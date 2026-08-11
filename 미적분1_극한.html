@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>미적분Ⅰ 스피드런</title>
+<style>
+:root{
+  --bg:#0b1220; --bg2:#111c33; --panel:#18233c; --panel2:#1f2c4a;
+  --line:#2c3a5c; --tx:#eef3ff; --mut:#93a4c8;
+  --acc:#4f8cff; --acc2:#7c5cff;
+  --ok:#22c55e; --ng:#ef4444; --warn:#f59e0b;
+  --limit:#38bdf8; --diff:#a78bfa; --integ:#34d399;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{
+  background:radial-gradient(1200px 700px at 50% -10%,#1c2c52 0%,var(--bg) 60%);
+  color:var(--tx);
+  font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic','맑은 고딕',sans-serif;
+  overflow:hidden;user-select:none;
+}
+#app{height:100%;display:flex;flex-direction:column}
+.screen{flex:1;min-height:0;display:none;flex-direction:column}
+.screen.on{display:flex}
+
+/* ───── 공통 ───── */
+.wrap{width:min(1100px,94vw);margin:0 auto}
+.btn{
+  border:0;border-radius:16px;padding:16px 26px;font-size:clamp(15px,1.9vw,19px);
+  font-weight:800;font-family:inherit;cursor:pointer;color:#fff;
+  background:linear-gradient(135deg,var(--acc),var(--acc2));
+  transition:transform .08s,filter .15s;
+}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:var(--panel2);color:var(--mut);border:1px solid var(--line)}
+.btn.ghost:hover{color:var(--tx)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:22px}
+.mut{color:var(--mut)}
+sup{font-size:.62em;vertical-align:.55em}
+sub{font-size:.62em;vertical-align:-.25em}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;
+    text-align:center;margin:0 .18em;line-height:1.18}
+.fr .de{border-top:2px solid currentColor;padding-top:.06em;margin-top:.06em}
+.eq{white-space:nowrap}
+
+/* ───── 시작 화면 ───── */
+#start{overflow-y:auto;padding:26px 0 40px}
+.logo{text-align:center;margin:14px 0 6px}
+.logo h1{font-size:clamp(30px,6vw,54px);margin:0;letter-spacing:-1px;
+  background:linear-gradient(100deg,#8ab4ff,#c4b5fd,#6ee7b7);
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.logo p{color:var(--mut);font-size:clamp(13px,2vw,17px);margin:8px 0 0}
+.sect{margin-top:22px}
+.sect>h3{font-size:clamp(13px,1.7vw,15px);color:var(--mut);margin:0 0 10px 4px;
+  font-weight:800;letter-spacing:.5px}
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.mode{padding:22px;cursor:pointer;border:2px solid var(--line);transition:.15s;background:var(--panel)}
+.mode:hover{border-color:var(--acc);transform:translateY(-3px)}
+.mode.sel{border-color:var(--acc);background:var(--panel2)}
+.mode .ic{font-size:38px;line-height:1}
+.mode h4{margin:10px 0 6px;font-size:clamp(18px,2.4vw,23px)}
+.mode p{margin:0;color:var(--mut);font-size:clamp(12px,1.6vw,14px);line-height:1.6}
+.chips{display:flex;flex-wrap:wrap;gap:10px}
+.chip{padding:12px 20px;border-radius:14px;border:2px solid var(--line);
+  background:var(--panel);cursor:pointer;font-weight:700;font-size:clamp(13px,1.8vw,16px);
+  color:var(--mut);transition:.12s}
+.chip.on{color:#fff;border-color:transparent}
+.chip[data-t=limit].on{background:var(--limit);color:#04283a}
+.chip[data-t=diff].on{background:var(--diff);color:#241249}
+.chip[data-t=integ].on{background:var(--integ);color:#04321f}
+.chip[data-lv].on{background:var(--acc);border-color:transparent;color:#fff}
+.go{display:block;width:100%;margin-top:26px;padding:20px;font-size:clamp(18px,2.6vw,24px)}
+.tip{margin-top:16px;padding:14px 18px;border-radius:14px;background:rgba(79,140,255,.09);
+  border:1px solid rgba(79,140,255,.25);color:#b9cdff;font-size:clamp(12px,1.6vw,14px);line-height:1.7}
+.best{text-align:center;color:var(--mut);margin-top:14px;font-size:14px}
+
+/* ───── 스피드전 ───── */
+#speed{padding:14px 0}
+.hud{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.hud .box{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  padding:8px 16px;text-align:center;min-width:78px}
+.hud .box b{display:block;font-size:clamp(18px,2.6vw,26px);line-height:1.1}
+.hud .box span{font-size:11px;color:var(--mut)}
+.hud .grow{flex:1}
+#combo{color:var(--warn)}
+.tbar{height:10px;border-radius:10px;background:var(--panel2);overflow:hidden;margin-bottom:16px}
+.tbar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--ok),var(--warn),var(--ng));
+  transform-origin:left;transition:transform .1s linear}
+.qcard{padding:clamp(20px,4vw,42px);text-align:center;position:relative;overflow:hidden}
+.qtag{position:absolute;top:14px;left:16px;font-size:12px;font-weight:800;
+  padding:5px 12px;border-radius:20px}
+.qtag.limit{background:rgba(56,189,248,.16);color:var(--limit)}
+.qtag.diff{background:rgba(167,139,250,.16);color:var(--diff)}
+.qtag.integ{background:rgba(52,211,153,.16);color:var(--integ)}
+.qtext{font-size:clamp(24px,5vw,50px);font-weight:700;line-height:1.5;margin:26px 0 6px;
+  word-break:keep-all}
+.choices{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:18px}
+.ch{padding:clamp(16px,2.6vw,26px);border-radius:18px;border:2px solid var(--line);
+  background:var(--panel);cursor:pointer;font-size:clamp(19px,3.4vw,32px);font-weight:700;
+  transition:.1s;position:relative;color:var(--tx);font-family:inherit}
+.ch:hover{border-color:var(--acc)}
+.ch .k{position:absolute;left:12px;top:10px;font-size:12px;color:var(--mut);font-weight:800}
+.ch.ok{background:rgba(34,197,94,.2);border-color:var(--ok)}
+.ch.ng{background:rgba(239,68,68,.2);border-color:var(--ng)}
+.ch:disabled{cursor:default}
+.hint{margin-top:14px;min-height:28px;text-align:center;font-size:clamp(13px,1.9vw,17px);
+  color:var(--mut);font-weight:600}
+.hint.show{color:#ffd88a}
+.fly{position:fixed;pointer-events:none;font-weight:900;font-size:34px;
+  animation:fly .8s ease-out forwards;z-index:60}
+@keyframes fly{to{transform:translateY(-70px);opacity:0}}
+
+/* ───── 슬라임 점프 ───── */
+#jump{position:relative}
+#cv{width:100%;height:100%;display:block;touch-action:none}
+.jhud{position:absolute;top:0;left:0;right:0;padding:12px 16px;
+  display:flex;gap:10px;align-items:flex-start;pointer-events:none}
+.jq{flex:1;background:rgba(17,28,51,.94);border:1px solid var(--line);border-radius:16px;
+  padding:12px 18px;text-align:center;backdrop-filter:blur(6px)}
+.jq .t{font-size:11px;color:var(--mut);font-weight:800;letter-spacing:.5px}
+.jq .q{font-size:clamp(18px,3.4vw,34px);font-weight:800;margin-top:4px;line-height:1.4}
+.jstat{background:rgba(17,28,51,.94);border:1px solid var(--line);border-radius:16px;
+  padding:10px 14px;text-align:center;min-width:70px}
+.jstat b{display:block;font-size:20px}
+.jstat span{font-size:10px;color:var(--mut)}
+.pads{position:absolute;bottom:18px;left:0;right:0;display:flex;justify-content:space-between;
+  padding:0 18px;pointer-events:none}
+.pad{width:74px;height:74px;border-radius:50%;background:rgba(79,140,255,.22);
+  border:2px solid rgba(79,140,255,.5);color:#fff;font-size:30px;
+  display:flex;align-items:center;justify-content:center;pointer-events:auto;cursor:pointer}
+.pad:active{background:rgba(79,140,255,.45)}
+@media(hover:hover) and (pointer:fine){.pads{display:none}}
+
+/* ───── 결과 ───── */
+#result{overflow-y:auto;padding:26px 0 40px}
+.rtitle{text-align:center;font-size:clamp(26px,5vw,44px);font-weight:900;margin:10px 0}
+.rscore{text-align:center;font-size:clamp(52px,12vw,110px);font-weight:900;line-height:1;
+  background:linear-gradient(100deg,#8ab4ff,#c4b5fd);-webkit-background-clip:text;
+  background-clip:text;color:transparent}
+.rstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin:22px 0}
+.rstat{padding:16px;text-align:center}
+.rstat b{display:block;font-size:clamp(22px,3.4vw,30px)}
+.rstat span{font-size:12px;color:var(--mut)}
+.bars{margin-top:8px}
+.bar{margin-bottom:14px}
+.bar .lb{display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px;font-weight:700}
+.bar .tr{height:14px;border-radius:8px;background:var(--panel2);overflow:hidden}
+.bar .fl{height:100%;border-radius:8px;transition:width .6s}
+.wrongs{margin-top:8px}
+.wrong{padding:14px 18px;border-radius:14px;background:var(--panel);border:1px solid var(--line);
+  margin-bottom:10px;font-size:clamp(14px,2vw,18px)}
+.wrong .a{color:var(--ok);font-weight:800}
+.wrong .b{color:var(--ng);text-decoration:line-through;opacity:.75}
+.wrong .h{display:block;color:var(--mut);font-size:13px;margin-top:6px}
+.rbtns{display:flex;gap:12px;margin-top:24px}
+.rbtns .btn{flex:1}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ══════════ 시작 ══════════ -->
+<section class="screen on" id="start">
+  <div class="wrap">
+    <div class="logo">
+      <h1>미적분Ⅰ 스피드런</h1>
+      <p>공식은 외우는 게 아니라 <b>익숙해지는</b> 것 · 하루 5분</p>
+    </div>
+
+    <div class="sect">
+      <h3>어떻게 연습할까요</h3>
+      <div class="modes">
+        <div class="mode card sel" data-mode="speed">
+          <div class="ic">⚡</div>
+          <h4>스피드전</h4>
+          <p>60초 동안 최대한 많이. 연속으로 맞히면 콤보 배수가 붙습니다.
+             공식을 몸에 붙이는 데 가장 효과적입니다.</p>
+        </div>
+        <div class="mode card" data-mode="jump">
+          <div class="ic">🟢</div>
+          <h4>슬라임 점프</h4>
+          <p>정답이 적힌 발판만 밟고 위로. 공중에 떠 있는 동안 답을 골라야 합니다.
+             재미있게 반복하고 싶을 때.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="sect">
+      <h3>단원 (여러 개 고를 수 있어요)</h3>
+      <div class="chips" id="topics">
+        <div class="chip on" data-t="limit">함수의 극한·연속</div>
+        <div class="chip on" data-t="diff">미분법</div>
+        <div class="chip on" data-t="integ">적분법</div>
+      </div>
+    </div>
+
+    <div class="sect">
+      <h3>난이도</h3>
+      <div class="chips" id="levels">
+        <div class="chip" data-lv="1">1단계 · 공식 그대로</div>
+        <div class="chip on" data-lv="2">2단계 · 한 번 더 계산</div>
+        <div class="chip" data-lv="3">섞기 · 실전</div>
+      </div>
+    </div>
+
+    <button class="btn go" id="goBtn">시작하기</button>
+    <div class="best" id="bestLine"></div>
+
+    <div class="tip">
+      <b>선생님께</b> · 이 게임에는 <b>3초 안에 끝나는 문제만</b> 들어 있습니다.
+      여러 단계를 밟아야 하는 문제는 넣지 않았습니다. 게임의 리듬이 깨지면
+      학생이 계산을 포기하고 찍기 시작하거든요.<br>
+      끝나면 <b>단원별 정답률</b>과 <b>틀린 문제</b>가 나옵니다. 자주 틀린 유형은
+      다음 판에 더 자주 나옵니다.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 스피드전 ══════════ -->
+<section class="screen" id="speed">
+  <div class="wrap" style="display:flex;flex-direction:column;height:100%">
+    <div class="hud">
+      <div class="box"><b id="sScore">0</b><span>점수</span></div>
+      <div class="box"><b id="combo">×1</b><span>콤보</span></div>
+      <div class="grow"></div>
+      <div class="box"><b id="sTime">60</b><span>남은 시간</span></div>
+      <button class="btn ghost" id="sQuit" style="padding:10px 18px">그만</button>
+    </div>
+    <div class="tbar"><i id="tbar"></i></div>
+    <div class="card qcard">
+      <div class="qtag" id="qtag">미분법</div>
+      <div class="qtext eq" id="qtext"></div>
+      <div class="choices" id="choices"></div>
+      <div class="hint" id="hint"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 슬라임 점프 ══════════ -->
+<section class="screen" id="jump">
+  <canvas id="cv"></canvas>
+  <div class="jhud">
+    <div class="jstat"><b id="jScore">0</b><span>점수</span></div>
+    <div class="jq">
+      <div class="t" id="jTag">미분법</div>
+      <div class="q eq" id="jQ"></div>
+    </div>
+    <div class="jstat"><b id="jLife">♥♥♥</b><span>목숨</span></div>
+  </div>
+  <div class="pads">
+    <div class="pad" id="padL">◀</div>
+    <div class="pad" id="padR">▶</div>
+  </div>
+</section>
+
+<!-- ══════════ 결과 ══════════ -->
+<section class="screen" id="result">
+  <div class="wrap">
+    <div class="rtitle" id="rTitle">수고했어요!</div>
+    <div class="rscore" id="rScore">0</div>
+    <div class="rstats">
+      <div class="rstat card"><b id="rAcc">0%</b><span>정답률</span></div>
+      <div class="rstat card"><b id="rCnt">0</b><span>푼 문제</span></div>
+      <div class="rstat card"><b id="rCombo">0</b><span>최고 콤보</span></div>
+      <div class="rstat card"><b id="rBest">0</b><span>최고 기록</span></div>
+    </div>
+    <div class="sect"><h3>단원별 정답률</h3><div class="bars" id="rBars"></div></div>
+    <div class="sect" id="rWrongWrap"><h3>틀린 문제 다시 보기</h3>
+      <div class="wrongs" id="rWrongs"></div></div>
+    <div class="rbtns">
+      <button class="btn" id="rAgain">한 판 더</button>
+      <button class="btn ghost" id="rHome">처음으로</button>
+    </div>
+  </div>
+</section>
+
+</div>
+<script>
+"use strict";
+/* ══════════════════════════════════════════════════════════
+   미적분Ⅰ 스피드런
+   설계 원칙 : 게임에 들어가는 문제는 '종이 없이 3초 안에 끝나는 것'만.
+              여러 단계를 밟아야 하는 문제는 넣지 않는다.
+              (액션의 리듬이 깨지면 학생은 계산을 포기하고 찍는다)
+   ══════════════════════════════════════════════════════════ */
+
+/* ───────── 작은 도구들 ───────── */
+const $ = s => document.querySelector(s);
+const R = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;   // 양끝 포함
+const nz = (a, b) => { let v; do { v = R(a, b); } while (v === 0); return v; };
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = R(0, i);[a[i], a[j]] = [a[j], a[i]]; } return a; };
+const MINUS = "−";                       // 진짜 빼기 기호 (하이픈보다 예쁨)
+const num = n => (n < 0 ? MINUS + Math.abs(n) : String(n));
+/* '−5'(U+2212) 는 parseInt 가 못 읽는다. 이걸 놓치면 보기 채우기가
+   정답과 동떨어진 값으로 채워져 학생이 눈으로 찍어 맞힌다. */
+const toN = v => { const x = parseFloat(String(v).replace(/−/g, "-")); return isNaN(x) ? null : x; };
+
+/* 다항식 표시 : [[계수, 차수], ...] 내림차순 */
+function poly(terms) {
+  let s = "";
+  for (const [c, p] of terms) {
+    if (c === 0) continue;
+    const abs = Math.abs(c);
+    let t;
+    if (p === 0) t = String(abs);
+    else t = (abs === 1 ? "" : abs) + "x" + (p > 1 ? `<sup>${p}</sup>` : "");
+    s += (s === "" ? (c < 0 ? MINUS : "") : (c < 0 ? ` ${MINUS} ` : " + ")) + t;
+  }
+  return s === "" ? "0" : s;
+}
+const mono = (c, p) => poly([[c, p]]);
+const frac = (n, d) => `<span class="fr"><span class="nu">${n}</span><span class="de">${d}</span></span>`;
+const lim = (v, e) => `lim<sub>${v}</sub> ${e}`;
+
+/* ───────── 단원 정보 ───────── */
+const TOPIC = {
+  limit: { name: "함수의 극한·연속", short: "극한", css: "limit", color: "#38bdf8" },
+  diff:  { name: "미분법",           short: "미분", css: "diff",  color: "#a78bfa" },
+  integ: { name: "적분법",           short: "적분", css: "integ", color: "#34d399" },
+};
+
+/* ───────── 문제 생성기 ─────────
+   tier 1 = 공식을 그대로 꺼내는 수준 (1~2초)
+   tier 2 = 한 번 더 계산 (2~3초)
+   오답(wrongs)은 '학생이 실제로 하는 실수'로 만든다. 무작위 숫자는 학습 효과가 없다. */
+const GEN = [
+
+  /* ═══ 함수의 극한 ═══ */
+  {
+    id: "lim_sub", topic: "limit", tier: 1, label: "극한값 대입",
+    gen() {
+      const a = R(1, 3), b = nz(-4, 4), c = R(-3, 3), k = R(-2, 3);
+      const v = a * k * k + b * k + c;
+      return {
+        q: lim(`x→${num(k)}`, `(${poly([[a, 2], [b, 1], [c, 0]])})`),
+        ans: num(v),
+        wrongs: [num(a * 2 * k + b * k + c), num(v + 2), num(v - 3), num(-v), num(v + 1)],
+        hint: "다항함수는 연속 → x 자리에 그냥 대입",
+      };
+    }
+  },
+  {
+    id: "lim_fac", topic: "limit", tier: 2, label: "0/0 꼴 (인수분해)",
+    gen() {
+      const p = R(-3, 4); let q = R(-3, 4); while (q === p) q = R(-3, 4);
+      const v = p - q;                                   // (x-p)(x-q)/(x-p) → x-q → p-q
+      return {
+        q: lim(`x→${num(p)}`,
+               frac(poly([[1, 2], [-(p + q), 1], [p * q, 0]]), `x ${MINUS} ${num(p)}`.replace(`${MINUS} ${MINUS}`, "+ "))),
+        ans: num(v),
+        wrongs: [num(q), num(p + q), num(-v), num(p), num(p * q),
+                 num(v + 1), num(v - 1), num(v + 2)],
+        hint: `분자를 (x${MINUS}${num(p)})(x${MINUS}${num(q)}) 로 쪼개고 약분`,
+      };
+    }
+  },
+  {
+    id: "lim_inf", topic: "limit", tier: 1, label: "∞/∞ 꼴",
+    gen() {
+      const kind = pick(["same", "same", "low", "high"]);
+      const b = R(1, 3), m = R(1, 4), a = b * m;
+      if (kind === "same") {
+        return {
+          q: lim("x→∞", frac(poly([[a, 2], [nz(-3, 3), 1]]), poly([[b, 2], [nz(-4, 4), 0]]))),
+          ans: num(m),
+          wrongs: [num(a), num(b), "0", "∞", num(m + 1)],
+          hint: "분모·분자의 최고차항 계수만 비교",
+        };
+      }
+      if (kind === "low") {
+        return {
+          q: lim("x→∞", frac(poly([[R(1, 4), 1], [R(1, 5), 0]]), poly([[R(1, 3), 2], [nz(-3, 3), 1]]))),
+          ans: "0",
+          wrongs: ["∞", "1", num(R(2, 5)), "−1"],
+          hint: "분모의 차수가 더 크면 0",
+        };
+      }
+      return {
+        q: lim("x→∞", frac(poly([[R(1, 3), 3], [nz(-3, 3), 1]]), poly([[R(1, 4), 2], [R(1, 5), 0]]))),
+        ans: "∞",
+        wrongs: ["0", "1", num(R(2, 5)), "−1"],
+        hint: "분자의 차수가 더 크면 발산(∞)",
+      };
+    }
+  },
+  {
+    id: "lim_rule", topic: "limit", tier: 1, label: "극한의 성질",
+    gen() {
+      const A = nz(-4, 5), B = nz(-4, 5), p = pick([1, 2, 3]), q = pick([-2, -1, 1, 2]);
+      const v = p * A + q * B;
+      const ex = `${p === 1 ? "" : p}f(x) ${q < 0 ? MINUS : "+"} ${Math.abs(q) === 1 ? "" : Math.abs(q)}g(x)`;
+      return {
+        q: `lim f(x)=${num(A)}, lim g(x)=${num(B)} 일 때<br>${lim("", `{ ${ex} }`)}`,
+        ans: num(v),
+        wrongs: [num(p * A - q * B), num(A + B), num(p * A * q * B), num(-v),
+                 num(v + 2), num(v - 1), num(v + 3)],
+        hint: "극한은 각각 계산해서 더하고 빼면 됩니다",
+      };
+    }
+  },
+  {
+    id: "cont_k", topic: "limit", tier: 2, label: "연속이 되는 값",
+    gen() {
+      const a = nz(-3, 4), v = 2 * a;
+      return {
+        q: `f(x)=${frac(poly([[1, 2], [0, 1], [-a * a, 0]]), `x ${MINUS} ${num(a)}`.replace(`${MINUS} ${MINUS}`, "+ "))} (x≠${num(a)}), f(${num(a)})=k<br>가 x=${num(a)} 에서 연속이려면 k =`,
+        ans: num(v),
+        wrongs: [num(a), "0", num(a * a), num(-v), num(v + 1)],
+        hint: `약분하면 x+${num(a)} → x=${num(a)} 대입`,
+      };
+    }
+  },
+
+  /* ═══ 미분법 ═══ */
+  {
+    id: "d_power", topic: "diff", tier: 1, label: "미분 공식",
+    gen() {
+      const n = R(2, 6), c = R(1, 5);
+      return {
+        q: `<b>d</b>/<b>dx</b> ( ${mono(c, n)} )`,
+        ans: mono(c * n, n - 1),
+        wrongs: [mono(c, n - 1), mono(c * n, n), mono(n, n - 1), mono(c * (n - 1), n - 1), mono(c * n, n - 2)],
+        hint: "(xⁿ)′ = n·xⁿ⁻¹ · 계수는 그대로 곱하기",
+      };
+    }
+  },
+  {
+    id: "d_poly", topic: "diff", tier: 1, label: "다항함수 미분",
+    gen() {
+      const a = R(1, 3), b = nz(-4, 4), c = nz(-5, 5), d = nz(-6, 6);
+      const A = 3 * a, B = 2 * b, C = c;
+      return {
+        q: `f(x) = ${poly([[a, 3], [b, 2], [c, 1], [d, 0]])} 일 때<br>f′(x) =`,
+        ans: poly([[A, 2], [B, 1], [C, 0]]),
+        wrongs: [
+          poly([[A, 2], [B, 1], [C + d, 0]]),            // 상수항을 안 지움
+          poly([[a, 2], [b, 1], [c, 0]]),                // 계수를 안 곱함
+          poly([[A, 3], [B, 2], [C, 1]]),                // 지수를 안 줄임
+          poly([[A, 2], [B, 1], [0, 0]]),                // 일차항 계수를 날림
+          poly([[A, 2], [b, 1], [C, 0]]),
+        ],
+        hint: "차수를 앞으로 내리고 지수는 1 줄이기 · 상수항은 사라짐",
+      };
+    }
+  },
+  {
+    id: "d_at", topic: "diff", tier: 2, label: "미분계수 f′(k)",
+    gen() {
+      const a = R(1, 3), b = nz(-4, 4), k = R(-2, 3);
+      const v = 3 * a * k * k + b;                       // f=ax³+bx → f'=3ax²+b
+      return {
+        q: `f(x) = ${poly([[a, 3], [b, 1]])} 일 때<br>f′(${num(k)}) =`,
+        ans: num(v),
+        wrongs: [num(a * k * k * k + b * k), num(3 * a * k + b), num(a * k * k * 3), num(-v),
+                 num(v + 2), num(v - 1), num(v + 3), num(v - 4)],
+        hint: "먼저 f′(x)=3ax²+b, 그다음 대입",
+      };
+    }
+  },
+  {
+    id: "d_prod", topic: "diff", tier: 2, label: "곱 꼴 미분",
+    gen() {
+      const a = nz(-4, 4), b = nz(-4, 4);
+      return {
+        q: `f(x) = (x ${a < 0 ? MINUS : "+"} ${Math.abs(a)})(x ${b < 0 ? MINUS : "+"} ${Math.abs(b)}) 일 때<br>f′(x) =`,
+        ans: poly([[2, 1], [a + b, 0]]),
+        wrongs: [poly([[2, 1], [a * b, 0]]), poly([[1, 1], [a + b, 0]]),
+                 poly([[2, 1], [a + b + 1, 0]]), poly([[1, 0]]), poly([[2, 1], [-(a + b), 0]])],
+        hint: "전개하면 x²+(a+b)x+ab → 미분하면 2x+(a+b)",
+      };
+    }
+  },
+  {
+    id: "d_tan", topic: "diff", tier: 2, label: "접선의 기울기",
+    gen() {
+      const a = nz(-4, 4), k = R(-2, 3);
+      const v = 2 * k + a;
+      return {
+        q: `곡선 y = ${poly([[1, 2], [a, 1]])} 위의<br>x = ${num(k)} 인 점에서 접선의 기울기`,
+        ans: num(v),
+        wrongs: [num(k * k + a * k), num(2 * k), num(a), num(-v),
+                 num(v + 2), num(v - 1), num(v + 3), num(v - 4)],
+        hint: "접선의 기울기 = 그 점에서의 미분계수",
+      };
+    }
+  },
+  {
+    id: "d_def", topic: "diff", tier: 1, label: "미분계수의 정의",
+    gen() {
+      const k = R(1, 5);
+      return {
+        q: `${lim("h→0", frac(`f(${k}+h) ${MINUS} f(${k})`, "h"))} 는?`,
+        ans: `f′(${k})`,
+        wrongs: [`f(${k})`, "f′(0)", `f′(${k}) + ${k}`, `${k}f′(${k})`, "f′(x)"],
+        hint: "이 꼴이 바로 x=k 에서의 미분계수",
+      };
+    }
+  },
+  {
+    id: "d_avg", topic: "diff", tier: 2, label: "평균변화율",
+    gen() {
+      const p = R(0, 3); const q = p + R(1, 3);
+      const v = p + q;                                   // f=x² → (q²-p²)/(q-p)=p+q
+      return {
+        q: `f(x) = x<sup>2</sup> 일 때<br>구간 [${p}, ${q}] 에서의 평균변화율`,
+        ans: num(v),
+        wrongs: [num(q - p), num(q * q - p * p), num(2 * p), num(2 * q),
+                 num(v + 1), num(v - 1), num(v + 3), num(v + 5)],
+        hint: "(f(q)−f(p))/(q−p) · x² 이면 p+q",
+      };
+    }
+  },
+
+  /* ═══ 적분법 ═══ */
+  {
+    id: "i_power", topic: "integ", tier: 1, label: "부정적분 공식",
+    gen() {
+      const n = R(1, 4), m = R(1, 4), c = m * (n + 1);
+      return {
+        q: `∫ ${mono(c, n)} dx`,
+        ans: `${mono(m, n + 1)} + C`,
+        wrongs: [`${mono(c, n + 1)} + C`, `${mono(m, n)} + C`, mono(m, n + 1),
+                 `${mono(c * n, n - 1)} + C`, `${mono(m, n + 2)} + C`],
+        hint: "지수를 1 올리고 그 수로 나누기 · +C 잊지 않기",
+      };
+    }
+  },
+  {
+    id: "i_def", topic: "integ", tier: 2, label: "정적분 계산",
+    gen() {
+      const n = R(1, 2), m = R(1, 3), c = m * (n + 1), b = R(1, 3);
+      const v = m * Math.pow(b, n + 1);
+      return {
+        q: `∫<sub>0</sub><sup>${b}</sup> ${mono(c, n)} dx`,
+        ans: num(v),
+        wrongs: [num(c * Math.pow(b, n + 1)), num(m * Math.pow(b, n)), num(v + b),
+                 num(c * b), num(-v), num(v + 1), num(v - 1), num(v + 3)],
+        hint: `${mono(m, n + 1)} 에 위끝·아래끝 대입해서 빼기`,
+      };
+    }
+  },
+  {
+    id: "i_sym", topic: "integ", tier: 1, label: "정적분의 성질",
+    gen() {
+      const kind = pick(["odd", "even", "same"]);
+      const a = R(1, 3);
+      if (kind === "odd") {
+        const n = pick([1, 3]), c = R(1, 4);
+        return {
+          q: `∫<sub>${MINUS}${a}</sub><sup>${a}</sup> ${mono(c, n)} dx`,
+          ans: "0",
+          wrongs: [num(c * a), num(2 * c * a), num(a), num(c),
+                   num(c * a * a), num(1), num(-c * a)],
+          hint: "홀수 차수(기함수)를 대칭 구간에서 적분하면 0",
+        };
+      }
+      if (kind === "even") {
+        const n = 2, m = R(1, 3), c = m * 3;
+        const v = 2 * m * Math.pow(a, 3);
+        return {
+          q: `∫<sub>${MINUS}${a}</sub><sup>${a}</sup> ${mono(c, n)} dx`,
+          ans: num(v),
+          wrongs: ["0", num(v / 2), num(v * 2), num(c * a),
+                   num(v + 2), num(v - 3), num(m * a * a * a)],
+          hint: "짝수 차수(우함수)는 0~a 적분의 2배",
+        };
+      }
+      const c = R(2, 5), n = R(1, 3);
+      return {
+        q: `∫<sub>${a}</sub><sup>${a}</sup> ${poly([[c, n], [nz(-4, 4), 0]])} dx`,
+        ans: "0",
+        wrongs: [num(c), num(a), num(c * a), "1", num(c + a), num(-c), num(2 * a)],
+        hint: "위끝과 아래끝이 같으면 무조건 0",
+      };
+    }
+  },
+  {
+    id: "i_ftc", topic: "integ", tier: 2, label: "적분과 미분의 관계",
+    gen() {
+      const a = R(1, 4), b = nz(-4, 4), c = R(1, 4);
+      return {
+        q: `<b>d</b>/<b>dx</b> ∫<sub>${a}</sub><sup>x</sup> (${poly([[c, 2], [b, 1]]).replace(/x/g, "t")}) dt`,
+        ans: poly([[c, 2], [b, 1]]),
+        wrongs: [`${poly([[c, 2], [b, 1]])} + C`, poly([[2 * c, 1], [b, 0]]),
+                 poly([[c / 3 * 3, 3], [b, 2]]), num(a), poly([[c, 2], [b, 1], [1, 0]])],
+        hint: "적분한 뒤 미분하면 원래 함수 · t 자리에 x",
+      };
+    }
+  },
+];
+
+/* ───────── 상태 ───────── */
+const S = {
+  mode: "speed", topics: ["limit", "diff", "integ"], level: 2,
+  score: 0, combo: 0, maxCombo: 0, right: 0, total: 0,
+  perTopic: {}, wrongList: [], weight: {}, cur: null, running: false,
+};
+
+/* 저장 (파일로 열어도 되게 실패해도 조용히 넘어감) */
+const Store = {
+  get(k, d) { try { const v = localStorage.getItem("calc1_" + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem("calc1_" + k, JSON.stringify(v)); } catch (e) { } },
+};
+
+function pool() {
+  return GEN.filter(g => S.topics.includes(g.topic) &&
+    (S.level === 3 ? true : g.tier <= S.level));
+}
+/* 자주 틀린 유형을 더 자주 (아주 가벼운 간격 반복) */
+function nextGen() {
+  const p = pool();
+  if (!p.length) return GEN[0];
+  const w = p.map(g => {
+    const st = S.weight[g.id] || { s: 0, w: 0 };
+    return 1 + 2.2 * (st.s ? st.w / st.s : 0);
+  });
+  let r = Math.random() * w.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < p.length; i++) { r -= w[i]; if (r <= 0) return p[i]; }
+  return p[p.length - 1];
+}
+function makeQ() {
+  const g = nextGen();
+  const o = g.gen();
+  const set = [o.ans];
+  for (const x of o.wrongs) {
+    const s = String(x);
+    if (s !== o.ans && !set.includes(s)) set.push(s);
+    if (set.length >= 4) break;
+  }
+  const base = toN(o.ans);                               // 모자라면 정답 근처 값으로 채움
+  let n = 1;
+  while (set.length < 4 && n < 60) {
+    const d = Math.ceil(n / 2) * (n % 2 ? 1 : -1);
+    const t = base === null ? String(d) : num(base + d);
+    if (!set.includes(t)) set.push(t);
+    n++;
+  }
+  return { gid: g.id, topic: g.topic, label: g.label, q: o.q, ans: o.ans,
+           hint: o.hint, choices: shuffle(set.slice(0, 4)) };
+}
+function record(ok) {
+  S.total++; if (ok) S.right++;
+  const t = S.cur.topic;
+  S.perTopic[t] = S.perTopic[t] || { s: 0, r: 0 };
+  S.perTopic[t].s++; if (ok) S.perTopic[t].r++;
+  const w = S.weight[S.cur.gid] = S.weight[S.cur.gid] || { s: 0, w: 0 };
+  w.s++; if (!ok) w.w++;
+  if (!ok && S.wrongList.length < 8) S.wrongList.push(S.cur);
+}
+
+/* ───────── 화면 전환 ───────── */
+function show(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === id));
+}
+
+/* ───────── 시작 화면 ───────── */
+document.querySelectorAll(".mode").forEach(m => m.onclick = () => {
+  document.querySelectorAll(".mode").forEach(x => x.classList.remove("sel"));
+  m.classList.add("sel"); S.mode = m.dataset.mode;
+});
+$("#topics").onclick = e => {
+  const c = e.target.closest(".chip"); if (!c) return;
+  c.classList.toggle("on");
+  const on = [...$("#topics").querySelectorAll(".chip.on")];
+  if (!on.length) { c.classList.add("on"); return; }        // 최소 하나
+  S.topics = on.map(x => x.dataset.t);
+};
+$("#levels").onclick = e => {
+  const c = e.target.closest(".chip"); if (!c) return;
+  $("#levels").querySelectorAll(".chip").forEach(x => x.classList.remove("on"));
+  c.classList.add("on"); S.level = +c.dataset.lv;
+};
+function refreshBest() {
+  const b1 = Store.get("best_speed", 0), b2 = Store.get("best_jump", 0);
+  $("#bestLine").innerHTML = `최고 기록 &nbsp;⚡ 스피드전 <b>${b1}</b>점 &nbsp;·&nbsp; 🟢 슬라임 점프 <b>${b2}</b>점`;
+}
+refreshBest();
+$("#goBtn").onclick = () => {
+  S.score = 0; S.combo = 0; S.maxCombo = 0; S.right = 0; S.total = 0;
+  S.perTopic = {}; S.wrongList = [];
+  if (S.mode === "speed") startSpeed(); else startJump();
+};
+
+/* ══════════ 스피드전 ══════════ */
+const SPEED_SEC = 60;
+let sTimer = null, sLeft = 0, sLock = false;
+
+function startSpeed() {
+  show("speed"); sLeft = SPEED_SEC; sLock = false; S.running = true;
+  $("#sScore").textContent = "0"; $("#combo").textContent = "×1";
+  nextSpeedQ();
+  clearInterval(sTimer);
+  sTimer = setInterval(() => {
+    sLeft -= 0.1;
+    $("#sTime").textContent = Math.max(0, Math.ceil(sLeft));
+    $("#tbar").style.transform = `scaleX(${Math.max(0, sLeft / SPEED_SEC)})`;
+    if (sLeft <= 0) endSpeed();
+  }, 100);
+}
+function nextSpeedQ() {
+  S.cur = makeQ(); sLock = false;
+  $("#qtag").textContent = TOPIC[S.cur.topic].name;
+  $("#qtag").className = "qtag " + TOPIC[S.cur.topic].css;
+  $("#qtext").innerHTML = S.cur.q;
+  $("#hint").className = "hint"; $("#hint").innerHTML = "";
+  const box = $("#choices"); box.innerHTML = "";
+  S.cur.choices.forEach((c, i) => {
+    const b = document.createElement("button");
+    b.className = "ch"; b.innerHTML = `<span class="k">${i + 1}</span>${c}`;
+    b.onclick = () => answerSpeed(b, c);
+    box.appendChild(b);
+  });
+}
+function answerSpeed(btn, val) {
+  if (sLock || !S.running) return;
+  sLock = true;
+  const ok = val === S.cur.ans;
+  record(ok);
+  [...$("#choices").children].forEach((b, i) => {
+    b.disabled = true;
+    if (S.cur.choices[i] === S.cur.ans) b.classList.add("ok");
+  });
+  if (ok) {
+    S.combo++; S.maxCombo = Math.max(S.maxCombo, S.combo);
+    const mul = 1 + Math.floor(S.combo / 3);
+    const gain = 10 * mul;
+    S.score += gain;
+    $("#sScore").textContent = S.score;
+    $("#combo").textContent = "×" + mul;
+    fly(btn, "+" + gain, "#22c55e");
+    sLeft = Math.min(SPEED_SEC, sLeft + 0.6);            // 맞히면 시간 살짝 보너스
+    setTimeout(() => { if (S.running) nextSpeedQ(); }, 320);
+  } else {
+    S.combo = 0; $("#combo").textContent = "×1";
+    btn.classList.add("ng");
+    $("#hint").className = "hint show";
+    $("#hint").innerHTML = `정답 <b>${S.cur.ans}</b> &nbsp;·&nbsp; ${S.cur.hint}`;
+    sLeft = Math.max(0, sLeft - 1.5);
+    setTimeout(() => { if (S.running) nextSpeedQ(); }, 1500);
+  }
+}
+function fly(el, txt, color) {
+  const r = el.getBoundingClientRect();
+  const d = document.createElement("div");
+  d.className = "fly"; d.textContent = txt; d.style.color = color;
+  d.style.left = r.left + r.width / 2 - 20 + "px"; d.style.top = r.top + "px";
+  document.body.appendChild(d); setTimeout(() => d.remove(), 800);
+}
+function endSpeed() {
+  clearInterval(sTimer); S.running = false;
+  finish("best_speed");
+}
+$("#sQuit").onclick = endSpeed;
+document.addEventListener("keydown", e => {
+  if (!$("#speed").classList.contains("on") || sLock) return;
+  const i = "1234".indexOf(e.key);
+  if (i >= 0) { const b = $("#choices").children[i]; if (b) b.click(); }
+});
+
+/* ══════════ 슬라임 점프 ══════════ */
+const cv = $("#cv"), cx = cv.getContext("2d");
+let W = 0, H = 0, raf = null;
+const J = {
+  g: 0.30, jump: 13, gap: 170, acc: 1.4, life: 3, score: 0,
+  px: 0, py: 0, vx: 0, vy: 0, dir: 0, cam: 0, rows: [], top: 0, msg: null, t: 0,
+};
+const LV = { 1: { g: 0.22, gap: 175 }, 2: { g: 0.30, gap: 170 }, 3: { g: 0.38, gap: 165 } };
+
+const FRIC = 0.86;                                     // 좌우 마찰
+
+/* ★ 좌우 가속은 '화면 폭'과 '체공 시간'에서 역산한다.
+   고정값(1.4)을 쓰면 모니터가 클수록 발판 간격만 넓어져
+   한쪽 끝에서 반대쪽 끝 발판까지 영영 못 간다. (실제로 그랬다) */
+function calcAcc() {
+  const frames = Math.max(20, 2 * J.jump / J.g);        // 한 번 점프의 체공 프레임
+  const vmax = 0.95 * W / frames;                       // 체공 중 화면 폭의 95% 이동
+  J.acc = Math.max(0.6, vmax * (1 - FRIC) / FRIC);
+}
+
+function fitCanvas() {
+  const r = cv.getBoundingClientRect();
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  W = r.width; H = r.height;
+  cv.width = W * dpr; cv.height = H * dpr;
+  cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  calcAcc();                                            // 창 크기가 바뀌면 다시 계산
+}
+window.addEventListener("resize", () => { if ($("#jump").classList.contains("on")) fitCanvas(); });
+
+function startJump() {
+  show("jump"); fitCanvas();
+  const lv = LV[S.level] || LV[2];
+  J.g = lv.g; J.gap = lv.gap;
+  J.jump = Math.sqrt(2 * J.g * J.gap * 1.65);            // 항상 다음 층에 닿는 점프력
+  calcAcc();
+  J.life = 3; J.score = 0; J.rows = []; J.cam = 0; J.msg = null;
+  J.px = W / 2; J.py = H - 140; J.vx = 0; J.vy = -J.jump; J.dir = 0;
+  J.top = H - 240;
+  for (let i = 0; i < 6; i++) addRow();
+  S.running = true; newJumpQ();
+  cancelAnimationFrame(raf); raf = requestAnimationFrame(loop);
+}
+function addRow() {
+  const y = J.top; J.top -= J.gap;
+  const n = 4, secW = W / n;
+  const pw = Math.max(104, Math.min(secW - 16, secW * 0.82));
+  const row = { y, pads: [], q: null, done: false };
+  for (let i = 0; i < n; i++) {
+    row.pads.push({ x: i * secW + (secW - pw) / 2, y, w: pw, h: 18, txt: "", ok: false });
+  }
+  fillRow(row);                                         // 만들 때 바로 채워야 발판이 비어 보이지 않음
+  J.rows.push(row);
+  return row;
+}
+function fillRow(row) {
+  const q = makeQ();
+  row.q = q;
+  const order = shuffle([0, 1, 2, 3]);
+  row.pads.forEach((p, i) => { p.txt = q.choices[order[i]]; p.ok = q.choices[order[i]] === q.ans; });
+}
+function newJumpQ() {
+  /* 지금 밟아야 할 층 = 아직 안 밟은 층 중 슬라임 바로 위 */
+  const cur = J.rows.filter(r => !r.done && r.y < J.py - 20)
+                    .sort((a, b) => b.y - a.y)[0];
+  if (!cur) return;
+  if (!cur.q) fillRow(cur);
+  S.cur = cur.q;
+  $("#jTag").textContent = TOPIC[cur.q.topic].name;
+  $("#jQ").innerHTML = cur.q.q;
+}
+function jumpKey(e, down) {
+  if (e.key === "ArrowLeft" || e.key === "a") J.dir = down ? -1 : (J.dir === -1 ? 0 : J.dir);
+  if (e.key === "ArrowRight" || e.key === "d") J.dir = down ? 1 : (J.dir === 1 ? 0 : J.dir);
+}
+document.addEventListener("keydown", e => { if ($("#jump").classList.contains("on")) jumpKey(e, true); });
+document.addEventListener("keyup", e => { if ($("#jump").classList.contains("on")) jumpKey(e, false); });
+const hold = (el, d) => {
+  const on = e => { e.preventDefault(); J.dir = d; };
+  const off = e => { e.preventDefault(); J.dir = 0; };
+  el.addEventListener("touchstart", on, { passive: false });
+  el.addEventListener("touchend", off, { passive: false });
+  el.addEventListener("mousedown", on); el.addEventListener("mouseup", off);
+  el.addEventListener("mouseleave", off);
+};
+hold($("#padL"), -1); hold($("#padR"), 1);
+
+function loop() {
+  if (!S.running) return;
+  J.t++;
+  /* 이동 */
+  J.vx += J.dir * J.acc; J.vx *= FRIC;
+  J.px += J.vx;
+  J.px = ((J.px % W) + W) % W;                           // 좌우 순환(끊김 없이)
+  const prevBottom = J.py;
+  J.vy += J.g; J.py += J.vy;
+
+  /* 착지 판정 (내려올 때만) */
+  if (J.vy > 0) {
+    for (const row of J.rows) {
+      if (row.done) continue;
+      for (const p of row.pads) {
+        if (prevBottom <= p.y && J.py >= p.y &&
+            J.px > p.x - 6 && J.px < p.x + p.w + 6) {
+          row.done = true;
+          if (p.ok) {
+            J.score += 10; S.score = J.score;
+            record(true);
+            J.msg = { t: 30, txt: "정답!", c: "#22c55e" };
+          } else {
+            J.life--; record(false);
+            J.msg = { t: 60, txt: `정답은 ${S.cur.ans}`, c: "#ef4444" };
+            if (J.life <= 0) { S.running = false; setTimeout(() => finish("best_jump"), 700); }
+          }
+          J.vy = -J.jump;
+          $("#jScore").textContent = J.score;
+          $("#jLife").textContent = "♥".repeat(Math.max(0, J.life)) || "·";
+          newJumpQ();
+          break;
+        }
+      }
+    }
+  }
+
+  /* 카메라 · 층 추가 */
+  const want = J.py - H * 0.62;
+  if (want < J.cam) J.cam = want;
+  while (J.top > J.cam - H) addRow();
+  J.rows = J.rows.filter(r => r.y < J.cam + H + 200);
+
+  /* 추락 */
+  if (J.py > J.cam + H + 80) {
+    J.life--;                                           // 추락은 오답이 아님(정답률 왜곡 방지)
+    $("#jLife").textContent = "♥".repeat(Math.max(0, J.life)) || "·";
+    if (J.life <= 0) { S.running = false; setTimeout(() => finish("best_jump"), 400); }
+    else {
+      const r = J.rows.filter(x => !x.done && x.y > J.cam + 120).sort((a, b) => b.y - a.y)[0] || J.rows[0];
+      J.py = r.y - 40; J.px = r.pads[1].x + r.pads[1].w / 2; J.vy = -J.jump; J.vx = 0;
+      newJumpQ();
+    }
+  }
+  draw(); raf = requestAnimationFrame(loop);
+}
+
+function draw() {
+  cx.clearRect(0, 0, W, H);
+  /* 배경 */
+  const g = cx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, "#16233f"); g.addColorStop(1, "#0b1220");
+  cx.fillStyle = g; cx.fillRect(0, 0, W, H);
+  /* 눈금 (높이감) */
+  cx.strokeStyle = "rgba(255,255,255,.04)"; cx.lineWidth = 1;
+  for (let y = Math.floor(J.cam / 100) * 100; y < J.cam + H; y += 100) {
+    cx.beginPath(); cx.moveTo(0, y - J.cam); cx.lineTo(W, y - J.cam); cx.stroke();
+  }
+  /* 발판 */
+  for (const row of J.rows) {
+    for (const p of row.pads) {
+      const y = p.y - J.cam;
+      if (y < -60 || y > H + 40) continue;
+      const showAns = row.done;
+      cx.fillStyle = row.done ? (p.ok ? "rgba(34,197,94,.35)" : "rgba(120,130,160,.2)")
+                              : "rgba(79,140,255,.30)";
+      cx.strokeStyle = row.done ? (p.ok ? "#22c55e" : "#3b465f") : "#4f8cff";
+      cx.lineWidth = 2;
+      roundRect(p.x, y, p.w, p.h, 9); cx.fill(); cx.stroke();
+      cx.fillStyle = row.done && !p.ok ? "#7c88a6" : "#eef3ff";
+      cx.font = "700 " + Math.min(19, p.w / 5.2) + "px 'Malgun Gothic',sans-serif";
+      cx.textAlign = "center"; cx.textBaseline = "middle";
+      cx.fillText(stripTags(p.txt), p.x + p.w / 2, y + p.h / 2 + 1);
+    }
+  }
+  /* 슬라임 — 화면 끝을 넘나들 때 반대편에도 그려서 순간이동처럼 보이지 않게 */
+  const py = J.py - J.cam, sq = Math.max(-4, Math.min(6, J.vy * .5));
+  const xs = [J.px];
+  if (J.px < 40) xs.push(J.px + W);
+  if (J.px > W - 40) xs.push(J.px - W);
+  for (const sx of xs) {
+    cx.save(); cx.translate(sx, py);
+    cx.fillStyle = "#5eead4"; cx.strokeStyle = "#0f766e"; cx.lineWidth = 3;
+    cx.beginPath();
+    cx.ellipse(0, -20 + sq / 2, 26 - sq, 22 + sq, 0, 0, Math.PI * 2);
+    cx.fill(); cx.stroke();
+    cx.fillStyle = "#062e29";
+    cx.beginPath(); cx.arc(-9, -24, 3.4, 0, 7); cx.fill();
+    cx.beginPath(); cx.arc(9, -24, 3.4, 0, 7); cx.fill();
+    cx.restore();
+  }
+  /* 처음 3초 조작 안내 */
+  if (J.t < 200) {
+    cx.globalAlpha = Math.min(1, (200 - J.t) / 60);
+    cx.fillStyle = "#93a4c8"; cx.textAlign = "center";
+    cx.font = "700 15px 'Malgun Gothic',sans-serif";
+    cx.fillText("← → 로 움직여 정답 발판 밟기 · 화면 끝으로 나가면 반대편에서 나옵니다",
+                W / 2, H - 130);
+    cx.globalAlpha = 1;
+  }
+  /* 메시지 */
+  if (J.msg && J.msg.t > 0) {
+    J.msg.t--;
+    cx.fillStyle = J.msg.c; cx.textAlign = "center";
+    cx.font = "900 26px 'Malgun Gothic',sans-serif";
+    cx.globalAlpha = Math.min(1, J.msg.t / 20);
+    cx.fillText(J.msg.txt, W / 2, H - 110);
+    cx.globalAlpha = 1;
+  }
+}
+function roundRect(x, y, w, h, r) {
+  cx.beginPath();
+  cx.moveTo(x + r, y); cx.arcTo(x + w, y, x + w, y + h, r);
+  cx.arcTo(x + w, y + h, x, y + h, r); cx.arcTo(x, y + h, x, y, r);
+  cx.arcTo(x, y, x + w, y, r); cx.closePath();
+}
+function stripTags(html) {                                 // 캔버스는 HTML을 못 그림
+  return String(html)
+    .replace(/<sup>(.*?)<\/sup>/g, (m, a) => toSup(a))
+    .replace(/<sub>(.*?)<\/sub>/g, "_$1")
+    .replace(/<[^>]+>/g, "");
+}
+const SUP = { "0": "⁰", "1": "¹", "2": "²", "3": "³", "4": "⁴",
+              "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹",
+              "-": "⁻", "−": "⁻" };
+const toSup = s => [...String(s)].map(c => SUP[c] || c).join("");
+
+/* ══════════ 결과 ══════════ */
+function finish(bestKey) {
+  S.running = false; cancelAnimationFrame(raf); clearInterval(sTimer);
+  const best = Store.get(bestKey, 0);
+  if (S.score > best) Store.set(bestKey, S.score);
+  refreshBest();
+
+  const acc = S.total ? Math.round(S.right / S.total * 100) : 0;
+  $("#rScore").textContent = S.score;
+  $("#rAcc").textContent = acc + "%";
+  $("#rCnt").textContent = S.total;
+  $("#rCombo").textContent = S.maxCombo;
+  $("#rBest").textContent = Math.max(best, S.score);
+  $("#rTitle").textContent =
+    acc >= 90 ? "완벽해요! 👏" : acc >= 70 ? "잘하고 있어요 🙂" :
+    acc >= 50 ? "조금만 더! 💪" : "천천히 다시 해봐요";
+
+  const bars = $("#rBars"); bars.innerHTML = "";
+  Object.keys(TOPIC).forEach(t => {
+    const d = S.perTopic[t]; if (!d || !d.s) return;
+    const pct = Math.round(d.r / d.s * 100);
+    bars.insertAdjacentHTML("beforeend",
+      `<div class="bar"><div class="lb"><span>${TOPIC[t].name}</span>
+       <span>${d.r}/${d.s} · ${pct}%</span></div>
+       <div class="tr"><div class="fl" style="width:${pct}%;background:${TOPIC[t].color}"></div></div></div>`);
+  });
+
+  const wr = $("#rWrongs"); wr.innerHTML = "";
+  $("#rWrongWrap").style.display = S.wrongList.length ? "" : "none";
+  S.wrongList.forEach(w => {
+    wr.insertAdjacentHTML("beforeend",
+      `<div class="wrong"><span class="eq">${w.q}</span> = <span class="a">${w.ans}</span>
+       <span class="h">${w.hint}</span></div>`);
+  });
+  show("result");
+}
+$("#rAgain").onclick = () => {
+  S.score = 0; S.combo = 0; S.maxCombo = 0; S.right = 0; S.total = 0;
+  S.perTopic = {}; S.wrongList = [];
+  if (S.mode === "speed") startSpeed(); else startJump();
+};
+$("#rHome").onclick = () => { show("start"); refreshBest(); };
+</script>
+</body>
+</html>
