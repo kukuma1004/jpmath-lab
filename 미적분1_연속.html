@@ -623,7 +623,7 @@ const LabApp = (function(){
 // ARCADE GAME APP ("연속성 판독기")
 // ============================================================
 const ArcadeApp = (function(){
-  const START_TIME = 3000, MIN_TIME = 1000, DECAY_EVERY = 4, DECAY_AMOUNT = 350;
+  const START_TIME = 3000, MIN_TIME = 650, DECAY_EVERY = 3, DECAY_AMOUNT = 320;
 
   const MISCONCEPTIONS = {
     'continuous-single': '매끄럽게 하나로 이어진 함수예요. 그래프를 끝까지 눈으로 따라가 보세요.',
@@ -642,17 +642,38 @@ const ArcadeApp = (function(){
     'asymptote': '맞아요, 무한대로 발산해서 불연속이에요.',
   };
 
-  // Anchored random branch: guaranteed to equal V exactly at x=a, but the shape
-  // (straight / curved-up / curved-down) and steepness are randomized every call.
+  // Difficulty ramps in two ways as correctCount grows: speed (handled by the timer) and
+  // "how obvious the visual tell is" — jump gaps and redefined-point offsets shrink at higher
+  // tiers, so pattern-memorized reflexes stop being enough and the player has to keep looking.
+  function difficultyTier(){ return Math.min(3, Math.floor(state.correctCount / 8)); }
+  function tierScale(){ return [1, 0.75, 0.55, 0.4][difficultyTier()]; }
+
+  // Anchored random branch: guaranteed to equal V exactly at x=a (every (x-a) term vanishes
+  // there), but the shape family is randomized every call across six visually distinct kinds —
+  // straight, two bowl/dome curvatures, an S-curve, a wave, and a continuous-but-jagged kink —
+  // so the same "kind" of card never looks the same way twice in a row.
   function randomBranchFn(a, V){
-    const type = pick(['linear', 'linear', 'curve']);
+    const type = pick(['linear', 'bow', 'bow', 'cubic', 'wave', 'kink']);
     if (type === 'linear') {
-      const m = randSign() * rand(0.35, 1.4);
+      const m = randSign() * rand(0.3, 1.6);
       return (x) => V + m * (x - a);
     }
-    const p = randSign() * rand(0.25, 1.0);
-    const q = randSign() * rand(0.1, 0.32);
-    return (x) => V + p * (x - a) + q * (x - a) * (x - a);
+    if (type === 'bow') {
+      const p = randSign() * rand(0.2, 1.1), q = randSign() * rand(0.08, 0.4);
+      return (x) => V + p * (x - a) + q * (x - a) * (x - a);
+    }
+    if (type === 'cubic') {
+      const p = randSign() * rand(0.2, 0.9), r = randSign() * rand(0.03, 0.15);
+      return (x) => V + p * (x - a) + r * (x - a) * (x - a) * (x - a);
+    }
+    if (type === 'wave') {
+      const p = randSign() * rand(0.15, 0.6), amp = rand(0.4, 1.1), freq = rand(0.8, 1.7);
+      return (x) => V + p * (x - a) + amp * Math.sin(freq * (x - a));
+    }
+    // kink: a gentle corner elsewhere inside the branch — still a single, genuinely continuous
+    // formula, but visually jagged so "smooth-looking = continuous" stops being a safe shortcut.
+    const p = randSign() * rand(0.3, 1.0), amp = rand(0.4, 1.0), offset = randSign() * rand(0.7, 1.8);
+    return (x) => V + p * (x - a) + amp * (Math.abs(x - a - offset) - Math.abs(offset));
   }
 
   function continuousSingleCard(){
@@ -675,7 +696,8 @@ const ArcadeApp = (function(){
     };
   }
   function jumpCard(){
-    const a = randInt(-2, 3), V1 = randInt(-1, 4), delta = randSign() * randInt(1, 4), V2 = V1 + delta;
+    const scale = tierScale();
+    const a = randInt(-2, 3), V1 = randInt(-1, 4), delta = randSign() * rand(0.5, 4) * scale, V2 = V1 + delta;
     const domain = [a - 3, a + 3];
     const leftClosed = Math.random() < 0.5;
     return {
@@ -700,9 +722,10 @@ const ArcadeApp = (function(){
     };
   }
   function removableCard(){
+    const scale = tierScale();
     const a = randInt(-2, 3), V = randInt(-1, 4), domain = [a - 3, a + 3];
     const fn = randomBranchFn(a, V);
-    const isoDelta = randSign() * randInt(1, 4);
+    const isoDelta = randSign() * rand(0.5, 4) * scale;
     return {
       correct: 'discontinuous', kind: 'removable', aValue: a, xDomain: domain, yDomain: [V - 4, V + 4],
       branches: [
