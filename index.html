@@ -1,50 +1,235 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>미적분 1 실험실 모음</title>
-  <style>
-    * { box-sizing: border-box; }
-    body { font-family: "Pretendard", -apple-system, sans-serif; max-width: 500px; margin: 0 auto; padding: 40px 20px; background: #f8fafc; color: #1e293b; }
-    h1 { font-size: 1.8rem; color: #1e3a8a; text-align: center; margin-bottom: 8px; }
-    p { text-align: center; color: #64748b; margin-top: 0; font-size: 0.95rem; }
-    .list { display: grid; gap: 12px; margin-top: 28px; }
-    .card { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; background: white; border: 1px solid #e2e8f0; border-radius: 16px; text-decoration: none; color: #0f172a; font-weight: bold; font-size: 1.05rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); transition: all 0.2s; }
-    .card:hover { border-color: #2563eb; background: #eff6ff; color: #2563eb; transform: translateY(-2px); }
-    .arrow { color: #94a3b8; font-size: 0.9rem; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>미적분 1 실험실 모음</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<style>
+  :root{
+    --bg:#f7f8f4;
+    --grid-line:rgba(22,32,46,0.06);
+    --paper:#ffffff;
+    --border:#dfe3e0;
+    --ink:#16202e;
+    --ink-soft:#5c6b72;
+    --limit:#2563eb;
+    --continuity:#0d8f7e;
+    --diff:#7c3aed;
+  }
+
+  *{ box-sizing:border-box; }
+
+  body{
+    font-family:"Pretendard Variable","Pretendard",-apple-system,sans-serif;
+    max-width:560px;
+    margin:0 auto;
+    padding:56px 22px 72px;
+    background-color:var(--bg);
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size:26px 26px;
+    color:var(--ink);
+  }
+
+  .mono{ font-family:"JetBrains Mono", ui-monospace, monospace; }
+
+  .hero{ text-align:center; margin-bottom:44px; }
+
+  .eyebrow{
+    font-family:"JetBrains Mono", ui-monospace, monospace;
+    font-size:0.72rem;
+    font-weight:600;
+    letter-spacing:0.16em;
+    color:var(--ink-soft);
+    margin:0 0 10px;
+  }
+
+  h1{
+    font-size:clamp(1.6rem, 5vw, 2rem);
+    font-weight:800;
+    margin:0 0 10px;
+    letter-spacing:-0.01em;
+  }
+
+  .lede{
+    font-size:0.95rem;
+    line-height:1.55;
+    color:var(--ink-soft);
+    margin:0;
+    padding:0 8px;
+  }
+
+  .path{
+    list-style:none;
+    margin:0;
+    padding-left:44px;
+    position:relative;
+  }
+
+  .path::before{
+    content:"";
+    position:absolute;
+    left:15px;
+    top:26px;
+    bottom:26px;
+    border-left:2px dashed var(--border);
+  }
+
+  .step{
+    position:relative;
+    margin-bottom:20px;
+  }
+  .step:last-child{ margin-bottom:0; }
+
+  .step--limit{ --accent:var(--limit); }
+  .step--continuity{ --accent:var(--continuity); }
+  .step--diff{ --accent:var(--diff); }
+
+  .node{
+    position:absolute;
+    left:-44px;
+    top:24px;
+    width:14px;
+    height:14px;
+    border-radius:50%;
+    background:var(--accent);
+    box-shadow:0 0 0 4px var(--bg), 0 0 0 5px var(--border);
+  }
+
+  .card{
+    display:block;
+    background:var(--paper);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:18px 20px;
+    text-decoration:none;
+    color:var(--ink);
+    transition:transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  }
+
+  .card:hover{
+    transform:translateY(-3px);
+    border-color:var(--accent);
+    box-shadow:0 10px 22px -14px var(--accent);
+  }
+
+  .card:focus-visible{
+    outline:2px solid var(--accent);
+    outline-offset:3px;
+  }
+
+  .card-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:12px;
+  }
+
+  .mini-graph{ width:52px; height:36px; flex-shrink:0; }
+
+  .notation{
+    font-family:"JetBrains Mono", ui-monospace, monospace;
+    font-size:0.72rem;
+    font-weight:500;
+    color:var(--accent);
+    white-space:nowrap;
+  }
+
+  .card-title{
+    font-size:1.15rem;
+    font-weight:700;
+    margin:0 0 4px;
+  }
+
+  .card-desc{
+    font-size:0.85rem;
+    color:var(--ink-soft);
+    margin:0 0 14px;
+    line-height:1.5;
+  }
+
+  .cta{
+    display:block;
+    text-align:right;
+    font-family:"JetBrains Mono", ui-monospace, monospace;
+    font-size:0.8rem;
+    font-weight:600;
+    color:var(--accent);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .card{ transition:none; }
+    .card:hover{ transform:none; }
+  }
+</style>
 </head>
 <body>
 
-  <h1>📐 미적분1 실험실</h1>
-  <p>원하는 탐구 주제를 선택해 보세요.</p>
+  <header class="hero">
+    <p class="eyebrow">CALCULUS LAB NOTES</p>
+    <h1>📐 미적분Ⅰ 실험실</h1>
+    <p class="lede">극한에서 미분가능성까지, 그래프를 직접 움직이며 개념을 확인해 보세요.</p>
+  </header>
 
-  <div class="list">
-    <!-- 사진속 실제 파일명: 극한탐정v2.html -->
-    <a href="극한 탐정v2.html" class="card">
-      <span>🔎 극한 탐정v2</span>
-      <span class="arrow">입장하기 →</span>
-    </a>
+  <ol class="path">
 
-    <!-- 사진속 실제 파일명: 미적분1_극한.html -->
-    <a href="미적분1_극한.html" class="card">
-      <span>📊 미적분Ⅰ - 극한</span>
-      <span class="arrow">입장하기 →</span>
-    </a>
+    <li class="step step--limit">
+      <span class="node" aria-hidden="true"></span>
+      <a class="card" href="미적분1_극한.html">
+        <div class="card-top">
+          <svg class="mini-graph" viewBox="0 0 56 40" fill="none" aria-hidden="true">
+            <path d="M4 32 C 16 32, 20 10, 30 10" stroke="var(--limit)" stroke-width="2.4" stroke-linecap="round"/>
+            <line x1="30" y1="10" x2="30" y2="34" stroke="var(--limit)" stroke-width="1.2" stroke-dasharray="3 3" opacity="0.5"/>
+            <line x1="4" y1="10" x2="30" y2="10" stroke="var(--limit)" stroke-width="1.2" stroke-dasharray="3 3" opacity="0.5"/>
+            <circle cx="30" cy="10" r="3.5" fill="var(--bg)" stroke="var(--limit)" stroke-width="2.2"/>
+          </svg>
+          <span class="notation">lim f(x), x → a</span>
+        </div>
+        <h2 class="card-title">극한</h2>
+        <p class="card-desc">x가 a에 다가갈 때 f(x)가 다가가는 값을 살펴봐요.</p>
+        <span class="cta">입장하기 →</span>
+      </a>
+    </li>
 
-    <!-- 사진속 실제 파일명: 미적분1_연속.html -->
-    <a href="미적분1_연속.html" class="card">
-      <span>📈 미적분Ⅰ - 연속</span>
-      <span class="arrow">입장하기 →</span>
-    </a>
+    <li class="step step--continuity">
+      <span class="node" aria-hidden="true"></span>
+      <a class="card" href="미적분1_연속.html">
+        <div class="card-top">
+          <svg class="mini-graph" viewBox="0 0 56 40" fill="none" aria-hidden="true">
+            <path d="M4 30 C 14 6, 24 6, 30 18 C 36 30, 44 30, 52 12" stroke="var(--continuity)" stroke-width="2.4" stroke-linecap="round"/>
+            <circle cx="30" cy="18" r="3" fill="var(--continuity)"/>
+          </svg>
+          <span class="notation">f(a) = lim f(x)</span>
+        </div>
+        <h2 class="card-title">연속</h2>
+        <p class="card-desc">끊기거나 튀는 곳 없이 이어지는 그래프의 조건이에요.</p>
+        <span class="cta">입장하기 →</span>
+      </a>
+    </li>
 
-    <!-- 사진속 실제 파일명: 연속 탐정v2.html (띄어쓰기 포함) -->
-    <a href="연속 탐정v2.html" class="card">
-      <span>🔍 연속 탐정 v2</span>
-      <span class="arrow">입장하기 →</span>
-    </a>
-  </div>
+    <li class="step step--diff">
+      <span class="node" aria-hidden="true"></span>
+      <a class="card" href="미적분1_미분가능성.html">
+        <div class="card-top">
+          <svg class="mini-graph" viewBox="0 0 56 40" fill="none" aria-hidden="true">
+            <path d="M4 34 C 16 8, 30 4, 44 20 C 48 26, 50 30, 52 34" stroke="var(--diff)" stroke-width="2.4" stroke-linecap="round"/>
+            <line x1="12" y1="30" x2="42" y2="6" stroke="var(--diff)" stroke-width="1.4" opacity="0.6"/>
+            <circle cx="27" cy="16" r="3" fill="var(--diff)"/>
+          </svg>
+          <span class="notation">f '(a) exists</span>
+        </div>
+        <h2 class="card-title">미분가능성</h2>
+        <p class="card-desc">그 점에서 접선을 하나로 그을 수 있는지 확인해요.</p>
+        <span class="cta">입장하기 →</span>
+      </a>
+    </li>
+
+  </ol>
 
 </body>
 </html>
