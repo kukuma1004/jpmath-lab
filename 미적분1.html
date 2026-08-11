@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>미적분Ⅰ · JP Math Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <p class="breadcrumb"><a href="index.html">JP Math Lab</a> / <span class="current">미적분Ⅰ</span></p>
+
+  <header class="hero">
+    <p class="eyebrow">CALC Ⅰ</p>
+    <h1>미적분Ⅰ</h1>
+    <p class="lede">극한에서 접선의 방정식까지, 그래프를 직접 움직이며 개념을 확인해 보세요.</p>
+  </header>
+
+  <ul class="grid">
+
+    <li>
+      <a class="card" style="--accent:var(--limit)" href="미적분1_극한.html">
+        <span class="index-mark" aria-hidden="true">01</span>
+        <div class="card-top">
+          <span class="icon-tile" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M3 17c4-1 6-7 9-7" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/>
+              <circle cx="14" cy="9" r="2.2" fill="none" stroke="var(--accent)" stroke-width="1.8"/>
+            </svg>
+          </span>
+          <span class="code-chip">LIMIT</span>
+        </div>
+        <h2 class="card-title">극한</h2>
+        <p class="card-desc">x가 a에 다가갈 때 f(x)가 다가가는 값을 살펴봐요.</p>
+        <div class="card-footer">
+          <span class="card-meta">lim f(x), x → a</span>
+          <span class="card-arrow">입장하기 →</span>
+        </div>
+      </a>
+    </li>
+
+    <li>
+      <a class="card" style="--accent:var(--continuity)" href="미적분1_연속.html">
+        <span class="index-mark" aria-hidden="true">02</span>
+        <div class="card-top">
+          <span class="icon-tile" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M3 16c3-9 8-9 9-4 1 5 6 5 9-4" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/>
+              <circle cx="12" cy="12" r="1.7" fill="var(--accent)"/>
+            </svg>
+          </span>
+          <span class="code-chip">CONTINUITY</span>
+        </div>
+        <h2 class="card-title">연속</h2>
+        <p class="card-desc">끊기거나 튀는 곳 없이 이어지는 그래프의 조건이에요.</p>
+        <div class="card-footer">
+          <span class="card-meta">f(a) = lim f(x)</span>
+          <span class="card-arrow">입장하기 →</span>
+        </div>
+      </a>
+    </li>
+
+    <li>
+      <a class="card" style="--accent:var(--diff)" href="미적분1_미분가능성.html">
+        <span class="index-mark" aria-hidden="true">03</span>
+        <div class="card-top">
+          <span class="icon-tile" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M3 18c4-10 10-14 14-10" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/>
+              <line x1="5" y1="14" x2="17" y2="6" stroke="var(--accent)" stroke-width="1.4" opacity="0.55"/>
+              <circle cx="11" cy="10" r="1.7" fill="var(--accent)"/>
+            </svg>
+          </span>
+          <span class="code-chip">DIFFERENTIABLE</span>
+        </div>
+        <h2 class="card-title">미분가능성</h2>
+        <p class="card-desc">그 점에서 접선을 하나로 그을 수 있는지 확인해요.</p>
+        <div class="card-footer">
+          <span class="card-meta">f '(a) exists</span>
+          <span class="card-arrow">입장하기 →</span>
+        </div>
+      </a>
+    </li>
+
+    <li>
+      <a class="card" style="--accent:var(--coefficient)" href="미적분1_미분계수계산.html">
+        <span class="index-mark" aria-hidden="true">04</span>
+        <div class="card-top">
+          <span class="icon-tile" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M3 18c4-10 10-14 14-10" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/>
+              <line x1="6" y1="15.5" x2="15" y2="9" stroke="var(--accent)" stroke-width="1.4" opacity="0.55"/>
+              <circle cx="6" cy="15.5" r="1.5" fill="var(--accent)"/>
+              <circle cx="15" cy="9" r="1.5" fill="var(--accent)"/>
+            </svg>
+          </span>
+          <span class="code-chip">COEFFICIENT</span>
+        </div>
+        <h2 class="card-title">미분계수계산</h2>
+        <p class="card-desc">평균변화율의 극한으로 순간변화율, 즉 미분계수를 구해봐요.</p>
+        <div class="card-footer">
+          <span class="card-meta">Δy／Δx, h → 0</span>
+          <span class="card-arrow">입장하기 →</span>
+        </div>
+      </a>
+    </li>
+
+    <li>
+      <a class="card" style="--accent:var(--tangent)" href="미적분1_접선의방정식.html">
+        <span class="index-mark" aria-hidden="true">05</span>
+        <div class="card-top">
+          <span class="icon-tile" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M3 18c4-10 10-14 14-10" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/>
+              <line x1="2" y1="17" x2="20" y2="3" stroke="var(--accent)" stroke-width="1.4"/>
+              <circle cx="11" cy="10" r="1.7" fill="var(--accent)"/>
+            </svg>
+          </span>
+          <span class="code-chip">TANGENT</span>
+        </div>
+        <h2 class="card-title">접선의 방정식</h2>
+        <p class="card-desc">미분계수를 이용해 곡선 위 한 점에서의 접선의 방정식을 구해봐요.</p>
+        <div class="card-footer">
+          <span class="card-meta">y-f(a)=f '(a)(x-a)</span>
+          <span class="card-arrow">입장하기 →</span>
+        </div>
+      </a>
+    </li>
+
+  </ul>
+
+</body>
+</html>
