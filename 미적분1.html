@@ -8,7 +8,125 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
-<link rel="stylesheet" href="style.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Pretendard', sans-serif;
+    background-color: #f9fafb;
+    color: #111827;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+  }
+
+  /* 상단 네비게이션 경로 */
+  .breadcrumb {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    margin-bottom: 30px;
+    color: #9ca3af;
+  }
+  .breadcrumb a {
+    color: #4b5563;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .breadcrumb .current { color: #C1442D; font-weight: 700; }
+
+  .hero { margin-bottom: 40px; }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    color: #6b7280;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .hero h1 { font-size: 38px; font-weight: 800; margin-bottom: 12px; }
+  .lede { font-size: 16px; color: #4b5563; }
+
+  /* 정사각형 그리드 설정 */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 24px;
+    list-style: none;
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    aspect-ratio: 1 / 1;
+    border-radius: 28px;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    padding: 28px 24px;
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+  }
+
+  .index-mark {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    font-weight: 600;
+    color: #9ca3af;
+    opacity: 0.6;
+  }
+
+  .card-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: auto;
+  }
+
+  .icon-tile {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.03);
+    border-radius: 14px;
+  }
+  .icon-tile svg { width: 24px; height: 24px; }
+
+  .code-chip {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--accent);
+    background: rgba(0,0,0,0.03);
+    padding: 5px 10px;
+    border-radius: 8px;
+  }
+
+  .card-title { font-size: 20px; font-weight: 700; margin: 20px 0 8px 0; }
+  .card-desc { font-size: 13.5px; color: #6b7280; line-height: 1.55; margin-bottom: 20px; word-break: keep-all; }
+  
+  .card-footer {
+    margin-top: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+  }
+  .card-meta { color: #9ca3af; }
+  .card-arrow { color: var(--accent); font-weight: 700; }
+</style>
 </head>
 <body>
 
@@ -21,12 +139,11 @@
   </header>
 
   <ul class="grid">
-
     <li>
-      <a class="card" style="--accent:var(--limit)" href="미적분1_극한.html">
-        <span class="index-mark" aria-hidden="true">01</span>
+      <a class="card" style="--accent:#C1442D" href="미적분1_극한.html">
+        <span class="index-mark">01</span>
         <div class="card-top">
-          <span class="icon-tile" aria-hidden="true">
+          <span class="icon-tile">
             <svg viewBox="0 0 24 24" fill="none">
               <path d="M3 17c4-1 6-7 9-7" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/>
               <circle cx="14" cy="9" r="2.2" fill="none" stroke="var(--accent)" stroke-width="1.8"/>
@@ -44,10 +161,31 @@
     </li>
 
     <li>
-      <a class="card" style="--accent:var(--continuity)" href="미적분1_연속.html">
-        <span class="index-mark" aria-hidden="true">02</span>
+      <a class="card" style="--accent:#E87A5D" href="미적분1_함수의극한값.html">
+        <span class="index-mark">02</span>
         <div class="card-top">
-          <span class="icon-tile" aria-hidden="true">
+          <span class="icon-tile">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M4 18 L10 6 L14 14 L20 4" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="20" cy="4" r="2" fill="#fff" stroke="var(--accent)" stroke-width="1.8"/>
+            </svg>
+          </span>
+          <span class="code-chip">LIMIT VALUE</span>
+        </div>
+        <h2 class="card-title">함수의 극한값</h2>
+        <p class="card-desc">0/0꼴, 무한대/무한대 꼴 등 다양한 형태의 극한값을 직접 계산해봐요.</p>
+        <div class="card-footer">
+          <span class="card-meta">lim f(x) = L</span>
+          <span class="card-arrow">입장하기 →</span>
+        </div>
+      </a>
+    </li>
+
+    <li>
+      <a class="card" style="--accent:#2B6CA3" href="미적분1_연속.html">
+        <span class="index-mark">03</span>
+        <div class="card-top">
+          <span class="icon-tile">
             <svg viewBox="0 0 24 24" fill="none">
               <path d="M3 16c3-9 8-9 9-4 1 5 6 5 9-4" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/>
               <circle cx="12" cy="12" r="1.7" fill="var(--accent)"/>
@@ -65,10 +203,10 @@
     </li>
 
     <li>
-      <a class="card" style="--accent:var(--diff)" href="미적분1_미분가능성.html">
-        <span class="index-mark" aria-hidden="true">03</span>
+      <a class="card" style="--accent:#C99A2E" href="미적분1_미분가능성.html">
+        <span class="index-mark">04</span>
         <div class="card-top">
-          <span class="icon-tile" aria-hidden="true">
+          <span class="icon-tile">
             <svg viewBox="0 0 24 24" fill="none">
               <path d="M3 18c4-10 10-14 14-10" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/>
               <line x1="5" y1="14" x2="17" y2="6" stroke="var(--accent)" stroke-width="1.4" opacity="0.55"/>
@@ -87,10 +225,10 @@
     </li>
 
     <li>
-      <a class="card" style="--accent:var(--coefficient)" href="미적분1_미분계수계산.html">
-        <span class="index-mark" aria-hidden="true">04</span>
+      <a class="card" style="--accent:#5C6B60" href="미적분1_미분계수계산.html">
+        <span class="index-mark">05</span>
         <div class="card-top">
-          <span class="icon-tile" aria-hidden="true">
+          <span class="icon-tile">
             <svg viewBox="0 0 24 24" fill="none">
               <path d="M3 18c4-10 10-14 14-10" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/>
               <line x1="6" y1="15.5" x2="15" y2="9" stroke="var(--accent)" stroke-width="1.4" opacity="0.55"/>
@@ -110,10 +248,10 @@
     </li>
 
     <li>
-      <a class="card" style="--accent:var(--derivative)" href="미적분1_도함수와미분법.html">
-        <span class="index-mark" aria-hidden="true">05</span>
+      <a class="card" style="--accent:#3F7D4C" href="미적분1_도함수와미분법.html">
+        <span class="index-mark">06</span>
         <div class="card-top">
-          <span class="icon-tile" aria-hidden="true">
+          <span class="icon-tile">
             <svg viewBox="0 0 24 24" fill="none">
               <path d="M3 9c3-6 9-6 12 0" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/>
               <path d="M3 18c5-2 10-2 15 0" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" opacity="0.5"/>
@@ -122,7 +260,7 @@
           <span class="code-chip">DERIVATIVE</span>
         </div>
         <h2 class="card-title">도함수와 미분법</h2>
-        <p class="card-desc">상수·거듭제곱·곱의 미분법 등, 정의 대신 공식으로 미분계수를 빠르게 구해요.</p>
+        <p class="card-desc">정의 대신 공식으로 미분계수를 빠르게 구해요.</p>
         <div class="card-footer">
           <span class="card-meta">(xⁿ)' = nxⁿ⁻¹</span>
           <span class="card-arrow">입장하기 →</span>
@@ -131,10 +269,10 @@
     </li>
 
     <li>
-      <a class="card" style="--accent:var(--tangent)" href="미적분1_접선의방정식.html">
-        <span class="index-mark" aria-hidden="true">06</span>
+      <a class="card" style="--accent:#223027" href="미적분1_접선의방정식.html">
+        <span class="index-mark">07</span>
         <div class="card-top">
-          <span class="icon-tile" aria-hidden="true">
+          <span class="icon-tile">
             <svg viewBox="0 0 24 24" fill="none">
               <path d="M3 18c4-10 10-14 14-10" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/>
               <line x1="2" y1="17" x2="20" y2="3" stroke="var(--accent)" stroke-width="1.4"/>
@@ -151,7 +289,6 @@
         </div>
       </a>
     </li>
-
   </ul>
 
 </body>
