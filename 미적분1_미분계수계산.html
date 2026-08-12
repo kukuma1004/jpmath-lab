@@ -29,6 +29,8 @@ html,body{ margin:0; padding:0; background:var(--paper); color:var(--ink); font-
 .tabbar-inner{ max-width:600px; margin:0 auto; display:flex; gap:8px; }
 .tab-btn{ flex:1; font-family:var(--font-body); font-size:12.5px; font-weight:700; padding:10px 6px; border-radius:12px; border:1.5px solid var(--border); background:var(--panel); color:var(--inkSoft); cursor:pointer; text-align:center; }
 .tab-btn.active{ border-color:var(--ink); background:var(--ink); color:var(--paper); }
+.tab-back{ flex:0 0 38px; display:flex; align-items:center; justify-content:center; border-radius:12px; border:1.5px solid var(--border); background:var(--panel); color:var(--inkSoft); text-decoration:none; font-size:16px; font-weight:700; }
+.tab-back:hover{ border-color:var(--ink); color:var(--ink); }
 
 .eyebrow{ font-family:var(--font-mono); font-size:11.5px; letter-spacing:1.5px; color:var(--inkSoft); text-transform:uppercase; margin-bottom:6px; }
 .title{ font-family:var(--font-display); font-weight:900; font-size:22px; margin:0 0 5px; line-height:1.28; }
@@ -103,6 +105,7 @@ html,body{ margin:0; padding:0; background:var(--paper); color:var(--ink); font-
 
 <div class="tabbar">
   <div class="tabbar-inner">
+    <a href="미적분1.html" class="tab-back" aria-label="목록으로 돌아가기" title="미적분Ⅰ 목록으로">←</a>
     <button class="tab-btn active" data-tab="theory">① 원리</button>
     <button class="tab-btn" data-tab="lab">② 실험실</button>
     <button class="tab-btn" data-tab="game">③ 게임</button>
