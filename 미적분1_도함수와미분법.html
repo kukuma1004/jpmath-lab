@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>도함수와 미분법 스위트 · 석산고 미적분</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700;900&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EFF3EE; --panel:#FFFFFF; --grid:#D8E2D3; --dot:#E2E9DE;
+  --ink:#223027; --inkSoft:#5C6B60;
+  --left:#C1442D; --right:#2B6CA3; --gold:#C99A2E; --success:#3F7D4C; --border:#D3DAD0;
+  --font-display:'Noto Serif KR', serif;
+  --font-body:'IBM Plex Sans KR','Pretendard',sans-serif;
+  --font-mono:'IBM Plex Mono','Menlo',monospace;
+}
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); }
+.page-bg{ background-image:radial-gradient(var(--dot) 1px, transparent 1px); background-size:20px 20px; min-height:100vh; }
+.wrap{ max-width:600px; margin:0 auto; padding:14px 14px 40px; }
+.hidden{ display:none !important; }
+.mono{ font-family:var(--font-mono); }
+.card{ background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:18px; }
+.btn-primary{ width:100%; padding:14px; border-radius:14px; border:none; background:var(--ink); color:var(--paper); font-weight:700; font-size:15px; cursor:pointer; }
+.btn-secondary{ width:100%; padding:14px; border-radius:14px; border:1.5px solid var(--border); background:#fff; color:var(--ink); font-weight:600; font-size:14px; cursor:pointer; margin-bottom:10px; }
+
+.tabbar{ position:sticky; top:0; z-index:20; background:var(--paper); padding:10px 14px 8px; border-bottom:1px solid var(--border); }
+.tabbar-inner{ max-width:600px; margin:0 auto; display:flex; gap:8px; }
+.tab-btn{ flex:1; font-family:var(--font-body); font-size:12.5px; font-weight:700; padding:10px 6px; border-radius:12px; border:1.5px solid var(--border); background:var(--panel); color:var(--inkSoft); cursor:pointer; text-align:center; }
+.tab-btn.active{ border-color:var(--ink); background:var(--ink); color:var(--paper); }
+
+.eyebrow{ font-family:var(--font-mono); font-size:11.5px; letter-spacing:1.5px; color:var(--inkSoft); text-transform:uppercase; margin-bottom:6px; }
+.title{ font-family:var(--font-display); font-weight:900; font-size:22px; margin:0 0 5px; line-height:1.28; }
+.desc{ color:var(--inkSoft); font-size:13px; line-height:1.55; margin:0 0 14px; }
+
+.theory-section{ margin-bottom:18px; }
+.theory-h2{ font-family:var(--font-display); font-weight:900; font-size:18px; margin:0 0 8px; }
+.theory-p{ font-size:13.5px; line-height:1.7; color:var(--ink); margin:0 0 10px; }
+.theorem-box{ background:#FBF3E0; border:1.5px solid var(--gold); border-radius:14px; padding:14px 16px; margin-bottom:10px; }
+.theorem-eyebrow{ font-family:var(--font-mono); font-size:10.5px; letter-spacing:1px; color:var(--gold); text-transform:uppercase; margin-bottom:6px; font-weight:700; }
+.theorem-formula{ font-family:var(--font-mono); font-size:13.5px; font-weight:600; line-height:2; }
+.misconception{ background:#F7E9E5; border:1.5px solid var(--left); border-radius:14px; padding:12px 14px; margin-bottom:10px; }
+.misconception-title{ font-weight:700; font-size:13px; color:var(--left); margin-bottom:4px; }
+.misconception-body{ font-size:12.5px; color:var(--ink); line-height:1.6; }
+.cta-row{ display:flex; gap:10px; margin-top:16px; }
+.prereq-note{ background:var(--panel); border:1px dashed var(--border); border-radius:12px; padding:10px 12px; font-size:12px; color:var(--inkSoft); margin-bottom:16px; line-height:1.6; }
+
+.chips{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+.chip{ font-family:var(--font-body); font-size:13px; font-weight:600; padding:9px 13px; border-radius:999px; border:1.5px solid var(--border); background:var(--panel); color:var(--ink); cursor:pointer; }
+.chip.active{ border-color:var(--ink); background:var(--ink); color:var(--paper); }
+
+.rule-box{ background:#FBF3E0; border:1.5px solid var(--gold); border-radius:14px; padding:12px 14px; margin-bottom:12px; }
+.rule-box-label{ font-size:11px; font-weight:700; color:var(--gold); text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px; }
+.rule-box-formula{ font-family:var(--font-mono); font-size:14px; font-weight:700; }
+.step-card{ background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:16px; margin-bottom:14px; min-height:140px; }
+.step-line{ font-family:var(--font-mono); font-size:13.5px; line-height:2.3; color:var(--ink); }
+.step-line.pending{ opacity:0.15; }
+.step-controls{ display:flex; gap:8px; margin-bottom:14px; }
+.step-btn{ flex:1; padding:12px; border-radius:12px; border:1.5px solid var(--ink); background:#fff; color:var(--ink); font-weight:700; font-size:13.5px; cursor:pointer; }
+.step-btn:disabled{ opacity:.4; }
+.step-btn.primary{ background:var(--ink); color:var(--paper); }
+.final-box{ background:#EAF3EA; border:1.5px solid var(--success); border-radius:14px; padding:14px; text-align:center; }
+.final-box .val{ font-family:var(--font-mono); font-size:19px; font-weight:800; color:var(--success); }
+
+.game-header.hidden{ display:none !important; }
+.top-bar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap; gap:8px; }
+.top-stat{ font-family:var(--font-mono); font-size:13px; color:var(--inkSoft); }
+.top-stat b{ color:var(--ink); font-size:17px; }
+.lives{ font-size:17px; letter-spacing:2px; }
+.timerbar-wrap{ width:100%; height:8px; background:var(--grid); border-radius:999px; overflow:hidden; margin-bottom:14px; }
+.timerbar-fill{ height:100%; border-radius:999px; }
+.judge-card{ background:#fff; border:1.5px solid var(--ink); border-radius:14px; padding:18px 16px; margin-bottom:14px; text-align:center; }
+.judge-fn-label{ font-family:var(--font-mono); font-size:10.5px; letter-spacing:1px; color:var(--inkSoft); text-transform:uppercase; margin-bottom:4px; }
+.judge-fn{ font-family:var(--font-mono); font-size:17px; font-weight:700; margin-bottom:14px; }
+.judge-arrow{ font-size:13px; color:var(--gold); margin-bottom:10px; }
+.judge-cand-label{ font-family:var(--font-mono); font-size:10.5px; letter-spacing:1px; color:var(--inkSoft); text-transform:uppercase; margin-bottom:4px; }
+.judge-cand{ font-family:var(--font-mono); font-size:19px; font-weight:800; color:var(--right); }
+.judge-buttons{ display:flex; gap:10px; }
+.judge-btn{ flex:1; padding:16px; border-radius:14px; border:none; font-size:15px; font-weight:800; cursor:pointer; color:#fff; }
+.judge-btn.good{ background:var(--success); }
+.judge-btn.bad{ background:var(--left); }
+.judge-btn:disabled{ opacity:.5; }
+.game-feedback-box{ font-size:12.5px; line-height:1.65; padding:12px 14px; border-radius:12px; margin-bottom:12px; }
+.game-feedback-box.good{ background:#EAF3EA; border:1.5px solid var(--success); color:var(--success); }
+.game-feedback-box.bad{ background:#F7E9E5; border:1.5px solid var(--left); color:var(--left); }
+.end-score{ font-family:var(--font-mono); font-size:38px; font-weight:700; text-align:center; margin:6px 0 4px; }
+.end-sub{ text-align:center; color:var(--inkSoft); font-size:13px; margin-bottom:8px; }
+.lb-title{ font-family:var(--font-display); font-weight:900; font-size:19px; margin:0 0 4px; }
+
+@media (prefers-reduced-motion: reduce){ .step-line,.timerbar-fill{ transition:none; } }
+</style>
+</head>
+<body>
+<div class="page-bg">
+
+<div class="tabbar">
+  <div class="tabbar-inner">
+    <button class="tab-btn active" data-tab="theory">① 원리</button>
+    <button class="tab-btn" data-tab="lab">② 실험실</button>
+    <button class="tab-btn" data-tab="game">③ 게임</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- THEORY -->
+<div id="page-theory">
+  <div class="eyebrow">석산고 미적분 · 도함수와 미분법 스위트</div>
+  <h1 class="title">매번 극한으로 계산하지 않아도 되는 이유</h1>
+  <p class="desc">정의로 f'(a)를 구하는 건 배웠으니, 이제 미리 증명된 규칙으로 빠르게 계산하는 법을 배워요.</p>
+
+  <div class="prereq-note">🔗 이전 단원들에서 x², x³ 같은 함수의 미분계수를 정의로 직접 계산했었죠? 그 결과들을 일반화한 게 바로 이 규칙들이에요 — 매번 극한을 계산할 필요 없이 공식만 적용하면 돼요.</div>
+
+  <div class="theory-section">
+    <div class="theory-h2">1. 기본 미분법칙</div>
+    <div class="theorem-box">
+      <div class="theorem-eyebrow">공식</div>
+      <div class="theorem-formula">
+        (c)' = 0  <span style="color:var(--inkSoft); font-weight:400;">(c는 상수)</span><br>
+        (xⁿ)' = n·x^(n&minus;1)  <span style="color:var(--inkSoft); font-weight:400;">(거듭제곱)</span><br>
+        (c·f(x))' = c·f'(x)  <span style="color:var(--inkSoft); font-weight:400;">(상수배)</span><br>
+        (f(x)±g(x))' = f'(x)±g'(x)  <span style="color:var(--inkSoft); font-weight:400;">(합/차)</span>
+      </div>
+    </div>
+    <p class="theory-p">다항식은 이 네 가지만으로 다 처리할 수 있어요. 항끼리 따로 미분해서 더하고 빼면 돼요.</p>
+  </div>
+
+  <div class="theory-section">
+    <div class="theory-h2">2. 자주 하는 오해</div>
+    <div class="misconception">
+      <div class="misconception-title">❌ 거듭제곱을 미분할 때 지수를 안 내려도 되나요?</div>
+      <div class="misconception-body">(xⁿ)' = n·x^(n−1)에서 지수가 1 줄어드는 걸 빼먹는 실수가 많아요. 계수(n)만 곱하고 지수는 그대로 두면 틀린 답이 돼요.</div>
+    </div>
+    <div class="misconception">
+      <div class="misconception-title">❌ 상수항도 미분하면 뭔가 남지 않나요?</div>
+      <div class="misconception-body">상수함수의 미분은 항상 0이에요. 다항식을 미분할 때 상수항(숫자만 있는 항)은 그냥 사라진다는 걸 기억하세요.</div>
+    </div>
+  </div>
+
+  <div class="prereq-note">📌 참고: 곱해지거나 나눠진 함수의 미분법(곱의 미분법·몫의 미분법)은 미적분Ⅱ에서 배워요. 지금은 다항함수의 미분법에 집중해요.</div>
+
+  <div class="cta-row">
+    <button class="btn-primary" id="ctaToLab">🧪 실험실에서 규칙 적용해보기</button>
+  </div>
+  <div class="cta-row">
+    <button class="btn-secondary" id="ctaToGame" style="margin-bottom:0;">🎮 게임으로 순발력 테스트</button>
+  </div>
+</div>
+
+<!-- LAB -->
+<div id="page-lab" class="hidden">
+  <div class="eyebrow">석산고 미적분 · Interactive Lab</div>
+  <h1 class="title">미분법칙 적용 스테퍼</h1>
+  <p class="desc">규칙을 고르고 한 줄씩 눌러가며 실제로 적용하는 과정을 확인하세요.</p>
+
+  <div class="chips" id="ruleChips"></div>
+
+  <div class="rule-box">
+    <div class="rule-box-label">공식</div>
+    <div class="rule-box-formula" id="ruleFormula"></div>
+  </div>
+
+  <div class="step-card">
+    <div id="stepLines"></div>
+  </div>
+
+  <div class="step-controls">
+    <button class="step-btn" id="btnPrevStep">◀ 이전</button>
+    <button class="step-btn primary" id="btnNextStep">다음 단계 →</button>
+  </div>
+
+  <div id="finalBox" class="final-box hidden">
+    <div style="font-size:12px; color:var(--inkSoft); margin-bottom:4px;">결과</div>
+    <div class="val" id="finalVal"></div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="page-game" class="hidden">
+  <div id="gameHeader" class="game-header">
+    <div class="eyebrow">석산고 미적분 · Interactive Lab</div>
+    <h1 class="title">도함수 판독기</h1>
+    <p class="desc">f(x)와 계산된 f'(x)를 보고, 맞는지 틀린지 빠르게 판단하세요.</p>
+  </div>
+
+  <div id="gameScreenStart" class="card">
+    <div id="gameBestLine" style="text-align:center; margin-bottom:14px; font-size:13.5px; color:var(--inkSoft);"></div>
+    <button class="btn-primary" id="gameBtnStart">게임 시작</button>
+  </div>
+
+  <div id="gameScreenPlay" class="card hidden">
+    <div class="top-bar">
+      <div class="top-stat">점수 <b id="gameScoreNum">0</b></div>
+      <div class="lives" id="gameLives"></div>
+    </div>
+    <div class="timerbar-wrap"><div class="timerbar-fill" id="gameTimerFill" style="width:100%; background:var(--success);"></div></div>
+
+    <div class="judge-card">
+      <div class="judge-fn-label">f(x)</div>
+      <div class="judge-fn" id="qFnStr"></div>
+      <div class="judge-arrow">↓ 미분하면</div>
+      <div class="judge-cand-label">제시된 f'(x)</div>
+      <div class="judge-cand" id="qCandStr"></div>
+    </div>
+
+    <div id="gameFeedback" class="hidden"></div>
+
+    <div class="judge-buttons">
+      <button class="judge-btn good" id="btnJudgeGood">🟢 맞다</button>
+      <button class="judge-btn bad" id="btnJudgeBad">🔴 틀리다</button>
+    </div>
+  </div>
+
+  <div id="gameScreenEnd" class="card hidden">
+    <div class="lb-title" style="text-align:center;">게임 오버!</div>
+    <div class="end-score" id="gameFinalScore">0</div>
+    <div class="end-sub" id="gameFinalSummary"></div>
+    <div class="end-sub" id="gameBestCompare" style="font-weight:700; color:var(--gold);"></div>
+    <button class="btn-primary" id="gameBtnRetry">다시 시작</button>
+  </div>
+
+  <p class="desc" style="margin-top:16px; text-align:center;">헷갈리면 <a href="#" id="gameLinkToTheory" style="color:var(--ink); font-weight:600;">① 원리 탭</a>에서 복습하세요.</p>
+</div>
+
+</div>
+</div>
+
+<script>
+const COLORS = { ink:'#223027', inkSoft:'#5C6B60', left:'#C1442D', right:'#2B6CA3', gold:'#C99A2E', success:'#3F7D4C', border:'#D3DAD0' };
+function rand(min, max){ return min + Math.random() * (max - min); }
+function randInt(min, max){ return Math.floor(rand(min, max + 1)); }
+function randSign(){ return Math.random() < 0.5 ? -1 : 1; }
+function pick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
+function shuffle(arr){
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+
+function showTab(name){
+  ['theory', 'lab', 'game'].forEach((n) => {
+    document.getElementById('page-' + n).classList.toggle('hidden', n !== name);
+    document.querySelector(`.tab-btn[data-tab="${n}"]`).classList.toggle('active', n === name);
+  });
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll('.tab-btn').forEach((btn) => btn.addEventListener('click', () => showTab(btn.dataset.tab)));
+
+// ============================================================
+// LAB: RULE DEFINITIONS (hand-verified worked examples)
+// ============================================================
+const RULES = [
+  {
+    id: 'const', label: '① 상수함수', formula: "(c)' = 0",
+    steps: [
+      "f(x) = 5  (상수함수)",
+      "f'(x) = lim<span style=\"color:var(--gold); font-size:11px;\">h→0</span> [f(x+h) &minus; f(x)] / h",
+      "= lim<span style=\"color:var(--gold); font-size:11px;\">h→0</span> [5 &minus; 5] / h = 0",
+    ],
+    final: "f'(x) = 0",
+  },
+  {
+    id: 'power', label: '② 거듭제곱함수', formula: "(xⁿ)' = n·x^(n−1)",
+    steps: [
+      "f(x) = x⁵",
+      "공식: (xⁿ)' = n · x^(n&minus;1)",
+      "n = 5 대입: f'(x) = 5 · x⁴",
+    ],
+    final: "f'(x) = 5x⁴",
+  },
+  {
+    id: 'const-mult', label: '③ 상수배', formula: "(cf(x))' = c·f'(x)",
+    steps: [
+      "f(x) = 3x⁴ = 3 · x⁴",
+      "공식: (c·f(x))' = c · f'(x)",
+      "f'(x) = 3 · (x⁴)' = 3 · 4x³",
+    ],
+    final: "f'(x) = 12x³",
+  },
+  {
+    id: 'sum', label: '④ 합/차', formula: "(f±g)' = f'±g'",
+    steps: [
+      "f(x) = x³ + 2x² &minus; 5x + 7",
+      "공식: 각 항을 따로 미분해서 더하고 뺀다",
+      "(x³)'=3x², (2x²)'=4x, (&minus;5x)'=&minus;5, (7)'=0",
+    ],
+    final: "f'(x) = 3x² + 4x &minus; 5",
+  },
+];
+
+// ============================================================
+// LAB APP
+// ============================================================
+const LabApp = (function(){
+  let ruleId = 'const', stepIndex = 0;
+  function getRule(){ return RULES.find((r) => r.id === ruleId); }
+
+  function renderChips(){
+    const box = document.getElementById('ruleChips');
+    box.innerHTML = '';
+    RULES.forEach((r) => {
+      const btn = document.createElement('button');
+      btn.className = 'chip' + (r.id === ruleId ? ' active' : '');
+      btn.textContent = r.label;
+      btn.onclick = () => { ruleId = r.id; stepIndex = 0; renderChips(); render(); };
+      box.appendChild(btn);
+    });
+  }
+  function render(){
+    const rule = getRule();
+    document.getElementById('ruleFormula').textContent = rule.formula;
+    const linesEl = document.getElementById('stepLines');
+    linesEl.innerHTML = '';
+    rule.steps.forEach((s, i) => {
+      const div = document.createElement('div');
+      div.className = 'step-line' + (i >= stepIndex ? ' pending' : '');
+      div.innerHTML = s;
+      linesEl.appendChild(div);
+    });
+    document.getElementById('btnPrevStep').disabled = stepIndex === 0;
+    document.getElementById('btnNextStep').disabled = stepIndex >= rule.steps.length;
+    const showFinal = stepIndex >= rule.steps.length;
+    document.getElementById('finalBox').classList.toggle('hidden', !showFinal);
+    if (showFinal) document.getElementById('finalVal').innerHTML = rule.final;
+  }
+  function init(){
+    renderChips();
+    render();
+    document.getElementById('btnNextStep').addEventListener('click', () => { const total = getRule().steps.length; if (stepIndex < total) { stepIndex++; render(); } });
+    document.getElementById('btnPrevStep').addEventListener('click', () => { if (stepIndex > 0) { stepIndex--; render(); } });
+  }
+  return { init };
+})();
+
+// ============================================================
+// GAME APP: 도함수 판독기 (binary judgment)
+// ============================================================
+const GameApp = (function(){
+  const START_TIME = 7000, MIN_TIME = 3200, DECAY_EVERY = 4, DECAY_AMOUNT = 700;
+  const state = { score: 0, lives: 3, streak: 0, correctCount: 0, timePerQ: START_TIME, round: null, rafId: null, locked: false };
+
+  function nz(min, max){ return randSign() * randInt(min, max); }
+  function termStr(coef, varPart){
+    if (coef === 0) return null;
+    const sign = coef < 0 ? '&minus;' : '';
+    const abs = Math.abs(coef);
+    const coefPart = (abs === 1 && varPart !== '') ? '' : String(abs);
+    return sign + coefPart + varPart;
+  }
+  function joinTerms(terms){
+    let result = '';
+    terms.filter((t) => t !== null).forEach((t, i) => {
+      if (i === 0) result += t;
+      else if (t.startsWith('&minus;')) result += ' &minus; ' + t.slice(7);
+      else result += ' + ' + t;
+    });
+    return result || '0';
+  }
+
+  function generatePoly(){
+    let n = randInt(2, 4), m = randInt(2, 4);
+    while (m === n) m = randInt(2, 4);
+    const a = nz(1, 6), b = nz(1, 6), c = nz(1, 5);
+    const trueDeriv = (x) => a * n * Math.pow(x, n - 1) + b * m * Math.pow(x, m - 1);
+    const t1 = n - 1 === 1 ? 'x' : 'x^' + (n - 1), t2 = m - 1 === 1 ? 'x' : 'x^' + (m - 1);
+    const correctStr = joinTerms([termStr(a * n, t1), termStr(b * m, t2)]);
+    const wrongType = pick(['keepConst', 'missExp', 'missDecrement']);
+    let wrongStr, wrongDeriv;
+    if (wrongType === 'keepConst') {
+      wrongStr = joinTerms([termStr(a * n, t1), termStr(b * m, t2), termStr(c, '')]);
+      wrongDeriv = (x) => a * n * Math.pow(x, n - 1) + b * m * Math.pow(x, m - 1) + c;
+    } else if (wrongType === 'missExp') {
+      wrongStr = joinTerms([termStr(a, t1), termStr(b * m, t2)]);
+      wrongDeriv = (x) => a * Math.pow(x, n - 1) + b * m * Math.pow(x, m - 1);
+    } else {
+      wrongStr = joinTerms([termStr(a * n, n === 1 ? 'x' : 'x^' + n), termStr(b * m, t2)]);
+      wrongDeriv = (x) => a * n * Math.pow(x, n) + b * m * Math.pow(x, m - 1);
+    }
+    return { kind: 'poly', fnStr: joinTerms([termStr(a, 'x^' + n), termStr(b, 'x^' + m), termStr(c, '')]), trueDeriv, correctStr, wrongStr, wrongDeriv, wrongType };
+  }
+
+  const HINTS = {
+    poly: { keepConst: '상수항은 미분하면 0이 돼서 사라져요.', missExp: '거듭제곱을 미분할 때는 지수를 계수로 곱해야 해요 — (xⁿ)\' = nx^(n−1).', missDecrement: '지수를 1 낮추는 걸 빼먹으면 안 돼요.' },
+  };
+  function generateRound(){
+    const showCorrect = Math.random() < 0.5;
+    const g = generatePoly();
+    return { ...g, candidateStr: showCorrect ? g.correctStr : g.wrongStr, correctAnswer: showCorrect ? 'good' : 'bad' };
+  }
+
+  function loadBest(){ try { const raw = localStorage.getItem('diffrule_checker_best'); return raw ? JSON.parse(raw) : null; } catch (e) { return null; } }
+  function saveBest(entry){ try { localStorage.setItem('diffrule_checker_best', JSON.stringify(entry)); } catch (e) {} }
+  function renderBestLine(){
+    const best = loadBest();
+    document.getElementById('gameBestLine').textContent = best ? `🏆 내 최고 기록: ${best.score}점 (${best.correct}개 정답)` : '이 기기에 첫 기록이 저장돼요. 시작해볼까요?';
+  }
+  function showScreen(name){
+    ['start', 'play', 'end'].forEach((s) => document.getElementById('gameScreen' + s.charAt(0).toUpperCase() + s.slice(1)).classList.toggle('hidden', s !== name));
+    document.getElementById('gameHeader').classList.toggle('hidden', name === 'play');
+    if (name === 'start') renderBestLine();
+  }
+  function renderLives(){
+    let s = ''; for (let i = 0; i < 3; i++) s += i < state.lives ? '❤️' : '🤍';
+    document.getElementById('gameLives').textContent = s;
+  }
+  function updateTimerBar(ratio){
+    const fill = document.getElementById('gameTimerFill');
+    fill.style.width = (ratio * 100) + '%';
+    fill.style.backgroundColor = ratio > 0.5 ? COLORS.success : ratio > 0.2 ? COLORS.gold : COLORS.left;
+  }
+
+  function spawnQuestion(){
+    state.locked = false;
+    const round = generateRound();
+    state.round = round;
+    document.getElementById('qFnStr').innerHTML = 'f(x) = ' + round.fnStr;
+    document.getElementById('qCandStr').innerHTML = "f'(x) = " + round.candidateStr;
+    document.getElementById('gameFeedback').classList.add('hidden');
+    document.getElementById('btnJudgeGood').disabled = false;
+    document.getElementById('btnJudgeBad').disabled = false;
+
+    const start = performance.now();
+    const duration = state.timePerQ;
+    function tick(now){
+      const elapsed = now - start, remaining = Math.max(0, duration - elapsed);
+      updateTimerBar(remaining / duration);
+      if (remaining <= 0) { onAnswer(null); return; }
+      state.rafId = requestAnimationFrame(tick);
+    }
+    state.rafId = requestAnimationFrame(tick);
+  }
+
+  function onAnswer(choice){
+    if (state.locked) return;
+    state.locked = true;
+    cancelAnimationFrame(state.rafId);
+    document.getElementById('btnJudgeGood').disabled = true;
+    document.getElementById('btnJudgeBad').disabled = true;
+    const round = state.round;
+    const isCorrect = choice === round.correctAnswer;
+    const fbEl = document.getElementById('gameFeedback');
+    fbEl.classList.remove('hidden');
+    const correctLine = "f'(x) = " + round.correctStr;
+    if (isCorrect) {
+      const remainingRatio = parseFloat(document.getElementById('gameTimerFill').style.width) / 100 || 0;
+      const points = 15 + Math.round(remainingRatio * 20) + Math.min(state.streak, 10);
+      state.score += points; state.streak += 1; state.correctCount += 1;
+      document.getElementById('gameScoreNum').textContent = state.score;
+      if (state.correctCount % DECAY_EVERY === 0) state.timePerQ = Math.max(MIN_TIME, state.timePerQ - DECAY_AMOUNT);
+      fbEl.className = 'game-feedback-box good';
+      fbEl.innerHTML = `✓ +${points}점 · 정답: ${correctLine}`;
+      setTimeout(() => spawnQuestion(), 1200);
+    } else {
+      state.streak = 0; state.lives -= 1; renderLives();
+      fbEl.className = 'game-feedback-box bad';
+      const hint = HINTS[round.kind][round.wrongType] || '';
+      fbEl.innerHTML = (choice == null ? '⏱ 시간 초과! ' : '✕ 틀렸어요. ') + `정답: ${correctLine}. ${round.correctAnswer === 'bad' ? hint : ''}`;
+      if (state.lives <= 0) setTimeout(() => gameOver(), 1900);
+      else setTimeout(() => spawnQuestion(), 1900);
+    }
+  }
+
+  function startGame(){
+    state.score = 0; state.lives = 3; state.streak = 0; state.correctCount = 0; state.timePerQ = START_TIME;
+    document.getElementById('gameScoreNum').textContent = 0;
+    renderLives();
+    showScreen('play');
+    spawnQuestion();
+  }
+  function gameOver(){
+    cancelAnimationFrame(state.rafId);
+    showScreen('end');
+    document.getElementById('gameFinalScore').textContent = state.score;
+    document.getElementById('gameFinalSummary').textContent = `${state.correctCount}개 정답`;
+    const best = loadBest();
+    const isNewBest = !best || state.score > best.score;
+    const compareEl = document.getElementById('gameBestCompare');
+    if (isNewBest) { saveBest({ score: state.score, correct: state.correctCount }); compareEl.textContent = '🎉 이 기기 최고 기록 갱신!'; }
+    else compareEl.textContent = `내 최고 기록은 ${best.score}점이에요. 다시 도전해보세요!`;
+  }
+
+  function init(){
+    document.getElementById('gameBtnStart').addEventListener('click', startGame);
+    document.getElementById('gameBtnRetry').addEventListener('click', () => showScreen('start'));
+    document.getElementById('btnJudgeGood').addEventListener('click', () => onAnswer('good'));
+    document.getElementById('btnJudgeBad').addEventListener('click', () => onAnswer('bad'));
+    document.getElementById('gameLinkToTheory').addEventListener('click', (e) => { e.preventDefault(); showTab('theory'); });
+    showScreen('start');
+  }
+  return { init };
+})();
+
+document.getElementById('ctaToLab').addEventListener('click', () => showTab('lab'));
+document.getElementById('ctaToGame').addEventListener('click', () => showTab('game'));
+
+LabApp.init();
+GameApp.init();
+showTab('theory');
+</script>
+</body>
+</html>

@@ -30,8 +30,6 @@ html,body{ margin:0; padding:0; background:var(--paper); color:var(--ink); font-
 .tabbar-inner{ max-width:600px; margin:0 auto; display:flex; gap:8px; }
 .tab-btn{ flex:1; font-family:var(--font-body); font-size:12.5px; font-weight:700; padding:10px 6px; border-radius:12px; border:1.5px solid var(--border); background:var(--panel); color:var(--inkSoft); cursor:pointer; text-align:center; }
 .tab-btn.active{ border-color:var(--ink); background:var(--ink); color:var(--paper); }
-.tab-back{ flex:0 0 38px; display:flex; align-items:center; justify-content:center; border-radius:12px; border:1.5px solid var(--border); background:var(--panel); color:var(--inkSoft); text-decoration:none; font-size:16px; font-weight:700; }
-.tab-back:hover{ border-color:var(--ink); color:var(--ink); }
 
 /* ---------- shared header ---------- */
 .eyebrow{ font-family:var(--font-mono); font-size:11.5px; letter-spacing:1.5px; color:var(--inkSoft); text-transform:uppercase; margin-bottom:6px; }
@@ -129,7 +127,6 @@ input[type=range]{ width:100%; accent-color:var(--ink); margin:10px 0; }
 
 <div class="tabbar">
   <div class="tabbar-inner">
-    <a href="미적분1.html" class="tab-back" aria-label="목록으로 돌아가기" title="미적분Ⅰ 목록으로">←</a>
     <button class="tab-btn active" data-tab="theory">① 원리</button>
     <button class="tab-btn" data-tab="lab">② 실험실</button>
     <button class="tab-btn" data-tab="game">③ 게임</button>
@@ -188,7 +185,7 @@ input[type=range]{ width:100%; accent-color:var(--ink); margin:10px 0; }
     <div class="theory-h2">4. 자주 하는 오해</div>
     <div class="misconception">
       <div class="misconception-title">❌ 극한값 = 함숫값이다?</div>
-      <div class="misconception-body">아니에요. 극한은 "다가가는 값"이고 f(a)는 "실제 x=a에서의 값"이라 서로 다른 개념이에요. 구멍(제거가능 불연속) 유형처럼, 극한은 존재해도 f(a)와 다르거나 f(a)가 아예 정의되지 않을 수 있어요.</div>
+      <div class="misconception-body">아니에요. 극한은 "다가가는 값"이고 f(a)는 "실제 x=a에서의 값"이라 서로 다른 개념이에요. 구멍이 뚫린 그래프처럼, 극한은 존재해도 f(a)와 다르거나 f(a)가 아예 정의되지 않을 수 있어요.</div>
     </div>
     <div class="misconception">
       <div class="misconception-title">❌ 그래프가 끊어져 있으면 극한이 무조건 없다?</div>
@@ -446,7 +443,7 @@ function drawStaticGraph(svgEl, preset, aValue, opts){
 // ============================================================
 const LAB_PRESETS = [
   {
-    id: 'jump', label: '① 점프 불연속', subtitle: '두 조각이 서로 다른 높이에서 만난다',
+    id: 'jump', label: '① 좌우극한이 다른 경우', subtitle: '두 조각이 서로 다른 높이에서 만난다',
     xDomain: [-3, 4], yDomain: [-1.5, 4.5], aOptions: [1],
     branches: [
       { xMin: -3, xMax: 1, closedMin: true, closedMax: false, fn: (x) => -0.5 * x * x + x + 1 },
@@ -455,7 +452,7 @@ const LAB_PRESETS = [
     isolated: [],
   },
   {
-    id: 'hole', label: '② 구멍(제거가능) 불연속', subtitle: '선을 따라가면 매끄럽지만 한 점만 비어있다',
+    id: 'hole', label: '② 구멍이 있는 경우', subtitle: '선을 따라가면 매끄럽지만 한 점만 비어있다',
     xDomain: [-2, 5], yDomain: [-1, 6], aOptions: [2],
     branches: [
       { xMin: -2, xMax: 2, closedMin: true, closedMax: false, fn: (x) => x + 1 },
@@ -464,7 +461,7 @@ const LAB_PRESETS = [
     isolated: [{ x: 2, y: 1 }],
   },
   {
-    id: 'zigzag', label: '③ 다중 불연속', subtitle: '구간마다 다른 식, 불연속점도 여러 개',
+    id: 'zigzag', label: '③ 여러 지점에서 극한 관찰', subtitle: '구간마다 다른 식, 극한이 없는 지점도 있다',
     xDomain: [-4, 4], yDomain: [-2.5, 4], aOptions: [-1, 1, 2],
     branches: [
       { xMin: -4, xMax: -1, closedMin: true, closedMax: false, fn: (x) => 0.4 * x * x + 1.2 * x - 0.4 },
@@ -649,9 +646,9 @@ const LabApp = (function(){
       let title, sub, cls;
       if (limitsEqual) {
         cls = 'ok'; title = `극한이 존재합니다 (= ${fmt(limitLeftVal)})`;
-        sub = faVal == null ? `f(${aValue})는 정의되어 있지 않아요. 극한은 있지만 이 점에서 함수는 불연속이에요.`
-          : Math.abs(faVal - limitLeftVal) < 0.05 ? `f(${aValue}) = ${fmt(faVal)}로 극한값과 같아서, 이 점에서 함수는 연속이에요.`
-          : `f(${aValue}) = ${fmt(faVal)}로 극한값과 달라서, 이 점에서 함수는 불연속이에요.`;
+        sub = faVal == null ? `f(${aValue})는 정의되어 있지 않아요. 극한값은 있지만, 그 점에는 실제로 찍힌 값이 없어요.`
+          : Math.abs(faVal - limitLeftVal) < 0.05 ? `f(${aValue}) = ${fmt(faVal)}로 극한값과 같아요. 그래프가 이 점에서 자연스럽게 이어져요.`
+          : `f(${aValue}) = ${fmt(faVal)}로 극한값과 달라요. 그 점만 다른 위치에 따로 찍혀 있는 거예요.`;
       } else {
         cls = 'bad'; title = eitherInfinite ? '극한이 존재하지 않습니다 (발산)' : '극한이 존재하지 않습니다 (좌≠우)';
         sub = '좌극한과 우극한이 서로 다르면, x=a에서 극한은 존재하지 않아요.';

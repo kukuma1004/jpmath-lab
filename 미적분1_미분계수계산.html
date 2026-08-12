@@ -29,8 +29,6 @@ html,body{ margin:0; padding:0; background:var(--paper); color:var(--ink); font-
 .tabbar-inner{ max-width:600px; margin:0 auto; display:flex; gap:8px; }
 .tab-btn{ flex:1; font-family:var(--font-body); font-size:12.5px; font-weight:700; padding:10px 6px; border-radius:12px; border:1.5px solid var(--border); background:var(--panel); color:var(--inkSoft); cursor:pointer; text-align:center; }
 .tab-btn.active{ border-color:var(--ink); background:var(--ink); color:var(--paper); }
-.tab-back{ flex:0 0 38px; display:flex; align-items:center; justify-content:center; border-radius:12px; border:1.5px solid var(--border); background:var(--panel); color:var(--inkSoft); text-decoration:none; font-size:16px; font-weight:700; }
-.tab-back:hover{ border-color:var(--ink); color:var(--ink); }
 
 .eyebrow{ font-family:var(--font-mono); font-size:11.5px; letter-spacing:1.5px; color:var(--inkSoft); text-transform:uppercase; margin-bottom:6px; }
 .title{ font-family:var(--font-display); font-weight:900; font-size:22px; margin:0 0 5px; line-height:1.28; }
@@ -105,7 +103,6 @@ html,body{ margin:0; padding:0; background:var(--paper); color:var(--ink); font-
 
 <div class="tabbar">
   <div class="tabbar-inner">
-    <a href="미적분1.html" class="tab-back" aria-label="목록으로 돌아가기" title="미적분Ⅰ 목록으로">←</a>
     <button class="tab-btn active" data-tab="theory">① 원리</button>
     <button class="tab-btn" data-tab="lab">② 실험실</button>
     <button class="tab-btn" data-tab="game">③ 게임</button>
@@ -134,22 +131,18 @@ html,body{ margin:0; padding:0; background:var(--paper); color:var(--ink); font-
 
   <div class="theory-section">
     <div class="theory-h2">2. 계산의 핵심 흐름</div>
-    <p class="theory-p">거의 모든 문제가 같은 패턴이에요: <b>① 정의에 대입 → ② 전개·통분·유리화로 정리 → ③ h(또는 x−a)로 약분 → ④ h→0 대입</b>. 함수 종류에 따라 ②번 정리 방법만 달라져요 — 다항식은 전개, 분수식은 통분, 무리식은 분자의 유리화. 실험실에서 4가지 대표 유형을 한 줄씩 눌러가며 직접 확인해보세요.</p>
+    <p class="theory-p">거의 모든 문제가 같은 패턴이에요: <b>① 정의에 대입 → ② 전개해서 정리 → ③ h(또는 x−a)로 약분 → ④ h→0 대입</b>. 실험실에서 대표 유형을 한 줄씩 눌러가며 직접 확인해보세요.</p>
   </div>
 
   <div class="theory-section">
     <div class="theory-h2">3. 자주 하는 오해</div>
     <div class="misconception">
       <div class="misconception-title">❌ h에 그냥 0을 대입하면 안 되나요?</div>
-      <div class="misconception-body">바로 대입하면 분모가 0이 되어 0/0 꼴이 나와요(정의가 안 됨). 그래서 먼저 전개·통분·유리화로 분모의 h를 없앤 다음에 h→0을 대입해야 해요. 이 순서를 건너뛰는 게 가장 흔한 실수예요.</div>
+      <div class="misconception-body">바로 대입하면 분모가 0이 되어 0/0 꼴이 나와요(정의가 안 됨). 그래서 먼저 전개해서 분모의 h를 없앤 다음에 h→0을 대입해야 해요. 이 순서를 건너뛰는 게 가장 흔한 실수예요.</div>
     </div>
     <div class="misconception">
       <div class="misconception-title">❌ f'(a)와 f'(x)는 같은 거 아닌가요?</div>
       <div class="misconception-body">f'(x)는 x에 대한 함수(도함수)이고, f'(a)는 그중 x=a에서의 값 하나(숫자)예요. f'(x)=2x라면 f'(3)=6처럼, f'(a)는 f'(x)에 a를 대입한 특정 숫자예요.</div>
-    </div>
-    <div class="misconception">
-      <div class="misconception-title">❌ 분수식·무리식도 다항식처럼 그냥 전개하면 되나요?</div>
-      <div class="misconception-body">분수식은 통분해야 h가 분자로 나오고, 무리식은 분자를 유리화해야 h가 나와요. 각 유형마다 "h를 밖으로 꺼내는" 도구가 다르다는 걸 기억하세요.</div>
     </div>
   </div>
 
@@ -192,8 +185,8 @@ html,body{ margin:0; padding:0; background:var(--paper); color:var(--ink); font-
 <div id="page-game" class="hidden">
   <div id="gameHeader" class="game-header">
     <div class="eyebrow">석산고 미적분 · Interactive Lab</div>
-    <h1 class="title">다음 단계 맞히기</h1>
-    <p class="desc">계산 중간에 올바른 다음 줄을 골라보세요. 흔한 실수들이 오답으로 섞여있어요.</p>
+    <h1 class="title">미분계수 판독기</h1>
+    <p class="desc">f(x)와 a, 그리고 계산된 f'(a) 값을 보고 맞는지 틀린지 빠르게 판단하세요.</p>
   </div>
 
   <div id="gameScreenStart" class="card">
@@ -208,14 +201,18 @@ html,body{ margin:0; padding:0; background:var(--paper); color:var(--ink); font-
     </div>
     <div class="timerbar-wrap"><div class="timerbar-fill" id="gameTimerFill" style="width:100%; background:var(--success);"></div></div>
 
-    <div class="q-setup">
-      <div class="q-eyebrow" id="qEyebrow"></div>
-      <div class="q-formula" id="qFormula"></div>
-      <div class="q-ask" id="qAsk"></div>
+    <div class="q-setup" style="text-align:center;">
+      <div id="qFnStr" style="font-family:var(--font-mono); font-size:19px; font-weight:800; margin-bottom:6px;"></div>
+      <div id="qAValue" style="font-family:var(--font-mono); font-size:13.5px; color:var(--inkSoft); margin-bottom:14px;"></div>
+      <div style="font-size:11px; color:var(--inkSoft); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">제시된 값</div>
+      <div id="qCandidate" style="font-family:var(--font-mono); font-size:21px; font-weight:800; color:var(--right);"></div>
     </div>
 
     <div id="gameFeedback" class="hidden"></div>
-    <div id="optionsGrid"></div>
+    <div class="judge-buttons" style="display:flex; gap:10px;">
+      <button class="step-btn primary" id="btnJudgeGood" style="background:var(--success); border-color:var(--success);">🟢 맞다</button>
+      <button class="step-btn primary" id="btnJudgeBad" style="background:var(--left); border-color:var(--left);">🔴 틀리다</button>
+    </div>
   </div>
 
   <div id="gameScreenEnd" class="card hidden">
@@ -253,6 +250,15 @@ function fracStr(num, den){
   return `${num}/${den}`;
 }
 function frac(numHTML, denHTML){ return `<span class="frac"><span class="num">${numHTML}</span><span class="den">${denHTML}</span></span>`; }
+function fmtNum(v){
+  const r = Math.round(v);
+  if (Math.abs(v - r) < 1e-6) return String(r);
+  for (let den = 2; den <= 36; den++) {
+    const num = v * den;
+    if (Math.abs(num - Math.round(num)) < 1e-6) return fracStr(Math.round(num), den);
+  }
+  return v.toFixed(2);
+}
 function el(tag, attrs){
   const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
   for (const k in attrs) e.setAttribute(k, attrs[k]);
@@ -300,35 +306,6 @@ const FUNCS = {
     finalNum: (a) => 3 * a * a,
     finalStr: (a) => `f'(${a}) = 3×${a}² = ${3 * a * a}`,
   },
-  inv: {
-    label: 'f(x) = 1/x', aValues: [-3, -2, -1, 1, 2, 3],
-    fn: (x) => 1 / x,
-    steps: (a) => [
-      `f'(a) = lim<span class="step-note">h→0</span> ${frac("f(a+h) &minus; f(a)", "h")}`,
-      `= lim<span class="step-note">h→0</span> ${frac(frac("1", "a+h") + " &minus; " + frac("1", "a"), "h")}`,
-      `= lim<span class="step-note">h→0</span> ${frac(frac("a &minus; (a+h)", "a(a+h)"), "h")} <span class="step-note">통분</span>`,
-      `= lim<span class="step-note">h→0</span> ${frac(frac("&minus;h", "a(a+h)"), "h")}`,
-      `= lim<span class="step-note">h→0</span> ${frac("&minus;1", "a(a+h)")} <span class="step-note">h로 약분</span>`,
-      `= ${frac("&minus;1", "a²")}`,
-    ],
-    finalNum: (a) => -1 / (a * a),
-    finalStr: (a) => `f'(${a}) = −1/${a}² = ${fracStr(-1, a * a)}`,
-  },
-  sqrt: {
-    label: 'f(x) = √x', aValues: [1, 4, 9],
-    fn: (x) => Math.sqrt(x),
-    steps: (a) => [
-      `f'(a) = lim<span class="step-note">h→0</span> ${frac("f(a+h) &minus; f(a)", "h")}`,
-      `= lim<span class="step-note">h→0</span> ${frac("√(a+h) &minus; √a", "h")}`,
-      `= lim<span class="step-note">h→0</span> ${frac("[√(a+h) &minus; √a][√(a+h) + √a]", "h[√(a+h) + √a]")} <span class="step-note">분자의 유리화</span>`,
-      `= lim<span class="step-note">h→0</span> ${frac("(a+h) &minus; a", "h[√(a+h) + √a]")}`,
-      `= lim<span class="step-note">h→0</span> ${frac("h", "h[√(a+h) + √a]")}`,
-      `= lim<span class="step-note">h→0</span> ${frac("1", "√(a+h) + √a")} <span class="step-note">h로 약분</span>`,
-      `= ${frac("1", "2√a")}`,
-    ],
-    finalNum: (a) => 1 / (2 * Math.sqrt(a)),
-    finalStr: (a) => `f'(${a}) = 1/(2√${a}) = ${fracStr(1, 2 * Math.sqrt(a))}`,
-  },
   linear: {
     label: 'f(x) = mx+b (m=2, b=1)', aValues: [-2, -1, 0, 1, 2, 3],
     fn: (x) => 2 * x + 1,
@@ -343,7 +320,7 @@ const FUNCS = {
     finalStr: () => `f'(a) = 2  (a와 무관하게 항상 일정!)`,
   },
 };
-const FUNC_ORDER = ['x2', 'x3', 'inv', 'sqrt', 'linear'];
+const FUNC_ORDER = ['x2', 'x3', 'linear'];
 
 // ============================================================
 // SHARED MINI GRAPH (for Lab's visual payoff)
@@ -361,8 +338,6 @@ function autoYDomain(fn, xDomain){
 }
 function funcXDomain(key, a){
   if (key === 'x3') return [a - 2.1, a + 2.1];
-  if (key === 'inv') return a > 0 ? [Math.max(0.4, a - 2.5), a + 2.5] : [a - 2.5, Math.min(-0.4, a + 2.5)];
-  if (key === 'sqrt') return [Math.max(0, a - 2.5), a + 3];
   return [a - 3, a + 3];
 }
 function drawMiniGraph(svgEl, key, a, slope){
@@ -463,72 +438,23 @@ const LabApp = (function(){
 })();
 
 // ============================================================
-// GAME APP ("다음 단계 맞히기")
+// GAME APP ("미분계수 판독기")
 // ============================================================
 const GameApp = (function(){
-  const START_TIME = 12000, MIN_TIME = 6000, DECAY_EVERY = 4, DECAY_AMOUNT = 1200;
+  const START_TIME = 7000, MIN_TIME = 3200, DECAY_EVERY = 4, DECAY_AMOUNT = 700;
 
-  const QUESTIONS = {
-    x2: {
-      eyebrow: 'f(x) = x²', formula: `f'(a) = lim<span class="step-note">h→0</span> ${frac("(a+h)² &minus; a²", "h")}`,
-      ask: '이 식을 전개하면?',
-      correct: `lim ${frac("a² + 2ah + h² &minus; a²", "h")}`,
-      wrongs: [
-        `lim ${frac("a² + h² &minus; a²", "h")}`,
-        `lim ${frac("a² + ah + h² &minus; a²", "h")}`,
-        `lim ${frac("a² &minus; 2ah + h² &minus; a²", "h")}`,
-      ],
-      goodHint: '맞아요! (a+h)²을 전개할 때 가운데 항 2ah를 놓치지 않는 게 핵심이에요.',
-      badHint: '(a+h)² = a² + 2ah + h² 예요. 가운데 항의 계수나 부호를 다시 확인해보세요.',
-    },
-    x3: {
-      eyebrow: 'f(x) = x³', formula: `f'(a) = lim<span class="step-note">h→0</span> ${frac("(a+h)³ &minus; a³", "h")}`,
-      ask: '이 식을 전개하면?',
-      correct: `lim ${frac("a³ + 3a²h + 3ah² + h³ &minus; a³", "h")}`,
-      wrongs: [
-        `lim ${frac("a³ + a²h + ah² + h³ &minus; a³", "h")}`,
-        `lim ${frac("a³ + 3ah² + h³ &minus; a³", "h")}`,
-        `lim ${frac("a³ &minus; 3a²h + 3ah² &minus; h³ &minus; a³", "h")}`,
-      ],
-      goodHint: '맞아요! (a+h)³ = a³+3a²h+3ah²+h³, 계수 3을 놓치지 않는 게 핵심이에요.',
-      badHint: '(a+h)³을 전개하면 a³+3a²h+3ah²+h³이에요. 계수나 항의 개수를 다시 확인해보세요.',
-    },
-    inv: {
-      eyebrow: 'f(x) = 1/x', formula: `f'(a) = lim<span class="step-note">h→0</span> ${frac(frac("1", "a+h") + " &minus; " + frac("1", "a"), "h")}`,
-      ask: '이 식을 통분하면?',
-      correct: `lim ${frac(frac("a &minus; (a+h)", "a(a+h)"), "h")}`,
-      wrongs: [
-        `lim ${frac(frac("(a+h) &minus; a", "a(a+h)"), "h")}`,
-        `lim ${frac(frac("a &minus; (a+h)", "a+h"), "h")}`,
-        `lim ${frac(frac("1", "a(a+h)"), "h")}`,
-      ],
-      goodHint: '맞아요! 통분할 때 분자의 순서(a − (a+h))가 핵심이에요.',
-      badHint: '1/(a+h) − 1/a를 통분하면 (a−(a+h))/(a(a+h))예요. 분자의 부호나 분모를 다시 확인해보세요.',
-    },
-    sqrt: {
-      eyebrow: 'f(x) = √x', formula: `f'(a) = lim<span class="step-note">h→0</span> ${frac("√(a+h) &minus; √a", "h")}`,
-      ask: '분자를 유리화하려면 분자·분모에 무엇을 곱해야 할까요?',
-      correct: `√(a+h) + √a`,
-      wrongs: [
-        `√(a+h) &minus; √a`,
-        `√a + √a`,
-        `그냥 h → 0을 대입한다 (유리화 생략)`,
-      ],
-      goodHint: '맞아요! 켤레 [√(a+h)+√a]를 곱해야 분자의 √가 사라져요.',
-      badHint: '분모의 h를 없애려면 켤레 [√(a+h)+√a]를 곱해야 해요. h→0을 바로 대입하면 0/0이 돼버려요.',
-    },
-    linear: {
-      eyebrow: 'f(x) = mx+b', formula: `f'(a) = lim<span class="step-note">h→0</span> ${frac("m(a+h)+b &minus; (ma+b)", "h")}`,
-      ask: '이 식을 정리하면?',
-      correct: `lim ${frac("mh", "h")} = m`,
-      wrongs: [
-        `lim ${frac("mh", "h")} = a`,
-        `lim ${frac("m + h", "h")}`,
-        `lim ${frac("mh", "h")} = 0`,
-      ],
-      goodHint: '맞아요! mh/h = m 이고, 이건 a와 무관하게 항상 일정해요.',
-      badHint: '분자를 정리하면 mh만 남고, h로 나누면 m이에요 — a와는 무관해요.',
-    },
+  // Plausible-mistake value generators per function type, expressed as functions of a.
+  // Validated to never coincide with the true value across all offered a-presets; any
+  // accidental collision (e.g. a=1 cases) is filtered out at round-generation time below.
+  const WRONG_VARIANTS = {
+    x2: (a) => [a, -2 * a],
+    x3: (a) => [a * a, -3 * a * a],
+    linear: (a) => [2 * a, -2],
+  };
+  const HINTS = {
+    x2: '계수 2를 놓치지 않아야 해요 — f\'(a) = 2a.',
+    x3: '계수 3을 놓치지 않아야 해요 — f\'(a) = 3a².',
+    linear: '일차함수의 기울기는 a와 무관하게 항상 일정해요 — f\'(a) = m.',
   };
 
   const state = { score: 0, lives: 3, streak: 0, correctCount: 0, timePerQ: START_TIME, round: null, rafId: null, locked: false };
@@ -565,26 +491,32 @@ const GameApp = (function(){
     fill.style.backgroundColor = ratio > 0.5 ? COLORS.success : ratio > 0.2 ? COLORS.gold : COLORS.left;
   }
 
+  function generateRound(){
+    const kind = nextKind();
+    const def = FUNCS[kind];
+    const a = def.aValues[Math.floor(Math.random() * def.aValues.length)];
+    const correct = def.finalNum(a);
+    const showCorrect = Math.random() < 0.5;
+    let candidate = correct, correctAnswer = 'good';
+    if (!showCorrect) {
+      const validWrongs = WRONG_VARIANTS[kind](a).filter((w) => Math.abs(w - correct) > 1e-6);
+      if (validWrongs.length > 0) { candidate = validWrongs[Math.floor(Math.random() * validWrongs.length)]; correctAnswer = 'bad'; }
+      // if every wrong variant happens to collide with the correct value for this (kind,a),
+      // fall back to a genuine "correct" round instead — never show a wrong value that isn't actually wrong.
+    }
+    return { kind, def, a, correct, candidate, correctAnswer };
+  }
+
   function spawnQuestion(){
     state.locked = false;
-    const kind = nextKind();
-    const q = QUESTIONS[kind];
-    const options = shuffle([{ text: q.correct, correct: true }, ...q.wrongs.map((w) => ({ text: w, correct: false }))]);
-    state.round = { kind, q, options };
-
-    document.getElementById('qEyebrow').textContent = q.eyebrow;
-    document.getElementById('qFormula').innerHTML = q.formula;
-    document.getElementById('qAsk').textContent = q.ask;
+    const round = generateRound();
+    state.round = round;
+    document.getElementById('qFnStr').textContent = round.def.label;
+    document.getElementById('qAValue').textContent = `a = ${round.a}`;
+    document.getElementById('qCandidate').textContent = `f'(${round.a}) = ${fmtNum(round.candidate)}`;
     document.getElementById('gameFeedback').classList.add('hidden');
-    const grid = document.getElementById('optionsGrid');
-    grid.innerHTML = '';
-    options.forEach((opt, idx) => {
-      const btn = document.createElement('button');
-      btn.className = 'opt-btn';
-      btn.innerHTML = opt.text;
-      btn.onclick = () => onAnswer(idx);
-      grid.appendChild(btn);
-    });
+    document.getElementById('btnJudgeGood').disabled = false;
+    document.getElementById('btnJudgeBad').disabled = false;
 
     const start = performance.now();
     const duration = state.timePerQ;
@@ -597,20 +529,17 @@ const GameApp = (function(){
     state.rafId = requestAnimationFrame(tick);
   }
 
-  function onAnswer(idx){
+  function onAnswer(choice){
     if (state.locked) return;
     state.locked = true;
     cancelAnimationFrame(state.rafId);
-    const { q, options } = state.round;
-    const chosen = idx == null ? null : options[idx];
-    const isCorrect = !!(chosen && chosen.correct);
-    document.querySelectorAll('#optionsGrid .opt-btn').forEach((btn, i) => {
-      btn.disabled = true;
-      if (options[i].correct) btn.classList.add('correct');
-      else if (i === idx) btn.classList.add('wrong');
-    });
+    document.getElementById('btnJudgeGood').disabled = true;
+    document.getElementById('btnJudgeBad').disabled = true;
+    const round = state.round;
+    const isCorrect = choice === round.correctAnswer;
     const fbEl = document.getElementById('gameFeedback');
     fbEl.classList.remove('hidden');
+    const trueLine = `실제 f'(${round.a}) = ${fmtNum(round.correct)}`;
     if (isCorrect) {
       const remainingRatio = parseFloat(document.getElementById('gameTimerFill').style.width) / 100 || 0;
       const points = 15 + Math.round(remainingRatio * 20) + Math.min(state.streak, 10);
@@ -618,12 +547,13 @@ const GameApp = (function(){
       document.getElementById('gameScoreNum').textContent = state.score;
       if (state.correctCount % DECAY_EVERY === 0) state.timePerQ = Math.max(MIN_TIME, state.timePerQ - DECAY_AMOUNT);
       fbEl.className = 'game-feedback-box good';
-      fbEl.textContent = `✓ +${points}점 · ${q.goodHint}`;
-      setTimeout(() => spawnQuestion(), 1300);
+      fbEl.textContent = `✓ +${points}점 · ${trueLine}`;
+      setTimeout(() => spawnQuestion(), 1200);
     } else {
       state.streak = 0; state.lives -= 1; renderLives();
       fbEl.className = 'game-feedback-box bad';
-      fbEl.textContent = (idx == null ? '⏱ 시간 초과! ' : '✕ 틀렸어요. ') + q.badHint;
+      const hint = round.correctAnswer === 'bad' ? HINTS[round.kind] : '';
+      fbEl.textContent = (choice == null ? '⏱ 시간 초과! ' : '✕ 틀렸어요. ') + `${trueLine}. ${hint}`;
       if (state.lives <= 0) setTimeout(() => gameOver(), 1800);
       else setTimeout(() => spawnQuestion(), 1800);
     }
@@ -651,6 +581,8 @@ const GameApp = (function(){
   function init(){
     document.getElementById('gameBtnStart').addEventListener('click', startGame);
     document.getElementById('gameBtnRetry').addEventListener('click', () => showScreen('start'));
+    document.getElementById('btnJudgeGood').addEventListener('click', () => onAnswer('good'));
+    document.getElementById('btnJudgeBad').addEventListener('click', () => onAnswer('bad'));
     document.getElementById('gameLinkToTheory').addEventListener('click', (e) => { e.preventDefault(); showTab('theory'); });
     showScreen('start');
   }
