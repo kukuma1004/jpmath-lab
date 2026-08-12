@@ -2,41 +2,1105 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JP Math Lab</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>극한 학습 스위트 · 석산고 미적분</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
-<link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700;900&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EFF3EE; --panel:#FFFFFF; --grid:#D8E2D3; --dot:#E2E9DE;
+  --ink:#223027; --inkSoft:#5C6B60;
+  --left:#C1442D; --right:#2B6CA3; --gold:#C99A2E; --success:#3F7D4C; --border:#D3DAD0;
+  --font-display:'Noto Serif KR', serif;
+  --font-body:'IBM Plex Sans KR','Pretendard',sans-serif;
+  --font-mono:'IBM Plex Mono','Menlo',monospace;
+}
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); }
+.page-bg{ background-image:radial-gradient(var(--dot) 1px, transparent 1px); background-size:20px 20px; min-height:100vh; }
+.wrap{ max-width:600px; margin:0 auto; padding:14px 14px 40px; }
+.hidden{ display:none !important; }
+.mono{ font-family:var(--font-mono); }
+.card{ background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:18px; }
+.btn-primary{ width:100%; padding:14px; border-radius:14px; border:none; background:var(--ink); color:var(--paper); font-weight:700; font-size:15px; cursor:pointer; }
+.btn-secondary{ width:100%; padding:14px; border-radius:14px; border:1.5px solid var(--border); background:#fff; color:var(--ink); font-weight:600; font-size:14px; cursor:pointer; }
+
+/* ---------- top tab bar ---------- */
+.tabbar{ position:sticky; top:0; z-index:20; background:var(--paper); padding:10px 14px 8px; border-bottom:1px solid var(--border); }
+.tabbar-inner{ max-width:600px; margin:0 auto; display:flex; gap:8px; }
+.tab-btn{ flex:1; font-family:var(--font-body); font-size:12.5px; font-weight:700; padding:10px 6px; border-radius:12px; border:1.5px solid var(--border); background:var(--panel); color:var(--inkSoft); cursor:pointer; text-align:center; }
+.tab-btn.active{ border-color:var(--ink); background:var(--ink); color:var(--paper); }
+
+/* ---------- shared header ---------- */
+.eyebrow{ font-family:var(--font-mono); font-size:11.5px; letter-spacing:1.5px; color:var(--inkSoft); text-transform:uppercase; margin-bottom:6px; }
+.title{ font-family:var(--font-display); font-weight:900; font-size:23px; margin:0 0 5px; line-height:1.28; }
+.desc{ color:var(--inkSoft); font-size:13px; line-height:1.55; margin:0 0 14px; }
+
+/* ---------- theory tab ---------- */
+.theory-section{ margin-bottom:18px; }
+.theory-h2{ font-family:var(--font-display); font-weight:900; font-size:18px; margin:0 0 8px; }
+.theory-p{ font-size:13.5px; line-height:1.7; color:var(--ink); margin:0 0 10px; }
+.numline-wrap{ background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:10px; margin-bottom:8px; }
+.theorem-box{ background:#FBF3E0; border:1.5px solid var(--gold); border-radius:14px; padding:14px 16px; margin-bottom:10px; }
+.theorem-eyebrow{ font-family:var(--font-mono); font-size:10.5px; letter-spacing:1px; color:var(--gold); text-transform:uppercase; margin-bottom:6px; font-weight:700; }
+.theorem-formula{ font-family:var(--font-mono); font-size:14px; font-weight:600; line-height:1.8; }
+.case-grid{ display:grid; grid-template-columns:1fr; gap:12px; }
+.case-card{ background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:12px; }
+.case-card-title{ font-weight:700; font-size:14px; margin:8px 0 4px; }
+.case-card-desc{ font-size:12.5px; color:var(--inkSoft); line-height:1.55; margin:0 0 10px; }
+.case-svg-wrap{ position:relative; width:100%; padding-bottom:62.5%; background:var(--paper); border-radius:10px; overflow:hidden; }
+.case-svg-wrap svg{ position:absolute; inset:0; width:100%; height:100%; }
+.case-link{ width:100%; padding:9px; border-radius:10px; border:1.5px solid var(--ink); background:#fff; color:var(--ink); font-weight:600; font-size:12.5px; cursor:pointer; }
+.misconception{ background:#F7E9E5; border:1.5px solid var(--left); border-radius:14px; padding:12px 14px; margin-bottom:10px; }
+.misconception-title{ font-weight:700; font-size:13px; color:var(--left); margin-bottom:4px; }
+.misconception-body{ font-size:12.5px; color:var(--ink); line-height:1.6; }
+.cta-row{ display:flex; gap:10px; margin-top:16px; }
+
+/* ---------- lab tab ---------- */
+.lab-chips{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:6px; }
+.chip{ font-family:var(--font-body); font-size:13px; font-weight:600; padding:9px 13px; border-radius:999px; border:1.5px solid var(--border); background:var(--panel); color:var(--ink); cursor:pointer; }
+.chip.active{ border-color:var(--ink); background:var(--ink); color:var(--paper); }
+.lab-subtitle{ font-size:12.5px; color:var(--inkSoft); margin:0 0 14px; }
+.lab-layout{ display:flex; flex-direction:column; gap:16px; }
+.lab-graph-card{ background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:12px; }
+.lab-svg-wrap{ position:relative; width:100%; padding-bottom:65.625%; }
+.lab-svg-wrap svg{ position:absolute; inset:0; width:100%; height:100%; touch-action:none; cursor:grab; display:block; }
+.lab-readout{ background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:14px; margin-bottom:12px; }
+.lab-limits{ display:flex; gap:10px; margin-bottom:12px; }
+.limit-box{ flex:1; min-width:0; background:#fff; border:1.5px solid var(--c); border-radius:14px; padding:12px; }
+.lb-label{ font-size:11px; font-weight:700; color:var(--c); margin-bottom:2px; }
+.lb-symbol{ font-family:var(--font-mono); font-size:10px; color:var(--inkSoft); margin-bottom:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.lb-value{ font-family:var(--font-mono); font-size:19px; font-weight:700; color:var(--c); }
+.ll-fog{ filter:blur(5px); opacity:.35; transition:filter .5s ease, opacity .5s ease; }
+.ll-clear{ filter:blur(0); opacity:1; transition:filter .6s ease, opacity .6s ease; }
+.verdict{ border-radius:14px; padding:13px; margin-bottom:12px; }
+.verdict.ok{ background:#EAF3EA; border:1.5px solid var(--success); }
+.verdict.bad{ background:#F7E9E5; border:1.5px solid var(--left); }
+.a-btn{ font-family:var(--font-mono); font-size:12.5px; font-weight:600; padding:6px 11px; border-radius:10px; border:1.5px solid var(--border); background:var(--panel); cursor:pointer; margin-right:6px; }
+.a-btn.active{ border-color:var(--gold); background:#FBF3E0; }
+.lab-actions{ display:flex; gap:8px; margin-top:2px; }
+.act-btn{ flex:1; display:flex; align-items:center; justify-content:center; gap:6px; font-family:var(--font-body); font-size:12.5px; font-weight:600; padding:10px; border-radius:12px; border:1.5px solid var(--c); background:#fff; color:var(--c); cursor:pointer; }
+input[type=range]{ width:100%; accent-color:var(--ink); margin:10px 0; }
+
+/* ---------- game tab ---------- */
+.game-header.hidden{ display:none !important; }
+.top-bar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:6px; flex-wrap:wrap; }
+.top-stat{ font-family:var(--font-mono); font-size:12.5px; color:var(--inkSoft); }
+.top-stat b{ color:var(--ink); font-size:17px; }
+.streak-tag{ color:var(--gold); font-weight:700; }
+.quit-link{ font-size:12px; color:var(--inkSoft); text-decoration:underline; cursor:pointer; background:none; border:none; padding:0; }
+.timerbar-wrap{ width:100%; height:9px; background:var(--grid); border-radius:999px; overflow:hidden; margin-bottom:10px; }
+.timerbar-fill{ height:100%; border-radius:999px; transition:background-color .2s; }
+.graph-card{ position:relative; background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:10px; margin-bottom:12px; }
+.svg-wrap{ position:relative; width:100%; padding-bottom:59.375%; }
+.svg-wrap svg{ position:absolute; inset:0; width:100%; height:100%; touch-action:none; display:block; }
+.feedback-overlay{ position:absolute; inset:0; background:rgba(255,255,255,.95); border-radius:18px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:18px; opacity:0; pointer-events:none; transition:opacity .2s ease; }
+.feedback-overlay.show{ opacity:1; pointer-events:auto; }
+.feedback-icon{ font-size:38px; margin-bottom:6px; }
+.feedback-title{ font-weight:800; font-size:18px; margin-bottom:4px; }
+.feedback-sub{ font-size:12.5px; color:var(--inkSoft); line-height:1.6; max-width:380px; }
+.feedback-points{ font-family:var(--font-mono); font-size:15px; font-weight:700; margin-top:8px; }
+.q-card{ background:#fff; border:1.5px solid var(--ink); border-radius:14px; padding:14px 16px; margin-bottom:14px; }
+.q-eyebrow{ font-family:var(--font-mono); font-size:10.5px; letter-spacing:1px; color:var(--inkSoft); text-transform:uppercase; margin-bottom:4px; }
+.question-text{ font-size:17px; font-weight:800; line-height:1.45; margin:0; color:var(--ink); }
+.mcq-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.mcq-btn{ font-family:var(--font-body); font-size:13.5px; font-weight:600; padding:13px 10px; border-radius:14px; border:1.5px solid var(--border); background:#fff; color:var(--ink); cursor:pointer; text-align:left; }
+.mcq-btn.correct{ border-color:var(--success); background:#EAF3EA; color:var(--success); }
+.mcq-btn.wrong{ border-color:var(--left); background:#F7E9E5; color:var(--left); }
+.mcq-btn:disabled{ opacity:.55; }
+.drag-instruction{ font-size:14.5px; font-weight:700; margin:0 0 8px; }
+.drag-distance{ font-family:var(--font-mono); font-size:22px; font-weight:700; color:var(--ink); }
+.drag-distance.close{ color:var(--success); }
+.drag-ready-tag{ font-size:12.5px; color:var(--inkSoft); margin:2px 0 12px; min-height:16px; font-weight:600; }
+.drag-ready-tag.close{ color:var(--success); }
+.drag-ready-tag.wrong{ color:var(--left); }
+.confirm-btn{ width:100%; padding:14px; border-radius:14px; border:none; background:var(--ink); color:var(--paper); font-weight:700; font-size:15px; cursor:pointer; }
+.end-score{ font-family:var(--font-mono); font-size:38px; font-weight:700; text-align:center; margin:6px 0 4px; }
+.end-sub{ text-align:center; color:var(--inkSoft); font-size:13px; margin-bottom:16px; }
+.lb-title{ font-family:var(--font-display); font-weight:900; font-size:19px; margin:0 0 4px; }
+
+@media (prefers-reduced-motion: reduce){ .feedback-overlay,.timerbar-fill,.ll-fog,.ll-clear{ transition:none; } }
+</style>
 </head>
 <body>
+<div class="page-bg">
 
-  <div class="logo-mark" aria-hidden="true">∫</div>
+<div class="tabbar">
+  <div class="tabbar-inner">
+    <button class="tab-btn active" data-tab="theory">① 원리</button>
+    <button class="tab-btn" data-tab="lab">② 실험실</button>
+    <button class="tab-btn" data-tab="game">③ 게임</button>
+  </div>
+</div>
 
-  <header class="hero">
-    <p class="eyebrow">Interactive Learning</p>
-    <h1>JP Math Lab</h1>
-    <p class="lede">고등수학 개념을 직접 움직이며 확인하는 인터랙티브 실험실</p>
-  </header>
+<div class="wrap">
 
-  <ul class="grid">
+<!-- ================= THEORY PAGE ================= -->
+<div id="page-theory">
+  <div class="eyebrow">석산고 미적분 · 극한 학습 스위트</div>
+  <h1 class="title">극한, 왜 "다가가는 값"일까?</h1>
+  <p class="desc">개념을 먼저 읽고, 실험실에서 직접 움직여보고, 게임으로 확인해보세요.</p>
 
-    <li>
-      <a class="card" style="--accent:var(--calc)" href="미적분1.html">
-        <div class="card-top">
-          <span class="code-chip">CALC Ⅰ</span>
+  <div class="theory-section">
+    <div class="theory-h2">1. 극한이란?</div>
+    <p class="theory-p">함수 f(x)에서 x가 a는 아니지만 a에 <b>한없이 가까워질 때</b>, f(x)의 값이 어떤 한 값 L에 한없이 가까워지면, 그 값 L을 x=a에서의 극한이라 하고 lim f(x) (x→a) = L 로 씁니다. 중요한 건 x=a일 때의 실제 함숫값이 아니라, a로 다가가는 "과정"에서 f(x)가 어디로 향하는지라는 점이에요.</p>
+    <div class="numline-wrap">
+      <svg viewBox="0 0 300 100" style="width:100%; height:auto; display:block;">
+        <line x1="20" y1="55" x2="280" y2="55" stroke="#223027" stroke-width="1.5"/>
+        <circle cx="150" cy="55" r="5" fill="none" stroke="#C99A2E" stroke-width="2"/>
+        <text x="150" y="80" font-family="IBM Plex Mono, monospace" font-size="13" font-weight="700" fill="#C99A2E" text-anchor="middle">a</text>
+        <line x1="45" y1="30" x2="128" y2="30" stroke="#C1442D" stroke-width="2" marker-end="url(#arrLeft)"/>
+        <text x="85" y="20" font-family="IBM Plex Mono, monospace" font-size="11" fill="#C1442D" text-anchor="middle">x → a⁻</text>
+        <line x1="255" y1="30" x2="172" y2="30" stroke="#2B6CA3" stroke-width="2" marker-end="url(#arrRight)"/>
+        <text x="215" y="20" font-family="IBM Plex Mono, monospace" font-size="11" fill="#2B6CA3" text-anchor="middle">x → a⁺</text>
+        <defs>
+          <marker id="arrLeft" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#C1442D"/></marker>
+          <marker id="arrRight" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M6,0 L0,3 L6,6 Z" fill="#2B6CA3"/></marker>
+        </defs>
+      </svg>
+    </div>
+    <p class="theory-p">왼쪽에서 다가가는 것을 <b style="color:#C1442D">좌극한</b>, 오른쪽에서 다가가는 것을 <b style="color:#2B6CA3">우극한</b>이라고 불러요. 방향에 따라 f(x)가 다른 값으로 향할 수도 있기 때문에, 이 둘을 따로 따져보는 게 중요합니다.</p>
+  </div>
+
+  <div class="theory-section">
+    <div class="theory-h2">2. 극한이 존재할 조건</div>
+    <div class="theorem-box">
+      <div class="theorem-eyebrow">개념</div>
+      <div class="theorem-formula">
+        lim f(x) (x→a) = L<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;⟺<br>
+        lim f(x) (x→a⁻) = lim f(x) (x→a⁺) = L
+      </div>
+    </div>
+    <p class="theory-p">좌극한과 우극한이 <b>둘 다 존재하고, 그 값이 서로 같을 때만</b> 극한이 존재한다고 말해요. 둘 중 하나라도 없거나, 둘이 다른 값이면 그 지점에서 극한은 존재하지 않습니다.</p>
+  </div>
+
+  <div class="theory-section">
+    <div class="theory-h2">3. 네 가지 대표 유형</div>
+    <p class="theory-p">아래 네 그래프는 실험실·게임에서 계속 나오는 기본 패턴이에요. 눌러서 실험실에서 직접 확인해보세요.</p>
+    <div class="case-grid" id="caseGrid"></div>
+  </div>
+
+  <div class="theory-section">
+    <div class="theory-h2">4. 자주 하는 오해</div>
+    <div class="misconception">
+      <div class="misconception-title">❌ 극한값 = 함숫값이다?</div>
+      <div class="misconception-body">아니에요. 극한은 "다가가는 값"이고 f(a)는 "실제 x=a에서의 값"이라 서로 다른 개념이에요. 구멍이 뚫린 그래프처럼, 극한은 존재해도 f(a)와 다르거나 f(a)가 아예 정의되지 않을 수 있어요.</div>
+    </div>
+    <div class="misconception">
+      <div class="misconception-title">❌ 그래프가 끊어져 있으면 극한이 무조건 없다?</div>
+      <div class="misconception-body">좌극한과 우극한은 "끊어진 지점"에서도 각각 따로 존재할 수 있어요. 다만 그 둘이 서로 다르면, 양쪽 극한(그냥 lim)은 존재하지 않는다고 말하는 거예요.</div>
+    </div>
+  </div>
+
+  <div class="cta-row">
+    <button class="btn-primary" id="ctaToLab">🧪 실험실에서 움직여보기</button>
+  </div>
+  <div class="cta-row">
+    <button class="btn-secondary" id="ctaToGame">🎮 게임으로 테스트하기</button>
+  </div>
+</div>
+
+<!-- ================= LAB PAGE ================= -->
+<div id="page-lab" class="hidden">
+  <div class="eyebrow">석산고 미적분 · Interactive Lab</div>
+  <h1 class="title">좌극한 · 우극한 실험실</h1>
+  <p class="desc">점 x를 a 쪽으로 직접 끌어보세요. 충분히 가까워지면 안개 속에 가려진 극한값이 드러납니다.</p>
+
+  <div class="lab-chips" id="labChips"></div>
+  <p class="lab-subtitle" id="labSubtitle"></p>
+
+  <div class="lab-layout">
+    <div class="lab-graph-card">
+      <div class="lab-svg-wrap"><svg id="labSvg" viewBox="0 0 640 420" preserveAspectRatio="xMidYMid meet"></svg></div>
+    </div>
+
+    <div>
+      <div class="lab-readout">
+        <div class="mono" style="font-size:12.5px; color:var(--inkSoft); margin-bottom:4px;">현재 위치</div>
+        <div class="mono" style="font-size:21px; font-weight:600;">x = <span id="labXVal"></span></div>
+        <div class="mono" style="font-size:21px; font-weight:600; margin-top:2px;">f(x) = <span id="labFxVal"></span></div>
+      </div>
+
+      <div class="lab-limits">
+        <div class="limit-box" style="--c:var(--left)">
+          <div class="lb-label">좌극한</div>
+          <div class="lb-symbol" id="labLeftSymbol"></div>
+          <div class="lb-value ll-fog" id="labLeftValue">?.??</div>
         </div>
-        <h2 class="card-title">미적분Ⅰ</h2>
-        <p class="card-desc">함수의 극한부터 접선의 방정식까지, 그래프를 직접 움직이며 개념을 확인해요.</p>
-        <div class="card-footer">
-          <span class="card-meta">5개 단원</span>
-          <span class="card-arrow">들어가기 →</span>
+        <div class="limit-box" style="--c:var(--right)">
+          <div class="lb-label">우극한</div>
+          <div class="lb-symbol" id="labRightSymbol"></div>
+          <div class="lb-value ll-fog" id="labRightValue">?.??</div>
         </div>
-      </a>
-    </li>
+      </div>
 
-  </ul>
+      <div id="labVerdict" style="font-size:12.5px; color:var(--inkSoft); padding:0 2px 12px; line-height:1.6;">양쪽에서 모두 a에 충분히 가까워지면 판정 결과가 여기 나타나요.</div>
 
+      <div id="labASelector" style="display:none; margin-bottom:12px;"></div>
+
+      <input type="range" id="labSlider" min="0" max="1" step="0.01">
+
+      <div class="lab-actions">
+        <button id="labBtnLeft" class="act-btn" style="--c:var(--left)">‹‹ 왼쪽에서 접근</button>
+        <button id="labBtnRight" class="act-btn" style="--c:var(--right)">오른쪽에서 접근 ››</button>
+      </div>
+      <button id="labBtnReset" class="act-btn" style="--c:var(--inkSoft); width:100%; margin-top:8px; justify-content:center;">↺ 리셋</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= GAME PAGE ================= -->
+<div id="page-game" class="hidden">
+  <div id="gameHeader" class="game-header">
+    <div class="eyebrow">석산고 미적분 · Interactive Lab</div>
+    <h1 class="title">극한 마스터 챌린지</h1>
+    <p class="desc">그래프 퀴즈와 "타겟 도킹" 조작 라운드가 번갈아 나와요.</p>
+  </div>
+
+  <div id="gameScreenStart" class="card">
+    <div id="gameBestLine" style="text-align:center; margin-bottom:14px; font-size:13.5px; color:var(--inkSoft);"></div>
+    <button class="btn-primary" id="gameBtnStart">게임 시작 (8라운드)</button>
+  </div>
+
+  <div id="gameScreenPlay" class="card hidden">
+    <div class="top-bar">
+      <div class="top-stat">라운드 <b id="gameRoundNum">1</b>/<span id="gameRoundTotal">8</span></div>
+      <div class="top-stat">점수 <b id="gameScoreNum">0</b> <span class="streak-tag" id="gameStreakTag"></span></div>
+      <button class="quit-link" id="gameBtnQuit">그만하기</button>
+    </div>
+    <div class="timerbar-wrap"><div class="timerbar-fill" id="gameTimerFill" style="width:100%; background:var(--success);"></div></div>
+
+    <div class="graph-card">
+      <div class="svg-wrap"><svg id="gameSvg" viewBox="0 0 640 380" preserveAspectRatio="xMidYMid meet"></svg></div>
+      <div class="feedback-overlay" id="gameFeedbackOverlay">
+        <div class="feedback-icon" id="gameFbIcon">✓</div>
+        <div class="feedback-title" id="gameFbTitle"></div>
+        <div class="feedback-sub" id="gameFbSub"></div>
+        <div class="feedback-points" id="gameFbPoints"></div>
+      </div>
+    </div>
+
+    <div id="gameQuizArea">
+      <div class="q-card">
+        <div class="q-eyebrow">Q · 그래프를 보고 답하세요</div>
+        <div class="question-text" id="gameQuestionText"></div>
+      </div>
+      <div class="mcq-grid" id="gameMcqGrid"></div>
+    </div>
+
+    <div id="gameDragArea" class="hidden">
+      <div class="drag-instruction" id="gameDragInstruction"></div>
+      <div class="drag-distance" id="gameDragDistance">|x − a| = —</div>
+      <div class="drag-ready-tag" id="gameDragReadyTag"></div>
+      <button class="confirm-btn" id="gameBtnConfirmDrag">✋ 확정</button>
+    </div>
+  </div>
+
+  <div id="gameScreenEnd" class="card hidden">
+    <div class="lb-title" style="text-align:center;">라운드 종료!</div>
+    <div class="end-score" id="gameFinalScore">0</div>
+    <div class="end-sub" id="gameFinalSummary"></div>
+    <div class="end-sub" id="gameBestCompare" style="font-weight:700; color:var(--gold);"></div>
+    <button class="btn-primary" id="gameBtnPlayAgain">다시 도전하기</button>
+  </div>
+
+  <p class="desc" style="margin-top:16px; text-align:center;">헷갈리면 <a href="#" id="gameLinkToTheory" style="color:var(--ink); font-weight:600;">① 원리 탭</a>에서 복습하세요.</p>
+</div>
+
+</div>
+</div>
+
+<script>
+// ============================================================
+// SHARED UTILITIES (used by Theory / Lab / Game)
+// ============================================================
+const COLORS = {
+  paper:'#EFF3EE', panel:'#FFFFFF', grid:'#D8E2D3',
+  ink:'#223027', inkSoft:'#5C6B60',
+  left:'#C1442D', right:'#2B6CA3', gold:'#C99A2E', success:'#3F7D4C', border:'#D3DAD0',
+};
+function rand(min, max){ return min + Math.random() * (max - min); }
+function randSign(){ return Math.random() < 0.5 ? -1 : 1; }
+function randInt(min, max){ return Math.floor(rand(min, max + 1)); }
+function shuffle(arr){
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+function fmt(v){
+  if (v == null) return '정의되지 않음';
+  if (Math.abs(v) > 60) return v > 0 ? '+∞' : '−∞';
+  const r = Math.round(v);
+  if (Math.abs(v - r) < 0.02) return String(r);
+  return v.toFixed(2);
+}
+function clampDomain(v, preset){ return Math.min(preset.xDomain[1], Math.max(preset.xDomain[0], v)); }
+function findBranch(preset, x, eps){
+  eps = eps || 1e-9;
+  const cands = preset.branches.filter((b) => x >= b.xMin - eps && x <= b.xMax + eps);
+  if (cands.length === 0) return null;
+  if (cands.length === 1) return cands[0];
+  const closed = cands.find((b) => (Math.abs(x - b.xMin) < eps && b.closedMin) || (Math.abs(x - b.xMax) < eps && b.closedMax));
+  return closed || cands[0];
+}
+function fAt(preset, x){
+  const iso = preset.isolated.find((p) => Math.abs(p.x - x) < 1e-9);
+  if (iso) return iso.y;
+  const br = findBranch(preset, x);
+  if (!br) return null;
+  try { const y = br.fn(x); return isFinite(y) ? y : null; } catch (e) { return null; }
+}
+function el(tag, attrs){
+  const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  return e;
+}
+function computeGeo(preset, W, H){
+  W = W || 640; H = H || 420;
+  const plot = { x: 40, y: 16, w: W - 40 - 18, h: H - 16 - 32 };
+  const xmin = preset.xDomain[0], xmax = preset.xDomain[1];
+  const ymin = preset.yDomain[0], ymax = preset.yDomain[1];
+  const sx = (vx) => plot.x + ((vx - xmin) / (xmax - xmin)) * plot.w;
+  const sy = (vy) => plot.y + plot.h - ((vy - ymin) / (ymax - ymin)) * plot.h;
+  return { W, H, plot, xmin, xmax, ymin, ymax, sx, sy };
+}
+function branchPathD(branch, g){
+  const samples = 130; let d = '', down = false;
+  for (let i = 0; i <= samples; i++) {
+    const vx = branch.xMin + ((branch.xMax - branch.xMin) * i) / samples;
+    let vy; try { vy = branch.fn(vx); } catch (e) { vy = null; }
+    if (vy == null || !isFinite(vy) || vy < g.ymin - 1.5 || vy > g.ymax + 1.5) { down = false; continue; }
+    d += (down ? 'L ' : 'M ') + g.sx(vx) + ' ' + g.sy(vy) + ' ';
+    down = true;
+  }
+  return d;
+}
+// Draws grid + curve + breakpoint circles + isolated points + optional a-marker/sideZone into svgEl.
+// Returns {geo, dynG} where dynG is an empty <g> appended last, for the caller's own dynamic content.
+function drawStaticGraph(svgEl, preset, aValue, opts){
+  opts = opts || {};
+  const g = computeGeo(preset, opts.W, opts.H);
+  svgEl.setAttribute('viewBox', `0 0 ${g.W} ${g.H}`);
+  while (svgEl.firstChild) svgEl.removeChild(svgEl.firstChild);
+  const staticG = el('g', {});
+  const dynG = el('g', {});
+
+  if (opts.sideZone) {
+    const z1 = opts.sideZone.side === 'left' ? g.plot.x : g.sx(aValue);
+    const z2 = opts.sideZone.side === 'left' ? g.sx(aValue) : g.plot.x + g.plot.w;
+    staticG.appendChild(el('rect', { x: z1, y: g.plot.y, width: Math.max(0, z2 - z1), height: g.plot.h, fill: COLORS.gold, opacity: 0.1 }));
+    if (!opts.compact) {
+      const arrow = opts.sideZone.side === 'left' ? '←' : '→';
+      const tag = el('text', { x: z1 + (z2 - z1) / 2, y: g.plot.y + 16, 'font-family': 'IBM Plex Sans KR, sans-serif', 'font-size': 12, 'font-weight': 700, fill: COLORS.gold, 'text-anchor': 'middle' });
+      tag.textContent = `${arrow} 이 방향에서 접근`;
+      staticG.appendChild(tag);
+    }
+  }
+
+  if (!opts.compact) {
+    const gridXs = []; for (let gx = Math.ceil(g.xmin); gx <= Math.floor(g.xmax); gx++) gridXs.push(gx);
+    const gridYs = []; for (let gy = Math.ceil(g.ymin); gy <= Math.floor(g.ymax); gy++) gridYs.push(gy);
+    gridXs.forEach((gx) => staticG.appendChild(el('line', { x1: g.sx(gx), y1: g.plot.y, x2: g.sx(gx), y2: g.plot.y + g.plot.h, stroke: COLORS.grid, 'stroke-width': gx === 0 ? 1.6 : 1 })));
+    gridYs.forEach((gy) => staticG.appendChild(el('line', { x1: g.plot.x, y1: g.sy(gy), x2: g.plot.x + g.plot.w, y2: g.sy(gy), stroke: COLORS.grid, 'stroke-width': gy === 0 ? 1.6 : 1 })));
+    gridXs.filter((v) => v !== 0).forEach((gx) => { const t = el('text', { x: g.sx(gx), y: g.plot.y + g.plot.h + 16, 'font-family': 'IBM Plex Mono, monospace', 'font-size': 11, fill: COLORS.inkSoft, 'text-anchor': 'middle' }); t.textContent = gx; staticG.appendChild(t); });
+    gridYs.filter((v) => v !== 0).forEach((gy) => { const t = el('text', { x: g.plot.x - 8, y: g.sy(gy) + 4, 'font-family': 'IBM Plex Mono, monospace', 'font-size': 11, fill: COLORS.inkSoft, 'text-anchor': 'end' }); t.textContent = gy; staticG.appendChild(t); });
+    staticG.appendChild(el('line', { x1: g.sx(aValue), y1: g.plot.y, x2: g.sx(aValue), y2: g.plot.y + g.plot.h, stroke: COLORS.gold, 'stroke-width': 1.4, 'stroke-dasharray': '3 4' }));
+    const aLabel = el('text', { x: g.sx(aValue), y: g.plot.y + g.plot.h + 30, 'font-family': 'IBM Plex Mono, monospace', 'font-size': 12, 'font-weight': 600, fill: COLORS.gold, 'text-anchor': 'middle' });
+    aLabel.textContent = `a=${aValue}`; staticG.appendChild(aLabel);
+  } else {
+    staticG.appendChild(el('line', { x1: g.sx(aValue), y1: g.plot.y, x2: g.sx(aValue), y2: g.plot.y + g.plot.h, stroke: COLORS.gold, 'stroke-width': 1.4, 'stroke-dasharray': '3 4' }));
+  }
+
+  preset.branches.forEach((b) => staticG.appendChild(el('path', { d: branchPathD(b, g), fill: 'none', stroke: COLORS.ink, 'stroke-width': 2.4, 'stroke-linecap': 'round' })));
+
+  const internalBreaks = preset.branches.slice(0, -1).map((b) => b.xMax);
+  internalBreaks.forEach((bx, i) => {
+    const bLeft = preset.branches[i], bRight = preset.branches[i + 1];
+    let yL, yR;
+    try { yL = bLeft.fn(bx); } catch (e) { yL = null; }
+    try { yR = bRight.fn(bx); } catch (e) { yR = null; }
+    const validL = yL != null && isFinite(yL) && yL >= g.ymin - 0.5 && yL <= g.ymax + 0.5;
+    const validR = yR != null && isFinite(yR) && yR >= g.ymin - 0.5 && yR <= g.ymax + 0.5;
+    const bothSamePoint = validL && validR && Math.abs(yL - yR) < 0.05;
+    if (bothSamePoint) {
+      const closedHere = bLeft.closedMax || bRight.closedMin;
+      staticG.appendChild(el('circle', { cx: g.sx(bx), cy: g.sy(yL), r: opts.compact ? 3.2 : 4.5, fill: closedHere ? COLORS.ink : COLORS.panel, stroke: COLORS.ink, 'stroke-width': 2 }));
+    } else {
+      if (validL) staticG.appendChild(el('circle', { cx: g.sx(bx), cy: g.sy(yL), r: opts.compact ? 3.2 : 4.5, fill: bLeft.closedMax ? COLORS.ink : COLORS.panel, stroke: COLORS.ink, 'stroke-width': 2 }));
+      if (validR) staticG.appendChild(el('circle', { cx: g.sx(bx), cy: g.sy(yR), r: opts.compact ? 3.2 : 4.5, fill: bRight.closedMin ? COLORS.ink : COLORS.panel, stroke: COLORS.ink, 'stroke-width': 2 }));
+    }
+  });
+  preset.isolated.forEach((p) => staticG.appendChild(el('circle', { cx: g.sx(p.x), cy: g.sy(p.y), r: opts.compact ? 3.5 : 5, fill: COLORS.gold, stroke: COLORS.ink, 'stroke-width': 1.5 })));
+
+  svgEl.appendChild(staticG);
+  svgEl.appendChild(dynG);
+  return { geo: g, dynG };
+}
+
+// ============================================================
+// PRESET DATA
+// ============================================================
+const LAB_PRESETS = [
+  {
+    id: 'jump', label: '① 좌우극한이 다른 경우', subtitle: '두 조각이 서로 다른 높이에서 만난다',
+    xDomain: [-3, 4], yDomain: [-1.5, 4.5], aOptions: [1],
+    branches: [
+      { xMin: -3, xMax: 1, closedMin: true, closedMax: false, fn: (x) => -0.5 * x * x + x + 1 },
+      { xMin: 1, xMax: 4, closedMin: true, closedMax: true, fn: (x) => -x + 3 },
+    ],
+    isolated: [],
+  },
+  {
+    id: 'hole', label: '② 구멍이 있는 경우', subtitle: '선을 따라가면 매끄럽지만 한 점만 비어있다',
+    xDomain: [-2, 5], yDomain: [-1, 6], aOptions: [2],
+    branches: [
+      { xMin: -2, xMax: 2, closedMin: true, closedMax: false, fn: (x) => x + 1 },
+      { xMin: 2, xMax: 5, closedMin: false, closedMax: true, fn: (x) => x + 1 },
+    ],
+    isolated: [{ x: 2, y: 1 }],
+  },
+  {
+    id: 'zigzag', label: '③ 여러 지점에서 극한 관찰', subtitle: '구간마다 다른 식, 극한이 없는 지점도 있다',
+    xDomain: [-4, 4], yDomain: [-2.5, 4], aOptions: [-1, 1, 2],
+    branches: [
+      { xMin: -4, xMax: -1, closedMin: true, closedMax: false, fn: (x) => 0.4 * x * x + 1.2 * x - 0.4 },
+      { xMin: -1, xMax: 1, closedMin: true, closedMax: false, fn: (x) => -0.8 * x + 1.5 },
+      { xMin: 1, xMax: 2, closedMin: true, closedMax: false, fn: (x) => 1.5 * (x - 1) * (x - 1) - 0.5 },
+      { xMin: 2, xMax: 4, closedMin: true, closedMax: true, fn: (x) => 0.7 * x - 0.4 },
+    ],
+    isolated: [],
+  },
+  {
+    id: 'asymptote', label: '④ 발산(점근선)', subtitle: '한쪽은 +∞, 다른 쪽은 −∞로 치닫는다',
+    xDomain: [-3, 5], yDomain: [-6, 6], aOptions: [1],
+    branches: [
+      { xMin: -3, xMax: 1, closedMin: true, closedMax: false, fn: (x) => 1 / (x - 1) + 0.5 },
+      { xMin: 1, xMax: 5, closedMin: false, closedMax: true, fn: (x) => 1 / (x - 1) + 0.5 },
+    ],
+    isolated: [],
+  },
+];
+
+function nextTargetVal(prevVal, lo, hi){
+  const v = Math.random() < 0.35 ? prevVal : prevVal + randSign() * randInt(1, 2);
+  return Math.max(lo, Math.min(hi, v));
+}
+const GAME_PRESETS = [
+  {
+    id: 'jump', xDomain: [-3, 4], yDomain: [-1.5, 4.5], aOptions: [1],
+    build(){
+      const L = randInt(0, 3);
+      const p = rand(0.6, 1.3), q = rand(0.15, 0.35);
+      const leftFn = (x) => L + p * (x - 1) - q * (x - 1) * (x - 1);
+      const R = nextTargetVal(L, -1, 5);
+      const slope = -1 * rand(0.7, 1.3);
+      const rightFn = (x) => R + slope * (x - 1);
+      return { branches: [
+        { xMin: -3, xMax: 1, closedMin: true, closedMax: false, fn: leftFn },
+        { xMin: 1, xMax: 4, closedMin: true, closedMax: true, fn: rightFn },
+      ], isolated: [] };
+    },
+  },
+  {
+    id: 'hole', xDomain: [-2, 5], yDomain: [-1, 6], aOptions: [2],
+    build(){
+      const V = randInt(1, 4);
+      const slope = randSign() * rand(0.7, 1.3);
+      const lineFn = (x) => V + slope * (x - 2);
+      const matches = Math.random() < 0.3;
+      const isoY = matches ? V : nextTargetVal(V, 0, 6);
+      return { branches: [
+        { xMin: -2, xMax: 2, closedMin: true, closedMax: false, fn: lineFn },
+        { xMin: 2, xMax: 5, closedMin: false, closedMax: true, fn: lineFn },
+      ], isolated: [{ x: 2, y: isoY }] };
+    },
+  },
+  {
+    id: 'zigzag', xDomain: [-4, 4], yDomain: [-2.5, 4], aOptions: [-1, 1, 2],
+    build(){
+      const V1 = randInt(-1, 2);
+      const p1 = rand(0.5, 1.1), q1 = rand(0.15, 0.3);
+      const b1fn = (x) => V1 + p1 * (x + 1) - q1 * (x + 1) * (x + 1);
+      const V2 = nextTargetVal(V1, -2, 3);
+      const V2b = nextTargetVal(V2, -2, 3);
+      const m2 = (V2b - V2) / 2, k2 = rand(-0.3, 0.3);
+      const b2fn = (x) => V2 + m2 * (x + 1) + k2 * (x + 1) * (x - 1);
+      const V3 = nextTargetVal(V2b, -2, 3);
+      const V3b = nextTargetVal(V3, -2, 3);
+      const m3 = V3b - V3, k3 = rand(-0.4, 0.4);
+      const b3fn = (x) => V3 + m3 * (x - 1) + k3 * (x - 1) * (x - 2);
+      const V4 = nextTargetVal(V3b, -2, 3);
+      const slope4 = rand(0.5, 1.1);
+      const b4fn = (x) => V4 + slope4 * (x - 2);
+      return { branches: [
+        { xMin: -4, xMax: -1, closedMin: true, closedMax: false, fn: b1fn },
+        { xMin: -1, xMax: 1, closedMin: true, closedMax: false, fn: b2fn },
+        { xMin: 1, xMax: 2, closedMin: true, closedMax: false, fn: b3fn },
+        { xMin: 2, xMax: 4, closedMin: true, closedMax: true, fn: b4fn },
+      ], isolated: [] };
+    },
+  },
+  {
+    id: 'asymptote', xDomain: [-3, 5], yDomain: [-6, 6], aOptions: [1],
+    build(){
+      const k = rand(0.6, 1.6), sign = randSign(), shift = randInt(-1, 1);
+      const fn = (x) => (sign * k) / (x - 1) + shift;
+      return { branches: [
+        { xMin: -3, xMax: 1, closedMin: true, closedMax: false, fn },
+        { xMin: 1, xMax: 5, closedMin: false, closedMax: true, fn },
+      ], isolated: [] };
+    },
+  },
+];
+
+// ============================================================
+// TAB CONTROLLER
+// ============================================================
+function showTab(name){
+  ['theory', 'lab', 'game'].forEach((n) => {
+    document.getElementById('page-' + n).classList.toggle('hidden', n !== name);
+    document.querySelector(`.tab-btn[data-tab="${n}"]`).classList.toggle('active', n === name);
+  });
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll('.tab-btn').forEach((btn) => {
+  btn.addEventListener('click', () => showTab(btn.dataset.tab));
+});
+
+// ============================================================
+// LAB APP
+// ============================================================
+const LabApp = (function(){
+  let presetId = 'jump', aValue = 1, x = 0;
+  let revealed = { left: false, right: false };
+  let leftTrail = [], rightTrail = [];
+  let animating = null, rafId = null;
+  let geo = {}, dynG = null;
+
+  function getPreset(){ return LAB_PRESETS.find((p) => p.id === presetId); }
+
+  function resetAll(){
+    cancelAnimationFrame(rafId); animating = null;
+    const preset = getPreset();
+    const span = preset.xDomain[1] - preset.xDomain[0];
+    x = clampDomain(aValue - span * 0.32, preset);
+    revealed = { left: false, right: false };
+    leftTrail = []; rightTrail = [];
+    renderStatic();
+    renderDynamic();
+    const slider = document.getElementById('labSlider');
+    slider.min = preset.xDomain[0]; slider.max = preset.xDomain[1]; slider.step = 0.01;
+  }
+
+  function renderStatic(){
+    const preset = getPreset();
+    const svg = document.getElementById('labSvg');
+    const result = drawStaticGraph(svg, preset, aValue, {});
+    geo = result.geo; dynG = result.dynG;
+  }
+
+  function applyX(newX){
+    const preset = getPreset();
+    let v = clampDomain(newX, preset);
+    if (Math.abs(v - aValue) < 0.012) v = clampDomain(v < aValue ? aValue - 0.012 : aValue + 0.012, preset);
+    x = v;
+    const y = fAt(preset, v);
+    if (y != null) {
+      const cy = Math.max(preset.yDomain[0] - 1, Math.min(preset.yDomain[1] + 1, y));
+      if (v < aValue) { leftTrail.push({ x: v, y: cy }); if (leftTrail.length > 34) leftTrail.shift(); }
+      else { rightTrail.push({ x: v, y: cy }); if (rightTrail.length > 34) rightTrail.shift(); }
+    }
+    if (Math.abs(v - aValue) < 0.07) {
+      if (v < aValue) revealed.left = true; else revealed.right = true;
+    }
+    renderDynamic();
+  }
+
+  function renderDynamic(){
+    const preset = getPreset();
+    const y = fAt(preset, x);
+    const sideColor = x < aValue ? COLORS.left : COLORS.right;
+    document.getElementById('labXVal').textContent = x.toFixed(3);
+    document.getElementById('labXVal').style.color = sideColor;
+    document.getElementById('labFxVal').textContent = fmt(y);
+    document.getElementById('labFxVal').style.color = sideColor;
+    document.getElementById('labSlider').value = x;
+
+    const limitLeftVal = fAt(preset, aValue - 0.001);
+    const limitRightVal = fAt(preset, aValue + 0.001);
+    const leftEl = document.getElementById('labLeftValue'), rightEl = document.getElementById('labRightValue');
+    leftEl.textContent = revealed.left ? fmt(limitLeftVal) : '?.??';
+    leftEl.className = 'lb-value ' + (revealed.left ? 'll-clear' : 'll-fog');
+    rightEl.textContent = revealed.right ? fmt(limitRightVal) : '?.??';
+    rightEl.className = 'lb-value ' + (revealed.right ? 'll-clear' : 'll-fog');
+    document.getElementById('labLeftSymbol').textContent = `x→${aValue}⁻`;
+    document.getElementById('labRightSymbol').textContent = `x→${aValue}⁺`;
+
+    const verdictEl = document.getElementById('labVerdict');
+    if (revealed.left && revealed.right) {
+      const bothFinite = limitLeftVal != null && Math.abs(limitLeftVal) <= 60 && limitRightVal != null && Math.abs(limitRightVal) <= 60;
+      const limitsEqual = bothFinite && Math.abs(limitLeftVal - limitRightVal) < 0.05;
+      const eitherInfinite = (limitLeftVal != null && Math.abs(limitLeftVal) > 60) || (limitRightVal != null && Math.abs(limitRightVal) > 60);
+      const faVal = fAt(preset, aValue);
+      let title, sub, cls;
+      if (limitsEqual) {
+        cls = 'ok'; title = `극한이 존재합니다 (= ${fmt(limitLeftVal)})`;
+        sub = faVal == null ? `f(${aValue})는 정의되어 있지 않아요. 극한값은 있지만, 그 점에는 실제로 찍힌 값이 없어요.`
+          : Math.abs(faVal - limitLeftVal) < 0.05 ? `f(${aValue}) = ${fmt(faVal)}로 극한값과 같아요. 그래프가 이 점에서 자연스럽게 이어져요.`
+          : `f(${aValue}) = ${fmt(faVal)}로 극한값과 달라요. 그 점만 다른 위치에 따로 찍혀 있는 거예요.`;
+      } else {
+        cls = 'bad'; title = eitherInfinite ? '극한이 존재하지 않습니다 (발산)' : '극한이 존재하지 않습니다 (좌≠우)';
+        sub = '좌극한과 우극한이 서로 다르면, x=a에서 극한은 존재하지 않아요.';
+      }
+      verdictEl.className = 'verdict ' + cls;
+      verdictEl.innerHTML = `<div style="font-weight:700; font-size:13.5px; color:${cls === 'ok' ? COLORS.success : COLORS.left}">${title}</div><div style="font-size:12px; color:var(--inkSoft); margin-top:5px; line-height:1.6;">${sub}</div>`;
+    } else {
+      verdictEl.className = '';
+      verdictEl.setAttribute('style', 'font-size:12.5px; color:var(--inkSoft); padding:0 2px 12px; line-height:1.6;');
+      verdictEl.textContent = '양쪽에서 모두 a에 충분히 가까워지면 판정 결과가 여기 나타나요.';
+    }
+
+    if (dynG) {
+      while (dynG.firstChild) dynG.removeChild(dynG.firstChild);
+      leftTrail.forEach((t, i) => dynG.appendChild(el('circle', { cx: geo.sx(t.x), cy: geo.sy(t.y), r: 2.6, fill: COLORS.left, opacity: 0.12 + (0.6 * i) / Math.max(1, leftTrail.length) })));
+      rightTrail.forEach((t, i) => dynG.appendChild(el('circle', { cx: geo.sx(t.x), cy: geo.sy(t.y), r: 2.6, fill: COLORS.right, opacity: 0.12 + (0.6 * i) / Math.max(1, rightTrail.length) })));
+      if (y != null) {
+        const cy = Math.max(geo.ymin - 0.4, Math.min(geo.ymax + 0.4, y));
+        dynG.appendChild(el('line', { x1: geo.sx(x), y1: geo.sy(cy), x2: geo.sx(x), y2: geo.plot.y + geo.plot.h, stroke: sideColor, 'stroke-width': 1, 'stroke-dasharray': '2 3', opacity: 0.7 }));
+        dynG.appendChild(el('line', { x1: geo.plot.x, y1: geo.sy(cy), x2: geo.sx(x), y2: geo.sy(cy), stroke: sideColor, 'stroke-width': 1, 'stroke-dasharray': '2 3', opacity: 0.7 }));
+        dynG.appendChild(el('circle', { cx: geo.sx(x), cy: geo.sy(cy), r: 6.5, fill: sideColor, stroke: COLORS.panel, 'stroke-width': 2 }));
+      }
+    }
+  }
+
+  function stopAnimation(){ cancelAnimationFrame(rafId); animating = null; }
+  function animateFrom(side){
+    stopAnimation();
+    const preset = getPreset();
+    const span = preset.xDomain[1] - preset.xDomain[0];
+    let cur = side === 'left' ? clampDomain(aValue - span * 0.4, preset) : clampDomain(aValue + span * 0.4, preset);
+    applyX(cur);
+    function step(){
+      const diff = aValue - x;
+      if (Math.abs(diff) < 0.012) { applyX(aValue + (side === 'left' ? -0.012 : 0.012)); animating = null; return; }
+      applyX(x + diff * 0.055);
+      rafId = requestAnimationFrame(step);
+    }
+    rafId = requestAnimationFrame(step);
+  }
+
+  function renderChips(){
+    const container = document.getElementById('labChips');
+    container.innerHTML = '';
+    LAB_PRESETS.forEach((p) => {
+      const btn = document.createElement('button');
+      btn.className = 'chip' + (p.id === presetId ? ' active' : '');
+      btn.textContent = p.label;
+      btn.onclick = () => { presetId = p.id; aValue = p.aOptions[0]; renderChips(); renderASelector(); document.getElementById('labSubtitle').textContent = p.subtitle; resetAll(); };
+      container.appendChild(btn);
+    });
+  }
+  function renderASelector(){
+    const preset = getPreset();
+    const wrap = document.getElementById('labASelector');
+    if (preset.aOptions.length <= 1) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
+    wrap.style.display = 'block';
+    wrap.innerHTML = '<div style="font-size:12px; color:var(--inkSoft); margin-bottom:6px;">관찰할 지점 a 선택</div>';
+    const row = document.createElement('div');
+    preset.aOptions.forEach((a) => {
+      const btn = document.createElement('button');
+      btn.className = 'a-btn' + (a === aValue ? ' active' : '');
+      btn.textContent = `a = ${a}`;
+      btn.onclick = () => { aValue = a; renderASelector(); resetAll(); };
+      row.appendChild(btn);
+    });
+    wrap.appendChild(row);
+  }
+
+  function wireDrag(){
+    const svgEl = document.getElementById('labSvg');
+    let dragging = false;
+    function clientXOf(e){ if (e.touches && e.touches[0]) return e.touches[0].clientX; if (e.changedTouches && e.changedTouches[0]) return e.changedTouches[0].clientX; return e.clientX; }
+    function moveFromClientX(clientX){
+      const rect = svgEl.getBoundingClientRect();
+      const px = ((clientX - rect.left) / rect.width) * geo.W;
+      applyX(geo.xmin + ((px - geo.plot.x) / geo.plot.w) * (geo.xmax - geo.xmin));
+    }
+    function startDrag(e){ stopAnimation(); dragging = true; moveFromClientX(clientXOf(e)); }
+    function moveDrag(e){ if (!dragging) return; if (e.cancelable) e.preventDefault(); moveFromClientX(clientXOf(e)); }
+    function endDrag(){ dragging = false; }
+    svgEl.addEventListener('mousedown', startDrag);
+    svgEl.addEventListener('mousemove', moveDrag);
+    window.addEventListener('mouseup', endDrag);
+    svgEl.addEventListener('touchstart', startDrag, { passive: true });
+    svgEl.addEventListener('touchmove', moveDrag, { passive: false });
+    svgEl.addEventListener('touchend', endDrag);
+  }
+
+  function init(){
+    document.getElementById('labSubtitle').textContent = getPreset().subtitle;
+    renderChips();
+    renderASelector();
+    wireDrag();
+    document.getElementById('labSlider').addEventListener('input', (e) => { stopAnimation(); applyX(parseFloat(e.target.value)); });
+    document.getElementById('labBtnLeft').addEventListener('click', () => animateFrom('left'));
+    document.getElementById('labBtnRight').addEventListener('click', () => animateFrom('right'));
+    document.getElementById('labBtnReset').addEventListener('click', () => { stopAnimation(); resetAll(); });
+    resetAll();
+  }
+
+  function selectPreset(id){
+    const preset = LAB_PRESETS.find((p) => p.id === id);
+    if (!preset) return;
+    presetId = id; aValue = preset.aOptions[0];
+    renderChips(); renderASelector();
+    document.getElementById('labSubtitle').textContent = preset.subtitle;
+    resetAll();
+  }
+
+  return { init, selectPreset };
+})();
+
+// ============================================================
+// GAME APP
+// ============================================================
+const GameApp = (function(){
+  const COMBOS = [];
+  GAME_PRESETS.forEach((p) => p.aOptions.forEach((a) => COMBOS.push({ presetId: p.id, aValue: a })));
+  const ROUND_COUNT = 8, QUIZ_TIME = 15000, DRAG_TIME = 14000, DRAG_STRICT = 0.07, DRAG_PARTIAL = 0.25;
+
+  function getPresetById(id){ return GAME_PRESETS.find((p) => p.id === id); }
+
+  const state = { rounds: [], roundIndex: 0, score: 0, streak: 0, correctCount: 0, timerRaf: null, roundLocked: false, dragX: 0, currentGeo: null, dynG: null, screen: 'start' };
+  let lastKnownRatio = 1;
+
+  function showScreen(name){
+    ['start', 'play', 'end'].forEach((s) => document.getElementById('gameScreen' + s.charAt(0).toUpperCase() + s.slice(1)).classList.toggle('hidden', s !== name));
+    document.getElementById('gameHeader').classList.toggle('hidden', name === 'play');
+    if (name === 'start') renderBestLine();
+    state.screen = name;
+  }
+
+  function loadBest(){
+    try { const raw = localStorage.getItem('limit_game_best'); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+  }
+  function saveBest(entry){
+    try { localStorage.setItem('limit_game_best', JSON.stringify(entry)); } catch (e) {}
+  }
+  function renderBestLine(){
+    const best = loadBest();
+    const lineEl = document.getElementById('gameBestLine');
+    lineEl.textContent = best ? `🏆 내 최고 기록: ${best.score}점 (${best.correct}/${best.total} 성공)` : '이 기기에 첫 도전 기록이 저장돼요. 시작해볼까요?';
+  }
+
+  let comboBag = [];
+  function nextCombo(){
+    if (comboBag.length === 0) {
+      let fresh = shuffle(COMBOS.slice());
+      if (comboBag._last && fresh.length > 1 && fresh[fresh.length - 1].presetId === comboBag._last.presetId && fresh[fresh.length - 1].aValue === comboBag._last.aValue) {
+        const t = fresh[fresh.length - 1]; fresh[fresh.length - 1] = fresh[fresh.length - 2]; fresh[fresh.length - 2] = t;
+      }
+      comboBag = fresh;
+    }
+    const combo = comboBag.pop(); comboBag._last = combo; return combo;
+  }
+  function generateRounds(n){
+    const rounds = [];
+    for (let i = 0; i < n; i++) {
+      const combo = nextCombo();
+      const preset = getPresetById(combo.presetId);
+      const built = preset.build();
+      const presetInstance = { xDomain: preset.xDomain, yDomain: preset.yDomain, branches: built.branches, isolated: built.isolated };
+      const side = Math.random() < 0.5 ? 'left' : 'right';
+      if (i % 2 === 0) {
+        const qtype = Math.random() < 0.5 ? 'exist' : 'value';
+        rounds.push({ type: 'quiz', qtype, side, aValue: combo.aValue, presetInstance });
+      } else {
+        rounds.push({ type: 'drag', side, aValue: combo.aValue, presetInstance });
+      }
+    }
+    return rounds;
+  }
+
+  function startRoundTimer(durationMs, onTick, onTimeout){
+    const start = performance.now();
+    function tick(now){
+      const elapsed = now - start, remaining = Math.max(0, durationMs - elapsed);
+      onTick(remaining / durationMs, remaining);
+      if (remaining <= 0) { onTimeout(); return; }
+      state.timerRaf = requestAnimationFrame(tick);
+    }
+    state.timerRaf = requestAnimationFrame(tick);
+  }
+  function stopRoundTimer(){ cancelAnimationFrame(state.timerRaf); }
+  function updateTimerBar(ratio){
+    const fill = document.getElementById('gameTimerFill');
+    fill.style.width = (ratio * 100) + '%';
+    fill.style.backgroundColor = ratio > 0.5 ? COLORS.success : ratio > 0.2 ? COLORS.gold : COLORS.left;
+  }
+  function updateHud(){
+    document.getElementById('gameRoundNum').textContent = state.roundIndex + 1;
+    document.getElementById('gameRoundTotal').textContent = state.rounds.length;
+    document.getElementById('gameScoreNum').textContent = state.score;
+    document.getElementById('gameStreakTag').textContent = state.streak >= 2 ? `🔥×${state.streak}` : '';
+  }
+
+  function buildValueOptions(correctVal){
+    const correctStr = fmt(correctVal);
+    const base = correctVal == null ? 0 : correctVal;
+    const candidates = correctVal == null ? [0, 1, -1, 2, -2, 3] : [base + 1, base - 1, base + 2, base - 2, -base, base + 3, base - 3];
+    const seen = new Set([correctStr]); const opts = [correctStr];
+    for (const c of candidates) { const s = fmt(c); if (!seen.has(s)) { seen.add(s); opts.push(s); } if (opts.length >= 4) break; }
+    let guard = 0;
+    while (opts.length < 4 && guard < 20) { guard++; const s = fmt(base + Math.round(Math.random() * 5 + 1) * (Math.random() < 0.5 ? 1 : -1)); if (!seen.has(s)) { seen.add(s); opts.push(s); } }
+    const shuffled = shuffle(opts);
+    return { options: shuffled, correctIndex: shuffled.indexOf(correctStr) };
+  }
+  function buildExistOptions(L, R){
+    const bothFinite = L != null && Math.abs(L) <= 60 && R != null && Math.abs(R) <= 60;
+    const eq = bothFinite && Math.abs(L - R) < 0.05;
+    const inf = (L != null && Math.abs(L) > 60) || (R != null && Math.abs(R) > 60);
+    const optExists = eq ? `존재한다 (lim = ${fmt(L)})` : '존재한다';
+    const optNotEqual = '존재하지 않는다 (좌극한 ≠ 우극한)';
+    const optDiverge = '발산한다 (무한대)';
+    const correctOption = eq ? optExists : (inf ? optDiverge : optNotEqual);
+    const shuffled = shuffle([optExists, optNotEqual, optDiverge]);
+    return { options: shuffled, correctIndex: shuffled.indexOf(correctOption) };
+  }
+
+  function renderQuizRound(round){
+    document.getElementById('gameQuizArea').classList.remove('hidden');
+    document.getElementById('gameDragArea').classList.add('hidden');
+    const preset = round.presetInstance;
+    const svg = document.getElementById('gameSvg');
+    const result = drawStaticGraph(svg, preset, round.aValue, { W: 640, H: 380 });
+    state.currentGeo = result.geo; state.dynG = result.dynG;
+
+    const L = fAt(preset, round.aValue - 0.001), R = fAt(preset, round.aValue + 0.001);
+    let optionData, questionText;
+    if (round.qtype === 'exist') {
+      optionData = buildExistOptions(L, R);
+      questionText = `x = ${round.aValue} 에서 극한이 존재하는가?`;
+    } else {
+      const correctVal = round.side === 'left' ? L : R;
+      optionData = buildValueOptions(correctVal);
+      questionText = `lim f(x), x → ${round.aValue}${round.side === 'left' ? '⁻' : '⁺'} 의 값은?`;
+    }
+    round._optionData = optionData; round._L = L; round._R = R;
+    document.getElementById('gameQuestionText').textContent = questionText;
+    const grid = document.getElementById('gameMcqGrid');
+    grid.innerHTML = '';
+    optionData.options.forEach((label, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'mcq-btn'; btn.textContent = label;
+      btn.onclick = () => selectQuizAnswer(round, idx);
+      grid.appendChild(btn);
+    });
+    startRoundTimer(QUIZ_TIME, (ratio) => { updateTimerBar(ratio); lastKnownRatio = ratio; }, () => { if (!state.roundLocked) evaluateQuiz(round, -1, 0); });
+  }
+  function selectQuizAnswer(round, idx){ if (state.roundLocked) return; stopRoundTimer(); evaluateQuiz(round, idx, lastKnownRatio); }
+  function evaluateQuiz(round, chosenIdx, remainingRatio){
+    state.roundLocked = true;
+    document.querySelectorAll('#gameMcqGrid .mcq-btn').forEach((b, i) => {
+      b.disabled = true;
+      if (i === round._optionData.correctIndex) b.classList.add('correct');
+      else if (i === chosenIdx) b.classList.add('wrong');
+    });
+    const isCorrect = chosenIdx === round._optionData.correctIndex;
+    let points = 0;
+    if (isCorrect) {
+      points = 80 + Math.round(Math.max(0, remainingRatio) * 80) + Math.min(state.streak * 8, 40);
+      state.streak += 1; state.correctCount += 1;
+    } else state.streak = 0;
+    state.score += points; updateHud();
+    showFeedback(isCorrect, isCorrect ? '정답이에요!' : '아쉬워요!', `좌극한 = ${fmt(round._L)} · 우극한 = ${fmt(round._R)}`, points);
+  }
+
+  function renderDragRound(round){
+    document.getElementById('gameQuizArea').classList.add('hidden');
+    document.getElementById('gameDragArea').classList.remove('hidden');
+    const preset = round.presetInstance;
+    const svg = document.getElementById('gameSvg');
+    const result = drawStaticGraph(svg, preset, round.aValue, { W: 640, H: 380, sideZone: { side: round.side } });
+    state.currentGeo = result.geo; state.dynG = result.dynG;
+    const span = preset.xDomain[1] - preset.xDomain[0];
+    const dir = Math.random() < 0.5 ? -1 : 1;
+    state.dragX = clampDomain(round.aValue + dir * span * 0.35, preset);
+    document.getElementById('gameDragInstruction').textContent = `x를 a = ${round.aValue} 의 ${round.side === 'left' ? '왼쪽(좌극한)' : '오른쪽(우극한)'}에서 최대한 가깝게 접근시키세요!`;
+    drawDragPoint(round); updateDragReadout(round);
+    startRoundTimer(DRAG_TIME, (ratio) => { updateTimerBar(ratio); lastKnownRatio = ratio; }, () => { if (!state.roundLocked) finishDragRound(round, 0); });
+  }
+  function drawDragPoint(round){
+    const g = state.currentGeo, dyn = state.dynG;
+    if (!dyn) return;
+    while (dyn.firstChild) dyn.removeChild(dyn.firstChild);
+    const correctSide = round.side === 'left' ? state.dragX < round.aValue : state.dragX > round.aValue;
+    const dx = Math.abs(state.dragX - round.aValue);
+    const ready = correctSide && dx < DRAG_STRICT;
+    const color = ready ? COLORS.success : (correctSide ? COLORS.gold : COLORS.left);
+    const cyPix = g.plot.y + g.plot.h / 2;
+    dyn.appendChild(el('line', { x1: g.sx(state.dragX), y1: g.plot.y, x2: g.sx(state.dragX), y2: g.plot.y + g.plot.h, stroke: color, 'stroke-width': 1.4, 'stroke-dasharray': '2 3', opacity: 0.8 }));
+    dyn.appendChild(el('circle', { cx: g.sx(state.dragX), cy: cyPix, r: 7, fill: color, stroke: COLORS.panel, 'stroke-width': 2 }));
+  }
+  function updateDragReadout(round){
+    const dx = Math.abs(state.dragX - round.aValue);
+    const correctSide = round.side === 'left' ? state.dragX < round.aValue : state.dragX > round.aValue;
+    const ready = correctSide && dx < DRAG_STRICT;
+    const distEl = document.getElementById('gameDragDistance');
+    distEl.textContent = `|x − a| = ${dx.toFixed(3)}`;
+    distEl.className = 'drag-distance' + (ready ? ' close' : '');
+    const tagEl = document.getElementById('gameDragReadyTag');
+    tagEl.textContent = ready ? '✅ 지금 확정하면 성공!' : correctSide ? '조금 더 가까이!' : `❌ 반대 방향이에요 — ${round.side === 'left' ? '왼쪽' : '오른쪽'}에서 접근해야 해요`;
+    tagEl.className = 'drag-ready-tag' + (ready ? ' close' : (correctSide ? '' : ' wrong'));
+  }
+  function onDragMove(round, newX){
+    if (state.roundLocked || state.screen !== 'play') return;
+    const preset = round.presetInstance;
+    state.dragX = clampDomain(newX, preset);
+    drawDragPoint(round); updateDragReadout(round);
+  }
+  function finishDragRound(round, remainingRatio){
+    state.roundLocked = true; stopRoundTimer();
+    const dx = Math.abs(state.dragX - round.aValue);
+    const correctSide = round.side === 'left' ? state.dragX < round.aValue : state.dragX > round.aValue;
+    let tier = 'fail', points = 0;
+    if (correctSide && dx < DRAG_STRICT) { tier = 'perfect'; points = 90 + Math.round(Math.max(0, remainingRatio) * 90) + Math.min(state.streak * 8, 40); state.streak += 1; state.correctCount += 1; }
+    else if (correctSide && dx < DRAG_PARTIAL) { tier = 'partial'; points = 35; state.streak = 0; }
+    else state.streak = 0;
+    state.score += points; updateHud();
+    const preset = round.presetInstance;
+    const L = fAt(preset, round.aValue - 0.001), R = fAt(preset, round.aValue + 0.001);
+    const titleMap = { perfect: '완벽해요!', partial: '아깝다, 조금 더!', fail: '실패했어요' };
+    showFeedback(tier !== 'fail', titleMap[tier], `최종 거리 |x−a| = ${dx.toFixed(3)} · 좌극한 = ${fmt(L)} · 우극한 = ${fmt(R)}`, points);
+  }
+
+  function showFeedback(isCorrect, title, sub, points){
+    const overlay = document.getElementById('gameFeedbackOverlay');
+    document.getElementById('gameFbIcon').textContent = isCorrect ? '✓' : '✕';
+    document.getElementById('gameFbIcon').style.color = isCorrect ? COLORS.success : COLORS.left;
+    document.getElementById('gameFbTitle').textContent = title;
+    document.getElementById('gameFbTitle').style.color = isCorrect ? COLORS.success : COLORS.left;
+    document.getElementById('gameFbSub').textContent = sub;
+    document.getElementById('gameFbPoints').textContent = points > 0 ? `+${points}점` : '+0점';
+    overlay.classList.add('show');
+    setTimeout(() => { overlay.classList.remove('show'); nextRound(); }, 1500);
+  }
+  function nextRound(){
+    state.roundIndex += 1;
+    if (state.roundIndex >= state.rounds.length) { endGame(); return; }
+    state.roundLocked = false; updateHud();
+    const round = state.rounds[state.roundIndex];
+    if (round.type === 'quiz') renderQuizRound(round); else renderDragRound(round);
+  }
+
+  async function startGame(){
+    state.rounds = generateRounds(ROUND_COUNT);
+    state.roundIndex = 0; state.score = 0; state.streak = 0; state.correctCount = 0; state.roundLocked = false;
+    showScreen('play'); updateHud();
+    const round = state.rounds[0];
+    if (round.type === 'quiz') renderQuizRound(round); else renderDragRound(round);
+  }
+  function endGame(){
+    stopRoundTimer(); showScreen('end');
+    document.getElementById('gameFinalScore').textContent = state.score;
+    document.getElementById('gameFinalSummary').textContent = `${state.correctCount}/${state.rounds.length} 성공`;
+    const best = loadBest();
+    const isNewBest = !best || state.score > best.score;
+    const compareEl = document.getElementById('gameBestCompare');
+    if (isNewBest) {
+      saveBest({ score: state.score, correct: state.correctCount, total: state.rounds.length });
+      compareEl.textContent = '🎉 이 기기 최고 기록 갱신!';
+    } else {
+      compareEl.textContent = `내 최고 기록은 ${best.score}점이에요. 다시 도전해보세요!`;
+    }
+  }
+
+  function currentRound(){ return state.rounds[state.roundIndex]; }
+  function wireDrag(){
+    const svgEl = document.getElementById('gameSvg');
+    let dragging = false;
+    function clientXOf(e){ if (e.touches && e.touches[0]) return e.touches[0].clientX; if (e.changedTouches && e.changedTouches[0]) return e.changedTouches[0].clientX; return e.clientX; }
+    function moveFromClientX(clientX){
+      const round = currentRound();
+      if (!round || round.type !== 'drag' || state.roundLocked || !state.currentGeo) return;
+      const rect = svgEl.getBoundingClientRect();
+      const g = state.currentGeo;
+      const px = ((clientX - rect.left) / rect.width) * g.W;
+      onDragMove(round, g.xmin + ((px - g.plot.x) / g.plot.w) * (g.xmax - g.xmin));
+    }
+    function startDrag(e){ const round = currentRound(); if (!round || round.type !== 'drag' || state.roundLocked) return; dragging = true; moveFromClientX(clientXOf(e)); }
+    function moveDrag(e){ if (!dragging) return; if (e.cancelable) e.preventDefault(); moveFromClientX(clientXOf(e)); }
+    function endDrag(){ dragging = false; }
+    svgEl.addEventListener('mousedown', startDrag);
+    svgEl.addEventListener('mousemove', moveDrag);
+    window.addEventListener('mouseup', endDrag);
+    svgEl.addEventListener('touchstart', startDrag, { passive: true });
+    svgEl.addEventListener('touchmove', moveDrag, { passive: false });
+    svgEl.addEventListener('touchend', endDrag);
+    document.getElementById('gameBtnConfirmDrag').addEventListener('click', () => {
+      const round = currentRound();
+      if (!round || round.type !== 'drag' || state.roundLocked) return;
+      finishDragRound(round, lastKnownRatio);
+    });
+  }
+
+  async function init(){
+    wireDrag();
+    document.getElementById('gameBtnStart').addEventListener('click', startGame);
+    document.getElementById('gameBtnPlayAgain').addEventListener('click', () => showScreen('start'));
+    document.getElementById('gameBtnQuit').addEventListener('click', () => { stopRoundTimer(); showScreen('start'); });
+    document.getElementById('gameLinkToTheory').addEventListener('click', (e) => { e.preventDefault(); showTab('theory'); });
+    showScreen('start');
+  }
+
+  return { init };
+})();
+
+// ============================================================
+// THEORY APP
+// ============================================================
+const TheoryApp = (function(){
+  function renderCaseGrid(){
+    const grid = document.getElementById('caseGrid');
+    grid.innerHTML = '';
+    LAB_PRESETS.forEach((preset) => {
+      const card = document.createElement('div');
+      card.className = 'case-card';
+      const svgWrap = document.createElement('div');
+      svgWrap.className = 'case-svg-wrap';
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svgWrap.appendChild(svg);
+      card.appendChild(svgWrap);
+      const titleEl = document.createElement('div');
+      titleEl.className = 'case-card-title'; titleEl.textContent = preset.label;
+      card.appendChild(titleEl);
+      const descEl = document.createElement('div');
+      descEl.className = 'case-card-desc'; descEl.textContent = preset.subtitle;
+      card.appendChild(descEl);
+      const btn = document.createElement('button');
+      btn.className = 'case-link'; btn.textContent = '🧪 실험실에서 보기';
+      btn.onclick = () => { showTab('lab'); LabApp.selectPreset(preset.id); };
+      card.appendChild(btn);
+      grid.appendChild(card);
+      drawStaticGraph(svg, preset, preset.aOptions[0], { W: 300, H: 190, compact: true });
+    });
+  }
+  function init(){
+    renderCaseGrid();
+    document.getElementById('ctaToLab').addEventListener('click', () => showTab('lab'));
+    document.getElementById('ctaToGame').addEventListener('click', () => showTab('game'));
+  }
+  return { init };
+})();
+
+// ============================================================
+// INIT
+// ============================================================
+LabApp.init();
+GameApp.init();
+TheoryApp.init();
+showTab('theory');
+</script>
 </body>
 </html>
