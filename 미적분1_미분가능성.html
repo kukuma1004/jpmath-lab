@@ -6,6 +6,10 @@
 <title>미분가능성 학습 스위트 · 석산고 미적분</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700;900&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- KaTeX (자체 호스팅) — 동기 로드: 하단 인라인 스크립트가 katex 전역을 즉시 쓰기 때문 -->
+<link rel="stylesheet" href="vendor/katex/katex.min.css">
+<script src="vendor/katex/katex.min.js"></script>
+<script src="vendor/katex/contrib/auto-render.min.js"></script>
 <style>
 :root{
   --paper:#EFF3EE; --panel:#FFFFFF; --grid:#D8E2D3; --dot:#E2E9DE;
@@ -116,6 +120,16 @@ input[type=range]{ width:100%; accent-color:var(--ink); margin:10px 0; }
 .memory-card.wrong{ border-color:var(--left); }
 .memory-card svg{ position:absolute; inset:0; width:100%; height:100%; }
 
+/* ---------- KaTeX 통합 (기존 서식 보존용) ---------- */
+/* 방침: 수식 표기만 KaTeX. 실시간 기울기 readout(.live-slope, .cond-value)은 mono 유지. */
+.katex{ font-size:1.05em; }
+.katex .base{ white-space:nowrap; }
+.theorem-formula .katex{ font-size:1.02em; }
+.rel-box .katex{ font-size:1em; }
+.misconception-body .katex, .theory-p .katex{ font-size:1em; }
+.verdict .katex{ font-size:1em; }
+.theorem-formula, .rel-box{ overflow-x:auto; overflow-y:hidden; }
+
 @media (prefers-reduced-motion: reduce){ .game-feedback,.ll-fog,.ll-clear,.memory-card{ transition:none; } }
 </style>
 </head>
@@ -142,12 +156,12 @@ input[type=range]{ width:100%; accent-color:var(--ink); margin:10px 0; }
 
   <div class="theory-section">
     <div class="theory-h2">1. 미분계수란?</div>
-    <p class="theory-p">x=a에서의 <b>미분계수</b> f'(a)는 그 점에서의 순간변화율, 즉 접선의 기울기예요. 근처의 점 (a+h, f(a+h))와 (a, f(a))를 잇는 <b>할선(secant line)</b>의 기울기를 h→0으로 보내면서 정의해요.</p>
+    <p class="theory-p">\(x=a\)에서의 <b>미분계수</b> \(f'(a)\)는 그 점에서의 순간변화율, 즉 접선의 기울기예요. 근처의 점 \((a+h,\, f(a+h))\)와 \((a,\, f(a))\)를 잇는 <b>할선(secant line)</b>의 기울기를 \(h \to 0\)으로 보내면서 정의해요.</p>
     <div class="theorem-box">
       <div class="theorem-eyebrow">정의</div>
-      <div class="theorem-formula">f'(a) = lim [f(a+h) − f(a)] / h, h→0</div>
+      <div class="theorem-formula">\(\displaystyle f'(a) = \lim_{h \to 0} \frac{f(a+h) - f(a)}{h}\)</div>
     </div>
-    <p class="theory-p">극한과 똑같이, 이것도 <b style="color:#C1442D">왼쪽에서(h→0⁻)</b> 다가갈 때와 <b style="color:#2B6CA3">오른쪽에서(h→0⁺)</b> 다가갈 때를 각각 <b>좌미분계수·우미분계수</b>라고 불러요.</p>
+    <p class="theory-p">극한과 똑같이, 이것도 <b style="color:#C1442D">왼쪽에서(\(h \to 0^{-}\))</b> 다가갈 때와 <b style="color:#2B6CA3">오른쪽에서(\(h \to 0^{+}\))</b> 다가갈 때를 각각 <b>좌미분계수·우미분계수</b>라고 불러요.</p>
   </div>
 
   <div class="theory-section">
@@ -155,7 +169,7 @@ input[type=range]{ width:100%; accent-color:var(--ink); margin:10px 0; }
     <div class="theorem-box">
       <div class="theorem-eyebrow">정의 · f가 x=a에서 미분가능하려면</div>
       <div class="theorem-formula">
-        ① f가 x=a에서 연속이다<br>
+        ① f가 \(x=a\)에서 연속이다<br>
         ② 좌미분계수 = 우미분계수 (둘 다 유한한 값)
       </div>
     </div>
@@ -164,8 +178,8 @@ input[type=range]{ width:100%; accent-color:var(--ink); margin:10px 0; }
   <div class="theory-section">
     <div class="theory-h2">3. 핵심 관계: 미분가능 ⟹ 연속, 그런데 역은?</div>
     <div class="rel-box">
-      <div class="theorem-formula">미분가능 → 연속 <span class="yes">(항상 참)</span></div>
-      <div class="theorem-formula" style="margin-top:6px;">연속 → 미분가능 <span class="no">(거짓! 반례 있음)</span></div>
+      <div class="theorem-formula">미분가능 \(\Longrightarrow\) 연속 <span class="yes">(항상 참)</span></div>
+      <div class="theorem-formula" style="margin-top:6px;">연속 \(\Longrightarrow\) 미분가능 <span class="no">(거짓! 반례 있음)</span></div>
     </div>
     <p class="theory-p">그래프가 안 끊어져 있어도(연속) 뾰족하게 꺾이거나 접선이 수직이면 기울기 자체가 안 정해져서 미분은 안 돼요. 아래 세 반례를 실험실에서 직접 확인해보세요.</p>
   </div>
@@ -319,6 +333,32 @@ const COLORS = {
   ink:'#223027', inkSoft:'#5C6B60',
   left:'#C1442D', right:'#2B6CA3', gold:'#C99A2E', success:'#3F7D4C', border:'#D3DAD0',
 };
+
+// ============================================================
+// KaTeX 헬퍼
+// KX(tex) → HTML 문자열. 반드시 innerHTML로 넣을 것.
+// 방침: 수식 표기만 조판. fmtSlope()가 돌려주는 값은 '정의되지 않음'·'+∞' 같은
+//      비-TeX 문자열일 수 있으므로 절대 그대로 KX()에 넣지 말 것.
+// ============================================================
+function KX(tex, display){
+  try {
+    return katex.renderToString(String(tex), { throwOnError:false, displayMode:!!display, strict:false });
+  } catch (e) {
+    return String(tex);
+  }
+}
+function renderStaticMath(root){
+  if (typeof renderMathInElement !== 'function' || !root) return;
+  try {
+    renderMathInElement(root, {
+      delimiters: [ { left:'\\[', right:'\\]', display:true }, { left:'\\(', right:'\\)', display:false } ],
+      throwOnError: false,
+      ignoredTags: ['script','noscript','style','textarea','pre','code','option'],
+      ignoredClasses: ['katex'],   // 이미 렌더된 수식 안(숨김 MathML의 원본 TeX)을 다시 훑지 않도록
+    });
+  } catch (e) {}
+}
+
 function rand(min, max){ return min + Math.random() * (max - min); }
 function randSign(){ return Math.random() < 0.5 ? -1 : 1; }
 function randInt(min, max){ return Math.floor(rand(min, max + 1)); }
@@ -942,13 +982,14 @@ const TangentApp = (function(){
       state.score += points; state.streak += 1; state.correctCount += 1;
       document.getElementById('tangentScoreNum').textContent = state.score;
       if (state.correctCount % DECAY_EVERY === 0) state.timePerCard = Math.max(MIN_TIME, state.timePerCard - DECAY_AMOUNT);
-      fbEl.textContent = `✓ +${points}점 · ${explain}`;
+      // 다른 단원과 동일하게 innerHTML 경로로 통일 — explain 에 수식(KX 출력)을 넣게 되어도 안전하도록.
+      fbEl.innerHTML = `✓ +${points}점 · ${explain}`;
       fbEl.className = 'game-feedback show good';
       setTimeout(() => spawnRound(), 550);
     } else {
       state.streak = 0; state.lives -= 1; renderLives();
       const msg = choice == null ? '⏱ 시간 초과! ' : '✕ 틀렸어요. ';
-      fbEl.textContent = msg + explain;
+      fbEl.innerHTML = msg + explain;
       fbEl.className = 'game-feedback show bad';
       if (state.lives <= 0) setTimeout(() => gameOver(), 1300);
       else setTimeout(() => spawnRound(), 1300);
@@ -1024,6 +1065,7 @@ LabApp.init();
 MemoryApp.init();
 TangentApp.init();
 TheoryApp.init();
+renderStaticMath(document.getElementById('page-theory'));   // 이론 탭의 \(...\) 일괄 렌더
 document.getElementById('btnModeMemory').addEventListener('click', () => showGameMode('memory'));
 document.getElementById('btnModeTangent').addEventListener('click', () => showGameMode('tangent'));
 document.getElementById('gameLinkToTheory').addEventListener('click', (e) => { e.preventDefault(); showTab('theory'); });

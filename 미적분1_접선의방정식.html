@@ -6,6 +6,10 @@
 <title>접선의 방정식 스위트 · 석산고 미적분</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700;900&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- KaTeX (자체 호스팅) — 동기 로드: 하단 인라인 스크립트가 katex 전역을 즉시 쓰기 때문 -->
+<link rel="stylesheet" href="vendor/katex/katex.min.css">
+<script src="vendor/katex/katex.min.js"></script>
+<script src="vendor/katex/contrib/auto-render.min.js"></script>
 <style>
 :root{
   --paper:#EFF3EE; --panel:#FFFFFF; --grid:#D8E2D3; --dot:#E2E9DE;
@@ -92,6 +96,22 @@ html,body{ margin:0; padding:0; background:var(--paper); color:var(--ink); font-
 .end-sub{ text-align:center; color:var(--inkSoft); font-size:13px; margin-bottom:8px; }
 .lb-title{ font-family:var(--font-display); font-weight:900; font-size:19px; margin:0 0 4px; }
 
+/* ---------- KaTeX 통합 (기존 서식 보존용) ---------- */
+.katex{ font-size:1.05em; }
+.katex .base{ white-space:nowrap; }
+.theorem-formula .katex{ font-size:1.02em; }
+.step-line .katex{ font-size:1em; }
+.final-box .val .katex{ font-size:1em; }
+.misconception-body .katex{ font-size:1em; }
+.q-formula .katex, .q-eyebrow .katex{ font-size:1em; }
+/* 4지선다 보기 — 수식이 버튼 폭을 넘지 않게 */
+.opt-btn .katex{ font-size:1em; }
+.opt-btn{ overflow-x:auto; }
+.game-feedback-box .katex{ font-size:1em; }
+.chip .katex, .a-chip .katex{ font-size:0.95em; }
+.theorem-formula, .step-line, .final-box .val{ overflow-x:auto; overflow-y:hidden; }
+.step-line{ padding:2px 0; }
+
 @media (prefers-reduced-motion: reduce){ .step-line,.timerbar-fill{ transition:none; } }
 </style>
 </head>
@@ -122,33 +142,33 @@ html,body{ margin:0; padding:0; background:var(--paper); color:var(--ink); font-
     <p class="theory-p">곡선 y=f(x) 위의 점 (a, f(a))에서의 접선은, 그 점을 지나고 기울기가 f'(a)인 직선이에요. 점-기울기 공식에 그대로 대입하면 돼요.</p>
     <div class="theorem-box">
       <div class="theorem-eyebrow">공식 · 점 (a, f(a))에서의 접선</div>
-      <div class="theorem-formula">y &minus; f(a) = f'(a)(x &minus; a)</div>
+      <div class="theorem-formula">\(y - f(a) = f'(a)(x - a)\)</div>
     </div>
-    <p class="theory-p">이걸 정리하면 y = f'(a)x + [f(a) − f'(a)·a] 형태의 일반적인 직선의 방정식이 돼요.</p>
+    <p class="theory-p">이걸 정리하면 \(y = f'(a)\,x + \bigl[f(a) - f'(a)\cdot a\bigr]\) 형태의 일반적인 직선의 방정식이 돼요.</p>
   </div>
 
   <div class="theory-section">
     <div class="theory-h2">2. 법선(수직인 직선)도 같은 방식으로</div>
     <div class="theorem-box">
       <div class="theorem-eyebrow">공식 · 점 (a, f(a))에서의 법선</div>
-      <div class="theorem-formula">y &minus; f(a) = &minus;1/f'(a) &times; (x &minus; a)   <span style="font-size:11px; color:var(--inkSoft);">(f'(a)≠0)</span></div>
+      <div class="theorem-formula">\(y - f(a) = -\dfrac{1}{f'(a)}\,(x - a)\)   <span style="font-size:11px; color:var(--inkSoft);">(\(f'(a) \neq 0\))</span></div>
     </div>
-    <p class="theory-p">접선과 수직으로 만나는 직선이라 기울기만 −1/f'(a)로 바뀌고, 지나는 점은 똑같이 (a, f(a))예요. 실험실에서 접선/법선을 토글로 바꿔가며 비교해보세요.</p>
+    <p class="theory-p">접선과 수직으로 만나는 직선이라 기울기만 \(-\dfrac{1}{f'(a)}\)로 바뀌고, 지나는 점은 똑같이 \((a,\, f(a))\)예요. 실험실에서 접선/법선을 토글로 바꿔가며 비교해보세요.</p>
   </div>
 
   <div class="theory-section">
     <div class="theory-h2">3. 자주 하는 오해</div>
     <div class="misconception">
       <div class="misconception-title">❌ 접선의 기울기가 f(a)인 줄 알았어요</div>
-      <div class="misconception-body">가장 흔한 실수예요! f(a)는 그 점의 <b>높이(y좌표)</b>이고, 기울기는 f'(a)예요. 점-기울기 공식 y−f(a)=f'(a)(x−a)에서 두 값의 자리를 바꿔 쓰지 않도록 주의하세요.</div>
+      <div class="misconception-body">가장 흔한 실수예요! \(f(a)\)는 그 점의 <b>높이(y좌표)</b>이고, 기울기는 \(f'(a)\)예요. 점-기울기 공식 \(y-f(a)=f'(a)(x-a)\)에서 두 값의 자리를 바꿔 쓰지 않도록 주의하세요.</div>
     </div>
     <div class="misconception">
       <div class="misconception-title">❌ 아무 점이나 대입해도 되는 줄 알았어요</div>
-      <div class="misconception-body">접선은 반드시 곡선 위의 그 점 (a, f(a))을 지나야 해요. f(a) 계산을 빼먹고 임의의 값을 쓰면 완전히 다른 직선이 나와요.</div>
+      <div class="misconception-body">접선은 반드시 곡선 위의 그 점 \((a,\, f(a))\)을 지나야 해요. \(f(a)\) 계산을 빼먹고 임의의 값을 쓰면 완전히 다른 직선이 나와요.</div>
     </div>
     <div class="misconception">
       <div class="misconception-title">❌ f'(a)를 x에 곱하기만 하면 끝인 줄 알았어요</div>
-      <div class="misconception-body">y−f(a)=f'(a)(x−a)를 정리할 때 f'(a)를 x뿐 아니라 a에도 똑같이 분배해야 해요. a에는 안 곱하는 실수가 잦아요.</div>
+      <div class="misconception-body">\(y-f(a)=f'(a)(x-a)\)를 정리할 때 \(f'(a)\)를 x뿐 아니라 a에도 똑같이 분배해야 해요. a에는 안 곱하는 실수가 잦아요.</div>
     </div>
   </div>
 
@@ -259,8 +279,45 @@ function fmtNum(v){
   }
   return v.toFixed(2);
 }
-function fmtSigned(v){ return v >= 0 ? `+ ${fmtNum(v)}` : `&minus; ${fmtNum(Math.abs(v))}`; }
-function lineStr(slope, intercept){ return `y = ${fmtNum(slope)}x ${fmtSigned(intercept)}`; }
+// ============================================================
+// KaTeX 헬퍼
+// KX(tex) → HTML 문자열. 반드시 innerHTML로 넣을 것.
+// katex 로드 실패나 문법 오류가 나도 게임 루프가 죽으면 안 되므로 원문 폴백.
+// ============================================================
+function KX(tex, display){
+  try {
+    return katex.renderToString(String(tex), { throwOnError:false, displayMode:!!display, strict:false });
+  } catch (e) {
+    return String(tex);
+  }
+}
+function renderStaticMath(root){
+  if (typeof renderMathInElement !== 'function' || !root) return;
+  try {
+    renderMathInElement(root, {
+      delimiters: [ { left:'\\[', right:'\\]', display:true }, { left:'\\(', right:'\\)', display:false } ],
+      throwOnError: false,
+      ignoredTags: ['script','noscript','style','textarea','pre','code','option'],
+      ignoredClasses: ['katex'],   // 이미 렌더된 수식 안(숨김 MathML의 원본 TeX)을 다시 훑지 않도록
+    });
+  } catch (e) {}
+}
+// 음수는 괄호로 감싼다 — 대입 과정이 그대로 드러나게: 2 × (−2), (x − (−2))
+function pn(v){ return v < 0 ? '(' + v + ')' : String(v); }
+// fmtNum 이 "-1/2" 같은 분수를 낼 수 있으므로 LaTeX \frac 으로 승격.
+// 법선 기울기(−1/f'(a))에서 실제로 분수가 나오는 단원이라 반드시 필요하다.
+function texNum(v){
+  const s = fmtNum(v);
+  const m = /^(-?)(\d+)\/(\d+)$/.exec(s);
+  return m ? m[1] + '\\frac{' + m[2] + '}{' + m[3] + '}' : s;
+}
+// 빼거나 더해지는 자리에 들어가는 값 — 음수면 괄호로 감싼다.
+// y − (−8), (x − (−2)) 처럼 "대입했다"는 게 드러나야 하고, y − −8 같은 표기를 막는다.
+function pnTex(v){ const s = texNum(v); return v < 0 ? '(' + s + ')' : s; }
+
+// ⚠️ 아래 두 함수는 LaTeX 소스를 만든다 (HTML 아님). 출력 시 KX()로 감쌀 것.
+function fmtSigned(v){ return v >= 0 ? `+ ${texNum(v)}` : `- ${texNum(Math.abs(v))}`; }
+function lineStr(slope, intercept){ return `y = ${texNum(slope)}x ${fmtSigned(intercept)}`; }
 function el(tag, attrs){
   const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
   for (const k in attrs) e.setAttribute(k, attrs[k]);
@@ -278,10 +335,18 @@ document.querySelectorAll('.tab-btn').forEach((btn) => btn.addEventListener('cli
 // ============================================================
 // FUNCTION DEFINITIONS
 // ============================================================
+// tex / faStr / fpaStr 은 전부 LaTeX 소스다 (HTML 아님). 출력 시 KX()로 감쌀 것.
+// label 은 폴백·접근성용 평문.
 const FUNCS = {
-  x2: { label: 'f(x) = x²', aValues: [-2, -1, 1, 2, 3], fn: (x) => x * x, fpFn: (a) => 2 * a, faStr: (a) => `${a}²`, fpaStr: (a) => `2×${a}` },
-  x3: { label: 'f(x) = x³', aValues: [-2, -1, 1, 2], fn: (x) => x * x * x, fpFn: (a) => 3 * a * a, faStr: (a) => `${a}³`, fpaStr: (a) => `3×${a}²` },
-  linear: { label: 'f(x) = 2x+1', aValues: [-2, -1, 0, 1, 2, 3], fn: (x) => 2 * x + 1, fpFn: () => 2, faStr: (a) => `2×${a}+1`, fpaStr: () => `2` },
+  x2: { label: 'f(x) = x²', tex: 'f(x) = x^{2}', aValues: [-2, -1, 1, 2, 3],
+        fn: (x) => x * x, fpFn: (a) => 2 * a,
+        faStr: (a) => pn(a) + '^{2}', fpaStr: (a) => '2 \\times ' + pn(a) },
+  x3: { label: 'f(x) = x³', tex: 'f(x) = x^{3}', aValues: [-2, -1, 1, 2],
+        fn: (x) => x * x * x, fpFn: (a) => 3 * a * a,
+        faStr: (a) => pn(a) + '^{3}', fpaStr: (a) => '3 \\times ' + pn(a) + '^{2}' },
+  linear: { label: 'f(x) = 2x+1', tex: 'f(x) = 2x+1', aValues: [-2, -1, 0, 1, 2, 3],
+        fn: (x) => 2 * x + 1, fpFn: () => 2,
+        faStr: (a) => '2 \\times ' + pn(a) + ' + 1', fpaStr: () => '2' },
 };
 const FUNC_ORDER = ['x2', 'x3', 'linear'];
 
@@ -313,7 +378,8 @@ const LabApp = (function(){
     FUNC_ORDER.forEach((key) => {
       const btn = document.createElement('button');
       btn.className = 'chip' + (key === funcKey ? ' active' : '');
-      btn.textContent = FUNCS[key].label;
+      btn.innerHTML = KX(FUNCS[key].tex);
+      btn.setAttribute('aria-label', FUNCS[key].label);
       btn.onclick = () => { funcKey = key; aVal = FUNCS[key].aValues[0]; stepIndex = 0; renderChips(); render(); };
       fnBox.appendChild(btn);
     });
@@ -335,19 +401,21 @@ const LabApp = (function(){
     const fpa = def.fpFn(a);
     const isTangent = mode === 'tangent';
     const useSlope = isTangent ? fpa : -1 / fpa;
-    const slopeLabel = isTangent ? "f'(a)" : "&minus;1/f'(a)";
-    const slopeExpr = isTangent ? def.fpaStr(a) : `&minus;1/(${def.fpaStr(a)})`;
+    const slopeExpr = isTangent ? def.fpaStr(a) : `-\\dfrac{1}{${def.fpaStr(a)}}`;
     const intercept = fa - useSlope * a;
 
+    // 한국어 라벨(.step-note 포함)은 수식 밖에 두어 본문 서체를 유지한다.
     return {
       fa, fpa, useSlope, intercept,
       lines: [
-        `f(${a}) = ${def.faStr(a)} = ${fmtNum(fa)}`,
-        `f'(${a}) = ${def.fpaStr(a)} = ${fmtNum(fpa)}`,
-        `${isTangent ? '기울기' : '법선의 기울기'} = ${slopeExpr} = ${fmtNum(useSlope)}`,
-        `y &minus; ${fmtNum(fa)} = ${fmtNum(useSlope)}(x &minus; ${a}) <span class="step-note">점-기울기 공식</span>`,
-        `y = ${fmtNum(useSlope)}x ${fmtSigned(-useSlope * a)} ${fmtSigned(fa)} <span class="step-note">분배</span>`,
-        `y = ${lineStr(useSlope, intercept)}`,
+        KX(`f(${a}) = ${def.faStr(a)} = ${texNum(fa)}`),
+        KX(`f'(${a}) = ${def.fpaStr(a)} = ${texNum(fpa)}`),
+        (isTangent ? '기울기 = ' : '법선의 기울기 = ') + KX(`${slopeExpr} = ${texNum(useSlope)}`),
+        KX(`y - ${pnTex(fa)} = ${texNum(useSlope)}(x - ${pnTex(a)})`) + ' <span class="step-note">점-기울기 공식</span>',
+        KX(`y = ${texNum(useSlope)}x ${fmtSigned(-useSlope * a)} ${fmtSigned(fa)}`) + ' <span class="step-note">분배</span>',
+        // lineStr 이 이미 "y = " 를 포함한다. 예전엔 여기서 "y = " 를 한 번 더 붙여
+        // 마지막 줄이 "y = y = 4x − 4" 로 나오는 버그가 있었다.
+        KX(lineStr(useSlope, intercept)),
       ],
     };
   }
@@ -356,7 +424,7 @@ const LabApp = (function(){
     const built = buildSteps();
     const linesEl = document.getElementById('stepLines');
     const def = FUNCS[funcKey];
-    linesEl.innerHTML = `<div class="step-line">${def.label}, a = ${aVal} (${mode === 'tangent' ? '접선' : '법선'})</div>`;
+    linesEl.innerHTML = `<div class="step-line">${KX(def.tex + ',\\;\\; a = ' + aVal)} <span class="step-note">${mode === 'tangent' ? '접선' : '법선'}</span></div>`;
     built.lines.forEach((s, i) => {
       const div = document.createElement('div');
       div.className = 'step-line' + (i >= stepIndex ? ' pending' : '');
@@ -371,7 +439,7 @@ const LabApp = (function(){
     finalBox.classList.toggle('hidden', !showFinal);
     if (showFinal) {
       document.getElementById('finalLabel').textContent = mode === 'tangent' ? '접선의 방정식' : '법선의 방정식';
-      document.getElementById('finalVal').textContent = lineStr(built.useSlope, built.intercept);
+      document.getElementById('finalVal').innerHTML = KX(lineStr(built.useSlope, built.intercept));
     }
 
     drawGraph(funcKey, aVal, showFinal ? built : null);
@@ -469,13 +537,21 @@ const GameApp = (function(){
     const def = FUNCS[kind];
     const shuffledA = shuffle(def.aValues.slice());
     for (const a of shuffledA) {
+      // ⚠️ a = 0 은 반드시 건너뛴다.
+      // 오답②는 (x − a) 를 (x + a) 로 뒤집은 것인데, a=0 이면 (x − 0) 과 (x + 0) 이
+      // 문자열로는 다르지만 같은 직선이다 → 아래 4-distinct 검사(문자열 비교)를 통과해버리고
+      // 정답을 고른 학생이 오답 처리된다. linear 의 aValues 에만 0 이 들어 있다.
+      if (a === 0) continue;
       const fa = def.fn(a), fpa = def.fpFn(a);
-      const faS = fmtNum(fa), fpaS = fmtNum(fpa), aS = String(a);
-      const correct = `y &minus; ${faS} = ${fpaS}(x &minus; ${aS})`;
+      const faS = texNum(fa), fpaS = texNum(fpa);        // 계수 자리 (뒤에 괄호가 붙는 값)
+      const faP = pnTex(fa), aP = pnTex(a);              // 빼기·더하기 자리 (음수면 괄호)
+      // ⚠️ 이 4개는 LaTeX 소스다. 아래 4-distinct 검사도 LaTeX 소스 기준으로 돌아야 한다
+      //    (렌더된 HTML로 비교하면 KaTeX가 붙이는 부가 마크업 때문에 항상 4개로 보인다).
+      const correct = `y - ${faP} = ${fpaS}(x - ${aP})`;
       const wrongs = [
-        `y &minus; ${faS} = ${faS}(x &minus; ${aS})`,
-        `y &minus; ${faS} = ${fpaS}(x + ${aS})`,
-        `y + ${faS} = ${fpaS}(x &minus; ${aS})`,
+        `y - ${faP} = ${faS}(x - ${aP})`,    // 기울기 자리에 f(a)를 씀
+        `y - ${faP} = ${fpaS}(x + ${aP})`,   // (x − a) 부호 뒤집기
+        `y + ${faP} = ${fpaS}(x - ${aP})`,   // y − f(a) 부호 뒤집기
       ];
       if (new Set([correct, ...wrongs]).size === 4) {
         return { kind, def, a, fa, fpa, correct, wrongs };
@@ -485,11 +561,16 @@ const GameApp = (function(){
     }
     // Should be unreachable given the dataset, but fall back to a known-safe pair rather than crash.
     const a = def.aValues[0], fa = def.fn(a), fpa = def.fpFn(a);
-    const faS = fmtNum(fa), fpaS = fmtNum(fpa), aS = String(a);
+    const faS = texNum(fa), fpaS = texNum(fpa);
+    const faP = pnTex(fa), fpaP = pnTex(fpa), aP = pnTex(a);
     return {
       kind, def, a, fa, fpa,
-      correct: `y &minus; ${faS} = ${fpaS}(x &minus; ${aS})`,
-      wrongs: [`y &minus; ${faS} = ${fpaS}(x + ${aS})`, `y + ${faS} = ${fpaS}(x &minus; ${aS})`, `y &minus; ${fpaS} = ${faS}(x &minus; ${aS})`],
+      correct: `y - ${faP} = ${fpaS}(x - ${aP})`,
+      wrongs: [
+        `y - ${faP} = ${fpaS}(x + ${aP})`,
+        `y + ${faP} = ${fpaS}(x - ${aP})`,
+        `y - ${fpaP} = ${faS}(x - ${aP})`,
+      ],
     };
   }
 
@@ -500,15 +581,15 @@ const GameApp = (function(){
     const options = shuffle([{ text: round.correct, correct: true }, ...round.wrongs.map((w) => ({ text: w, correct: false }))]);
     state.round.options = options;
 
-    document.getElementById('qEyebrow').textContent = round.def.label;
-    document.getElementById('qFormula').innerHTML = `a = ${round.a}, &nbsp; f(${round.a}) = ${fmtNum(round.fa)}, &nbsp; f'(${round.a}) = ${fmtNum(round.fpa)}`;
+    document.getElementById('qEyebrow').innerHTML = KX(round.def.tex);
+    document.getElementById('qFormula').innerHTML = KX(`a = ${round.a}, \\quad f(${round.a}) = ${texNum(round.fa)}, \\quad f'(${round.a}) = ${texNum(round.fpa)}`);
     document.getElementById('gameFeedback').classList.add('hidden');
     const grid = document.getElementById('optionsGrid');
     grid.innerHTML = '';
     options.forEach((opt, idx) => {
       const btn = document.createElement('button');
       btn.className = 'opt-btn';
-      btn.innerHTML = opt.text;
+      btn.innerHTML = KX(opt.text);        // opt.text 는 LaTeX 소스 (정오 판정은 옵션 인덱스로 하므로 렌더는 표시 전용)
       btn.onclick = () => onAnswer(idx);
       grid.appendChild(btn);
     });
@@ -538,7 +619,7 @@ const GameApp = (function(){
     });
     const fbEl = document.getElementById('gameFeedback');
     fbEl.classList.remove('hidden');
-    const finalLine = lineStr(state.round.fpa, state.round.fa - state.round.fpa * state.round.a);
+    const finalLine = KX(lineStr(state.round.fpa, state.round.fa - state.round.fpa * state.round.a));
     if (isCorrect) {
       const remainingRatio = parseFloat(document.getElementById('gameTimerFill').style.width) / 100 || 0;
       const points = 15 + Math.round(remainingRatio * 20) + Math.min(state.streak, 10);
@@ -546,12 +627,12 @@ const GameApp = (function(){
       document.getElementById('gameScoreNum').textContent = state.score;
       if (state.correctCount % DECAY_EVERY === 0) state.timePerQ = Math.max(MIN_TIME, state.timePerQ - DECAY_AMOUNT);
       fbEl.className = 'game-feedback-box good';
-      fbEl.innerHTML = `✓ +${points}점 · f(a)는 지나는 점의 높이, f'(a)는 기울기예요. 정리하면 ${finalLine}`;
+      fbEl.innerHTML = `✓ +${points}점 · ${KX("f(a)")}는 지나는 점의 높이, ${KX("f'(a)")}는 기울기예요. 정리하면 ${finalLine}`;
       setTimeout(() => spawnQuestion(), 1300);
     } else {
       state.streak = 0; state.lives -= 1; renderLives();
       fbEl.className = 'game-feedback-box bad';
-      fbEl.innerHTML = (idx == null ? '⏱ 시간 초과! ' : '✕ 틀렸어요. ') + `y − f(a) = f'(a)(x − a) 순서를 다시 확인하세요. 정리하면 ${finalLine}`;
+      fbEl.innerHTML = (idx == null ? '⏱ 시간 초과! ' : '✕ 틀렸어요. ') + `${KX("y - f(a) = f'(a)(x - a)")} 순서를 다시 확인하세요. 정리하면 ${finalLine}`;
       if (state.lives <= 0) setTimeout(() => gameOver(), 1800);
       else setTimeout(() => spawnQuestion(), 1800);
     }
@@ -590,6 +671,7 @@ document.getElementById('ctaToGame').addEventListener('click', () => showTab('ga
 
 LabApp.init();
 GameApp.init();
+renderStaticMath(document.getElementById('page-theory'));   // 이론 탭의 \(...\) 일괄 렌더
 showTab('theory');
 </script>
 </body>

@@ -6,6 +6,10 @@
 <title>극한 학습 스위트 · 석산고 미적분</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700;900&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- KaTeX (자체 호스팅) — 동기 로드: 하단 인라인 스크립트가 katex 전역을 즉시 쓰기 때문 -->
+<link rel="stylesheet" href="vendor/katex/katex.min.css">
+<script src="vendor/katex/katex.min.js"></script>
+<script src="vendor/katex/contrib/auto-render.min.js"></script>
 <style>
 :root{
   --paper:#EFF3EE; --panel:#FFFFFF; --grid:#D8E2D3; --dot:#E2E9DE;
@@ -121,6 +125,19 @@ input[type=range]{ width:100%; accent-color:var(--ink); margin:10px 0; }
 .end-sub{ text-align:center; color:var(--inkSoft); font-size:13px; margin-bottom:16px; }
 .lb-title{ font-family:var(--font-display); font-weight:900; font-size:19px; margin:0 0 4px; }
 
+/* ---------- KaTeX 통합 (기존 서식 보존용) ---------- */
+/* 방침: 수식 표기(lim, 분수, 위첨자)만 KaTeX로 조판한다.
+   실시간 숫자 readout(.lb-value, #labXVal, #labFxVal)은 원래대로 mono 서체를 유지 —
+   60fps로 갱신되는 값이라 KaTeX로 다시 그리면 흔들리고, 디자인 의도상으로도 '계기판'이다. */
+.katex{ font-size:1.05em; }
+.katex .base{ white-space:nowrap; }
+.theorem-formula .katex{ font-size:1.02em; }
+.lb-symbol .katex{ font-size:0.95em; }
+.question-text .katex{ font-size:1em; }
+.misconception-body .katex, .theory-p .katex{ font-size:1em; }
+.theorem-formula{ overflow-x:auto; overflow-y:hidden; }
+.lb-symbol{ overflow:visible; }   /* 기존 ellipsis 규칙이 KaTeX 박스를 자르지 않게 */
+
 @media (prefers-reduced-motion: reduce){ .feedback-overlay,.timerbar-fill,.ll-fog,.ll-clear{ transition:none; } }
 </style>
 </head>
@@ -146,7 +163,7 @@ input[type=range]{ width:100%; accent-color:var(--ink); margin:10px 0; }
 
   <div class="theory-section">
     <div class="theory-h2">1. 극한이란?</div>
-    <p class="theory-p">함수 f(x)에서 x가 a는 아니지만 a에 <b>한없이 가까워질 때</b>, f(x)의 값이 어떤 한 값 L에 한없이 가까워지면, 그 값 L을 x=a에서의 극한이라 하고 lim f(x) (x→a) = L 로 씁니다. 중요한 건 x=a일 때의 실제 함숫값이 아니라, a로 다가가는 "과정"에서 f(x)가 어디로 향하는지라는 점이에요.</p>
+    <p class="theory-p">함수 f(x)에서 x가 a는 아니지만 a에 <b>한없이 가까워질 때</b>, f(x)의 값이 어떤 한 값 L에 한없이 가까워지면, 그 값 L을 \(x=a\)에서의 극한이라 하고 \(\lim\limits_{x \to a} f(x) = L\) 로 씁니다. 중요한 건 \(x=a\)일 때의 실제 함숫값이 아니라, a로 다가가는 "과정"에서 f(x)가 어디로 향하는지라는 점이에요.</p>
     <div class="numline-wrap">
       <svg viewBox="0 0 300 100" style="width:100%; height:auto; display:block;">
         <line x1="20" y1="55" x2="280" y2="55" stroke="#223027" stroke-width="1.5"/>
@@ -170,9 +187,9 @@ input[type=range]{ width:100%; accent-color:var(--ink); margin:10px 0; }
     <div class="theorem-box">
       <div class="theorem-eyebrow">개념</div>
       <div class="theorem-formula">
-        lim f(x) (x→a) = L<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;⟺<br>
-        lim f(x) (x→a⁻) = lim f(x) (x→a⁺) = L
+        \(\displaystyle \lim_{x \to a} f(x) = L\)<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;\(\Longleftrightarrow\)<br>
+        \(\displaystyle \lim_{x \to a^{-}} f(x) = \lim_{x \to a^{+}} f(x) = L\)
       </div>
     </div>
     <p class="theory-p">좌극한과 우극한이 <b>둘 다 존재하고, 그 값이 서로 같을 때만</b> 극한이 존재한다고 말해요. 둘 중 하나라도 없거나, 둘이 다른 값이면 그 지점에서 극한은 존재하지 않습니다.</p>
@@ -188,11 +205,11 @@ input[type=range]{ width:100%; accent-color:var(--ink); margin:10px 0; }
     <div class="theory-h2">4. 자주 하는 오해</div>
     <div class="misconception">
       <div class="misconception-title">❌ 극한값 = 함숫값이다?</div>
-      <div class="misconception-body">아니에요. 극한은 "다가가는 값"이고 f(a)는 "실제 x=a에서의 값"이라 서로 다른 개념이에요. 구멍이 뚫린 그래프처럼, 극한은 존재해도 f(a)와 다르거나 f(a)가 아예 정의되지 않을 수 있어요.</div>
+      <div class="misconception-body">아니에요. 극한은 "다가가는 값"이고 \(f(a)\)는 "실제 \(x=a\)에서의 값"이라 서로 다른 개념이에요. 구멍이 뚫린 그래프처럼, 극한은 존재해도 \(f(a)\)와 다르거나 \(f(a)\)가 아예 정의되지 않을 수 있어요.</div>
     </div>
     <div class="misconception">
       <div class="misconception-title">❌ 그래프가 끊어져 있으면 극한이 무조건 없다?</div>
-      <div class="misconception-body">좌극한과 우극한은 "끊어진 지점"에서도 각각 따로 존재할 수 있어요. 다만 그 둘이 서로 다르면, 양쪽 극한(그냥 lim)은 존재하지 않는다고 말하는 거예요.</div>
+      <div class="misconception-body">좌극한과 우극한은 "끊어진 지점"에서도 각각 따로 존재할 수 있어요. 다만 그 둘이 서로 다르면, 양쪽 극한(그냥 \(\lim\))은 존재하지 않는다고 말하는 거예요.</div>
     </div>
   </div>
 
@@ -323,6 +340,32 @@ const COLORS = {
   ink:'#223027', inkSoft:'#5C6B60',
   left:'#C1442D', right:'#2B6CA3', gold:'#C99A2E', success:'#3F7D4C', border:'#D3DAD0',
 };
+
+// ============================================================
+// KaTeX 헬퍼
+// KX(tex) → HTML 문자열. 반드시 innerHTML로 넣을 것.
+// 방침: 수식 표기(lim, 위첨자)만 조판한다. fmt()가 돌려주는 실시간 값은
+//      '정의되지 않음' 같은 한국어일 수 있으므로 절대 그대로 KX()에 넣지 말 것.
+// ============================================================
+function KX(tex, display){
+  try {
+    return katex.renderToString(String(tex), { throwOnError:false, displayMode:!!display, strict:false });
+  } catch (e) {
+    return String(tex);
+  }
+}
+function renderStaticMath(root){
+  if (typeof renderMathInElement !== 'function' || !root) return;
+  try {
+    renderMathInElement(root, {
+      delimiters: [ { left:'\\[', right:'\\]', display:true }, { left:'\\(', right:'\\)', display:false } ],
+      throwOnError: false,
+      ignoredTags: ['script','noscript','style','textarea','pre','code','option'],
+      ignoredClasses: ['katex'],   // 이미 렌더된 수식 안(숨김 MathML의 원본 TeX)을 다시 훑지 않도록
+    });
+  } catch (e) {}
+}
+
 function rand(min, max){ return min + Math.random() * (max - min); }
 function randSign(){ return Math.random() < 0.5 ? -1 : 1; }
 function randInt(min, max){ return Math.floor(rand(min, max + 1)); }
@@ -637,8 +680,8 @@ const LabApp = (function(){
     leftEl.className = 'lb-value ' + (revealed.left ? 'll-clear' : 'll-fog');
     rightEl.textContent = revealed.right ? fmt(limitRightVal) : '?.??';
     rightEl.className = 'lb-value ' + (revealed.right ? 'll-clear' : 'll-fog');
-    document.getElementById('labLeftSymbol').textContent = `x→${aValue}⁻`;
-    document.getElementById('labRightSymbol').textContent = `x→${aValue}⁺`;
+    document.getElementById('labLeftSymbol').innerHTML = KX(`x \\to ${aValue}^{-}`);
+    document.getElementById('labRightSymbol').innerHTML = KX(`x \\to ${aValue}^{+}`);
 
     const verdictEl = document.getElementById('labVerdict');
     if (revealed.left && revealed.right) {
@@ -884,14 +927,14 @@ const GameApp = (function(){
     let optionData, questionText;
     if (round.qtype === 'exist') {
       optionData = buildExistOptions(L, R);
-      questionText = `x = ${round.aValue} 에서 극한이 존재하는가?`;
+      questionText = KX(`x = ${round.aValue}`) + ' 에서 극한이 존재하는가?';
     } else {
       const correctVal = round.side === 'left' ? L : R;
       optionData = buildValueOptions(correctVal);
-      questionText = `lim f(x), x → ${round.aValue}${round.side === 'left' ? '⁻' : '⁺'} 의 값은?`;
+      questionText = KX(`\\lim\\limits_{x \\to ${round.aValue}^{${round.side === 'left' ? '-' : '+'}}} f(x)`) + ' 의 값은?';
     }
     round._optionData = optionData; round._L = L; round._R = R;
-    document.getElementById('gameQuestionText').textContent = questionText;
+    document.getElementById('gameQuestionText').innerHTML = questionText;   // KX HTML 포함
     const grid = document.getElementById('gameMcqGrid');
     grid.innerHTML = '';
     optionData.options.forEach((label, idx) => {
@@ -930,7 +973,7 @@ const GameApp = (function(){
     const span = preset.xDomain[1] - preset.xDomain[0];
     const dir = Math.random() < 0.5 ? -1 : 1;
     state.dragX = clampDomain(round.aValue + dir * span * 0.35, preset);
-    document.getElementById('gameDragInstruction').textContent = `x를 a = ${round.aValue} 의 ${round.side === 'left' ? '왼쪽(좌극한)' : '오른쪽(우극한)'}에서 최대한 가깝게 접근시키세요!`;
+    document.getElementById('gameDragInstruction').innerHTML = `x를 ${KX('a = ' + round.aValue)} 의 ${round.side === 'left' ? '왼쪽(좌극한)' : '오른쪽(우극한)'}에서 최대한 가깝게 접근시키세요!`;
     drawDragPoint(round); updateDragReadout(round);
     startRoundTimer(DRAG_TIME, (ratio) => { updateTimerBar(ratio); lastKnownRatio = ratio; }, () => { if (!state.roundLocked) finishDragRound(round, 0); });
   }
@@ -1103,6 +1146,7 @@ const TheoryApp = (function(){
 LabApp.init();
 GameApp.init();
 TheoryApp.init();
+renderStaticMath(document.getElementById('page-theory'));   // 이론 탭의 \(...\) 일괄 렌더
 showTab('theory');
 </script>
 </body>

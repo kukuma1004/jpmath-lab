@@ -6,6 +6,10 @@
 <title>도함수와 미분법 스위트 · 석산고 미적분</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700;900&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- KaTeX (자체 호스팅) — 동기 로드: 하단 인라인 스크립트가 katex 전역을 즉시 쓰기 때문 -->
+<link rel="stylesheet" href="vendor/katex/katex.min.css">
+<script src="vendor/katex/katex.min.js"></script>
+<script src="vendor/katex/contrib/auto-render.min.js"></script>
 <style>
 :root{
   --paper:#EFF3EE; --panel:#FFFFFF; --grid:#D8E2D3; --dot:#E2E9DE;
@@ -58,6 +62,8 @@ html,body{ margin:0; padding:0; background:var(--paper); color:var(--ink); font-
 .step-card{ background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:16px; margin-bottom:14px; min-height:140px; }
 .step-line{ font-family:var(--font-mono); font-size:13.5px; line-height:2.3; color:var(--ink); }
 .step-line.pending{ opacity:0.15; }
+/* 다른 단원(함수의극한값·미분계수계산·접선의방정식)과 동일한 정의 — 단계별 금색 주석 */
+.step-note{ font-size:11.5px; color:var(--gold); font-weight:600; margin-left:8px; }
 .step-controls{ display:flex; gap:8px; margin-bottom:14px; }
 .step-btn{ flex:1; padding:12px; border-radius:12px; border:1.5px solid var(--ink); background:#fff; color:var(--ink); font-weight:700; font-size:13.5px; cursor:pointer; }
 .step-btn:disabled{ opacity:.4; }
@@ -90,6 +96,19 @@ html,body{ margin:0; padding:0; background:var(--paper); color:var(--ink); font-
 .end-sub{ text-align:center; color:var(--inkSoft); font-size:13px; margin-bottom:8px; }
 .lb-title{ font-family:var(--font-display); font-weight:900; font-size:19px; margin:0 0 4px; }
 
+/* ---------- KaTeX 통합 (기존 서식 보존용) ---------- */
+/* KaTeX 기본 1.21em은 이 페이지의 촘촘한 레이아웃엔 너무 커서 낮춘다. 색은 상속되므로 건드리지 않는다. */
+.katex{ font-size:1.05em; }
+.katex .base{ white-space:nowrap; }              /* 수식 중간에서 줄바꿈되지 않게 */
+.theorem-formula .katex{ font-size:1.02em; }
+.step-line .katex{ font-size:1em; }
+.judge-fn .katex, .judge-cand .katex{ font-size:1em; }
+.final-box .val .katex{ font-size:1em; }
+.rule-box-formula .katex{ font-size:1em; }
+.misconception-body .katex{ font-size:1em; }
+/* 수식이 길어질 때 가로 스크롤 (레이아웃이 밀리는 것보다 낫다) */
+.theorem-formula, .rule-box-formula, .judge-fn, .judge-cand{ overflow-x:auto; overflow-y:hidden; }
+
 @media (prefers-reduced-motion: reduce){ .step-line,.timerbar-fill{ transition:none; } }
 </style>
 </head>
@@ -113,17 +132,17 @@ html,body{ margin:0; padding:0; background:var(--paper); color:var(--ink); font-
   <h1 class="title">매번 극한으로 계산하지 않아도 되는 이유</h1>
   <p class="desc">정의로 f'(a)를 구하는 건 배웠으니, 이제 미리 증명된 규칙으로 빠르게 계산하는 법을 배워요.</p>
 
-  <div class="prereq-note">🔗 이전 단원들에서 x², x³ 같은 함수의 미분계수를 정의로 직접 계산했었죠? 그 결과들을 일반화한 게 바로 이 규칙들이에요 — 매번 극한을 계산할 필요 없이 공식만 적용하면 돼요.</div>
+  <div class="prereq-note">🔗 이전 단원들에서 \(x^{2}\), \(x^{3}\) 같은 함수의 미분계수를 정의로 직접 계산했었죠? 그 결과들을 일반화한 게 바로 이 규칙들이에요 — 매번 극한을 계산할 필요 없이 공식만 적용하면 돼요.</div>
 
   <div class="theory-section">
     <div class="theory-h2">1. 기본 미분법칙</div>
     <div class="theorem-box">
       <div class="theorem-eyebrow">공식</div>
       <div class="theorem-formula">
-        (c)' = 0  <span style="color:var(--inkSoft); font-weight:400;">(c는 상수)</span><br>
-        (xⁿ)' = n·x^(n&minus;1)  <span style="color:var(--inkSoft); font-weight:400;">(거듭제곱)</span><br>
-        (c·f(x))' = c·f'(x)  <span style="color:var(--inkSoft); font-weight:400;">(상수배)</span><br>
-        (f(x)±g(x))' = f'(x)±g'(x)  <span style="color:var(--inkSoft); font-weight:400;">(합/차)</span>
+        \((c)' = 0\)  <span style="color:var(--inkSoft); font-weight:400;">(c는 상수)</span><br>
+        \((x^n)' = n\,x^{n-1}\)  <span style="color:var(--inkSoft); font-weight:400;">(거듭제곱)</span><br>
+        \(\bigl(c\,f(x)\bigr)' = c\,f'(x)\)  <span style="color:var(--inkSoft); font-weight:400;">(상수배)</span><br>
+        \(\bigl(f(x)\pm g(x)\bigr)' = f'(x)\pm g'(x)\)  <span style="color:var(--inkSoft); font-weight:400;">(합/차)</span>
       </div>
     </div>
     <p class="theory-p">다항식은 이 네 가지만으로 다 처리할 수 있어요. 항끼리 따로 미분해서 더하고 빼면 돼요.</p>
@@ -133,7 +152,7 @@ html,body{ margin:0; padding:0; background:var(--paper); color:var(--ink); font-
     <div class="theory-h2">2. 자주 하는 오해</div>
     <div class="misconception">
       <div class="misconception-title">❌ 거듭제곱을 미분할 때 지수를 안 내려도 되나요?</div>
-      <div class="misconception-body">(xⁿ)' = n·x^(n−1)에서 지수가 1 줄어드는 걸 빼먹는 실수가 많아요. 계수(n)만 곱하고 지수는 그대로 두면 틀린 답이 돼요.</div>
+      <div class="misconception-body">\((x^n)' = n\,x^{n-1}\)에서 지수가 1 줄어드는 걸 빼먹는 실수가 많아요. 계수(n)만 곱하고 지수는 그대로 두면 틀린 답이 돼요.</div>
     </div>
     <div class="misconception">
       <div class="misconception-title">❌ 상수항도 미분하면 뭔가 남지 않나요?</div>
@@ -231,6 +250,32 @@ html,body{ margin:0; padding:0; background:var(--paper); color:var(--ink); font-
 
 <script>
 const COLORS = { ink:'#223027', inkSoft:'#5C6B60', left:'#C1442D', right:'#2B6CA3', gold:'#C99A2E', success:'#3F7D4C', border:'#D3DAD0' };
+
+// ============================================================
+// KaTeX 헬퍼
+// KX(tex) → HTML 문자열. 반드시 innerHTML로 넣을 것 (textContent면 태그가 날것으로 보인다).
+// katex 로드 실패나 문법 오류가 나도 게임 루프가 죽으면 안 되므로 원문 폴백.
+// ============================================================
+function KX(tex, display){
+  try {
+    return katex.renderToString(String(tex), { throwOnError:false, displayMode:!!display, strict:false });
+  } catch (e) {
+    return String(tex);
+  }
+}
+// 정적 마크업 안의 \(...\) / \[...\] 를 일괄 렌더 (이론 탭 등 JS가 다시 안 쓰는 영역 전용)
+function renderStaticMath(root){
+  if (typeof renderMathInElement !== 'function' || !root) return;
+  try {
+    renderMathInElement(root, {
+      delimiters: [ { left:'\\[', right:'\\]', display:true }, { left:'\\(', right:'\\)', display:false } ],
+      throwOnError: false,
+      ignoredTags: ['script','noscript','style','textarea','pre','code','option'],
+      ignoredClasses: ['katex'],   // 이미 렌더된 수식 안(숨김 MathML의 원본 TeX)을 다시 훑지 않도록
+    });
+  } catch (e) {}
+}
+
 function rand(min, max){ return min + Math.random() * (max - min); }
 function randInt(min, max){ return Math.floor(rand(min, max + 1)); }
 function randSign(){ return Math.random() < 0.5 ? -1 : 1; }
@@ -253,42 +298,44 @@ document.querySelectorAll('.tab-btn').forEach((btn) => btn.addEventListener('cli
 // ============================================================
 // LAB: RULE DEFINITIONS (hand-verified worked examples)
 // ============================================================
+// steps/final/formula 는 전부 KX()가 만든 HTML 문자열이다 → 렌더 시 반드시 innerHTML.
+// 한국어 설명은 수식 밖에 두어 본문 서체를 유지한다.
 const RULES = [
   {
-    id: 'const', label: '① 상수함수', formula: "(c)' = 0",
+    id: 'const', label: '① 상수함수', formula: KX("(c)' = 0"),
     steps: [
-      "f(x) = 5  (상수함수)",
-      "f'(x) = lim<span style=\"color:var(--gold); font-size:11px;\">h→0</span> [f(x+h) &minus; f(x)] / h",
-      "= lim<span style=\"color:var(--gold); font-size:11px;\">h→0</span> [5 &minus; 5] / h = 0",
+      KX("f(x) = 5") + ' <span class="step-note">상수함수</span>',
+      KX("\\displaystyle f'(x) = \\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h}"),
+      KX("\\displaystyle = \\lim_{h \\to 0} \\frac{5 - 5}{h} = 0"),
     ],
-    final: "f'(x) = 0",
+    final: KX("f'(x) = 0"),
   },
   {
-    id: 'power', label: '② 거듭제곱함수', formula: "(xⁿ)' = n·x^(n−1)",
+    id: 'power', label: '② 거듭제곱함수', formula: KX("(x^n)' = n\\,x^{n-1}"),
     steps: [
-      "f(x) = x⁵",
-      "공식: (xⁿ)' = n · x^(n&minus;1)",
-      "n = 5 대입: f'(x) = 5 · x⁴",
+      KX("f(x) = x^{5}"),
+      '공식: ' + KX("(x^n)' = n\\,x^{n-1}"),
+      'n = 5 대입: ' + KX("f'(x) = 5\\,x^{4}"),
     ],
-    final: "f'(x) = 5x⁴",
+    final: KX("f'(x) = 5x^{4}"),
   },
   {
-    id: 'const-mult', label: '③ 상수배', formula: "(cf(x))' = c·f'(x)",
+    id: 'const-mult', label: '③ 상수배', formula: KX("\\bigl(c\\,f(x)\\bigr)' = c\\,f'(x)"),
     steps: [
-      "f(x) = 3x⁴ = 3 · x⁴",
-      "공식: (c·f(x))' = c · f'(x)",
-      "f'(x) = 3 · (x⁴)' = 3 · 4x³",
+      KX("f(x) = 3x^{4} = 3 \\cdot x^{4}"),
+      '공식: ' + KX("\\bigl(c\\,f(x)\\bigr)' = c\\,f'(x)"),
+      KX("f'(x) = 3 \\cdot (x^{4})' = 3 \\cdot 4x^{3}"),
     ],
-    final: "f'(x) = 12x³",
+    final: KX("f'(x) = 12x^{3}"),
   },
   {
-    id: 'sum', label: '④ 합/차', formula: "(f±g)' = f'±g'",
+    id: 'sum', label: '④ 합/차', formula: KX("(f \\pm g)' = f' \\pm g'"),
     steps: [
-      "f(x) = x³ + 2x² &minus; 5x + 7",
-      "공식: 각 항을 따로 미분해서 더하고 뺀다",
-      "(x³)'=3x², (2x²)'=4x, (&minus;5x)'=&minus;5, (7)'=0",
+      KX("f(x) = x^{3} + 2x^{2} - 5x + 7"),
+      '공식: 각 항을 따로 미분해서 더하고 뺀다',
+      KX("(x^{3})' = 3x^{2},\\quad (2x^{2})' = 4x,\\quad (-5x)' = -5,\\quad (7)' = 0"),
     ],
-    final: "f'(x) = 3x² + 4x &minus; 5",
+    final: KX("f'(x) = 3x^{2} + 4x - 5"),
   },
 ];
 
@@ -312,7 +359,7 @@ const LabApp = (function(){
   }
   function render(){
     const rule = getRule();
-    document.getElementById('ruleFormula').textContent = rule.formula;
+    document.getElementById('ruleFormula').innerHTML = rule.formula;   // KX() 결과 HTML
     const linesEl = document.getElementById('stepLines');
     linesEl.innerHTML = '';
     rule.steps.forEach((s, i) => {
@@ -344,47 +391,54 @@ const GameApp = (function(){
   const state = { score: 0, lives: 3, streak: 0, correctCount: 0, timePerQ: START_TIME, round: null, rafId: null, locked: false };
 
   function nz(min, max){ return randSign() * randInt(min, max); }
-  function termStr(coef, varPart){
+
+  // 항을 {neg, body} 구조로 다룬다.
+  // 예전에는 '&minus;' 접두 문자열을 만든 뒤 joinTerms에서 slice(7)로 다시 잘라 부호를 판별했다.
+  // 조판 문자를 하나라도 바꾸면 그 로직이 통째로 깨지는 구조였으므로, 부호를 구조로 들고 있게 바꿨다.
+  function term(coef, varPart){
     if (coef === 0) return null;
-    const sign = coef < 0 ? '&minus;' : '';
     const abs = Math.abs(coef);
-    const coefPart = (abs === 1 && varPart !== '') ? '' : String(abs);
-    return sign + coefPart + varPart;
+    const body = (abs === 1 && varPart !== '') ? varPart : String(abs) + varPart;
+    return { neg: coef < 0, body };
   }
+  // LaTeX 문자열 생성. ⚠️ 이 문자열이 정오 판정의 기준이기도 하다 (correctStr === candidateStr).
+  // 같은 입력이면 반드시 같은 출력이어야 한다 — 공백 하나까지.
   function joinTerms(terms){
-    let result = '';
-    terms.filter((t) => t !== null).forEach((t, i) => {
-      if (i === 0) result += t;
-      else if (t.startsWith('&minus;')) result += ' &minus; ' + t.slice(7);
-      else result += ' + ' + t;
-    });
-    return result || '0';
+    const ts = terms.filter((t) => t !== null);
+    if (ts.length === 0) return '0';
+    return ts.map((t, i) => (i === 0 ? (t.neg ? '-' : '') : (t.neg ? ' - ' : ' + ')) + t.body).join('');
   }
+  // 지수 1이면 x, 아니면 x^{k}
+  function pow(k){ return k === 1 ? 'x' : 'x^{' + k + '}'; }
 
   function generatePoly(){
     let n = randInt(2, 4), m = randInt(2, 4);
     while (m === n) m = randInt(2, 4);
     const a = nz(1, 6), b = nz(1, 6), c = nz(1, 5);
     const trueDeriv = (x) => a * n * Math.pow(x, n - 1) + b * m * Math.pow(x, m - 1);
-    const t1 = n - 1 === 1 ? 'x' : 'x^' + (n - 1), t2 = m - 1 === 1 ? 'x' : 'x^' + (m - 1);
-    const correctStr = joinTerms([termStr(a * n, t1), termStr(b * m, t2)]);
+    const t1 = pow(n - 1), t2 = pow(m - 1);
+    const correctStr = joinTerms([term(a * n, t1), term(b * m, t2)]);
     const wrongType = pick(['keepConst', 'missExp', 'missDecrement']);
     let wrongStr, wrongDeriv;
     if (wrongType === 'keepConst') {
-      wrongStr = joinTerms([termStr(a * n, t1), termStr(b * m, t2), termStr(c, '')]);
+      wrongStr = joinTerms([term(a * n, t1), term(b * m, t2), term(c, '')]);
       wrongDeriv = (x) => a * n * Math.pow(x, n - 1) + b * m * Math.pow(x, m - 1) + c;
     } else if (wrongType === 'missExp') {
-      wrongStr = joinTerms([termStr(a, t1), termStr(b * m, t2)]);
+      wrongStr = joinTerms([term(a, t1), term(b * m, t2)]);
       wrongDeriv = (x) => a * Math.pow(x, n - 1) + b * m * Math.pow(x, m - 1);
     } else {
-      wrongStr = joinTerms([termStr(a * n, n === 1 ? 'x' : 'x^' + n), termStr(b * m, t2)]);
+      wrongStr = joinTerms([term(a * n, pow(n)), term(b * m, t2)]);
       wrongDeriv = (x) => a * n * Math.pow(x, n) + b * m * Math.pow(x, m - 1);
     }
-    return { kind: 'poly', fnStr: joinTerms([termStr(a, 'x^' + n), termStr(b, 'x^' + m), termStr(c, '')]), trueDeriv, correctStr, wrongStr, wrongDeriv, wrongType };
+    return { kind: 'poly', fnStr: joinTerms([term(a, pow(n)), term(b, pow(m)), term(c, '')]), trueDeriv, correctStr, wrongStr, wrongDeriv, wrongType };
   }
 
   const HINTS = {
-    poly: { keepConst: '상수항은 미분하면 0이 돼서 사라져요.', missExp: '거듭제곱을 미분할 때는 지수를 계수로 곱해야 해요 — (xⁿ)\' = nx^(n−1).', missDecrement: '지수를 1 낮추는 걸 빼먹으면 안 돼요.' },
+    poly: {
+      keepConst: '상수항은 미분하면 0이 돼서 사라져요.',
+      missExp: '거듭제곱을 미분할 때는 지수를 계수로 곱해야 해요 — ' + KX("(x^n)' = n\\,x^{n-1}") + '.',
+      missDecrement: '지수를 1 낮추는 걸 빼먹으면 안 돼요.',
+    },
   };
   function generateRound(){
     const showCorrect = Math.random() < 0.5;
@@ -417,8 +471,8 @@ const GameApp = (function(){
     state.locked = false;
     const round = generateRound();
     state.round = round;
-    document.getElementById('qFnStr').innerHTML = 'f(x) = ' + round.fnStr;
-    document.getElementById('qCandStr').innerHTML = "f'(x) = " + round.candidateStr;
+    document.getElementById('qFnStr').innerHTML = KX('f(x) = ' + round.fnStr);
+    document.getElementById('qCandStr').innerHTML = KX("f'(x) = " + round.candidateStr);
     document.getElementById('gameFeedback').classList.add('hidden');
     document.getElementById('btnJudgeGood').disabled = false;
     document.getElementById('btnJudgeBad').disabled = false;
@@ -444,7 +498,7 @@ const GameApp = (function(){
     const isCorrect = choice === round.correctAnswer;
     const fbEl = document.getElementById('gameFeedback');
     fbEl.classList.remove('hidden');
-    const correctLine = "f'(x) = " + round.correctStr;
+    const correctLine = KX("f'(x) = " + round.correctStr);
     if (isCorrect) {
       const remainingRatio = parseFloat(document.getElementById('gameTimerFill').style.width) / 100 || 0;
       const points = 15 + Math.round(remainingRatio * 20) + Math.min(state.streak, 10);
@@ -499,6 +553,7 @@ document.getElementById('ctaToGame').addEventListener('click', () => showTab('ga
 
 LabApp.init();
 GameApp.init();
+renderStaticMath(document.getElementById('page-theory'));   // 이론 탭의 \(...\) 일괄 렌더
 showTab('theory');
 </script>
 </body>

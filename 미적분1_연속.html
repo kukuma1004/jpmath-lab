@@ -6,6 +6,10 @@
 <title>연속 학습 스위트 · 석산고 미적분</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700;900&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- KaTeX (자체 호스팅) — 동기 로드: 하단 인라인 스크립트가 katex 전역을 즉시 쓰기 때문 -->
+<link rel="stylesheet" href="vendor/katex/katex.min.css">
+<script src="vendor/katex/katex.min.js"></script>
+<script src="vendor/katex/contrib/auto-render.min.js"></script>
 <style>
 :root{
   --paper:#EFF3EE; --panel:#FFFFFF; --grid:#D8E2D3; --dot:#E2E9DE;
@@ -109,6 +113,16 @@ input[type=range]{ width:100%; accent-color:var(--ink); margin:10px 0; }
 .end-sub{ text-align:center; color:var(--inkSoft); font-size:13px; margin-bottom:8px; }
 .lb-title{ font-family:var(--font-display); font-weight:900; font-size:19px; margin:0 0 4px; }
 
+/* ---------- KaTeX 통합 (기존 서식 보존용) ---------- */
+/* 방침: 수식 표기만 KaTeX. 실시간 숫자 readout(.cond-value, .limit-mini-value)은 mono 유지. */
+.katex{ font-size:1.05em; }
+.katex .base{ white-space:nowrap; }
+.theorem-formula .katex{ font-size:1.02em; }
+.limit-mini-label .katex{ font-size:0.95em; }
+.misconception-body .katex, .theory-p .katex{ font-size:1em; }
+.verdict .katex{ font-size:1em; }
+.theorem-formula{ overflow-x:auto; overflow-y:hidden; }
+
 @media (prefers-reduced-motion: reduce){ .arcade-feedback,.ll-fog,.ll-clear{ transition:none; } }
 </style>
 </head>
@@ -136,13 +150,13 @@ input[type=range]{ width:100%; accent-color:var(--ink); margin:10px 0; }
 
   <div class="theory-section">
     <div class="theory-h2">1. 연속이란?</div>
-    <p class="theory-p">함수 f(x)가 x=a에서 <b>연속</b>이라는 건, 그래프가 그 점에서 끊기지 않고 매끄럽게 이어진다는 뜻이에요. 이걸 엄밀하게 판정하려면 아래 세 가지를 전부 확인해야 해요.</p>
+    <p class="theory-p">함수 f(x)가 \(x=a\)에서 <b>연속</b>이라는 건, 그래프가 그 점에서 끊기지 않고 매끄럽게 이어진다는 뜻이에요. 이걸 엄밀하게 판정하려면 아래 세 가지를 전부 확인해야 해요.</p>
     <div class="theorem-box">
       <div class="theorem-eyebrow">정의 · f(x)가 x=a에서 연속이려면</div>
       <div class="theorem-formula">
-        ① f(a) 가 정의된다 (함숫값이 존재)<br>
-        ② lim f(x), x→a 가 존재한다 (좌극한 = 우극한)<br>
-        ③ lim f(x), x→a = f(a) (극한값 = 함숫값)
+        ① \(f(a)\) 가 정의된다 (함숫값이 존재)<br>
+        ② \(\lim\limits_{x \to a} f(x)\) 가 존재한다 (좌극한 = 우극한)<br>
+        ③ \(\lim\limits_{x \to a} f(x) = f(a)\) (극한값 = 함숫값)
       </div>
     </div>
     <p class="theory-p">세 개 중 <b>하나라도</b> 어긋나면 그 점에서 불연속이에요. 셋 다 만족해야만 연속입니다.</p>
@@ -158,15 +172,15 @@ input[type=range]{ width:100%; accent-color:var(--ink); margin:10px 0; }
     <div class="theory-h2">3. 자주 하는 오해</div>
     <div class="misconception">
       <div class="misconception-title">❌ f(a)가 정의되어 있으면 연속이다?</div>
-      <div class="misconception-body">아니에요. 함숫값이 있어도 극한이 없거나, 극한값과 f(a)가 다르면 불연속이에요. 세 조건을 다 봐야 해요.</div>
+      <div class="misconception-body">아니에요. 함숫값이 있어도 극한이 없거나, 극한값과 \(f(a)\)가 다르면 불연속이에요. 세 조건을 다 봐야 해요.</div>
     </div>
     <div class="misconception">
       <div class="misconception-title">❌ 극한이 존재하면 연속이다?</div>
-      <div class="misconception-body">극한이 있어도 f(a)가 정의되지 않았거나, 극한값과 f(a)가 다르면 불연속이에요. "제거가능 불연속"이 바로 이 함정이에요.</div>
+      <div class="misconception-body">극한이 있어도 \(f(a)\)가 정의되지 않았거나, 극한값과 \(f(a)\)가 다르면 불연속이에요. "제거가능 불연속"이 바로 이 함정이에요.</div>
     </div>
     <div class="misconception">
       <div class="misconception-title">❌ 그래프가 눈으로 안 끊어져 보이면 연속이다?</div>
-      <div class="misconception-body">교과서 문제는 일부러 한 점만 다른 값으로 "몰래" 재정의해두는 경우가 많아요. 눈대중이 아니라 f(a) 값을 직접 확인하는 습관이 중요해요.</div>
+      <div class="misconception-body">교과서 문제는 일부러 한 점만 다른 값으로 "몰래" 재정의해두는 경우가 많아요. 눈대중이 아니라 \(f(a)\) 값을 직접 확인하는 습관이 중요해요.</div>
     </div>
     <div class="misconception">
       <div class="misconception-title">❌ 한 점에서 불연속이면 그 근처도 다 불연속이다?</div>
@@ -291,6 +305,32 @@ const COLORS = {
   ink:'#223027', inkSoft:'#5C6B60',
   left:'#C1442D', right:'#2B6CA3', gold:'#C99A2E', success:'#3F7D4C', border:'#D3DAD0',
 };
+
+// ============================================================
+// KaTeX 헬퍼
+// KX(tex) → HTML 문자열. 반드시 innerHTML로 넣을 것.
+// 방침: 수식 표기만 조판. fmt()가 돌려주는 값은 '정의되지 않음' 같은 한국어일 수 있으므로
+//      절대 그대로 KX()에 넣지 말 것.
+// ============================================================
+function KX(tex, display){
+  try {
+    return katex.renderToString(String(tex), { throwOnError:false, displayMode:!!display, strict:false });
+  } catch (e) {
+    return String(tex);
+  }
+}
+function renderStaticMath(root){
+  if (typeof renderMathInElement !== 'function' || !root) return;
+  try {
+    renderMathInElement(root, {
+      delimiters: [ { left:'\\[', right:'\\]', display:true }, { left:'\\(', right:'\\)', display:false } ],
+      throwOnError: false,
+      ignoredTags: ['script','noscript','style','textarea','pre','code','option'],
+      ignoredClasses: ['katex'],   // 이미 렌더된 수식 안(숨김 MathML의 원본 TeX)을 다시 훑지 않도록
+    });
+  } catch (e) {}
+}
+
 function rand(min, max){ return min + Math.random() * (max - min); }
 function randSign(){ return Math.random() < 0.5 ? -1 : 1; }
 function randInt(min, max){ return Math.floor(rand(min, max + 1)); }
@@ -505,8 +545,8 @@ const LabApp = (function(){
     leftEl.className = 'limit-mini-value ' + (revealed.left ? 'll-clear' : 'll-fog');
     rightEl.textContent = revealed.right ? fmt(limitRightVal) : '?.??';
     rightEl.className = 'limit-mini-value ' + (revealed.right ? 'll-clear' : 'll-fog');
-    document.getElementById('labLeftSymbol').textContent = `좌극한 x→${aValue}⁻`;
-    document.getElementById('labRightSymbol').textContent = `우극한 x→${aValue}⁺`;
+    document.getElementById('labLeftSymbol').innerHTML = '좌극한 ' + KX(`x \\to ${aValue}^{-}`);
+    document.getElementById('labRightSymbol').innerHTML = '우극한 ' + KX(`x \\to ${aValue}^{+}`);
 
     const faVal = fAt(preset, aValue);
     const faEl = document.getElementById('labFaValue');
@@ -521,12 +561,13 @@ const LabApp = (function(){
       const cond3 = cond1 && cond2 && Math.abs(faVal - limitLeftVal) < 0.05;
       const continuous = cond1 && cond2 && cond3;
       let failMsg = '';
-      if (!cond1) failMsg = `f(${aValue})가 정의되지 않았어요. '그래프가 이어져 보이면 연속'이라 생각하기 쉽지만, 함숫값 자체가 없으면 무조건 불연속이에요.`;
-      else if (!cond2) failMsg = '좌극한과 우극한이 달라서 극한 자체가 존재하지 않아요. f(a)가 정의되어 있어도 소용없어요.';
-      else if (!cond3) failMsg = `극한값(${fmt(limitLeftVal)})과 f(${aValue})(${fmt(faVal)})가 서로 달라요. 둘 다 있어도 값이 같아야 연속이에요.`;
+      // fmt() 결과(한국어일 수 있음)는 평문으로, f(a) 같은 표기만 KX로 조판한다.
+      if (!cond1) failMsg = KX(`f(${aValue})`) + `가 정의되지 않았어요. '그래프가 이어져 보이면 연속'이라 생각하기 쉽지만, 함숫값 자체가 없으면 무조건 불연속이에요.`;
+      else if (!cond2) failMsg = '좌극한과 우극한이 달라서 극한 자체가 존재하지 않아요. ' + KX('f(a)') + '가 정의되어 있어도 소용없어요.';
+      else if (!cond3) failMsg = `극한값(${fmt(limitLeftVal)})과 ` + KX(`f(${aValue})`) + `(${fmt(faVal)})가 서로 달라요. 둘 다 있어도 값이 같아야 연속이에요.`;
 
       verdictEl.className = 'verdict ' + (continuous ? 'ok' : 'bad');
-      verdictEl.innerHTML = `<div style="font-weight:700; font-size:13.5px; color:${continuous ? COLORS.success : COLORS.left}">${continuous ? `③ 극한 = f(a) ✓ → 연속이다` : '③ 조건 불충족 → 불연속이다'}</div><div style="font-size:12px; color:var(--inkSoft); margin-top:5px; line-height:1.6;">${continuous ? `세 조건을 모두 만족해서 x=${aValue}에서 연속이에요.` : failMsg}</div>`;
+      verdictEl.innerHTML = `<div style="font-weight:700; font-size:13.5px; color:${continuous ? COLORS.success : COLORS.left}">${continuous ? `③ 극한 = ${KX('f(a)')} ✓ → 연속이다` : '③ 조건 불충족 → 불연속이다'}</div><div style="font-size:12px; color:var(--inkSoft); margin-top:5px; line-height:1.6;">${continuous ? `세 조건을 모두 만족해서 ${KX('x=' + aValue)}에서 연속이에요.` : failMsg}</div>`;
     } else {
       verdictEl.className = '';
       verdictEl.setAttribute('style', 'font-size:12.5px; color:var(--inkSoft); padding:0 2px 12px; line-height:1.6;');
@@ -631,17 +672,17 @@ const ArcadeApp = (function(){
   const MISCONCEPTIONS = {
     'continuous-single': '매끄럽게 하나로 이어진 함수예요. 그래프를 끝까지 눈으로 따라가 보세요.',
     'continuous-piece': '조각으로 나뉘어 있어도 이어지는 지점의 값이 같으면 연속이에요! "조각=불연속"은 오해예요.',
-    'jump': '좌극한과 우극한이 서로 달라요. 극한 자체가 없으니 f(a)가 있어도 불연속이에요.',
-    'gap': '이 점에서는 f(a)가 아예 정의되어 있지 않아요. 양쪽 극한이 같아도 함숫값이 없으면 불연속이에요.',
-    'removable': '극한값과 f(a)가 서로 달라요. 둘 다 있다고 자동으로 연속인 건 아니에요 — 값이 같아야 해요.',
+    'jump': '좌극한과 우극한이 서로 달라요. 극한 자체가 없으니 ' + KX('f(a)') + '가 있어도 불연속이에요.',
+    'gap': '이 점에서는 ' + KX('f(a)') + '가 아예 정의되어 있지 않아요. 양쪽 극한이 같아도 함숫값이 없으면 불연속이에요.',
+    'removable': '극한값과 ' + KX('f(a)') + '가 서로 달라요. 둘 다 있다고 자동으로 연속인 건 아니에요 — 값이 같아야 해요.',
     'asymptote': '한쪽(또는 양쪽)이 무한대로 발산해요. 극한이 존재하지 않으니 불연속이에요.',
   };
   const CORRECT_HINTS = {
     'continuous-single': '맞아요, 매끄럽게 하나로 이어져 있어요.',
     'continuous-piece': '맞아요, 조각의 값이 정확히 이어져서 연속이에요.',
     'jump': '맞아요, 좌우극한이 달라서 불연속이에요.',
-    'gap': '맞아요, f(a)가 정의되지 않아서 불연속이에요.',
-    'removable': '맞아요, 극한과 f(a)가 달라서 불연속이에요.',
+    'gap': '맞아요, ' + KX('f(a)') + '가 정의되지 않아서 불연속이에요.',
+    'removable': '맞아요, 극한과 ' + KX('f(a)') + '가 달라서 불연속이에요.',
     'asymptote': '맞아요, 무한대로 발산해서 불연속이에요.',
   };
 
@@ -827,7 +868,7 @@ const ArcadeApp = (function(){
       state.score += points; state.streak += 1; state.correctCount += 1;
       document.getElementById('arcadeScoreNum').textContent = state.score;
       if (state.correctCount % DECAY_EVERY === 0) state.timePerCard = Math.max(MIN_TIME, state.timePerCard - DECAY_AMOUNT);
-      fbEl.textContent = `✓ +${points}점 · ${CORRECT_HINTS[card.kind] || ''}`;
+      fbEl.innerHTML = `✓ +${points}점 · ${CORRECT_HINTS[card.kind] || ''}`;   // 힌트가 KX HTML을 품음
       fbEl.className = 'arcade-feedback show good';
       setTimeout(() => { spawnCard(); }, 550);
     } else {
@@ -835,7 +876,7 @@ const ArcadeApp = (function(){
       state.lives -= 1;
       renderLives();
       const msg = choice == null ? '⏱ 시간 초과! ' : '✕ 틀렸어요. ';
-      fbEl.textContent = msg + (MISCONCEPTIONS[card.kind] || '');
+      fbEl.innerHTML = msg + (MISCONCEPTIONS[card.kind] || '');   // 오개념 설명이 KX HTML을 품음
       fbEl.className = 'arcade-feedback show bad';
       if (state.lives <= 0) {
         setTimeout(() => { gameOver(); }, 1300);
@@ -919,6 +960,7 @@ const TheoryApp = (function(){
 LabApp.init();
 ArcadeApp.init();
 TheoryApp.init();
+renderStaticMath(document.getElementById('page-theory'));   // 이론 탭의 \(...\) 일괄 렌더
 showTab('theory');
 </script>
 </body>

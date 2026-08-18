@@ -6,6 +6,10 @@
 <title>함수의 극한값 구하기 · 석산고 미적분Ⅰ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700;900&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- KaTeX (자체 호스팅) — 동기 로드: 하단 인라인 스크립트가 katex 전역을 즉시 쓰기 때문 -->
+<link rel="stylesheet" href="vendor/katex/katex.min.css">
+<script src="vendor/katex/katex.min.js"></script>
+<script src="vendor/katex/contrib/auto-render.min.js"></script>
 <style>
 :root{
   --paper:#EFF3EE; --panel:#FFFFFF; --grid:#D8E2D3; --dot:#E2E9DE;
@@ -96,6 +100,23 @@ html,body{ margin:0; padding:0; background:var(--paper); color:var(--ink); font-
 .frac{ display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle; margin:0 3px; line-height:1.15; }
 .frac .num{ border-bottom:1.4px solid currentColor; padding:0 5px 1px; }
 .frac .den{ padding:1px 5px 0; }
+/* ---------- KaTeX 통합 (기존 서식 보존용) ---------- */
+.katex{ font-size:1.05em; }
+.katex .base{ white-space:nowrap; }
+.theorem-formula .katex{ font-size:1em; }
+.step-line .katex{ font-size:1em; }
+.q-expr .katex{ font-size:1em; }
+.q-cand .katex{ font-size:1em; }
+.final-box .val .katex{ font-size:1em; }
+.fb-box .katex{ font-size:1em; }
+.form-card-body .katex, .misconception-body .katex{ font-size:1em; }
+.form-card-tag .katex{ font-size:1em; }
+/* 긴 수식은 레이아웃을 밀지 말고 그 안에서 가로 스크롤 */
+.theorem-formula, .step-line, .q-expr, .final-box .val{ overflow-x:auto; overflow-y:hidden; }
+/* displaystyle 분수가 들어가면 줄 높이가 커진다 — 여백으로 흡수 */
+.step-line{ padding:2px 0; }
+.q-expr{ padding:2px 0; }
+
 @media (prefers-reduced-motion: reduce){ .step-line,.timerbar-fill{ transition:none; } }
 </style>
 </head>
@@ -125,15 +146,15 @@ html,body{ margin:0; padding:0; background:var(--paper); color:var(--ink); font-
     <div class="theory-h2">1. 부정형(不定形)이란?</div>
     <p class="theory-p">극한값은 보통 <b>그냥 대입</b>하면 구해져요. 하지만 대입했을 때 아래 같은 꼴이 나오면 값을 바로 알 수 없어요. 이런 걸 <b>부정형</b>이라고 해요.</p>
     <div class="form-card">
-      <div class="form-card-tag">0 / 0 꼴</div>
+      <div class="form-card-tag">\(\dfrac{0}{0}\) 꼴</div>
       <div class="form-card-body">분자와 분모가 동시에 0이 되는 경우. <b>인수분해해서 약분</b>하면 풀려요.</div>
     </div>
     <div class="form-card">
-      <div class="form-card-tag">∞ / ∞ 꼴</div>
-      <div class="form-card-body">x→∞일 때 분자·분모가 모두 무한대로 가는 경우. <b>분모의 최고차항으로 나누면</b> 풀려요.</div>
+      <div class="form-card-tag">\(\dfrac{\infty}{\infty}\) 꼴</div>
+      <div class="form-card-body">\(x \to \infty\)일 때 분자·분모가 모두 무한대로 가는 경우. <b>분모의 최고차항으로 나누면</b> 풀려요.</div>
     </div>
     <div class="form-card">
-      <div class="form-card-tag">∞ − ∞ 꼴</div>
+      <div class="form-card-tag">\(\infty - \infty\) 꼴</div>
       <div class="form-card-body">무한대끼리 빼는 경우. 루트가 있으면 <b>유리화</b>, 다항식이면 <b>최고차항으로 묶어서</b> 풀어요.</div>
     </div>
     <p class="theory-p">중요한 건 <b>0/0은 "0"이 아니라는 것</b>이에요. 값이 정해지지 않았다는 신호일 뿐이라, 식을 정리하면 어떤 값이든 나올 수 있어요.</p>
@@ -144,12 +165,12 @@ html,body{ margin:0; padding:0; background:var(--paper); color:var(--ink); font-
     <div class="theorem-box">
       <div class="theorem-eyebrow">정리</div>
       <div class="theorem-formula">
-        0/0 꼴 → 인수분해 후 약분<br>
-        ∞/∞ 꼴 → 분모 최고차항으로 나누기<br>
-        ∞−∞ 꼴 → 유리화 또는 최고차항 묶기
+        \(\frac{0}{0}\) 꼴 → 인수분해 후 약분<br>
+        \(\frac{\infty}{\infty}\) 꼴 → 분모 최고차항으로 나누기<br>
+        \(\infty-\infty\) 꼴 → 유리화 또는 최고차항 묶기
       </div>
     </div>
-    <p class="theory-p">∞/∞ 꼴에서는 결국 <b>최고차항끼리의 비</b>가 답이 돼요. 분자·분모의 차수가 같으면 최고차항 계수의 비, 분자 차수가 낮으면 0, 분자 차수가 높으면 발산해요.</p>
+    <p class="theory-p">\(\frac{\infty}{\infty}\) 꼴에서는 결국 <b>최고차항끼리의 비</b>가 답이 돼요. 분자·분모의 차수가 같으면 최고차항 계수의 비, 분자 차수가 낮으면 0, 분자 차수가 높으면 발산해요.</p>
   </div>
 
   <div class="theory-section">
@@ -160,11 +181,11 @@ html,body{ margin:0; padding:0; background:var(--paper); color:var(--ink); font-
     </div>
     <div class="misconception">
       <div class="misconception-title">❌ ∞/∞니까 답은 1 아닌가요?</div>
-      <div class="misconception-body">무한대는 숫자가 아니라서 약분되지 않아요. 분모의 최고차항으로 나눠봐야 실제 값이 나와요 — 3x²/2x²이면 3/2가 되는 것처럼요.</div>
+      <div class="misconception-body">무한대는 숫자가 아니라서 약분되지 않아요. 분모의 최고차항으로 나눠봐야 실제 값이 나와요 — \(\frac{3x^{2}}{2x^{2}}\)이면 \(\frac{3}{2}\)가 되는 것처럼요.</div>
     </div>
     <div class="misconception">
       <div class="misconception-title">❌ ∞−∞는 0 아닌가요?</div>
-      <div class="misconception-body">이것도 아니에요. √(x²+4x)−x 처럼 생긴 식은 계산해보면 2로 수렴해요. 무한대끼리 빼도 그 "속도 차이"에 따라 결과가 달라져요.</div>
+      <div class="misconception-body">이것도 아니에요. \(\sqrt{x^{2}+4x}-x\) 처럼 생긴 식은 계산해보면 2로 수렴해요. 무한대끼리 빼도 그 "속도 차이"에 따라 결과가 달라져요.</div>
     </div>
   </div>
 
@@ -288,8 +309,43 @@ function shuffle(arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){const 
 function gcd(a,b){ a=Math.abs(a); b=Math.abs(b); while(b){[a,b]=[b,a%b];} return a||1; }
 function fracStr(n,d){ if(d<0){n=-n;d=-d;} const g=gcd(n,d); n/=g; d/=g; return d===1?String(n):`${n}/${d}`; }
 function frac(n,d){ return `<span class="frac"><span class="num">${n}</span><span class="den">${d}</span></span>`; }
-function bin(c){ return c<0 ? `(x+${Math.abs(c)})` : `(x&minus;${c})`; }
-function signedTerm(c, v){ return (c<0 ? '&minus;' : '+') + ' ' + Math.abs(c) + v; }
+
+// ============================================================
+// KaTeX 헬퍼
+// KX(tex) → HTML 문자열. 반드시 innerHTML로 넣을 것.
+// katex 로드 실패나 문법 오류가 나도 게임 루프가 죽으면 안 되므로 원문 폴백.
+// ============================================================
+function KX(tex, display){
+  try {
+    return katex.renderToString(String(tex), { throwOnError:false, displayMode:!!display, strict:false });
+  } catch (e) {
+    return String(tex);
+  }
+}
+function renderStaticMath(root){
+  if (typeof renderMathInElement !== 'function' || !root) return;
+  try {
+    renderMathInElement(root, {
+      delimiters: [ { left:'\\[', right:'\\]', display:true }, { left:'\\(', right:'\\)', display:false } ],
+      throwOnError: false,
+      ignoredTags: ['script','noscript','style','textarea','pre','code','option'],
+      ignoredClasses: ['katex'],   // 이미 렌더된 수식 안(숨김 MathML의 원본 TeX)을 다시 훑지 않도록
+    });
+  } catch (e) {}
+}
+// 기약분수 LaTeX. 부호는 분수 앞으로 뺀다 (\frac{-1}{2} 아니라 -\frac{1}{2}).
+function texFracStr(n, d){
+  if (d < 0) { n = -n; d = -d; }
+  const g = gcd(n, d); n /= g; d /= g;
+  if (d === 1) return String(n);
+  return (n < 0 ? '-' : '') + `\\frac{${Math.abs(n)}}{${d}}`;
+}
+
+// ---- 아래 3개는 LaTeX 소스를 만든다 (HTML 아님). 출력 시 KX()로 감쌀 것. ----
+function bin(c){ return c<0 ? `(x+${Math.abs(c)})` : `(x-${c})`; }
+function signedTerm(c, v){ return (c<0 ? '-' : '+') + ' ' + Math.abs(c) + v; }
+// 나눗셈 단계에서 쓰는 c/x 항
+function signedOverX(c){ return (c<0 ? '-' : '+') + ` \\frac{${Math.abs(c)}}{x}`; }
 
 function showTab(name){
   ['theory','lab','game'].forEach(n=>{
@@ -305,18 +361,21 @@ function makeZZ(){
   const a = nz(1,4);
   let r = nz(1,5); while (r===a) r = nz(1,5);
   let s = nz(1,5); while (s===a || s===r) s = nz(1,5);
+  const exprTex = `\\displaystyle \\lim_{x \\to ${a}} \\frac{${bin(a)}${bin(r)}}{${bin(a)}${bin(s)}}`;
   return {
     form:'0/0', a, r, s,
-    exprHTML: `lim<span style="font-size:11px;color:var(--gold);">x→${a}</span> ${frac(bin(a)+bin(r), bin(a)+bin(s))}`,
+    exprTex,
+    exprHTML: KX(exprTex),                 // 렌더된 HTML — innerHTML 로만 출력
     limit: (a-r)/(a-s),
     num: a-r, den: a-s,
-    limitStr: fracStr(a-r, a-s),
+    limitStr: fracStr(a-r, a-s),           // 평문 (로직·폴백용)
+    limitTex: texFracStr(a-r, a-s),        // 표시용 LaTeX
     steps: [
-      `lim<span class="step-note">x→${a}</span> ${frac(bin(a)+bin(r), bin(a)+bin(s))}`,
-      `x=${a} 대입하면 ${frac("0","0")} 꼴 <span class="step-note">부정형!</span>`,
-      `공통인수 ${bin(a)}로 약분 <span class="step-note">x≠${a}이므로 가능</span>`,
-      `= lim<span class="step-note">x→${a}</span> ${frac(bin(r), bin(s))}`,
-      `= ${frac(`${a}${r<0?'+':'&minus;'}${Math.abs(r)}`, `${a}${s<0?'+':'&minus;'}${Math.abs(s)}`)} <span class="step-note">이제 대입</span>`,
+      KX(exprTex),
+      `x=${a} 대입하면 ` + KX(`\\frac{0}{0}`) + ` 꼴 <span class="step-note">부정형!</span>`,
+      `공통인수 ` + KX(bin(a)) + ` 로 약분 <span class="step-note">x≠${a}이므로 가능</span>`,
+      KX(`\\displaystyle = \\lim_{x \\to ${a}} \\frac{${bin(r)}}{${bin(s)}}`),
+      KX(`\\displaystyle = \\frac{${a}${r<0?'+':'-'}${Math.abs(r)}}{${a}${s<0?'+':'-'}${Math.abs(s)}}`) + ` <span class="step-note">이제 대입</span>`,
     ],
   };
 }
@@ -324,45 +383,53 @@ function makeII(){
   const d = randInt(1,3);
   const p = nz(1,6), q = nz(1,6);
   const e = nz(1,5), f = nz(1,5);
-  const xp = d===1 ? 'x' : `x<sup>${d}</sup>`;
-  const xp1 = d===1 ? '' : (d===2 ? 'x' : `x<sup>${d-1}</sup>`);
-  const numHTML = `${p}${xp} ${signedTerm(e, xp1)}`;
-  const denHTML = `${q}${xp} ${signedTerm(f, xp1)}`;
+  const xp = d===1 ? 'x' : `x^{${d}}`;
+  const xp1 = d===1 ? '' : (d===2 ? 'x' : `x^{${d-1}}`);
+  const numTex = `${p}${xp} ${signedTerm(e, xp1)}`;
+  const denTex = `${q}${xp} ${signedTerm(f, xp1)}`;
+  const exprTex = `\\displaystyle \\lim_{x \\to \\infty} \\frac{${numTex}}{${denTex}}`;
   return {
     form:'∞/∞', d, p, q, e, f,
-    exprHTML: `lim<span style="font-size:11px;color:var(--gold);">x→∞</span> ${frac(numHTML, denHTML)}`,
+    exprTex,
+    exprHTML: KX(exprTex),
     limit: p/q,
     num: p, den: q,
     limitStr: fracStr(p,q),
+    limitTex: texFracStr(p,q),
     steps: [
-      `lim<span class="step-note">x→∞</span> ${frac(numHTML, denHTML)}`,
+      KX(exprTex),
       `x→∞이면 분자·분모 모두 ∞ <span class="step-note">∞/∞ 부정형!</span>`,
-      `분모의 최고차항 ${xp}으로 분자·분모를 나눈다`,
-      `= lim<span class="step-note">x→∞</span> ${frac(`${p} ${signedTerm(e,'/x')}`, `${q} ${signedTerm(f,'/x')}`)}`,
-      `x→∞이면 ${frac("1","x")}→0 이므로`,
-      `= ${frac(String(p), String(q))}`,
+      `분모의 최고차항 ` + KX(xp) + `으로 분자·분모를 나눈다`,
+      KX(`\\displaystyle = \\lim_{x \\to \\infty} \\frac{${p} ${signedOverX(e)}}{${q} ${signedOverX(f)}}`),
+      `x→∞이면 ` + KX(`\\frac{1}{x} \\to 0`) + ` 이므로`,
+      // 원본과 동일하게 약분 전 형태를 보여준다 (최종 약분값은 아래 결과 박스에서).
+      KX(`\\displaystyle = \\frac{${p}}{${q}}`),
     ],
   };
 }
 function makeIMI(){
   const half = nz(1,5);
   const b = 2*half;
-  const bStr = b<0 ? `&minus;${Math.abs(b)}x` : `+${b}x`;
-  const expr = `√(x<sup>2</sup>${bStr}) &minus; x`;
+  const bStr = b<0 ? `-${Math.abs(b)}x` : `+${b}x`;
+  const rootTex = `\\sqrt{x^{2}${bStr}}`;
+  const exprTex = `\\displaystyle \\lim_{x \\to \\infty} \\left( ${rootTex} - x \\right)`;
   return {
     form:'∞−∞', b,
-    exprHTML: `lim<span style="font-size:11px;color:var(--gold);">x→∞</span> ${expr}`,
+    exprTex,
+    exprHTML: KX(exprTex),
     limit: b/2,
     num: b, den: 2,
     limitStr: String(b/2),
+    limitTex: texFracStr(b, 2),
     steps: [
-      `lim<span class="step-note">x→∞</span> ${expr}`,
+      KX(exprTex),
       `둘 다 ∞로 발산 <span class="step-note">∞−∞ 부정형!</span>`,
-      `분자를 유리화: 켤레 [√(x<sup>2</sup>${bStr}) + x]를 분자·분모에 곱한다`,
-      `= lim<span class="step-note">x→∞</span> ${frac(`(x<sup>2</sup>${bStr}) &minus; x<sup>2</sup>`, `√(x<sup>2</sup>${bStr}) + x`)}`,
-      `= lim<span class="step-note">x→∞</span> ${frac(`${b}x`, `√(x<sup>2</sup>${bStr}) + x`)}`,
+      `분자를 유리화: 켤레 ` + KX(`${rootTex} + x`) + `를 분자·분모에 곱한다`,
+      KX(`\\displaystyle = \\lim_{x \\to \\infty} \\frac{(x^{2}${bStr}) - x^{2}}{${rootTex} + x}`),
+      KX(`\\displaystyle = \\lim_{x \\to \\infty} \\frac{${b}x}{${rootTex} + x}`),
       `분모·분자를 x로 나누면 분모 → 1+1 = 2`,
-      `= ${frac(String(b), "2")}`,
+      // 원본과 동일하게 b/2 중간형을 보여준다 (약분값은 아래 결과 박스에서).
+      KX(`\\displaystyle = \\frac{${b}}{2}`),
     ],
   };
 }
@@ -395,7 +462,7 @@ const LabApp = (function(){
     document.getElementById('btnNext').disabled = idx>=problem.steps.length;
     const done = idx>=problem.steps.length;
     document.getElementById('finalBox').classList.toggle('hidden', !done);
-    if(done) document.getElementById('finalVal').textContent = problem.limitStr;
+    if(done) document.getElementById('finalVal').innerHTML = KX(problem.limitTex);
   }
   function init(){
     problem=GENS[key]();
@@ -453,7 +520,8 @@ const ValueGame = (function(){
     const valid = cands.filter(c => c.d !== 0 && (c.n * d !== n * c.d));
     return valid.length ? pick(valid) : {n:n+d, d:d};
   }
-  function fracOf(f){ return fracStr(f.n, f.d); }
+  function fracOf(f){ return fracStr(f.n, f.d); }          // 평문 (로직·폴백용)
+  function fracOfTex(f){ return texFracStr(f.n, f.d); }    // 표시용 LaTeX
   function spawn(){
     st.locked=false;
     const p=GENS[nextKind()]();
@@ -461,7 +529,7 @@ const ValueGame = (function(){
     const cand = showCorrect ? {n:p.num, d:p.den} : makeWrong(p);
     st.round={ p, cand, answer: showCorrect?'good':'bad' };
     document.getElementById('valueExpr').innerHTML=p.exprHTML;
-    document.getElementById('valueCand').textContent = fracOf(cand);
+    document.getElementById('valueCand').innerHTML = KX(fracOfTex(cand));
     document.getElementById('valueFb').classList.add('hidden');
     document.getElementById('valueBtnGood').disabled=false;
     document.getElementById('valueBtnBad').disabled=false;
@@ -481,19 +549,20 @@ const ValueGame = (function(){
     const {p, answer:ans}=st.round;
     const ok = ch===ans;
     const fb=document.getElementById('valueFb'); fb.classList.remove('hidden');
-    const truth=`실제 극한값은 ${p.limitStr} (${p.form} 꼴)`;
+    // ⚠️ KX() HTML을 품으므로 아래 출력은 전부 innerHTML 경로여야 한다.
+    const truth='실제 극한값은 ' + KX(p.limitTex) + ` (${p.form} 꼴)`;
     if(ok){
       const r=parseFloat(document.getElementById('valueTimer').style.width)/100||0;
       const pts=15+Math.round(r*20)+Math.min(st.streak,10);
       st.score+=pts; st.streak++; st.correct++;
       document.getElementById('valueScore').textContent=st.score;
       if(st.correct%EVERY===0) st.time=Math.max(MIN, st.time-DEC);
-      fb.className='fb-box good'; fb.textContent=`✓ +${pts}점 · ${truth}`;
+      fb.className='fb-box good'; fb.innerHTML=`✓ +${pts}점 · ${truth}`;
       setTimeout(spawn,1200);
     } else {
       st.streak=0; st.lives--; lives();
       fb.className='fb-box bad';
-      fb.textContent=(ch==null?'⏱ 시간 초과! ':'✕ 틀렸어요. ')+truth;
+      fb.innerHTML=(ch==null?'⏱ 시간 초과! ':'✕ 틀렸어요. ')+truth;
       if(st.lives<=0) setTimeout(over,1800); else setTimeout(spawn,1800);
     }
   }
@@ -584,12 +653,12 @@ const FormGame = (function(){
       st.score+=pts; st.streak++; st.correct++;
       document.getElementById('formScore').textContent=st.score;
       if(st.correct%EVERY===0) st.time=Math.max(MIN, st.time-DEC);
-      fb.className='fb-box good'; fb.textContent=`✓ +${pts}점 · ${ans} 꼴, 극한값은 ${p.limitStr}`;
+      fb.className='fb-box good'; fb.innerHTML=`✓ +${pts}점 · ${ans} 꼴, 극한값은 ${KX(p.limitTex)}`;
       setTimeout(spawn,1000);
     } else {
       st.streak=0; st.lives--; lives();
       fb.className='fb-box bad';
-      fb.textContent=(ch==null?'⏱ 시간 초과! ':'✕ 틀렸어요. ')+`정답은 ${ans} 꼴. ${TIP[ans]}`;
+      fb.innerHTML=(ch==null?'⏱ 시간 초과! ':'✕ 틀렸어요. ')+`정답은 ${ans} 꼴. ${TIP[ans]}`;
       if(st.lives<=0) setTimeout(over,1900); else setTimeout(spawn,1900);
     }
   }
@@ -626,6 +695,7 @@ document.getElementById('btnModeForm').addEventListener('click',()=>showGameMode
 document.getElementById('ctaToLab').addEventListener('click',()=>showTab('lab'));
 document.getElementById('ctaToGame').addEventListener('click',()=>showTab('game'));
 document.getElementById('toTheory').addEventListener('click',e=>{ e.preventDefault(); showTab('theory'); });
+renderStaticMath(document.getElementById('page-theory'));   // 이론 탭의 \(...\) 일괄 렌더
 showGameMode('select');
 showTab('theory');
 </script>
