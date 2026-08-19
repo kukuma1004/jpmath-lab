@@ -679,6 +679,7 @@ function Arena(root, cfg){
     self.locked=false; self.lastTick=-1; self.updateHud();
     const r=self.rounds[self.state.round];
     self.q('[data-question]').innerHTML=r.q;
+    renderStaticMath(self.q('[data-question]'));
     const grid=self.q('[data-choices]'); grid.innerHTML='';
     r.choices.forEach((html,i)=>{
       const b=document.createElement('button');
@@ -686,6 +687,7 @@ function Arena(root, cfg){
       b.addEventListener('click',()=>self.answer(i));
       grid.appendChild(b);
     });
+    renderStaticMath(grid);
     self.startTimer();
   };
   this.startTimer=function(){
@@ -728,6 +730,7 @@ function Arena(root, cfg){
     self.q('[data-fb-icon]').textContent = ok?'✓':(timeout?'⌛':'✕');
     self.q('[data-fb-title]').textContent = ok?(self.state.streak>=3?'콤보 폭발!':'정답!'):(timeout?'시간 초과!':'라이프 −1');
     self.q('[data-fb-sub]').innerHTML=r.why;
+    renderStaticMath(self.q('[data-fb-sub]'));
     self.q('[data-fb-points]').textContent = ok?`+${points}점`:'+0점';
     fb.classList.remove('hidden');
     setTimeout(()=>{ fb.classList.add('hidden'); self.state.round++; self.beginRound(); }, ok?1200:2100);
