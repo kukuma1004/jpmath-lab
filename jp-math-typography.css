@@ -1,0 +1,161 @@
+:root {
+  --jp-font-display: "Noto Serif KR", "Batang", serif;
+  --jp-font-body: "IBM Plex Sans KR", "Pretendard", "Noto Sans KR", "Malgun Gothic", sans-serif;
+  --jp-font-mono: "IBM Plex Mono", "JetBrains Mono", Consolas, monospace;
+  --jp-font-math: KaTeX_Main, "STIX Two Math", "Cambria Math", "Times New Roman", var(--jp-font-body);
+}
+
+html {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body,
+button,
+input,
+select,
+textarea {
+  font-family: var(--jp-font-body);
+}
+
+h1,
+h2,
+.hero-title,
+.topic-hero h1,
+.section-hero h1,
+.scene h1,
+.scene h2,
+.tpl-math-lesson .h1,
+.tpl-math-lesson .h2 {
+  font-family: var(--jp-font-display);
+  word-break: keep-all;
+}
+
+code,
+kbd,
+pre,
+samp,
+.eyebrow,
+.kicker,
+.topic-kicker,
+.skill-kicker,
+.chip,
+.number,
+.card-footer,
+.breadcrumb {
+  font-family: var(--jp-font-mono);
+}
+
+.formula-main,
+.rule-strip strong,
+.example-equation,
+.question-equation,
+.rush-eq,
+.core-formula strong,
+.mini-formula,
+.skill-mini-formula,
+.display-expr,
+.math-group,
+.frac,
+.lim,
+.equation,
+.formula,
+.math,
+.m,
+[data-example-equation],
+[data-drill-equation],
+[data-game-equation],
+.tpl-math-lesson .math,
+.tpl-math-lesson .formula,
+.tpl-math-lesson .svg-label,
+.tpl-math-lesson .numline .pt b {
+  font-family: var(--jp-font-math);
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: 0;
+}
+
+.formula-main,
+.core-formula strong,
+.skill-mini-formula,
+.example-equation,
+.question-equation,
+.rush-eq,
+.equation,
+.formula {
+  line-height: 1.45;
+  overflow-wrap: normal;
+  word-break: keep-all;
+}
+
+.katex {
+  font-size: 1.04em;
+  line-height: 1.35;
+}
+
+.formula-main .katex,
+.core-formula strong .katex,
+.question-equation .katex {
+  font-size: 1.18em;
+}
+
+.katex-display {
+  margin: .65em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: .1em .05em;
+}
+
+.katex-display > .katex {
+  white-space: nowrap;
+}
+
+.jp-back-link {
+  position: fixed;
+  z-index: 90;
+  top: 18px;
+  left: 20px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 999px;
+  background: rgba(15, 35, 31, .74);
+  color: #fff;
+  font: 700 12px/1 var(--jp-font-body);
+  text-decoration: none;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px rgba(0,0,0,.14);
+}
+
+.jp-back-link:hover {
+  background: rgba(15, 35, 31, .92);
+  text-decoration: none;
+}
+
+.jp-back-link.teacher-back {
+  right: 20px;
+  left: auto;
+}
+
+@media (max-width: 640px) {
+  .jp-back-link {
+    top: 10px;
+    left: 10px;
+    min-height: 34px;
+    padding: 0 11px;
+  }
+
+  .jp-back-link.teacher-back {
+    right: 10px;
+  }
+
+  .formula-main,
+  .core-formula strong,
+  .question-equation,
+  .equation,
+  .formula {
+    font-size: clamp(18px, 5.4vw, 25px);
+  }
+}
