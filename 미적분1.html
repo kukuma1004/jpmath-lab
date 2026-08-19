@@ -345,7 +345,7 @@
 
   <div class="view-switch" aria-label="미적분 학습 방식 선택">
     <button class="view-btn" data-main-view="concepts">개념 학습 <span>24</span></button>
-    <button class="view-btn active" data-main-view="skills">수능·계산 스킬 <span>32</span></button>
+    <button class="view-btn active" data-main-view="skills">수능·계산 스킬 <span>28</span></button>
   </div>
 
   <div class="main-panel hidden" data-main-panel="concepts">
@@ -670,7 +670,7 @@
   </div>
 
   <div class="main-panel" data-main-panel="skills">
-    <div class="skill-map-intro"><div><h2>32개 수능·계산 스킬 지도</h2><p>교과 필수 계산부터 수능 실전, 교육과정 밖 확장 훈련까지 분리해 연습하세요.</p></div></div>
+    <div class="skill-map-intro"><div><h2>28개 미적분Ⅰ 계산 스킬 지도</h2><p>2022 개정 교육과정의 다항함수 범위로 구성하고, 로피탈 정리만 교육과정 밖 검산 도구로 따로 표시했습니다. 미적분Ⅱ 선행 내용과 초월함수는 제외했습니다.</p></div></div>
     <div data-skill-map></div>
   </div>
 
@@ -681,7 +681,7 @@
       ['16','#B0552B','REAL ROOTS','방정식의 실근 개수','삼차·사차함수와 수평선의 교점으로 실근 수를 판정','미적분1_방정식실근개수.html','교점 수 = 실근 수','M10'],
       ['17','#287D8E','MOTION','속도와 가속도','위치·속도·가속도를 미분으로 연결하고 부호를 해석','미적분1_속도가속도.html',"v=s′, a=v′",'M11'],
       ['18','#3B5BA5','CUBIC RATIO','삼차함수와 이차함수의 비율 관계','두 극점 사이 높이 차를 도함수의 근 간격으로 계산','미적분1_삼차이차비율관계.html','|Δf|=|a|d³/2','M12'],
-      ['19','#8C5B3E','L’HÔPITAL','로피탈 정리','0/0·∞/∞ 미정형을 다루는 대학 미적분 맛보기','미적분1_로피탈정리.html',"lim f/g=lim f′/g′",'M13'],
+      ['19','#8C5B3E','L’HÔPITAL CHECK','로피탈 정리','다항함수 0/0꼴 극한을 빠르게 확인하는 교육과정 밖 검산 도구','미적분1_로피탈정리.html',"lim f/g=lim f′/g′",'X19'],
       ['20','#7A4E8C','ANTIDERIVATIVE','부정적분과 원함수','미분을 거꾸로 하여 원함수의 가족과 적분상수를 이해','미적분1_부정적분.html','∫f(x)dx=F(x)+C','I14'],
       ['21','#6F4A91','DEFINITE','정적분의 계산과 성질','원시함수의 위끝값과 아래끝값 차로 누적량 계산','미적분1_정적분.html','F(b)−F(a)','I15'],
       ['22','#5E529D','ACCUMULATION','정적분으로 정의된 함수','누적함수의 값과 변화율을 미적분의 기본정리로 연결','미적분1_정적분정의함수.html',"F′(x)=f(x)",'I16'],
@@ -696,7 +696,7 @@
     const cards = [...sourceGrid.children];
     const groups = [
       { key: 'limits', mark: 'lim', name: '극한과 연속', summary: '극한 · 극한값 · 연속 · 최대최소 · 사잇값', color: '#C1442D', indexes: [0, 1, 2, 7, 8] },
-      { key: 'derivative', mark: "f'", name: '미분', summary: '미분계수 · 도함수 · 접선 · 그래프 · 실근 · 변화율', color: '#2B6CA3', indexes: [3, 4, 5, 6, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18] },
+      { key: 'derivative', mark: "f'", name: '미분', summary: '미분계수 · 도함수 · 접선 · 그래프 · 실근 · 변화율 · 로피탈 검산', color: '#2B6CA3', indexes: [3, 4, 5, 6, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18] },
       { key: 'integral', mark: '∫', name: '적분', summary: '부정적분 · 정적분 · 누적함수 · 넓이 · 이동거리', color: '#7A4E8C', indexes: [19, 20, 21, 22, 23] }
     ];
 
@@ -748,45 +748,41 @@
     });
 
     const skillGroups = [
-      { key:'limit', name:'Ⅰ. 극한·연속 계산', sub:'LIMIT & CONTINUITY · 8', color:'#C1442D', summary:'0/0 · ∞/∞ · 유리화 · 좌우극한 · 연속 · 로피탈', items:[
+      { key:'limit', name:'Ⅰ. 극한·연속 계산', sub:'LIMIT & CONTINUITY · 8', color:'#C1442D', summary:'0/0 · ∞/∞ · 유리화 · 좌우극한 · 연속 · 끼워넣기 · 로피탈 검산', items:[
         ['limit_factor','L01','0/0꼴 인수분해','공통인수 (x−a)를 찾아 약분','교과 핵심'],
         ['limit_rationalize','L02','0/0꼴 유리화','근호식에 켤레식을 곱하는 루틴','교과 핵심'],
         ['limit_infinity_ratio','L03','∞/∞꼴 최고차항 비교','분자·분모의 최고차항만 남기기','교과 핵심'],
         ['limit_infinity_diff','L04','∞−∞꼴 정리','통분 또는 유리화로 한 덩어리 만들기','수능 실전'],
         ['limit_one_sided','L05','좌극한·우극한과 절댓값','방향에 따른 부호를 빠르게 판정','교과 핵심'],
         ['continuity_parameter','L06','연속 조건과 미정계수','극한값과 함숫값을 일치시키기','교과 핵심'],
-        ['squeeze_limit','L07','샌드위치 정리 계산','양쪽에서 끼워 극한을 결정','확장'],
-        ['lhopital','L08','로피탈 정리','미정형에서 분자·분모를 각각 미분','대학 맛보기']
+        ['squeeze_limit','L07','샌드위치 정리 계산','유계 조건으로 양쪽에서 끼워 극한을 결정','교과 심화'],
+        ['lhopital','L08','로피탈 정리','다항함수 0/0꼴을 빠르게 확인하는 검산 도구','교육과정 밖 검산']
       ]},
-      { key:'differentiate', name:'Ⅱ. 미분 계산', sub:'DIFFERENTIATION · 8', color:'#2B6CA3', summary:'정의 · 다항함수 · 곱 · 몫 · 연쇄 · 접선 · 고계 · 음함수', items:[
-        ['derivative_definition','D09','미분계수의 정의','차분몫의 극한을 도함수 값으로 연결','교과 핵심'],
-        ['differentiate_polynomial','D10','다항함수 빠른 미분','계수×지수, 지수는 하나 내리기','교과 핵심'],
-        ['product_rule','D11','곱의 미분법','앞미분×뒤 + 앞×뒤미분','수능 실전'],
-        ['quotient_rule','D12','몫의 미분법','분모 제곱과 분자 순서를 고정','확장'],
-        ['chain_rule','D13','합성함수 연쇄법칙','바깥 미분×안쪽 미분','확장'],
-        ['tangent_equation','D14','접선의 방정식','기울기와 접점을 한 번에 대입','교과 핵심'],
-        ['higher_derivative','D15','고계도함수','반복 미분과 계승 패턴','대학 맛보기'],
-        ['implicit_derivative','D16','음함수 미분','x와 y가 섞인 식에서 dy/dx 찾기','대학 맛보기']
+      { key:'differentiate', name:'Ⅱ. 미분 계산', sub:'DIFFERENTIATION · 4', color:'#2B6CA3', summary:'미분계수의 정의 · 다항함수 · 곱의 미분법 · 접선', items:[
+        ['derivative_definition','D08','미분계수의 정의','차분몫의 극한을 도함수 값으로 연결','교과 핵심'],
+        ['differentiate_polynomial','D09','다항함수 빠른 미분','계수×지수, 지수는 하나 내리기','교과 핵심'],
+        ['product_rule','D10','곱의 미분법','앞미분×뒤 + 앞×뒤미분','교과 핵심'],
+        ['tangent_equation','D11','접선의 방정식','기울기와 접점을 한 번에 대입','교과 핵심']
       ]},
       { key:'graph', name:'Ⅲ. 도함수·그래프 실전', sub:'GRAPH & APPLICATIONS · 8', color:'#176B5B', summary:'증가감소 · 극값 · 삼차 · 사차 · 실근 · 평균값 · 운동', items:[
-        ['monotonic_interval','G17','증가·감소 구간','도함수의 부호표를 구간으로 읽기','교과 핵심'],
-        ['extrema_sign','G18','극대·극소 부호 변화','+→−와 −→+를 즉시 판정','교과 핵심'],
-        ['cubic_extrema','G19','삼차함수의 극값 조건',"f'의 판별식으로 개형 결정",'수능 실전'],
-        ['quartic_shape','G20','사차함수와 도함수','세 임계점의 극대·극소 배열','수능 실전'],
-        ['real_roots','G21','방정식의 실근 개수','그래프와 수평선의 교점 세기','수능 실전'],
-        ['mean_value','G22','평균값 정리·롤의 정리','평균변화율과 같은 순간기울기','교과 핵심'],
-        ['motion_rate','G23','속도와 가속도','위치→속도→가속도 순서','교과 핵심'],
-        ['horizontal_tangent','G24','수평접선과 접선 개수','도함수의 근을 그래프 조건으로 변환','수능 실전']
+        ['monotonic_interval','G12','증가·감소 구간','도함수의 부호표를 구간으로 읽기','교과 핵심'],
+        ['extrema_sign','G13','극대·극소 부호 변화','+→−와 −→+를 즉시 판정','교과 핵심'],
+        ['cubic_extrema','G14','삼차함수의 극값 조건',"f'의 판별식으로 개형 결정",'수능 실전'],
+        ['quartic_shape','G15','사차함수와 도함수','세 임계점의 극대·극소 배열','수능 실전'],
+        ['real_roots','G16','방정식의 실근 개수','그래프와 수평선의 교점 세기','수능 실전'],
+        ['mean_value','G17','평균값 정리·롤의 정리','평균변화율과 같은 순간기울기','교과 핵심'],
+        ['motion_rate','G18','속도와 가속도','다항식 위치함수의 변화율 계산','교과 핵심'],
+        ['horizontal_tangent','G19','수평접선과 접선 개수','도함수의 근을 그래프 조건으로 변환','수능 실전']
       ]},
       { key:'integral', name:'Ⅳ. 적분·변화량 계산', sub:'INTEGRAL & CHANGE · 8', color:'#7A4E8C', summary:'부정적분 · 정적분 · 대칭성 · 넓이 · 거리 · 기본정리', items:[
-        ['antiderivative','I25','부정적분 기본','지수를 하나 올리고 새 지수로 나누기','교과 핵심'],
-        ['initial_antiderivative','I26','조건으로 원함수 결정','적분상수 C를 주어진 값으로 결정','교과 핵심'],
-        ['definite_integral','I27','정적분 계산','원시함수에 위끝−아래끝 대입','교과 핵심'],
-        ['integral_symmetry','I28','정적분의 대칭성','홀함수·짝함수를 구간과 함께 판정','수능 실전'],
-        ['area_axis','I29','곡선과 x축 사이 넓이','부호가 바뀌는 지점에서 구간 분할','교과 핵심'],
-        ['area_between','I30','두 곡선 사이 넓이','위 함수−아래 함수의 정적분','수능 실전'],
-        ['distance_velocity','I31','속도에서 이동거리','속도의 부호가 바뀌면 절댓값 적분','수능 실전'],
-        ['fundamental_theorem','I32','미적분의 기본정리','적분으로 정의된 함수의 미분','확장']
+        ['antiderivative','I20','부정적분 기본','지수를 하나 올리고 새 지수로 나누기','교과 핵심'],
+        ['initial_antiderivative','I21','조건으로 원함수 결정','적분상수 C를 주어진 값으로 결정','교과 핵심'],
+        ['definite_integral','I22','정적분 계산','원시함수에 위끝−아래끝 대입','교과 핵심'],
+        ['integral_symmetry','I23','정적분의 대칭성','홀함수·짝함수를 구간과 함께 판정','수능 실전'],
+        ['area_axis','I24','곡선과 x축 사이 넓이','부호가 바뀌는 지점에서 구간 분할','교과 핵심'],
+        ['area_between','I25','두 곡선 사이 넓이','위 함수−아래 함수의 정적분','수능 실전'],
+        ['distance_velocity','I26','속도에서 이동거리','속도의 부호가 바뀌면 절댓값 적분','수능 실전'],
+        ['fundamental_theorem','I27','정적분으로 정의된 함수','위끝이 x인 누적함수를 미분','수능 실전']
       ]}
     ];
     const skillMap = document.querySelector('[data-skill-map]');

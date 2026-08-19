@@ -4,6 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="noindex,nofollow,noarchive" name="robots"/>
 <link crossorigin="" href="https://cdn.jsdelivr.net" rel="preconnect"/>
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;family=Noto+Serif+KR:wght@700;900&amp;display=swap" rel="stylesheet"/>
@@ -661,8 +662,49 @@ a{color:var(--accent);text-decoration:underline}
 <link rel="stylesheet" href="../../vendor/katex/katex.min.css"/>
 <link rel="stylesheet" href="../../jp-math-typography.css"/>
 </head>
-<body class="tpl-math-lesson">
+<body class="tpl-math-lesson teacher-locked">
 <a class="jp-back-link teacher-back" href="../">← 수능 문제</a>
+<div class="teacher-gate" id="teacherGate">
+  <form class="teacher-gate-card" id="teacherGateForm">
+    <span class="teacher-gate-badge">TEACHER ONLY</span>
+    <h1>교사용 수업 자료</h1>
+    <p>발문과 해설, 교사 노트가 포함된 자료입니다.<br/>교사용 비밀번호를 입력해 주세요.</p>
+    <label for="teacherPassword">비밀번호</label>
+    <div class="teacher-gate-row">
+      <input id="teacherPassword" type="password" autocomplete="current-password" required autofocus/>
+      <button type="submit">자료 열기</button>
+    </div>
+    <p class="teacher-gate-feedback" id="teacherGateFeedback" role="status" aria-live="polite"></p>
+  </form>
+</div>
+<script>
+  (function () {
+    const ACCESS_KEY = 'jp-math-teacher-access';
+    const gate = document.getElementById('teacherGate');
+    const form = document.getElementById('teacherGateForm');
+    const input = document.getElementById('teacherPassword');
+    const feedback = document.getElementById('teacherGateFeedback');
+    function unlock() {
+      document.body.classList.remove('teacher-locked');
+      gate.hidden = true;
+    }
+    try {
+      if (sessionStorage.getItem(ACCESS_KEY) === 'granted') unlock();
+    } catch (error) {}
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      if (input.value === 'jpmath') {
+        try { sessionStorage.setItem(ACCESS_KEY, 'granted'); } catch (error) {}
+        feedback.textContent = '';
+        unlock();
+        return;
+      }
+      input.value = '';
+      feedback.textContent = '비밀번호가 맞지 않습니다. 다시 확인해 주세요.';
+      input.focus();
+    });
+  })();
+</script>
 <div class="deck">
 <section class="slide slide--title" data-title="문제와 만나기"><div class="s-body"><div class="problem-layout">
 <div>
