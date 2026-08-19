@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>미분가능성 학습 스위트 · 석산고 미적분</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700;900&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- KaTeX (자체 호스팅) — 동기 로드: 하단 인라인 스크립트가 katex 전역을 즉시 쓰기 때문 -->
+<link rel="stylesheet" href="vendor/katex/katex.min.css">
+<script src="vendor/katex/katex.min.js"></script>
+<script src="vendor/katex/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  --paper:#EFF3EE; --panel:#FFFFFF; --grid:#D8E2D3; --dot:#E2E9DE;
+  --ink:#223027; --inkSoft:#5C6B60;
+  --left:#C1442D; --right:#2B6CA3; --gold:#C99A2E; --success:#3F7D4C; --border:#D3DAD0;
+  --font-display:'Noto Serif KR', serif;
+  --font-body:'IBM Plex Sans KR','Pretendard',sans-serif;
+  --font-mono:'IBM Plex Mono','Menlo',monospace;
+}
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); }
+.page-bg{ background-image:radial-gradient(var(--dot) 1px, transparent 1px); background-size:20px 20px; min-height:100vh; }
+.wrap{ max-width:600px; margin:0 auto; padding:14px 14px 40px; }
+.hidden{ display:none !important; }
+.mono{ font-family:var(--font-mono); }
+.card{ background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:18px; }
+.btn-primary{ width:100%; padding:14px; border-radius:14px; border:none; background:var(--ink); color:var(--paper); font-weight:700; font-size:15px; cursor:pointer; }
+.btn-secondary{ width:100%; padding:14px; border-radius:14px; border:1.5px solid var(--border); background:#fff; color:var(--ink); font-weight:600; font-size:14px; cursor:pointer; margin-bottom:10px; }
+
+.tabbar{ position:sticky; top:0; z-index:20; background:var(--paper); padding:10px 14px 8px; border-bottom:1px solid var(--border); }
+.tabbar-inner{ max-width:600px; margin:0 auto; display:flex; gap:8px; }
+.tab-btn{ flex:1; font-family:var(--font-body); font-size:12.5px; font-weight:700; padding:10px 6px; border-radius:12px; border:1.5px solid var(--border); background:var(--panel); color:var(--inkSoft); cursor:pointer; text-align:center; }
+.tab-btn.active{ border-color:var(--ink); background:var(--ink); color:var(--paper); }
+.tab-back{ flex:0 0 38px; display:flex; align-items:center; justify-content:center; border-radius:12px; border:1.5px solid var(--border); background:var(--panel); color:var(--inkSoft); text-decoration:none; font-size:16px; font-weight:700; }
+.tab-back:hover{ border-color:var(--ink); color:var(--ink); }
+
+.eyebrow{ font-family:var(--font-mono); font-size:11.5px; letter-spacing:1.5px; color:var(--inkSoft); text-transform:uppercase; margin-bottom:6px; }
+.title{ font-family:var(--font-display); font-weight:900; font-size:22px; margin:0 0 5px; line-height:1.28; }
+.desc{ color:var(--inkSoft); font-size:13px; line-height:1.55; margin:0 0 14px; }
+
+.theory-section{ margin-bottom:18px; }
+.theory-h2{ font-family:var(--font-display); font-weight:900; font-size:18px; margin:0 0 8px; }
+.theory-p{ font-size:13.5px; line-height:1.7; color:var(--ink); margin:0 0 10px; }
+.theorem-box{ background:#FBF3E0; border:1.5px solid var(--gold); border-radius:14px; padding:14px 16px; margin-bottom:10px; }
+.theorem-eyebrow{ font-family:var(--font-mono); font-size:10.5px; letter-spacing:1px; color:var(--gold); text-transform:uppercase; margin-bottom:6px; font-weight:700; }
+.theorem-formula{ font-family:var(--font-mono); font-size:13.5px; font-weight:600; line-height:1.85; }
+.rel-box{ background:#EAF3EA; border:1.5px solid var(--success); border-radius:14px; padding:14px 16px; margin-bottom:10px; text-align:center; }
+.rel-box .yes{ color:var(--success); font-weight:800; }
+.rel-box .no{ color:var(--left); font-weight:800; }
+.case-grid{ display:grid; grid-template-columns:1fr; gap:12px; }
+.case-card{ background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:12px; }
+.case-card-title{ font-weight:700; font-size:14px; margin:8px 0 4px; }
+.case-card-desc{ font-size:12.5px; color:var(--inkSoft); line-height:1.55; margin:0 0 10px; }
+.case-svg-wrap{ position:relative; width:100%; padding-bottom:62.5%; background:var(--paper); border-radius:10px; overflow:hidden; }
+.case-svg-wrap svg{ position:absolute; inset:0; width:100%; height:100%; }
+.case-link{ width:100%; padding:9px; border-radius:10px; border:1.5px solid var(--ink); background:#fff; color:var(--ink); font-weight:600; font-size:12.5px; cursor:pointer; }
+.misconception{ background:#F7E9E5; border:1.5px solid var(--left); border-radius:14px; padding:12px 14px; margin-bottom:10px; }
+.misconception-title{ font-weight:700; font-size:13px; color:var(--left); margin-bottom:4px; }
+.misconception-body{ font-size:12.5px; color:var(--ink); line-height:1.6; }
+.cta-row{ display:flex; gap:10px; margin-top:16px; }
+.prereq-note{ background:var(--panel); border:1px dashed var(--border); border-radius:12px; padding:10px 12px; font-size:12px; color:var(--inkSoft); margin-bottom:16px; line-height:1.6; }
+
+.lab-chips{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:6px; }
+.chip{ font-family:var(--font-body); font-size:13px; font-weight:600; padding:9px 13px; border-radius:999px; border:1.5px solid var(--border); background:var(--panel); color:var(--ink); cursor:pointer; }
+.chip.active{ border-color:var(--ink); background:var(--ink); color:var(--paper); }
+.lab-subtitle{ font-size:12.5px; color:var(--inkSoft); margin:0 0 14px; }
+.lab-layout{ display:flex; flex-direction:column; gap:16px; }
+.lab-graph-card{ background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:12px; }
+.lab-svg-wrap{ position:relative; width:100%; padding-bottom:65.625%; }
+.lab-svg-wrap svg{ position:absolute; inset:0; width:100%; height:100%; touch-action:none; cursor:grab; display:block; }
+.cond-box{ background:#fff; border:1.5px solid var(--c); border-radius:14px; padding:12px; margin-bottom:10px; }
+.cond-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px; }
+.cond-label{ font-size:12.5px; font-weight:700; color:var(--c); }
+.cond-value{ font-family:var(--font-mono); font-size:20px; font-weight:700; color:var(--c); }
+.ll-fog{ filter:blur(5px); opacity:.35; transition:filter .5s ease, opacity .5s ease; }
+.ll-clear{ filter:blur(0); opacity:1; transition:filter .6s ease, opacity .6s ease; }
+.live-slope{ font-family:var(--font-mono); font-size:13px; color:var(--inkSoft); margin-bottom:8px; }
+.verdict{ border-radius:14px; padding:13px; margin-bottom:12px; }
+.verdict.ok{ background:#EAF3EA; border:1.5px solid var(--success); }
+.verdict.bad{ background:#F7E9E5; border:1.5px solid var(--left); }
+.lab-actions{ display:flex; gap:8px; margin-top:2px; }
+.act-btn{ flex:1; display:flex; align-items:center; justify-content:center; gap:6px; font-family:var(--font-body); font-size:12.5px; font-weight:600; padding:10px; border-radius:12px; border:1.5px solid var(--c); background:#fff; color:var(--c); cursor:pointer; }
+input[type=range]{ width:100%; accent-color:var(--ink); margin:10px 0; }
+
+.game-header.hidden{ display:none !important; }
+.mode-btn{ width:100%; padding:16px; border-radius:14px; border:1.5px solid var(--border); background:#fff; color:var(--ink); font-weight:700; font-size:15px; cursor:pointer; margin-bottom:10px; text-align:left; }
+.mode-btn-desc{ font-size:12px; font-weight:400; color:var(--inkSoft); margin-top:3px; }
+.back-link{ font-size:12px; color:var(--inkSoft); text-decoration:underline; cursor:pointer; background:none; border:none; padding:0; margin-bottom:6px; }
+.top-bar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap; gap:8px; }
+.top-stat{ font-family:var(--font-mono); font-size:13px; color:var(--inkSoft); }
+.top-stat b{ color:var(--ink); font-size:17px; }
+.lives{ font-size:17px; letter-spacing:2px; }
+.timerbar-wrap{ width:100%; height:8px; background:var(--grid); border-radius:999px; overflow:hidden; margin-bottom:12px; }
+.timerbar-fill{ height:100%; border-radius:999px; }
+.game-card-wrap{ position:relative; background:var(--panel); border:2px solid var(--ink); border-radius:18px; padding:10px; margin-bottom:14px; }
+.game-svg-wrap{ position:relative; width:100%; padding-bottom:66%; }
+.game-svg-wrap svg{ position:absolute; inset:0; width:100%; height:100%; }
+.game-feedback{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; padding:16px; background:rgba(255,255,255,.96); border-radius:16px; opacity:0; pointer-events:none; transition:opacity .15s ease; font-size:12.5px; font-weight:600; line-height:1.6; }
+.game-feedback.show{ opacity:1; }
+.game-feedback.good{ color:var(--success); }
+.game-feedback.bad{ color:var(--left); }
+.end-score{ font-family:var(--font-mono); font-size:36px; font-weight:700; text-align:center; margin:6px 0 4px; }
+.end-sub{ text-align:center; color:var(--inkSoft); font-size:13px; margin-bottom:8px; }
+.lb-title{ font-family:var(--font-display); font-weight:900; font-size:18px; margin:0 0 4px; }
+
+.tangent-buttons{ display:flex; gap:8px; }
+.tangent-btn{ flex:1; padding:14px 6px; border-radius:14px; border:none; font-size:13px; font-weight:800; cursor:pointer; color:#fff; }
+.tangent-btn.good{ background:var(--success); }
+.tangent-btn.bad{ background:var(--left); }
+.tangent-btn.none{ background:var(--inkSoft); }
+
+.memory-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.memory-grid{ display:grid; grid-template-columns:1fr 1fr; gap:6px; max-height:62vh; overflow-y:auto; }
+.memory-card{ position:relative; background:var(--panel); border:2px solid var(--border); border-radius:12px; padding-bottom:58%; cursor:pointer; transition:border-color .15s ease, background .15s ease; }
+.memory-card-inner{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
+.memory-card.back .memory-card-inner{ font-family:var(--font-mono); font-size:26px; font-weight:700; color:var(--border); }
+.memory-card.matched{ border-color:var(--success); background:#EAF3EA; }
+.memory-card.wrong{ border-color:var(--left); }
+.memory-card svg{ position:absolute; inset:0; width:100%; height:100%; }
+
+/* ---------- KaTeX 통합 (기존 서식 보존용) ---------- */
+/* 방침: 수식 표기만 KaTeX. 실시간 기울기 readout(.live-slope, .cond-value)은 mono 유지. */
+.katex{ font-size:1.05em; }
+.katex .base{ white-space:nowrap; }
+.theorem-formula .katex{ font-size:1.02em; }
+.rel-box .katex{ font-size:1em; }
+.misconception-body .katex, .theory-p .katex{ font-size:1em; }
+.verdict .katex{ font-size:1em; }
+.theorem-formula, .rel-box{ overflow-x:auto; overflow-y:hidden; }
+
+@media (prefers-reduced-motion: reduce){ .game-feedback,.ll-fog,.ll-clear,.memory-card{ transition:none; } }
+</style>
+</head>
+<body>
+<div class="page-bg">
+
+<div class="tabbar">
+  <div class="tabbar-inner">
+    <a href="미적분1.html" class="tab-back" aria-label="목록으로 돌아가기" title="미적분Ⅰ 목록으로">←</a>
+    <button class="tab-btn active" data-tab="theory">① 원리</button>
+    <button class="tab-btn" data-tab="lab">② 실험실</button>
+    <button class="tab-btn" data-tab="game">③ 게임</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+<div id="page-theory">
+  <div class="eyebrow">석산고 미적분 · 미분가능성 학습 스위트</div>
+  <h1 class="title">미분가능, 연속보다 한 단계 더 까다롭다</h1>
+  <p class="desc">연속 위에 쌓는 개념이에요. 개념을 읽고, 실험실에서 할선의 기울기가 수렴/발산하는 걸 직접 관찰하고, 게임으로 감을 다져보세요.</p>
+
+  <div class="prereq-note">🔗 이전 단원: 연속 학습 스위트에서 3조건을 다졌다면 이해가 쉬워요. "연속인데 매끄러워 보이면 미분도 될까?" — 바로 이 질문의 답을 다룹니다.</div>
+
+  <div class="theory-section">
+    <div class="theory-h2">1. 미분계수란?</div>
+    <p class="theory-p">\(x=a\)에서의 <b>미분계수</b> \(f'(a)\)는 그 점에서의 순간변화율, 즉 접선의 기울기예요. 근처의 점 \((a+h,\, f(a+h))\)와 \((a,\, f(a))\)를 잇는 <b>할선(secant line)</b>의 기울기를 \(h \to 0\)으로 보내면서 정의해요.</p>
+    <div class="theorem-box">
+      <div class="theorem-eyebrow">정의</div>
+      <div class="theorem-formula">\(\displaystyle f'(a) = \lim_{h \to 0} \frac{f(a+h) - f(a)}{h}\)</div>
+    </div>
+    <p class="theory-p">극한과 똑같이, 이것도 <b style="color:#C1442D">왼쪽에서(\(h \to 0^{-}\))</b> 다가갈 때와 <b style="color:#2B6CA3">오른쪽에서(\(h \to 0^{+}\))</b> 다가갈 때를 각각 <b>좌미분계수·우미분계수</b>라고 불러요.</p>
+  </div>
+
+  <div class="theory-section">
+    <div class="theory-h2">2. 미분가능 조건</div>
+    <div class="theorem-box">
+      <div class="theorem-eyebrow">정의 · f가 x=a에서 미분가능하려면</div>
+      <div class="theorem-formula">
+        ① f가 \(x=a\)에서 연속이다<br>
+        ② 좌미분계수 = 우미분계수 (둘 다 유한한 값)
+      </div>
+    </div>
+  </div>
+
+  <div class="theory-section">
+    <div class="theory-h2">3. 핵심 관계: 미분가능 ⟹ 연속, 그런데 역은?</div>
+    <div class="rel-box">
+      <div class="theorem-formula">미분가능 \(\Longrightarrow\) 연속 <span class="yes">(항상 참)</span></div>
+      <div class="theorem-formula" style="margin-top:6px;">연속 \(\Longrightarrow\) 미분가능 <span class="no">(거짓! 반례 있음)</span></div>
+    </div>
+    <p class="theory-p">그래프가 안 끊어져 있어도(연속) 뾰족하게 꺾이거나 접선이 수직이면 기울기 자체가 안 정해져서 미분은 안 돼요. 아래 세 반례를 실험실에서 직접 확인해보세요.</p>
+  </div>
+
+  <div class="theory-section">
+    <div class="theory-h2">4. 연속이지만 미분 불가능한 경우</div>
+    <div class="case-grid" id="caseGrid"></div>
+  </div>
+
+  <div class="theory-section">
+    <div class="theory-h2">5. 자주 하는 오해</div>
+    <div class="misconception">
+      <div class="misconception-title">❌ 연속이면 매끄럽게 이어지니까 미분도 될 것이다?</div>
+      <div class="misconception-body">아니에요. "안 끊어짐(연속)"과 "안 꺾임(미분가능)"은 다른 조건이에요. 좌우 기울기가 다르면 연속이어도 미분은 안 돼요.</div>
+    </div>
+    <div class="misconception">
+      <div class="misconception-title">❌ 미분 불가능하면 불연속이다?</div>
+      <div class="misconception-body">거꾸로도 틀려요. 꺾인 점(코너)은 연속이면서 미분 불가능한 대표적인 예시예요.</div>
+    </div>
+    <div class="misconception">
+      <div class="misconception-title">❌ 그래프가 부드러워 보이면 미분 가능하다?</div>
+      <div class="misconception-body">수직접선 함정이에요. 꺾이지 않고 매끈해 보여도 그 점의 접선이 수직이면 기울기(값)가 존재하지 않아서 미분 불가능해요.</div>
+    </div>
+  </div>
+
+  <div class="cta-row">
+    <button class="btn-primary" id="ctaToLab">🧪 실험실에서 할선 움직여보기</button>
+  </div>
+  <div class="cta-row">
+    <button class="btn-secondary" id="ctaToGame" style="margin-bottom:0;">🎮 게임으로 감 잡기</button>
+  </div>
+</div>
+
+<div id="page-lab" class="hidden">
+  <div class="eyebrow">석산고 미적분 · Interactive Lab</div>
+  <h1 class="title">할선 → 접선 실험실</h1>
+  <p class="desc">점 x를 a로 가까이 끌면 할선이 그려져요. 그 기울기가 어디로 수렴(또는 발산)하는지 관찰하세요.</p>
+
+  <div class="lab-chips" id="labChips"></div>
+  <p class="lab-subtitle" id="labSubtitle"></p>
+
+  <div class="lab-layout">
+    <div class="lab-graph-card">
+      <div class="lab-svg-wrap"><svg id="labSvg" viewBox="0 0 640 420" preserveAspectRatio="xMidYMid meet"></svg></div>
+    </div>
+
+    <div>
+      <div class="live-slope" id="labLiveSlope">할선의 기울기 = —</div>
+      <input type="range" id="labSlider" min="0" max="1" step="0.001">
+      <div class="lab-actions" style="margin-bottom:14px;">
+        <button id="labBtnLeft" class="act-btn" style="--c:var(--left)">‹‹ 왼쪽에서 접근</button>
+        <button id="labBtnRight" class="act-btn" style="--c:var(--right)">오른쪽에서 접근 ››</button>
+      </div>
+
+      <div class="cond-box" style="--c:var(--left)">
+        <div class="cond-head"><div class="cond-label">좌미분계수</div></div>
+        <div class="cond-value ll-fog" id="labLeftValue">?.??</div>
+      </div>
+      <div class="cond-box" style="--c:var(--right)">
+        <div class="cond-head"><div class="cond-label">우미분계수</div></div>
+        <div class="cond-value ll-fog" id="labRightValue">?.??</div>
+      </div>
+
+      <div id="labVerdict" style="font-size:12.5px; color:var(--inkSoft); padding:0 2px 12px; line-height:1.6;">양쪽에서 접근하면 판정이 나타나요.</div>
+
+      <button id="labBtnReset" class="act-btn" style="--c:var(--inkSoft); width:100%; justify-content:center;">↺ 리셋</button>
+    </div>
+  </div>
+</div>
+
+<div id="page-game" class="hidden">
+  <div id="gameHeader" class="game-header">
+    <div class="eyebrow">석산고 미적분 · Interactive Lab</div>
+    <h1 class="title">미분가능성 게임</h1>
+    <p class="desc">두 가지 모드 중 골라서 감을 다져보세요.</p>
+  </div>
+
+  <div id="gameModeSelect" class="card">
+    <button class="mode-btn" id="btnModeMemory">🃏 카드 짝 맞추기<div class="mode-btn-desc">같은 유형의 그래프 카드끼리 짝 찾기. 차분한 추리형.</div></button>
+    <button class="mode-btn" id="btnModeTangent" style="margin-bottom:0;">🎯 접선 조준<div class="mode-btn-desc">제시된 접선이 맞는지 빠르게 판단. 순발력형.</div></button>
+  </div>
+
+  <div id="memoryApp" class="hidden">
+    <button class="back-link" id="memoryBack">← 모드 선택으로</button>
+
+    <div id="memoryScreenStart" class="card">
+      <div id="memoryBestLine" style="text-align:center; margin-bottom:14px; font-size:13.5px; color:var(--inkSoft);"></div>
+      <button class="btn-primary" id="memoryBtnStart">시작 (4쌍)</button>
+    </div>
+
+    <div id="memoryScreenPlay" class="card hidden" style="padding:10px;">
+      <div class="memory-top" style="margin-bottom:6px;">
+        <div class="top-stat">시도 <b id="memoryMoves">0</b></div>
+        <div class="top-stat">경과 <b id="memoryTime">0</b>초</div>
+      </div>
+      <div class="memory-grid" id="memoryGrid"></div>
+    </div>
+
+    <div id="memoryScreenEnd" class="card hidden">
+      <div class="lb-title" style="text-align:center;">모두 맞췄어요!</div>
+      <div class="end-score" id="memoryFinalScore">0</div>
+      <div class="end-sub" id="memoryFinalSummary"></div>
+      <div class="end-sub" id="memoryBestCompare" style="font-weight:700; color:var(--gold);"></div>
+      <button class="btn-primary" id="memoryBtnRetry">다시 하기</button>
+    </div>
+  </div>
+
+  <div id="tangentApp" class="hidden">
+    <button class="back-link" id="tangentBack">← 모드 선택으로</button>
+
+    <div id="tangentScreenStart" class="card">
+      <div id="tangentBestLine" style="text-align:center; margin-bottom:14px; font-size:13.5px; color:var(--inkSoft);"></div>
+      <button class="btn-primary" id="tangentBtnStart">게임 시작</button>
+    </div>
+
+    <div id="tangentScreenPlay" class="card hidden">
+      <div class="top-bar">
+        <div class="top-stat">점수 <b id="tangentScoreNum">0</b></div>
+        <div class="lives" id="tangentLives"></div>
+      </div>
+      <div class="timerbar-wrap"><div class="timerbar-fill" id="tangentTimerFill" style="width:100%; background:var(--success);"></div></div>
+      <div class="game-card-wrap">
+        <div class="game-svg-wrap"><svg id="tangentSvg" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid meet"></svg></div>
+        <div class="game-feedback" id="tangentFeedback"></div>
+      </div>
+      <div class="tangent-buttons">
+        <button class="tangent-btn good" id="tangentBtnGood">🟢 정확해요</button>
+        <button class="tangent-btn bad" id="tangentBtnBad">🔴 틀렸어요</button>
+        <button class="tangent-btn none" id="tangentBtnNone">⚫ 접선 없음</button>
+      </div>
+    </div>
+
+    <div id="tangentScreenEnd" class="card hidden">
+      <div class="lb-title" style="text-align:center;">게임 오버!</div>
+      <div class="end-score" id="tangentFinalScore">0</div>
+      <div class="end-sub" id="tangentFinalSummary"></div>
+      <div class="end-sub" id="tangentBestCompare" style="font-weight:700; color:var(--gold);"></div>
+      <button class="btn-primary" id="tangentBtnRetry">다시 시작</button>
+    </div>
+  </div>
+
+  <p class="desc" id="gameFooterLink" style="margin-top:16px; text-align:center;">헷갈리면 <a href="#" id="gameLinkToTheory" style="color:var(--ink); font-weight:600;">① 원리 탭</a>에서 복습하세요.</p>
+</div>
+
+</div>
+</div>
+
+<script>
+const COLORS = {
+  paper:'#EFF3EE', panel:'#FFFFFF', grid:'#D8E2D3',
+  ink:'#223027', inkSoft:'#5C6B60',
+  left:'#C1442D', right:'#2B6CA3', gold:'#C99A2E', success:'#3F7D4C', border:'#D3DAD0',
+};
+
+// ============================================================
+// KaTeX 헬퍼
+// KX(tex) → HTML 문자열. 반드시 innerHTML로 넣을 것.
+// 방침: 수식 표기만 조판. fmtSlope()가 돌려주는 값은 '정의되지 않음'·'+∞' 같은
+//      비-TeX 문자열일 수 있으므로 절대 그대로 KX()에 넣지 말 것.
+// ============================================================
+function KX(tex, display){
+  try {
+    return katex.renderToString(String(tex), { throwOnError:false, displayMode:!!display, strict:false });
+  } catch (e) {
+    return String(tex);
+  }
+}
+function renderStaticMath(root){
+  if (typeof renderMathInElement !== 'function' || !root) return;
+  try {
+    renderMathInElement(root, {
+      delimiters: [ { left:'\\[', right:'\\]', display:true }, { left:'\\(', right:'\\)', display:false } ],
+      throwOnError: false,
+      ignoredTags: ['script','noscript','style','textarea','pre','code','option'],
+      ignoredClasses: ['katex'],   // 이미 렌더된 수식 안(숨김 MathML의 원본 TeX)을 다시 훑지 않도록
+    });
+  } catch (e) {}
+}
+
+function rand(min, max){ return min + Math.random() * (max - min); }
+function randSign(){ return Math.random() < 0.5 ? -1 : 1; }
+function randInt(min, max){ return Math.floor(rand(min, max + 1)); }
+function pick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
+function shuffle(arr){
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+function fmt(v){
+  if (v == null) return '정의되지 않음';
+  if (Math.abs(v) > 60) return v > 0 ? '+∞' : '−∞';
+  const r = Math.round(v);
+  if (Math.abs(v - r) < 0.02) return String(r);
+  return v.toFixed(2);
+}
+function fmtSlope(v){
+  if (v == null) return '정의되지 않음';
+  if (Math.abs(v) > 25) return v > 0 ? '+∞' : '−∞';
+  const r = Math.round(v);
+  if (Math.abs(v - r) < 0.05) return String(r);
+  return v.toFixed(1);
+}
+function clampDomain(v, preset){ return Math.min(preset.xDomain[1], Math.max(preset.xDomain[0], v)); }
+function findBranch(preset, x, eps){
+  eps = eps || 1e-9;
+  const cands = preset.branches.filter((b) => x >= b.xMin - eps && x <= b.xMax + eps);
+  if (cands.length === 0) return null;
+  if (cands.length === 1) return cands[0];
+  const closed = cands.find((b) => (Math.abs(x - b.xMin) < eps && b.closedMin) || (Math.abs(x - b.xMax) < eps && b.closedMax));
+  return closed || null;
+}
+function fAt(preset, x){
+  const iso = preset.isolated.find((p) => Math.abs(p.x - x) < 1e-9);
+  if (iso) return iso.y;
+  const br = findBranch(preset, x);
+  if (!br) return null;
+  try { const y = br.fn(x); return isFinite(y) ? y : null; } catch (e) { return null; }
+}
+function el(tag, attrs){
+  const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  return e;
+}
+function computeGeo(preset, W, H){
+  W = W || 640; H = H || 420;
+  const plot = { x: 40, y: 16, w: W - 40 - 18, h: H - 16 - 32 };
+  const xmin = preset.xDomain[0], xmax = preset.xDomain[1];
+  const ymin = preset.yDomain[0], ymax = preset.yDomain[1];
+  const sx = (vx) => plot.x + ((vx - xmin) / (xmax - xmin)) * plot.w;
+  const sy = (vy) => plot.y + plot.h - ((vy - ymin) / (ymax - ymin)) * plot.h;
+  return { W, H, plot, xmin, xmax, ymin, ymax, sx, sy };
+}
+function branchPathD(branch, g){
+  const samples = 160; let d = '', down = false;
+  for (let i = 0; i <= samples; i++) {
+    const vx = branch.xMin + ((branch.xMax - branch.xMin) * i) / samples;
+    let vy; try { vy = branch.fn(vx); } catch (e) { vy = null; }
+    if (vy == null || !isFinite(vy) || vy < g.ymin - 1.5 || vy > g.ymax + 1.5) { down = false; continue; }
+    d += (down ? 'L ' : 'M ') + g.sx(vx) + ' ' + g.sy(vy) + ' ';
+    down = true;
+  }
+  return d;
+}
+function drawStaticGraph(svgEl, preset, aValue, opts){
+  opts = opts || {};
+  const g = computeGeo(preset, opts.W, opts.H);
+  svgEl.setAttribute('viewBox', `0 0 ${g.W} ${g.H}`);
+  while (svgEl.firstChild) svgEl.removeChild(svgEl.firstChild);
+  const staticG = el('g', {});
+  const dynG = el('g', {});
+
+  if (!opts.compact) {
+    const gridXs = []; for (let gx = Math.ceil(g.xmin); gx <= Math.floor(g.xmax); gx++) gridXs.push(gx);
+    const gridYs = []; for (let gy = Math.ceil(g.ymin); gy <= Math.floor(g.ymax); gy++) gridYs.push(gy);
+    gridXs.forEach((gx) => staticG.appendChild(el('line', { x1: g.sx(gx), y1: g.plot.y, x2: g.sx(gx), y2: g.plot.y + g.plot.h, stroke: COLORS.grid, 'stroke-width': gx === 0 ? 1.6 : 1 })));
+    gridYs.forEach((gy) => staticG.appendChild(el('line', { x1: g.plot.x, y1: g.sy(gy), x2: g.plot.x + g.plot.w, y2: g.sy(gy), stroke: COLORS.grid, 'stroke-width': gy === 0 ? 1.6 : 1 })));
+    gridXs.filter((v) => v !== 0).forEach((gx) => { const t = el('text', { x: g.sx(gx), y: g.plot.y + g.plot.h + 16, 'font-family': 'IBM Plex Mono, monospace', 'font-size': 11, fill: COLORS.inkSoft, 'text-anchor': 'middle' }); t.textContent = gx; staticG.appendChild(t); });
+    gridYs.filter((v) => v !== 0).forEach((gy) => { const t = el('text', { x: g.plot.x - 8, y: g.sy(gy) + 4, 'font-family': 'IBM Plex Mono, monospace', 'font-size': 11, fill: COLORS.inkSoft, 'text-anchor': 'end' }); t.textContent = gy; staticG.appendChild(t); });
+    staticG.appendChild(el('line', { x1: g.sx(aValue), y1: g.plot.y, x2: g.sx(aValue), y2: g.plot.y + g.plot.h, stroke: COLORS.gold, 'stroke-width': 1.4, 'stroke-dasharray': '3 4' }));
+    const aLabel = el('text', { x: g.sx(aValue), y: g.plot.y + g.plot.h + 30, 'font-family': 'IBM Plex Mono, monospace', 'font-size': 12, 'font-weight': 600, fill: COLORS.gold, 'text-anchor': 'middle' });
+    aLabel.textContent = `a=${aValue}`; staticG.appendChild(aLabel);
+  } else {
+    staticG.appendChild(el('line', { x1: g.sx(aValue), y1: g.plot.y, x2: g.sx(aValue), y2: g.plot.y + g.plot.h, stroke: COLORS.gold, 'stroke-width': 1.2, 'stroke-dasharray': '3 4' }));
+  }
+
+  preset.branches.forEach((b) => staticG.appendChild(el('path', { d: branchPathD(b, g), fill: 'none', stroke: COLORS.ink, 'stroke-width': 2.4, 'stroke-linecap': 'round' })));
+
+  const internalBreaks = preset.branches.slice(0, -1).map((b) => b.xMax);
+  internalBreaks.forEach((bx, i) => {
+    const bLeft = preset.branches[i], bRight = preset.branches[i + 1];
+    let yL, yR;
+    try { yL = bLeft.fn(bx); } catch (e) { yL = null; }
+    try { yR = bRight.fn(bx); } catch (e) { yR = null; }
+    const validL = yL != null && isFinite(yL) && yL >= g.ymin - 0.5 && yL <= g.ymax + 0.5;
+    const validR = yR != null && isFinite(yR) && yR >= g.ymin - 0.5 && yR <= g.ymax + 0.5;
+    const bothSamePoint = validL && validR && Math.abs(yL - yR) < 0.05;
+    if (bothSamePoint) {
+      const closedHere = bLeft.closedMax || bRight.closedMin;
+      staticG.appendChild(el('circle', { cx: g.sx(bx), cy: g.sy(yL), r: opts.compact ? 3 : 4, fill: closedHere ? COLORS.ink : COLORS.panel, stroke: COLORS.ink, 'stroke-width': 1.8 }));
+    } else {
+      if (validL) staticG.appendChild(el('circle', { cx: g.sx(bx), cy: g.sy(yL), r: opts.compact ? 3 : 4, fill: bLeft.closedMax ? COLORS.ink : COLORS.panel, stroke: COLORS.ink, 'stroke-width': 1.8 }));
+      if (validR) staticG.appendChild(el('circle', { cx: g.sx(bx), cy: g.sy(yR), r: opts.compact ? 3 : 4, fill: bRight.closedMin ? COLORS.ink : COLORS.panel, stroke: COLORS.ink, 'stroke-width': 1.8 }));
+    }
+  });
+  preset.isolated.forEach((p) => staticG.appendChild(el('circle', { cx: g.sx(p.x), cy: g.sy(p.y), r: opts.compact ? 3 : 4.5, fill: COLORS.gold, stroke: COLORS.ink, 'stroke-width': 1.5 })));
+
+  svgEl.appendChild(staticG);
+  svgEl.appendChild(dynG);
+  return { geo: g, dynG };
+}
+
+function smoothFn(V, a, p, q){ return (x) => V + p * (x - a) + q * (x - a) * (x - a); }
+
+function anchoredDecoration(a){
+  const type = pick(['none', 'none', 'bow', 'cubic', 'wave']);
+  if (type === 'bow') { const q = randSign() * rand(0.08, 0.3); return (x) => q * (x - a) * (x - a); }
+  if (type === 'cubic') { const r = randSign() * rand(0.03, 0.12); return (x) => r * Math.pow(x - a, 3); }
+  if (type === 'wave') { const amp = rand(0.25, 0.7), freq = rand(1.0, 1.8); return (x) => amp * (1 - Math.cos(freq * (x - a))); }
+  return () => 0;
+}
+function anchoredFn(a, V, slope){
+  const dec = anchoredDecoration(a);
+  return (x) => V + slope * (x - a) + dec(x);
+}
+
+function makeSmooth(aRange, vRange){
+  const a = randInt(aRange[0], aRange[1]), V = randInt(vRange[0], vRange[1]);
+  const p = randSign() * rand(0.5, 1.4);
+  const domain = [a - 3, a + 3];
+  return {
+    category: 'smooth', aValue: a, xDomain: domain, yDomain: [V - 4, V + 4], trueSlope: p,
+    branches: [{ xMin: domain[0], xMax: domain[1], closedMin: true, closedMax: true, fn: anchoredFn(a, V, p) }],
+    isolated: [],
+  };
+}
+function makeCorner(aRange, vRange){
+  const a = randInt(aRange[0], aRange[1]), V = randInt(vRange[0], vRange[1]);
+  let m1 = randSign() * rand(0.6, 1.6), m2 = randSign() * rand(0.6, 1.6);
+  if (Math.abs(m1 - m2) < 0.7) m2 = m1 + (randSign() * rand(0.9, 1.6));
+  const domain = [a - 3, a + 3];
+  return {
+    category: 'corner', aValue: a, xDomain: domain, yDomain: [V - 4, V + 4], leftSlope: m1, rightSlope: m2,
+    branches: [
+      { xMin: domain[0], xMax: a, closedMin: true, closedMax: true, fn: anchoredFn(a, V, m1) },
+      { xMin: a, xMax: domain[1], closedMin: false, closedMax: true, fn: anchoredFn(a, V, m2) },
+    ],
+    isolated: [],
+  };
+}
+function makeCusp(aRange, vRange){
+  const a = randInt(aRange[0], aRange[1]), V = randInt(vRange[0], vRange[1]);
+  const k = rand(1.3, 2.4), dir = randSign();
+  const p = pick([0.22, 0.28, 0.34, 0.4, 0.46]);
+  const domain = [a - 3, a + 3];
+  return {
+    category: 'cusp', aValue: a, xDomain: domain, yDomain: [V - 5, V + 5],
+    branches: [
+      { xMin: domain[0], xMax: a, closedMin: true, closedMax: true, fn: (x) => V + dir * (-k) * Math.pow(Math.max(0, a - x), p) },
+      { xMin: a, xMax: domain[1], closedMin: false, closedMax: true, fn: (x) => V + dir * (-k) * Math.pow(Math.max(0, x - a), p) },
+    ],
+    isolated: [],
+  };
+}
+function makeVertical(aRange, vRange){
+  const a = randInt(aRange[0], aRange[1]), V = randInt(vRange[0], vRange[1]);
+  const s = randSign() * rand(1.1, 2.2);
+  const p = pick([0.18, 0.24, 1 / 3, 0.36, 0.42]);
+  const domain = [a - 3, a + 3];
+  return {
+    category: 'vertical', aValue: a, xDomain: domain, yDomain: [V - 5, V + 5],
+    branches: [{ xMin: domain[0], xMax: domain[1], closedMin: true, closedMax: true, fn: (x) => V + s * Math.sign(x - a) * Math.pow(Math.abs(x - a), p) }],
+    isolated: [],
+  };
+}
+
+const LAB_PRESETS = [
+  {
+    id: 'smooth', label: '① 미분가능', subtitle: '좌우 기울기가 같아서 매끄럽게 이어짐', aValue: 1,
+    xDomain: [-3, 4], yDomain: [-1, 5],
+    branches: [{ xMin: -3, xMax: 4, closedMin: true, closedMax: true, fn: smoothFn(2, 1, 0.8, 0.15) }],
+    isolated: [],
+  },
+  {
+    id: 'corner', label: '② 코너 (꺾인 점)', subtitle: '연속이지만 좌우 기울기가 다름', aValue: 1,
+    xDomain: [-3, 4], yDomain: [-1, 5],
+    branches: [
+      { xMin: -3, xMax: 1, closedMin: true, closedMax: true, fn: (x) => 2 + 1.3 * (x - 1) },
+      { xMin: 1, xMax: 4, closedMin: false, closedMax: true, fn: (x) => 2 - 0.9 * (x - 1) },
+    ],
+    isolated: [],
+  },
+  {
+    id: 'cusp', label: '③ 첨점', subtitle: '양쪽 기울기가 서로 반대 방향으로 발산 (+∞ / −∞)', aValue: 1,
+    xDomain: [-2, 4], yDomain: [-1, 5],
+    branches: [
+      { xMin: -2, xMax: 1, closedMin: true, closedMax: true, fn: (x) => 3 + 2.2 * (-1) * Math.sqrt(Math.max(0, 1 - x)) },
+      { xMin: 1, xMax: 4, closedMin: false, closedMax: true, fn: (x) => 3 + 2.2 * (-1) * Math.sqrt(Math.max(0, x - 1)) },
+    ],
+    isolated: [],
+  },
+  {
+    id: 'vertical', label: '④ 수직접선', subtitle: '매끈해 보이지만 양쪽 다 같은 방향(+∞)으로 발산', aValue: 1,
+    xDomain: [-2, 4], yDomain: [-2, 6],
+    branches: [{ xMin: -2, xMax: 4, closedMin: true, closedMax: true, fn: (x) => 2 + 1.6 * Math.cbrt(x - 1) }],
+    isolated: [],
+  },
+];
+
+function showTab(name){
+  ['theory', 'lab', 'game'].forEach((n) => {
+    document.getElementById('page-' + n).classList.toggle('hidden', n !== name);
+    document.querySelector(`.tab-btn[data-tab="${n}"]`).classList.toggle('active', n === name);
+  });
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll('.tab-btn').forEach((btn) => btn.addEventListener('click', () => showTab(btn.dataset.tab)));
+
+const LabApp = (function(){
+  let presetId = 'smooth', x = 0;
+  let revealed = { left: false, right: false };
+  let animating = null, rafId = null;
+  let geo = {}, dynG = null;
+  const MIN_DIST = 0.0015, REVEAL_DIST = 0.05;
+
+  function getPreset(){ return LAB_PRESETS.find((p) => p.id === presetId); }
+
+  function resetAll(){
+    cancelAnimationFrame(rafId); animating = null;
+    const preset = getPreset();
+    const span = preset.xDomain[1] - preset.xDomain[0];
+    x = clampDomain(preset.aValue - span * 0.32, preset);
+    revealed = { left: false, right: false };
+    renderStatic();
+    renderDynamic();
+    const slider = document.getElementById('labSlider');
+    slider.min = preset.xDomain[0]; slider.max = preset.xDomain[1]; slider.step = 0.001;
+  }
+
+  function renderStatic(){
+    const preset = getPreset();
+    const svg = document.getElementById('labSvg');
+    const result = drawStaticGraph(svg, preset, preset.aValue, {});
+    geo = result.geo; dynG = result.dynG;
+  }
+
+  function secantSlope(preset, xv){
+    const a = preset.aValue;
+    if (Math.abs(xv - a) < 1e-6) return null;
+    const fa = fAt(preset, a), fx = fAt(preset, xv);
+    if (fa == null || fx == null) return null;
+    return (fx - fa) / (xv - a);
+  }
+
+  function applyX(newX){
+    const preset = getPreset();
+    let v = clampDomain(newX, preset);
+    if (Math.abs(v - preset.aValue) < MIN_DIST) v = clampDomain(v < preset.aValue ? preset.aValue - MIN_DIST : preset.aValue + MIN_DIST, preset);
+    x = v;
+    if (Math.abs(v - preset.aValue) < REVEAL_DIST) {
+      if (v < preset.aValue) revealed.left = true; else revealed.right = true;
+    }
+    renderDynamic();
+  }
+
+  function renderDynamic(){
+    const preset = getPreset();
+    const a = preset.aValue;
+    const fa = fAt(preset, a);
+    const fx = fAt(preset, x);
+    const slope = secantSlope(preset, x);
+    const sideColor = x < a ? COLORS.left : COLORS.right;
+    document.getElementById('labSlider').value = x;
+    document.getElementById('labLiveSlope').textContent = `할선의 기울기 = ${fmtSlope(slope)}  (x=${x.toFixed(3)})`;
+    document.getElementById('labLiveSlope').style.color = sideColor;
+
+    const leftSlope = secantSlope(preset, a - MIN_DIST);
+    const rightSlope = secantSlope(preset, a + MIN_DIST);
+    const leftEl = document.getElementById('labLeftValue'), rightEl = document.getElementById('labRightValue');
+    leftEl.textContent = revealed.left ? fmtSlope(leftSlope) : '?.??';
+    leftEl.className = 'cond-value ' + (revealed.left ? 'll-clear' : 'll-fog');
+    rightEl.textContent = revealed.right ? fmtSlope(rightSlope) : '?.??';
+    rightEl.className = 'cond-value ' + (revealed.right ? 'll-clear' : 'll-fog');
+
+    const verdictEl = document.getElementById('labVerdict');
+    if (revealed.left && revealed.right) {
+      const leftFinite = leftSlope != null && Math.abs(leftSlope) <= 25;
+      const rightFinite = rightSlope != null && Math.abs(rightSlope) <= 25;
+      const bothFinite = leftFinite && rightFinite;
+      const match = bothFinite && Math.abs(leftSlope - rightSlope) < 0.3;
+      const sameSignInfinite = !bothFinite && leftSlope != null && rightSlope != null && Math.sign(leftSlope) === Math.sign(rightSlope) && Math.abs(leftSlope) > 25 && Math.abs(rightSlope) > 25;
+      const differentiable = bothFinite && match;
+      let title, sub;
+      if (differentiable) {
+        title = `미분가능해요 (기울기 = ${fmtSlope(leftSlope)})`;
+        sub = '좌미분계수와 우미분계수가 같은 유한한 값으로 만나요.';
+      } else if (!bothFinite && sameSignInfinite) {
+        title = '미분 불가능해요 (수직접선)';
+        sub = '양쪽 다 기울기가 무한대로 발산해요 — 접선이 수직이라 기울기 값 자체가 없어요.';
+      } else if (!bothFinite) {
+        title = '미분 불가능해요 (첨점)';
+        sub = `좌우 기울기가 서로 반대 방향으로 발산해요 (좌=${fmtSlope(leftSlope)}, 우=${fmtSlope(rightSlope)}).`;
+      } else {
+        title = '미분 불가능해요 (코너)';
+        sub = `좌미분계수(${fmtSlope(leftSlope)})와 우미분계수(${fmtSlope(rightSlope)})가 서로 달라요.`;
+      }
+      verdictEl.className = 'verdict ' + (differentiable ? 'ok' : 'bad');
+      verdictEl.innerHTML = `<div style="font-weight:700; font-size:13.5px; color:${differentiable ? COLORS.success : COLORS.left}">${title}</div><div style="font-size:12px; color:var(--inkSoft); margin-top:5px; line-height:1.6;">${sub}</div>`;
+    } else {
+      verdictEl.className = '';
+      verdictEl.setAttribute('style', 'font-size:12.5px; color:var(--inkSoft); padding:0 2px 12px; line-height:1.6;');
+      verdictEl.textContent = '양쪽에서 접근하면 판정이 나타나요.';
+    }
+
+    if (dynG) {
+      while (dynG.firstChild) dynG.removeChild(dynG.firstChild);
+      if (fa != null) dynG.appendChild(el('circle', { cx: geo.sx(a), cy: geo.sy(Math.max(geo.ymin - 0.4, Math.min(geo.ymax + 0.4, fa))), r: 6, fill: COLORS.gold, stroke: COLORS.panel, 'stroke-width': 2 }));
+      if (fx != null && fa != null) {
+        const cyA = Math.max(geo.ymin - 0.4, Math.min(geo.ymax + 0.4, fa));
+        const cyX = Math.max(geo.ymin - 0.4, Math.min(geo.ymax + 0.4, fx));
+        dynG.appendChild(el('line', { x1: geo.sx(a), y1: geo.sy(cyA), x2: geo.sx(x), y2: geo.sy(cyX), stroke: sideColor, 'stroke-width': 2, opacity: 0.85 }));
+        dynG.appendChild(el('circle', { cx: geo.sx(x), cy: geo.sy(cyX), r: 6, fill: sideColor, stroke: COLORS.panel, 'stroke-width': 2 }));
+      }
+    }
+  }
+
+  function stopAnimation(){ cancelAnimationFrame(rafId); animating = null; }
+  function animateFrom(side){
+    stopAnimation();
+    const preset = getPreset();
+    const span = preset.xDomain[1] - preset.xDomain[0];
+    let cur = side === 'left' ? clampDomain(preset.aValue - span * 0.4, preset) : clampDomain(preset.aValue + span * 0.4, preset);
+    applyX(cur);
+    function step(){
+      const diff = preset.aValue - x;
+      if (Math.abs(diff) < MIN_DIST) { applyX(preset.aValue + (side === 'left' ? -MIN_DIST : MIN_DIST)); animating = null; return; }
+      applyX(x + diff * 0.12);
+      rafId = requestAnimationFrame(step);
+    }
+    rafId = requestAnimationFrame(step);
+  }
+
+  function renderChips(){
+    const container = document.getElementById('labChips');
+    container.innerHTML = '';
+    LAB_PRESETS.forEach((p) => {
+      const btn = document.createElement('button');
+      btn.className = 'chip' + (p.id === presetId ? ' active' : '');
+      btn.textContent = p.label;
+      btn.onclick = () => { presetId = p.id; renderChips(); document.getElementById('labSubtitle').textContent = p.subtitle; resetAll(); };
+      container.appendChild(btn);
+    });
+  }
+
+  function wireDrag(){
+    const svgEl = document.getElementById('labSvg');
+    let dragging = false;
+    function clientXOf(e){ if (e.touches && e.touches[0]) return e.touches[0].clientX; if (e.changedTouches && e.changedTouches[0]) return e.changedTouches[0].clientX; return e.clientX; }
+    function moveFromClientX(clientX){
+      const rect = svgEl.getBoundingClientRect();
+      const px = ((clientX - rect.left) / rect.width) * geo.W;
+      applyX(geo.xmin + ((px - geo.plot.x) / geo.plot.w) * (geo.xmax - geo.xmin));
+    }
+    function startDrag(e){ stopAnimation(); dragging = true; moveFromClientX(clientXOf(e)); }
+    function moveDrag(e){ if (!dragging) return; if (e.cancelable) e.preventDefault(); moveFromClientX(clientXOf(e)); }
+    function endDrag(){ dragging = false; }
+    svgEl.addEventListener('mousedown', startDrag);
+    svgEl.addEventListener('mousemove', moveDrag);
+    window.addEventListener('mouseup', endDrag);
+    svgEl.addEventListener('touchstart', startDrag, { passive: true });
+    svgEl.addEventListener('touchmove', moveDrag, { passive: false });
+    svgEl.addEventListener('touchend', endDrag);
+  }
+
+  function init(){
+    document.getElementById('labSubtitle').textContent = getPreset().subtitle;
+    renderChips();
+    wireDrag();
+    document.getElementById('labSlider').addEventListener('input', (e) => { stopAnimation(); applyX(parseFloat(e.target.value)); });
+    document.getElementById('labBtnLeft').addEventListener('click', () => animateFrom('left'));
+    document.getElementById('labBtnRight').addEventListener('click', () => animateFrom('right'));
+    document.getElementById('labBtnReset').addEventListener('click', () => { stopAnimation(); resetAll(); });
+    resetAll();
+  }
+  function selectPreset(id){
+    const preset = LAB_PRESETS.find((p) => p.id === id);
+    if (!preset) return;
+    presetId = id;
+    renderChips();
+    document.getElementById('labSubtitle').textContent = preset.subtitle;
+    resetAll();
+  }
+
+  return { init, selectPreset };
+})();
+
+function showGameMode(mode){
+  document.getElementById('gameModeSelect').classList.toggle('hidden', mode !== 'select');
+  document.getElementById('memoryApp').classList.toggle('hidden', mode !== 'memory');
+  document.getElementById('tangentApp').classList.toggle('hidden', mode !== 'tangent');
+  document.getElementById('gameHeader').classList.toggle('hidden', mode === 'memory' || mode === 'tangent');
+  document.getElementById('gameFooterLink').classList.toggle('hidden', mode !== 'select');
+}
+
+const MemoryApp = (function(){
+  const MAKERS = { smooth: () => makeSmooth([-2, 3], [-1, 4]), corner: () => makeCorner([-2, 3], [-1, 4]), cusp: () => makeCusp([-2, 3], [0, 4]), vertical: () => makeVertical([-2, 3], [0, 4]) };
+  const CATEGORIES = ['smooth', 'corner', 'cusp', 'vertical'];
+
+  const state = { cards: [], flipped: [], matchedCount: 0, moves: 0, startTs: 0, timerInt: null, locked: false };
+
+  function loadBest(){ try { const raw = localStorage.getItem('diff_memory_best'); return raw ? JSON.parse(raw) : null; } catch (e) { return null; } }
+  function saveBest(entry){ try { localStorage.setItem('diff_memory_best', JSON.stringify(entry)); } catch (e) {} }
+  function renderBestLine(){
+    const best = loadBest();
+    document.getElementById('memoryBestLine').textContent = best ? `🏆 내 최고 기록: ${best.score}점 (${best.moves}번 시도, ${best.seconds}초)` : '이 기기에 첫 기록이 저장돼요.';
+  }
+  function showScreen(name){
+    ['start', 'play', 'end'].forEach((s) => document.getElementById('memoryScreen' + s.charAt(0).toUpperCase() + s.slice(1)).classList.toggle('hidden', s !== name));
+    if (name === 'start') renderBestLine();
+  }
+
+  function buildDeck(){
+    const cards = [];
+    CATEGORIES.forEach((cat) => {
+      for (let i = 0; i < 2; i++) cards.push({ id: cat + '-' + i, category: cat, data: MAKERS[cat]() });
+    });
+    return shuffle(cards);
+  }
+
+  function startGame(){
+    state.cards = buildDeck();
+    state.flipped = []; state.matchedCount = 0; state.moves = 0; state.locked = false;
+    state.startTs = performance.now();
+    document.getElementById('memoryMoves').textContent = 0;
+    document.getElementById('memoryTime').textContent = 0;
+    clearInterval(state.timerInt);
+    state.timerInt = setInterval(() => {
+      document.getElementById('memoryTime').textContent = Math.floor((performance.now() - state.startTs) / 1000);
+    }, 250);
+    showScreen('play');
+    renderGrid();
+  }
+
+  function renderGrid(){
+    const grid = document.getElementById('memoryGrid');
+    grid.innerHTML = '';
+    state.cards.forEach((card, idx) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'memory-card back';
+      wrap.dataset.idx = idx;
+      const inner = document.createElement('div');
+      inner.className = 'memory-card-inner';
+      inner.textContent = '?';
+      wrap.appendChild(inner);
+      wrap.addEventListener('click', () => onCardClick(idx));
+      grid.appendChild(wrap);
+    });
+  }
+
+  function flipVisual(idx, faceUp){
+    const wrap = document.querySelector(`.memory-card[data-idx="${idx}"]`);
+    if (!wrap) return;
+    const card = state.cards[idx];
+    wrap.classList.remove('wrong');
+    if (faceUp) {
+      wrap.classList.remove('back');
+      wrap.innerHTML = '';
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      wrap.appendChild(svg);
+      drawStaticGraph(svg, card.data, card.data.aValue, { W: 220, H: 165, compact: true });
+    } else {
+      wrap.classList.add('back');
+      wrap.innerHTML = '<div class="memory-card-inner">?</div>';
+    }
+  }
+
+  function onCardClick(idx){
+    if (state.locked) return;
+    if (state.flipped.includes(idx)) return;
+    if (document.querySelector(`.memory-card[data-idx="${idx}"]`).classList.contains('matched')) return;
+    flipVisual(idx, true);
+    state.flipped.push(idx);
+    if (state.flipped.length === 2) {
+      state.locked = true;
+      state.moves += 1;
+      document.getElementById('memoryMoves').textContent = state.moves;
+      const [i1, i2] = state.flipped;
+      const c1 = state.cards[i1], c2 = state.cards[i2];
+      if (c1.category === c2.category) {
+        setTimeout(() => {
+          [i1, i2].forEach((i) => document.querySelector(`.memory-card[data-idx="${i}"]`).classList.add('matched'));
+          state.matchedCount += 1;
+          state.flipped = []; state.locked = false;
+          if (state.matchedCount === CATEGORIES.length) finishGame();
+        }, 350);
+      } else {
+        setTimeout(() => {
+          [i1, i2].forEach((i) => document.querySelector(`.memory-card[data-idx="${i}"]`).classList.add('wrong'));
+        }, 400);
+        setTimeout(() => {
+          flipVisual(i1, false); flipVisual(i2, false);
+          state.flipped = []; state.locked = false;
+        }, 950);
+      }
+    }
+  }
+
+  function finishGame(){
+    clearInterval(state.timerInt);
+    const seconds = Math.floor((performance.now() - state.startTs) / 1000);
+    const score = Math.max(50, 1000 - (state.moves - CATEGORIES.length) * 40 - seconds * 3);
+    showScreen('end');
+    document.getElementById('memoryFinalScore').textContent = score;
+    document.getElementById('memoryFinalSummary').textContent = `${state.moves}번 시도 · ${seconds}초`;
+    const best = loadBest();
+    const isNewBest = !best || score > best.score;
+    const compareEl = document.getElementById('memoryBestCompare');
+    if (isNewBest) { saveBest({ score, moves: state.moves, seconds }); compareEl.textContent = '🎉 이 기기 최고 기록 갱신!'; }
+    else compareEl.textContent = `내 최고 기록은 ${best.score}점이에요.`;
+  }
+
+  function init(){
+    document.getElementById('memoryBtnStart').addEventListener('click', startGame);
+    document.getElementById('memoryBtnRetry').addEventListener('click', () => showScreen('start'));
+    document.getElementById('memoryBack').addEventListener('click', () => { clearInterval(state.timerInt); showGameMode('select'); });
+    showScreen('start');
+  }
+  return { init };
+})();
+
+const TangentApp = (function(){
+  const START_TIME = 3200, MIN_TIME = 1100, DECAY_EVERY = 4, DECAY_AMOUNT = 300;
+
+  const state = { score: 0, lives: 3, streak: 0, correctCount: 0, timePerCard: START_TIME, round: null, rafId: null, locked: false };
+
+  function loadBest(){ try { const raw = localStorage.getItem('diff_tangent_best'); return raw ? JSON.parse(raw) : null; } catch (e) { return null; } }
+  function saveBest(entry){ try { localStorage.setItem('diff_tangent_best', JSON.stringify(entry)); } catch (e) {} }
+  function renderBestLine(){
+    const best = loadBest();
+    document.getElementById('tangentBestLine').textContent = best ? `🏆 내 최고 기록: ${best.score}점 (${best.correct}개 정답)` : '이 기기에 첫 기록이 저장돼요. 시작해볼까요?';
+  }
+  function showScreen(name){
+    ['start', 'play', 'end'].forEach((s) => document.getElementById('tangentScreen' + s.charAt(0).toUpperCase() + s.slice(1)).classList.toggle('hidden', s !== name));
+    if (name === 'start') renderBestLine();
+  }
+  function renderLives(){
+    let s = ''; for (let i = 0; i < 3; i++) s += i < state.lives ? '❤️' : '🤍';
+    document.getElementById('tangentLives').textContent = s;
+  }
+  function updateTimerBar(ratio){
+    const fill = document.getElementById('tangentTimerFill');
+    fill.style.width = (ratio * 100) + '%';
+    fill.style.backgroundColor = ratio > 0.5 ? COLORS.success : ratio > 0.2 ? COLORS.gold : COLORS.left;
+  }
+
+  function generateRound(){
+    const kind = pick(['smooth', 'smooth', 'corner', 'cusp']);
+    let card, trueSlope = null;
+    if (kind === 'smooth') card = makeSmooth([-2, 3], [-1, 4]);
+    else if (kind === 'corner') card = makeCorner([-2, 3], [-1, 4]);
+    else card = makeCusp([-2, 3], [0, 4]);
+
+    let candidateSlope, correctAnswer;
+    if (kind === 'smooth') {
+      trueSlope = card.trueSlope;
+      const showCorrect = Math.random() < 0.5;
+      candidateSlope = showCorrect ? trueSlope : trueSlope + randSign() * rand(1.0, 2.5);
+      correctAnswer = showCorrect ? 'good' : 'bad';
+    } else {
+      candidateSlope = kind === 'corner' ? card.leftSlope + randSign() * rand(0.3, 1.0) : randSign() * rand(1.0, 2.5);
+      correctAnswer = 'none';
+    }
+    return { card, kind, candidateSlope, correctAnswer, trueSlope };
+  }
+
+  function drawRound(round){
+    const svg = document.getElementById('tangentSvg');
+    const result = drawStaticGraph(svg, round.card, round.card.aValue, { W: 300, H: 200, compact: true });
+    const g = result.geo, dyn = result.dynG;
+    const a = round.card.aValue;
+    const fa = fAt(round.card, a);
+    if (fa == null) return;
+    const dx = 1.6;
+    const x1 = a - dx, x2 = a + dx;
+    const y1 = fa - round.candidateSlope * dx, y2 = fa + round.candidateSlope * dx;
+    dyn.appendChild(el('line', { x1: g.sx(x1), y1: g.sy(y1), x2: g.sx(x2), y2: g.sy(y2), stroke: COLORS.gold, 'stroke-width': 2.5, 'stroke-dasharray': '5 4' }));
+    dyn.appendChild(el('circle', { cx: g.sx(a), cy: g.sy(fa), r: 5, fill: COLORS.gold, stroke: COLORS.ink, 'stroke-width': 1.5 }));
+  }
+
+  function spawnRound(){
+    state.locked = false;
+    state.round = generateRound();
+    drawRound(state.round);
+    document.getElementById('tangentFeedback').className = 'game-feedback';
+    const start = performance.now();
+    const duration = state.timePerCard;
+    function tick(now){
+      const elapsed = now - start, remaining = Math.max(0, duration - elapsed);
+      updateTimerBar(remaining / duration);
+      if (remaining <= 0) { onAnswer(null); return; }
+      state.rafId = requestAnimationFrame(tick);
+    }
+    state.rafId = requestAnimationFrame(tick);
+  }
+
+  function onAnswer(choice){
+    if (state.locked) return;
+    state.locked = true;
+    cancelAnimationFrame(state.rafId);
+    const round = state.round;
+    const isCorrect = choice === round.correctAnswer;
+    const fbEl = document.getElementById('tangentFeedback');
+    let explain;
+    if (round.kind === 'smooth') explain = `이 점의 실제 기울기는 ${fmtSlope(round.trueSlope)}예요.`;
+    else if (round.kind === 'corner') explain = '꺾인 점이라 접선이 없어요 — 좌우 기울기가 달라요.';
+    else explain = '첨점이라 접선이 없어요 — 양쪽 기울기가 반대 방향으로 발산해요.';
+
+    if (isCorrect) {
+      const remainingRatio = parseFloat(document.getElementById('tangentTimerFill').style.width) / 100 || 0;
+      const points = 10 + Math.round(remainingRatio * 15) + Math.min(state.streak, 10);
+      state.score += points; state.streak += 1; state.correctCount += 1;
+      document.getElementById('tangentScoreNum').textContent = state.score;
+      if (state.correctCount % DECAY_EVERY === 0) state.timePerCard = Math.max(MIN_TIME, state.timePerCard - DECAY_AMOUNT);
+      // 다른 단원과 동일하게 innerHTML 경로로 통일 — explain 에 수식(KX 출력)을 넣게 되어도 안전하도록.
+      fbEl.innerHTML = `✓ +${points}점 · ${explain}`;
+      fbEl.className = 'game-feedback show good';
+      setTimeout(() => spawnRound(), 550);
+    } else {
+      state.streak = 0; state.lives -= 1; renderLives();
+      const msg = choice == null ? '⏱ 시간 초과! ' : '✕ 틀렸어요. ';
+      fbEl.innerHTML = msg + explain;
+      fbEl.className = 'game-feedback show bad';
+      if (state.lives <= 0) setTimeout(() => gameOver(), 1300);
+      else setTimeout(() => spawnRound(), 1300);
+    }
+  }
+
+  function startGame(){
+    state.score = 0; state.lives = 3; state.streak = 0; state.correctCount = 0; state.timePerCard = START_TIME;
+    document.getElementById('tangentScoreNum').textContent = 0;
+    renderLives();
+    showScreen('play');
+    spawnRound();
+  }
+  function gameOver(){
+    cancelAnimationFrame(state.rafId);
+    showScreen('end');
+    document.getElementById('tangentFinalScore').textContent = state.score;
+    document.getElementById('tangentFinalSummary').textContent = `${state.correctCount}개 정답`;
+    const best = loadBest();
+    const isNewBest = !best || state.score > best.score;
+    const compareEl = document.getElementById('tangentBestCompare');
+    if (isNewBest) { saveBest({ score: state.score, correct: state.correctCount }); compareEl.textContent = '🎉 이 기기 최고 기록 갱신!'; }
+    else compareEl.textContent = `내 최고 기록은 ${best.score}점이에요. 다시 도전해보세요!`;
+  }
+
+  function init(){
+    document.getElementById('tangentBtnStart').addEventListener('click', startGame);
+    document.getElementById('tangentBtnRetry').addEventListener('click', () => showScreen('start'));
+    document.getElementById('tangentBtnGood').addEventListener('click', () => onAnswer('good'));
+    document.getElementById('tangentBtnBad').addEventListener('click', () => onAnswer('bad'));
+    document.getElementById('tangentBtnNone').addEventListener('click', () => onAnswer('none'));
+    document.getElementById('tangentBack').addEventListener('click', () => { cancelAnimationFrame(state.rafId); showGameMode('select'); });
+    showScreen('start');
+  }
+  return { init };
+})();
+
+const TheoryApp = (function(){
+  function renderCaseGrid(){
+    const grid = document.getElementById('caseGrid');
+    grid.innerHTML = '';
+    LAB_PRESETS.forEach((preset) => {
+      const card = document.createElement('div');
+      card.className = 'case-card';
+      const svgWrap = document.createElement('div');
+      svgWrap.className = 'case-svg-wrap';
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svgWrap.appendChild(svg);
+      card.appendChild(svgWrap);
+      const titleEl = document.createElement('div');
+      titleEl.className = 'case-card-title'; titleEl.textContent = preset.label;
+      card.appendChild(titleEl);
+      const descEl = document.createElement('div');
+      descEl.className = 'case-card-desc'; descEl.textContent = preset.subtitle;
+      card.appendChild(descEl);
+      const btn = document.createElement('button');
+      btn.className = 'case-link'; btn.textContent = '🧪 실험실에서 보기';
+      btn.onclick = () => { showTab('lab'); LabApp.selectPreset(preset.id); };
+      card.appendChild(btn);
+      grid.appendChild(card);
+      drawStaticGraph(svg, preset, preset.aValue, { W: 300, H: 190, compact: true });
+    });
+  }
+  function init(){
+    renderCaseGrid();
+    document.getElementById('ctaToLab').addEventListener('click', () => showTab('lab'));
+    document.getElementById('ctaToGame').addEventListener('click', () => showTab('game'));
+  }
+  return { init };
+})();
+
+LabApp.init();
+MemoryApp.init();
+TangentApp.init();
+TheoryApp.init();
+renderStaticMath(document.getElementById('page-theory'));   // 이론 탭의 \(...\) 일괄 렌더
+document.getElementById('btnModeMemory').addEventListener('click', () => showGameMode('memory'));
+document.getElementById('btnModeTangent').addEventListener('click', () => showGameMode('tangent'));
+document.getElementById('gameLinkToTheory').addEventListener('click', (e) => { e.preventDefault(); showTab('theory'); });
+showGameMode('select');
+showTab('theory');
+</script>
+</body>
+</html>
