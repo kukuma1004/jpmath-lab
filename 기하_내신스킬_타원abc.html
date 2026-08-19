@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+  <title>타원 a·b·c 계산 · JP Math Lab 기하</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700;900&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="기하_공통.css">
+  <link rel="stylesheet" href="기하_내신스킬.css">
+</head>
+<body>
+<div class="skill-page">
+  <nav class="skill-nav" aria-label="타원 계산 스킬 단계">
+    <div class="skill-nav-inner">
+      <a class="skill-back" href="기하.html" aria-label="기하 목록으로 돌아가기">←</a>
+      <button class="skill-tab active" data-skill-tab="concept"><span>01</span> 원리</button>
+      <button class="skill-tab" data-skill-tab="drill"><span>02</span> 5문제</button>
+      <button class="skill-tab rush-tab" data-skill-tab="rush"><span>03</span> 60초</button>
+      <button class="skill-tab boss-tab" data-skill-tab="boss"><span>04</span> 보스</button>
+    </div>
+  </nav>
+
+  <main class="skill-wrap">
+    <section class="skill-panel" data-skill-panel="concept">
+      <header class="skill-hero">
+        <div>
+          <p class="skill-kicker">SCHOOL SKILL 01 · ELLIPSE</p>
+          <h1>타원 a·b·c 계산</h1>
+          <p>식의 세 숫자만 정확히 읽어도 초점·장축·단축 문제의 절반이 끝납니다.</p>
+        </div>
+        <div class="mastery-card" aria-label="현재 숙련도">
+          <span>MASTERY</span><strong data-mastery-stars>☆☆☆☆☆</strong><small data-mastery-note>첫 도전을 기다리는 중</small>
+        </div>
+      </header>
+
+      <div class="rule-strip">
+        <span class="rule-label">한 줄 공식</span>
+        <strong>a² = b² + c²</strong>
+        <span>a: 장반경 · b: 단반경 · c: 중심에서 초점까지</span>
+      </div>
+
+      <div class="concept-layout">
+        <div class="skill-visual-card">
+          <svg id="ellipseSkillSvg" viewBox="0 0 680 430" role="img" aria-label="장반경, 단반경과 초점이 표시된 타원"></svg>
+          <div class="visual-legend"><span><i class="legend-a"></i>장반경 a</span><span><i class="legend-b"></i>단반경 b</span><span><i class="legend-c"></i>초점거리 c</span></div>
+        </div>
+        <aside class="control-card">
+          <div class="control-head"><span>직접 움직이기</span><b data-equation-readout></b></div>
+          <label class="skill-range"><span>장반경 a <b data-a-value>5</b></span><input data-a-range type="range" min="3" max="7" step="1" value="5"></label>
+          <label class="skill-range"><span>단반경 b <b data-b-value>3</b></span><input data-b-range type="range" min="1" max="4" step="1" value="3"></label>
+          <div class="abc-readout">
+            <div><span>a²</span><strong data-a2>25</strong></div>
+            <div><span>b²</span><strong data-b2>9</strong></div>
+            <div class="focus-value"><span>c²=a²−b²</span><strong data-c2>16</strong></div>
+          </div>
+          <p class="micro-tip" data-focus-readout>따라서 c=4, 초점은 (±4, 0)</p>
+        </aside>
+      </div>
+
+      <div class="mistake-grid">
+        <article><span>실수 ①</span><b>a와 b를 분모 자체로 읽기</b><p>x²/25의 장반경은 25가 아니라 √25=5입니다.</p></article>
+        <article><span>실수 ②</span><b>타원에서 더하기</b><p>타원은 c²=a²−b². 쌍곡선과 부호를 반대로 기억하세요.</p></article>
+        <article><span>실수 ③</span><b>초점을 (0,±c)로 고정</b><p>큰 분모가 x² 아래면 초점은 x축, y² 아래면 y축입니다.</p></article>
+      </div>
+
+      <div class="launch-row">
+        <button class="launch-card" data-launch="drill"><span>STEP 02</span><b>5문제 정확도 훈련</b><small>시간제한 없이 계산 루틴 만들기</small></button>
+        <button class="launch-card hot" data-launch="rush"><span>STEP 03</span><b>60초 러시</b><small>콤보를 쌓고 오답 시 2초 차감</small></button>
+        <button class="launch-card boss" data-launch="boss"><span>STEP 04</span><b>내신 보스</b><small>세 계산을 연결해 한 번에 해결</small></button>
+      </div>
+    </section>
+
+    <section class="skill-panel hidden" data-skill-panel="drill">
+      <header class="mode-header">
+        <div><p class="skill-kicker">ACCURACY DRILL</p><h1>5문제 계산 루틴</h1><p>식 읽기 → 제곱 관계 → 초점 확인 순서로 풀어보세요.</p></div>
+        <div class="mode-stat"><span>진행</span><strong data-drill-progress>0 / 5</strong></div>
+      </header>
+      <div class="question-shell">
+        <div class="question-topline"><span data-drill-type>READY</span><b data-drill-score>정답 0</b></div>
+        <div class="question-equation" data-drill-equation>준비되면 시작하세요.</div>
+        <h2 class="question-prompt" data-drill-prompt>다섯 문제로 계산 습관을 점검합니다.</h2>
+        <div class="answer-grid" data-drill-answers></div>
+        <div class="answer-feedback hidden" data-drill-feedback></div>
+        <button class="primary-action" data-drill-start>훈련 시작</button>
+      </div>
+      <div class="result-card hidden" data-drill-result></div>
+    </section>
+
+    <section class="skill-panel hidden" data-skill-panel="rush">
+      <header class="mode-header rush-heading">
+        <div><p class="skill-kicker">60 SECOND RUSH</p><h1>멈추면 점수를 빼앗긴다</h1><p>정답은 콤보 보너스, 오답은 2초 차감. 가능한 많이 해결하세요.</p></div>
+        <div class="best-card"><span>BEST</span><strong data-rush-best>0</strong></div>
+      </header>
+      <div class="rush-stage">
+        <div class="rush-hud"><div><span>TIME</span><strong data-rush-time>60.0</strong></div><div><span>SCORE</span><strong data-rush-score>0</strong></div><div><span>COMBO</span><strong data-rush-combo>×1</strong></div></div>
+        <div class="rush-track"><div data-rush-bar></div></div>
+        <div class="rush-question" data-rush-question>
+          <span class="rush-ready-icon">⚡</span><h2>60초 동안 몇 문제까지 갈 수 있을까요?</h2><p>틀리면 시간이 줄어듭니다. 정확도와 속도를 함께 잡으세요.</p>
+        </div>
+        <div class="answer-grid rush-answers" data-rush-answers></div>
+        <button class="danger-action" data-rush-start>60초 러시 시작</button>
+        <div class="rush-flash" data-rush-flash aria-live="polite"></div>
+      </div>
+      <div class="result-card hidden" data-rush-result></div>
+    </section>
+
+    <section class="skill-panel hidden" data-skill-panel="boss">
+      <header class="mode-header boss-heading">
+        <div><p class="skill-kicker">SCHOOL EXAM BOSS</p><h1>한 문제, 세 번의 판단</h1><p>중간 계산이 틀리면 최종 답도 무너집니다. 단계별로 확인하세요.</p></div>
+        <div class="boss-clears"><span>CLEAR</span><strong data-boss-clears>0</strong></div>
+      </header>
+      <div class="boss-stage">
+        <div class="boss-warning"><span>FINAL BOSS</span><b>부분점수 없이 세 칸을 모두 맞혀야 클리어</b></div>
+        <div class="boss-problem">
+          <span>다음 타원에 대하여 물음에 답하시오.</span>
+          <strong data-boss-equation></strong>
+        </div>
+        <svg id="bossEllipseSvg" viewBox="0 0 680 300" role="img" aria-label="내신 보스 타원 문제"></svg>
+        <div class="boss-steps">
+          <label><span>1</span><div><b>c²의 값</b><small>a²−b²부터 계산</small></div><input data-boss-c2 type="number" inputmode="numeric" placeholder="?"></label>
+          <label><span>2</span><div><b>양의 초점 좌표의 값</b><small>(c,0)의 c 또는 (0,c)의 c</small></div><input data-boss-c type="number" inputmode="numeric" placeholder="?"></label>
+          <label><span>3</span><div><b>PF₁+PF₂</b><small>타원의 거리 합</small></div><input data-boss-sum type="number" inputmode="numeric" placeholder="?"></label>
+        </div>
+        <button class="boss-action" data-boss-check>보스 정답 제출</button>
+        <div class="boss-feedback hidden" data-boss-feedback></div>
+      </div>
+    </section>
+  </main>
+</div>
+<script src="기하_공통.js"></script>
+<script src="기하_내신스킬_타원abc.js"></script>
+</body>
+</html>

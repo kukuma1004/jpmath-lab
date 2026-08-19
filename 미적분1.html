@@ -126,6 +126,205 @@
   }
   .card-meta { color: #9ca3af; }
   .card-arrow { color: var(--accent); font-weight: 700; }
+
+  .calc-category-nav {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin: 18px 0 6px;
+  }
+  .calc-category {
+    position: relative;
+    min-height: 158px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 24px;
+    background: #fff;
+    padding: 20px;
+    text-align: left;
+    color: #111827;
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+  }
+  .calc-category::after {
+    content: '+';
+    position: absolute;
+    right: 18px;
+    top: 15px;
+    font: 500 27px 'JetBrains Mono', monospace;
+    color: #aeb4bd;
+  }
+  .calc-category:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent);
+    box-shadow: 0 10px 24px rgba(0,0,0,.06);
+  }
+  .calc-category.active {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 6%, white);
+    box-shadow: 0 10px 24px color-mix(in srgb, var(--accent) 13%, transparent);
+  }
+  .calc-category.active::after { content: '−'; color: var(--accent); }
+  .calc-category-mark {
+    display: grid;
+    place-items: center;
+    width: 43px;
+    height: 43px;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--accent) 10%, white);
+    color: var(--accent);
+    font: 800 16px 'JetBrains Mono', monospace;
+  }
+  .calc-category b { display: block; font-size: 17px; margin: 18px 0 5px; }
+  .calc-category small { display: block; color: #7b8491; font-size: 11.5px; line-height: 1.45; }
+  .calc-category em {
+    position: absolute;
+    right: 18px;
+    bottom: 17px;
+    color: var(--accent);
+    font: 700 10px 'JetBrains Mono', monospace;
+    font-style: normal;
+  }
+  .calc-category-empty {
+    margin-top: 16px;
+    padding: 35px 20px;
+    border: 1px dashed #cbd0d8;
+    border-radius: 22px;
+    text-align: center;
+    color: #7b8491;
+    background: rgba(255,255,255,.5);
+  }
+  .calc-category-empty strong { display: block; color: #374151; font-size: 16px; margin-bottom: 6px; }
+  .calc-category-empty span { font-size: 12px; }
+  .calc-section { margin-top: 28px; animation: calcOpen .28s ease; }
+  .calc-section.hidden, .calc-category-empty.hidden { display: none; }
+  .calc-section-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .calc-section-head h2 { font-size: 23px; }
+  .calc-section-head span { color: #9ca3af; font: 700 11px 'JetBrains Mono', monospace; }
+  .calc-coming-soon {
+    padding: 42px 28px;
+    border: 1px dashed #d5d9df;
+    border-radius: 24px;
+    background: #fff;
+    text-align: center;
+  }
+  .calc-coming-soon strong { display: block; color: #7A4E8C; font-size: 19px; margin-bottom: 9px; }
+  .calc-coming-soon p { color: #6b7280; font-size: 14px; line-height: 1.65; word-break: keep-all; }
+  .calc-coming-soon span {
+    display: inline-block;
+    margin-top: 18px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: #f6f1f8;
+    color: #7A4E8C;
+    font: 700 11px 'JetBrains Mono', monospace;
+  }
+  .view-switch {
+    display: inline-flex;
+    gap: 6px;
+    margin: -8px 0 24px;
+    padding: 5px;
+    border: 1px solid #e1e5e9;
+    border-radius: 14px;
+    background: #eef1f4;
+  }
+  .view-btn {
+    border: 0;
+    border-radius: 10px;
+    padding: 11px 16px;
+    background: transparent;
+    color: #6b7280;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .view-btn span { margin-left: 5px; color: #9ca3af; font: 700 11px 'JetBrains Mono', monospace; }
+  .view-btn.active { background: #fff; color: #111827; box-shadow: 0 3px 10px rgba(0,0,0,.07); }
+  .view-btn.active span { color: #C1442D; }
+  .main-panel.hidden, .skill-section.hidden, .skill-empty.hidden { display: none; }
+  .skill-map-intro {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 25px 27px;
+    border-radius: 24px;
+    background: #223027;
+    color: #fff;
+  }
+  .skill-map-intro h2 { font-size: 24px; margin-bottom: 7px; }
+  .skill-map-intro p { color: #d7dfda; font-size: 13px; line-height: 1.55; }
+  .skill-map-intro strong { color: #f3c86a; font: 800 22px 'JetBrains Mono', monospace; white-space: nowrap; }
+  .skill-category-nav { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin: 16px 0; }
+  .skill-category-button {
+    position: relative;
+    min-height: 112px;
+    padding: 17px 18px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 20px;
+    background: #fff;
+    text-align: left;
+    cursor: pointer;
+    transition: .2s ease;
+  }
+  .skill-category-button::after { content: '+'; position: absolute; right: 15px; top: 12px; color: #aeb4bd; font: 500 24px 'JetBrains Mono', monospace; }
+  .skill-category-button:hover { transform: translateY(-3px); border-color: var(--accent); }
+  .skill-category-button.active { border-color: var(--accent); background: color-mix(in srgb,var(--accent) 6%,white); box-shadow: 0 9px 22px color-mix(in srgb,var(--accent) 12%,transparent); }
+  .skill-category-button.active::after { content: '−'; color: var(--accent); }
+  .skill-category-button b { display: block; font-size: 16px; margin-bottom: 7px; }
+  .skill-category-button small { display: block; max-width: 85%; color: #7b8491; font-size: 11px; line-height: 1.4; }
+  .skill-category-button em { position: absolute; right: 15px; bottom: 13px; color: var(--accent); font: 700 9px 'JetBrains Mono', monospace; font-style: normal; }
+  .skill-empty { padding: 30px 20px; border: 1px dashed #cbd0d8; border-radius: 20px; text-align: center; color: #7b8491; }
+  .skill-empty strong { display: block; color: #374151; margin-bottom: 5px; }
+  .skill-section { margin-top: 22px; animation: calcOpen .28s ease; }
+  .skill-section-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 15px; margin-bottom: 14px; }
+  .skill-section-head h2 { font-size: 21px; }
+  .skill-section-head span { color: #9ca3af; font: 700 10px 'JetBrains Mono', monospace; }
+  .skill-grid-main { display: grid; grid-template-columns: repeat(auto-fill,minmax(235px,1fr)); gap: 14px; list-style: none; }
+  .skill-mini {
+    display: flex;
+    min-height: 174px;
+    flex-direction: column;
+    padding: 19px;
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+    background: #fff;
+    color: inherit;
+    text-decoration: none;
+    transition: .2s ease;
+  }
+  a.skill-mini:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: 0 9px 22px rgba(0,0,0,.05); }
+  .skill-mini.disabled { background: #f5f6f7; color: #9ca3af; border-style: dashed; }
+  .skill-mini-top { display: flex; justify-content: space-between; align-items: center; }
+  .skill-mini-code { color: var(--accent); font: 800 11px 'JetBrains Mono', monospace; }
+  .skill-mini-status { padding: 4px 7px; border-radius: 999px; background: color-mix(in srgb,var(--accent) 10%,white); color: var(--accent); font: 700 9px 'JetBrains Mono', monospace; }
+  .skill-mini.disabled .skill-mini-status { background: #e5e7eb; color: #8b929d; }
+  .skill-mini h3 { font-size: 17px; line-height: 1.4; margin: 20px 0 8px; word-break: keep-all; }
+  .skill-mini p { color: #6b7280; font-size: 12px; line-height: 1.5; word-break: keep-all; }
+  .skill-mini-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 16px; color: #9ca3af; font: 700 10px 'JetBrains Mono', monospace; }
+  .skill-mini-footer b { color: var(--accent); }
+  @keyframes calcOpen { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+
+  @media (max-width: 560px) {
+    body { padding: 28px 16px; }
+    .hero h1 { font-size: 32px; }
+    .calc-category-nav { grid-template-columns: 1fr; gap: 10px; }
+    .calc-category { min-height: 104px; padding: 15px 17px 15px 76px; }
+    .calc-category-mark { position: absolute; left: 16px; top: 18px; }
+    .calc-category b { margin: 6px 35px 5px 0; }
+    .calc-category em { bottom: 13px; }
+    .calc-section-head { align-items: flex-start; flex-direction: column; gap: 5px; }
+    .view-switch { display: flex; margin-top: -4px; }
+    .view-btn { flex: 1; padding: 10px 8px; font-size: 13px; }
+    .skill-map-intro { align-items: flex-start; flex-direction: column; }
+    .skill-category-nav { grid-template-columns: 1fr; gap: 9px; }
+    .skill-category-button { min-height: 91px; }
+  }
 </style>
 </head>
 <body>
@@ -135,9 +334,15 @@
   <header class="hero">
     <p class="eyebrow">CALC Ⅰ</p>
     <h1>미적분Ⅰ</h1>
-    <p class="lede">극한에서 접선의 방정식까지, 그래프를 직접 움직이며 개념을 확인해 보세요.</p>
+    <p class="lede">원하는 단원을 고른 뒤, 필요한 개념만 펼쳐서 시작하세요.</p>
   </header>
 
+  <div class="view-switch" aria-label="미적분 학습 방식 선택">
+    <button class="view-btn" data-main-view="concepts">개념 학습 <span>14</span></button>
+    <button class="view-btn active" data-main-view="skills">수능·계산 스킬 <span>13</span></button>
+  </div>
+
+  <div class="main-panel hidden" data-main-panel="concepts">
   <ul class="grid">
     <li>
       <a class="card" style="--accent:#C1442D" href="미적분1_극한.html">
@@ -395,7 +600,188 @@
         </div>
       </a>
     </li>
+    <li>
+      <a class="card" style="--accent:#A03D62" href="미적분1_극대극소.html">
+        <span class="index-mark">13</span>
+        <div class="card-top">
+          <span class="icon-tile">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M3 17c2.5 0 3.5-9 6-9s3 7 5 7 3-4 4.5-4" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/>
+              <circle cx="9" cy="8.2" r="1.9" fill="#fff" stroke="var(--accent)" stroke-width="1.7"/>
+              <circle cx="14.2" cy="15" r="1.9" fill="var(--accent)"/>
+            </svg>
+          </span>
+          <span class="code-chip">EXTREMA</span>
+        </div>
+        <h2 class="card-title">극대와 극소</h2>
+        <p class="card-desc">증감표를 직접 만들어보고, 스릴 아레나에서 1:1 대결까지.</p>
+        <div class="card-footer">
+          <span class="card-meta">f ' 부호 변화 → 극값</span>
+          <span class="card-arrow">입장하기 →</span>
+        </div>
+      </a>
+    </li>
+    <li>
+      <a class="card" style="--accent:#3B5BA5" href="미적분1_삼차함수그래프.html">
+        <span class="index-mark">14</span>
+        <div class="card-top">
+          <span class="icon-tile">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M3 19c2.5 0 3.2-7.5 5.5-7.5S11 17 13.5 17 18 6 21 5" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/>
+              <path d="M3 12h18" stroke="var(--accent)" stroke-width="1.2" opacity="0.45"/>
+            </svg>
+          </span>
+          <span class="code-chip">CUBIC SHAPE</span>
+        </div>
+        <h2 class="card-title">삼차함수 그래프의 개형</h2>
+        <p class="card-desc">판별식 하나로 개형이 정해져요. 극값을 가질 조건까지.</p>
+        <div class="card-footer">
+          <span class="card-meta">b² - 3ac &gt; 0</span>
+          <span class="card-arrow">입장하기 →</span>
+        </div>
+      </a>
+    </li>
   </ul>
+  </div>
+
+  <div class="main-panel" data-main-panel="skills">
+    <div class="skill-map-intro"><div><h2>13개 수능·계산 스킬 지도</h2><p>완성된 1~8번은 바로 학습하고, 다음 주제까지 한눈에 확인하세요.</p></div><strong>8 / 13 READY</strong></div>
+    <div data-skill-map></div>
+  </div>
+
+  <script>
+  (function () {
+    const sourceGrid = document.querySelector('[data-main-panel="concepts"] > .grid');
+    const cards = [...sourceGrid.children];
+    const groups = [
+      { key: 'limits', mark: 'lim', name: '극한과 연속', summary: '극한 · 극한값 · 연속 · 최대최소 · 사잇값', color: '#C1442D', indexes: [0, 1, 2, 7, 8] },
+      { key: 'derivative', mark: "f'", name: '미분', summary: '미분계수 · 도함수 · 접선 · 미분법 · 도함수의 활용', color: '#2B6CA3', indexes: [3, 4, 5, 6, 9, 10, 11, 12, 13] },
+      { key: 'integral', mark: '∫', name: '적분', summary: '부정적분 · 정적분 · 넓이 · 속도와 거리', color: '#7A4E8C', indexes: [] }
+    ];
+
+    const nav = document.createElement('div');
+    nav.className = 'calc-category-nav';
+    nav.setAttribute('aria-label', '미적분 단원 선택');
+    const empty = document.createElement('div');
+    empty.className = 'calc-category-empty';
+    empty.innerHTML = '<strong>먼저 공부할 단원을 선택하세요</strong><span>선택한 단원의 학습 카드만 펼쳐집니다.</span>';
+    const stage = document.createElement('div');
+    stage.className = 'calc-category-stage';
+    sourceGrid.replaceWith(nav, empty, stage);
+
+    groups.forEach((group, groupIndex) => {
+      const button = document.createElement('button');
+      button.className = 'calc-category';
+      button.style.setProperty('--accent', group.color);
+      button.dataset.category = group.key;
+      button.setAttribute('aria-expanded', 'false');
+      button.innerHTML = `<span class="calc-category-mark">${group.mark}</span><b>${group.name}</b><small>${group.summary}</small><em>${group.indexes.length ? `${group.indexes.length} LABS` : 'COMING SOON'}</em>`;
+      nav.appendChild(button);
+
+      const section = document.createElement('section');
+      section.className = 'calc-section hidden';
+      section.dataset.calcCategory = group.key;
+      section.innerHTML = `<div class="calc-section-head"><h2>${['Ⅰ', 'Ⅱ', 'Ⅲ'][groupIndex]}. ${group.name}</h2><span>${group.indexes.length ? `${group.indexes.length} INTERACTIVE LABS` : 'NEXT LABS'}</span></div>${group.indexes.length ? '<ul class="grid"></ul>' : '<div class="calc-coming-soon"><strong>적분 학습실을 준비하고 있어요</strong><p>부정적분과 정적분의 계산부터 넓이, 속도와 거리까지<br>직접 움직이고 겨루는 학습으로 이어질 예정입니다.</p><span>INTEGRAL LAB · COMING SOON</span></div>'}`;
+      const grid = section.querySelector('.grid');
+      if (grid) group.indexes.forEach(index => grid.appendChild(cards[index]));
+      stage.appendChild(section);
+    });
+
+    let openCategory = null;
+    function setCategory(key, updateHash = true) {
+      openCategory = openCategory === key ? null : key;
+      nav.querySelectorAll('.calc-category').forEach(button => {
+        const active = button.dataset.category === openCategory;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-expanded', String(active));
+      });
+      stage.querySelectorAll('.calc-section').forEach(section => {
+        section.classList.toggle('hidden', section.dataset.calcCategory !== openCategory);
+      });
+      empty.classList.toggle('hidden', Boolean(openCategory));
+      if (updateHash) history.replaceState(null, '', openCategory ? `#${openCategory}` : '#topics');
+    }
+
+    nav.querySelectorAll('.calc-category').forEach(button => {
+      button.addEventListener('click', () => setCategory(button.dataset.category));
+    });
+
+    const skillGroups = [
+      { key:'core', name:'Ⅰ. 극한·정리 계산', sub:'LIMIT & THEOREMS · 4', color:'#C1442D', summary:'극한값 · 최대최소 · 사잇값 · 곱의 미분', items:[
+        ['01','함수의 극한값 구하기','0/0 · ∞/∞ · ∞−∞꼴','미적분1_함수의극한값.html'],
+        ['02','최대·최소 정리','닫힌구간에서 최댓값·최솟값','미적분1_최대최소정리.html'],
+        ['03','사잇값 정리','함숫값의 부호로 실근 존재 판정','미적분1_사잇값정리.html'],
+        ['04','곱의 미분법',"(fg)'=f'g+fg'",'미적분1_곱의미분법.html']
+      ]},
+      { key:'graph', name:'Ⅱ. 도함수·그래프', sub:'DERIVATIVE & GRAPH · 6', color:'#2B6CA3', summary:'증가감소 · 평균값 · 극값 · 삼·사차함수 · 실근', items:[
+        ['05','함수의 증가와 감소',"f'(x)의 부호 판정",'미적분1_함수의증가감소.html'],
+        ['06','평균값 정리·롤의 정리',"f'(c)=평균변화율",'미적분1_평균값정리.html'],
+        ['07','극대와 극소',"f'의 부호 변화",'미적분1_극대극소.html'],
+        ['08','삼차함수 그래프와 도함수','개형·극값을 가질 조건','미적분1_삼차함수그래프.html'],
+        ['09','사차함수 그래프와 도함수','개형·극값을 가질 조건',null],
+        ['10','방정식의 실근의 개수','삼차·사차함수와 교점',null]
+      ]},
+      { key:'advanced', name:'Ⅲ. 변화율·특수 스킬', sub:'APPLICATIONS · 3', color:'#7A4E8C', summary:'속도·가속도 · 비율관계 · 로피탈 정리', items:[
+        ['11','속도와 가속도','위치·속도·가속도의 관계',null],
+        ['12','삼차함수와 이차함수의 비율관계','수능형 넓이·비율 패턴',null],
+        ['13','로피탈 정리','미정형 극한의 빠른 계산',null]
+      ]}
+    ];
+    const skillMap = document.querySelector('[data-skill-map]');
+    skillMap.innerHTML = '<div class="skill-category-nav" aria-label="수능 계산 스킬 분야 선택"></div><div class="skill-empty"><strong>훈련할 분야를 선택하세요</strong><span>완성된 스킬 8개는 바로 시작할 수 있습니다.</span></div>';
+    const skillNav = skillMap.querySelector('.skill-category-nav');
+    const skillEmpty = skillMap.querySelector('.skill-empty');
+    skillGroups.forEach(group => {
+      const button = document.createElement('button');
+      button.className = 'skill-category-button';
+      button.style.setProperty('--accent',group.color);
+      button.dataset.skillCategoryButton = group.key;
+      button.setAttribute('aria-expanded','false');
+      button.innerHTML = `<b>${group.name.replace(/^[ⅠⅡⅢ]\. /,'')}</b><small>${group.summary}</small><em>${group.items.length} SKILLS</em>`;
+      skillNav.appendChild(button);
+      const section = document.createElement('section');
+      section.className = 'skill-section hidden';
+      section.dataset.skillCategory = group.key;
+      section.innerHTML = `<div class="skill-section-head"><h2>${group.name}</h2><span>${group.sub}</span></div><ul class="skill-grid-main"></ul>`;
+      const list = section.querySelector('ul');
+      group.items.forEach(item => {
+        const li = document.createElement('li');
+        const inner = `<div class="skill-mini-top"><span class="skill-mini-code">S${item[0]}</span><span class="skill-mini-status">${item[3]?'READY':'NEXT'}</span></div><h3>${item[1]}</h3><p>${item[2]}</p><div class="skill-mini-footer"><span>${item[3]?'원리 · 실험 · 아레나':'제작 예정'}</span><b>${item[3]?'입장 →':'준비 중'}</b></div>`;
+        li.innerHTML = item[3] ? `<a class="skill-mini" style="--accent:${group.color}" href="${item[3]}">${inner}</a>` : `<div class="skill-mini disabled" style="--accent:${group.color}">${inner}</div>`;
+        list.appendChild(li);
+      });
+      skillMap.appendChild(section);
+    });
+    let openSkill = null;
+    function setSkillCategory(key, updateHash=true) {
+      openSkill = openSkill===key ? null : key;
+      skillNav.querySelectorAll('.skill-category-button').forEach(button => {
+        const active = button.dataset.skillCategoryButton===openSkill;
+        button.classList.toggle('active',active);
+        button.setAttribute('aria-expanded',String(active));
+      });
+      skillMap.querySelectorAll('.skill-section').forEach(section => section.classList.toggle('hidden',section.dataset.skillCategory!==openSkill));
+      skillEmpty.classList.toggle('hidden',Boolean(openSkill));
+      if(updateHash) history.replaceState(null,'',openSkill?`#skills-${openSkill}`:'#skills');
+    }
+    skillNav.querySelectorAll('.skill-category-button').forEach(button => button.addEventListener('click',()=>setSkillCategory(button.dataset.skillCategoryButton)));
+
+    const lede = document.querySelector('.lede');
+    function showView(view, updateHash=true) {
+      document.querySelectorAll('[data-main-panel]').forEach(panel => panel.classList.toggle('hidden',panel.dataset.mainPanel!==view));
+      document.querySelectorAll('[data-main-view]').forEach(button => button.classList.toggle('active',button.dataset.mainView===view));
+      lede.textContent = view==='skills' ? '수능에서 반복되는 계산과 그래프 스킬을 분야별로 펼쳐 훈련하세요.' : '원하는 단원을 고른 뒤, 필요한 개념만 펼쳐서 시작하세요.';
+      if(updateHash) history.replaceState(null,'',view==='skills'?(openSkill?`#skills-${openSkill}`:'#skills'):(openCategory?`#${openCategory}`:'#topics'));
+    }
+    document.querySelectorAll('[data-main-view]').forEach(button => button.addEventListener('click',()=>showView(button.dataset.mainView)));
+
+    const skillInitial = (location.hash.match(/^#skills-(core|graph|advanced)$/)||[])[1];
+    const conceptInitial = (location.hash.match(/^#(limits|derivative|integral)$/) || [])[1];
+    showView(location.hash==='#topics' || conceptInitial ? 'concepts' : 'skills',false);
+    if (conceptInitial) setCategory(conceptInitial, false);
+    if (skillInitial) setSkillCategory(skillInitial, false);
+  })();
+  </script>
 
 </body>
 </html>
