@@ -661,8 +661,10 @@ a{color:var(--accent);text-decoration:underline}
 </style>
 <link rel="stylesheet" href="../../vendor/katex/katex.min.css"/>
 <link rel="stylesheet" href="../../jp-math-typography.css"/>
+<script defer src="../../vendor/katex/katex.min.js"></script>
+<script defer src="../../jp-math-render.js"></script>
 </head>
-<body class="tpl-math-lesson teacher-locked">
+<body class="tpl-math-lesson teacher-locked" data-math-style="upright">
 <a class="jp-back-link teacher-back" href="../">← 수능 문제</a>
 <div class="teacher-gate" id="teacherGate">
   <form class="teacher-gate-card" id="teacherGateForm">
@@ -763,15 +765,15 @@ a{color:var(--accent);text-decoration:underline}
 
 <aside class="notes"><p>여기서 a는 특정 값이 아니라 <strong>우리가 극한을 조사할 임의의 위치</strong>입니다. x→a+는 x가 a보다 큰 쪽에서 a로 다가온다는 뜻입니다. 예를 들어 a=2이면 2.1, 2.01, 2.001처럼 접근합니다.</p><p>a가 0과 2가 아니면 분모가 0이 아니므로 극한이 자동으로 존재합니다. 그래서 “모든 실수 a”라는 큰 조건은 실제로 <em>a=0과 a=2에서 문제가 생기지 않게 하라</em>는 조건으로 압축됩니다.</p></aside>
 </section>
-<section class="slide" data-title="조건 가의 결론"><div class="s-head"><p class="kicker">조건 (가)의 수확</p><h2 class="h2">두 위험 지점이 <span class="accent">두 개의 근</span>을 준다</h2></div><div class="s-body"><div class="formula small"><span class="math">g(0)=0,   g(2)=0</span></div><div class="formula small"><span class="math">f(0)=0,   f(2)=0</span></div><div class="flow"><div class="flow-box"><b>연속성</b><span class="fb-text"><span class="math">t</span>가 근</span></div><div class="arrow">+</div><div class="flow-box"><b>조건 (가)</b><span class="fb-text"><span class="math">0, 2</span>가 근</span></div><div class="arrow">→</div><div class="flow-box"><b>후보 근</b><span class="fb-text"><span class="math">0, 2, t</span></span></div></div></div><div class="s-ask"><p class="question">세 수는 정말 서로 다른 세 근일까?</p></div>
+<section class="slide" data-title="조건 가의 결론"><div class="s-head"><p class="kicker">조건 (가)의 수확</p><h2 class="h2">확정된 근과 접는 위치를 <span class="accent">구분</span>하자</h2></div><div class="s-body"><div class="formula small"><span class="math">f(0)=0,   f(2)=0</span></div><div class="flow"><div class="flow-box"><b>확정된 두 근</b><span class="fb-text"><span class="math">0, 2</span></span></div><div class="arrow">+</div><div class="flow-box"><b>접는 위치</b><span class="fb-text"><span class="math">f(t)=0</span></span></div><div class="arrow">→</div><div class="flow-box"><b>아직 모르는 것</b><span class="fb-text"><span class="math">t</span>가 새 근인가?</span></div></div><div class="condition-box"><div class="condition-tag">!</div><div><h3><span class="math">t</span>는 근의 이름이 아니라 접는 위치의 이름</h3><p>연속성 때문에 그 위치가 어떤 근과 겹친다는 사실만 알았습니다.</p></div></div></div><div class="s-ask"><p class="question"><span class="math">t</span>가 0, 2와 모두 다른 새 근이라고 가정해도 될까?</p></div>
 
 
 
 
 
-<aside class="notes"><p>g(0)=g(2)=0에서 f(0)=f(2)=0으로 넘어갈 때, g가 f 또는 -f이므로 0 여부는 변하지 않는다고 설명하세요. 부호가 바뀌어도 0은 그대로입니다.</p><p>이제 칠판에 근 후보 <strong>0, 2, t</strong>를 크게 적습니다. 여기서 바로 t=0 또는 2라고 결론내리면 안 됩니다. 오히려 가장 자연스러운 가설, 세 수가 서로 다른 세 근이라고 가정해 보겠다고 선언하세요.</p></aside>
+<aside class="notes"><p>g(0)=g(2)=0에서 f(0)=f(2)=0으로 넘어갈 때, g가 f 또는 -f이므로 0 여부는 변하지 않는다고 설명하세요. 부호가 바뀌어도 0은 그대로입니다.</p><p>이 장에서 기호의 역할을 분리합니다. <strong>0과 2는 조건 (가)가 확정한 근</strong>이고, <strong>t는 조각이 바뀌는 위치</strong>입니다. f(t)=0이므로 t도 근의 위치와 겹치지만, 아직 0·2와 다른 새 근인지 둘 중 하나인지 결정되지 않았습니다.</p></aside>
 </section>
-<section class="slide" data-title="가설 세우기"><div class="s-head"><p class="kicker">가설</p><h2 class="h2">만약 <span class="math">0,2,t</span>가 서로 다른 세 근이라면?</h2></div><div class="s-body"><div class="formula"><span class="math">f(x)=Ax(x-2)(x-t)</span></div><div class="condition-box"><div class="condition-tag">?</div><div><h3>좋은 가설은 틀려도 가치가 있다</h3><p>식을 세울 수 있고, 조건 (나)와 비교하여 참인지 거짓인지 검증할 수 있다.</p></div></div></div><div class="s-ask"><p class="question">이 식을 원래 몫에 넣으면 무엇이 약분될까?</p></div>
+<section class="slide" data-title="가설 세우기"><div class="s-head"><p class="kicker">가설</p><h2 class="h2">잠시 <span class="math">t≠0,2</span>라고 가정해 보자</h2></div><div class="s-body"><div class="condition-box"><div class="condition-tag">가정</div><div><h3>접는 위치 <span class="math">t</span>가 새로운 세 번째 근</h3><p>이 가정 아래에서만 세 근이 0, 2, t로 서로 다릅니다.</p></div></div><div class="formula"><span class="math">f(x)=Ax(x-2)(x-t)</span></div></div><div class="s-ask"><p class="question">이 식을 원래 몫에 넣으면 조건 (나)와 맞을까?</p></div>
 
 
 
@@ -787,18 +789,18 @@ a{color:var(--accent);text-decoration:underline}
 
 <aside class="notes"><p>이 장에서는 계산보다 모양을 먼저 보세요. A가 양수이므로 V자는 위로 열리고 꼭짓점이 x축에 닿습니다. 학생에게 손가락으로 x축 아래 영역을 가리켜 보라고 하세요.</p><p>답은 <strong>어디에도 없다</strong>입니다. 그런데 조건 (나)는 음수가 되는 자연수 m이 두 개 있다고 말합니다. 학생이 스스로 “가설이 틀렸어요”라고 말할 때까지 기다린 뒤 다음 장에서 논리적으로 정리합니다.</p></aside>
 </section>
-<section class="slide" data-title="모순 발견"><div class="s-head"><p class="kicker">첫 번째 반전</p><h2 class="h2"><span class="math">A|x-t|≥0</span>인데, 조건 (나)는 <span class="accent">음수</span>를 요구한다</h2></div><div class="s-body"><div class="compare"><div class="case"><h3>가설의 결과</h3><p>음수가 되는 자연수는 하나도 없다.</p></div><div class="versus clash">모순</div><div class="case"><h3>조건 (나)</h3><p>서로 다른 두 자연수가 음수가 되는 입력값이다.</p></div></div><div class="formula small"><span class="math">∴ t=0 또는 t=2</span></div></div><div class="s-ask"><p class="question">왜 “새로운 세 번째 근”이 아니라고 결론낼 수 있을까?</p></div>
+<section class="slide" data-title="모순 발견"><div class="s-head"><p class="kicker">첫 번째 반전</p><h2 class="h2">접는 위치 <span class="math">t</span>는 <span class="accent">새 근이 아니다</span></h2></div><div class="s-body"><div class="compare"><div class="case"><h3>새 근이라고 가정</h3><p><span class="math">A|x-t|≥0</span><br/>음수가 되는 자연수 없음</p></div><div class="versus clash">모순</div><div class="case"><h3>조건 (나)</h3><p>음수가 되는 서로 다른 자연수가 두 개</p></div></div><div class="formula small"><span class="math">t=0 또는 t=2</span></div><p class="lede">즉, 접는 위치가 이미 확정된 두 근 중 하나와 겹친다.</p></div><div class="s-ask"><p class="question">이 결론은 <span class="math">t=2</span>까지 확정한 것일까?</p></div>
 
 
 
 
-<aside class="notes"><p>단서 g(-1)≠-7g(1)/2 때문에 조건 (나)의 집합에는 서로 다른 두 원소가 있습니다. 따라서 음수가 되는 자연수가 실제로 두 개 존재해야 합니다.</p><p>그런데 절대값 그래프는 음수가 될 수 없습니다. 그래서 “0, 2, t가 모두 다르다”는 가설이 틀렸습니다. 이미 0과 2는 근이므로 t는 둘 중 하나와 겹쳐야 합니다. 이것이 <strong>모순을 이용한 경우 축소</strong>입니다.</p></aside>
+<aside class="notes"><p>단서 g(-1)≠-7g(1)/2 때문에 조건 (나)의 집합에는 서로 다른 두 원소가 있습니다. 따라서 음수가 되는 자연수가 실제로 두 개 존재해야 합니다.</p><p>절대값 그래프는 음수가 될 수 없으므로 “t가 0과 2와 다른 새 근”이라는 가설이 틀렸습니다. 따라서 t는 이미 확정된 근 0 또는 2와 겹칩니다. <strong>이 단계의 결론은 t=0 또는 t=2이며, 아직 t=2로 확정한 것이 아닙니다.</strong></p></aside>
 </section>
-<section class="slide" data-title="t의 두 경우"><div class="s-head"><p class="kicker">경우 비교</p><h2 class="h2"><span class="math">t=0</span>인가, <span class="math">t=2</span>인가?</h2></div><div class="s-body"><div class="compare"><div class="case no"><h3><span class="math">t=0</span></h3><p>음수인 자연수가 두 개이면 그 집합은 {1,2}. 하지만 <span class="math">-<span class="frac"><span>7</span><span>2</span></span>g(1)&lt;0</span>이 되어 자연수가 될 수 없다.</p></div><div class="versus">VS</div><div class="case"><h3><span class="math">t=2</span></h3><p>조건 (나)의 두 자연수를 만들 수 있다. 남은 근 <span class="math">r</span>의 위치를 그래프로 찾자.</p></div></div><div class="formula small"><span class="math">∴ t=2</span></div></div>
+<section class="slide" data-title="t의 두 경우"><div class="s-head"><p class="kicker">기호 정리와 경우 비교</p><h2 class="h2"><span class="math">r</span>은 <span class="math">t</span>의 새 이름이 아니다</h2></div><div class="s-body"><div class="condition-box"><div class="condition-tag">t / r</div><div><h3><span class="math">t</span>: 접는 위치 · <span class="math">r</span>: 남은 세 번째 근</h3><p><span class="math">f(x)=Ax(x-2)(x-r)</span>로 두고 t=0과 t=2를 비교한다.</p></div></div><div class="compare"><div class="case no"><h3><span class="math">t=0</span></h3><p>음수 입력은 {1,2}. 하지만 <span class="math">-<span class="frac"><span>7</span><span>2</span></span>g(1)&lt;0</span>이라 조건의 자연수가 될 수 없다.</p></div><div class="versus">VS</div><div class="case"><h3><span class="math">t=2</span></h3><p>조건 (나)를 만족시킬 수 있다. 이제 남은 근 r의 위치를 찾는다.</p></div></div><div class="formula small"><span class="math">t=2</span></div></div>
 
 
 
-<aside class="notes"><p>남은 한 근을 r이라 두고 두 경우를 비교합니다. t=0이면 음수가 되는 자연수가 두 개일 때 r은 2와 3 사이에 있어야 하고, 그 자연수는 1과 2입니다.</p><p>하지만 이때 g(1)&gt;0이므로 -7g(1)/2는 음수입니다. 조건의 집합 원소는 자연수여야 하므로 탈락합니다. 계산을 길게 하기보다 <strong>부호 하나로 경우를 제거</strong>했다는 점을 강조하세요.</p></aside>
+<aside class="notes"><p>여기서 r을 처음 정의합니다. r은 t를 다시 부르는 이름이 아니라, 이미 확정된 근 0과 2를 제외한 <strong>f의 남은 세 번째 근</strong>입니다. 따라서 f(x)=Ax(x-2)(x-r)입니다. 반면 t는 조각이 바뀌는 위치이며 후보가 0과 2입니다.</p><p>t=0이면 음수가 되는 자연수가 두 개일 때 그 입력은 1과 2입니다. 하지만 g(1)&gt;0이므로 -7g(1)/2는 음수가 되어 조건의 자연수가 될 수 없습니다. 그래서 t=0을 버리고 t=2를 확정합니다.</p></aside>
 </section>
 <section class="slide" data-title="조건 나 읽기"><div class="s-head"><p class="kicker">조건 (나)</p><h2 class="h2">조건 (나)는 식이 아니라 <span class="accent">음수 구간 찾기</span>다</h2></div><div class="s-body"><div class="graph-panel">
 <svg aria-label="음수 구간을 표시한 꺾은선 그래프" class="graph" viewBox="0 0 520 360"><rect class="negative-zone" height="110" width="175" x="225" y="190"></rect><line class="axis" x1="45" x2="490" y1="190" y2="190"></line><line class="axis" x1="80" x2="80" y1="28" y2="330"></line><path class="curve" d="M60 65 L170 190 L225 260 L400 190 L480 80"></path><text class="svg-label" x="214" y="218">2</text><text class="svg-label" x="298" y="218">3</text><text class="svg-label" x="390" y="218">r</text></svg>
@@ -856,6 +858,23 @@ a{color:var(--accent);text-decoration:underline}
 </section>
 </div><div class="deck-chrome"><div class="chrome-left"><span class="idx"><b id="cNow">1</b> / <span id="cTot">17</span></span><span class="sep"></span><span class="chap" id="chapLabel"></span></div><div class="chrome-right"><div class="kbd-help">← → 이동 · N 교사 노트 · S 교사용 창 · F 전체화면 · O 한눈에 보기</div><div aria-label="슬라이드 조작" class="touch-nav"><button aria-label="이전 슬라이드" id="touchPrev" type="button">‹</button><button id="touchNotes" type="button">교사 노트</button><button aria-label="다음 슬라이드" id="touchNext" type="button">›</button></div></div></div>
 
+<script>
+(function prepareTeacherMath(){
+  function sourceOf(element){
+    const clone=element.cloneNode(true);
+    clone.querySelectorAll('.frac').forEach(frac=>{
+      const parts=[...frac.children].map(part=>part.textContent.trim());
+      frac.replaceWith(`{${parts[0]||''}}/{${parts[1]||''}}`);
+    });
+    clone.querySelectorAll('sup').forEach(sup=>sup.replaceWith(`^(${sup.textContent.trim()})`));
+    return clone.textContent.replace(/\u00a0/g,' ').replace(/\s+/g,' ').trim();
+  }
+  document.querySelectorAll('.tpl-math-lesson .math').forEach(el=>{el.dataset.tex=sourceOf(el)});
+  document.querySelectorAll('.tpl-math-lesson .formula').forEach(el=>{
+    if(!el.querySelector('.math')) el.dataset.tex=sourceOf(el);
+  });
+})();
+</script>
 
 <script>
 /* html-ppt :: runtime.js

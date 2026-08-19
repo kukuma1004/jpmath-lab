@@ -52,6 +52,8 @@ samp,
 .example-equation,
 .question-equation,
 .rush-eq,
+.answer-btn,
+.game-choice,
 .core-formula strong,
 .mini-formula,
 .skill-mini-formula,
@@ -97,6 +99,11 @@ samp,
 .core-formula strong .katex,
 .question-equation .katex {
   font-size: 1.18em;
+}
+
+.answer-btn .katex,
+.game-choice .katex {
+  font-size: 1.08em;
 }
 
 .katex-display {
