@@ -152,7 +152,7 @@
   };
   const params=new URLSearchParams(location.search),requestedId=params.get('id'),skill=skills[requestedId];
   const app=$('#calcSkillApp');
-  if(!skill){const moved=excluded[requestedId];app.innerHTML=`<div class="not-found"><h1>${moved?'미적분Ⅰ에서 분리했어요.':'계산 스킬을 찾을 수 없어요.'}</h1><p>${moved?`${moved} 내용이어서 2022 개정 미적분Ⅰ 계산 지도에서는 제외했습니다.`:'미적분 스킬 지도에서 다시 선택해 주세요.'}</p><a href="미적분1.html#skills">미적분Ⅰ 스킬 지도로 돌아가기</a></div>`;return}
+  if(!skill){const moved=excluded[requestedId];app.innerHTML=`<div class="not-found"><h1>${moved?'미적분Ⅰ에서 분리했어요.':'계산 스킬을 찾을 수 없어요.'}</h1><p>${moved?`${moved} 내용이어서 2022 개정 미적분Ⅰ 계산 지도에서는 제외했습니다.`:'미적분 스킬 지도에서 다시 선택해 주세요.'}</p><a href="index.html#skills">미적분Ⅰ 스킬 지도로 돌아가기</a></div>`;return}
   const group=groups[skill.group];
   const bossNames={limit:'극한의 파수꾼',differentiate:'미분의 철갑수',graph:'그래프의 심연왕',integral:'적분의 수문장'};
   const bossName=bossNames[skill.group];
@@ -160,7 +160,7 @@
   document.documentElement.style.setProperty('--skill-dark',group.dark);
   document.title=`${skill.title} · 미적분 계산 스킬`;
   app.innerHTML=`<div class="calc-skill-page">
-    <nav class="skill-nav"><div class="skill-nav-inner"><a class="skill-back" href="미적분1.html#skills-${skill.group}" aria-label="스킬 지도로 돌아가기">←</a><button class="skill-tab active" data-tab="concept"><span>01</span>원리</button><button class="skill-tab" data-tab="drill"><span>02</span>5문제</button><button class="skill-tab rush" data-tab="rush"><span>03</span>60초</button><button class="skill-tab boss" data-tab="boss"><span>04</span>보스</button></div></nav>
+    <nav class="skill-nav"><div class="skill-nav-inner"><a class="skill-back" href="index.html#skills-${skill.group}" aria-label="스킬 지도로 돌아가기">←</a><button class="skill-tab active" data-tab="concept"><span>01</span>원리</button><button class="skill-tab" data-tab="drill"><span>02</span>5문제</button><button class="skill-tab rush" data-tab="rush"><span>03</span>60초</button><button class="skill-tab boss" data-tab="boss"><span>04</span>보스</button></div></nav>
     <main class="skill-wrap">
       <section data-panel="concept">
         <header class="skill-hero"><div><p class="skill-kicker">${skill.code} · ${group.name}</p><h1>${skill.title}</h1><p>${skill.desc}</p></div><div class="mastery-card"><span>MASTERY</span><strong data-stars>☆☆☆</strong><small>5문제 · 러시 · 보스</small></div></header>
