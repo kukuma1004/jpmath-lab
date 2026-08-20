@@ -24,7 +24,7 @@
 
   if (isProtectedPage) {
     if (!hasAccess()) {
-      var entryUrl = new URL('../', window.location.href);
+      var entryUrl = new URL('./', script.src);
       entryUrl.searchParams.set('next', window.location.href);
       window.location.replace(entryUrl.href);
     } else {
@@ -60,7 +60,7 @@
     try {
       var target = new URL(value, window.location.href);
       var storageRoot = new URL('./', window.location.href).pathname;
-      if (target.origin === window.location.origin && target.pathname.indexOf(storageRoot + '주제탐구수학/') === 0) {
+      if (target.origin === window.location.origin && target.pathname.indexOf(storageRoot) === 0 && target.pathname !== storageRoot) {
         return target.href;
       }
     } catch (error) {

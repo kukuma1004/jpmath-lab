@@ -10,37 +10,24 @@
 <title>수업자료 템플릿 | 제이피매쓰랩</title>
 
 <!-- ── 공용 자산 (제이피매쓰랩 루트) ────────────────────────────── -->
-<link rel="stylesheet" href="../../vendor/katex/katex.min.css"/>
-<link rel="stylesheet" href="../../jp-math-typography.css"/>
-<link rel="stylesheet" href="../../jp-lesson.css"/>
-<script defer src="../../vendor/katex/katex.min.js"></script>
-<script defer src="../../jp-lab.js"></script>
-<script defer src="../../jp-deck.js"></script>
+<style id="classroomGuard">html{display:none!important}</style>
+<script src="../../auth.js" data-classroom-protected></script>
+<link rel="stylesheet" href="../../../vendor/katex/katex.min.css"/>
+<link rel="stylesheet" href="../../../jp-math-typography.css"/>
+<link rel="stylesheet" href="../../../jp-lesson.css"/>
+<script defer src="../../../vendor/katex/katex.min.js"></script>
+<script defer src="../../../jp-lab.js"></script>
+<script defer src="../../../jp-deck.js"></script>
 </head>
-<body class="tpl-math-lesson teacher-locked">
-<a class="jp-back-link teacher-back" href="../">← 수능 문제</a>
-
-<!-- ── 교사용 게이트 (동작은 jp-deck.js) ───────────────────────── -->
-<div class="teacher-gate" id="teacherGate">
-  <form class="teacher-gate-card" id="teacherGateForm">
-    <span class="teacher-gate-badge">TEACHER ONLY</span>
-    <h1>교사용 수업 자료</h1>
-    <p>발문과 해설, 교사 노트가 포함된 자료입니다.<br/>교사용 비밀번호를 입력해 주세요.</p>
-    <label for="teacherPassword">비밀번호</label>
-    <div class="teacher-gate-row">
-      <input id="teacherPassword" type="password" autocomplete="current-password" required autofocus/>
-      <button type="submit">자료 열기</button>
-    </div>
-    <p class="teacher-gate-feedback" id="teacherGateFeedback" role="status" aria-live="polite"></p>
-  </form>
-</div>
+<body class="tpl-math-lesson">
+<a class="jp-back-link teacher-back" href="../../">← 수업창고</a>
 
 <!-- ══════════════════════════════════════════════════════════════════════
      수업자료 템플릿 · 사용법 요약
      ══════════════════════════════════════════════════════════════════════
   ▸ 새 자료 만들기
-      이 파일을 복사 → 수능문제/<과목>/<이름>.html 로 저장 (깊이 2단계 유지)
-      깊이가 달라지면 상단 ../../ 경로만 고쳐 주세요.
+      이 파일을 복사 → 수업창고/수능문제/<과목>/<이름>.html 로 저장 (깊이 3단계 유지)
+      깊이가 달라지면 상단 ../../../ 경로만 고쳐 주세요.
 
   ▸ 슬라이드 뼈대  (머리 / 몸통 / 발문 / 교사노트 — 4단 고정)
       <section class="slide" data-title="하단에 뜰 소제목">
