@@ -25,6 +25,20 @@
 
   const fitTargets = '.formula-main,.rule-strip strong,.example-equation,.question-equation,.rush-eq,.answer-btn,.game-choice';
 
+  // 풀이의 중심이 되는 수식은 본문형이 아니라 전시형으로 조판한다.
+  // 특히 lim, sum, int의 위·아래 조건과 큰 분수의 균형이 달라진다.
+  const displayTargets = [
+    '.formula-main',
+    '.example-equation',
+    '.question-equation',
+    '.rush-eq',
+    '.core-formula strong',
+    '[data-example-equation]',
+    '[data-drill-equation]',
+    '[data-game-equation]',
+    '[data-math-display="block"]'
+  ].join(',');
+
   function fitRendered(el) {
     if (!el.matches(fitTargets) || el.clientWidth <= 0) return;
     const rendered = el.querySelector('.katex');
@@ -116,8 +130,9 @@
     try {
       const tex = toTex(source);
       const readableTex = el.closest('[data-math-style="upright"]') ? `\\mathsf{${tex}}` : tex;
+      const displayMode = el.matches(displayTargets);
       window.katex.render(readableTex, el, {
-        displayMode: false,
+        displayMode,
         throwOnError: false,
         strict: false,
         output: 'htmlAndMathml'
