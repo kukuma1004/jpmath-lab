@@ -1544,5 +1544,59 @@ else boot();
 })();
 
 </script>
+<script data-jp-swipe>
+/* ===================================================================
+   손가락으로 넘기기
+   -------------------------------------------------------------------
+   태블릿·휴대폰에서 키보드 없이도 좌우로 밀어 넘길 수 있게 한다.
+   슬라이더·버튼·카드 위에서 시작한 손짓은 넘기지 않는다.
+   (그 자리에서 조작하려는 것이지 넘기려는 게 아니므로)
+   =================================================================== */
+(function () {
+  'use strict';
+
+  var HOLD = 'input,textarea,select,button,a,canvas,label,' +
+             '[data-claim],[data-mv],[data-chk],.tcard,.lab-tab,.tg,.fbtn,' +
+             '.choice,.sol-btns,.basket,.topic-scroll,.eq';
+
+  var sx = 0, sy = 0, st = 0, armed = false;
+
+  document.addEventListener('touchstart', function (e) {
+    if (e.touches.length !== 1) { armed = false; return; }
+    var t = e.touches[0];
+    armed = !(e.target.closest && e.target.closest(HOLD));
+    sx = t.clientX; sy = t.clientY; st = Date.now();
+  }, { passive: true });
+
+  document.addEventListener('touchend', function (e) {
+    if (!armed) return;
+    armed = false;
+    var t = e.changedTouches[0];
+    var dx = t.clientX - sx, dy = t.clientY - sy, dt = Date.now() - st;
+    if (dt > 900) return;                              // 천천히 끈 것은 무시
+    if (Math.abs(dx) < 60) return;                     // 너무 짧으면 무시
+    if (Math.abs(dx) < Math.abs(dy) * 1.6) return;     // 세로로 기운 손짓은 스크롤
+    go(dx < 0 ? 1 : -1);
+  }, { passive: true });
+
+  function go(dir) {
+    // 1) 슬라이드 덱 — 방향키를 대신 눌러 준다
+    if (document.querySelector('.deck .slide')) {
+      var k = dir > 0 ? 'ArrowRight' : 'ArrowLeft';
+      document.dispatchEvent(new KeyboardEvent('keydown',
+        { key: k, code: k, keyCode: dir > 0 ? 39 : 37, bubbles: true }));
+      return;
+    }
+    // 2) 강의 페이지 — 앞뒤 장으로
+    var tabs = document.querySelectorAll('#nav button[data-ch]');
+    if (tabs.length) {
+      var cur = document.querySelector('#nav button.on');
+      var i = Array.prototype.indexOf.call(tabs, cur);
+      var next = Math.min(tabs.length - 1, Math.max(0, i + dir));
+      if (next !== i) tabs[next].click();
+    }
+  }
+})();
+</script>
 </body>
 </html>

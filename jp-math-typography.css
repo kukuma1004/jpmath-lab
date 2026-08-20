@@ -90,9 +90,15 @@ samp,
   word-break: keep-all;
 }
 
+/* 수식이 곁의 한글보다 작아 보이지 않도록 한 단계 올린다 */
 .katex {
-  font-size: 1.04em;
-  line-height: 1.35;
+  font-size: 1.14em;
+  line-height: 1.45;
+}
+
+/* 인라인 분수는 세로로 눌리기 쉬워 위아래 숨통을 준다 */
+.katex .mfrac {
+  padding: .06em 0;
 }
 
 .formula-main .katex,

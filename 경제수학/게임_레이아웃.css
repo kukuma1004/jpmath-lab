@@ -291,7 +291,11 @@
 .game-page .strategy-feedback{margin-top:14px}
 
 /* 장면 안의 가게가 낮아진 하늘에 맞도록 */
-.game-page .bakery-building{bottom:40px;height:118px;padding-top:28px}
+/* 차양(:before)이 건물 위로 28px 더 올라가므로, 낮아진 장면 안에
+   차양까지 들어오도록 건물 높이와 위치를 함께 줄인다 */
+.game-page .bakery-building{bottom:32px;height:100px;padding-top:24px}
+.game-page .bakery-building>b{font-size:13px}
+.game-page .bakery-building .shop-window{transform:scale(.88);transform-origin:center top}
 
 
 /* ── 7. 카드 글자 크기 · 지점 장면 3차 보정 ─────────────────
@@ -341,4 +345,36 @@
 .game-page .matrix-table b small{
   font-weight:500;
   color:var(--muted);
+}
+
+
+/* ── 9. 줄인 장면 높이에 맞춰 내용물도 맞춘다 ────────────────
+   장면 높이를 낮추면서 자산 탑(140px)이 위로 잘리고 있었다.
+   장면 안에 들어오도록 낮추고, 말이 지나는 길과도 어긋나지 않게 한다. */
+.game-page .wealth-city{height:104px}
+.game-page .village-buildings span{font-size:52px}
+.game-page .asset-world .asset-cloud{font-size:20px}
+
+
+/* ── 10. 애니메이션 장면을 화면 위에 고정 ────────────────────
+   조작 버튼은 아래쪽에 있고 장면은 위쪽에 있어서, 아래에서 '운영하기'를
+   누르면 정작 위에서 벌어지는 장면을 놓치게 된다.
+   장면을 헤더 바로 아래에 붙여 두면 어디에서 조작하든 계속 보인다.
+   (패널을 벗어나면 자연스럽게 같이 밀려 올라간다) */
+@media (min-width:900px){
+  .game-page .operation-scene,
+  .game-page .branch-scene,
+  .game-page .asset-world,
+  .game-page .village-stage{
+    position:sticky;
+    top:72px;                 /* 상단 고정 헤더 높이 */
+    z-index:5;
+  }
+  /* 고정된 장면 아래로 내용이 지나갈 때 경계가 분명하도록 */
+  .game-page .operation-scene,
+  .game-page .branch-scene,
+  .game-page .asset-world,
+  .game-page .village-stage{
+    box-shadow:0 6px 14px rgba(23,35,29,.10);
+  }
 }

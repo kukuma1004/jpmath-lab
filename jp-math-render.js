@@ -34,7 +34,9 @@
     const available = Math.max(40, el.clientWidth - 10);
     const width = rendered.getBoundingClientRect().width;
     if (width <= available) return;
-    rendered.style.zoom = String(Math.max(.68, available / width));
+    // 너무 줄이면 읽을 수 없다. 0.82 밑으로는 줄이지 않고
+    // 넘치는 부분은 가로 스크롤에 맡긴다.
+    rendered.style.zoom = String(Math.max(.82, available / width));
   }
 
   function toTex(source) {
@@ -69,23 +71,41 @@
     tex = tex.replace(/∫/g, '\\int ');
     tex = tex.replace(/\b(sin|cos|tan|exp|ln|log)\b/g, '\\$1');
 
+    // 분수 규칙이 위첨자 묶음 안을 가로지르지 않도록 잠시 표식으로 감춘다.
+    // (이게 없으면 x²/a² 가 x^\dfrac{2}{a}^{2} 처럼 깨진다)
+    const supStore = [];
+    tex = tex.replace(/\^\{[^{}]*\}/g, function (m) {
+      supStore.push(m);
+      return '\u0001' + (supStore.length - 1) + '\u0002';
+    });
+
     // 문제 생성기가 사용하는 (분자)/(분모) 표기를 실제 분수로 통일합니다.
     for (let i = 0; i < 4; i += 1) {
-      tex = tex.replace(/\(([^()]*)\)\s*\/\s*\(([^()]*)\)/g, '\\frac{$1}{$2}');
+      tex = tex.replace(/\(([^()]*)\)\s*\/\s*\(([^()]*)\)/g, '\\dfrac{$1}{$2}');
     }
-    tex = tex.replace(/\{([^{}]+)\}\s*\/\s*\{([^{}]+)\}/g, '\\frac{$1}{$2}');
-    tex = tex.replace(/\{([^{}]+)\}\s*\/\s*([A-Za-z0-9]+)/g, '\\frac{$1}{$2}');
-    tex = tex.replace(/([A-Za-z][A-Za-z0-9']*(?:\([^()]*\))?)\s*\/\s*\{([^{}]+)\}/g, '\\frac{$1}{$2}');
-    tex = tex.replace(/([A-Za-z0-9]+(?:\^\{[^{}]+\})?)\s*\/\s*\(([^()]*)\)/g, '\\frac{$1}{$2}');
-    tex = tex.replace(/\|([^|]+)\|\s*\/\s*([A-Za-z0-9]+)/g, '\\frac{\\lvert $1\\rvert}{$2}');
-    tex = tex.replace(/(\d*[A-Za-z][A-Za-z0-9']*\([^()]*\))\s*\/\s*([A-Za-z0-9]+)/g, '\\frac{$1}{$2}');
-    tex = tex.replace(/([A-Za-z0-9]+)\s*\/\s*\(([^()]*)\)/g, '\\frac{$1}{$2}');
+    tex = tex.replace(/\{([^{}]+)\}\s*\/\s*\{([^{}]+)\}/g, '\\dfrac{$1}{$2}');
+    tex = tex.replace(/\{([^{}]+)\}\s*\/\s*([A-Za-z0-9]+)/g, '\\dfrac{$1}{$2}');
+    tex = tex.replace(/([A-Za-z][A-Za-z0-9']*(?:\([^()]*\))?)\s*\/\s*\{([^{}]+)\}/g, '\\dfrac{$1}{$2}');
+    tex = tex.replace(/([A-Za-z0-9]+(?:\^\{[^{}]+\})?)\s*\/\s*\(([^()]*)\)/g, '\\dfrac{$1}{$2}');
+    tex = tex.replace(/\|([^|]+)\|\s*\/\s*([A-Za-z0-9]+)/g, '\\dfrac{\\lvert $1\\rvert}{$2}');
+    tex = tex.replace(/(\d*[A-Za-z][A-Za-z0-9']*\([^()]*\))\s*\/\s*([A-Za-z0-9]+)/g, '\\dfrac{$1}{$2}');
+    tex = tex.replace(/([A-Za-z0-9]+)\s*\/\s*\(([^()]*)\)/g, '\\dfrac{$1}{$2}');
 
     for (let i = 0; i < 3; i += 1) {
-      tex = tex.replace(/(\d+|[A-Za-z]{1,3})\s*\/\s*(\d+|[A-Za-z]{1,3})/g, '\\frac{$1}{$2}');
+      tex = tex.replace(/(\d+|[A-Za-z]{1,3})\s*\/\s*(\d+|[A-Za-z]{1,3})/g, '\\dfrac{$1}{$2}');
     }
-    tex = tex.replace(/\|([^|]+)\|/g, '\\lvert $1\\rvert');
-    tex = tex.replace(/[가-힣]+/g, word => `\\text{${word}}`);
+    // 위첨자가 붙은 항끼리의 나눗셈 (x²/a² 같은 표준형)
+    for (let i = 0; i < 3; i += 1) {
+      tex = tex.replace(
+        /([A-Za-z0-9]*\u0001\d+\u0002|[A-Za-z0-9]+)\s*\/\s*([A-Za-z0-9]*\u0001\d+\u0002|[A-Za-z0-9]+)/g,
+        '\\dfrac{$1}{$2}');
+    }
+    // 감춰 둔 위첨자를 되돌린다
+    tex = tex.replace(/\u0001(\d+)\u0002/g, function (_, i) { return supStore[+i]; });
+    // \rvert 뒤에 글자가 바로 붙으면 (예: |v(t)|dt) 명령어가 뭉개진다. 공백을 남긴다.
+    tex = tex.replace(/\|([^|]+)\|/g, '\\lvert $1\\rvert ');
+    // 한글 낱말은 수식 글꼴로 두지 않는다. 수식과 붙지 않도록 앞뒤에 숨통을 준다.
+    tex = tex.replace(/[가-힣]+/g, word => `\\;\\text{${word}}\\;`);
     return tex;
   }
 
