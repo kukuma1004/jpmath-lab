@@ -300,7 +300,79 @@
     queueSweep();
   }
 
+  function buildDisplayTools() {
+    if (document.querySelector('.jp-display-tools')) return;
+
+    var bodyMax = parseFloat(getComputedStyle(document.body).maxWidth);
+    if (isFinite(bodyMax) && bodyMax > 0 && bodyMax <= 1400) {
+      document.body.classList.add('jp-hub-page');
+    }
+    var directMain = document.body.querySelector(':scope > main');
+    if (directMain && !isFinite(bodyMax) && directMain.getBoundingClientRect().width <= 1220) {
+      document.body.classList.add('jp-wide-main');
+    }
+
+    var modes = {
+      auto: { label: '자동', button: '화면 맞춤' },
+      large: { label: '크게', button: '화면 크게' },
+      xlarge: { label: '더 크게', button: '화면 더 크게' }
+    };
+    var saved = 'auto';
+    try { saved = localStorage.getItem('jp-display-size') || 'auto'; } catch (e) {}
+    if (!modes[saved]) saved = 'auto';
+
+    var tools = document.createElement('div');
+    tools.className = 'jp-display-tools';
+    tools.innerHTML = '<div class="jp-display-menu" hidden></div>' +
+      '<button class="jp-display-trigger" type="button" aria-expanded="false" aria-label="수업 화면 크기 선택"></button>';
+    var menu = tools.querySelector('.jp-display-menu');
+    var trigger = tools.querySelector('.jp-display-trigger');
+
+    Object.keys(modes).forEach(function (key) {
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.dataset.displayMode = key;
+      button.textContent = modes[key].label;
+      menu.appendChild(button);
+    });
+
+    function applyMode(mode) {
+      saved = modes[mode] ? mode : 'auto';
+      document.documentElement.dataset.jpDisplay = saved;
+      trigger.textContent = modes[saved].button;
+      menu.querySelectorAll('button').forEach(function (button) {
+        var active = button.dataset.displayMode === saved;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', String(active));
+      });
+      try { localStorage.setItem('jp-display-size', saved); } catch (e) {}
+      setTimeout(queueSweep, 30);
+    }
+
+    trigger.addEventListener('click', function () {
+      var opening = menu.hidden;
+      menu.hidden = !opening;
+      trigger.setAttribute('aria-expanded', String(opening));
+    });
+    menu.addEventListener('click', function (event) {
+      var button = event.target.closest('[data-display-mode]');
+      if (!button) return;
+      applyMode(button.dataset.displayMode);
+      menu.hidden = true;
+      trigger.setAttribute('aria-expanded', 'false');
+    });
+    document.addEventListener('click', function (event) {
+      if (tools.contains(event.target)) return;
+      menu.hidden = true;
+      trigger.setAttribute('aria-expanded', 'false');
+    });
+
+    document.body.appendChild(tools);
+    applyMode(saved);
+  }
+
   function boot() {
+    try { buildDisplayTools(); } catch (e) { console.warn('jp-display:', e); }
     scan(document);
     try { buildRail(); } catch (e) { console.warn('jp-rail:', e); }
 

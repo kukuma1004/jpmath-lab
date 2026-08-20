@@ -246,3 +246,107 @@ button:disabled{cursor:default}
 @media (prefers-reduced-motion:reduce){
   .jp-rail button, .jp-rail button .n, .jp-progress i{transition:none}
 }
+
+/* Classroom display -------------------------------------------------
+   Wide electronic boards need more than a narrow phone-first column.
+   These rules widen the shared learning surfaces and keep controls and
+   explanatory text readable from the back of a classroom. */
+@media (min-width:1600px) and (min-height:800px){
+  body.jp-hub-page{
+    max-width:1480px !important;
+    padding-left:34px !important;
+    padding-right:34px !important;
+  }
+  body.jp-wide-main > .site-head,
+  body.jp-wide-main > .topbar,
+  body.jp-wide-main > .breadcrumb,
+  body.jp-wide-main > .hero,
+  body.jp-wide-main > .unit-nav,
+  body.jp-wide-main > main,
+  body.jp-wide-main > .plain-note,
+  body.jp-wide-main > footer{
+    width:min(1380px,calc(100% - 68px)) !important;
+  }
+  .wrap, .tabbar-inner,
+  .topic-wrap, .topic-nav-inner,
+  .skill-wrap, .skill-nav-inner{
+    max-width:1180px !important;
+  }
+  body.jp-rail-on .wrap{
+    max-width:1510px !important;
+    grid-template-columns:260px minmax(0,1fr);
+  }
+  .topic-hero .desc, .section-hero .desc,
+  .skill-hero p:last-child, .mode-header p:last-child{
+    font-size:16px !important;
+  }
+  .topic-tab, .skill-tab, .tab-btn{
+    min-height:48px;
+    font-size:14px !important;
+  }
+  button, .btn, .chip, input, select{
+    min-height:42px;
+  }
+  input[type=range]{min-height:34px}
+}
+
+@media (min-width:2300px) and (min-height:1200px){
+  body.jp-hub-page{max-width:1780px !important}
+  body.jp-wide-main > .site-head,
+  body.jp-wide-main > .topbar,
+  body.jp-wide-main > .breadcrumb,
+  body.jp-wide-main > .hero,
+  body.jp-wide-main > .unit-nav,
+  body.jp-wide-main > main,
+  body.jp-wide-main > .plain-note,
+  body.jp-wide-main > footer{
+    width:min(1720px,calc(100% - 96px)) !important;
+  }
+  .wrap, .tabbar-inner,
+  .topic-wrap, .topic-nav-inner,
+  .skill-wrap, .skill-nav-inner{
+    max-width:1440px !important;
+  }
+  body.jp-rail-on .wrap{
+    max-width:1780px !important;
+    grid-template-columns:290px minmax(0,1fr);
+  }
+  .topic-hero .desc, .section-hero .desc,
+  .skill-hero p:last-child, .mode-header p:last-child,
+  .theory-section p, .section p, .concept-box p{
+    font-size:18px !important;
+  }
+}
+
+/* Optional teacher-controlled enlargement. The choice is remembered only
+   in this browser, so no account or server storage is required. */
+@media (min-width:900px){
+  html[data-jp-display="large"] body{zoom:1.12}
+  html[data-jp-display="xlarge"] body{zoom:1.25}
+}
+
+.jp-display-tools{
+  position:fixed;right:18px;bottom:18px;z-index:1000;
+  display:flex;flex-direction:column;align-items:flex-end;gap:7px;
+  font-family:var(--font-kr,"IBM Plex Sans KR",sans-serif);
+}
+.jp-display-trigger{
+  min-height:42px;padding:0 15px;border:1px solid rgba(255,255,255,.2);
+  border-radius:999px;background:#172A24;color:#fff;
+  box-shadow:0 8px 24px rgba(23,42,36,.22);font-size:13px;font-weight:800;
+  cursor:pointer;
+}
+.jp-display-menu{
+  display:grid;grid-template-columns:repeat(3,auto);gap:5px;padding:6px;
+  border:1px solid rgba(23,42,36,.13);border-radius:15px;background:rgba(255,255,255,.96);
+  box-shadow:0 12px 32px rgba(23,42,36,.16);backdrop-filter:blur(12px);
+}
+.jp-display-menu[hidden]{display:none}
+.jp-display-menu button{
+  min-height:38px;padding:0 12px;border:0;border-radius:10px;background:transparent;
+  color:#58635e;font-size:12px;font-weight:750;white-space:nowrap;cursor:pointer;
+}
+.jp-display-menu button.active{background:#172A24;color:#fff}
+
+@media (max-width:899px){.jp-display-tools{display:none}}
+@media print{.jp-display-tools{display:none !important}}
