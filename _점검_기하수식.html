@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>기하 실험실 수식 점검</title>
+<style>
+ body{font:14px/1.6 system-ui,sans-serif;margin:20px;background:#111;color:#eee}
+ table{border-collapse:collapse;width:100%;font-size:12.5px}
+ td,th{border:1px solid #333;padding:4px 8px;text-align:left;vertical-align:top}
+ .ok{color:#8f8}.bad{color:#f88;font-weight:700}
+ iframe{width:1280px;height:900px;border:0;position:absolute;left:-9999px}
+</style>
+</head>
+<body>
+<h1>기하 실험실 · KaTeX 조판 점검</h1>
+<p id="status">준비 중…</p>
+<table id="out"><thead><tr><th>단원</th><th>KaTeX</th><th>오류</th><th>표시 내용</th></tr></thead><tbody></tbody></table>
+<script>
+const PAGES = [
+ '기하_포물선.html','기하_타원.html','기하_쌍곡선.html','기하_이차곡선의접선.html',
+ '기하_공간에서의위치관계.html','기하_삼수선정리.html','기하_정사영.html',
+ '기하_공간좌표와내분점.html','기하_구의방정식.html','기하_벡터와연산.html',
+ '기하_위치벡터와성분.html','기하_벡터의내적.html','기하_벡터로표현한직선.html',
+ '기하_벡터로표현한평면과구.html'
+];
+const tbody=document.querySelector('#out tbody'), status=document.getElementById('status');
+let i=0, bad=0;
+
+function step(){
+  if(i>=PAGES.length){
+    status.textContent='완료 — '+PAGES.length+'개 중 문제 '+bad+'개';
+    status.className=bad?'bad':'ok'; return;
+  }
+  const page='기하/'+PAGES[i++];
+  status.textContent='검사 중 ('+i+'/'+PAGES.length+') '+page;
+  const f=document.createElement('iframe'); f.src=page+'?cacheBust='+Date.now(); document.body.appendChild(f);
+  const errs=[];
+  f.onload=function(){
+    try{ f.contentWindow.addEventListener('error',e=>errs.push(e.message)); }catch(e){}
+    setTimeout(function(){
+      let katex=0, kerr=0, texts=[], note='';
+      try{
+        const d=f.contentDocument;
+        // 실험실 탭 열기
+        const lab=[...d.querySelectorAll('button')].find(b=>b.textContent.indexOf('실험실')>-1);
+        if(lab) lab.click(); else note='실험실 탭 없음';
+        setTimeout(function(){
+          try{
+            katex=d.querySelectorAll('.readout-box .katex').length;
+            kerr=d.querySelectorAll('.readout-box .katex-error').length;
+            // 아직 모노로 남은 것(=\( 가 안 붙은 값) 찾기
+            texts=[...d.querySelectorAll('.readout-box .readout-value')]
+                    .filter(v=>!v.querySelector('.katex'))
+                    .map(v=>v.textContent.trim().slice(0,24));
+          }catch(e){ note='접근 실패'; }
+          const problem = kerr>0 || errs.length>0 || note || katex===0;
+          if(problem) bad++;
+          const tr=document.createElement('tr');
+          tr.innerHTML='<td>'+PAGES[i-1].replace('기하_','').replace('.html','')+'</td>'+
+            '<td class="'+(katex?'ok':'bad')+'">'+katex+'</td>'+
+            '<td class="'+(kerr||errs.length||note?'bad':'ok')+'">'+
+              (kerr?('KaTeX오류 '+kerr):'')+(errs.join(' ')||'')+(note||'')+
+              (!kerr&&!errs.length&&!note?'없음':'')+'</td>'+
+            '<td>'+(texts.length?('모노로 남음: '+texts.join(' | ')):'전부 조판됨')+'</td>';
+          tbody.appendChild(tr); f.remove(); step();
+        }, 700);
+      }catch(e){ f.remove(); step(); }
+    }, 900);
+  };
+  f.onerror=function(){ f.remove(); step(); };
+}
+step();
+</script>
+</body>
+</html>

@@ -1,0 +1,344 @@
+/* ===================================================================
+   게임 연구소 · 데스크톱 레이아웃 보정
+   style.css / 게임.css / 게임_동작.css 뒤에 로드되어 크기와 배치만 조정한다.
+   색은 기존 팔레트(--paper/--ink/--green/--orange)를 그대로 쓴다.
+   =================================================================== */
+
+/* ── 1. 콘텐츠 최대 폭 ───────────────────────────────────────
+   1920 모니터에서 좌우로 끝없이 늘어나던 것을 1400px 로 묶는다. */
+.game-page .game-hero,
+.game-page .game-library{
+  max-width:1400px;
+  margin-inline:auto;
+}
+
+/* ── 2. 히어로 2단 압축 ──────────────────────────────────────
+   세로 292px → 약 180px. 비어 있던 오른쪽에 학습 영역 요약을 넣는다. */
+.game-page .game-hero{
+  display:grid;
+  grid-template-columns:minmax(0,1.3fr) minmax(300px,.7fr);
+  gap:clamp(28px,4vw,64px);
+  align-items:end;
+  padding:40px clamp(22px,4vw,52px) 26px;
+}
+.game-page .game-hero h1{
+  font-size:clamp(34px,3.7vw,54px);
+  letter-spacing:-.055em;
+}
+.game-page .game-hero .hero-copy>p:last-child{
+  max-width:60ch;
+  margin-top:14px;
+  font-size:15.5px;
+  line-height:1.7;
+}
+.hero-stats{
+  margin:0;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  border:1px solid var(--line);
+  background:var(--white);
+}
+.hero-stats div{
+  padding:13px 15px;
+  border-right:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+}
+.hero-stats div:nth-child(2n){border-right:0}
+.hero-stats div:nth-child(n+3){border-bottom:0}
+.hero-stats dt{
+  font:700 10.5px "IBM Plex Mono",monospace;
+  letter-spacing:.09em;
+  color:var(--orange);
+}
+.hero-stats dd{
+  margin:5px 0 0;
+  font-size:13px;
+  color:var(--muted);
+}
+
+/* ── 3. 게임 선택: 얇은 탭 → 비교 가능한 카드 6장 ────────────
+   6개가 첫 화면에 한꺼번에 보이도록 3열 2행으로 배치한다.
+   sticky 를 풀어 게임 장면을 가리지 않게 한다. */
+.game-page .game-library{padding:0 clamp(22px,4vw,52px) 88px}
+.game-page .six-tabs{
+  position:static;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+  margin-bottom:26px;
+  padding:0;
+  background:none;
+  border:0;
+  backdrop-filter:none;
+}
+
+/* 장르별 강조선 색 */
+.six-tabs .game-tab[data-genre="sim"]      {--gc:#1f6b50}
+.six-tabs .game-tab[data-genre="detective"]{--gc:#315f78}
+.six-tabs .game-tab[data-genre="matrix"]   {--gc:#9f4320}
+.six-tabs .game-tab[data-genre="assets"]   {--gc:#a8801a}
+.six-tabs .game-tab[data-genre="village"]  {--gc:#67417d}
+.six-tabs .game-tab[data-genre="garden"]   {--gc:#4a7c1f}
+
+.six-tabs .game-tab{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  gap:0;
+  min-height:0;
+  padding:20px 22px 18px;
+  background:var(--white);
+  border:1px solid var(--line);
+  text-align:left;
+  overflow:hidden;
+  transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.six-tabs .game-tab::before{
+  content:"";
+  position:absolute;
+  left:0;right:0;top:0;height:3px;
+  background:var(--gc);
+}
+.six-tabs .game-tab:hover{
+  transform:translateY(-3px);
+  box-shadow:0 14px 30px rgba(35,45,38,.14);
+  border-color:var(--gc);
+}
+.six-tabs .game-tab:focus-visible{
+  outline:2px solid var(--gc);
+  outline-offset:2px;
+}
+
+.six-tabs .game-tab .gt-top{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  grid-row:auto;
+}
+.six-tabs .game-tab .gt-num{
+  font:700 12px "IBM Plex Mono",monospace;
+  font-style:normal;
+  color:var(--gc);
+}
+.six-tabs .game-tab .gt-genre{
+  font:700 9.5px "IBM Plex Mono",monospace;
+  font-style:normal;
+  letter-spacing:.1em;
+  color:var(--muted);
+}
+.six-tabs .game-tab .gt-ico{
+  position:absolute;
+  right:16px;
+  top:14px;
+  font-size:30px;
+  line-height:1;
+  opacity:.9;
+}
+.six-tabs .game-tab .gt-title{
+  margin:11px 0 0;
+  padding-right:44px;
+  font:700 18.5px/1.35 "Noto Serif KR",serif;
+  letter-spacing:-.02em;
+}
+.six-tabs .game-tab .gt-desc{
+  margin-top:7px;
+  font-size:13px;
+  line-height:1.6;
+  color:var(--muted);
+}
+.six-tabs .game-tab .gt-foot{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-top:auto;
+  padding-top:15px;
+}
+.six-tabs .game-tab .gt-chips{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+}
+.six-tabs .game-tab .gt-chips i{
+  font-style:normal;
+  font-size:10.5px;
+  padding:3px 7px;
+  border:1px solid var(--line);
+  background:var(--paper);
+  color:var(--muted);
+}
+.six-tabs .game-tab .gt-len{
+  flex-shrink:0;
+  font:700 11px "IBM Plex Mono",monospace;
+  font-style:normal;
+  padding:4px 9px;
+  background:var(--gc);
+  color:#fff;
+}
+
+/* 선택된 카드 */
+.six-tabs .game-tab.active{
+  background:var(--ink);
+  border-color:var(--ink);
+  color:#fff;
+  box-shadow:0 16px 34px rgba(23,35,29,.24);
+}
+.six-tabs .game-tab.active .gt-num{color:var(--yellow)}
+.six-tabs .game-tab.active .gt-genre{color:#9fb0a7}
+.six-tabs .game-tab.active .gt-desc{color:#c2ccc6}
+.six-tabs .game-tab.active .gt-chips i{
+  background:rgba(255,255,255,.09);
+  border-color:rgba(255,255,255,.22);
+  color:#dfe6e2;
+}
+.six-tabs .game-tab.active .gt-len{background:var(--yellow);color:var(--ink)}
+.six-tabs .game-tab.active:hover{transform:translateY(-3px)}
+
+/* ── 4. 게임 패널 세로 압축 ──────────────────────────────────
+   패널 하나가 1240px 라 한 화면에 안 들어오던 것을 줄인다. */
+.game-page .game-panel{scroll-margin-top:84px}
+
+.game-page .game-intro{padding:22px 26px}
+.game-page .game-intro h3{margin:6px 0 3px;font-size:25px}
+.game-page .game-intro p{font-size:14px;line-height:1.6}
+
+/* 애니메이션 장면 높이 */
+.game-page .operation-scene{height:200px}
+.game-page .village-stage{height:196px}
+.game-page .asset-world{height:178px}
+.game-page .branch-scene{min-height:198px;padding:22px 28px}
+
+/* 좌우 분할 비율 — 결과판이 너무 좁아지지 않게 */
+.game-page .sim-layout,
+.game-page .matrix-layout{grid-template-columns:minmax(0,1.15fr) minmax(340px,.85fr)}
+.game-page .case-layout{grid-template-columns:minmax(320px,.85fr) minmax(0,1.15fr);min-height:0}
+.game-page .new-game-layout{min-height:0}
+
+/* 내부 여백 */
+.game-page .decision-card,
+.game-page .result-board,
+.game-page .matrix-board,
+.game-page .matrix-result,
+.game-page .game-controls,
+.game-page .story-scene,
+.game-page .garden-board,
+.game-page .game-results{padding:24px 26px}
+.game-page .case-file,
+.game-page .answer-desk{padding:28px 30px}
+.game-page .case-file h3{font-size:24px}
+.game-page .case-file blockquote{margin:20px 0;padding:15px 0;font-size:17.5px}
+
+.game-page .decision-step{padding-bottom:20px;margin-bottom:19px}
+.game-page .kpi-grid{margin:16px 0}
+.game-page .kpi-grid div{padding:13px 14px}
+.game-page .big-kpis div{padding:13px 4px}
+.game-page .life-board{margin-bottom:20px}
+.game-page .life-board span{padding:13px 6px;font-size:11.5px}
+.game-page .choice-range{margin:18px 0}
+.game-page .market-meter{margin:18px 0;padding:14px}
+.game-page .story-scene blockquote{min-height:76px;margin:16px 0;font-size:21px}
+
+/* 한계의 정원 — 밭 두 칸이 세로로 길던 것을 줄인다 */
+.game-page .garden-plot{min-height:296px;padding:20px 18px}
+.game-page .garden-plot>strong{margin:16px 0 1px;font-size:42px}
+.game-page .plot-dots{height:76px;margin:12px 0}
+
+/* ── 5. 좁은 화면 ────────────────────────────────────────── */
+@media(max-width:1180px){
+  .game-page .six-tabs{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:1000px){
+  .game-page .game-hero{grid-template-columns:1fr;gap:24px;align-items:start}
+  .hero-stats{grid-template-columns:1fr 1fr}
+}
+@media(max-width:720px){
+  .game-page .six-tabs{grid-template-columns:1fr;gap:10px}
+  .six-tabs .game-tab{padding:16px 18px 15px}
+  .six-tabs .game-tab .gt-title{font-size:17px}
+  .six-tabs .game-tab .gt-ico{font-size:25px;top:12px;right:13px}
+  .game-page .game-hero{padding:30px 22px 20px}
+  .hero-stats{grid-template-columns:1fr}
+  .hero-stats div{border-right:0!important;border-bottom:1px solid var(--line)!important}
+  .hero-stats div:last-child{border-bottom:0!important}
+}
+
+/* 움직임 줄이기 설정 존중 */
+@media(prefers-reduced-motion:reduce){
+  .six-tabs .game-tab{transition:none}
+  .six-tabs .game-tab:hover{transform:none}
+}
+
+
+/* ── 6. 게임 패널 추가 압축 (2차) ────────────────────────────
+   측정 결과 sim 패널이 1086px 이라 한 화면(839px)을 넘겼다.
+   장면·여백·카드 내부를 조금씩 줄여 950px 아래로 맞춘다. */
+.game-page .game-intro{padding:17px 26px}
+.game-page .game-intro h3{font-size:22px}
+.game-page .operation-scene{height:172px}
+.game-page .village-stage{height:172px}
+.game-page .asset-world{height:162px}
+.game-page .branch-scene{min-height:180px;padding:18px 26px}
+
+.game-page .decision-step{padding-bottom:16px;margin-bottom:15px}
+.game-page .step-label{margin-bottom:13px}
+.game-page .org-card{padding:13px 14px}
+.game-page .org-card.selected{padding:12px 13px}
+.game-page .event-card{padding:14px 16px;margin-bottom:16px}
+.game-page .formula-note{padding:13px 15px;margin-top:13px}
+.game-page .coach-note{padding:13px 15px;margin-top:10px}
+.game-page .profit-line{padding:13px 0}
+.game-page .score-row{margin-top:16px}
+.game-page .kpi-grid div{padding:11px 13px}
+.game-page .strategy-feedback{margin-top:14px}
+
+/* 장면 안의 가게가 낮아진 하늘에 맞도록 */
+.game-page .bakery-building{bottom:40px;height:118px;padding-top:28px}
+
+
+/* ── 7. 카드 글자 크기 · 지점 장면 3차 보정 ─────────────────
+   데스크톱에서 칩과 장르 라벨이 너무 작아 읽기 힘들어 조금 키운다.
+   행렬 게임의 지점 장면(295px)이 패널을 밀어 올려 함께 줄인다. */
+.six-tabs .game-tab .gt-genre{font-size:10.5px}
+.six-tabs .game-tab .gt-chips i{font-size:11.5px;padding:3px 8px}
+.six-tabs .game-tab .gt-len{font-size:11.5px}
+.six-tabs .game-tab .gt-desc{font-size:13.5px}
+
+.game-page .branch-scene{
+  min-height:0;
+  padding:14px 26px 18px;
+  gap:6px;
+}
+.game-page .warehouse span,
+.game-page .branch-store span{font-size:34px}
+.game-page .branch-store{padding:6px 4px}
+.game-page .branch-store b{font-size:13px}
+.game-page .flow-message{bottom:10px;left:26px}
+.game-page .matrix-table{gap:6px}
+.game-page .equation-visual{margin-bottom:6px}
+
+
+/* ── 8. 넓은 화면에서 늘어지던 장면·표 정리 ──────────────────
+   1400px 폭에서 생산센터와 지점 사이 점선이 700px 넘게 비어 있었다.
+   띠(배경)는 full-width 로 두고 안쪽 트랙만 가운데로 모은다. */
+.game-page .branch-scene{
+  grid-template-columns:130px 360px 152px;
+  justify-content:center;
+  column-gap:22px;
+  row-gap:10px;
+}
+.game-page .warehouse span,
+.game-page .branch-store span{font-size:29px}
+.game-page .branch-store{padding:7px 6px}
+.game-page .branch-store b{font-size:13px}
+.game-page .branch-store small{font-size:10.5px;margin-top:2px}
+
+/* 수량 행렬 표: '학교점수요 32 · 24' 처럼 한 줄로 붙어 나오던 설명을 줄바꿈.
+   b 가 display:flex(row) 라서 <br> 이 먹히지 않았다. 세로 배치로 바꾼다. */
+.game-page .matrix-table b{
+  flex-direction:column;
+  justify-content:center;
+  gap:2px;
+}
+.game-page .matrix-table b small{
+  font-weight:500;
+  color:var(--muted);
+}

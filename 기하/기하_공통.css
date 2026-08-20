@@ -59,3 +59,17 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid color
 @media(max-width:620px){.lab-layout{grid-template-columns:1fr}.mini-grid{grid-template-columns:1fr}.readout{grid-template-columns:1fr 1fr}.game-screen{min-height:400px}}
 @media(max-width:410px){.wrap{padding-left:10px;padding-right:10px}.choice-grid,.mode-grid,.name-grid{grid-template-columns:1fr}.readout{grid-template-columns:1fr}.hud-item b{font-size:13px}.hud-item span{font-size:8.5px}.tab-btn{font-size:11.5px}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* 자주 하는 오해 · 계산의 핵심 흐름 (미적분 페이지와 같은 결) */
+.misconception{background:#F7E9E5;border:1.5px solid #C1442D;border-radius:12px;
+  padding:13px 15px;margin-bottom:10px}
+.misconception-title{font-weight:700;font-size:14px;color:#C1442D;margin-bottom:5px}
+.misconception-body{font-size:14px;color:var(--ink,#223027);line-height:1.7}
+.misconception-body b{font-weight:700}
+.flow-steps{margin:10px 0 0;padding:0;list-style:none;counter-reset:jpflow;
+  display:flex;flex-direction:column;gap:9px}
+.flow-steps li{counter-increment:jpflow;position:relative;padding-left:34px;
+  font-size:14.5px;line-height:1.65}
+.flow-steps li::before{content:counter(jpflow);position:absolute;left:0;top:1px;
+  width:23px;height:23px;border-radius:50%;background:#223027;color:#fff;
+  font:700 11px "IBM Plex Mono",monospace;display:flex;align-items:center;justify-content:center}

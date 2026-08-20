@@ -1,0 +1,248 @@
+/* ===================================================================
+   JP Math Lab · 공통 마감 레이어 (jp-polish)
+   -------------------------------------------------------------------
+   모든 페이지의 맨 마지막에 로드된다. 색과 구조는 건드리지 않고
+   움직임 · 여백 · 글자 크기 · 조작감만 손본다.
+   되돌리려면 각 페이지의 jp-polish 링크 두 줄만 지우면 된다.
+   =================================================================== */
+
+/* ── 0. 공통 토큰 ─────────────────────────────────────────── */
+:root{
+  --jp-ease:cubic-bezier(.16,1,.3,1);   /* 감속이 긴 곡선 — 부드럽게 멈춘다 */
+  --jp-ease-io:cubic-bezier(.4,0,.2,1);
+  --jp-dur:.52s;
+}
+
+/* ── 1. 부드러운 스크롤 ───────────────────────────────────── */
+html{
+  scroll-behavior:smooth;
+  scroll-padding-top:88px;      /* sticky 탭바에 제목이 가리지 않게 */
+}
+
+/* ── 2. 진입 애니메이션 ───────────────────────────────────────
+   중요: 기본 상태는 '보임'이다.
+   화면 아래에 있어 아직 안 보이는 블록에만 jp-polish.js 가
+   .jp-pre 를 잠깐 씌웠다가, 올라올 때 .jp-in 으로 바꾼다.
+   스크립트가 실패하거나 탭이 숨어 있어도 글이 사라지지 않는다. */
+[data-jp-rise].jp-pre{
+  opacity:0;
+  transform:translateY(16px);
+}
+[data-jp-rise].jp-in{
+  opacity:1;
+  transform:none;
+  transition:opacity var(--jp-dur) var(--jp-ease),
+             transform var(--jp-dur) var(--jp-ease);
+}
+
+/* ── 3. 탭 전환 ───────────────────────────────────────────── */
+@keyframes jpPanelIn{
+  from{opacity:0;transform:translateY(12px)}
+  to  {opacity:1;transform:none}
+}
+.jp-panel-in{animation:jpPanelIn .44s var(--jp-ease) both}
+
+/* 탭 버튼 자체의 반응 */
+.tab-btn{
+  transition:background .22s var(--jp-ease-io),
+             color .22s var(--jp-ease-io),
+             border-color .22s var(--jp-ease-io),
+             transform .18s var(--jp-ease-io);
+}
+.tab-btn:not(.active):hover{transform:translateY(-1px)}
+.tab-btn:active{transform:translateY(0)}
+
+/* ── 4. 값이 바뀔 때 튀지 않게 ─────────────────────────────────
+   수치 표시(readout)와 그래프 요소가 뚝 끊기지 않고 이어지도록. */
+.readout-box, .readout-box *,
+.chip, .range-row output, output{
+  transition:color .25s var(--jp-ease-io),
+             background-color .25s var(--jp-ease-io),
+             border-color .25s var(--jp-ease-io);
+}
+@keyframes jpValuePulse{
+  0%{background-color:rgba(201,154,46,.22)}
+  100%{background-color:transparent}
+}
+.jp-value-changed{animation:jpValuePulse .5s var(--jp-ease-io)}
+
+/* SVG 안의 움직이는 요소를 부드럽게 (점·선·도형) */
+svg [data-jp-smooth]{
+  transition:cx .12s linear, cy .12s linear,
+             x1 .12s linear, y1 .12s linear,
+             x2 .12s linear, y2 .12s linear;
+}
+
+/* ── 5. 슬라이더 조작감 ─────────────────────────────────────
+   각 페이지가 이미 accent-color 로 자기 색을 쓰고 있어서
+   트랙/썸을 통째로 다시 그리지 않는다. 잡기 쉬운 크기와
+   또렷한 포커스만 더한다. */
+input[type=range]{
+  cursor:pointer;
+  height:22px;
+  touch-action:pan-y;
+}
+input[type=range]:focus-visible{
+  outline:2px solid currentColor;
+  outline-offset:4px;
+  border-radius:999px;
+}
+
+/* ── 6. 버튼·카드 반응 ────────────────────────────────────── */
+button, .btn, .chip{
+  transition:transform .16s var(--jp-ease-io),
+             box-shadow .2s var(--jp-ease-io),
+             background-color .2s var(--jp-ease-io),
+             border-color .2s var(--jp-ease-io);
+}
+button:not(:disabled):hover, .chip:hover{transform:translateY(-1px)}
+button:not(:disabled):active{transform:translateY(0)}
+button:disabled{cursor:default}
+
+.mini-card, .visual-card, .graph-card, .lab-graph-card,
+.concept-box, .theorem-box, .limit-box, .question-card, .q-card{
+  transition:box-shadow .24s var(--jp-ease), transform .24s var(--jp-ease);
+}
+
+/* 키보드 포커스는 항상 보이게 */
+:focus-visible{
+  outline:2px solid currentColor;
+  outline-offset:2px;
+  border-radius:4px;
+}
+
+/* ── 7. 데스크톱 폭과 글자 크기 ───────────────────────────────
+   1세대 페이지는 .wrap 이 600px 로 고정돼 있어 큰 화면에서
+   가운데 좁은 기둥처럼 보였다. 읽기 좋은 선까지만 넓힌다. */
+@media (min-width:1080px){
+  .wrap, .tabbar-inner{
+    max-width:860px !important;
+  }
+  .wrap{padding-left:20px;padding-right:20px}
+}
+@media (min-width:1500px){
+  .wrap, .tabbar-inner{max-width:940px !important}
+}
+
+/* 본문 글자가 12.5~13px 로 작아 데스크톱에서 읽기 나빴다.
+   화면이 넓을 때만 한 단계 올린다. */
+@media (min-width:1080px){
+  .theory-section p, .section p, .mini-card, .misconception-body,
+  .concept-box p, .readout-box, .chip{
+    font-size:14.5px;
+    line-height:1.72;
+  }
+  .tab-btn{font-size:14px;padding:12px 10px}
+}
+
+/* ── 8. 스크롤바 ─────────────────────────────────────────── */
+@media (min-width:900px){
+  *{scrollbar-width:thin}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{
+    background:rgba(120,130,120,.34);
+    border-radius:999px;
+    border:3px solid transparent;
+    background-clip:content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover{background:rgba(120,130,120,.55);background-clip:content-box}
+  ::-webkit-scrollbar-track{background:transparent}
+}
+
+/* ── 9. 움직임 줄이기 설정 존중 ───────────────────────────── */
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  [data-jp-rise]{opacity:1;transform:none;transition:none}
+  .jp-panel-in{animation:none}
+  *{transition-duration:.01ms !important;animation-duration:.01ms !important}
+}
+
+/* ═══════════════════════════════════════════════════════════
+   10. 탐구 경로 레일 (1세대 페이지를 3세대 레이아웃으로)
+   -----------------------------------------------------------
+   .theory-h2 가 3개 이상인 페이지에서만 jp-polish.js 가 켠다.
+   넓은 화면에서 왼쪽에 목차를 세우고, 읽는 위치를 따라 표시한다.
+   좁은 화면에서는 레일을 감추고 원래 한 단 레이아웃 그대로 둔다.
+   ═══════════════════════════════════════════════════════════ */
+.jp-rail{display:none}
+
+@media (min-width:1180px){
+  body.jp-rail-on .wrap{
+    max-width:1230px !important;
+    display:grid;
+    grid-template-columns:230px minmax(0,1fr);
+    gap:clamp(32px,3.4vw,56px);
+    align-items:start;
+  }
+  /* 레일을 빼고 나머지만 오른쪽 열로 (레일 자신이 밀리지 않게) */
+  body.jp-rail-on .wrap > *:not(.jp-rail){grid-column:2}
+
+  body.jp-rail-on .jp-rail{
+    display:block;
+    grid-column:1;
+    grid-row:1 / -1;
+    position:sticky;
+    top:92px;
+    padding-right:4px;
+  }
+  .jp-rail-eyebrow{
+    font-family:var(--font-mono,"IBM Plex Mono",monospace);
+    font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--inkSoft,#5C6B60);font-weight:700;margin-bottom:12px;
+  }
+  .jp-rail ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px}
+  .jp-rail li{margin:0}
+  .jp-rail button{
+    display:grid;
+    grid-template-columns:24px 1fr;
+    align-items:center;
+    gap:10px;
+    width:100%;
+    padding:9px 11px;
+    border:0;
+    border-radius:10px;
+    background:transparent;
+    color:var(--inkSoft,#5C6B60);
+    font-family:inherit;
+    font-size:13.5px;
+    font-weight:600;
+    line-height:1.4;
+    text-align:left;
+    cursor:pointer;
+    transition:background .2s var(--jp-ease-io), color .2s var(--jp-ease-io);
+  }
+  .jp-rail button:hover{background:rgba(34,48,39,.06);color:var(--ink,#223027)}
+  .jp-rail button .n{
+    width:24px;height:24px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(34,48,39,.09);
+    color:var(--inkSoft,#5C6B60);
+    font-family:var(--font-mono,"IBM Plex Mono",monospace);
+    font-size:11px;font-weight:700;
+    transition:background .2s var(--jp-ease-io), color .2s var(--jp-ease-io);
+  }
+  .jp-rail li.on button{background:rgba(34,48,39,.08);color:var(--ink,#223027)}
+  .jp-rail li.on button .n{background:var(--ink,#223027);color:#fff}
+  .jp-rail li.done button .n{background:rgba(34,48,39,.22);color:var(--ink,#223027)}
+
+  .jp-rail-foot{
+    margin-top:18px;padding-top:14px;
+    border-top:1px solid var(--border,#D3DAD0);
+    font-size:12px;line-height:1.6;color:var(--inkSoft,#5C6B60);
+  }
+
+  /* 읽기 진행 막대 — 탭바 바로 아래 */
+  .jp-progress{
+    position:fixed;left:0;right:0;top:0;height:3px;
+    background:transparent;z-index:30;pointer-events:none;
+  }
+  .jp-progress i{
+    display:block;height:100%;width:0;
+    background:var(--ink,#223027);
+    transition:width .12s linear;
+  }
+}
+
+@media (prefers-reduced-motion:reduce){
+  .jp-rail button, .jp-rail button .n, .jp-progress i{transition:none}
+}

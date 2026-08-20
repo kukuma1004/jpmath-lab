@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="게임.css">
   <link rel="stylesheet" href="게임_동작.css">
+  <link rel="stylesheet" href="게임_레이아웃.css">
 </head>
 <body class="game-page">
   <header class="site-head">
@@ -19,19 +20,63 @@
   </header>
   <main>
     <section class="game-hero">
-      <p class="eyebrow">6 GENRES · NO ARCADE</p>
-      <h1>경제수학 게임 연구소</h1>
-      <p>순발력보다 생각하고 비교하고 다시 결정하는 여섯 가지 게임입니다. 아래에서 장르를 고르면 바로 시작됩니다.</p>
+      <div class="hero-copy">
+        <p class="eyebrow">6 GENRES · NO ARCADE</p>
+        <h1>경제수학 게임 연구소</h1>
+        <p>순발력이 아니라 생각하고 비교하고 다시 결정하는 여섯 가지 게임입니다. 아래에서 하나를 고르면 바로 시작됩니다.</p>
+      </div>
+      <dl class="hero-stats">
+        <div><dt>수와 경제</dt><dd>환율 · 세금 · 복리</dd></div>
+        <div><dt>함수와 경제</dt><dd>수요 · 공급 · 균형</dd></div>
+        <div><dt>행렬과 경제</dt><dd>배분 · 행렬의 곱</dd></div>
+        <div><dt>미분과 경제</dt><dd>한계 · 최적화</dd></div>
+      </dl>
     </section>
 
     <section class="playground game-library" id="play">
       <div class="game-tabs six-tabs" role="tablist" aria-label="게임 장르 선택">
-        <button class="game-tab active" type="button" role="tab" aria-selected="true" aria-controls="game-sim" id="tab-sim" data-game="sim"><span>01</span><b>경영 시뮬레이션</b><small>가격·생산량</small></button>
-        <button class="game-tab" type="button" role="tab" aria-selected="false" aria-controls="game-detective" id="tab-detective" data-game="detective"><span>02</span><b>데이터 탐정</b><small>단서·추리</small></button>
-        <button class="game-tab" type="button" role="tab" aria-selected="false" aria-controls="game-matrix" id="tab-matrix" data-game="matrix"><span>03</span><b>지점 운영 전략</b><small>행렬·배분</small></button>
-        <button class="game-tab" type="button" role="tab" aria-selected="false" aria-controls="game-assets" id="tab-assets" data-game="assets"><span>04</span><b>가계 자산 보드게임</b><small>복리·현재가치</small></button>
-        <button class="game-tab" type="button" role="tab" aria-selected="false" aria-controls="game-village" id="tab-village" data-game="village"><span>05</span><b>시장 균형 RPG</b><small>수요·공급</small></button>
-        <button class="game-tab" type="button" role="tab" aria-selected="false" aria-controls="game-garden" id="tab-garden" data-game="garden"><span>06</span><b>한계의 정원</b><small>미분·최적화</small></button>
+        <button class="game-tab active" type="button" role="tab" aria-selected="true" aria-controls="game-sim" id="tab-sim" data-game="sim" data-genre="sim">
+          <span class="gt-top"><i class="gt-num">01</i><i class="gt-genre">TURN-BASED MANAGEMENT</i></span>
+          <span class="gt-ico" aria-hidden="true">🥐</span>
+          <b class="gt-title">동네빵 연구소 이사회</b>
+          <span class="gt-desc">가격과 생산량을 정해 가게를 8주 동안 운영한다</span>
+          <span class="gt-foot"><span class="gt-chips"><i>매출·비용</i><i>이익</i><i>수요</i></span><i class="gt-len">8주</i></span>
+        </button>
+        <button class="game-tab" type="button" role="tab" aria-selected="false" aria-controls="game-detective" id="tab-detective" data-game="detective" data-genre="detective">
+          <span class="gt-top"><i class="gt-num">02</i><i class="gt-genre">DATA MYSTERY</i></span>
+          <span class="gt-ico" aria-hidden="true">🔍</span>
+          <b class="gt-title">숫자 뒤의 진실</b>
+          <span class="gt-desc">기사 속 숫자 표현이 맞는지 단서로 판별한다</span>
+          <span class="gt-foot"><span class="gt-chips"><i>퍼센트포인트</i><i>환율</i><i>세금</i></span><i class="gt-len">8사건</i></span>
+        </button>
+        <button class="game-tab" type="button" role="tab" aria-selected="false" aria-controls="game-matrix" id="tab-matrix" data-game="matrix" data-genre="matrix">
+          <span class="gt-top"><i class="gt-num">03</i><i class="gt-genre">MATRIX STRATEGY</i></span>
+          <span class="gt-ico" aria-hidden="true">🏭</span>
+          <b class="gt-title">두 지점, 두 상품</b>
+          <span class="gt-desc">생산량을 배분하고 매출을 행렬로 계산한다</span>
+          <span class="gt-foot"><span class="gt-chips"><i>행렬의 곱</i><i>배분</i><i>폐기비용</i></span><i class="gt-len">5미션</i></span>
+        </button>
+        <button class="game-tab" type="button" role="tab" aria-selected="false" aria-controls="game-assets" id="tab-assets" data-game="assets" data-genre="assets">
+          <span class="gt-top"><i class="gt-num">04</i><i class="gt-genre">FINANCE BOARD GAME</i></span>
+          <span class="gt-ico" aria-hidden="true">🎲</span>
+          <b class="gt-title">가계 자산 설계</b>
+          <span class="gt-desc">생애 구간마다 저축액과 수익률을 결정한다</span>
+          <span class="gt-foot"><span class="gt-chips"><i>복리</i><i>미래가치</i></span><i class="gt-len">8칸</i></span>
+        </button>
+        <button class="game-tab" type="button" role="tab" aria-selected="false" aria-controls="game-village" id="tab-village" data-game="village" data-genre="village">
+          <span class="gt-top"><i class="gt-num">05</i><i class="gt-genre">ECON STORY RPG</i></span>
+          <span class="gt-ico" aria-hidden="true">🏘️</span>
+          <b class="gt-title">시장 균형 마을</b>
+          <span class="gt-desc">주민 이야기를 듣고 시장 정책을 고른다</span>
+          <span class="gt-foot"><span class="gt-chips"><i>수요·공급</i><i>균형가격</i><i>초과수요</i></span><i class="gt-len">8장면</i></span>
+        </button>
+        <button class="game-tab" type="button" role="tab" aria-selected="false" aria-controls="game-garden" id="tab-garden" data-game="garden" data-genre="garden">
+          <span class="gt-top"><i class="gt-num">06</i><i class="gt-genre">OPTIMIZATION PUZZLE</i></span>
+          <span class="gt-ico" aria-hidden="true">🌱</span>
+          <b class="gt-title">한계의 정원</b>
+          <span class="gt-desc">물 10통을 두 밭에 나눠 총수확을 최대로 만든다</span>
+          <span class="gt-foot"><span class="gt-chips"><i>한계수확</i><i>최적화</i></span><i class="gt-len">퍼즐</i></span>
+        </button>
       </div>
 
       <section class="game-panel active" id="game-sim" role="tabpanel" aria-labelledby="tab-sim" data-panel="sim">
@@ -81,5 +126,18 @@
 
   <dialog class="glossary" id="glossaryDialog"><div class="dialog-head"><div><p class="eyebrow">PLAIN ECONOMICS</p><h2>쉬운 경제 용어집</h2></div><button type="button" aria-label="용어집 닫기" data-close-glossary>×</button></div><p class="dialog-lede">게임에서 만난 낯선 말을 일상 사례로 먼저 이해해 보세요.</p><label class="term-search"><span>용어 검색</span><input type="search" placeholder="예: 영리기업, 매출, 한계" data-term-search></label><div class="term-list" data-term-list></div></dialog>
   <script src="app.js"></script>
+  <script data-scroll-to-panel>
+  // 게임을 고르면 해당 패널이 화면 위쪽에 오도록 맞춘다
+  document.querySelectorAll('.game-tab[data-game]').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      var panel = document.getElementById('game-' + tab.dataset.game);
+      if (!panel) return;
+      requestAnimationFrame(function () {
+        var y = window.scrollY + panel.getBoundingClientRect().top - 84;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      });
+    });
+  });
+  </script>
 </body>
 </html>

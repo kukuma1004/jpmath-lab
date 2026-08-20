@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>jp-polish 회귀 점검</title>
+<style>
+ body{font:14px/1.6 system-ui,sans-serif;margin:20px;background:#111;color:#eee}
+ table{border-collapse:collapse;width:100%;font-size:12.5px}
+ td,th{border:1px solid #333;padding:4px 8px;text-align:left}
+ .ok{color:#8f8}.bad{color:#f88;font-weight:700}
+ iframe{width:1280px;height:820px;border:0;position:absolute;left:-9999px;top:0}
+</style>
+</head>
+<body>
+<h1>jp-polish 회귀 점검</h1>
+<p id="status">준비 중…</p>
+<table id="out"><thead><tr><th>페이지</th><th>rise</th><th>탐구경로</th><th>안 보이는 블록</th><th>JS 오류</th></tr></thead><tbody></tbody></table>
+<script>
+// 점검할 페이지 목록
+const PAGES = [
+  'index.html',
+  '미적분1/index.html',
+  '미적분1/미적분1_극한.html',
+  '미적분1/미적분1_미분계수계산.html',
+  '미적분1/미적분1_미분가능성.html',
+  '미적분1/미적분1_연속.html',
+  '미적분1/미적분1_평균값정리.html',
+  '미적분1/미적분1_삼차함수그래프.html',
+  '미적분1/미적분1_정적분.html',
+  '미적분1/미적분1_부정적분.html',
+  '미적분1/미적분1_계산스킬.html',
+  '기하/index.html',
+  '기하/기하_포물선.html',
+  '기하/기하_타원.html',
+  '기하/기하_쌍곡선.html',
+  '기하/기하_벡터의내적.html',
+  '기하/기하_정사영.html',
+  '기하/기하_내신스킬.html',
+  '수능문제/index.html',
+  '수능문제/미적분1/함수_그래프_탐구실.html',
+  '수업창고/index.html',
+  '미적분1/미적분1_사잇값정리.html','미적분1/미적분1_최대최소정리.html',
+  '미적분1/미적분1_곱의미분법.html','미적분1/미적분1_함수의증가감소.html',
+  '미적분1/미적분1_극대극소.html','미적분1/미적분1_사차함수그래프.html',
+  '미적분1/미적분1_함수의극한값.html','미적분1/미적분1_접선의방정식.html',
+  '미적분1/미적분1_도함수와미분법.html'
+];
+
+const tbody = document.querySelector('#out tbody');
+const status = document.getElementById('status');
+let i = 0, bad = 0;
+
+function step() {
+  if (i >= PAGES.length) {
+    status.textContent = '완료 — ' + PAGES.length + '개 중 문제 ' + bad + '개';
+    status.className = bad ? 'bad' : 'ok';
+    return;
+  }
+  const page = PAGES[i++];
+  status.textContent = '검사 중 (' + i + '/' + PAGES.length + ') ' + page;
+
+  const f = document.createElement('iframe');
+  f.src = page + '?cacheBust=' + Date.now();
+  document.body.appendChild(f);
+
+  const errs = [];
+  f.onload = function () {
+    try { f.contentWindow.addEventListener('error', e => errs.push(e.message)); } catch (e) {}
+    // 엔진이 그릴 시간을 준다
+    setTimeout(function () {
+      let rise = 0, invisible = [], note = '', rail = 0;
+      try {
+        const d = f.contentDocument, w = f.contentWindow;
+        rise = d.querySelectorAll('[data-jp-rise]').length;
+        rail = d.querySelectorAll('.jp-rail li').length;
+        invisible = [...d.querySelectorAll('[data-jp-rise]')].filter(el => {
+          const r = el.getBoundingClientRect();
+          return w.getComputedStyle(el).opacity === '0' &&
+                 r.height > 0 && r.top < w.innerHeight && r.bottom > 0;
+        }).map(el => (el.className || '').toString().slice(0, 22));
+        if (!d.querySelector('link[href*="jp-polish"]')) note = 'polish 미적용';
+      } catch (e) { note = '접근 실패: ' + e.message; }
+
+      const tr = document.createElement('tr');
+      const problem = invisible.length > 0 || errs.length > 0 || note;
+      if (problem) bad++;
+      tr.innerHTML = '<td>' + page + '</td><td>' + rise + '</td>' +
+        '<td>' + (rail || '-') + '</td>' +
+        '<td class="' + (invisible.length ? 'bad' : 'ok') + '">' +
+        (invisible.length ? invisible.join(', ') : '없음') + '</td>' +
+        '<td class="' + (errs.length || note ? 'bad' : 'ok') + '">' +
+        (errs.join(' / ') || note || '없음') + '</td>';
+      tbody.appendChild(tr);
+      f.remove();
+      step();
+    }, 1400);
+  };
+  f.onerror = function () { f.remove(); step(); };
+}
+step();
+</script>
+</body>
+</html>

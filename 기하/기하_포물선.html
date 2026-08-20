@@ -9,6 +9,19 @@
 <link rel="stylesheet" href="../vendor/katex/katex.min.css">
 <script src="../vendor/katex/katex.min.js"></script><script src="../vendor/katex/contrib/auto-render.min.js"></script>
 <link rel="stylesheet" href="기하_공통.css">
+  <link rel="stylesheet" href="../jp-polish.css?v=2">
+  <script src="../jp-polish.js?v=2" defer></script>
+<script>
+  // 값 자리에 TeX 를 넣고 그 자리에서 KaTeX 로 조판한다
+  function jpTex(id, tex){
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = tex;
+    if (window.renderMathInElement) renderMathInElement(el, {
+      delimiters:[{left:'\\(', right:'\\)', display:false}], throwOnError:false
+    });
+  }
+</script>
 </head>
 <body><div class="page-bg">
 <nav class="tabbar"><div class="tabbar-inner"><a class="tab-back" href="index.html" aria-label="기하 목록으로">←</a><button class="tab-btn" data-tab="theory">① 원리</button><button class="tab-btn" data-tab="lab">② 실험실</button><button class="tab-btn" data-tab="game">③ 스릴 아레나</button></div></nav>
@@ -44,7 +57,7 @@ const G=GeoLab;G.tabs();G.renderMath();
 const para={p:2,t:2.4,orient:'h'},labSvg=document.getElementById('parabolaLabSvg');
 function parabolaPath(g,p,o){let d='';for(let i=0;i<=160;i++){const t=-5+i/160*10,x=t*t/(4*p),P=o==='h'?[x,t]:[t,x];d+=(i?'L':'M')+g.sx(P[0])+' '+g.sy(P[1])}return d}
 function drawParabola(svg,p,o,showDetail=true,t=2.4){G.clear(svg);const g=G.cartesian(svg,{xmin:-4,xmax:6,ymin:-5,ymax:5});g.grid();svg.appendChild(G.s('path',{d:parabolaPath(g,p,o),fill:'none',stroke:'#7557A8','stroke-width':4,'stroke-linecap':'round'}));const F=o==='h'?[p,0]:[0,p],P=o==='h'?[t*t/(4*p),t]:[t,t*t/(4*p)],H=o==='h'?[-p,t]:[t,-p];const directrix=o==='h'?{x1:g.sx(-p),y1:g.plot.y,x2:g.sx(-p),y2:g.plot.y+g.plot.h}:{x1:g.plot.x,y1:g.sy(-p),x2:g.plot.x+g.plot.w,y2:g.sy(-p)};svg.appendChild(G.s('line',{...directrix,stroke:'#2B6CA3','stroke-width':2,'stroke-dasharray':'7 5'}));if(showDetail){svg.appendChild(G.s('line',{x1:g.sx(P[0]),y1:g.sy(P[1]),x2:g.sx(F[0]),y2:g.sy(F[1]),stroke:'#C1442D','stroke-width':3}));svg.appendChild(G.s('line',{x1:g.sx(P[0]),y1:g.sy(P[1]),x2:g.sx(H[0]),y2:g.sy(H[1]),stroke:'#2B6CA3','stroke-width':3}));svg.appendChild(G.s('circle',{cx:g.sx(F[0]),cy:g.sy(F[1]),r:7,fill:'#C1442D',stroke:'white','stroke-width':3}));svg.appendChild(G.s('text',{x:g.sx(F[0])+11,y:g.sy(F[1])-9,fill:'#C1442D','font-size':13,'font-weight':700},'F'));svg.appendChild(G.s('circle',{cx:g.sx(P[0]),cy:g.sy(P[1]),r:10,fill:'#7557A8',stroke:'white','stroke-width':3,'data-drag':'p'}));svg.appendChild(G.s('text',{x:g.sx(P[0])+13,y:g.sy(P[1])-12,fill:'#7557A8','font-size':13,'font-weight':700},'P'));}return{g,P,F,H}}
-function renderLab(){const r=drawParabola(labSvg,para.p,para.orient,true,para.t),d=Math.hypot(r.P[0]-r.F[0],r.P[1]-r.F[1]);document.getElementById('paraEquation').textContent=para.orient==='h'?`y² = ${(4*para.p).toFixed(1)}x`:`x² = ${(4*para.p).toFixed(1)}y`;document.getElementById('paraDistances').textContent=`PF = PH = ${d.toFixed(3)}`;document.getElementById('paraVerdict').textContent=Math.abs(Math.hypot(r.P[0]-r.H[0],r.P[1]-r.H[1])-d)<.001?'✓ 두 거리가 정확히 같습니다.':'';document.getElementById('paraPoint').textContent=`P(${r.P[0].toFixed(2)}, ${r.P[1].toFixed(2)})`;document.getElementById('paraPLabel').textContent=para.p.toFixed(1)}
+function renderLab(){const r=drawParabola(labSvg,para.p,para.orient,true,para.t),d=Math.hypot(r.P[0]-r.F[0],r.P[1]-r.F[1]);jpTex('paraEquation',para.orient==='h'?`\\(y^2=${(4*para.p).toFixed(1)}x\\)`:`\\(x^2=${(4*para.p).toFixed(1)}y\\)`);jpTex('paraDistances',`\\(\\overline{PF}=\\overline{PH}=${d.toFixed(3)}\\)`);document.getElementById('paraVerdict').textContent=Math.abs(Math.hypot(r.P[0]-r.H[0],r.P[1]-r.H[1])-d)<.001?'✓ 두 거리가 정확히 같습니다.':'';jpTex('paraPoint',`\\(P(${r.P[0].toFixed(2)},\\,${r.P[1].toFixed(2)})\\)`);document.getElementById('paraPLabel').textContent=para.p.toFixed(1)}
 document.querySelectorAll('[data-orient]').forEach(b=>b.addEventListener('click',()=>{para.orient=b.dataset.orient;document.querySelectorAll('[data-orient]').forEach(x=>x.classList.toggle('active',x===b));renderLab()}));document.getElementById('paraPSlider').addEventListener('input',e=>{para.p=+e.target.value;renderLab()});document.getElementById('paraReset').addEventListener('click',()=>{para.p=2;para.t=2.4;document.getElementById('paraPSlider').value=2;renderLab()});
 let dragging=false;labSvg.addEventListener('pointerdown',e=>{if(e.target.dataset.drag==='p'){dragging=true;labSvg.setPointerCapture(e.pointerId)}});labSvg.addEventListener('pointermove',e=>{if(!dragging)return;const rect=labSvg.getBoundingClientRect(),px=(e.clientX-rect.left)/rect.width*640,py=(e.clientY-rect.top)/rect.height*400,g=G.cartesian(labSvg,{xmin:-4,xmax:6,ymin:-5,ymax:5});para.t=G.clamp(para.orient==='h'?g.yOf(py):g.xOf(px),-4.7,4.7);renderLab()});labSvg.addEventListener('pointerup',()=>dragging=false);labSvg.addEventListener('pointercancel',()=>dragging=false);renderLab();
 function optionRound(rng){
