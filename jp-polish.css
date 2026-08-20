@@ -267,14 +267,10 @@ button:disabled{cursor:default}
   body.jp-wide-main > footer{
     width:min(1380px,calc(100% - 68px)) !important;
   }
-  .wrap, .tabbar-inner,
-  .topic-wrap, .topic-nav-inner,
+  /* 계산·내신 스킬 화면만 넓힌다. 개념 화면의 그래프는 가로폭에
+     비례해 높이까지 커지므로 기존의 읽기 폭을 유지한다. */
   .skill-wrap, .skill-nav-inner{
     max-width:1180px !important;
-  }
-  body.jp-rail-on .wrap{
-    max-width:1510px !important;
-    grid-template-columns:260px minmax(0,1fr);
   }
   .topic-hero .desc, .section-hero .desc,
   .skill-hero p:last-child, .mode-header p:last-child{
@@ -302,14 +298,8 @@ button:disabled{cursor:default}
   body.jp-wide-main > footer{
     width:min(1720px,calc(100% - 96px)) !important;
   }
-  .wrap, .tabbar-inner,
-  .topic-wrap, .topic-nav-inner,
   .skill-wrap, .skill-nav-inner{
     max-width:1440px !important;
-  }
-  body.jp-rail-on .wrap{
-    max-width:1780px !important;
-    grid-template-columns:290px minmax(0,1fr);
   }
   .topic-hero .desc, .section-hero .desc,
   .skill-hero p:last-child, .mode-header p:last-child,
