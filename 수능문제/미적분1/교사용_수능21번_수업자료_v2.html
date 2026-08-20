@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="noindex,nofollow,noarchive" name="robots"/>
+<link crossorigin="" href="https://cdn.jsdelivr.net" rel="preconnect"/>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;family=Noto+Serif+KR:wght@700;900&amp;display=swap" rel="stylesheet"/>
+<title>2026 수능 수학 21번 | 교사용 탐구 수업 (확장판)</title>
+
+<!-- ── 공용 자산 (제이피매쓰랩 루트) ────────────────────────────── -->
+<link rel="stylesheet" href="../../vendor/katex/katex.min.css"/>
+<link rel="stylesheet" href="../../jp-math-typography.css"/>
+<link rel="stylesheet" href="../../jp-lesson.css"/>
+<script defer src="../../vendor/katex/katex.min.js"></script>
+<script defer src="../../jp-lab.js"></script>
+<script defer src="../../jp-deck.js"></script>
+</head>
+<body class="tpl-math-lesson teacher-locked">
+<a class="jp-back-link teacher-back" href="../">← 수능 문제</a>
+
+<!-- ── 교사용 게이트 (동작은 jp-deck.js) ───────────────────────── -->
+<div class="teacher-gate" id="teacherGate">
+  <form class="teacher-gate-card" id="teacherGateForm">
+    <span class="teacher-gate-badge">TEACHER ONLY</span>
+    <h1>교사용 수업 자료</h1>
+    <p>발문과 해설, 교사 노트가 포함된 자료입니다.<br/>교사용 비밀번호를 입력해 주세요.</p>
+    <label for="teacherPassword">비밀번호</label>
+    <div class="teacher-gate-row">
+      <input id="teacherPassword" type="password" autocomplete="current-password" required autofocus/>
+      <button type="submit">자료 열기</button>
+    </div>
+    <p class="teacher-gate-feedback" id="teacherGateFeedback" role="status" aria-live="polite"></p>
+  </form>
+</div>
+
+<div class="deck">
+
+<!-- ═══ 1. 표지 ═══════════════════════════════════════════════ -->
+<section class="slide slide--title" data-title="문제와 만나기"><div class="s-body"><div class="problem-layout">
+<div>
+<p class="kicker">2026학년도 대학수학능력시험 수학 21번</p>
+<h1 class="h1 anim-fade-up" data-anim="fade-up">한 문제를<br/><span class="accent">끝까지 씹어서</span> 넘기는 시간</h1>
+<p class="lede">식부터 세우지 않습니다. 조건을 그래프로 번역하고, 세워 본 가설을 스스로 무너뜨리고, 왜 그 범위인지까지 손으로 확인합니다.</p>
+<div class="pause">첫 90초는 말하지 않기</div>
+</div>
+<img alt="2026학년도 수능 수학 21번 문제" class="problem-img" src="문제이미지/assets/original-problem.png"/>
+</div></div>
+<aside class="notes"><p><strong>이 자료의 사용법.</strong> 이 판은 <em>교사용 확장판</em>입니다. 기존 흐름에 더해 학생들이 매번 막히는 세 지점을 완전히 뜯어 놓았습니다 — ① 왜 <em>t</em>=0이 아니라 <em>t</em>=2인가(9~13장) ② 왜 <em>r</em>의 범위가 3&lt;<em>r</em>≤4인가(18~20장) ③ 왜 <em>m</em>을 2부터 세는가(15~17장).</p><p><strong>인터랙티브 슬라이드</strong>는 슬라이더를 직접 끌어서 보여 주세요. 말로 설명한 뒤 확인하지 말고, <em>먼저 움직여서 학생이 발견하게</em> 한 다음 언어로 정리하는 순서가 훨씬 남습니다.</p><p><strong>권장 시간</strong> 총 50분 · 도입 5 / 조건(가) 8 / <em>t</em> 결정 14 / <em>r</em> 범위 12 / 회수와 계산 8 / 정리 3.</p></aside>
+</section>
+
+<!-- ═══ 2. 로드맵 ═════════════════════════════════════════════ -->
+<section class="slide" data-title="오늘의 지도"><div class="s-head"><p class="kicker">전체 지도</p><h2 class="h2">이 문제는 <span class="accent">다섯 개의 관문</span>으로 되어 있다</h2></div><div class="s-body">
+<div class="gates anim-stagger-list" data-anim="stagger-list">
+<div class="gate"><span class="g-n">GATE 1</span><b>연속</b><p>접는 위치에서 두 높이가 같아야 한다 → <span class="kx" data-k="f(t)=0"></span></p></div>
+<div class="gate"><span class="g-n">GATE 2</span><b>조건 (가)</b><p>분모가 0이 되는 곳에서 분자도 0 → <span class="kx" data-k="f(0)=f(2)=0"></span></p></div>
+<div class="gate"><span class="g-n">GATE 3</span><b><span class="kx" data-k="t"></span>의 정체</b><p>세 후보 중 살아남는 것은 <span class="kx" data-k="t=2"></span> 하나뿐</p></div>
+<div class="gate"><span class="g-n">GATE 4</span><b><span class="kx" data-k="r"></span>의 범위</b><p>음수인 자연수가 정확히 2개 → <span class="kx" data-k="3\lt r\le 4"></span></p></div>
+<div class="gate"><span class="g-n">GATE 5</span><b>회수</b><p>두 값을 배정하고 연립 → <span class="kx" data-k="g(-5)"></span></p></div>
+</div>
+<div class="note-strip"><span class="ic">KEY</span><p>이 문제의 진짜 주인공은 <span class="kx" data-k="f(x)"></span>가 아니라 <b>몫함수</b> <span class="kx" data-k="\dfrac{g(x)}{x(x-2)}"></span>입니다. 이 함수가 <b>직선 두 조각</b>이라는 걸 알아채는 순간 문제가 무너집니다.</p></div>
+</div>
+<div class="s-ask"><p class="question">다섯 관문 중, 계산이 필요한 곳은 몇 번째일까?</p></div>
+<aside class="notes"><p>여기서 <strong>"오늘은 마지막 관문에서만 계산한다"</strong>고 못 박아 두세요. 학생들은 <em>f</em>(<em>x</em>)=<em>ax</em>³+<em>bx</em>²+<em>cx</em>+<em>d</em>로 놓고 미지수 4개를 세우려 듭니다. 그 길은 이 문제에서 막힙니다.</p><p>GATE 3~4가 오늘 수업의 <em>심장</em>입니다. 여기서 시간을 아끼지 마세요.</p></aside>
+</section>
+
+<!-- ═══ 3. 접기 LAB ═══════════════════════════════════════════ -->
+<section class="slide" data-title="g는 f를 접은 그래프"><div class="s-head"><p class="kicker">GATE 1 · 그래프 번역</p><h2 class="h2"><span class="kx" data-k="g"></span>는 새 함수가 아니라 <span class="accent"><span class="kx" data-k="f"></span>를 <span class="kx" data-k="t"></span>에서 접은 것</span></h2></div><div class="s-body">
+<div class="lab" data-lab="fold"><div class="lab-stage"><svg class="lab-svg"></svg></div><div class="lab-side"></div></div>
+</div>
+<div class="s-ask"><p class="question">두 조각이 <span class="kx" data-k="x=t"></span>에서 만나려면, 그 자리의 높이는 얼마여야 할까?</p></div>
+<aside class="notes"><p><strong>슬라이더를 천천히 끌어 주세요.</strong> 대부분의 위치에서 그래프가 뚝 끊어지고, <em>t</em>가 <em>f</em>의 근(0, 2, <em>r</em>)을 지나는 순간에만 딱 붙습니다. 학생이 "아 저기서만 붙네"라고 말할 때까지 기다리세요.</p><p><strong>오개념 주의.</strong> "<em>t</em>는 <em>f</em>의 근이다"까지만 확정된 것이지, <em>t</em>가 어느 근인지는 아직 모릅니다. 여기서 성급히 <em>t</em>=2라고 말하지 마세요 — 그건 3번 관문에서 <em>학생이</em> 걸러낼 몫입니다.</p></aside>
+</section>
+
+<!-- ═══ 4. 연속 → f(t)=0 ══════════════════════════════════════ -->
+<section class="slide" data-title="연속의 번역"><div class="s-head"><p class="kicker">GATE 1 · 결론</p><h2 class="h2">"연속"이라는 말은 <span class="accent">두 높이가 같다</span>는 뜻</h2></div><div class="s-body">
+<div class="fx lg boxed" data-k="\lim_{x\to t^{-}}g(x)=\lim_{x\to t^{+}}g(x)=g(t)"></div>
+<div class="flow">
+<div class="flow-box"><b>왼쪽에서</b><span class="fb-text"><span class="kx" data-k="-f(t)"></span></span></div>
+<div class="arrow">=</div>
+<div class="flow-box"><b>오른쪽에서</b><span class="fb-text"><span class="kx" data-k="f(t)"></span></span></div>
+<div class="arrow">→</div>
+<div class="flow-box"><b>그러므로</b><span class="fb-text"><span class="kx" data-k="f(t)=0"></span></span></div>
+</div>
+<div class="note-strip"><span class="ic">읽기</span><p><span class="kx" data-k="-f(t)=f(t)"></span> 에서 <span class="kx" data-k="2f(t)=0"></span>. 즉 <b><span class="kx" data-k="t"></span>는 <span class="kx" data-k="f"></span>의 근</b>입니다. 어느 근인지는 아직 모릅니다.</p></div>
+</div>
+<div class="s-ask"><p class="question">이제 <span class="kx" data-k="f"></span>의 근을 찾으면 <span class="kx" data-k="t"></span>의 후보가 나온다. 근은 어디서 알아낼까?</p></div>
+<aside class="notes"><p>칠판에 <em>−f</em>(<em>t</em>) = <em>f</em>(<em>t</em>) 한 줄만 쓰고, 이항해서 2<em>f</em>(<em>t</em>)=0을 학생이 말하게 하세요.</p><p>여기서 얻은 정보는 <em>딱 하나</em>입니다: <strong><em>t</em> ∈ (f의 근 집합)</strong>. 이 정보를 카드처럼 손에 쥐고 다음 관문으로 넘어갑니다.</p></aside>
+</section>
+
+<!-- ═══ 5. 조건 (가) 읽기 ═════════════════════════════════════ -->
+<section class="slide" data-title="조건 (가) 읽기"><div class="s-head"><p class="kicker">GATE 2 · 조건 (가)</p><h2 class="h2">"모든 실수 <span class="kx" data-k="a"></span>"를 전부 조사할 필요는 없다</h2></div><div class="s-body">
+<div class="condition-box"><div class="condition-tag">가</div><div><h3>위험한 점은 <span class="kx" data-k="\bf 2"></span>개뿐이다</h3><p>분모 <span class="kx" data-k="x(x-2)"></span>가 0이 아닌 곳에서 이 몫은 <b>연속함수의 몫</b>이라 극한이 저절로 존재합니다. 따로 조사할 필요가 없습니다. 위험한 곳은 <b>분모가 0이 되는 두 점</b>뿐입니다.</p></div></div>
+<div class="numline">
+<div class="pt" style="--x:34%"><b>0</b><i></i><span>분모가 0</span></div>
+<div class="pt" style="--x:64%"><b>2</b><i></i><span>분모가 0</span></div>
+</div>
+<div class="fx sm" data-k="\lim_{x\to 0^{+}}\dfrac{g(x)}{x(x-2)}\ ,\qquad \lim_{x\to 2^{+}}\dfrac{g(x)}{x(x-2)}"></div>
+</div>
+<div class="s-ask"><p class="question">분모가 0으로 갈 때, 유한한 값이 남으려면 분자는 어떻게 되어야 할까?</p></div>
+<aside class="notes"><p>"모든 실수 <em>a</em>"라는 말에 학생들은 압도됩니다. <strong>"조사할 필요가 있는 곳만 조사한다"</strong>는 습관을 여기서 심어 주세요. 연속함수의 몫은 분모가 0이 아니면 극한이 자동으로 존재합니다.</p><p><em>x</em>=<em>t</em>는 위험하지 않냐는 질문이 나올 수 있습니다. <em>g</em>가 이미 <strong>연속</strong>이므로 <em>x</em>=<em>t</em>에서도 분모만 0이 아니면 문제없습니다. 좋은 질문이니 칭찬해 주세요.</p></aside>
+</section>
+
+<!-- ═══ 6. 발산 LAB ═══════════════════════════════════════════ -->
+<section class="slide" data-title="분자가 0이 아니면"><div class="s-head"><p class="kicker">GATE 2 · 직접 확인</p><h2 class="h2">분자가 0이 아니면 <span class="neg">무조건 터진다</span></h2></div><div class="s-body">
+<div class="lab narrow" data-lab="blowup"><div class="lab-stage"><svg class="lab-svg"></svg></div><div class="lab-side"></div></div>
+</div>
+<div class="s-ask"><p class="question">그래서 <span class="kx" data-k="g(0)"></span>과 <span class="kx" data-k="g(2)"></span>는 각각 얼마여야 할까?</p></div>
+<aside class="notes"><p>학생이 <strong>"0/0 꼴이어야 한다"</strong>는 말을 스스로 하게 만드는 장면입니다. 슬라이더를 0 근처로 가져가면 세로 점근선이 사라지고 그래프가 평범해집니다.</p><p>여기서 정리: <em>g</em>(0)=0, <em>g</em>(2)=0. 그런데 <em>g</em>는 <em>f</em> 아니면 <em>−f</em>이므로, 어느 쪽이든 <strong><em>f</em>(0)=0, <em>f</em>(2)=0</strong>입니다. (0과 2가 <em>t</em>의 어느 쪽에 있든 결론은 같다는 점을 짚어 주세요.)</p></aside>
+</section>
+
+<!-- ═══ 7. (가)의 수확 ════════════════════════════════════════ -->
+<section class="slide" data-title="조건 (가)의 수확"><div class="s-head"><p class="kicker">GATE 2 · 결론</p><h2 class="h2">최고차항이 <span class="kx" data-k="A\gt 0"></span>인 삼차함수의 <span class="accent">모양이 확정</span>됐다</h2></div><div class="s-body">
+<div class="fx lg boxed hot" data-k="f(x)=Ax(x-2)(x-r)\qquad (A\gt 0)"></div>
+<div class="grid g3">
+<div class="card hot"><strong>확정된 근</strong><p><span class="kx" data-k="0"></span> 과 <span class="kx" data-k="2"></span> — 조건 (가)가 준 선물</p></div>
+<div class="card"><strong>남은 근</strong><p><span class="kx" data-k="r"></span> — 아직 어디 있는지 모른다</p></div>
+<div class="card"><strong>접는 위치</strong><p><span class="kx" data-k="t\in\{0,\,2,\,r\}"></span> — 세 후보</p></div>
+</div>
+<div class="note-strip warn"><span class="ic">주의</span><p><span class="kx" data-k="t"></span>와 <span class="kx" data-k="r"></span>은 <b>다른 이름</b>입니다. <span class="kx" data-k="t"></span>는 <b>접는 위치</b>, <span class="kx" data-k="r"></span>은 <b>세 번째 근</b>. 우연히 같을 수도 있고, 아닐 수도 있습니다.</p></div>
+</div>
+<div class="s-ask"><p class="question">세 후보 <span class="kx" data-k="t=r,\ t=0,\ t=2"></span> 중 무엇이 살아남을까?</p></div>
+<aside class="notes"><p><strong>여기가 갈림길입니다.</strong> 학생들이 가장 많이 저지르는 실수는 <em>t</em>와 <em>r</em>을 같은 문자로 뭉개는 것입니다. 칠판 한쪽에 <strong>"t = 접는 위치 / r = 남은 근"</strong>이라고 크게 써 두고 수업 끝까지 지우지 마세요.</p><p>미지수는 이제 <strong><em>A</em>와 <em>r</em> 단 두 개</strong>입니다. 원래 삼차함수의 미지수 4개가 2개로 줄었다는 걸 강조하세요.</p></aside>
+</section>
+
+<!-- ═══ 8. 몫함수의 정체 ══════════════════════════════════════ -->
+<section class="slide" data-title="몫함수의 정체"><div class="s-head"><p class="kicker">GATE 3 · 이 문제의 심장</p><h2 class="h2">복잡해 보이는 몫이 사실은 <span class="accent">직선 두 조각</span>이다</h2></div><div class="s-body">
+<div class="steps">
+<div class="step"><span class="n">1</span><div class="body"><b><span class="kx" data-k="x\ge t"></span> 인 쪽 — 원래 <span class="kx" data-k="f"></span> 그대로</b><p><span class="kx" data-k="\dfrac{g(x)}{x(x-2)}=\dfrac{Ax(x-2)(x-r)}{x(x-2)}=A(x-r)"></span></p></div></div>
+<div class="step"><span class="n">2</span><div class="body"><b><span class="kx" data-k="x\lt t"></span> 인 쪽 — 부호가 뒤집힌 <span class="kx" data-k="-f"></span></b><p><span class="kx" data-k="\dfrac{-Ax(x-2)(x-r)}{x(x-2)}=-A(x-r)=A(r-x)"></span></p></div></div>
+<div class="step yes"><span class="n">3</span><div class="body"><b>그래서 몫함수는 이렇게 생겼다</b><p><span class="kx" data-k="\dfrac{g(x)}{x(x-2)}=\begin{cases}A(r-x)&(x\lt t)\\[2pt]A(x-r)&(x\ge t)\end{cases}"></span> &nbsp;— 기울기 <span class="kx" data-k="-A"></span>와 <span class="kx" data-k="+A"></span>인 두 직선</p></div></div>
+</div>
+<div class="note-strip"><span class="ic">단</span><p><span class="kx" data-k="x=0"></span>과 <span class="kx" data-k="x=2"></span>에서는 원래 식이 정의되지 않으므로 그래프에 <b>구멍</b>이 뚫립니다. (극한은 존재하지만 함숫값은 없다.)</p></div>
+</div>
+<div class="s-ask"><p class="question">두 직선이 <span class="kx" data-k="x=t"></span>에서 만날까, 아니면 튈까?</p></div>
+<aside class="notes"><p><strong>약분이 이 문제의 전부입니다.</strong> <em>x</em>(<em>x</em>−2)가 통째로 날아가는 순간 학생들 표정이 바뀝니다. 여기서 한 박자 쉬어 주세요.</p><p>왼쪽 조각은 기울기 <em>−A</em>(내려가는 직선), 오른쪽 조각은 기울기 <em>+A</em>(올라가는 직선). <strong>둘 다 <em>x</em>=<em>r</em>에서 0을 지납니다</strong>(연장했을 때). 이 한 문장이 다음 세 장을 전부 설명합니다.</p></aside>
+</section>
+
+<!-- ═══ 9. 3-케이스 LAB ═══════════════════════════════════════ -->
+<section class="slide" data-title="세 후보를 눈으로 비교"><div class="s-head"><p class="kicker">GATE 3 · ① 왜 t=2인가 · 직접 확인</p><h2 class="h2"><span class="kx" data-k="t"></span>를 바꿔 가며 <span class="accent">몫함수의 모양</span>을 보자</h2></div><div class="s-body">
+<div class="lab" data-lab="quot" data-cases="r,0,2" data-t="r" data-r="3.67"><div class="lab-stage"><svg class="lab-svg"></svg></div><div class="lab-side"></div></div>
+</div>
+<div class="s-ask"><p class="question">세 경우 중, 그래프가 <span class="neg">x축 아래로 내려가는</span> 자연수를 두 개 만들 수 있는 건 어느 것일까?</p></div>
+<aside class="notes"><p><strong>오늘 수업에서 가장 중요한 화면입니다.</strong> 버튼 세 개를 순서대로 눌러 가며 모양이 어떻게 달라지는지 보여 주세요. 빨간 점이 "우극한이 음수인 자연수"입니다.</p><p>진행 요령 — <em>t</em>=<em>r</em>: 빨간 점이 <strong>하나도 안 생긴다</strong>. <em>t</em>=0: 빨간 점이 생기긴 한다. <em>t</em>=2: <em>x</em>=2에서 <strong>뚝 떨어지는 점프</strong>가 보인다. "왜 t=2에서만 저렇게 떨어지지?"라는 질문이 나오면 성공입니다.</p><p><em>r</em> 슬라이더도 같이 움직여 보세요. <em>t</em>=<em>r</em> 모드에서는 <em>r</em>을 아무리 움직여도 빨간 점이 안 생깁니다 — 이게 다음 장의 결론입니다.</p></aside>
+</section>
+
+<!-- ═══ 10. Case 1 : t=r 탈락 ═════════════════════════════════ -->
+<section class="slide" data-title="① t=r 은 왜 안 되는가"><div class="s-head"><p class="kicker">GATE 3 · 후보 1 탈락</p><h2 class="h2"><span class="kx" data-k="t=r"></span> 이면 몫이 <span class="accent">V자</span>가 되어 음수가 사라진다</h2></div><div class="s-body">
+<div class="lab narrow" data-lab="quot" data-cases="r" data-t="r" data-r="3.2" data-nat="0"><div class="lab-stage"><svg class="lab-svg"></svg></div><div class="lab-side"></div></div>
+<div class="fx sm boxed bad" data-k="\dfrac{g(x)}{x(x-2)}=A\lvert x-r\rvert\ \ge 0\quad\Longrightarrow\quad \text{음수인 자연수 } m \text{ 은 존재하지 않는다}"></div>
+</div>
+<div class="s-ask"><p class="question">그런데 조건 (나)는 그런 자연수가 <span class="kx" data-k="\bf 2"></span>개 있다고 말한다. 무엇이 잘못됐을까?</p></div>
+<aside class="notes"><p>접는 위치가 <strong>세 번째 근과 겹치면</strong> 두 직선이 <em>x</em>축 위의 한 점에서 만나 <em>A</em>|<em>x</em>−<em>r</em>| 라는 V자가 됩니다. 절댓값은 절대 음수가 안 됩니다.</p><p>조건 (나)의 집합 {<em>g</em>(−1), −7/2·<em>g</em>(1)}은 <strong>원소가 2개</strong>입니다(단서 <em>g</em>(−1) ≠ −7/2·<em>g</em>(1) 덕분에 서로 다르다는 게 보장됩니다). 공집합일 수 없으므로 <em>t</em>=<em>r</em>은 <strong>모순</strong>. 남은 후보는 <em>t</em>=0과 <em>t</em>=2뿐입니다.</p><p>학생들이 "단서 <em>g</em>(−1)≠−7/2<em>g</em>(1)는 왜 붙어 있냐"고 물으면 <strong>바로 여기서 쓰인다</strong>고 답해 주세요 — 집합의 원소가 2개임을 보장하는 장치입니다.</p></aside>
+</section>
+
+<!-- ═══ 11. Case 2 : t=0 상황 ═════════════════════════════════ -->
+<section class="slide" data-title="② t=0 이면 어떻게 되나"><div class="s-head"><p class="kicker">GATE 3 · 후보 2 · 1단계</p><h2 class="h2"><span class="kx" data-k="t=0"></span> 이면 <span class="accent">모든 자연수가 오른쪽 조각</span>에 놓인다</h2></div><div class="s-body">
+<div class="lab" data-lab="quot" data-cases="0" data-t="0" data-r="2.5" data-rmin="1.2" data-rmax="4.2"><div class="lab-stage"><svg class="lab-svg"></svg></div><div class="lab-side"></div></div>
+</div>
+<div class="s-ask"><p class="question">여기까지는 모순이 없다. 그러면 <span class="kx" data-k="t=0"></span>을 어떻게 걸러낼 수 있을까?</p></div>
+<aside class="notes"><p><strong>학생들이 가장 자주 빠뜨리는 경우입니다.</strong> "<em>t</em>=<em>r</em>이 모순이니까 <em>t</em>=2"로 바로 건너뛰면 안 됩니다. <em>t</em>=0도 반드시 죽여야 합니다.</p><p><em>t</em>=0이면 모든 자연수 <em>m</em>≥1이 접힘점 <strong>오른쪽</strong>에 있으므로 우극한은 전부 <em>A</em>(<em>m</em>−<em>r</em>). 음수가 되는 조건은 <em>m</em>&lt;<em>r</em>. <em>r</em>을 2와 3 사이에 두면 집합이 {1, 2}가 되어 <strong>개수는 맞습니다</strong>. 여기까지는 살아 있어요.</p><p>슬라이더로 <em>r</em>=2.5쯤 맞춰 놓고 "집합 {1,2} — 개수는 맞네?"까지 확인시킨 뒤 다음 장으로 넘어가세요.</p></aside>
+</section>
+
+<!-- ═══ 12. Case 2 : t=0 사형 ═════════════════════════════════ -->
+<section class="slide" data-title="② t=0 이 죽는 순간"><div class="s-head"><p class="kicker">GATE 3 · 후보 2 탈락</p><h2 class="h2">집합의 원소는 <span class="accent">자연수</span>여야 하는데, 한 값이 <span class="neg">음수</span>다</h2></div><div class="s-body">
+<div class="lab narrow" data-lab="values" data-case="t0"><div class="lab-stage"><svg class="lab-svg"></svg></div><div class="lab-side"></div></div>
+<div class="grid g2">
+<div class="card"><strong><span class="kx" data-k="-1\lt t=0"></span> 이므로 뒤집힌 조각</strong><p><span class="kx" data-k="g(-1)=-f(-1)=3A(1+r)\ \gt 0"></span></p></div>
+<div class="card"><strong><span class="kx" data-k="1\ge t=0"></span> 이므로 원래 조각</strong><p><span class="kx" data-k="g(1)=f(1)=A(r-1)"></span> &nbsp;→&nbsp; <span class="kx" data-k="-\tfrac{7}{2}g(1)=-\tfrac{7}{2}A(r-1)\ \lt 0"></span></p></div>
+</div>
+</div>
+<div class="s-ask"><p class="question">그러면 마지막 후보는 하나뿐이다. 무엇일까?</p></div>
+<aside class="notes"><p><strong>핵심 논리.</strong> <em>t</em>=0에서 집합의 개수가 2개가 되려면 2&lt;<em>r</em>≤3이어야 합니다. 그러면 <em>r</em>−1&gt;0이고 <em>A</em>&gt;0이므로 −7/2·<em>A</em>(<em>r</em>−1)은 <strong>반드시 음수</strong>입니다.</p><p>그런데 조건 (나)의 집합은 <strong>자연수의 집합</strong>입니다. 음수는 자연수가 될 수 없으므로 <em>t</em>=0은 탈락. 여기서 "자연수 <em>m</em>의 집합"이라는 문구를 다시 읽게 하세요 — <strong>집합의 원소가 자연수</strong>라는 게 결정적입니다.</p><p><em>t</em>=0에서 <em>g</em>(1)이 <strong>−f가 아니라 +f</strong>라는 점(1이 접힘점 오른쪽)을 반드시 짚어 주세요. 여기서 부호를 틀리는 학생이 많습니다.</p></aside>
+</section>
+
+<!-- ═══ 13. Case 3 : t=2 ══════════════════════════════════════ -->
+<section class="slide" data-title="③ t=2 · 점프가 열쇠다"><div class="s-head"><p class="kicker">GATE 3 · 후보 3 생존</p><h2 class="h2"><span class="kx" data-k="x=2"></span>에서 생기는 <span class="accent">점프</span>가 이 문제의 유일한 열쇠</h2></div><div class="s-body">
+<div class="lab" data-lab="quot" data-cases="2" data-t="2" data-r="3.67" data-rmin="2.2" data-rmax="5"><div class="lab-stage"><svg class="lab-svg"></svg></div><div class="lab-side"></div></div>
+</div>
+<div class="s-ask"><p class="question"><span class="kx" data-k="x=2"></span>의 왼쪽과 오른쪽에서 값의 <span class="neg">부호가 반대</span>다. 조건 (나)는 어느 쪽을 묻고 있을까?</p></div>
+<aside class="notes"><p><strong>이 장에서 학생이 봐야 할 것 하나:</strong> <em>x</em>=2 바로 왼쪽은 <em>A</em>(<em>r</em>−2) &gt; 0 (양수), 바로 오른쪽은 <em>A</em>(2−<em>r</em>) &lt; 0 (음수). 같은 점을 두고 <strong>부호가 정반대</strong>입니다.</p><p>조건 (나)는 <em>x</em>→<em>m</em><sup>+</sup>, 즉 <strong>오른쪽</strong> 극한을 묻습니다. 그래서 <em>m</em>=2가 집합에 들어갈 수 있습니다. 만약 좌극한이었다면 <em>m</em>=2는 양수라 절대 못 들어갔을 겁니다.</p><p>"수능이 왜 굳이 <em>x</em>→<em>a</em><sup>+</sup>라고 썼을까?"를 물어보세요. <strong>이 문제 전체가 이 플러스 기호 하나 위에 서 있습니다.</strong></p></aside>
+</section>
+
+<!-- ═══ 14. 세 경우 정리 ══════════════════════════════════════ -->
+<section class="slide" data-title="t 결정 · 최종 정리"><div class="s-head"><p class="kicker">GATE 3 · 결론</p><h2 class="h2">세 후보를 나란히 놓으면 답은 <span class="accent">하나</span></h2></div><div class="s-body">
+<div class="tri">
+<div class="tcard dead"><h3><span class="tag">탈락</span><span class="kx" data-k="t=r"></span></h3><p class="mini"><span class="kx" data-k="\dfrac{g(x)}{x(x-2)}=A\lvert x-r\rvert"></span></p><p>V자라서 <b>항상 0 이상</b>. 음수인 자연수가 하나도 없다 → 집합이 공집합.</p></div>
+<div class="tcard dead"><h3><span class="tag">탈락</span><span class="kx" data-k="t=0"></span></h3><p class="mini"><span class="kx" data-k="-\tfrac{7}{2}g(1)=-\tfrac{7}{2}A(r-1)"></span></p><p>개수는 맞출 수 있지만 이 값이 <b>항상 음수</b>. 자연수가 될 수 없다.</p></div>
+<div class="tcard live"><h3><span class="tag">생존</span><span class="kx" data-k="t=2"></span></h3><p class="mini"><span class="kx" data-k="x=2 \text{ 에서 점프}"></span></p><p>왼쪽은 양수, 오른쪽은 음수. <b>우극한</b>을 묻는 조건 (나)와 정확히 맞물린다.</p></div>
+</div>
+<div class="fx lg boxed hot" data-k="\therefore\ t=2,\qquad g(x)=\begin{cases}-f(x)&(x\lt 2)\\[2pt] f(x)&(x\ge 2)\end{cases}"></div>
+</div>
+<div class="s-ask"><p class="question">이제 남은 미지수는 <span class="kx" data-k="A"></span>와 <span class="kx" data-k="r"></span> 둘뿐이다. <span class="kx" data-k="r"></span>부터 잡아 보자.</p></div>
+<aside class="notes"><p>세 후보를 <strong>배제법</strong>으로 지웠다는 사실 자체를 언급하세요. 수학에서 "안 되는 걸 지워서 남기는" 논증은 직접 구하는 것만큼 정당합니다.</p><p>여기서 <em>g</em>(<em>x</em>)의 최종 형태를 칠판에 크게 남겨 두세요. 뒤에서 <em>g</em>(−1), <em>g</em>(1), <em>g</em>(−5)를 계산할 때 계속 참조합니다 — <strong>−1, 1, −5 모두 2보다 작으므로 전부 −f</strong>입니다.</p></aside>
+</section>
+
+<!-- ═══ 15. m 검사대 ══════════════════════════════════════════ -->
+<section class="slide" data-title="m 검사대"><div class="s-head"><p class="kicker">GATE 4 · ③ 왜 m을 2부터 세는가 · 1단계</p><h2 class="h2"><span class="kx" data-k="m"></span>은 함숫값이 아니라 <span class="accent">검사할 입력점</span>이다</h2></div><div class="s-body">
+<div class="condition-box"><div class="condition-tag">나</div><div><h3>자연수 <span class="kx" data-k="1,2,3,4,\dots"></span> 를 하나씩 대입해 부호를 본다</h3><p>각 자연수 <span class="kx" data-k="m"></span>의 <b>오른쪽</b>에서 다가갈 때 몫의 값이 음수인지 확인하고, 음수인 <b>입력값 <span class="kx" data-k="m"></span>만</b> 모아 집합을 만듭니다.</p></div></div>
+<div class="grid g2">
+<div class="card"><strong><span class="kx" data-k="m=1"></span> 은 접힘점 <span class="neg">왼쪽</span></strong><p><span class="kx" data-k="1\lt 2=t"></span> 이므로 뒤집힌 조각을 쓴다 → <span class="kx" data-k="\lim_{x\to1^{+}}\dfrac{g(x)}{x(x-2)}=A(r-1)"></span></p></div>
+<div class="card hot"><strong><span class="kx" data-k="m\ge 2"></span> 는 접힘점 <span class="pos">오른쪽</span></strong><p><span class="kx" data-k="m\ge 2=t"></span> 이므로 원래 조각을 쓴다 → <span class="kx" data-k="\lim_{x\to m^{+}}\dfrac{g(x)}{x(x-2)}=A(m-r)"></span></p></div>
+</div>
+<div class="note-strip"><span class="ic">그래서</span><p>같은 "자연수 검사"인데 <b><span class="kx" data-k="m=1"></span>만 다른 식</b>을 씁니다. 이게 다음 장의 출발점입니다.</p></div>
+</div>
+<div class="s-ask"><p class="question"><span class="kx" data-k="m=1"></span>에서 <span class="kx" data-k="A(r-1)"></span>이 음수가 되려면 <span class="kx" data-k="r"></span>은 어때야 할까?</p></div>
+<aside class="notes"><p><strong>학생 오개념 1위:</strong> "<em>m</em>이 집합의 원소니까 <em>m</em>은 함숫값이겠지" — 아닙니다. <em>m</em>은 <strong>입력값</strong>입니다. 집합 {<em>g</em>(−1), −7/2·<em>g</em>(1)}에 들어가는 것은 <strong>조건을 만족시키는 <em>m</em>들</strong>이지 극한값이 아닙니다.</p><p>여기서 <strong>1과 2가 서로 다른 조각에 산다</strong>는 사실을 확실히 못 박으세요. 다음 장 전체가 이 사실 위에 세워집니다.</p></aside>
+</section>
+
+<!-- ═══ 16. m=1 배제 ══════════════════════════════════════════ -->
+<section class="slide" data-title="m=1 이 절대 못 들어가는 이유"><div class="s-head"><p class="kicker">GATE 4 · ③ 왜 m을 2부터 세는가 · 2단계</p><h2 class="h2"><span class="kx" data-k="m=1"></span>을 넣으려는 순간 <span class="neg">집합이 무너진다</span></h2></div><div class="s-body">
+<div class="steps">
+<div class="step"><span class="n">1</span><div class="body"><b><span class="kx" data-k="m=1"></span>이 집합에 들어간다고 가정하자</b><p><span class="kx" data-k="A(r-1)\lt 0"></span> 이어야 하고, <span class="kx" data-k="A\gt 0"></span> 이므로 <span class="kx" data-k="r\lt 1"></span></p></div></div>
+<div class="step"><span class="n">2</span><div class="body"><b>그런데 <span class="kx" data-k="m\ge 2"></span>인 자연수들은?</b><p>이들은 <span class="kx" data-k="A(m-r)"></span>이고, <span class="kx" data-k="r\lt 1\lt 2\le m"></span> 이므로 <span class="kx" data-k="m-r\gt 0"></span> → <b>전부 양수</b></p></div></div>
+<div class="step no"><span class="n">3</span><div class="body"><b>그러면 집합의 원소가 <span class="kx" data-k="1"></span>개뿐이다</b><p>집합 <span class="kx" data-k="=\{1\}"></span> &nbsp;— 그런데 조건 (나)는 <b>서로 다른 두 값</b>을 요구한다 <span class="kx" data-k="\big(g(-1)\ne -\tfrac{7}{2}g(1)\big)"></span></p></div></div>
+<div class="step yes"><span class="n">4</span><div class="body"><b>모순. 따라서 <span class="kx" data-k="m=1"></span>은 절대 집합에 못 들어간다</b><p>검사는 <b><span class="kx" data-k="m=2"></span>부터</b> 시작하면 된다. <span class="kx" data-k="m=1"></span>은 처음부터 후보가 아니다.</p></div></div>
+</div>
+</div>
+<div class="s-ask"><p class="question">그러면 <span class="kx" data-k="m=2"></span>는 왜 <span class="accent">거의 항상</span> 들어갈까?</p></div>
+<aside class="notes"><p><strong>이 장이 "왜 2부터 세느냐"에 대한 완전한 답입니다.</strong> 그냥 "1은 안 되니까"가 아니라, <strong>1을 넣으면 다른 모든 자연수가 죽어서 집합이 원소 1개가 되어 버린다</strong>는 게 이유입니다.</p><p>귀류법 구조를 명시적으로 짚어 주세요: 가정 → <em>r</em>&lt;1 → <em>m</em>≥2 전멸 → 원소 1개 → 조건 (나)와 모순 → 가정 파기.</p><p>단서 <em>g</em>(−1) ≠ −7/2·<em>g</em>(1)이 <strong>여기서 두 번째로</strong> 쓰입니다(원소가 2개임을 보장). 문제의 단서는 장식이 아니라는 걸 보여 주기 좋은 자리입니다.</p></aside>
+</section>
+
+<!-- ═══ 17. m=2의 특권 ════════════════════════════════════════ -->
+<section class="slide" data-title="m=2 의 특권"><div class="s-head"><p class="kicker">GATE 4 · ③ 왜 m을 2부터 세는가 · 3단계</p><h2 class="h2"><span class="kx" data-k="m=2"></span>는 점프의 <span class="accent">바로 오른쪽</span>에 서 있다</h2></div><div class="s-body">
+<div class="grid g2">
+<div class="card"><strong>만약 좌극한이었다면</strong><p><span class="kx" data-k="\lim_{x\to2^{-}}\dfrac{g(x)}{x(x-2)}=A(r-2)"></span><br/><span class="kx" data-k="r\gt 2"></span> 이면 <b class="pos">양수</b> → <span class="kx" data-k="m=2"></span> 탈락</p></div>
+<div class="card hot"><strong>문제가 실제로 묻는 우극한</strong><p><span class="kx" data-k="\lim_{x\to2^{+}}\dfrac{g(x)}{x(x-2)}=A(2-r)"></span><br/><span class="kx" data-k="r\gt 2"></span> 이면 <b class="neg">음수</b> → <span class="kx" data-k="m=2"></span> 통과</p></div>
+</div>
+<div class="fx boxed hot" data-k="\text{정리}:\quad m=2 \in \text{집합}\iff r\gt 2"></div>
+<div class="note-strip"><span class="ic">구조</span><p>접힘점 <span class="kx" data-k="t=2"></span>와 조건 (나)의 검사점 <span class="kx" data-k="m=2"></span>가 <b>같은 자리</b>입니다. 그래서 부호가 뒤집히고, 그래서 이 문제가 성립합니다.</p></div>
+</div>
+<div class="s-ask"><p class="question">이제 <span class="kx" data-k="m=2,3,4,\dots"></span> 를 차례로 세어 보자. 몇 개까지 음수일까?</p></div>
+<aside class="notes"><p>같은 점 <em>x</em>=2를 좌/우 어느 쪽에서 보느냐에 따라 답이 완전히 달라진다는 걸 두 카드로 대비시켜 보여 주세요.</p><p><strong>깊은 질문</strong>: "출제자는 왜 <em>t</em>를 하필 2로 만들었을까?" — 접힘점을 분모의 근 위에 겹쳐 두면 <strong>우극한만 요구하는 조건 (가)를 만족시키면서도</strong> 몫함수에 부호 점프를 만들 수 있기 때문입니다. 조건 (가)가 좌극한까지 요구했다면 이 구조가 성립하는지 따로 확인해야 했겠죠. 여유가 있으면 던져 보세요.</p></aside>
+</section>
+
+<!-- ═══ 18. 세기 LAB ══════════════════════════════════════════ -->
+<section class="slide" data-title="r 을 움직이며 세어 보기"><div class="s-head"><p class="kicker">GATE 4 · ② 왜 3&lt;r≤4 인가 · 직접 확인</p><h2 class="h2"><span class="kx" data-k="r"></span>을 움직이면 <span class="accent">집합이 실시간으로</span> 변한다</h2></div><div class="s-body">
+<div class="lab" data-lab="count"><div class="lab-stage"><svg class="lab-svg"></svg></div><div class="lab-side"></div></div>
+</div>
+<div class="s-ask"><p class="question">원소가 <span class="accent">정확히 2개</span>가 되는 <span class="kx" data-k="r"></span>의 구간은 어디부터 어디까지일까?</p></div>
+<aside class="notes"><p><strong>학생에게 슬라이더를 넘기세요.</strong> "원소 2개를 만들어 봐"라고 시키고, 여러 명이 서로 다른 <em>r</em>값을 찾아오게 하면 자연스럽게 <strong>구간</strong>이라는 개념이 나옵니다.</p><p>확인 포인트 — <em>r</em>을 3.00에 정확히 맞추면 집합이 {2}로 줄어듭니다(<em>m</em>=3에서 값이 0이고, <strong>0은 음수가 아니다</strong>). <em>r</em>=4.00에서는 여전히 {2,3}이지만 4.01이 되면 {2,3,4}로 늘어납니다. <strong>양 끝의 등호가 다르다</strong>는 걸 여기서 눈으로 잡게 하세요.</p><p><em>r</em>을 1.5 근처로 내려 보면 집합이 <strong>공집합</strong>이 되는 것도 보여 주세요. <em>r</em>&lt;1로 더 내리면 {1}이 되는데, 그게 16장에서 배제한 상황입니다.</p></aside>
+</section>
+
+<!-- ═══ 19. 구간별 표 ═════════════════════════════════════════ -->
+<section class="slide" data-title="구간별로 집합 세기"><div class="s-head"><p class="kicker">GATE 4 · ② 왜 3&lt;r≤4 인가 · 정리</p><h2 class="h2"><span class="kx" data-k="m\ge 2"></span> 는 <span class="kx" data-k="m\lt r"></span> 일 때만 음수다</h2></div><div class="s-body">
+<div class="fx sm boxed" data-k="m\ge 2\ \text{일 때}\quad A(m-r)\lt 0 \iff m\lt r\qquad (A\gt 0)"></div>
+<table class="tbl">
+<tr><th><span class="kx" data-k="r"></span> 의 범위</th><th>음수인 자연수</th><th>원소 개수</th><th>조건 (나)</th></tr>
+<tr class="dead"><td class="m">r ≤ 2</td><td class="m">없음 (∅)</td><td>0</td><td class="nope">✕</td></tr>
+<tr class="dead"><td class="m">2 &lt; r ≤ 3</td><td class="m">{ 2 }</td><td>1</td><td class="nope">✕</td></tr>
+<tr class="hit"><td class="m">3 &lt; r ≤ 4</td><td class="m">{ 2, 3 }</td><td>2</td><td class="yes">✓</td></tr>
+<tr class="dead"><td class="m">4 &lt; r ≤ 5</td><td class="m">{ 2, 3, 4 }</td><td>3</td><td class="nope">✕</td></tr>
+<tr class="dead"><td class="m">r &gt; 5</td><td class="m">{ 2, 3, 4, … }</td><td>4 이상</td><td class="nope">✕</td></tr>
+</table>
+</div>
+<div class="s-ask"><p class="question">경계값 <span class="kx" data-k="r=3"></span>과 <span class="kx" data-k="r=4"></span>는 각각 포함될까, 제외될까?</p></div>
+<aside class="notes"><p>표를 한 줄씩 채우게 하세요. 학생이 직접 <em>m</em>=2, 3, 4를 대입해서 부호를 판정하는 게 중요합니다.</p><p><strong>16장에서 이미 <em>m</em>=1을 지웠기 때문에</strong> 이 표에 1이 등장하지 않는다는 점을 상기시키세요. 그 논증을 건너뛰면 이 표가 갑자기 튀어나온 것처럼 보입니다.</p></aside>
+</section>
+
+<!-- ═══ 20. 경계 검증 ═════════════════════════════════════════ -->
+<section class="slide" data-title="경계에서 등호 확정"><div class="s-head"><p class="kicker">GATE 4 · ② 왜 3&lt;r≤4 인가 · 경계</p><h2 class="h2">한쪽은 <span class="neg">열고</span>, 한쪽은 <span class="accent">닫는다</span></h2></div><div class="s-body">
+<div class="grid g2">
+<div class="card"><strong><span class="kx" data-k="r=3"></span> 은 왜 제외인가</strong><p><span class="kx" data-k="m=3"></span>에서 <span class="kx" data-k="A(3-3)=0"></span>. <b>0은 음수가 아니다</b> → 집합 <span class="kx" data-k="=\{2\}"></span>, 원소 1개. 탈락.</p></div>
+<div class="card hot"><strong><span class="kx" data-k="r=4"></span> 는 왜 포함인가</strong><p><span class="kx" data-k="m=4"></span>에서 <span class="kx" data-k="A(4-4)=0"></span>. 역시 음수가 아니므로 <span class="kx" data-k="4"></span>는 <b>안</b> 들어간다 → 집합 <span class="kx" data-k="=\{2,3\}"></span>. 통과.</p></div>
+</div>
+<div class="rangeline">
+<div class="band" style="left:38%;width:24%"></div>
+<div class="tick open" style="--x:38%"><i></i><b>3</b><em>제외</em></div>
+<div class="tick" style="--x:62%"><i></i><b>4</b><em>포함</em></div>
+</div>
+<div class="fx lg boxed hot" data-k="\therefore\ 3\lt r\le 4"></div>
+</div>
+<div class="s-ask"><p class="question">집합이 <span class="kx" data-k="\{2,3\}"></span>이라는 걸 알았다. 이제 이 두 숫자를 어디에 배정해야 할까?</p></div>
+<aside class="notes"><p><strong>"0은 음수가 아니다"</strong>가 두 경계를 모두 결정합니다. 같은 이유인데 결과가 반대(하나는 제외, 하나는 포함)라는 게 학생들에게 신선합니다.</p><p><em>r</em>=3일 때는 <strong>3이 빠져서</strong> 원소가 부족해지고, <em>r</em>=4일 때는 <strong>4가 빠져 줘서</strong> 딱 2개가 됩니다. "빠지는 게 손해일 때와 이득일 때"로 정리해 주면 기억에 남습니다.</p><p>18장 슬라이더로 돌아가 <em>r</em>=3.00과 4.00을 실제로 찍어서 확인시키면 완결됩니다.</p></aside>
+</section>
+
+<!-- ═══ 21. 집합 매칭 ═════════════════════════════════════════ -->
+<section class="slide" data-title="두 집합을 맞대기"><div class="s-head"><p class="kicker">GATE 5 · 회수 1</p><h2 class="h2">문제가 준 집합과 <span class="accent">우리가 센 집합</span>은 같아야 한다</h2></div><div class="s-body">
+<div class="compare">
+<div class="case"><h3>우리가 센 것</h3><p class="mini"><span class="kx" data-k="\{\,2,\ 3\,\}"></span></p><p>몫함수의 부호로 구한 자연수 집합</p></div>
+<div class="versus">=</div>
+<div class="case"><h3>문제가 준 것</h3><p class="mini"><span class="kx" data-k="\Big\{\,g(-1),\ -\tfrac{7}{2}g(1)\,\Big\}"></span></p><p>단, <span class="kx" data-k="g(-1)\ne-\tfrac{7}{2}g(1)"></span></p></div>
+</div>
+<div class="note-strip warn"><span class="ic">주의</span><p>집합은 <b>순서가 없습니다</b>. 어느 쪽이 2이고 어느 쪽이 3인지는 아직 모릅니다. 두 경우를 모두 따져 봐야 합니다.</p></div>
+</div>
+<div class="s-ask"><p class="question"><span class="kx" data-k="g(-1)"></span>과 <span class="kx" data-k="-\tfrac{7}{2}g(1)"></span> 중 어느 쪽이 클까? 계산하지 않고 알 수 있을까?</p></div>
+<aside class="notes"><p>학생들이 무심코 순서대로 <em>g</em>(−1)=2, −7/2·<em>g</em>(1)=3으로 배정하고 넘어갑니다. <strong>집합은 순서가 없다</strong>는 걸 반드시 짚어 주세요.</p><p>두 경우를 다 풀어도 되지만(하나는 <em>A</em>&lt;0이 나와서 탈락합니다), <strong>크기 비교로 한 번에 결정하는 쪽이 훨씬 세련됩니다</strong>. 다음 두 장이 그 길입니다.</p></aside>
+</section>
+
+<!-- ═══ 22. g(-1), g(1) 계산 ══════════════════════════════════ -->
+<section class="slide" data-title="두 값을 식으로"><div class="s-head"><p class="kicker">GATE 5 · 회수 2</p><h2 class="h2"><span class="kx" data-k="-1"></span>도 <span class="kx" data-k="1"></span>도 <span class="accent">모두 <span class="kx" data-k="t=2"></span>의 왼쪽</span>이다</h2></div><div class="s-body">
+<div class="fx sm boxed" data-k="g(x)=-f(x)=-Ax(x-2)(x-r)\qquad (x\lt 2)"></div>
+<div class="steps">
+<div class="step"><span class="n">1</span><div class="body"><b><span class="kx" data-k="g(-1)"></span></b><p><span class="kx" data-k="=-A(-1)(-3)(-1-r)=-A\cdot 3\cdot(-1-r)=3A(1+r)"></span></p></div></div>
+<div class="step"><span class="n">2</span><div class="body"><b><span class="kx" data-k="g(1)"></span></b><p><span class="kx" data-k="=-A(1)(-1)(1-r)=A(1-r)"></span></p></div></div>
+<div class="step yes"><span class="n">3</span><div class="body"><b><span class="kx" data-k="-\tfrac{7}{2}g(1)"></span></b><p><span class="kx" data-k="=-\tfrac{7}{2}\cdot A(1-r)=\tfrac{7}{2}A(r-1)"></span></p></div></div>
+</div>
+<div class="note-strip"><span class="ic">확인</span><p><span class="kx" data-k="3\lt r\le 4"></span>이고 <span class="kx" data-k="A\gt 0"></span>이므로 <b>두 값 모두 양수</b>입니다. 자연수 2, 3의 후보로 손색이 없습니다.</p></div>
+</div>
+<div class="s-ask"><p class="question">두 식 <span class="kx" data-k="3A(1+r)"></span>과 <span class="kx" data-k="\tfrac{7}{2}A(r-1)"></span> 의 차를 계산하면?</p></div>
+<aside class="notes"><p><strong>여기서 부호 실수가 가장 많이 납니다.</strong> −1과 1이 <em>둘 다</em> 2보다 작다는 걸 먼저 확인시키고, 두 값 모두 <em>−f</em>를 쓴다는 걸 못 박으세요. (12장의 <em>t</em>=0 경우와 대비하면 좋습니다 — 거기서는 1이 <em>+f</em>였습니다.)</p><p>부호 세 번 뒤집기를 천천히: <em>g</em>(−1) = −<em>A</em>·(−1)·(−3)·(−1−<em>r</em>). 앞의 세 인수 곱이 −3<em>A</em>, 마지막이 −(1+<em>r</em>) → 3<em>A</em>(1+<em>r</em>).</p></aside>
+</section>
+
+<!-- ═══ 23. 배정 LAB ══════════════════════════════════════════ -->
+<section class="slide" data-title="어느 쪽이 3인가"><div class="s-head"><p class="kicker">GATE 5 · 회수 3</p><h2 class="h2">계산하지 않고 <span class="accent">크기 순서</span>부터 정한다</h2></div><div class="s-body">
+<div class="lab narrow" data-lab="values" data-case="t2"><div class="lab-stage"><svg class="lab-svg"></svg></div><div class="lab-side"></div></div>
+<div class="fx sm boxed" data-k="g(-1)-\Big(-\tfrac{7}{2}g(1)\Big)=3A(1+r)-\tfrac{7}{2}A(r-1)=\tfrac{A}{2}(13-r)\ \gt 0"></div>
+</div>
+<div class="s-ask"><p class="question">그러면 <span class="kx" data-k="g(-1)"></span>과 <span class="kx" data-k="-\tfrac{7}{2}g(1)"></span> 에 각각 어떤 값을 배정해야 할까?</p></div>
+<aside class="notes"><p><strong>차를 정리하면 <em>A</em>(13−<em>r</em>)/2</strong>이고, <em>r</em>≤4이므로 13−<em>r</em>≥9&gt;0. <em>A</em>&gt;0이니 차는 <strong>항상 양수</strong>입니다. 즉 <em>g</em>(−1)이 언제나 더 큽니다.</p><p>따라서 <strong><em>g</em>(−1)=3, −7/2·<em>g</em>(1)=2</strong>. 슬라이더로 <em>r</em>을 3.02부터 4까지 끌어 보면 막대 높이 차이가 한 번도 뒤집히지 않는 걸 확인할 수 있습니다.</p><p>반대로 배정하면(<em>g</em>(−1)=2, −7/2·<em>g</em>(1)=3) 연립해서 <em>A</em>=−2/21이 나옵니다. <strong>최고차항 계수가 양수</strong>라는 조건에 어긋나 탈락 — 이쪽으로 확인하는 방법도 같이 알려 주면 안전망이 생깁니다.</p></aside>
+</section>
+
+<!-- ═══ 24. 연립 ══════════════════════════════════════════════ -->
+<section class="slide" data-title="연립해서 A와 r"><div class="s-head"><p class="kicker">GATE 5 · 회수 4</p><h2 class="h2">그래프가 끝난 뒤에야 <span class="accent">비로소 계산</span>한다</h2></div><div class="s-body">
+<div class="flow">
+<div class="flow-box"><b><span class="kx" data-k="3A(1+r)=3"></span></b><span class="fb-text"><span class="kx" data-k="A(1+r)=1"></span></span></div>
+<div class="arrow">−</div>
+<div class="flow-box"><b><span class="kx" data-k="\tfrac{7}{2}A(r-1)=2"></span></b><span class="fb-text"><span class="kx" data-k="A(r-1)=\tfrac{4}{7}"></span></span></div>
+<div class="arrow">→</div>
+<div class="flow-box"><b><span class="kx" data-k="2A=\tfrac{3}{7}"></span></b><span class="fb-text">두 식을 빼면</span></div>
+</div>
+<div class="fx lg boxed hot" data-k="A=\tfrac{3}{14},\qquad 1+r=\tfrac{1}{A}=\tfrac{14}{3}\ \Rightarrow\ r=\tfrac{11}{3}"></div>
+<div class="note-strip"><span class="ic">검증</span><p><span class="kx" data-k="r=\tfrac{11}{3}\approx 3.67"></span> — 우리가 구한 범위 <span class="kx" data-k="3\lt r\le 4"></span> 안에 있습니다. <b>범위 검증을 반드시 하세요.</b></p></div>
+</div>
+<div class="s-ask"><p class="question"><span class="kx" data-k="g(-5)"></span>를 구할 때는 어느 조각을 써야 할까?</p></div>
+<aside class="notes"><p>두 식을 <strong>빼는</strong> 순간 <em>r</em>이 사라지는 게 포인트입니다. <em>A</em>(1+<em>r</em>) − <em>A</em>(<em>r</em>−1) = 2<em>A</em>.</p><p><strong>범위 검증을 습관화하세요.</strong> 구한 <em>r</em>이 앞에서 정한 범위 밖으로 나오면 어딘가 틀린 것입니다. 이 문제에서는 11/3 ≈ 3.67로 (3, 4] 안에 잘 들어갑니다.</p><p>여유가 있으면 <em>f</em>(<em>x</em>) = (3/14)<em>x</em>(<em>x</em>−2)(<em>x</em>−11/3) = <em>x</em>(<em>x</em>−2)(3<em>x</em>−11)/14 로 정리해 보여 주세요.</p></aside>
+</section>
+
+<!-- ═══ 25. 최종 계산 ═════════════════════════════════════════ -->
+<section class="slide" data-title="g(-5) 계산"><div class="s-head"><p class="kicker">GATE 5 · 마지막</p><h2 class="h2"><span class="kx" data-k="-5\lt 2=t"></span> — 그러므로 <span class="accent">뒤집힌 조각</span></h2></div><div class="s-body">
+<div class="fx sm" data-k="g(-5)=-f(-5)=-\tfrac{3}{14}\,(-5)(-5-2)\Big(-5-\tfrac{11}{3}\Big)"></div>
+<div class="fx sm" data-k="=-\tfrac{3}{14}\cdot(-5)\cdot(-7)\cdot\Big(-\tfrac{26}{3}\Big)=-\tfrac{3}{14}\cdot\Big(-\tfrac{910}{3}\Big)=-(-65)"></div>
+<p class="answer-big">65</p>
+</div>
+<div class="s-ask"><p class="question">마지막에 붙은 마이너스는 어디에서 왔는가?</p></div>
+<aside class="notes"><p><strong>맨 앞의 마이너스</strong>는 −5가 접힘점 왼쪽이라 <em>g</em> = −<em>f</em>이기 때문입니다. 이걸 놓치면 −65가 나옵니다. 실전에서 가장 흔한 마지막 실수입니다.</p><p>계산 확인: <em>f</em>(−5) = (3/14)(−5)(−7)(−26/3) = (3/14)(−910/3) = −65. 따라서 <em>g</em>(−5) = 65.</p></aside>
+</section>
+
+<!-- ═══ 26. 검산 ══════════════════════════════════════════════ -->
+<section class="slide" data-title="검산"><div class="s-head"><p class="kicker">마무리 · 되짚기</p><h2 class="h2">구한 함수가 <span class="accent">모든 조건</span>을 만족하는지 확인</h2></div><div class="s-body">
+<div class="fx sm boxed" data-k="f(x)=\tfrac{1}{14}x(x-2)(3x-11),\qquad t=2"></div>
+<table class="tbl">
+<tr><th>확인할 것</th><th>계산</th><th>결과</th></tr>
+<tr><td>최고차항 계수</td><td class="m">A = 3/14</td><td class="yes">양수 ✓</td></tr>
+<tr><td>연속</td><td class="m">f(t) = f(2) = 0</td><td class="yes">이어짐 ✓</td></tr>
+<tr><td>조건 (가)</td><td class="m">f(0) = f(2) = 0</td><td class="yes">극한 존재 ✓</td></tr>
+<tr class="hit"><td>조건 (나) 집합</td><td class="m">{ 2, 3 }</td><td class="yes">원소 2개 ✓</td></tr>
+<tr><td>두 값</td><td class="m">g(−1) = 3, −7/2·g(1) = 2</td><td class="yes">일치 ✓</td></tr>
+<tr><td>단서</td><td class="m">3 ≠ 2</td><td class="yes">서로 다름 ✓</td></tr>
+</table>
+</div>
+<div class="s-ask"><p class="question">이 중 하나라도 어긋났다면, 어느 관문으로 돌아가야 할까?</p></div>
+<aside class="notes"><p><strong>검산을 수업의 일부로 만드세요.</strong> 답만 맞히고 끝내면 논증 구조가 남지 않습니다.</p><p><em>r</em>=11/3일 때 <em>m</em>=2에서 (3/14)(2−11/3) = (3/14)(−5/3) &lt; 0 ✓, <em>m</em>=3에서 (3/14)(3−11/3) = (3/14)(−2/3) &lt; 0 ✓, <em>m</em>=4에서 (3/14)(4−11/3) = (3/14)(1/3) &gt; 0 ✗. 정확히 {2, 3}입니다.</p></aside>
+</section>
+
+<!-- ═══ 27. 사고의 뼈대 ═══════════════════════════════════════ -->
+<section class="slide" data-title="사고의 뼈대"><div class="s-head"><p class="kicker">수업의 결론</p><h2 class="h2">우리는 이 문제에서 <span class="accent">다섯 가지 사고</span>를 썼다</h2></div><div class="s-body">
+<div class="takeaways anim-stagger-list" data-anim="stagger-list">
+<div class="takeaway"><b>번역</b><span>"연속" · "극한이 존재" · "집합이 {…}" 같은 <b>말</b>을 전부 <b>그래프의 모양</b>으로 바꿨다.</span></div>
+<div class="takeaway"><b>약분</b><span>복잡한 몫이 <b>직선 두 조각</b>이라는 걸 알아채는 순간 문제가 단순해졌다.</span></div>
+<div class="takeaway"><b>배제</b><span>세 후보를 각각 <b>가정하고 무너뜨려서</b> <span class="kx" data-k="t=2"></span> 하나만 남겼다.</span></div>
+<div class="takeaway"><b>세기</b><span>"음수인 자연수가 2개"를 <b>부등식이 아니라 개수 세기</b>로 다뤄 <span class="kx" data-k="3\lt r\le 4"></span>를 얻었다.</span></div>
+<div class="takeaway"><b>회수</b><span>모든 구조가 결정된 <b>마지막에만</b> 계산했다. 계산은 도구이지 출발점이 아니다.</span></div>
+</div>
+<div class="note-strip"><span class="ic">한 줄</span><p>이 문제가 어려웠던 건 계산이 아니라, <b>어느 방향이 좌·우인지</b>를 끝까지 놓치지 않아야 했기 때문입니다.</p></div>
+</div>
+<aside class="notes"><p>마지막으로 학생에게 물어보세요 — <strong>"오늘 가장 놀란 순간이 언제였나?"</strong> 대개 8장(약분) 또는 13장(점프)을 꼽습니다. 그 장면을 다시 띄워 놓고 끝내면 기억이 오래갑니다.</p><p><strong>후속 과제 제안</strong>: 조건 (나)의 집합이 {2, 3, 4}가 되도록 문제를 바꾸면 <em>r</em>의 범위는? (답: 4 &lt; <em>r</em> ≤ 5) — 18장 슬라이더로 스스로 확인하게 하면 좋습니다.</p></aside>
+</section>
+
+</div>
+
+<div class="deck-chrome">
+  <div class="chrome-left"><span class="idx"><b id="cNow">1</b> / <span id="cTot">1</span></span><span class="sep"></span><span class="chap" id="chapLabel"></span></div>
+  <div class="chrome-right">
+    <div class="kbd-help">← → 이동 · N 교사 노트 · S 교사용 창 · F 전체화면 · O 한눈에 보기</div>
+    <div aria-label="슬라이드 조작" class="touch-nav">
+      <button aria-label="이전 슬라이드" id="touchPrev" type="button">‹</button>
+      <button id="touchNotes" type="button">교사 노트</button>
+      <button aria-label="다음 슬라이드" id="touchNext" type="button">›</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>

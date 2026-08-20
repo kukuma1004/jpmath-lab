@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>접선의 방정식 스위트 · 석산고 미적분</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700;900&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- KaTeX (자체 호스팅) — 동기 로드: 하단 인라인 스크립트가 katex 전역을 즉시 쓰기 때문 -->
+<link rel="stylesheet" href="../vendor/katex/katex.min.css">
+<script src="../vendor/katex/katex.min.js"></script>
+<script src="../vendor/katex/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  --paper:#EFF3EE; --panel:#FFFFFF; --grid:#D8E2D3; --dot:#E2E9DE;
+  --ink:#223027; --inkSoft:#5C6B60;
+  --left:#C1442D; --right:#2B6CA3; --gold:#C99A2E; --success:#3F7D4C; --border:#D3DAD0;
+  --font-display:'Noto Serif KR', serif;
+  --font-body:'IBM Plex Sans KR','Pretendard',sans-serif;
+  --font-mono:'IBM Plex Mono','Menlo',monospace;
+}
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); }
+.page-bg{ background-image:radial-gradient(var(--dot) 1px, transparent 1px); background-size:20px 20px; min-height:100vh; }
+.wrap{ max-width:600px; margin:0 auto; padding:14px 14px 40px; }
+.hidden{ display:none !important; }
+.mono{ font-family:var(--font-mono); }
+.card{ background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:18px; }
+.btn-primary{ width:100%; padding:14px; border-radius:14px; border:none; background:var(--ink); color:var(--paper); font-weight:700; font-size:15px; cursor:pointer; }
+.btn-secondary{ width:100%; padding:14px; border-radius:14px; border:1.5px solid var(--border); background:#fff; color:var(--ink); font-weight:600; font-size:14px; cursor:pointer; margin-bottom:10px; }
+
+.tabbar{ position:sticky; top:0; z-index:20; background:var(--paper); padding:10px 14px 8px; border-bottom:1px solid var(--border); }
+.tabbar-inner{ max-width:600px; margin:0 auto; display:flex; gap:8px; }
+.tab-btn{ flex:1; font-family:var(--font-body); font-size:12.5px; font-weight:700; padding:10px 6px; border-radius:12px; border:1.5px solid var(--border); background:var(--panel); color:var(--inkSoft); cursor:pointer; text-align:center; }
+.tab-btn.active{ border-color:var(--ink); background:var(--ink); color:var(--paper); }
+.tab-back{ flex:0 0 38px; display:flex; align-items:center; justify-content:center; border-radius:12px; border:1.5px solid var(--border); background:var(--panel); color:var(--inkSoft); text-decoration:none; font-size:16px; font-weight:700; }
+.tab-back:hover{ border-color:var(--ink); color:var(--ink); }
+
+.eyebrow{ font-family:var(--font-mono); font-size:11.5px; letter-spacing:1.5px; color:var(--inkSoft); text-transform:uppercase; margin-bottom:6px; }
+.title{ font-family:var(--font-display); font-weight:900; font-size:22px; margin:0 0 5px; line-height:1.28; }
+.desc{ color:var(--inkSoft); font-size:13px; line-height:1.55; margin:0 0 14px; }
+
+.theory-section{ margin-bottom:18px; }
+.theory-h2{ font-family:var(--font-display); font-weight:900; font-size:18px; margin:0 0 8px; }
+.theory-p{ font-size:13.5px; line-height:1.7; color:var(--ink); margin:0 0 10px; }
+.theorem-box{ background:#FBF3E0; border:1.5px solid var(--gold); border-radius:14px; padding:14px 16px; margin-bottom:10px; }
+.theorem-eyebrow{ font-family:var(--font-mono); font-size:10.5px; letter-spacing:1px; color:var(--gold); text-transform:uppercase; margin-bottom:6px; font-weight:700; }
+.theorem-formula{ font-family:var(--font-mono); font-size:13.5px; font-weight:600; line-height:2; }
+.misconception{ background:#F7E9E5; border:1.5px solid var(--left); border-radius:14px; padding:12px 14px; margin-bottom:10px; }
+.misconception-title{ font-weight:700; font-size:13px; color:var(--left); margin-bottom:4px; }
+.misconception-body{ font-size:12.5px; color:var(--ink); line-height:1.6; }
+.cta-row{ display:flex; gap:10px; margin-top:16px; }
+.prereq-note{ background:var(--panel); border:1px dashed var(--border); border-radius:12px; padding:10px 12px; font-size:12px; color:var(--inkSoft); margin-bottom:16px; line-height:1.6; }
+
+.chips{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+.chip{ font-family:var(--font-body); font-size:13px; font-weight:600; padding:9px 13px; border-radius:999px; border:1.5px solid var(--border); background:var(--panel); color:var(--ink); cursor:pointer; }
+.chip.active{ border-color:var(--ink); background:var(--ink); color:var(--paper); }
+.a-chip{ font-family:var(--font-mono); font-size:12.5px; font-weight:600; padding:6px 12px; border-radius:10px; border:1.5px solid var(--border); background:var(--panel); cursor:pointer; }
+.a-chip.active{ border-color:var(--gold); background:#FBF3E0; }
+.mode-toggle{ display:flex; gap:8px; margin-bottom:10px; }
+.mode-btn{ flex:1; font-family:var(--font-body); font-size:12.5px; font-weight:700; padding:9px; border-radius:10px; border:1.5px solid var(--c); background:#fff; color:var(--c); cursor:pointer; }
+.mode-btn.active{ background:var(--c); color:#fff; }
+
+.step-card{ background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:16px; margin-bottom:14px; min-height:150px; }
+.step-line{ font-family:var(--font-mono); font-size:14px; line-height:2.3; color:var(--ink); }
+.step-line.pending{ opacity:0.15; }
+.step-note{ font-size:11.5px; color:var(--gold); font-weight:600; margin-left:8px; }
+.step-controls{ display:flex; gap:8px; margin-bottom:14px; }
+.step-btn{ flex:1; padding:12px; border-radius:12px; border:1.5px solid var(--ink); background:#fff; color:var(--ink); font-weight:700; font-size:13.5px; cursor:pointer; }
+.step-btn:disabled{ opacity:.4; }
+.step-btn.primary{ background:var(--ink); color:var(--paper); }
+.final-box{ background:#EAF3EA; border:1.5px solid var(--success); border-radius:14px; padding:14px; margin-bottom:14px; text-align:center; }
+.final-box .val{ font-family:var(--font-mono); font-size:20px; font-weight:800; color:var(--success); }
+.mini-graph-wrap{ position:relative; width:100%; padding-bottom:62%; background:var(--panel); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+.mini-graph-wrap svg{ position:absolute; inset:0; width:100%; height:100%; }
+
+.game-header.hidden{ display:none !important; }
+.top-bar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap; gap:8px; }
+.top-stat{ font-family:var(--font-mono); font-size:13px; color:var(--inkSoft); }
+.top-stat b{ color:var(--ink); font-size:17px; }
+.lives{ font-size:17px; letter-spacing:2px; }
+.timerbar-wrap{ width:100%; height:8px; background:var(--grid); border-radius:999px; overflow:hidden; margin-bottom:12px; }
+.timerbar-fill{ height:100%; border-radius:999px; }
+.q-setup{ background:#fff; border:1.5px solid var(--ink); border-radius:14px; padding:14px 16px; margin-bottom:12px; }
+.q-eyebrow{ font-family:var(--font-mono); font-size:10.5px; letter-spacing:1px; color:var(--inkSoft); text-transform:uppercase; margin-bottom:6px; }
+.q-formula{ font-family:var(--font-mono); font-size:13.5px; line-height:1.9; }
+.q-ask{ font-weight:700; font-size:14px; margin-top:8px; }
+.opt-btn{ width:100%; text-align:left; font-family:var(--font-mono); font-size:13px; font-weight:600; padding:12px 14px; border-radius:12px; border:1.5px solid var(--border); background:#fff; color:var(--ink); cursor:pointer; margin-bottom:8px; line-height:1.5; }
+.opt-btn.correct{ border-color:var(--success); background:#EAF3EA; color:var(--success); }
+.opt-btn.wrong{ border-color:var(--left); background:#F7E9E5; color:var(--left); }
+.opt-btn:disabled{ opacity:.6; }
+.game-feedback-box{ font-size:12.5px; line-height:1.65; padding:12px 14px; border-radius:12px; margin-bottom:12px; }
+.game-feedback-box.good{ background:#EAF3EA; border:1.5px solid var(--success); color:var(--success); }
+.game-feedback-box.bad{ background:#F7E9E5; border:1.5px solid var(--left); color:var(--left); }
+.end-score{ font-family:var(--font-mono); font-size:38px; font-weight:700; text-align:center; margin:6px 0 4px; }
+.end-sub{ text-align:center; color:var(--inkSoft); font-size:13px; margin-bottom:8px; }
+.lb-title{ font-family:var(--font-display); font-weight:900; font-size:19px; margin:0 0 4px; }
+
+/* ---------- KaTeX 통합 (기존 서식 보존용) ---------- */
+.katex{ font-size:1.05em; }
+.katex .base{ white-space:nowrap; }
+.theorem-formula .katex{ font-size:1.02em; }
+.step-line .katex{ font-size:1em; }
+.final-box .val .katex{ font-size:1em; }
+.misconception-body .katex{ font-size:1em; }
+.q-formula .katex, .q-eyebrow .katex{ font-size:1em; }
+/* 4지선다 보기 — 수식이 버튼 폭을 넘지 않게 */
+.opt-btn .katex{ font-size:1em; }
+.opt-btn{ overflow-x:auto; }
+.game-feedback-box .katex{ font-size:1em; }
+.chip .katex, .a-chip .katex{ font-size:0.95em; }
+.theorem-formula, .step-line, .final-box .val{ overflow-x:auto; overflow-y:hidden; }
+.step-line{ padding:2px 0; }
+
+@media (prefers-reduced-motion: reduce){ .step-line,.timerbar-fill{ transition:none; } }
+</style>
+</head>
+<body>
+<div class="page-bg">
+
+<div class="tabbar">
+  <div class="tabbar-inner">
+    <a href="index.html" class="tab-back" aria-label="목록으로 돌아가기" title="미적분Ⅰ 목록으로">←</a>
+    <button class="tab-btn active" data-tab="theory">① 원리</button>
+    <button class="tab-btn" data-tab="lab">② 실험실</button>
+    <button class="tab-btn" data-tab="game">③ 게임</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- THEORY -->
+<div id="page-theory">
+  <div class="eyebrow">석산고 미적분 · 접선의 방정식 스위트</div>
+  <h1 class="title">기울기를 알았으니, 이제 직선의 식을 쓰자</h1>
+  <p class="desc">f'(a)를 구하는 법은 배웠으니, 그 값으로 실제 접선의 방정식을 완성해요.</p>
+
+  <div class="prereq-note">🔗 이전 단원: 미분계수 계산 스위트에서 f'(a)를 정의로 구하는 연습을 했다면, 이제 그 값을 점-기울기 공식에 넣어서 직선의 식으로 완성해요.</div>
+
+  <div class="theory-section">
+    <div class="theory-h2">1. 접선의 방정식</div>
+    <p class="theory-p">곡선 y=f(x) 위의 점 (a, f(a))에서의 접선은, 그 점을 지나고 기울기가 f'(a)인 직선이에요. 점-기울기 공식에 그대로 대입하면 돼요.</p>
+    <div class="theorem-box">
+      <div class="theorem-eyebrow">공식 · 점 (a, f(a))에서의 접선</div>
+      <div class="theorem-formula">\(y - f(a) = f'(a)(x - a)\)</div>
+    </div>
+    <p class="theory-p">이걸 정리하면 \(y = f'(a)\,x + \bigl[f(a) - f'(a)\cdot a\bigr]\) 형태의 일반적인 직선의 방정식이 돼요.</p>
+  </div>
+
+  <div class="theory-section">
+    <div class="theory-h2">2. 법선(수직인 직선)도 같은 방식으로</div>
+    <div class="theorem-box">
+      <div class="theorem-eyebrow">공식 · 점 (a, f(a))에서의 법선</div>
+      <div class="theorem-formula">\(y - f(a) = -\dfrac{1}{f'(a)}\,(x - a)\)   <span style="font-size:11px; color:var(--inkSoft);">(\(f'(a) \neq 0\))</span></div>
+    </div>
+    <p class="theory-p">접선과 수직으로 만나는 직선이라 기울기만 \(-\dfrac{1}{f'(a)}\)로 바뀌고, 지나는 점은 똑같이 \((a,\, f(a))\)예요. 실험실에서 접선/법선을 토글로 바꿔가며 비교해보세요.</p>
+  </div>
+
+  <div class="theory-section">
+    <div class="theory-h2">3. 자주 하는 오해</div>
+    <div class="misconception">
+      <div class="misconception-title">❌ 접선의 기울기가 f(a)인 줄 알았어요</div>
+      <div class="misconception-body">가장 흔한 실수예요! \(f(a)\)는 그 점의 <b>높이(y좌표)</b>이고, 기울기는 \(f'(a)\)예요. 점-기울기 공식 \(y-f(a)=f'(a)(x-a)\)에서 두 값의 자리를 바꿔 쓰지 않도록 주의하세요.</div>
+    </div>
+    <div class="misconception">
+      <div class="misconception-title">❌ 아무 점이나 대입해도 되는 줄 알았어요</div>
+      <div class="misconception-body">접선은 반드시 곡선 위의 그 점 \((a,\, f(a))\)을 지나야 해요. \(f(a)\) 계산을 빼먹고 임의의 값을 쓰면 완전히 다른 직선이 나와요.</div>
+    </div>
+    <div class="misconception">
+      <div class="misconception-title">❌ f'(a)를 x에 곱하기만 하면 끝인 줄 알았어요</div>
+      <div class="misconception-body">\(y-f(a)=f'(a)(x-a)\)를 정리할 때 \(f'(a)\)를 x뿐 아니라 a에도 똑같이 분배해야 해요. a에는 안 곱하는 실수가 잦아요.</div>
+    </div>
+  </div>
+
+  <div class="cta-row">
+    <button class="btn-primary" id="ctaToLab">🧪 실험실에서 접선 식 완성하기</button>
+  </div>
+  <div class="cta-row">
+    <button class="btn-secondary" id="ctaToGame" style="margin-bottom:0;">🎮 게임으로 대입 연습하기</button>
+  </div>
+</div>
+
+<!-- LAB -->
+<div id="page-lab" class="hidden">
+  <div class="eyebrow">석산고 미적분 · Interactive Lab</div>
+  <h1 class="title">접선/법선 완성 스테퍼</h1>
+  <p class="desc">함수와 a를 고르고 한 줄씩 눌러가며 직선의 방정식을 완성해보세요.</p>
+
+  <div class="chips" id="fnChips"></div>
+  <div class="chips" id="aChips"></div>
+  <div class="mode-toggle" style="--c:var(--right)">
+    <button class="mode-btn active" id="modeTangent" style="--c:var(--right)">접선</button>
+    <button class="mode-btn" id="modeNormal" style="--c:var(--gold)">법선</button>
+  </div>
+
+  <div class="step-card">
+    <div id="stepLines"></div>
+  </div>
+
+  <div class="step-controls">
+    <button class="step-btn" id="btnPrevStep">◀ 이전</button>
+    <button class="step-btn primary" id="btnNextStep">다음 단계 →</button>
+  </div>
+
+  <div id="finalBox" class="final-box hidden">
+    <div style="font-size:12px; color:var(--inkSoft); margin-bottom:4px;" id="finalLabel">결과</div>
+    <div class="val" id="finalVal"></div>
+  </div>
+
+  <div class="mini-graph-wrap"><svg id="labSvg" viewBox="0 0 300 190"></svg></div>
+</div>
+
+<!-- GAME -->
+<div id="page-game" class="hidden">
+  <div id="gameHeader" class="game-header">
+    <div class="eyebrow">석산고 미적분 · Interactive Lab</div>
+    <h1 class="title">점-기울기 대입 연습</h1>
+    <p class="desc">f(a), f'(a)가 주어졌을 때 올바르게 대입한 식을 골라보세요.</p>
+  </div>
+
+  <div id="gameScreenStart" class="card">
+    <div id="gameBestLine" style="text-align:center; margin-bottom:14px; font-size:13.5px; color:var(--inkSoft);"></div>
+    <button class="btn-primary" id="gameBtnStart">게임 시작</button>
+  </div>
+
+  <div id="gameScreenPlay" class="card hidden">
+    <div class="top-bar">
+      <div class="top-stat">점수 <b id="gameScoreNum">0</b></div>
+      <div class="lives" id="gameLives"></div>
+    </div>
+    <div class="timerbar-wrap"><div class="timerbar-fill" id="gameTimerFill" style="width:100%; background:var(--success);"></div></div>
+
+    <div class="q-setup">
+      <div class="q-eyebrow" id="qEyebrow"></div>
+      <div class="q-formula" id="qFormula"></div>
+      <div class="q-ask">점-기울기 공식에 올바르게 대입한 식은?</div>
+    </div>
+
+    <div id="gameFeedback" class="hidden"></div>
+    <div id="optionsGrid"></div>
+  </div>
+
+  <div id="gameScreenEnd" class="card hidden">
+    <div class="lb-title" style="text-align:center;">게임 오버!</div>
+    <div class="end-score" id="gameFinalScore">0</div>
+    <div class="end-sub" id="gameFinalSummary"></div>
+    <div class="end-sub" id="gameBestCompare" style="font-weight:700; color:var(--gold);"></div>
+    <button class="btn-primary" id="gameBtnRetry">다시 시작</button>
+  </div>
+
+  <p class="desc" style="margin-top:16px; text-align:center;">헷갈리면 <a href="#" id="gameLinkToTheory" style="color:var(--ink); font-weight:600;">① 원리 탭</a>에서 복습하세요.</p>
+</div>
+
+</div>
+</div>
+
+<script>
+const COLORS = {
+  paper:'#EFF3EE', panel:'#FFFFFF', grid:'#D8E2D3',
+  ink:'#223027', inkSoft:'#5C6B60',
+  left:'#C1442D', right:'#2B6CA3', gold:'#C99A2E', success:'#3F7D4C', border:'#D3DAD0',
+};
+function shuffle(arr){
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+function gcd(a, b){ a = Math.abs(a); b = Math.abs(b); while (b) { [a, b] = [b, a % b]; } return a || 1; }
+function fmtNum(v){
+  const r = Math.round(v);
+  if (Math.abs(v - r) < 1e-6) return String(r);
+  for (let den = 2; den <= 36; den++) {
+    const num = v * den;
+    if (Math.abs(num - Math.round(num)) < 1e-6) {
+      const n = Math.round(num);
+      const g = gcd(n, den);
+      return `${n / g}/${den / g}`;
+    }
+  }
+  return v.toFixed(2);
+}
+// ============================================================
+// KaTeX 헬퍼
+// KX(tex) → HTML 문자열. 반드시 innerHTML로 넣을 것.
+// katex 로드 실패나 문법 오류가 나도 게임 루프가 죽으면 안 되므로 원문 폴백.
+// ============================================================
+function KX(tex, display){
+  try {
+    return katex.renderToString(String(tex), { throwOnError:false, displayMode:!!display, strict:false });
+  } catch (e) {
+    return String(tex);
+  }
+}
+function renderStaticMath(root){
+  if (typeof renderMathInElement !== 'function' || !root) return;
+  try {
+    renderMathInElement(root, {
+      delimiters: [ { left:'\\[', right:'\\]', display:true }, { left:'\\(', right:'\\)', display:false } ],
+      throwOnError: false,
+      ignoredTags: ['script','noscript','style','textarea','pre','code','option'],
+      ignoredClasses: ['katex'],   // 이미 렌더된 수식 안(숨김 MathML의 원본 TeX)을 다시 훑지 않도록
+    });
+  } catch (e) {}
+}
+// 음수는 괄호로 감싼다 — 대입 과정이 그대로 드러나게: 2 × (−2), (x − (−2))
+function pn(v){ return v < 0 ? '(' + v + ')' : String(v); }
+// fmtNum 이 "-1/2" 같은 분수를 낼 수 있으므로 LaTeX \frac 으로 승격.
+// 법선 기울기(−1/f'(a))에서 실제로 분수가 나오는 단원이라 반드시 필요하다.
+function texNum(v){
+  const s = fmtNum(v);
+  const m = /^(-?)(\d+)\/(\d+)$/.exec(s);
+  return m ? m[1] + '\\frac{' + m[2] + '}{' + m[3] + '}' : s;
+}
+// 빼거나 더해지는 자리에 들어가는 값 — 음수면 괄호로 감싼다.
+// y − (−8), (x − (−2)) 처럼 "대입했다"는 게 드러나야 하고, y − −8 같은 표기를 막는다.
+function pnTex(v){ const s = texNum(v); return v < 0 ? '(' + s + ')' : s; }
+
+// ⚠️ 아래 두 함수는 LaTeX 소스를 만든다 (HTML 아님). 출력 시 KX()로 감쌀 것.
+function fmtSigned(v){ return v >= 0 ? `+ ${texNum(v)}` : `- ${texNum(Math.abs(v))}`; }
+function lineStr(slope, intercept){ return `y = ${texNum(slope)}x ${fmtSigned(intercept)}`; }
+function el(tag, attrs){
+  const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  return e;
+}
+function showTab(name){
+  ['theory', 'lab', 'game'].forEach((n) => {
+    document.getElementById('page-' + n).classList.toggle('hidden', n !== name);
+    document.querySelector(`.tab-btn[data-tab="${n}"]`).classList.toggle('active', n === name);
+  });
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll('.tab-btn').forEach((btn) => btn.addEventListener('click', () => showTab(btn.dataset.tab)));
+
+// ============================================================
+// FUNCTION DEFINITIONS
+// ============================================================
+// tex / faStr / fpaStr 은 전부 LaTeX 소스다 (HTML 아님). 출력 시 KX()로 감쌀 것.
+// label 은 폴백·접근성용 평문.
+const FUNCS = {
+  x2: { label: 'f(x) = x²', tex: 'f(x) = x^{2}', aValues: [-2, -1, 1, 2, 3],
+        fn: (x) => x * x, fpFn: (a) => 2 * a,
+        faStr: (a) => pn(a) + '^{2}', fpaStr: (a) => '2 \\times ' + pn(a) },
+  x3: { label: 'f(x) = x³', tex: 'f(x) = x^{3}', aValues: [-2, -1, 1, 2],
+        fn: (x) => x * x * x, fpFn: (a) => 3 * a * a,
+        faStr: (a) => pn(a) + '^{3}', fpaStr: (a) => '3 \\times ' + pn(a) + '^{2}' },
+  linear: { label: 'f(x) = 2x+1', tex: 'f(x) = 2x+1', aValues: [-2, -1, 0, 1, 2, 3],
+        fn: (x) => 2 * x + 1, fpFn: () => 2,
+        faStr: (a) => '2 \\times ' + pn(a) + ' + 1', fpaStr: () => '2' },
+};
+const FUNC_ORDER = ['x2', 'x3', 'linear'];
+
+function autoYDomain(fn, xDomain){
+  let lo = Infinity, hi = -Infinity;
+  for (let i = 0; i <= 40; i++) {
+    const x = xDomain[0] + (xDomain[1] - xDomain[0]) * i / 40;
+    let y; try { y = fn(x); } catch (e) { y = null; }
+    if (y != null && isFinite(y)) { lo = Math.min(lo, y); hi = Math.max(hi, y); }
+  }
+  if (!isFinite(lo)) { lo = -5; hi = 5; }
+  const pad = Math.max(1, (hi - lo) * 0.2);
+  return [lo - pad, hi + pad];
+}
+function funcXDomain(key, a){
+  if (key === 'x3') return [a - 2, a + 2];
+  return [a - 2.5, a + 2.5];
+}
+
+// ============================================================
+// LAB APP
+// ============================================================
+const LabApp = (function(){
+  let funcKey = 'x2', aVal = 2, stepIndex = 0, mode = 'tangent';
+
+  function renderChips(){
+    const fnBox = document.getElementById('fnChips');
+    fnBox.innerHTML = '';
+    FUNC_ORDER.forEach((key) => {
+      const btn = document.createElement('button');
+      btn.className = 'chip' + (key === funcKey ? ' active' : '');
+      btn.innerHTML = KX(FUNCS[key].tex);
+      btn.setAttribute('aria-label', FUNCS[key].label);
+      btn.onclick = () => { funcKey = key; aVal = FUNCS[key].aValues[0]; stepIndex = 0; renderChips(); render(); };
+      fnBox.appendChild(btn);
+    });
+    const aBox = document.getElementById('aChips');
+    aBox.innerHTML = '';
+    FUNCS[funcKey].aValues.forEach((a) => {
+      const btn = document.createElement('button');
+      btn.className = 'a-chip' + (a === aVal ? ' active' : '');
+      btn.textContent = `a = ${a}`;
+      btn.onclick = () => { aVal = a; stepIndex = 0; renderChips(); render(); };
+      aBox.appendChild(btn);
+    });
+  }
+
+  function buildSteps(){
+    const def = FUNCS[funcKey];
+    const a = aVal;
+    const fa = def.fn(a);
+    const fpa = def.fpFn(a);
+    const isTangent = mode === 'tangent';
+    const useSlope = isTangent ? fpa : -1 / fpa;
+    const slopeExpr = isTangent ? def.fpaStr(a) : `-\\dfrac{1}{${def.fpaStr(a)}}`;
+    const intercept = fa - useSlope * a;
+
+    // 한국어 라벨(.step-note 포함)은 수식 밖에 두어 본문 서체를 유지한다.
+    return {
+      fa, fpa, useSlope, intercept,
+      lines: [
+        KX(`f(${a}) = ${def.faStr(a)} = ${texNum(fa)}`),
+        KX(`f'(${a}) = ${def.fpaStr(a)} = ${texNum(fpa)}`),
+        (isTangent ? '기울기 = ' : '법선의 기울기 = ') + KX(`${slopeExpr} = ${texNum(useSlope)}`),
+        KX(`y - ${pnTex(fa)} = ${texNum(useSlope)}(x - ${pnTex(a)})`) + ' <span class="step-note">점-기울기 공식</span>',
+        KX(`y = ${texNum(useSlope)}x ${fmtSigned(-useSlope * a)} ${fmtSigned(fa)}`) + ' <span class="step-note">분배</span>',
+        // lineStr 이 이미 "y = " 를 포함한다. 예전엔 여기서 "y = " 를 한 번 더 붙여
+        // 마지막 줄이 "y = y = 4x − 4" 로 나오는 버그가 있었다.
+        KX(lineStr(useSlope, intercept)),
+      ],
+    };
+  }
+
+  function render(){
+    const built = buildSteps();
+    const linesEl = document.getElementById('stepLines');
+    const def = FUNCS[funcKey];
+    linesEl.innerHTML = `<div class="step-line">${KX(def.tex + ',\\;\\; a = ' + aVal)} <span class="step-note">${mode === 'tangent' ? '접선' : '법선'}</span></div>`;
+    built.lines.forEach((s, i) => {
+      const div = document.createElement('div');
+      div.className = 'step-line' + (i >= stepIndex ? ' pending' : '');
+      div.innerHTML = s;
+      linesEl.appendChild(div);
+    });
+    document.getElementById('btnPrevStep').disabled = stepIndex === 0;
+    document.getElementById('btnNextStep').disabled = stepIndex >= built.lines.length;
+
+    const finalBox = document.getElementById('finalBox');
+    const showFinal = stepIndex >= built.lines.length;
+    finalBox.classList.toggle('hidden', !showFinal);
+    if (showFinal) {
+      document.getElementById('finalLabel').textContent = mode === 'tangent' ? '접선의 방정식' : '법선의 방정식';
+      document.getElementById('finalVal').innerHTML = KX(lineStr(built.useSlope, built.intercept));
+    }
+
+    drawGraph(funcKey, aVal, showFinal ? built : null);
+  }
+
+  function drawGraph(key, a, built){
+    const def = FUNCS[key];
+    const xDomain = funcXDomain(key, a);
+    const yDomain = autoYDomain(def.fn, xDomain);
+    const W = 300, H = 190, plot = { x: 16, y: 12, w: W - 32, h: H - 24 };
+    const sx = (vx) => plot.x + ((vx - xDomain[0]) / (xDomain[1] - xDomain[0])) * plot.w;
+    const sy = (vy) => plot.y + plot.h - ((vy - yDomain[0]) / (yDomain[1] - yDomain[0])) * plot.h;
+    const svg = document.getElementById('labSvg');
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+    let d = '', down = false;
+    for (let i = 0; i <= 100; i++) {
+      const x = xDomain[0] + (xDomain[1] - xDomain[0]) * i / 100;
+      let y; try { y = def.fn(x); } catch (e) { y = null; }
+      if (y == null || !isFinite(y) || y < yDomain[0] - 2 || y > yDomain[1] + 2) { down = false; continue; }
+      d += (down ? 'L ' : 'M ') + sx(x) + ' ' + sy(y) + ' ';
+      down = true;
+    }
+    svg.appendChild(el('path', { d, fill: 'none', stroke: COLORS.ink, 'stroke-width': 2.2, 'stroke-linecap': 'round' }));
+
+    const fa = def.fn(a);
+    if (fa != null && isFinite(fa)) {
+      svg.appendChild(el('circle', { cx: sx(a), cy: sy(fa), r: 4.5, fill: COLORS.gold, stroke: COLORS.ink, 'stroke-width': 1.3 }));
+    }
+    if (built) {
+      const lineColor = mode === 'tangent' ? COLORS.right : COLORS.gold;
+      const x1 = xDomain[0], x2 = xDomain[1];
+      const y1 = built.useSlope * x1 + built.intercept, y2 = built.useSlope * x2 + built.intercept;
+      svg.appendChild(el('line', { x1: sx(x1), y1: sy(Math.max(yDomain[0] - 1, Math.min(yDomain[1] + 1, y1))), x2: sx(x2), y2: sy(Math.max(yDomain[0] - 1, Math.min(yDomain[1] + 1, y2))), stroke: lineColor, 'stroke-width': 2, 'stroke-dasharray': mode === 'tangent' ? 'none' : '5 4' }));
+    }
+  }
+
+  function init(){
+    renderChips();
+    render();
+    document.getElementById('btnNextStep').addEventListener('click', () => {
+      const total = buildSteps().lines.length;
+      if (stepIndex < total) { stepIndex++; render(); }
+    });
+    document.getElementById('btnPrevStep').addEventListener('click', () => { if (stepIndex > 0) { stepIndex--; render(); } });
+    document.getElementById('modeTangent').addEventListener('click', () => { mode = 'tangent'; stepIndex = 0; document.getElementById('modeTangent').classList.add('active'); document.getElementById('modeNormal').classList.remove('active'); render(); });
+    document.getElementById('modeNormal').addEventListener('click', () => { mode = 'normal'; stepIndex = 0; document.getElementById('modeNormal').classList.add('active'); document.getElementById('modeTangent').classList.remove('active'); render(); });
+  }
+  return { init };
+})();
+
+// ============================================================
+// GAME APP
+// ============================================================
+const GameApp = (function(){
+  const START_TIME = 11000, MIN_TIME = 5500, DECAY_EVERY = 4, DECAY_AMOUNT = 1100;
+  const state = { score: 0, lives: 3, streak: 0, correctCount: 0, timePerQ: START_TIME, round: null, rafId: null, locked: false };
+
+  let kindBag = [];
+  function nextKind(){
+    if (kindBag.length === 0) {
+      let fresh = shuffle(FUNC_ORDER.slice());
+      if (kindBag._last && fresh[fresh.length - 1] === kindBag._last) {
+        const t = fresh[fresh.length - 1]; fresh[fresh.length - 1] = fresh[fresh.length - 2]; fresh[fresh.length - 2] = t;
+      }
+      kindBag = fresh;
+    }
+    const k = kindBag.pop(); kindBag._last = k; return k;
+  }
+
+  function loadBest(){ try { const raw = localStorage.getItem('tangent_game_best'); return raw ? JSON.parse(raw) : null; } catch (e) { return null; } }
+  function saveBest(entry){ try { localStorage.setItem('tangent_game_best', JSON.stringify(entry)); } catch (e) {} }
+  function renderBestLine(){
+    const best = loadBest();
+    document.getElementById('gameBestLine').textContent = best ? `🏆 내 최고 기록: ${best.score}점 (${best.correct}개 정답)` : '이 기기에 첫 기록이 저장돼요. 시작해볼까요?';
+  }
+  function showScreen(name){
+    ['start', 'play', 'end'].forEach((s) => document.getElementById('gameScreen' + s.charAt(0).toUpperCase() + s.slice(1)).classList.toggle('hidden', s !== name));
+    document.getElementById('gameHeader').classList.toggle('hidden', name === 'play');
+    if (name === 'start') renderBestLine();
+  }
+  function renderLives(){
+    let s = ''; for (let i = 0; i < 3; i++) s += i < state.lives ? '❤️' : '🤍';
+    document.getElementById('gameLives').textContent = s;
+  }
+  function updateTimerBar(ratio){
+    const fill = document.getElementById('gameTimerFill');
+    fill.style.width = (ratio * 100) + '%';
+    fill.style.backgroundColor = ratio > 0.5 ? COLORS.success : ratio > 0.2 ? COLORS.gold : COLORS.left;
+  }
+
+  function generateRound(){
+    const kind = nextKind();
+    const def = FUNCS[kind];
+    const shuffledA = shuffle(def.aValues.slice());
+    for (const a of shuffledA) {
+      // ⚠️ a = 0 은 반드시 건너뛴다.
+      // 오답②는 (x − a) 를 (x + a) 로 뒤집은 것인데, a=0 이면 (x − 0) 과 (x + 0) 이
+      // 문자열로는 다르지만 같은 직선이다 → 아래 4-distinct 검사(문자열 비교)를 통과해버리고
+      // 정답을 고른 학생이 오답 처리된다. linear 의 aValues 에만 0 이 들어 있다.
+      if (a === 0) continue;
+      const fa = def.fn(a), fpa = def.fpFn(a);
+      const faS = texNum(fa), fpaS = texNum(fpa);        // 계수 자리 (뒤에 괄호가 붙는 값)
+      const faP = pnTex(fa), aP = pnTex(a);              // 빼기·더하기 자리 (음수면 괄호)
+      // ⚠️ 이 4개는 LaTeX 소스다. 아래 4-distinct 검사도 LaTeX 소스 기준으로 돌아야 한다
+      //    (렌더된 HTML로 비교하면 KaTeX가 붙이는 부가 마크업 때문에 항상 4개로 보인다).
+      const correct = `y - ${faP} = ${fpaS}(x - ${aP})`;
+      const wrongs = [
+        `y - ${faP} = ${faS}(x - ${aP})`,    // 기울기 자리에 f(a)를 씀
+        `y - ${faP} = ${fpaS}(x + ${aP})`,   // (x − a) 부호 뒤집기
+        `y + ${faP} = ${fpaS}(x - ${aP})`,   // y − f(a) 부호 뒤집기
+      ];
+      if (new Set([correct, ...wrongs]).size === 4) {
+        return { kind, def, a, fa, fpa, correct, wrongs };
+      }
+      // fa === fpa for this a (e.g. x² at a=2, both equal 4) would make two options
+      // read identically — skip to the next a value for this function instead.
+    }
+    // Should be unreachable given the dataset, but fall back to a known-safe pair rather than crash.
+    const a = def.aValues[0], fa = def.fn(a), fpa = def.fpFn(a);
+    const faS = texNum(fa), fpaS = texNum(fpa);
+    const faP = pnTex(fa), fpaP = pnTex(fpa), aP = pnTex(a);
+    return {
+      kind, def, a, fa, fpa,
+      correct: `y - ${faP} = ${fpaS}(x - ${aP})`,
+      wrongs: [
+        `y - ${faP} = ${fpaS}(x + ${aP})`,
+        `y + ${faP} = ${fpaS}(x - ${aP})`,
+        `y - ${fpaP} = ${faS}(x - ${aP})`,
+      ],
+    };
+  }
+
+  function spawnQuestion(){
+    state.locked = false;
+    const round = generateRound();
+    state.round = round;
+    const options = shuffle([{ text: round.correct, correct: true }, ...round.wrongs.map((w) => ({ text: w, correct: false }))]);
+    state.round.options = options;
+
+    document.getElementById('qEyebrow').innerHTML = KX(round.def.tex);
+    document.getElementById('qFormula').innerHTML = KX(`a = ${round.a}, \\quad f(${round.a}) = ${texNum(round.fa)}, \\quad f'(${round.a}) = ${texNum(round.fpa)}`);
+    document.getElementById('gameFeedback').classList.add('hidden');
+    const grid = document.getElementById('optionsGrid');
+    grid.innerHTML = '';
+    options.forEach((opt, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'opt-btn';
+      btn.innerHTML = KX(opt.text);        // opt.text 는 LaTeX 소스 (정오 판정은 옵션 인덱스로 하므로 렌더는 표시 전용)
+      btn.onclick = () => onAnswer(idx);
+      grid.appendChild(btn);
+    });
+
+    const start = performance.now();
+    const duration = state.timePerQ;
+    function tick(now){
+      const elapsed = now - start, remaining = Math.max(0, duration - elapsed);
+      updateTimerBar(remaining / duration);
+      if (remaining <= 0) { onAnswer(null); return; }
+      state.rafId = requestAnimationFrame(tick);
+    }
+    state.rafId = requestAnimationFrame(tick);
+  }
+
+  function onAnswer(idx){
+    if (state.locked) return;
+    state.locked = true;
+    cancelAnimationFrame(state.rafId);
+    const { options } = state.round;
+    const chosen = idx == null ? null : options[idx];
+    const isCorrect = !!(chosen && chosen.correct);
+    document.querySelectorAll('#optionsGrid .opt-btn').forEach((btn, i) => {
+      btn.disabled = true;
+      if (options[i].correct) btn.classList.add('correct');
+      else if (i === idx) btn.classList.add('wrong');
+    });
+    const fbEl = document.getElementById('gameFeedback');
+    fbEl.classList.remove('hidden');
+    const finalLine = KX(lineStr(state.round.fpa, state.round.fa - state.round.fpa * state.round.a));
+    if (isCorrect) {
+      const remainingRatio = parseFloat(document.getElementById('gameTimerFill').style.width) / 100 || 0;
+      const points = 15 + Math.round(remainingRatio * 20) + Math.min(state.streak, 10);
+      state.score += points; state.streak += 1; state.correctCount += 1;
+      document.getElementById('gameScoreNum').textContent = state.score;
+      if (state.correctCount % DECAY_EVERY === 0) state.timePerQ = Math.max(MIN_TIME, state.timePerQ - DECAY_AMOUNT);
+      fbEl.className = 'game-feedback-box good';
+      fbEl.innerHTML = `✓ +${points}점 · ${KX("f(a)")}는 지나는 점의 높이, ${KX("f'(a)")}는 기울기예요. 정리하면 ${finalLine}`;
+      setTimeout(() => spawnQuestion(), 1300);
+    } else {
+      state.streak = 0; state.lives -= 1; renderLives();
+      fbEl.className = 'game-feedback-box bad';
+      fbEl.innerHTML = (idx == null ? '⏱ 시간 초과! ' : '✕ 틀렸어요. ') + `${KX("y - f(a) = f'(a)(x - a)")} 순서를 다시 확인하세요. 정리하면 ${finalLine}`;
+      if (state.lives <= 0) setTimeout(() => gameOver(), 1800);
+      else setTimeout(() => spawnQuestion(), 1800);
+    }
+  }
+
+  function startGame(){
+    state.score = 0; state.lives = 3; state.streak = 0; state.correctCount = 0; state.timePerQ = START_TIME;
+    document.getElementById('gameScoreNum').textContent = 0;
+    renderLives();
+    showScreen('play');
+    spawnQuestion();
+  }
+  function gameOver(){
+    cancelAnimationFrame(state.rafId);
+    showScreen('end');
+    document.getElementById('gameFinalScore').textContent = state.score;
+    document.getElementById('gameFinalSummary').textContent = `${state.correctCount}개 정답`;
+    const best = loadBest();
+    const isNewBest = !best || state.score > best.score;
+    const compareEl = document.getElementById('gameBestCompare');
+    if (isNewBest) { saveBest({ score: state.score, correct: state.correctCount }); compareEl.textContent = '🎉 이 기기 최고 기록 갱신!'; }
+    else compareEl.textContent = `내 최고 기록은 ${best.score}점이에요. 다시 도전해보세요!`;
+  }
+
+  function init(){
+    document.getElementById('gameBtnStart').addEventListener('click', startGame);
+    document.getElementById('gameBtnRetry').addEventListener('click', () => showScreen('start'));
+    document.getElementById('gameLinkToTheory').addEventListener('click', (e) => { e.preventDefault(); showTab('theory'); });
+    showScreen('start');
+  }
+  return { init };
+})();
+
+document.getElementById('ctaToLab').addEventListener('click', () => showTab('lab'));
+document.getElementById('ctaToGame').addEventListener('click', () => showTab('game'));
+
+LabApp.init();
+GameApp.init();
+renderStaticMath(document.getElementById('page-theory'));   // 이론 탭의 \(...\) 일괄 렌더
+showTab('theory');
+</script>
+</body>
+</html>

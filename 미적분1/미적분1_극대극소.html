@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>극대와 극소 · 석산고 미적분Ⅰ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700;900&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- KaTeX (자체 호스팅) — 동기 로드: 하단 인라인 스크립트가 katex 전역을 즉시 쓰기 때문 -->
+<link rel="stylesheet" href="../vendor/katex/katex.min.css">
+<script src="../vendor/katex/katex.min.js"></script>
+<script src="../vendor/katex/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  --paper:#EFF3EE; --panel:#FFFFFF; --grid:#D8E2D3; --dot:#E2E9DE;
+  --ink:#223027; --inkSoft:#5C6B60;
+  --left:#C1442D; --right:#2B6CA3; --gold:#C99A2E; --success:#3F7D4C; --border:#D3DAD0;
+  --font-display:'Noto Serif KR', serif;
+  --font-body:'IBM Plex Sans KR','Pretendard',sans-serif;
+  --font-mono:'IBM Plex Mono','Menlo',monospace;
+}
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); }
+.page-bg{ background-image:radial-gradient(var(--dot) 1px, transparent 1px); background-size:20px 20px; min-height:100vh; }
+.wrap{ max-width:600px; margin:0 auto; padding:14px 14px 40px; }
+.hidden{ display:none !important; }
+.card{ background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:18px; }
+.btn-primary{ width:100%; padding:14px; border-radius:14px; border:none; background:var(--ink); color:var(--paper); font-weight:700; font-size:15px; cursor:pointer; }
+.btn-secondary{ width:100%; padding:14px; border-radius:14px; border:1.5px solid var(--border); background:#fff; color:var(--ink); font-weight:600; font-size:14px; cursor:pointer; margin-bottom:10px; }
+.btn-danger{ width:100%; padding:14px; border-radius:14px; border:none; background:var(--left); color:#fff; font-weight:800; font-size:15px; cursor:pointer; }
+
+.tabbar{ position:sticky; top:0; z-index:20; background:var(--paper); padding:10px 14px 8px; border-bottom:1px solid var(--border); }
+.tabbar-inner{ max-width:600px; margin:0 auto; display:flex; gap:8px; }
+.tab-btn{ flex:1; font-family:var(--font-body); font-size:12.5px; font-weight:700; padding:10px 6px; border-radius:12px; border:1.5px solid var(--border); background:var(--panel); color:var(--inkSoft); cursor:pointer; text-align:center; }
+.tab-btn.active{ border-color:var(--ink); background:var(--ink); color:var(--paper); }
+.tab-back{ flex:0 0 38px; display:flex; align-items:center; justify-content:center; border-radius:12px; border:1.5px solid var(--border); background:var(--panel); color:var(--inkSoft); text-decoration:none; font-size:16px; font-weight:700; }
+.tab-back:hover{ border-color:var(--ink); color:var(--ink); }
+
+.eyebrow{ font-family:var(--font-mono); font-size:11.5px; letter-spacing:1.5px; color:var(--inkSoft); text-transform:uppercase; margin-bottom:6px; }
+.title{ font-family:var(--font-display); font-weight:900; font-size:22px; margin:0 0 5px; line-height:1.28; }
+.desc{ color:var(--inkSoft); font-size:13px; line-height:1.55; margin:0 0 14px; }
+
+.theory-section{ margin-bottom:18px; }
+.theory-h2{ font-family:var(--font-display); font-weight:900; font-size:18px; margin:0 0 8px; }
+.theory-p{ font-size:13.5px; line-height:1.7; margin:0 0 10px; }
+.theorem-box{ background:#FBF3E0; border:1.5px solid var(--gold); border-radius:14px; padding:14px 16px; margin-bottom:10px; }
+.theorem-eyebrow{ font-family:var(--font-mono); font-size:10.5px; letter-spacing:1px; color:var(--gold); text-transform:uppercase; margin-bottom:6px; font-weight:700; }
+.theorem-formula{ font-family:var(--font-mono); font-size:13.5px; font-weight:600; line-height:2; }
+.misconception{ background:#F7E9E5; border:1.5px solid var(--left); border-radius:14px; padding:12px 14px; margin-bottom:10px; }
+.misconception-title{ font-weight:700; font-size:13px; color:var(--left); margin-bottom:4px; }
+.misconception-body{ font-size:12.5px; line-height:1.6; }
+.cta-row{ display:flex; gap:10px; margin-top:16px; }
+.prereq-note{ background:var(--panel); border:1px dashed var(--border); border-radius:12px; padding:10px 12px; font-size:12px; color:var(--inkSoft); margin-bottom:16px; line-height:1.6; }
+.form-card{ background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:13px 15px; margin-bottom:10px; }
+.form-card-tag{ display:inline-block; font-family:var(--font-mono); font-size:15px; font-weight:800; color:var(--gold); margin-bottom:5px; }
+.form-card-body{ font-size:12.5px; line-height:1.65; color:var(--ink); }
+
+.chips{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+.chip{ font-size:12.5px; font-weight:600; padding:9px 12px; border-radius:999px; border:1.5px solid var(--border); background:var(--panel); color:var(--ink); cursor:pointer; }
+.chip.active{ border-color:var(--ink); background:var(--ink); color:var(--paper); }
+
+.svg-wrap{ background:#fff; border:1px solid var(--border); border-radius:16px; padding:6px; margin-bottom:12px; }
+.svg-wrap svg{ width:100%; height:auto; display:block; }
+.svg-caption{ font-size:11.5px; color:var(--inkSoft); text-align:center; margin:2px 0 10px; }
+.fn-tex{ text-align:center; font-size:14px; margin:0 0 10px; }
+
+/* 증감표 */
+.table-card{ background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:12px 10px; margin-bottom:12px; overflow-x:auto; }
+.table-title{ font-size:11.5px; color:var(--inkSoft); margin:0 4px 8px; }
+.mono-table{ border-collapse:collapse; width:100%; min-width:340px; font-family:var(--font-mono); }
+.mono-table th{ font-size:12.5px; font-weight:800; color:var(--ink); background:#F3F6F2; border:1px solid var(--border); padding:7px 6px; white-space:nowrap; }
+.mono-table td{ border:1px solid var(--border); padding:7px 4px; text-align:center; font-size:13px; font-weight:700; }
+.mono-table td.plus{ color:var(--success); } .mono-table td.minus{ color:var(--left); }
+.mono-table td.zero{ color:var(--gold); background:#FBF3E0; }
+.mono-table td.crit{ background:#FBF3E0; font-size:11.5px; line-height:1.35; }
+.mono-table td.crit b{ display:block; font-size:12.5px; }
+.mono-table td.here{ outline:2.5px solid var(--right); outline-offset:-2px; }
+.mono-table td .arrow{ font-size:16px; }
+
+.slider-card{ background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:12px 14px; margin-bottom:12px; }
+.slider-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px; }
+.slider-head .sl{ font-size:11.5px; color:var(--inkSoft); }
+.slider-head .sv{ font-family:var(--font-mono); font-size:15px; font-weight:800; color:var(--right); }
+input[type=range]{ width:100%; accent-color:var(--right); }
+.slider-note{ font-size:11.5px; color:var(--gold); font-weight:600; margin-top:5px; min-height:16px; line-height:1.5; }
+
+.back-link{ font-size:12.5px; color:var(--inkSoft); text-decoration:underline; cursor:pointer; background:none; border:none; padding:0; margin-bottom:10px; display:inline-block; }
+.mode-btn{ width:100%; padding:16px; border-radius:14px; border:1.5px solid var(--border); background:#fff; color:var(--ink); font-weight:700; font-size:15px; cursor:pointer; margin-bottom:10px; text-align:left; }
+.mode-btn-desc{ font-size:12px; font-weight:400; color:var(--inkSoft); margin-top:3px; }
+
+/* ===== 아레나 (기하 시리즈 방식) ===== */
+.game-shell{ position:relative; }
+.arena-hero{ text-align:center; }
+.arena-kicker{ font-family:var(--font-mono); font-size:11px; letter-spacing:1.5px; color:var(--left); font-weight:800; }
+.arena-title{ font-family:var(--font-display); font-size:24px; font-weight:900; margin:6px 0 4px; }
+.arena-desc{ font-size:12.5px; color:var(--inkSoft); line-height:1.6; margin:0 0 14px; }
+.name-grid{ display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-bottom:10px; }
+.name-field{ text-align:left; }
+.name-field label{ display:block; font-family:var(--font-mono); font-size:10px; color:var(--inkSoft); font-weight:700; margin-bottom:3px; }
+.name-field input{ width:100%; padding:9px 10px; border-radius:11px; border:1.5px solid var(--border); background:#fff; font-family:var(--font-body); font-size:13.5px; font-weight:600; color:var(--ink); }
+.sound-row{ display:flex; align-items:center; justify-content:center; gap:7px; font-size:12px; color:var(--inkSoft); margin-bottom:12px; }
+.mode-grid{ display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+.mode-card{ padding:13px 8px; border-radius:14px; border:1.5px solid var(--border); background:#fff; cursor:pointer; text-align:center; font-family:var(--font-body); color:var(--ink); }
+.mode-card strong{ display:block; font-size:14px; font-weight:800; margin-bottom:3px; }
+.mode-card small{ font-size:11px; color:var(--inkSoft); line-height:1.4; display:block; }
+.mode-card.duel{ background:var(--left); border-color:var(--left); color:#fff; }
+.mode-card.duel small{ color:#F7E0DA; }
+.leaderboard{ margin-top:16px; text-align:left; }
+.leaderboard h3{ font-size:13px; margin:0 0 7px; }
+.leader-row{ display:grid; grid-template-columns:26px 1fr auto; gap:8px; padding:7px 2px; border-bottom:1px solid var(--border); font-size:12px; align-items:center; }
+.leader-row b{ font-family:var(--font-mono); }
+.hud{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:8px; }
+.hud-item{ text-align:center; background:var(--panel); border:1px solid var(--border); border-radius:11px; padding:7px 3px; }
+.hud-item span{ display:block; font-size:9.5px; color:var(--inkSoft); font-weight:700; }
+.hud-item b{ font-family:var(--font-mono); font-size:15px; }
+.hud-item.combo b{ color:var(--gold); }
+.timer-track{ height:11px; background:var(--grid); border-radius:999px; overflow:hidden; margin-bottom:12px; }
+.timer-fill{ height:100%; width:100%; background:var(--success); transition:background .15s; }
+.timer-fill.danger{ background:var(--left); animation:timerPulse .42s infinite alternate; }
+@keyframes timerPulse{ to{ filter:brightness(1.35); } }
+.question-card{ background:var(--panel); border:1.5px solid var(--ink); border-radius:15px; padding:14px 14px; margin:0 0 12px; }
+.question-kicker{ font-family:var(--font-mono); font-size:10px; color:var(--inkSoft); margin-bottom:5px; letter-spacing:1px; }
+.question-text{ font-size:15.5px; font-weight:800; line-height:1.7; overflow-x:auto; }
+.choice-grid{ display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+.choice{ min-height:52px; padding:11px 10px; border-radius:13px; border:1.5px solid var(--border); background:#fff; color:var(--ink); font-family:var(--font-body); font-size:13.5px; font-weight:700; cursor:pointer; text-align:left; line-height:1.5; }
+.choice:hover{ border-color:var(--ink); }
+.choice.correct{ border-color:var(--success); background:#EAF3EA; color:var(--success); }
+.choice.wrong{ border-color:var(--left); background:#F7E9E5; color:var(--left); }
+.choice:disabled{ cursor:default; }
+.feedback{ position:absolute; inset:60px 8px auto; background:rgba(255,255,255,.97); border:2px solid var(--border); border-radius:18px; padding:20px 18px; text-align:center; z-index:5; box-shadow:0 18px 50px rgba(34,48,39,.18); }
+.feedback.good{ border-color:var(--success); } .feedback.bad{ border-color:var(--left); }
+.feedback-icon{ font-size:32px; font-weight:900; }
+.feedback-title{ font-size:18px; font-weight:900; margin:3px 0 5px; }
+.feedback-sub{ font-size:12.5px; color:var(--inkSoft); line-height:1.6; }
+.feedback-points{ font-family:var(--font-mono); font-size:18px; font-weight:800; margin-top:7px; }
+.shake{ animation:shake .25s linear 2; }
+@keyframes shake{ 25%{ transform:translateX(-5px);} 75%{ transform:translateX(5px);} }
+.handoff{ text-align:center; padding:34px 8px; }
+.handoff-icon{ font-size:42px; }
+.handoff h2, .end-screen h2{ font-family:var(--font-display); font-size:24px; font-weight:900; margin:6px 0; }
+.handoff p, .end-screen p{ font-size:13px; color:var(--inkSoft); line-height:1.6; }
+.end-screen{ text-align:center; }
+.final-score{ font-family:var(--font-mono); font-size:44px; font-weight:800; color:var(--success); }
+.duel-board{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0; }
+.duel-player{ background:var(--panel); border:1px solid var(--border); border-radius:15px; padding:13px; }
+.duel-player.winner{ border:2px solid var(--gold); background:#FBF3E0; }
+.duel-player b{ display:block; font-size:13px; }
+.duel-player strong{ font-family:var(--font-mono); font-size:25px; }
+.winner-line{ font-weight:900; color:#8a6a1a; margin:8px 0 14px; }
+
+/* ---------- KaTeX 통합 ---------- */
+.katex{ font-size:1.05em; }
+.katex .base{ white-space:nowrap; }
+.theorem-formula .katex, .fb-box .katex, .form-card-body .katex, .misconception-body .katex,
+.theory-p .katex, .form-card-tag .katex, .question-text .katex, .choice .katex,
+.feedback-sub .katex, .fn-tex .katex, .mono-table .katex, .slider-head .sv .katex,
+.mode-btn-desc .katex, .svg-caption .katex{ font-size:1em; }
+.theorem-formula, .fn-tex, .question-text{ overflow-x:auto; overflow-y:hidden; padding:2px 0; }
+
+@media(max-width:410px){
+  .choice-grid, .mode-grid, .name-grid{ grid-template-columns:1fr; }
+  .hud-item b{ font-size:13px; } .hud-item span{ font-size:8.5px; }
+}
+@media (prefers-reduced-motion: reduce){ *{ animation:none !important; } }
+</style>
+</head>
+<body>
+<div class="page-bg">
+
+<div class="tabbar">
+  <div class="tabbar-inner">
+    <a href="index.html" class="tab-back" aria-label="목록으로 돌아가기" title="미적분Ⅰ 목록으로">←</a>
+    <button class="tab-btn active" data-tab="theory">① 원리</button>
+    <button class="tab-btn" data-tab="lab">② 실험실</button>
+    <button class="tab-btn" data-tab="game">③ 스릴 아레나</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- THEORY -->
+<div id="page-theory">
+  <div class="eyebrow">석산고 미적분Ⅰ · 극대와 극소</div>
+  <h1 class="title">봉우리와 골짜기를 찾아내기</h1>
+  <p class="desc">\(f'(x)\)의 <b>부호가 바뀌는 곳</b>이 극값의 자리예요. 0이 되는 곳이 아니라요.</p>
+
+  <div class="prereq-note">🔗 이전 단원: 증가·감소를 \(f'\)의 부호로 판정했죠. 오르막에서 내리막으로 <b>바뀌는 지점</b>이 바로 이번에 배울 극대예요.</div>
+
+  <div class="theory-section">
+    <div class="theory-h2">1. 극대·극소의 뜻</div>
+    <div class="theorem-box">
+      <div class="theorem-eyebrow">Definition</div>
+      <div class="theorem-formula">
+        \(x=a\) <b>근처에서</b> \(f(a)\)가 가장 크면 → \(f\)는 \(x=a\)에서 <b>극대</b>, \(f(a)\)는 <b>극댓값</b><br>
+        \(x=a\) <b>근처에서</b> \(f(a)\)가 가장 작으면 → <b>극소</b>, \(f(a)\)는 <b>극솟값</b>
+      </div>
+    </div>
+    <p class="theory-p">핵심은 <b>"근처에서"</b>예요. 구간 전체에서 제일 클 필요는 없어요. 산봉우리가 여러 개면 낮은 봉우리도 그 동네에서는 제일 높으니 <b>극대</b>랍니다.</p>
+  </div>
+
+  <div class="theory-section">
+    <div class="theory-h2">2. 극값과 \(f'(a)=0\)</div>
+    <div class="theorem-box">
+      <div class="theorem-eyebrow">필요조건</div>
+      <div class="theorem-formula">
+        \(f\)가 \(x=a\)에서 <b>미분가능</b>하고 극값을 가지면 &nbsp;→&nbsp; \(f'(a)=0\)
+      </div>
+    </div>
+    <p class="theory-p">봉우리 꼭대기에서는 접선이 수평이 되니까요. 그런데 <b>이 명제의 역은 성립하지 않아요.</b> \(f'(a)=0\)이라고 해서 반드시 극값인 건 아니에요.</p>
+    <div class="misconception">
+      <div class="misconception-title">❗ 반드시 기억할 반례</div>
+      <div class="misconception-body">\(f(x)=x^{3}\)은 \(f'(0)=0\)이지만 \(x=0\)에서 극값을 갖지 않아요. 계속 증가하기만 하거든요. <b>\(f'(a)=0\)은 후보일 뿐, 부호 변화를 확인해야 확정</b>돼요.</div>
+    </div>
+  </div>
+
+  <div class="theory-section">
+    <div class="theory-h2">3. 부호 변화로 판정하기</div>
+    <div class="theorem-box">
+      <div class="theorem-eyebrow">판정법</div>
+      <div class="theorem-formula">
+        \(f'\)의 부호가 \(x=a\)의 좌우에서<br>
+        <span style="color:#3F7D4C">\(+\)</span> → <span style="color:#C1442D">\(-\)</span> 로 바뀌면 &nbsp;<b>극대</b><br>
+        <span style="color:#C1442D">\(-\)</span> → <span style="color:#3F7D4C">\(+\)</span> 로 바뀌면 &nbsp;<b>극소</b><br>
+        부호가 <b>그대로</b>면 &nbsp;<b>극값이 아니다</b>
+      </div>
+    </div>
+    <p class="theory-p">그래서 문제 풀이는 언제나 ① \(f'(x)=0\)의 해를 구하고 ② <b>증감표</b>를 그려 부호를 확인하는 순서예요. 실험실에서 증감표가 자동으로 만들어지는 걸 보면서 익혀보세요.</p>
+    <div class="form-card">
+      <div class="form-card-tag">중근 함정</div>
+      <div class="form-card-body">\(f'(x)=(x-1)^{2}(x-3)\)처럼 <b>짝수 제곱</b>이 붙은 인수는 그 점에서 부호를 바꾸지 않아요. 그래서 \(x=1\)은 <b>극값이 아니고</b>, \(x=3\)만 극소예요.</div>
+    </div>
+  </div>
+
+  <div class="theory-section">
+    <div class="theory-h2">4. 자주 하는 오해</div>
+    <div class="misconception">
+      <div class="misconception-title">❌ 극댓값은 최댓값 아닌가요?</div>
+      <div class="misconception-body">달라요. 극댓값은 <b>그 근처에서만</b> 제일 큰 값(국소), 최댓값은 <b>구간 전체에서</b> 제일 큰 값(전역)이에요. 닫힌구간 문제에서는 <b>극값과 끝점의 값을 모두 비교</b>해야 최댓값이 나와요.</div>
+    </div>
+    <div class="misconception">
+      <div class="misconception-title">❌ 극댓값이 극솟값보다 항상 큰가요?</div>
+      <div class="misconception-body">아니에요! 봉우리가 여러 개인 함수라면 <b>어떤 극솟값이 다른 극댓값보다 클 수도</b> 있어요. 각각 자기 동네에서만 최고/최저일 뿐이니까요.</div>
+    </div>
+    <div class="misconception">
+      <div class="misconception-title">❌ 미분가능하지 않으면 극값이 없나요?</div>
+      <div class="misconception-body">\(f(x)=|x|\)는 \(x=0\)에서 미분가능하지 않지만 <b>극솟값 0</b>을 가져요. 극값의 후보는 "\(f'=0\)인 점"과 "<b>미분불가능한 점</b>" 둘 다예요.</div>
+    </div>
+  </div>
+
+  <div class="cta-row"><button class="btn-primary" id="ctaToLab">🧪 증감표 실험실 열기</button></div>
+  <div class="cta-row"><button class="btn-secondary" id="ctaToGame" style="margin-bottom:0;">⚡ 스릴 아레나 입장</button></div>
+</div>
+
+<!-- LAB -->
+<div id="page-lab" class="hidden">
+  <div class="eyebrow">석산고 미적분Ⅰ · Interactive Lab</div>
+  <h1 class="title">증감표가 자동으로 그려지는 실험실</h1>
+  <p class="desc">\(f'\)의 부호가 표로 정리되고, 슬라이더를 움직이면 지금 위치가 표에서 빛나요.</p>
+
+  <div class="chips" id="labChips"></div>
+  <p class="fn-tex" id="labFn"></p>
+
+  <div class="svg-wrap"><svg id="labSvg" viewBox="0 0 640 520" preserveAspectRatio="xMidYMid meet"></svg></div>
+
+  <div class="table-card">
+    <p class="table-title">증감표 — \(f'(x)\)의 부호가 바뀌는 곳에서만 극값이 생겨요</p>
+    <table class="mono-table" id="labTable"></table>
+  </div>
+
+  <div class="slider-card">
+    <div class="slider-head">
+      <span class="sl">지금 보고 있는 위치 x</span>
+      <span class="sv" id="labX"></span>
+    </div>
+    <input type="range" id="labSlider" min="0" max="1" step="0.002" value="0.2">
+    <div class="slider-note" id="labNote"></div>
+  </div>
+
+  <button class="btn-secondary" id="labToGame" style="margin-bottom:0;">⚡ 아레나에서 실전 연습</button>
+</div>
+
+<!-- GAME -->
+<div id="page-game" class="hidden">
+  <div id="gameHeader">
+    <div class="eyebrow">석산고 미적분Ⅰ · THRILL ARENA</div>
+    <h1 class="title">극값 스릴 아레나</h1>
+    <p class="desc">8문제 · 라이프 3개 · 3연속 정답부터 콤보 배수가 붙어요. 친구와 <b>같은 문제로 1:1 대결</b>도 할 수 있어요.</p>
+  </div>
+
+  <div id="modeSelect" class="card">
+    <button class="mode-btn" id="btnModePeak">⛰️ 극값 사냥<div class="mode-btn-desc">삼차함수의 극댓값·극솟값을 8초 안에 계산해서 맞히기.</div></button>
+    <button class="mode-btn" id="btnModeSign" style="margin-bottom:0;">🔀 부호 변화 판독<div class="mode-btn-desc">인수분해된 \(f'(x)\)를 보고 각 점이 극대·극소·극값 아님인지 판정. <b>중근 함정</b> 주의!</div></button>
+  </div>
+
+  <div id="peakArena" class="game-shell hidden"></div>
+  <div id="signArena" class="game-shell hidden"></div>
+
+  <p class="desc" id="gameFooter" style="margin-top:16px; text-align:center;">헷갈리면 <a href="#" id="toTheory" style="color:var(--ink); font-weight:600;">① 원리 탭</a>에서 복습하세요.</p>
+</div>
+
+</div>
+</div>
+
+<script>
+const COLORS = { ink:'#223027', inkSoft:'#5C6B60', left:'#C1442D', right:'#2B6CA3', gold:'#C99A2E', success:'#3F7D4C', paper:'#EFF3EE' };
+function rand(a,b){ return a + Math.random()*(b-a); }
+function randInt(a,b){ return Math.floor(rand(a,b+1)); }
+function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+function fmt(v){ const r=Math.round(v*100)/100; return String(r); }
+// 시드 난수 — 1:1 대결에서 두 사람에게 똑같은 문제를 주기 위해 (기하 시리즈와 동일 방식)
+function seeded(seed){ let t=seed>>>0; return function(){ t+=0x6D2B79F5; let r=Math.imul(t^(t>>>15),1|t); r^=r+Math.imul(r^(r>>>7),61|r); return ((r^(r>>>14))>>>0)/4294967296; }; }
+function shuffleR(arr, rng){ rng=rng||Math.random; const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(rng()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function riInt(rng,a,b){ return a + Math.floor(rng()*(b-a+1)); }
+function rPick(rng,a){ return a[Math.floor(rng()*a.length)]; }
+
+// ============================================================
+// KaTeX 헬퍼
+// ============================================================
+function KX(tex, display){
+  try { return katex.renderToString(String(tex), { throwOnError:false, displayMode:!!display, strict:false }); }
+  catch(e){ return String(tex); }
+}
+function renderStaticMath(root){
+  if (typeof renderMathInElement !== 'function' || !root) return;
+  try {
+    renderMathInElement(root, {
+      delimiters: [ { left:'\\[', right:'\\]', display:true }, { left:'\\(', right:'\\)', display:false } ],
+      throwOnError: false,
+      ignoredTags: ['script','noscript','style','textarea','pre','code','option'],
+      ignoredClasses: ['katex'],
+    });
+  } catch(e){}
+}
+
+function showTab(name){
+  ['theory','lab','game'].forEach(n=>{
+    document.getElementById('page-'+n).classList.toggle('hidden', n!==name);
+    document.querySelector(`.tab-btn[data-tab="${n}"]`).classList.toggle('active', n===name);
+  });
+  if(name!=='game') window.dispatchEvent(new CustomEvent('jp:leavegame'));
+  window.scrollTo(0,0);
+}
+document.querySelectorAll('.tab-btn').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+
+// ============================================================
+// 다항식 유틸
+// ============================================================
+function pTrim(p){ const q=p.slice(); while(q.length>1 && Math.abs(q[q.length-1])<1e-12) q.pop(); return q; }
+function pDer(p){ const q=[]; for(let i=1;i<p.length;i++) q.push(i*p[i]); return pTrim(q.length?q:[0]); }
+function pEval(p,x){ let s=0; for(let i=p.length-1;i>=0;i--) s=s*x+p[i]; return s; }
+function pTerms(p){ return pTrim(p).filter(c=>Math.abs(c)>1e-12).length; }
+function pTex(p){
+  const q=pTrim(p); const parts=[];
+  for(let i=q.length-1;i>=0;i--){
+    const c=q[i]; if(Math.abs(c)<1e-12) continue;
+    const ac=Math.abs(c); let t='';
+    if(i===0) t=String(ac);
+    else { if(Math.abs(ac-1)>1e-12) t=String(ac); t += (i===1?'x':`x^{${i}}`); }
+    parts.push({ sign:c<0?'-':'+', t });
+  }
+  if(!parts.length) return '0';
+  let out=(parts[0].sign==='-'?'-':'')+parts[0].t;
+  for(let i=1;i<parts.length;i++) out += ` ${parts[i].sign} ${parts[i].t}`;
+  return out;
+}
+
+// ============================================================
+// 위 f / 아래 f' 두 칸 그래프
+// ============================================================
+const GV = { w:640, h:520, pl:48, pr:20, aT:20, aB:270, bT:320, bB:492 };
+function yRangeF(fn, L, R, N){
+  N=N||160; let lo=Infinity, hi=-Infinity;
+  for(let i=0;i<=N;i++){ const v=fn(L+(R-L)*i/N); if(v<lo)lo=v; if(v>hi)hi=v; }
+  if(lo>0) lo=0; if(hi<0) hi=0;
+  const r=Math.max(1,hi-lo);
+  return [lo-r*0.16, hi+r*0.16];
+}
+function drawPair(c, cursorX){
+  const V=GV, L=c.dom[0], R=c.dom[1];
+  const xr=R-L, xlo=L-xr*0.04, xhi=R+xr*0.04;
+  const X=x=>V.pl+(x-xlo)/(xhi-xlo)*(V.w-V.pl-V.pr);
+  const [aLo,aHi]=yRangeF(c.ev,L,R), [bLo,bHi]=yRangeF(c.d,L,R);
+  const YA=y=>V.aT+(aHi-y)/(aHi-aLo)*(V.aB-V.aT);
+  const YB=y=>V.bT+(bHi-y)/(bHi-bLo)*(V.bB-V.bT);
+  let s='';
+  // 증가/감소 배경
+  const cuts=[L].concat(c.crit.filter(t=>t>L&&t<R)).concat([R]);
+  for(let i=0;i<cuts.length-1;i++){
+    const mid=(cuts[i]+cuts[i+1])/2, up=c.d(mid)>0, col=up?COLORS.success:COLORS.left;
+    s+=`<rect x="${X(cuts[i])}" y="${V.aT}" width="${X(cuts[i+1])-X(cuts[i])}" height="${V.aB-V.aT}" fill="${col}" opacity="0.075"/>`;
+    s+=`<rect x="${X(cuts[i])}" y="${V.bT}" width="${X(cuts[i+1])-X(cuts[i])}" height="${V.bB-V.bT}" fill="${col}" opacity="0.075"/>`;
+  }
+  for(let g=Math.ceil(xlo); g<=Math.floor(xhi); g++){
+    s+=`<line x1="${X(g)}" y1="${V.aT}" x2="${X(g)}" y2="${V.aB}" stroke="var(--grid)" stroke-width="1"/>`;
+    s+=`<line x1="${X(g)}" y1="${V.bT}" x2="${X(g)}" y2="${V.bB}" stroke="var(--grid)" stroke-width="1"/>`;
+  }
+  s+=`<line x1="${V.pl}" y1="${YA(0)}" x2="${V.w-V.pr}" y2="${YA(0)}" stroke="${COLORS.ink}" stroke-width="1.5"/>`;
+  s+=`<line x1="${V.pl}" y1="${YB(0)}" x2="${V.w-V.pr}" y2="${YB(0)}" stroke="${COLORS.ink}" stroke-width="1.5"/>`;
+  if(xlo<0&&xhi>0){
+    s+=`<line x1="${X(0)}" y1="${V.aT}" x2="${X(0)}" y2="${V.aB}" stroke="${COLORS.ink}" stroke-width="1.5"/>`;
+    s+=`<line x1="${X(0)}" y1="${V.bT}" x2="${X(0)}" y2="${V.bB}" stroke="${COLORS.ink}" stroke-width="1.5"/>`;
+  }
+  c.crit.forEach(t=>{
+    if(t<=L||t>=R) return;
+    s+=`<line x1="${X(t)}" y1="${V.aT}" x2="${X(t)}" y2="${V.bB}" stroke="${COLORS.gold}" stroke-width="1.4" stroke-dasharray="5 5"/>`;
+    s+=`<text x="${X(t)}" y="${V.bB+18}" text-anchor="middle" font-family="var(--font-mono)" font-size="12" font-weight="700" fill="${COLORS.gold}">${fmt(t)}</text>`;
+  });
+  const N=240; let da='', db='';
+  for(let i=0;i<=N;i++){
+    const x=L+(R-L)*i/N;
+    da+=(i?'L':'M')+X(x).toFixed(1)+' '+YA(c.ev(x)).toFixed(1);
+    const dv=c.d(x);
+    db+=(i?'L':'M')+X(x).toFixed(1)+' '+YB(dv).toFixed(1);
+  }
+  s+=`<path d="${da}" fill="none" stroke="${COLORS.ink}" stroke-width="2.8" stroke-linecap="round"/>`;
+  s+=`<path d="${db}" fill="none" stroke="${COLORS.right}" stroke-width="2.6" stroke-linecap="round"/>`;
+  // 극점 강조
+  (c.marks||[]).forEach(mk=>{
+    const col = mk.kind==='극대' ? COLORS.left : (mk.kind==='극소' ? COLORS.right : COLORS.inkSoft);
+    s+=`<circle cx="${X(mk.x)}" cy="${YA(c.ev(mk.x))}" r="8" fill="#fff" stroke="${col}" stroke-width="3"/>`;
+    s+=`<text x="${X(mk.x)}" y="${YA(c.ev(mk.x))+(mk.kind==='극대'?-15:24)}" text-anchor="middle" font-size="12.5" font-weight="800" fill="${col}">${mk.kind}</text>`;
+  });
+  s+=`<text x="${V.pl+6}" y="${V.aB-8}" font-family="var(--font-mono)" font-size="13" font-weight="800" fill="${COLORS.ink}">y = f(x)</text>`;
+  s+=`<text x="${V.pl+6}" y="${V.bB-8}" font-family="var(--font-mono)" font-size="13" font-weight="800" fill="${COLORS.right}">y = f ′(x)</text>`;
+  if(typeof cursorX==='number'){
+    const y0=c.ev(cursorX), m=c.d(cursorX);
+    const col = m>0.02?COLORS.success : m<-0.02?COLORS.left : COLORS.gold;
+    const dx=(R-L)*0.15;
+    s+=`<line x1="${X(cursorX)}" y1="${V.aT}" x2="${X(cursorX)}" y2="${V.bB}" stroke="${COLORS.inkSoft}" stroke-width="1.2" stroke-dasharray="4 4" opacity="0.7"/>`;
+    if(!(c.undiff||[]).some(u=>Math.abs(u-cursorX)<0.03))
+      s+=`<line x1="${X(cursorX-dx)}" y1="${YA(y0-m*dx)}" x2="${X(cursorX+dx)}" y2="${YA(y0+m*dx)}" stroke="${col}" stroke-width="3" stroke-linecap="round"/>`;
+    s+=`<circle cx="${X(cursorX)}" cy="${YA(y0)}" r="6.5" fill="${col}"/>`;
+    s+=`<circle cx="${X(cursorX)}" cy="${YB(m)}" r="6.5" fill="${col}"/>`;
+  }
+  return s;
+}
+
+// ============================================================
+// LAB — 증감표
+// ============================================================
+const LAB_CASES=[
+  { label:'① 삼차 · 극대와 극소', tex:'f(x)=x^{3}-3x',
+    ev:x=>x*x*x-3*x, d:x=>3*x*x-3, dom:[-2.3,2.3], crit:[-1,1], undiff:[] },
+  { label:'② 삼차 · 극값 없음', tex:'f(x)=x^{3}',
+    ev:x=>x*x*x, d:x=>3*x*x, dom:[-1.7,1.7], crit:[0], undiff:[] },
+  { label:'③ 사차 · 극값 3개', tex:'f(x)=x^{4}-2x^{2}',
+    ev:x=>x*x*x*x-2*x*x, d:x=>4*x*x*x-4*x, dom:[-1.75,1.75], crit:[-1,0,1], undiff:[] },
+  { label:'④ 미분불가능한 극소', tex:'f(x)=|x|',
+    ev:x=>Math.abs(x), d:x=> x<0?-1:1, dom:[-1.8,1.8], crit:[0], undiff:[0] },
+];
+function classify(c, t){
+  const e=Math.min(0.08, 0.4);
+  const l=c.d(t-e), r=c.d(t+e);
+  if(l>0 && r<0) return '극대';
+  if(l<0 && r>0) return '극소';
+  return '없음';
+}
+const LabApp=(function(){
+  let idx=0, tt=0.2;
+  function cur(){ return LAB_CASES[idx]; }
+  function xNow(){ const c=cur(); return Math.round((c.dom[0]+(c.dom[1]-c.dom[0])*tt)*100)/100; }
+  function renderChips(){
+    const box=document.getElementById('labChips'); box.innerHTML='';
+    LAB_CASES.forEach((c,i)=>{
+      const b=document.createElement('button');
+      b.className='chip'+(i===idx?' active':'');
+      b.textContent=c.label;
+      b.onclick=()=>{ idx=i; renderChips(); render(); };
+      box.appendChild(b);
+    });
+  }
+  function buildTable(c, x0){
+    const cs=c.crit.slice().sort((a,b)=>a-b);
+    // 셀 구성: [구간, 임계점, 구간, 임계점, ... , 구간]
+    const cells=[];
+    for(let i=0;i<=cs.length;i++){
+      const a=(i===0)?null:cs[i-1], b=(i===cs.length)?null:cs[i];
+      const mid=(a===null)?(cs[0]-1):((b===null)?(cs[cs.length-1]+1):(a+b)/2);
+      cells.push({ type:'gap', a, b, sign:c.d(mid)>0?1:-1 });
+      if(b!==null) cells.push({ type:'crit', x:b, kind:classify(c,b), undiff:(c.undiff||[]).some(u=>Math.abs(u-b)<1e-9) });
+    }
+    let rx='<tr><th>x</th>', rd='<tr><th>f ′(x)</th>', rf='<tr><th>f(x)</th>';
+    cells.forEach(cell=>{
+      const here = (cell.type==='crit')
+        ? Math.abs(x0-cell.x)<0.06
+        : ((cell.a===null||x0>cell.a) && (cell.b===null||x0<cell.b) && !cs.some(t=>Math.abs(x0-t)<0.06));
+      const hl = here?' here':'';
+      if(cell.type==='gap'){
+        const label = (cell.a===null?'⋯':'') + (cell.a!==null&&cell.b!==null?'⋯':'') + (cell.b===null?'⋯':'');
+        rx += `<td class="${hl.trim()}">⋯</td>`;
+        rd += `<td class="${(cell.sign>0?'plus':'minus')}${hl}">${cell.sign>0?'+':'−'}</td>`;
+        rf += `<td class="${hl.trim()}"><span class="arrow">${cell.sign>0?'↗':'↘'}</span></td>`;
+      } else {
+        rx += `<td class="crit${hl}">${fmt(cell.x)}</td>`;
+        rd += `<td class="zero${hl}">${cell.undiff?'없음':'0'}</td>`;
+        const val=fmt(c.ev(cell.x));
+        rf += `<td class="crit${hl}">${cell.kind==='없음' ? '<b>—</b>변곡' : `<b>${cell.kind}</b>${val}`}</td>`;
+      }
+    });
+    return rx+'</tr>'+rd+'</tr>'+rf+'</tr>';
+  }
+  function render(){
+    const c=cur(), x0=xNow();
+    c.marks = c.crit.map(t=>({x:t, kind:classify(c,t)})).filter(m=>m.kind!=='없음');
+    document.getElementById('labFn').innerHTML = KX(c.tex);
+    document.getElementById('labSvg').innerHTML = drawPair(c, x0);
+    document.getElementById('labTable').innerHTML = buildTable(c, x0);
+    document.getElementById('labX').innerHTML = KX(`x = ${fmt(x0)}`);
+
+    const note=document.getElementById('labNote');
+    const near=c.crit.find(t=>Math.abs(t-x0)<0.06);
+    if(near!==undefined){
+      const k=classify(c,near);
+      if(k==='없음') note.innerHTML='💡 여기서 ' + KX("f'(x)=0") + ' 이지만 부호가 <b>바뀌지 않아</b> 극값이 아니에요!';
+      else if((c.undiff||[]).some(u=>Math.abs(u-near)<1e-9)) note.innerHTML='💡 미분가능하지 않은 점인데도 <b>극소</b>예요. 극값 후보에는 미분불가능한 점도 포함돼요.';
+      else note.innerHTML=`💡 ${k}인 자리! 아래 ` + KX("f'") + ` 그래프가 x축을 가로지르는 게 보이죠?`;
+    } else if(idx===2 && x0>-0.06 && x0<0.06) note.textContent='';
+    else note.textContent='';
+  }
+  function init(){
+    renderChips();
+    const sl=document.getElementById('labSlider');
+    sl.value=tt;
+    sl.addEventListener('input',()=>{ tt=parseFloat(sl.value); render(); });
+    document.getElementById('labToGame').addEventListener('click',()=>showTab('game'));
+    render();
+  }
+  return { init };
+})();
+
+// ============================================================
+// 아레나 엔진 (기하 시리즈 GeoLab.Arena 방식을 미적분1에 이식)
+//   cfg = { id, kicker, title, desc, roundMs, count, createRounds(rng) }
+//   round = { q:HTML, choices:[HTML], correct:index, why:HTML }
+// ============================================================
+function Arena(root, cfg){
+  const self=this;
+  this.cfg=cfg; this.root=root; this.mode='solo'; this.rounds=[]; this.session=0; this.results=[];
+  this.raf=0; this.locked=false; this.sound=true; this.lastTick=-1;
+
+  root.innerHTML = `
+    <div data-screen="start">
+      <button class="back-link" data-quit-top>← 모드 선택으로</button>
+      <div class="card arena-hero">
+        <div class="arena-kicker">⚡ ${cfg.kicker}</div>
+        <h2 class="arena-title">${cfg.title}</h2>
+        <p class="arena-desc">${cfg.desc}</p>
+        <div class="name-grid">
+          <div class="name-field"><label>PLAYER 1</label><input data-p1 value="나" maxlength="8"></div>
+          <div class="name-field"><label>PLAYER 2</label><input data-p2 value="친구" maxlength="8"></div>
+        </div>
+        <label class="sound-row"><input type="checkbox" data-sound checked> 긴장감 효과음 켜기</label>
+        <div class="mode-grid">
+          <button class="mode-card" data-mode="solo"><strong>혼자 기록전</strong><small>내 최고 점수와 랭킹에 도전</small></button>
+          <button class="mode-card duel" data-mode="duel"><strong>친구와 1:1</strong><small>같은 기기에서 같은 8문제</small></button>
+        </div>
+        <div class="leaderboard"><h3>🏆 이 기기 TOP 5</h3><div data-leaders></div></div>
+      </div>
+    </div>
+    <div data-screen="play" class="hidden">
+      <div class="hud">
+        <div class="hud-item"><span>PLAYER</span><b data-hud-player>—</b></div>
+        <div class="hud-item"><span>ROUND</span><b data-hud-round>1/8</b></div>
+        <div class="hud-item"><span>SCORE</span><b data-hud-score>0</b></div>
+        <div class="hud-item combo"><span>COMBO · LIFE</span><b><i data-hud-combo style="font-style:normal">×1.0</i> <i data-hud-lives style="font-style:normal;color:#C1442D"></i></b></div>
+      </div>
+      <div class="timer-track"><div class="timer-fill" data-timer></div></div>
+      <div class="question-card">
+        <div class="question-kicker">QUICK DECISION</div>
+        <div class="question-text" data-question></div>
+      </div>
+      <div class="choice-grid" data-choices></div>
+      <button class="btn-secondary" style="margin-top:12px;" data-quit>게임 나가기</button>
+      <div class="feedback hidden" data-feedback>
+        <div class="feedback-icon" data-fb-icon></div>
+        <div class="feedback-title" data-fb-title></div>
+        <div class="feedback-sub" data-fb-sub></div>
+        <div class="feedback-points" data-fb-points></div>
+      </div>
+    </div>
+    <div data-screen="handoff" class="hidden">
+      <div class="card handoff">
+        <div class="handoff-icon">⚔️</div>
+        <h2><span data-handoff-name></span> 차례!</h2>
+        <p data-handoff-score></p>
+        <p>문제 순서까지 <b>완전히 같습니다.</b> 화면을 넘겨주세요.</p>
+        <button class="btn-danger" data-next-player>두 번째 선수 시작</button>
+      </div>
+    </div>
+    <div data-screen="end" class="hidden">
+      <div class="card end-screen">
+        <h2>경기 종료</h2>
+        <div data-solo-result>
+          <div class="final-score" data-final-score>0</div>
+          <p data-final-summary></p>
+        </div>
+        <div class="hidden" data-duel-result>
+          <div class="duel-board">
+            <div class="duel-player" data-duel1><b data-duel1-name></b><strong data-duel1-score></strong></div>
+            <div class="duel-player" data-duel2><b data-duel2-name></b><strong data-duel2-score></strong></div>
+          </div>
+          <div class="winner-line" data-winner></div>
+        </div>
+        <button class="btn-primary" data-replay>다시 도전</button>
+      </div>
+    </div>`;
+
+  this.q = sel => root.querySelector(sel);
+  this.show = name => root.querySelectorAll('[data-screen]').forEach(n=>n.classList.toggle('hidden', n.dataset.screen!==name));
+
+  this.beep = function(kind){
+    if(!self.sound) return;
+    try{
+      const A=self.audio||(self.audio=new (window.AudioContext||window.webkitAudioContext)());
+      const o=A.createOscillator(), g=A.createGain();
+      o.connect(g); g.connect(A.destination);
+      o.frequency.value = kind==='good'?880 : kind==='bad'?170 : 560;
+      o.type = kind==='bad'?'sawtooth':'sine';
+      g.gain.setValueAtTime(0.05, A.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, A.currentTime+(kind==='tick'?0.09:0.2));
+      o.start(); o.stop(A.currentTime+0.22);
+    }catch(e){}
+  };
+  this.lbKey = 'jp_calc_arena_'+cfg.id;
+  this.loadLeaders = function(){ try{ const v=localStorage.getItem(self.lbKey); return v?JSON.parse(v):[]; }catch(e){ return []; } };
+  this.saveLeader = function(name, score){
+    try{
+      const list=self.loadLeaders();
+      list.push({name:name||'익명', score});
+      list.sort((a,b)=>b.score-a.score);
+      localStorage.setItem(self.lbKey, JSON.stringify(list.slice(0,5)));
+    }catch(e){}
+  };
+  this.renderLeaders = function(){
+    const box=self.q('[data-leaders]'), list=self.loadLeaders();
+    box.innerHTML='';
+    if(!list.length){ box.innerHTML='<div class="leader-row"><span>—</span><span>첫 기록에 도전하세요</span><b>0</b></div>'; return; }
+    list.forEach((r,i)=>{
+      const row=document.createElement('div');
+      row.className='leader-row';
+      row.innerHTML=`<span>${['🥇','🥈','🥉','4','5'][i]||i+1}</span><span></span><b>${r.score}</b>`;
+      row.children[1].textContent=r.name;
+      box.appendChild(row);
+    });
+  };
+  this.playerName = function(){
+    return (self.mode==='duel' && self.session===1) ? (self.q('[data-p2]').value||'친구') : (self.q('[data-p1]').value||'나');
+  };
+  this.stopTimer = function(){ cancelAnimationFrame(self.raf); };
+  this.start = function(mode){
+    self.mode=mode;
+    self.sound=self.q('[data-sound]').checked;
+    self.seed = (Date.now() ^ Math.floor(Math.random()*1e9)) >>> 0;
+    self.rounds = cfg.createRounds(seeded(self.seed), cfg.count||8);
+    self.results=[];
+    self.startSession(0);
+  };
+  this.startSession = function(i){
+    self.session=i;
+    self.state={ round:0, score:0, streak:0, lives:3, correct:0 };
+    self.show('play'); self.beginRound();
+  };
+  this.mult = function(){ return 1+Math.min(2, Math.floor(self.state.streak/3)*0.5); };
+  this.updateHud = function(){
+    self.q('[data-hud-player]').textContent=self.playerName();
+    self.q('[data-hud-round]').textContent=`${Math.min(self.state.round+1, self.rounds.length)}/${self.rounds.length}`;
+    self.q('[data-hud-score]').textContent=self.state.score;
+    self.q('[data-hud-combo]').textContent='×'+self.mult().toFixed(1);
+    self.q('[data-hud-lives]').textContent='♥'.repeat(self.state.lives)+'♡'.repeat(3-self.state.lives);
+  };
+  this.beginRound = function(){
+    if(self.state.round>=self.rounds.length || self.state.lives<=0){ self.finishSession(); return; }
+    self.locked=false; self.lastTick=-1; self.updateHud();
+    const r=self.rounds[self.state.round];
+    self.q('[data-question]').innerHTML=r.q;
+    renderStaticMath(self.q('[data-question]'));
+    const grid=self.q('[data-choices]'); grid.innerHTML='';
+    r.choices.forEach((html,i)=>{
+      const b=document.createElement('button');
+      b.type='button'; b.className='choice'; b.innerHTML=html;
+      b.addEventListener('click',()=>self.answer(i));
+      grid.appendChild(b);
+    });
+    renderStaticMath(grid);
+    self.startTimer();
+  };
+  this.startTimer = function(){
+    const total=cfg.roundMs||9000, t0=performance.now();
+    self.stopTimer();
+    const fill=self.q('[data-timer]');
+    (function tick(now){
+      const remain=Math.max(0, total-((now||performance.now())-t0)), ratio=remain/total;
+      fill.style.width=(ratio*100)+'%';
+      fill.classList.toggle('danger', ratio<0.32);
+      const sec=Math.ceil(remain/1000);
+      if(sec<=3 && sec!==self.lastTick){ self.lastTick=sec; self.beep('tick'); }
+      if(remain<=0){ self.answer(-1, true); return; }
+      self.ratio=ratio;
+      self.raf=requestAnimationFrame(tick);
+    })(performance.now());
+  };
+  this.answer = function(index, timeout){
+    if(self.locked) return; self.locked=true;
+    const ratio=self.ratio||0;
+    self.stopTimer();
+    const r=self.rounds[self.state.round], ok=(index===r.correct);
+    root.querySelectorAll('[data-choices] .choice').forEach((b,i)=>{
+      b.disabled=true;
+      if(i===r.correct) b.classList.add('correct');
+      else if(i===index) b.classList.add('wrong');
+    });
+    let points=0;
+    if(ok){
+      self.state.streak++; self.state.correct++;
+      points=Math.round((100+ratio*100)*self.mult());
+      self.state.score+=points; self.beep('good');
+    } else {
+      self.state.streak=0; self.state.lives--; self.beep('bad');
+      const play=self.q('[data-screen="play"]');
+      play.classList.add('shake'); setTimeout(()=>play.classList.remove('shake'),500);
+    }
+    self.updateHud();
+    const fb=self.q('[data-feedback]');
+    fb.className='feedback '+(ok?'good':'bad');
+    self.q('[data-fb-icon]').textContent = ok?'✓':(timeout?'⌛':'✕');
+    self.q('[data-fb-title]').textContent = ok?(self.state.streak>=3?'콤보 폭발!':'정답!'):(timeout?'시간 초과!':'라이프 −1');
+    self.q('[data-fb-sub]').innerHTML = r.why;
+    renderStaticMath(self.q('[data-fb-sub]'));
+    self.q('[data-fb-points]').textContent = ok?`+${points}점`:'+0점';
+    fb.classList.remove('hidden');
+    setTimeout(()=>{ fb.classList.add('hidden'); self.state.round++; self.beginRound(); }, ok?1200:2000);
+  };
+  this.finishSession = function(){
+    self.stopTimer();
+    self.results.push({ name:self.playerName(), score:self.state.score, correct:self.state.correct });
+    if(self.mode==='duel' && self.session===0){
+      self.q('[data-handoff-name]').textContent=(self.q('[data-p2]').value||'친구');
+      self.q('[data-handoff-score]').textContent=`${self.results[0].name} 선수 ${self.results[0].score}점 · ${self.results[0].correct}개 정답`;
+      self.show('handoff'); return;
+    }
+    self.renderEnd();
+  };
+  this.renderEnd = function(){
+    self.show('end');
+    const solo=self.q('[data-solo-result]'), duel=self.q('[data-duel-result]');
+    if(self.mode==='solo'){
+      solo.classList.remove('hidden'); duel.classList.add('hidden');
+      const r=self.results[0];
+      self.q('[data-final-score]').textContent=r.score;
+      const best=self.loadLeaders()[0];
+      self.q('[data-final-summary]').textContent =
+        `${r.correct}개 정답` + ((!best || r.score>best.score) ? ' · 🎉 이 기기 최고 기록!' : ` · 최고 기록은 ${best.score}점`);
+      self.saveLeader(r.name, r.score);
+    } else {
+      solo.classList.add('hidden'); duel.classList.remove('hidden');
+      const [a,b]=self.results;
+      self.q('[data-duel1-name]').textContent=a.name; self.q('[data-duel1-score]').textContent=a.score;
+      self.q('[data-duel2-name]').textContent=b.name; self.q('[data-duel2-score]').textContent=b.score;
+      self.q('[data-duel1]').classList.toggle('winner', a.score>b.score);
+      self.q('[data-duel2]').classList.toggle('winner', b.score>a.score);
+      self.q('[data-winner]').textContent = a.score===b.score ? '무승부! 다시 한 판?' : `🏆 ${(a.score>b.score?a:b).name} 승리!`;
+      self.saveLeader(a.name, a.score); self.saveLeader(b.name, b.score);
+    }
+    self.renderLeaders();
+  };
+
+  root.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>self.start(b.dataset.mode)));
+  this.q('[data-next-player]').addEventListener('click',()=>self.startSession(1));
+  this.q('[data-replay]').addEventListener('click',()=>{ self.renderLeaders(); self.show('start'); });
+  this.q('[data-quit]').addEventListener('click',()=>{ self.stopTimer(); self.renderLeaders(); self.show('start'); });
+  this.q('[data-quit-top]').addEventListener('click',()=>{ self.stopTimer(); showGameMode('select'); });
+  window.addEventListener('jp:leavegame',()=>{ self.stopTimer(); self.show('start'); });
+  this.renderLeaders();
+  this.show('start');
+}
+
+// ============================================================
+// 게임 모드 전환
+// ============================================================
+function showGameMode(mode){
+  document.getElementById('modeSelect').classList.toggle('hidden', mode!=='select');
+  document.getElementById('peakArena').classList.toggle('hidden', mode!=='peak');
+  document.getElementById('signArena').classList.toggle('hidden', mode!=='sign');
+  document.getElementById('gameHeader').classList.toggle('hidden', mode!=='select');
+  document.getElementById('gameFooter').classList.toggle('hidden', mode!=='select');
+}
+
+// 인수 표기 헬퍼 — 근이 0이면 (x - 0) 대신 그냥 x 로 쓴다
+function facTex(r, e){
+  const base = (r===0) ? 'x' : `(x ${r<0?'+':'-'} ${Math.abs(r)})`;
+  return base + (e>1 ? `^{${e}}` : '');
+}
+
+// ============================================================
+// 아레나 ① 극값 사냥 — 삼차함수의 극댓값·극솟값
+// ============================================================
+function makePeakRounds(rng, count){
+  const rounds=[];
+  let guard=0;
+  while(rounds.length<count && guard++<3000){
+    const k=rPick(rng,[1,-1]);
+    let p=riInt(rng,-3,2), q=riInt(rng,p+1,3);
+    if((p+q)%2!==0) continue;
+    const A=-3*k*(p+q)/2, B=3*k*p*q, C=riInt(rng,-4,4);
+    const f=[C,B,A,k];                                  // f' = 3k(x-p)(x-q)
+    const maxAt = k>0 ? p : q, minAt = k>0 ? q : p;
+    const fMax=pEval(f,maxAt), fMin=pEval(f,minAt);
+    if(Math.abs(fMax-fMin)<1e-9) continue;
+    const askMax = rng()<0.5;
+    const ans = askMax?fMax:fMin, other = askMax?fMin:fMax;
+    const pos = askMax?maxAt:minAt;
+    const cands=[other, pos, ans+riInt(rng,1,3), ans-riInt(rng,1,3), C];
+    const wrongs=[];
+    shuffleR(cands, rng).forEach(v=>{
+      if(wrongs.length>=3) return;
+      if(Math.abs(v-ans)<1e-9) return;
+      if(wrongs.some(w=>Math.abs(w-v)<1e-9)) return;
+      wrongs.push(v);
+    });
+    if(wrongs.length<3) continue;
+    const opts=shuffleR(wrongs.map(v=>({v,ok:false})).concat([{v:ans,ok:true}]), rng);
+    rounds.push({
+      q: KX(`f(x) = ${pTex(f)}`) + `<br><span style="font-size:14px">이 함수의 <b>${askMax?'극댓값':'극솟값'}</b>은?</span>`,
+      choices: opts.map(o=>KX(String(o.v))),
+      correct: opts.findIndex(o=>o.ok),
+      why: KX(`f'(x) = ${pTex(pDer(f))} = ${3*k}${facTex(p,1)}${facTex(q,1)}`) +
+           `<br>${askMax?'극대':'극소'}는 ` + KX(`x = ${pos}`) + ` 에서, 값은 ` + KX(`${ans}`) + ` 예요.`
+    });
+  }
+  return rounds;
+}
+
+// ============================================================
+// 아레나 ② 부호 변화 판독 — 중근 함정
+// ============================================================
+function makeSignRounds(rng, count){
+  const rounds=[];
+  const KIND=['극대','극소','극값 아님'];
+  let guard=0;
+  while(rounds.length<count && guard++<3000){
+    const k=rPick(rng,[1,-1]);
+    let p=riInt(rng,-3,1), q=riInt(rng,p+1,3);
+    const m=rPick(rng,[1,1,1,2]), n=rPick(rng,[1,1,2]);   // 중근 함정이 절반 정도 나오도록
+    const d = x => k*Math.pow(x-p,m)*Math.pow(x-q,n);
+    const cls = t => { const l=d(t-0.05), r=d(t+0.05);
+      if(l>0&&r<0) return '극대'; if(l<0&&r>0) return '극소'; return '극값 아님'; };
+    const kp=cls(p), kq=cls(q);
+    const correctLabel=`x=${p} : ${kp} / x=${q} : ${kq}`;
+    // 오답: 나머지 조합 중 3개
+    const all=[];
+    KIND.forEach(a=>KIND.forEach(b=>{ if(!(a===kp&&b===kq)) all.push(`x=${p} : ${a} / x=${q} : ${b}`); }));
+    const wrongs=shuffleR(all, rng).slice(0,3);
+    const opts=shuffleR(wrongs.map(t=>({t,ok:false})).concat([{t:correctLabel,ok:true}]), rng);
+    const dTex=`${k<0?'-':''}${facTex(p,m)}${facTex(q,n)}`;
+    const tip = (m%2===0||n%2===0)
+      ? `<b>짝수 제곱</b>이 붙은 인수는 그 점에서 부호를 바꾸지 않아요 → 극값이 아니에요.`
+      : `두 인수 모두 홀수 차라 각 점에서 부호가 바뀌어요.`;
+    rounds.push({
+      q: KX(`f'(x) = ${dTex}`) + `<br><span style="font-size:14px">두 점에서 \\(f\\)는 각각?</span>`,
+      choices: opts.map(o=>o.t),
+      correct: opts.findIndex(o=>o.ok),
+      why: `정답: <b>${correctLabel}</b><br>${tip}`
+    });
+  }
+  return rounds;
+}
+
+// ============================================================
+// 초기화
+// ============================================================
+LabApp.init();
+const peakArena = new Arena(document.getElementById('peakArena'), {
+  id:'peak', kicker:'EXTREME HUNT', title:'극값 사냥',
+  desc:'8문제 · 문제당 10초 · 라이프 3개. 빠를수록 점수가 높습니다.',
+  roundMs:10000, count:8, createRounds:makePeakRounds
+});
+const signArena = new Arena(document.getElementById('signArena'), {
+  id:'sign', kicker:'SIGN FLIP', title:'부호 변화 판독',
+  desc:'8문제 · 문제당 9초 · 라이프 3개. 중근이 보이면 한 번 더 생각하세요.',
+  roundMs:9000, count:8, createRounds:makeSignRounds
+});
+document.getElementById('btnModePeak').addEventListener('click',()=>showGameMode('peak'));
+document.getElementById('btnModeSign').addEventListener('click',()=>showGameMode('sign'));
+document.getElementById('ctaToLab').addEventListener('click',()=>showTab('lab'));
+document.getElementById('ctaToGame').addEventListener('click',()=>showTab('game'));
+document.getElementById('toTheory').addEventListener('click',e=>{ e.preventDefault(); showTab('theory'); });
+renderStaticMath(document.getElementById('page-theory'));
+renderStaticMath(document.getElementById('page-lab'));
+renderStaticMath(document.getElementById('modeSelect'));
+showGameMode('select');
+showTab('theory');
+</script>
+</body>
+</html>

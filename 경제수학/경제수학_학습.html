@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="경제용어 설명, 원리, 조작 활동, 확인 문제로 배우는 경제수학 학습실">
+  <title>경제수학 학습실 · JP Math Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="경제수학_학습.css">
+</head>
+<body>
+  <header class="topbar"><a href="교과서학습.html">← 개념 목록</a><span>ECONOMIC MATHEMATICS</span><a href="index.html">경제수학 홈</a></header>
+  <main>
+    <section class="lesson-hero" data-hero>
+      <div><p class="lesson-code" data-code></p><h1 data-title>경제수학</h1><p data-lede></p></div>
+      <span class="chapter-badge" data-chapter></span>
+    </section>
+
+    <nav class="tabs" aria-label="학습 단계">
+      <button class="active" type="button" data-tab="terms"><b>01</b> 용어부터</button>
+      <button type="button" data-tab="principle"><b>02</b> 원리 보기</button>
+      <button type="button" data-tab="lab"><b>03</b> 직접 조작</button>
+      <button type="button" data-tab="check"><b>04</b> 확인 문제</button>
+    </nav>
+
+    <section class="panel active" data-panel="terms">
+      <div class="section-title"><span>ECON WORDS</span><h2>수학식 전에, 말부터 이해해요</h2><p>낯선 경제용어를 일상적인 말과 장면으로 바꾸어 봅시다.</p></div>
+      <div class="term-grid" data-terms></div>
+      <button class="next-step" type="button" data-go="principle">원리로 이어가기 →</button>
+    </section>
+
+    <section class="panel" data-panel="principle" hidden>
+      <div class="section-title"><span>MATH PRINCIPLE</span><h2 data-principle-title></h2><p data-principle-copy></p></div>
+      <div class="principle-card"><div class="formula" data-formula></div><div><b>숫자로 보면</b><p data-example></p></div></div>
+      <div class="misconception"><span>헷갈리기 쉬워요</span><p data-warning></p></div>
+      <button class="next-step" type="button" data-go="lab">직접 움직여 보기 →</button>
+    </section>
+
+    <section class="panel" data-panel="lab" hidden>
+      <div class="section-title"><span>INTERACTIVE LAB</span><h2 data-lab-title></h2><p>값을 여러 번 바꾸어 보세요. 결과는 저장되지 않으니 마음껏 실험해도 됩니다.</p></div>
+      <div class="lab-shell" data-lab></div>
+      <button class="next-step" type="button" data-go="check">한 문제로 확인하기 →</button>
+    </section>
+
+    <section class="panel" data-panel="check" hidden>
+      <div class="section-title"><span>QUICK CHECK</span><h2>이제 스스로 판단해 볼까요?</h2><p>정답을 고르면 바로 이유를 확인할 수 있습니다.</p></div>
+      <div class="quiz-card"><span class="quiz-label">확인 문제</span><h3 data-question></h3><div class="answers" data-answers></div><div class="feedback" data-feedback hidden></div></div>
+      <div class="finish-actions"><button type="button" data-retry>다시 풀기</button><a data-next-topic href="교과서학습.html">다음 개념 →</a></div>
+    </section>
+  </main>
+  <footer><a href="교과서학습.html">← 15개 개념 목록으로</a><span>기록·로그인 없이 바로 학습</span></footer>
+  <script src="경제수학_학습.js"></script>
+</body>
+</html>

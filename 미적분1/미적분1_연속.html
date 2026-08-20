@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>연속 학습 스위트 · 석산고 미적분</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700;900&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- KaTeX (자체 호스팅) — 동기 로드: 하단 인라인 스크립트가 katex 전역을 즉시 쓰기 때문 -->
+<link rel="stylesheet" href="../vendor/katex/katex.min.css">
+<script src="../vendor/katex/katex.min.js"></script>
+<script src="../vendor/katex/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  --paper:#EFF3EE; --panel:#FFFFFF; --grid:#D8E2D3; --dot:#E2E9DE;
+  --ink:#223027; --inkSoft:#5C6B60;
+  --left:#C1442D; --right:#2B6CA3; --gold:#C99A2E; --success:#3F7D4C; --border:#D3DAD0;
+  --font-display:'Noto Serif KR', serif;
+  --font-body:'IBM Plex Sans KR','Pretendard',sans-serif;
+  --font-mono:'IBM Plex Mono','Menlo',monospace;
+}
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); }
+.page-bg{ background-image:radial-gradient(var(--dot) 1px, transparent 1px); background-size:20px 20px; min-height:100vh; }
+.wrap{ max-width:600px; margin:0 auto; padding:14px 14px 40px; }
+.hidden{ display:none !important; }
+.mono{ font-family:var(--font-mono); }
+.card{ background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:18px; }
+.btn-primary{ width:100%; padding:14px; border-radius:14px; border:none; background:var(--ink); color:var(--paper); font-weight:700; font-size:15px; cursor:pointer; }
+.btn-secondary{ width:100%; padding:14px; border-radius:14px; border:1.5px solid var(--border); background:#fff; color:var(--ink); font-weight:600; font-size:14px; cursor:pointer; }
+
+.tabbar{ position:sticky; top:0; z-index:20; background:var(--paper); padding:10px 14px 8px; border-bottom:1px solid var(--border); }
+.tabbar-inner{ max-width:600px; margin:0 auto; display:flex; gap:8px; }
+.tab-btn{ flex:1; font-family:var(--font-body); font-size:12.5px; font-weight:700; padding:10px 6px; border-radius:12px; border:1.5px solid var(--border); background:var(--panel); color:var(--inkSoft); cursor:pointer; text-align:center; }
+.tab-btn.active{ border-color:var(--ink); background:var(--ink); color:var(--paper); }
+.tab-back{ flex:0 0 38px; display:flex; align-items:center; justify-content:center; border-radius:12px; border:1.5px solid var(--border); background:var(--panel); color:var(--inkSoft); text-decoration:none; font-size:16px; font-weight:700; }
+.tab-back:hover{ border-color:var(--ink); color:var(--ink); }
+
+.eyebrow{ font-family:var(--font-mono); font-size:11.5px; letter-spacing:1.5px; color:var(--inkSoft); text-transform:uppercase; margin-bottom:6px; }
+.title{ font-family:var(--font-display); font-weight:900; font-size:23px; margin:0 0 5px; line-height:1.28; }
+.desc{ color:var(--inkSoft); font-size:13px; line-height:1.55; margin:0 0 14px; }
+
+/* ---------- theory ---------- */
+.theory-section{ margin-bottom:18px; }
+.theory-h2{ font-family:var(--font-display); font-weight:900; font-size:18px; margin:0 0 8px; }
+.theory-p{ font-size:13.5px; line-height:1.7; color:var(--ink); margin:0 0 10px; }
+.theorem-box{ background:#FBF3E0; border:1.5px solid var(--gold); border-radius:14px; padding:14px 16px; margin-bottom:10px; }
+.theorem-eyebrow{ font-family:var(--font-mono); font-size:10.5px; letter-spacing:1px; color:var(--gold); text-transform:uppercase; margin-bottom:6px; font-weight:700; }
+.theorem-formula{ font-family:var(--font-mono); font-size:13.5px; font-weight:600; line-height:1.85; }
+.case-grid{ display:grid; grid-template-columns:1fr; gap:12px; }
+.case-card{ background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:12px; }
+.case-card-title{ font-weight:700; font-size:14px; margin:8px 0 4px; }
+.case-card-desc{ font-size:12.5px; color:var(--inkSoft); line-height:1.55; margin:0 0 10px; }
+.case-svg-wrap{ position:relative; width:100%; padding-bottom:62.5%; background:var(--paper); border-radius:10px; overflow:hidden; }
+.case-svg-wrap svg{ position:absolute; inset:0; width:100%; height:100%; }
+.case-link{ width:100%; padding:9px; border-radius:10px; border:1.5px solid var(--ink); background:#fff; color:var(--ink); font-weight:600; font-size:12.5px; cursor:pointer; }
+.misconception{ background:#F7E9E5; border:1.5px solid var(--left); border-radius:14px; padding:12px 14px; margin-bottom:10px; }
+.misconception-title{ font-weight:700; font-size:13px; color:var(--left); margin-bottom:4px; }
+.misconception-body{ font-size:12.5px; color:var(--ink); line-height:1.6; }
+.cta-row{ display:flex; gap:10px; margin-top:16px; }
+.prereq-note{ background:var(--panel); border:1px dashed var(--border); border-radius:12px; padding:10px 12px; font-size:12px; color:var(--inkSoft); margin-bottom:16px; line-height:1.6; }
+
+/* ---------- lab ---------- */
+.lab-chips{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:6px; }
+.chip{ font-family:var(--font-body); font-size:13px; font-weight:600; padding:9px 13px; border-radius:999px; border:1.5px solid var(--border); background:var(--panel); color:var(--ink); cursor:pointer; }
+.chip.active{ border-color:var(--ink); background:var(--ink); color:var(--paper); }
+.lab-subtitle{ font-size:12.5px; color:var(--inkSoft); margin:0 0 14px; }
+.lab-layout{ display:flex; flex-direction:column; gap:16px; }
+.lab-graph-card{ background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:12px; }
+.lab-svg-wrap{ position:relative; width:100%; padding-bottom:65.625%; }
+.lab-svg-wrap svg{ position:absolute; inset:0; width:100%; height:100%; touch-action:none; cursor:grab; display:block; }
+.cond-box{ background:#fff; border:1.5px solid var(--c); border-radius:14px; padding:12px; margin-bottom:10px; }
+.cond-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px; }
+.cond-label{ font-size:12.5px; font-weight:700; color:var(--c); }
+.cond-mini-btn{ font-family:var(--font-body); font-size:11.5px; font-weight:600; padding:6px 10px; border-radius:9px; border:1.5px solid var(--c); background:#fff; color:var(--c); cursor:pointer; }
+.cond-value{ font-family:var(--font-mono); font-size:17px; font-weight:700; color:var(--c); }
+.ll-fog{ filter:blur(5px); opacity:.35; transition:filter .5s ease, opacity .5s ease; }
+.ll-clear{ filter:blur(0); opacity:1; transition:filter .6s ease, opacity .6s ease; }
+.limits-row{ display:flex; gap:8px; margin-top:8px; }
+.limit-mini{ flex:1; min-width:0; }
+.limit-mini-label{ font-size:10.5px; color:var(--inkSoft); margin-bottom:2px; }
+.limit-mini-value{ font-family:var(--font-mono); font-size:15px; font-weight:700; }
+.verdict{ border-radius:14px; padding:13px; margin-bottom:12px; }
+.verdict.ok{ background:#EAF3EA; border:1.5px solid var(--success); }
+.verdict.bad{ background:#F7E9E5; border:1.5px solid var(--left); }
+.a-btn{ font-family:var(--font-mono); font-size:12.5px; font-weight:600; padding:6px 11px; border-radius:10px; border:1.5px solid var(--border); background:var(--panel); cursor:pointer; margin-right:6px; }
+.a-btn.active{ border-color:var(--gold); background:#FBF3E0; }
+.lab-actions{ display:flex; gap:8px; margin-top:2px; }
+.act-btn{ flex:1; display:flex; align-items:center; justify-content:center; gap:6px; font-family:var(--font-body); font-size:12.5px; font-weight:600; padding:10px; border-radius:12px; border:1.5px solid var(--c); background:#fff; color:var(--c); cursor:pointer; }
+input[type=range]{ width:100%; accent-color:var(--ink); margin:10px 0; }
+
+/* ---------- arcade game ---------- */
+.arcade-header.hidden{ display:none !important; }
+.arcade-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.arcade-score{ font-family:var(--font-mono); font-size:14px; color:var(--inkSoft); }
+.arcade-score b{ color:var(--ink); font-size:19px; }
+.arcade-lives{ font-size:18px; letter-spacing:2px; }
+.arcade-timerbar-wrap{ width:100%; height:8px; background:var(--grid); border-radius:999px; overflow:hidden; margin-bottom:12px; }
+.arcade-timerbar-fill{ height:100%; border-radius:999px; background:var(--success); }
+.arcade-card-wrap{ position:relative; background:var(--panel); border:2px solid var(--ink); border-radius:18px; padding:10px; margin-bottom:14px; }
+.arcade-svg-wrap{ position:relative; width:100%; padding-bottom:66%; }
+.arcade-svg-wrap svg{ position:absolute; inset:0; width:100%; height:100%; }
+.arcade-feedback{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; padding:16px; background:rgba(255,255,255,.96); border-radius:16px; opacity:0; pointer-events:none; transition:opacity .15s ease; font-size:13px; font-weight:600; line-height:1.6; }
+.arcade-feedback.show{ opacity:1; }
+.arcade-feedback.good{ color:var(--success); }
+.arcade-feedback.bad{ color:var(--left); }
+.arcade-buttons{ display:flex; gap:10px; }
+.arcade-btn{ flex:1; padding:18px; border-radius:16px; border:none; font-size:16px; font-weight:800; cursor:pointer; color:#fff; }
+.arcade-btn-bad{ background:var(--left); }
+.arcade-btn-good{ background:var(--success); }
+.arcade-btn:disabled{ opacity:.5; }
+.end-score{ font-family:var(--font-mono); font-size:38px; font-weight:700; text-align:center; margin:6px 0 4px; }
+.end-sub{ text-align:center; color:var(--inkSoft); font-size:13px; margin-bottom:8px; }
+.lb-title{ font-family:var(--font-display); font-weight:900; font-size:19px; margin:0 0 4px; }
+
+/* ---------- KaTeX 통합 (기존 서식 보존용) ---------- */
+/* 방침: 수식 표기만 KaTeX. 실시간 숫자 readout(.cond-value, .limit-mini-value)은 mono 유지. */
+.katex{ font-size:1.05em; }
+.katex .base{ white-space:nowrap; }
+.theorem-formula .katex{ font-size:1.02em; }
+.limit-mini-label .katex{ font-size:0.95em; }
+.misconception-body .katex, .theory-p .katex{ font-size:1em; }
+.verdict .katex{ font-size:1em; }
+.theorem-formula{ overflow-x:auto; overflow-y:hidden; }
+
+@media (prefers-reduced-motion: reduce){ .arcade-feedback,.ll-fog,.ll-clear{ transition:none; } }
+</style>
+</head>
+<body>
+<div class="page-bg">
+
+<div class="tabbar">
+  <div class="tabbar-inner">
+    <a href="index.html" class="tab-back" aria-label="목록으로 돌아가기" title="미적분Ⅰ 목록으로">←</a>
+    <button class="tab-btn active" data-tab="theory">① 원리</button>
+    <button class="tab-btn" data-tab="lab">② 실험실</button>
+    <button class="tab-btn" data-tab="game">③ 게임</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ================= THEORY PAGE ================= -->
+<div id="page-theory">
+  <div class="eyebrow">석산고 미적분 · 연속 학습 스위트</div>
+  <h1 class="title">연속, 세 조건을 모두 통과해야 한다</h1>
+  <p class="desc">극한 위에 쌓는 개념이에요. 개념을 읽고, 실험실에서 3가지 조건을 직접 체크해보고, 게임으로 순발력을 길러보세요.</p>
+
+  <div class="prereq-note">🔗 이전 단원: 극한 학습 스위트에서 좌극한·우극한 개념을 먼저 다졌다면 이해가 훨씬 쉬워요. 가물가물하면 그 자료를 먼저 복습해보세요.</div>
+
+  <div class="theory-section">
+    <div class="theory-h2">1. 연속이란?</div>
+    <p class="theory-p">함수 f(x)가 \(x=a\)에서 <b>연속</b>이라는 건, 그래프가 그 점에서 끊기지 않고 매끄럽게 이어진다는 뜻이에요. 이걸 엄밀하게 판정하려면 아래 세 가지를 전부 확인해야 해요.</p>
+    <div class="theorem-box">
+      <div class="theorem-eyebrow">정의 · f(x)가 x=a에서 연속이려면</div>
+      <div class="theorem-formula">
+        ① \(f(a)\) 가 정의된다 (함숫값이 존재)<br>
+        ② \(\lim\limits_{x \to a} f(x)\) 가 존재한다 (좌극한 = 우극한)<br>
+        ③ \(\lim\limits_{x \to a} f(x) = f(a)\) (극한값 = 함숫값)
+      </div>
+    </div>
+    <p class="theory-p">세 개 중 <b>하나라도</b> 어긋나면 그 점에서 불연속이에요. 셋 다 만족해야만 연속입니다.</p>
+  </div>
+
+  <div class="theory-section">
+    <div class="theory-h2">2. 조건이 하나씩 깨지면 어떻게 될까?</div>
+    <p class="theory-p">아래 네 그래프는 실험실에서 그대로 다시 볼 수 있어요. 각각 어떤 조건이 문제인지 눌러서 확인해보세요.</p>
+    <div class="case-grid" id="caseGrid"></div>
+  </div>
+
+  <div class="theory-section">
+    <div class="theory-h2">3. 자주 하는 오해</div>
+    <div class="misconception">
+      <div class="misconception-title">❌ f(a)가 정의되어 있으면 연속이다?</div>
+      <div class="misconception-body">아니에요. 함숫값이 있어도 극한이 없거나, 극한값과 \(f(a)\)가 다르면 불연속이에요. 세 조건을 다 봐야 해요.</div>
+    </div>
+    <div class="misconception">
+      <div class="misconception-title">❌ 극한이 존재하면 연속이다?</div>
+      <div class="misconception-body">극한이 있어도 \(f(a)\)가 정의되지 않았거나, 극한값과 \(f(a)\)가 다르면 불연속이에요. "제거가능 불연속"이 바로 이 함정이에요.</div>
+    </div>
+    <div class="misconception">
+      <div class="misconception-title">❌ 그래프가 눈으로 안 끊어져 보이면 연속이다?</div>
+      <div class="misconception-body">교과서 문제는 일부러 한 점만 다른 값으로 "몰래" 재정의해두는 경우가 많아요. 눈대중이 아니라 \(f(a)\) 값을 직접 확인하는 습관이 중요해요.</div>
+    </div>
+    <div class="misconception">
+      <div class="misconception-title">❌ 한 점에서 불연속이면 그 근처도 다 불연속이다?</div>
+      <div class="misconception-body">불연속은 "그 점 하나"의 성질이에요. 바로 옆 점들은 멀쩡히 연속일 수 있어요.</div>
+    </div>
+  </div>
+
+  <div class="cta-row">
+    <button class="btn-primary" id="ctaToLab">🧪 실험실에서 조건 체크해보기</button>
+  </div>
+  <div class="cta-row">
+    <button class="btn-secondary" id="ctaToGame">🎮 아케이드로 순발력 테스트</button>
+  </div>
+</div>
+
+<!-- ================= LAB PAGE ================= -->
+<div id="page-lab" class="hidden">
+  <div class="eyebrow">석산고 미적분 · Interactive Lab</div>
+  <h1 class="title">연속 조건 체크 실험실</h1>
+  <p class="desc">세 조건을 하나씩 직접 확인해보세요. f(a)는 바로 대입, 극한은 approach해서 확인합니다.</p>
+
+  <div class="lab-chips" id="labChips"></div>
+  <p class="lab-subtitle" id="labSubtitle"></p>
+
+  <div class="lab-layout">
+    <div class="lab-graph-card">
+      <div class="lab-svg-wrap"><svg id="labSvg" viewBox="0 0 640 420" preserveAspectRatio="xMidYMid meet"></svg></div>
+    </div>
+
+    <div>
+      <div class="cond-box" style="--c:var(--gold)">
+        <div class="cond-head">
+          <div class="cond-label">① f(a) 정의됨?</div>
+          <button class="cond-mini-btn" id="labBtnCheckFa">직접 대입</button>
+        </div>
+        <div class="cond-value ll-fog" id="labFaValue">?.??</div>
+      </div>
+
+      <div class="cond-box" style="--c:var(--ink)">
+        <div class="cond-head">
+          <div class="cond-label">② 극한 존재함?</div>
+        </div>
+        <div class="limits-row">
+          <div class="limit-mini">
+            <div class="limit-mini-label" style="color:var(--left)" id="labLeftSymbol"></div>
+            <div class="limit-mini-value ll-fog" id="labLeftValue" style="color:var(--left)">?.??</div>
+          </div>
+          <div class="limit-mini">
+            <div class="limit-mini-label" style="color:var(--right)" id="labRightSymbol"></div>
+            <div class="limit-mini-value ll-fog" id="labRightValue" style="color:var(--right)">?.??</div>
+          </div>
+        </div>
+        <input type="range" id="labSlider" min="0" max="1" step="0.01">
+        <div class="lab-actions">
+          <button id="labBtnLeft" class="act-btn" style="--c:var(--left)">‹‹ 왼쪽에서 접근</button>
+          <button id="labBtnRight" class="act-btn" style="--c:var(--right)">오른쪽에서 접근 ››</button>
+        </div>
+      </div>
+
+      <div id="labVerdictWrap">
+        <div id="labVerdict" style="font-size:12.5px; color:var(--inkSoft); padding:0 2px 12px; line-height:1.6;">① 과 ②를 모두 확인하면 ③번과 최종 판정이 나타나요.</div>
+      </div>
+
+      <div id="labASelector" style="display:none; margin-bottom:12px;"></div>
+
+      <button id="labBtnReset" class="act-btn" style="--c:var(--inkSoft); width:100%; justify-content:center;">↺ 리셋</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= GAME PAGE (arcade) ================= -->
+<div id="page-game" class="hidden">
+  <div id="arcadeHeader" class="arcade-header">
+    <div class="eyebrow">석산고 미적분 · Interactive Lab</div>
+    <h1 class="title">연속성 판독기</h1>
+    <p class="desc">그래프가 나오면 재빨리 연속인지 불연속인지 탭하세요. 틀리면 하트가 줄어들어요.</p>
+  </div>
+
+  <div id="arcadeScreenStart" class="card">
+    <div id="arcadeBestLine" style="text-align:center; margin-bottom:14px; font-size:13.5px; color:var(--inkSoft);"></div>
+    <button class="btn-primary" id="arcadeBtnStart">게임 시작</button>
+  </div>
+
+  <div id="arcadeScreenPlay" class="card hidden">
+    <div class="arcade-top">
+      <div class="arcade-score">점수 <b id="arcadeScoreNum">0</b></div>
+      <div class="arcade-lives" id="arcadeLives"></div>
+    </div>
+    <div class="arcade-timerbar-wrap"><div class="arcade-timerbar-fill" id="arcadeTimerFill" style="width:100%;"></div></div>
+
+    <div class="arcade-card-wrap">
+      <div class="arcade-svg-wrap"><svg id="arcadeSvg" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid meet"></svg></div>
+      <div class="arcade-feedback" id="arcadeFeedback"></div>
+    </div>
+
+    <div class="arcade-buttons">
+      <button class="arcade-btn arcade-btn-bad" id="arcadeBtnBad">🔴 불연속</button>
+      <button class="arcade-btn arcade-btn-good" id="arcadeBtnGood">🟢 연속</button>
+    </div>
+  </div>
+
+  <div id="arcadeScreenEnd" class="card hidden">
+    <div class="lb-title" style="text-align:center;">게임 오버!</div>
+    <div class="end-score" id="arcadeFinalScore">0</div>
+    <div class="end-sub" id="arcadeFinalSummary"></div>
+    <div class="end-sub" id="arcadeBestCompare" style="font-weight:700; color:var(--gold);"></div>
+    <button class="btn-primary" id="arcadeBtnRetry">다시 시작</button>
+  </div>
+
+  <p class="desc" style="margin-top:16px; text-align:center;">헷갈리면 <a href="#" id="arcadeLinkToTheory" style="color:var(--ink); font-weight:600;">① 원리 탭</a>에서 복습하세요.</p>
+</div>
+
+</div>
+</div>
+
+<script>
+// ============================================================
+// SHARED UTILITIES
+// ============================================================
+const COLORS = {
+  paper:'#EFF3EE', panel:'#FFFFFF', grid:'#D8E2D3',
+  ink:'#223027', inkSoft:'#5C6B60',
+  left:'#C1442D', right:'#2B6CA3', gold:'#C99A2E', success:'#3F7D4C', border:'#D3DAD0',
+};
+
+// ============================================================
+// KaTeX 헬퍼
+// KX(tex) → HTML 문자열. 반드시 innerHTML로 넣을 것.
+// 방침: 수식 표기만 조판. fmt()가 돌려주는 값은 '정의되지 않음' 같은 한국어일 수 있으므로
+//      절대 그대로 KX()에 넣지 말 것.
+// ============================================================
+function KX(tex, display){
+  try {
+    return katex.renderToString(String(tex), { throwOnError:false, displayMode:!!display, strict:false });
+  } catch (e) {
+    return String(tex);
+  }
+}
+function renderStaticMath(root){
+  if (typeof renderMathInElement !== 'function' || !root) return;
+  try {
+    renderMathInElement(root, {
+      delimiters: [ { left:'\\[', right:'\\]', display:true }, { left:'\\(', right:'\\)', display:false } ],
+      throwOnError: false,
+      ignoredTags: ['script','noscript','style','textarea','pre','code','option'],
+      ignoredClasses: ['katex'],   // 이미 렌더된 수식 안(숨김 MathML의 원본 TeX)을 다시 훑지 않도록
+    });
+  } catch (e) {}
+}
+
+function rand(min, max){ return min + Math.random() * (max - min); }
+function randSign(){ return Math.random() < 0.5 ? -1 : 1; }
+function randInt(min, max){ return Math.floor(rand(min, max + 1)); }
+function pick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
+function shuffle(arr){
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+function fmt(v){
+  if (v == null) return '정의되지 않음';
+  if (Math.abs(v) > 60) return v > 0 ? '+∞' : '−∞';
+  const r = Math.round(v);
+  if (Math.abs(v - r) < 0.02) return String(r);
+  return v.toFixed(2);
+}
+function clampDomain(v, preset){ return Math.min(preset.xDomain[1], Math.max(preset.xDomain[0], v)); }
+// NOTE: unlike the limit suite, this findBranch returns null (not a fallback branch) when x sits
+// exactly on a boundary that is open on both sides — this is how we model "f(a) is genuinely undefined".
+function findBranch(preset, x, eps){
+  eps = eps || 1e-9;
+  const cands = preset.branches.filter((b) => x >= b.xMin - eps && x <= b.xMax + eps);
+  if (cands.length === 0) return null;
+  if (cands.length === 1) return cands[0];
+  const closed = cands.find((b) => (Math.abs(x - b.xMin) < eps && b.closedMin) || (Math.abs(x - b.xMax) < eps && b.closedMax));
+  return closed || null;
+}
+function fAt(preset, x){
+  const iso = preset.isolated.find((p) => Math.abs(p.x - x) < 1e-9);
+  if (iso) return iso.y;
+  const br = findBranch(preset, x);
+  if (!br) return null;
+  try { const y = br.fn(x); return isFinite(y) ? y : null; } catch (e) { return null; }
+}
+function el(tag, attrs){
+  const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  return e;
+}
+function computeGeo(preset, W, H){
+  W = W || 640; H = H || 420;
+  const plot = { x: 40, y: 16, w: W - 40 - 18, h: H - 16 - 32 };
+  const xmin = preset.xDomain[0], xmax = preset.xDomain[1];
+  const ymin = preset.yDomain[0], ymax = preset.yDomain[1];
+  const sx = (vx) => plot.x + ((vx - xmin) / (xmax - xmin)) * plot.w;
+  const sy = (vy) => plot.y + plot.h - ((vy - ymin) / (ymax - ymin)) * plot.h;
+  return { W, H, plot, xmin, xmax, ymin, ymax, sx, sy };
+}
+function branchPathD(branch, g){
+  const samples = 130; let d = '', down = false;
+  for (let i = 0; i <= samples; i++) {
+    const vx = branch.xMin + ((branch.xMax - branch.xMin) * i) / samples;
+    let vy; try { vy = branch.fn(vx); } catch (e) { vy = null; }
+    if (vy == null || !isFinite(vy) || vy < g.ymin - 1.5 || vy > g.ymax + 1.5) { down = false; continue; }
+    d += (down ? 'L ' : 'M ') + g.sx(vx) + ' ' + g.sy(vy) + ' ';
+    down = true;
+  }
+  return d;
+}
+function drawStaticGraph(svgEl, preset, aValue, opts){
+  opts = opts || {};
+  const g = computeGeo(preset, opts.W, opts.H);
+  svgEl.setAttribute('viewBox', `0 0 ${g.W} ${g.H}`);
+  while (svgEl.firstChild) svgEl.removeChild(svgEl.firstChild);
+  const staticG = el('g', {});
+  const dynG = el('g', {});
+
+  if (!opts.compact) {
+    const gridXs = []; for (let gx = Math.ceil(g.xmin); gx <= Math.floor(g.xmax); gx++) gridXs.push(gx);
+    const gridYs = []; for (let gy = Math.ceil(g.ymin); gy <= Math.floor(g.ymax); gy++) gridYs.push(gy);
+    gridXs.forEach((gx) => staticG.appendChild(el('line', { x1: g.sx(gx), y1: g.plot.y, x2: g.sx(gx), y2: g.plot.y + g.plot.h, stroke: COLORS.grid, 'stroke-width': gx === 0 ? 1.6 : 1 })));
+    gridYs.forEach((gy) => staticG.appendChild(el('line', { x1: g.plot.x, y1: g.sy(gy), x2: g.plot.x + g.plot.w, y2: g.sy(gy), stroke: COLORS.grid, 'stroke-width': gy === 0 ? 1.6 : 1 })));
+    gridXs.filter((v) => v !== 0).forEach((gx) => { const t = el('text', { x: g.sx(gx), y: g.plot.y + g.plot.h + 16, 'font-family': 'IBM Plex Mono, monospace', 'font-size': 11, fill: COLORS.inkSoft, 'text-anchor': 'middle' }); t.textContent = gx; staticG.appendChild(t); });
+    gridYs.filter((v) => v !== 0).forEach((gy) => { const t = el('text', { x: g.plot.x - 8, y: g.sy(gy) + 4, 'font-family': 'IBM Plex Mono, monospace', 'font-size': 11, fill: COLORS.inkSoft, 'text-anchor': 'end' }); t.textContent = gy; staticG.appendChild(t); });
+    staticG.appendChild(el('line', { x1: g.sx(aValue), y1: g.plot.y, x2: g.sx(aValue), y2: g.plot.y + g.plot.h, stroke: COLORS.gold, 'stroke-width': 1.4, 'stroke-dasharray': '3 4' }));
+    const aLabel = el('text', { x: g.sx(aValue), y: g.plot.y + g.plot.h + 30, 'font-family': 'IBM Plex Mono, monospace', 'font-size': 12, 'font-weight': 600, fill: COLORS.gold, 'text-anchor': 'middle' });
+    aLabel.textContent = `a=${aValue}`; staticG.appendChild(aLabel);
+  } else {
+    staticG.appendChild(el('line', { x1: g.sx(aValue), y1: g.plot.y, x2: g.sx(aValue), y2: g.plot.y + g.plot.h, stroke: COLORS.gold, 'stroke-width': 1.4, 'stroke-dasharray': '3 4' }));
+  }
+
+  preset.branches.forEach((b) => staticG.appendChild(el('path', { d: branchPathD(b, g), fill: 'none', stroke: COLORS.ink, 'stroke-width': 2.4, 'stroke-linecap': 'round' })));
+
+  const internalBreaks = preset.branches.slice(0, -1).map((b) => b.xMax);
+  internalBreaks.forEach((bx, i) => {
+    const bLeft = preset.branches[i], bRight = preset.branches[i + 1];
+    let yL, yR;
+    try { yL = bLeft.fn(bx); } catch (e) { yL = null; }
+    try { yR = bRight.fn(bx); } catch (e) { yR = null; }
+    const validL = yL != null && isFinite(yL) && yL >= g.ymin - 0.5 && yL <= g.ymax + 0.5;
+    const validR = yR != null && isFinite(yR) && yR >= g.ymin - 0.5 && yR <= g.ymax + 0.5;
+    const bothSamePoint = validL && validR && Math.abs(yL - yR) < 0.05;
+    if (bothSamePoint) {
+      // Same value from both sides: it's one point, not two. Whether it's drawn filled or
+      // open depends on whether either branch is actually closed there — never on draw order.
+      const closedHere = bLeft.closedMax || bRight.closedMin;
+      staticG.appendChild(el('circle', { cx: g.sx(bx), cy: g.sy(yL), r: opts.compact ? 3.2 : 4.5, fill: closedHere ? COLORS.ink : COLORS.panel, stroke: COLORS.ink, 'stroke-width': 2 }));
+    } else {
+      if (validL) staticG.appendChild(el('circle', { cx: g.sx(bx), cy: g.sy(yL), r: opts.compact ? 3.2 : 4.5, fill: bLeft.closedMax ? COLORS.ink : COLORS.panel, stroke: COLORS.ink, 'stroke-width': 2 }));
+      if (validR) staticG.appendChild(el('circle', { cx: g.sx(bx), cy: g.sy(yR), r: opts.compact ? 3.2 : 4.5, fill: bRight.closedMin ? COLORS.ink : COLORS.panel, stroke: COLORS.ink, 'stroke-width': 2 }));
+    }
+  });
+  preset.isolated.forEach((p) => staticG.appendChild(el('circle', { cx: g.sx(p.x), cy: g.sy(p.y), r: opts.compact ? 3.5 : 5, fill: COLORS.gold, stroke: COLORS.ink, 'stroke-width': 1.5 })));
+
+  svgEl.appendChild(staticG);
+  svgEl.appendChild(dynG);
+  return { geo: g, dynG };
+}
+
+// ============================================================
+// LAB PRESETS (4 cases, each isolating exactly one failing condition)
+// ============================================================
+const LAB_PRESETS = [
+  {
+    id: 'continuous', label: '① 모두 만족 (연속)', subtitle: '세 조건을 전부 통과하는 매끄러운 경우',
+    xDomain: [-3, 4], yDomain: [-1, 5], aOptions: [1],
+    branches: [{ xMin: -3, xMax: 4, closedMin: true, closedMax: true, fn: (x) => -0.35 * (x - 1) * (x - 1) + 3 }],
+    isolated: [],
+  },
+  {
+    id: 'undefined', label: '② f(a) 정의 안됨', subtitle: '함숫값 자체가 없어서 불연속',
+    xDomain: [-2, 5], yDomain: [-1, 5], aOptions: [2],
+    branches: [
+      { xMin: -2, xMax: 2, closedMin: true, closedMax: false, fn: (x) => 0.4 * x * x - 0.5 * x + 1 },
+      { xMin: 2, xMax: 5, closedMin: false, closedMax: true, fn: (x) => 0.4 * x * x - 0.5 * x + 1 },
+    ],
+    isolated: [],
+  },
+  {
+    id: 'jump', label: '③ 극한이 존재하지 않음', subtitle: '좌극한 ≠ 우극한 (점프)',
+    xDomain: [-3, 4], yDomain: [-1.5, 4.5], aOptions: [1],
+    branches: [
+      { xMin: -3, xMax: 1, closedMin: true, closedMax: false, fn: (x) => -0.5 * x * x + x + 1 },
+      { xMin: 1, xMax: 4, closedMin: true, closedMax: true, fn: (x) => -x + 3 },
+    ],
+    isolated: [],
+  },
+  {
+    id: 'removable', label: '④ 극한 ≠ f(a)', subtitle: '극한도, f(a)도 있지만 서로 다르다 (제거가능)',
+    xDomain: [-2, 5], yDomain: [-1, 6], aOptions: [2],
+    branches: [
+      { xMin: -2, xMax: 2, closedMin: true, closedMax: false, fn: (x) => x + 1 },
+      { xMin: 2, xMax: 5, closedMin: false, closedMax: true, fn: (x) => x + 1 },
+    ],
+    isolated: [{ x: 2, y: 1 }],
+  },
+];
+
+// ============================================================
+// TAB CONTROLLER
+// ============================================================
+function showTab(name){
+  ['theory', 'lab', 'game'].forEach((n) => {
+    document.getElementById('page-' + n).classList.toggle('hidden', n !== name);
+    document.querySelector(`.tab-btn[data-tab="${n}"]`).classList.toggle('active', n === name);
+  });
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll('.tab-btn').forEach((btn) => btn.addEventListener('click', () => showTab(btn.dataset.tab)));
+
+// ============================================================
+// LAB APP
+// ============================================================
+const LabApp = (function(){
+  let presetId = 'continuous', aValue = 1, x = 0;
+  let revealed = { fa: false, left: false, right: false };
+  let animating = null, rafId = null;
+  let geo = {}, dynG = null;
+
+  function getPreset(){ return LAB_PRESETS.find((p) => p.id === presetId); }
+
+  function resetAll(){
+    cancelAnimationFrame(rafId); animating = null;
+    const preset = getPreset();
+    const span = preset.xDomain[1] - preset.xDomain[0];
+    x = clampDomain(aValue - span * 0.32, preset);
+    revealed = { fa: false, left: false, right: false };
+    renderStatic();
+    renderDynamic();
+    const slider = document.getElementById('labSlider');
+    slider.min = preset.xDomain[0]; slider.max = preset.xDomain[1]; slider.step = 0.01;
+  }
+
+  function renderStatic(){
+    const preset = getPreset();
+    const svg = document.getElementById('labSvg');
+    const result = drawStaticGraph(svg, preset, aValue, {});
+    geo = result.geo; dynG = result.dynG;
+  }
+
+  function applyX(newX){
+    const preset = getPreset();
+    let v = clampDomain(newX, preset);
+    if (Math.abs(v - aValue) < 0.012) v = clampDomain(v < aValue ? aValue - 0.012 : aValue + 0.012, preset);
+    x = v;
+    if (Math.abs(v - aValue) < 0.07) {
+      if (v < aValue) revealed.left = true; else revealed.right = true;
+    }
+    renderDynamic();
+  }
+
+  function renderDynamic(){
+    const preset = getPreset();
+    const y = fAt(preset, x);
+    const sideColor = x < aValue ? COLORS.left : COLORS.right;
+    document.getElementById('labSlider').value = x;
+
+    const limitLeftVal = fAt(preset, aValue - 0.001);
+    const limitRightVal = fAt(preset, aValue + 0.001);
+    const leftEl = document.getElementById('labLeftValue'), rightEl = document.getElementById('labRightValue');
+    leftEl.textContent = revealed.left ? fmt(limitLeftVal) : '?.??';
+    leftEl.className = 'limit-mini-value ' + (revealed.left ? 'll-clear' : 'll-fog');
+    rightEl.textContent = revealed.right ? fmt(limitRightVal) : '?.??';
+    rightEl.className = 'limit-mini-value ' + (revealed.right ? 'll-clear' : 'll-fog');
+    document.getElementById('labLeftSymbol').innerHTML = '좌극한 ' + KX(`x \\to ${aValue}^{-}`);
+    document.getElementById('labRightSymbol').innerHTML = '우극한 ' + KX(`x \\to ${aValue}^{+}`);
+
+    const faVal = fAt(preset, aValue);
+    const faEl = document.getElementById('labFaValue');
+    faEl.textContent = revealed.fa ? fmt(faVal) : '?.??';
+    faEl.className = 'cond-value ' + (revealed.fa ? 'll-clear' : 'll-fog');
+
+    const verdictEl = document.getElementById('labVerdict');
+    if (revealed.fa && revealed.left && revealed.right) {
+      const cond1 = faVal != null;
+      const bothFinite = limitLeftVal != null && Math.abs(limitLeftVal) <= 60 && limitRightVal != null && Math.abs(limitRightVal) <= 60;
+      const cond2 = bothFinite && Math.abs(limitLeftVal - limitRightVal) < 0.05;
+      const cond3 = cond1 && cond2 && Math.abs(faVal - limitLeftVal) < 0.05;
+      const continuous = cond1 && cond2 && cond3;
+      let failMsg = '';
+      // fmt() 결과(한국어일 수 있음)는 평문으로, f(a) 같은 표기만 KX로 조판한다.
+      if (!cond1) failMsg = KX(`f(${aValue})`) + `가 정의되지 않았어요. '그래프가 이어져 보이면 연속'이라 생각하기 쉽지만, 함숫값 자체가 없으면 무조건 불연속이에요.`;
+      else if (!cond2) failMsg = '좌극한과 우극한이 달라서 극한 자체가 존재하지 않아요. ' + KX('f(a)') + '가 정의되어 있어도 소용없어요.';
+      else if (!cond3) failMsg = `극한값(${fmt(limitLeftVal)})과 ` + KX(`f(${aValue})`) + `(${fmt(faVal)})가 서로 달라요. 둘 다 있어도 값이 같아야 연속이에요.`;
+
+      verdictEl.className = 'verdict ' + (continuous ? 'ok' : 'bad');
+      verdictEl.innerHTML = `<div style="font-weight:700; font-size:13.5px; color:${continuous ? COLORS.success : COLORS.left}">${continuous ? `③ 극한 = ${KX('f(a)')} ✓ → 연속이다` : '③ 조건 불충족 → 불연속이다'}</div><div style="font-size:12px; color:var(--inkSoft); margin-top:5px; line-height:1.6;">${continuous ? `세 조건을 모두 만족해서 ${KX('x=' + aValue)}에서 연속이에요.` : failMsg}</div>`;
+    } else {
+      verdictEl.className = '';
+      verdictEl.setAttribute('style', 'font-size:12.5px; color:var(--inkSoft); padding:0 2px 12px; line-height:1.6;');
+      verdictEl.textContent = '① 과 ②를 모두 확인하면 ③번과 최종 판정이 나타나요.';
+    }
+
+    if (dynG) {
+      while (dynG.firstChild) dynG.removeChild(dynG.firstChild);
+      if (y != null) {
+        const cy = Math.max(geo.ymin - 0.4, Math.min(geo.ymax + 0.4, y));
+        dynG.appendChild(el('line', { x1: geo.sx(x), y1: geo.sy(cy), x2: geo.sx(x), y2: geo.plot.y + geo.plot.h, stroke: sideColor, 'stroke-width': 1, 'stroke-dasharray': '2 3', opacity: 0.7 }));
+        dynG.appendChild(el('line', { x1: geo.plot.x, y1: geo.sy(cy), x2: geo.sx(x), y2: geo.sy(cy), stroke: sideColor, 'stroke-width': 1, 'stroke-dasharray': '2 3', opacity: 0.7 }));
+        dynG.appendChild(el('circle', { cx: geo.sx(x), cy: geo.sy(cy), r: 6.5, fill: sideColor, stroke: COLORS.panel, 'stroke-width': 2 }));
+      }
+      if (revealed.fa) {
+        const mark = faVal != null
+          ? el('circle', { cx: geo.sx(aValue), cy: geo.sy(Math.max(geo.ymin - 0.4, Math.min(geo.ymax + 0.4, faVal))), r: 8, fill: 'none', stroke: COLORS.gold, 'stroke-width': 2.5 })
+          : null;
+        if (mark) dynG.appendChild(mark);
+      }
+    }
+  }
+
+  function stopAnimation(){ cancelAnimationFrame(rafId); animating = null; }
+  function animateFrom(side){
+    stopAnimation();
+    const preset = getPreset();
+    const span = preset.xDomain[1] - preset.xDomain[0];
+    let cur = side === 'left' ? clampDomain(aValue - span * 0.4, preset) : clampDomain(aValue + span * 0.4, preset);
+    applyX(cur);
+    function step(){
+      const diff = aValue - x;
+      if (Math.abs(diff) < 0.012) { applyX(aValue + (side === 'left' ? -0.012 : 0.012)); animating = null; return; }
+      applyX(x + diff * 0.055);
+      rafId = requestAnimationFrame(step);
+    }
+    rafId = requestAnimationFrame(step);
+  }
+
+  function renderChips(){
+    const container = document.getElementById('labChips');
+    container.innerHTML = '';
+    LAB_PRESETS.forEach((p) => {
+      const btn = document.createElement('button');
+      btn.className = 'chip' + (p.id === presetId ? ' active' : '');
+      btn.textContent = p.label;
+      btn.onclick = () => { presetId = p.id; aValue = p.aOptions[0]; renderChips(); document.getElementById('labSubtitle').textContent = p.subtitle; resetAll(); };
+      container.appendChild(btn);
+    });
+  }
+
+  function wireDrag(){
+    const svgEl = document.getElementById('labSvg');
+    let dragging = false;
+    function clientXOf(e){ if (e.touches && e.touches[0]) return e.touches[0].clientX; if (e.changedTouches && e.changedTouches[0]) return e.changedTouches[0].clientX; return e.clientX; }
+    function moveFromClientX(clientX){
+      const rect = svgEl.getBoundingClientRect();
+      const px = ((clientX - rect.left) / rect.width) * geo.W;
+      applyX(geo.xmin + ((px - geo.plot.x) / geo.plot.w) * (geo.xmax - geo.xmin));
+    }
+    function startDrag(e){ stopAnimation(); dragging = true; moveFromClientX(clientXOf(e)); }
+    function moveDrag(e){ if (!dragging) return; if (e.cancelable) e.preventDefault(); moveFromClientX(clientXOf(e)); }
+    function endDrag(){ dragging = false; }
+    svgEl.addEventListener('mousedown', startDrag);
+    svgEl.addEventListener('mousemove', moveDrag);
+    window.addEventListener('mouseup', endDrag);
+    svgEl.addEventListener('touchstart', startDrag, { passive: true });
+    svgEl.addEventListener('touchmove', moveDrag, { passive: false });
+    svgEl.addEventListener('touchend', endDrag);
+  }
+
+  function init(){
+    document.getElementById('labSubtitle').textContent = getPreset().subtitle;
+    renderChips();
+    wireDrag();
+    document.getElementById('labSlider').addEventListener('input', (e) => { stopAnimation(); applyX(parseFloat(e.target.value)); });
+    document.getElementById('labBtnLeft').addEventListener('click', () => animateFrom('left'));
+    document.getElementById('labBtnRight').addEventListener('click', () => animateFrom('right'));
+    document.getElementById('labBtnCheckFa').addEventListener('click', () => { revealed.fa = true; renderDynamic(); });
+    document.getElementById('labBtnReset').addEventListener('click', () => { stopAnimation(); resetAll(); });
+    resetAll();
+  }
+
+  function selectPreset(id){
+    const preset = LAB_PRESETS.find((p) => p.id === id);
+    if (!preset) return;
+    presetId = id; aValue = preset.aOptions[0];
+    renderChips();
+    document.getElementById('labSubtitle').textContent = preset.subtitle;
+    resetAll();
+  }
+
+  return { init, selectPreset };
+})();
+
+// ============================================================
+// ARCADE GAME APP ("연속성 판독기")
+// ============================================================
+const ArcadeApp = (function(){
+  const START_TIME = 3000, MIN_TIME = 650, DECAY_EVERY = 3, DECAY_AMOUNT = 320;
+
+  const MISCONCEPTIONS = {
+    'continuous-single': '매끄럽게 하나로 이어진 함수예요. 그래프를 끝까지 눈으로 따라가 보세요.',
+    'continuous-piece': '조각으로 나뉘어 있어도 이어지는 지점의 값이 같으면 연속이에요! "조각=불연속"은 오해예요.',
+    'jump': '좌극한과 우극한이 서로 달라요. 극한 자체가 없으니 ' + KX('f(a)') + '가 있어도 불연속이에요.',
+    'gap': '이 점에서는 ' + KX('f(a)') + '가 아예 정의되어 있지 않아요. 양쪽 극한이 같아도 함숫값이 없으면 불연속이에요.',
+    'removable': '극한값과 ' + KX('f(a)') + '가 서로 달라요. 둘 다 있다고 자동으로 연속인 건 아니에요 — 값이 같아야 해요.',
+    'asymptote': '한쪽(또는 양쪽)이 무한대로 발산해요. 극한이 존재하지 않으니 불연속이에요.',
+  };
+  const CORRECT_HINTS = {
+    'continuous-single': '맞아요, 매끄럽게 하나로 이어져 있어요.',
+    'continuous-piece': '맞아요, 조각의 값이 정확히 이어져서 연속이에요.',
+    'jump': '맞아요, 좌우극한이 달라서 불연속이에요.',
+    'gap': '맞아요, ' + KX('f(a)') + '가 정의되지 않아서 불연속이에요.',
+    'removable': '맞아요, 극한과 ' + KX('f(a)') + '가 달라서 불연속이에요.',
+    'asymptote': '맞아요, 무한대로 발산해서 불연속이에요.',
+  };
+
+  // Difficulty ramps in two ways as correctCount grows: speed (handled by the timer) and
+  // "how obvious the visual tell is" — jump gaps and redefined-point offsets shrink at higher
+  // tiers, so pattern-memorized reflexes stop being enough and the player has to keep looking.
+  function difficultyTier(){ return Math.min(3, Math.floor(state.correctCount / 8)); }
+  function tierScale(){ return [1, 0.75, 0.55, 0.4][difficultyTier()]; }
+
+  // Anchored random branch: guaranteed to equal V exactly at x=a (every (x-a) term vanishes
+  // there), but the shape family is randomized every call across six visually distinct kinds —
+  // straight, two bowl/dome curvatures, an S-curve, a wave, and a continuous-but-jagged kink —
+  // so the same "kind" of card never looks the same way twice in a row.
+  function randomBranchFn(a, V){
+    const type = pick(['linear', 'bow', 'bow', 'cubic', 'wave', 'kink']);
+    if (type === 'linear') {
+      const m = randSign() * rand(0.3, 1.6);
+      return (x) => V + m * (x - a);
+    }
+    if (type === 'bow') {
+      const p = randSign() * rand(0.2, 1.1), q = randSign() * rand(0.08, 0.4);
+      return (x) => V + p * (x - a) + q * (x - a) * (x - a);
+    }
+    if (type === 'cubic') {
+      const p = randSign() * rand(0.2, 0.9), r = randSign() * rand(0.03, 0.15);
+      return (x) => V + p * (x - a) + r * (x - a) * (x - a) * (x - a);
+    }
+    if (type === 'wave') {
+      const p = randSign() * rand(0.15, 0.6), amp = rand(0.4, 1.1), freq = rand(0.8, 1.7);
+      return (x) => V + p * (x - a) + amp * Math.sin(freq * (x - a));
+    }
+    // kink: a gentle corner elsewhere inside the branch — still a single, genuinely continuous
+    // formula, but visually jagged so "smooth-looking = continuous" stops being a safe shortcut.
+    const p = randSign() * rand(0.3, 1.0), amp = rand(0.4, 1.0), offset = randSign() * rand(0.7, 1.8);
+    return (x) => V + p * (x - a) + amp * (Math.abs(x - a - offset) - Math.abs(offset));
+  }
+
+  function continuousSingleCard(){
+    const a = randInt(-2, 3), V = randInt(-1, 4), domain = [a - 3, a + 3];
+    return {
+      correct: 'continuous', kind: 'continuous-single', aValue: a, xDomain: domain, yDomain: [V - 4, V + 4],
+      branches: [{ xMin: domain[0], xMax: domain[1], closedMin: true, closedMax: true, fn: randomBranchFn(a, V) }],
+      isolated: [],
+    };
+  }
+  function continuousPieceCard(){
+    const a = randInt(-2, 3), V = randInt(-1, 4), domain = [a - 3, a + 3];
+    return {
+      correct: 'continuous', kind: 'continuous-piece', aValue: a, xDomain: domain, yDomain: [V - 4, V + 4],
+      branches: [
+        { xMin: domain[0], xMax: a, closedMin: true, closedMax: true, fn: randomBranchFn(a, V) },
+        { xMin: a, xMax: domain[1], closedMin: false, closedMax: true, fn: randomBranchFn(a, V) },
+      ],
+      isolated: [],
+    };
+  }
+  function jumpCard(){
+    const scale = tierScale();
+    const a = randInt(-2, 3), V1 = randInt(-1, 4), delta = randSign() * rand(0.5, 4) * scale, V2 = V1 + delta;
+    const domain = [a - 3, a + 3];
+    const leftClosed = Math.random() < 0.5;
+    return {
+      correct: 'discontinuous', kind: 'jump', aValue: a, xDomain: domain, yDomain: [Math.min(V1, V2) - 3, Math.max(V1, V2) + 3],
+      branches: [
+        { xMin: domain[0], xMax: a, closedMin: true, closedMax: leftClosed, fn: randomBranchFn(a, V1) },
+        { xMin: a, xMax: domain[1], closedMin: !leftClosed, closedMax: true, fn: randomBranchFn(a, V2) },
+      ],
+      isolated: [],
+    };
+  }
+  function gapCard(){
+    const a = randInt(-2, 3), V = randInt(-1, 4), domain = [a - 3, a + 3];
+    const fn = randomBranchFn(a, V);
+    return {
+      correct: 'discontinuous', kind: 'gap', aValue: a, xDomain: domain, yDomain: [V - 4, V + 4],
+      branches: [
+        { xMin: domain[0], xMax: a, closedMin: true, closedMax: false, fn },
+        { xMin: a, xMax: domain[1], closedMin: false, closedMax: true, fn },
+      ],
+      isolated: [],
+    };
+  }
+  function removableCard(){
+    const scale = tierScale();
+    const a = randInt(-2, 3), V = randInt(-1, 4), domain = [a - 3, a + 3];
+    const fn = randomBranchFn(a, V);
+    const isoDelta = randSign() * rand(0.5, 4) * scale;
+    return {
+      correct: 'discontinuous', kind: 'removable', aValue: a, xDomain: domain, yDomain: [V - 4, V + 4],
+      branches: [
+        { xMin: domain[0], xMax: a, closedMin: true, closedMax: false, fn },
+        { xMin: a, xMax: domain[1], closedMin: false, closedMax: true, fn },
+      ],
+      isolated: [{ x: a, y: V + isoDelta }],
+    };
+  }
+  function asymptoteCard(){
+    const a = randInt(-2, 3), domain = [a - 3, a + 3];
+    const k = rand(0.6, 1.8), sign = randSign(), shift = randInt(-2, 2);
+    const fn = (x) => (sign * k) / (x - a) + shift;
+    return {
+      correct: 'discontinuous', kind: 'asymptote', aValue: a, xDomain: domain, yDomain: [-6, 6],
+      branches: [
+        { xMin: domain[0], xMax: a, closedMin: true, closedMax: false, fn },
+        { xMin: a, xMax: domain[1], closedMin: false, closedMax: true, fn },
+      ],
+      isolated: [],
+    };
+  }
+
+  const GENERATOR_MAP = {
+    'continuous-single': continuousSingleCard, 'continuous-piece': continuousPieceCard,
+    'jump': jumpCard, 'gap': gapCard, 'removable': removableCard, 'asymptote': asymptoteCard,
+  };
+  const KIND_POOL = ['continuous-single', 'continuous-single', 'continuous-piece', 'continuous-piece', 'jump', 'jump', 'gap', 'gap', 'removable', 'removable', 'asymptote'];
+  let kindBag = [];
+  function nextKind(){
+    if (kindBag.length === 0) {
+      let fresh = shuffle(KIND_POOL.slice());
+      if (kindBag._last && fresh[fresh.length - 1] === kindBag._last) {
+        const t = fresh[fresh.length - 1]; fresh[fresh.length - 1] = fresh[fresh.length - 2]; fresh[fresh.length - 2] = t;
+      }
+      kindBag = fresh;
+    }
+    const k = kindBag.pop(); kindBag._last = k; return k;
+  }
+  function generateCard(){ return GENERATOR_MAP[nextKind()](); }
+
+  const state = { score: 0, lives: 3, streak: 0, correctCount: 0, timePerCard: START_TIME, card: null, rafId: null, locked: false };
+
+
+  function showScreen(name){
+    ['start', 'play', 'end'].forEach((s) => document.getElementById('arcadeScreen' + s.charAt(0).toUpperCase() + s.slice(1)).classList.toggle('hidden', s !== name));
+    document.getElementById('arcadeHeader').classList.toggle('hidden', name === 'play');
+    if (name === 'start') renderBestLine();
+  }
+  function loadBest(){ try { const raw = localStorage.getItem('continuity_arcade_best'); return raw ? JSON.parse(raw) : null; } catch (e) { return null; } }
+  function saveBest(entry){ try { localStorage.setItem('continuity_arcade_best', JSON.stringify(entry)); } catch (e) {} }
+  function renderBestLine(){
+    const best = loadBest();
+    document.getElementById('arcadeBestLine').textContent = best ? `🏆 내 최고 기록: ${best.score}점 (${best.correct}개 판독)` : '이 기기에 첫 기록이 저장돼요. 시작해볼까요?';
+  }
+  function renderLives(){
+    const el2 = document.getElementById('arcadeLives');
+    let s = '';
+    for (let i = 0; i < 3; i++) s += i < state.lives ? '❤️' : '🤍';
+    el2.textContent = s;
+  }
+  function updateTimerBar(ratio){
+    const fill = document.getElementById('arcadeTimerFill');
+    fill.style.width = (ratio * 100) + '%';
+    fill.style.backgroundColor = ratio > 0.5 ? COLORS.success : ratio > 0.2 ? COLORS.gold : COLORS.left;
+  }
+
+  function spawnCard(){
+    state.locked = false;
+    state.card = generateCard();
+    const svg = document.getElementById('arcadeSvg');
+    drawStaticGraph(svg, state.card, state.card.aValue, { W: 300, H: 200, compact: true });
+    document.getElementById('arcadeFeedback').className = 'arcade-feedback';
+    const start = performance.now();
+    const duration = state.timePerCard;
+    function tick(now){
+      const elapsed = now - start;
+      const remaining = Math.max(0, duration - elapsed);
+      updateTimerBar(remaining / duration);
+      if (remaining <= 0) { onAnswer(null); return; }
+      state.rafId = requestAnimationFrame(tick);
+    }
+    state.rafId = requestAnimationFrame(tick);
+  }
+
+  function onAnswer(choice){
+    if (state.locked) return;
+    state.locked = true;
+    cancelAnimationFrame(state.rafId);
+    const card = state.card;
+    const isCorrect = choice === card.correct;
+    const fbEl = document.getElementById('arcadeFeedback');
+    if (isCorrect) {
+      const remainingRatio = parseFloat(document.getElementById('arcadeTimerFill').style.width) / 100 || 0;
+      const points = 10 + Math.round(remainingRatio * 15) + Math.min(state.streak, 10);
+      state.score += points; state.streak += 1; state.correctCount += 1;
+      document.getElementById('arcadeScoreNum').textContent = state.score;
+      if (state.correctCount % DECAY_EVERY === 0) state.timePerCard = Math.max(MIN_TIME, state.timePerCard - DECAY_AMOUNT);
+      fbEl.innerHTML = `✓ +${points}점 · ${CORRECT_HINTS[card.kind] || ''}`;   // 힌트가 KX HTML을 품음
+      fbEl.className = 'arcade-feedback show good';
+      setTimeout(() => { spawnCard(); }, 550);
+    } else {
+      state.streak = 0;
+      state.lives -= 1;
+      renderLives();
+      const msg = choice == null ? '⏱ 시간 초과! ' : '✕ 틀렸어요. ';
+      fbEl.innerHTML = msg + (MISCONCEPTIONS[card.kind] || '');   // 오개념 설명이 KX HTML을 품음
+      fbEl.className = 'arcade-feedback show bad';
+      if (state.lives <= 0) {
+        setTimeout(() => { gameOver(); }, 1300);
+      } else {
+        setTimeout(() => { spawnCard(); }, 1300);
+      }
+    }
+  }
+
+  function startGame(){
+    state.score = 0; state.lives = 3; state.streak = 0; state.correctCount = 0; state.timePerCard = START_TIME;
+    document.getElementById('arcadeScoreNum').textContent = 0;
+    renderLives();
+    showScreen('play');
+    spawnCard();
+  }
+  function gameOver(){
+    cancelAnimationFrame(state.rafId);
+    showScreen('end');
+    document.getElementById('arcadeFinalScore').textContent = state.score;
+    document.getElementById('arcadeFinalSummary').textContent = `${state.correctCount}개 정답 판독`;
+    const best = loadBest();
+    const isNewBest = !best || state.score > best.score;
+    const compareEl = document.getElementById('arcadeBestCompare');
+    if (isNewBest) { saveBest({ score: state.score, correct: state.correctCount }); compareEl.textContent = '🎉 이 기기 최고 기록 갱신!'; }
+    else compareEl.textContent = `내 최고 기록은 ${best.score}점이에요. 다시 도전해보세요!`;
+  }
+
+  function init(){
+    document.getElementById('arcadeBtnStart').addEventListener('click', startGame);
+    document.getElementById('arcadeBtnRetry').addEventListener('click', () => showScreen('start'));
+    document.getElementById('arcadeBtnGood').addEventListener('click', () => onAnswer('continuous'));
+    document.getElementById('arcadeBtnBad').addEventListener('click', () => onAnswer('discontinuous'));
+    document.getElementById('arcadeLinkToTheory').addEventListener('click', (e) => { e.preventDefault(); showTab('theory'); });
+    showScreen('start');
+  }
+
+  return { init };
+})();
+
+// ============================================================
+// THEORY APP
+// ============================================================
+const TheoryApp = (function(){
+  function renderCaseGrid(){
+    const grid = document.getElementById('caseGrid');
+    grid.innerHTML = '';
+    LAB_PRESETS.forEach((preset) => {
+      const card = document.createElement('div');
+      card.className = 'case-card';
+      const svgWrap = document.createElement('div');
+      svgWrap.className = 'case-svg-wrap';
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svgWrap.appendChild(svg);
+      card.appendChild(svgWrap);
+      const titleEl = document.createElement('div');
+      titleEl.className = 'case-card-title'; titleEl.textContent = preset.label;
+      card.appendChild(titleEl);
+      const descEl = document.createElement('div');
+      descEl.className = 'case-card-desc'; descEl.textContent = preset.subtitle;
+      card.appendChild(descEl);
+      const btn = document.createElement('button');
+      btn.className = 'case-link'; btn.textContent = '🧪 실험실에서 보기';
+      btn.onclick = () => { showTab('lab'); LabApp.selectPreset(preset.id); };
+      card.appendChild(btn);
+      grid.appendChild(card);
+      drawStaticGraph(svg, preset, preset.aOptions[0], { W: 300, H: 190, compact: true });
+    });
+  }
+  function init(){
+    renderCaseGrid();
+    document.getElementById('ctaToLab').addEventListener('click', () => showTab('lab'));
+    document.getElementById('ctaToGame').addEventListener('click', () => showTab('game'));
+  }
+  return { init };
+})();
+
+// ============================================================
+// INIT
+// ============================================================
+LabApp.init();
+ArcadeApp.init();
+TheoryApp.init();
+renderStaticMath(document.getElementById('page-theory'));   // 이론 탭의 \(...\) 일괄 렌더
+showTab('theory');
+</script>
+</body>
+</html>

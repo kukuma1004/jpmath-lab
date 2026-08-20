@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>포물선 · JP Math Lab 기하</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700;900&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../vendor/katex/katex.min.css">
+<script src="../vendor/katex/katex.min.js"></script><script src="../vendor/katex/contrib/auto-render.min.js"></script>
+<link rel="stylesheet" href="기하_공통.css">
+</head>
+<body><div class="page-bg">
+<nav class="tabbar"><div class="tabbar-inner"><a class="tab-back" href="index.html" aria-label="기하 목록으로">←</a><button class="tab-btn" data-tab="theory">① 원리</button><button class="tab-btn" data-tab="lab">② 실험실</button><button class="tab-btn" data-tab="game">③ 스릴 아레나</button></div></nav>
+<main class="wrap">
+  <section data-page="theory">
+    <div class="eyebrow">기하 · 이차곡선 · [12기하01-01]</div><h1 class="title">포물선은 ‘같은 거리’가 그린 곡선이다</h1><p class="desc">한 점과 한 직선에서 같은 거리에 있는 점을 계속 찍으면 포물선이 나타납니다.</p>
+    <div class="section"><h2>1. 초점과 준선</h2><p>평면 위의 한 점 <b>F</b>를 초점, F를 지나지 않는 한 직선을 <b>준선</b>이라고 합시다. 움직이는 점 P가 항상 초점과 준선에서 같은 거리에 있으면 P의 자취가 포물선입니다.</p><div class="concept-box"><div class="concept-label">DEFINITION</div><div class="formula">\(PF = PH\)<br><span style="font-size:12px;font-weight:500">H는 P에서 준선에 내린 수선의 발</span></div></div><div class="tip">곡선의 모양을 외우기보다, P를 움직여도 두 거리가 계속 같다는 불변량을 먼저 확인하세요.</div></div>
+    <div class="section"><h2>2. 방정식은 거리 조건의 번역</h2><p>초점이 \(F(p,0)\), 준선이 \(x=-p\)이면 점 \(P(x,y)\)에 대해 거리 조건을 정리하여 다음 방정식을 얻습니다.</p><div class="concept-box"><div class="concept-label">STANDARD FORM</div><div class="formula">\(y^2=4px\)<br>초점 \(F(p,0)\) · 준선 \(x=-p\)</div></div><div class="mini-grid"><div class="mini-card"><b>p &gt; 0</b><span>오른쪽으로 열린다</span></div><div class="mini-card"><b>p &lt; 0</b><span>왼쪽으로 열린다</span></div><div class="mini-card"><b>꼭짓점</b><span>원점 O(0,0)</span></div></div></div>
+    <div class="section"><h2>3. 직접 확인하고 승부하기</h2><p>실험실에서는 초점과 점 P를 움직여 거리 조건을 확인합니다. 아레나에서는 한 문제당 8초 안에 초점·준선·방정식을 판별해야 합니다.</p><div class="cta-row"><button class="btn btn-primary" data-go-tab="lab">실험실 열기</button><button class="btn btn-danger" data-go-tab="game">아레나 입장</button></div></div>
+  </section>
+
+  <section data-page="lab" class="hidden">
+    <div class="eyebrow">PARABOLA LAB</div><h1 class="title">초점과 준선 사이를 추적하라</h1><p class="desc">보라색 점 P를 끌어보세요. 초점까지의 거리와 준선까지의 거리가 항상 같습니다.</p>
+    <div class="chips"><button class="chip active" data-orient="h">가로축 포물선</button><button class="chip" data-orient="v">세로축 포물선</button></div>
+    <div class="lab-layout"><div class="visual-card"><svg id="parabolaLabSvg" class="svg-stage" viewBox="0 0 640 400" role="img" aria-label="초점, 준선과 포물선 위의 점을 조작하는 그래프"></svg><div class="legend"><span><i class="swatch" style="background:#7557A8"></i>점 P</span><span><i class="swatch" style="background:#C1442D"></i>초점까지</span><span><i class="swatch" style="background:#2B6CA3"></i>준선까지</span></div></div>
+      <div><div class="readout"><div class="readout-box"><div class="readout-label">현재 방정식</div><div class="readout-value" id="paraEquation"></div></div><div class="readout-box"><div class="readout-label">두 거리</div><div class="readout-value" id="paraDistances"></div><div class="readout-note" id="paraVerdict"></div></div><div class="readout-box"><div class="readout-label">점 P</div><div class="readout-value" id="paraPoint"></div></div></div><div class="range-row"><div class="range-head"><span>초점 거리 p</span><span id="paraPLabel">2.0</span></div><input id="paraPSlider" type="range" min="0.7" max="3" step="0.1" value="2"></div><button class="btn btn-block" id="paraReset">처음 위치</button></div>
+    </div><div class="cta-row"><button class="btn btn-danger" data-go-tab="game">8초 아레나 도전</button></div>
+  </section>
+
+  <section data-page="game" class="hidden">
+    <div class="eyebrow">PARABOLA RUSH</div><h1 class="title">8초 안에 곡선을 해독하라</h1><p class="desc">틀리면 라이프가 줄고, 3연속 정답부터 콤보 배수가 올라갑니다. 친구 대결은 완전히 같은 문제로 진행됩니다.</p>
+    <div class="game-shell" id="parabolaArena">
+      <div class="game-screen" data-arena-screen="start"><div class="card arena-hero"><div class="arena-kicker">⚡ TIME ATTACK</div><h2 class="arena-title">포물선 러시</h2><p class="arena-desc">8문제 · 문제당 8초 · 라이프 3개. 빠를수록 점수가 높습니다.</p><div class="name-grid"><div class="name-field"><label for="paraP1">PLAYER 1</label><input id="paraP1" data-player-one value="나"></div><div class="name-field"><label for="paraP2">PLAYER 2</label><input id="paraP2" data-player-two value="친구"></div></div><label class="sound-row"><input type="checkbox" data-arena-sound checked> 긴장감 효과음 켜기</label><div class="mode-grid"><button class="btn mode-card" data-arena-mode="solo"><strong>혼자 기록전</strong><small>내 최고 점수와 로컬 랭킹에 도전</small></button><button class="btn btn-danger mode-card" data-arena-mode="duel"><strong>친구와 1:1</strong><small>같은 기기에서 같은 8문제로 승부</small></button></div><div class="leaderboard"><h3>이 기기 TOP 5</h3><div data-leader-list></div></div></div></div>
+      <div class="game-screen hidden" data-arena-screen="play"><div class="hud"><div class="hud-item"><span>PLAYER</span><b data-hud-player></b></div><div class="hud-item"><span>ROUND</span><b data-hud-round></b></div><div class="hud-item"><span>SCORE</span><b data-hud-score></b></div><div class="hud-item combo"><span>COMBO · LIFE</span><b><i data-hud-combo style="font-style:normal"></i> <i data-hud-lives style="font-style:normal;color:#C1442D"></i></b></div></div><div class="timer-track"><div class="timer-fill" data-arena-timer></div></div><div class="visual-card"><svg data-arena-svg class="svg-stage" viewBox="0 0 640 400" role="img" aria-label="포물선 게임 문제 그래프"></svg></div><div class="question-card"><div class="question-kicker">QUICK DECISION</div><div class="question-text" data-arena-question></div></div><div class="choice-grid" data-arena-choices></div><button class="btn btn-block" style="margin-top:12px" data-arena-quit>게임 나가기</button><div class="feedback hidden" data-arena-feedback><div class="feedback-icon" data-feedback-icon></div><div class="feedback-title" data-feedback-title></div><div class="feedback-sub" data-feedback-sub></div><div class="feedback-points" data-feedback-points></div></div></div>
+      <div class="game-screen hidden" data-arena-screen="handoff"><div class="card handoff"><div class="handoff-icon">⚔️</div><h2><span data-handoff-name></span> 차례!</h2><p data-handoff-score></p><p>문제 순서까지 완전히 같습니다. 화면을 넘겨주세요.</p><button class="btn btn-danger btn-block" data-arena-next-player>두 번째 선수 시작</button></div></div>
+      <div class="game-screen hidden" data-arena-screen="end"><div class="card end-screen"><h2>경기 종료</h2><div data-solo-result><div class="final-score" data-final-score></div><p data-final-summary></p></div><div class="hidden" data-duel-result><div class="duel-board"><div class="duel-player" data-duel-one><b data-duel-one-name></b><strong data-duel-one-score></strong></div><div class="duel-player" data-duel-two><b data-duel-two-name></b><strong data-duel-two-score></strong></div></div><div class="winner-line" data-winner-line></div></div><button class="btn btn-danger btn-block" data-arena-replay>다시 도전</button></div></div>
+    </div>
+  </section>
+</main></div>
+<script src="기하_공통.js"></script>
+<script>
+const G=GeoLab;G.tabs();G.renderMath();
+const para={p:2,t:2.4,orient:'h'},labSvg=document.getElementById('parabolaLabSvg');
+function parabolaPath(g,p,o){let d='';for(let i=0;i<=160;i++){const t=-5+i/160*10,x=t*t/(4*p),P=o==='h'?[x,t]:[t,x];d+=(i?'L':'M')+g.sx(P[0])+' '+g.sy(P[1])}return d}
+function drawParabola(svg,p,o,showDetail=true,t=2.4){G.clear(svg);const g=G.cartesian(svg,{xmin:-4,xmax:6,ymin:-5,ymax:5});g.grid();svg.appendChild(G.s('path',{d:parabolaPath(g,p,o),fill:'none',stroke:'#7557A8','stroke-width':4,'stroke-linecap':'round'}));const F=o==='h'?[p,0]:[0,p],P=o==='h'?[t*t/(4*p),t]:[t,t*t/(4*p)],H=o==='h'?[-p,t]:[t,-p];const directrix=o==='h'?{x1:g.sx(-p),y1:g.plot.y,x2:g.sx(-p),y2:g.plot.y+g.plot.h}:{x1:g.plot.x,y1:g.sy(-p),x2:g.plot.x+g.plot.w,y2:g.sy(-p)};svg.appendChild(G.s('line',{...directrix,stroke:'#2B6CA3','stroke-width':2,'stroke-dasharray':'7 5'}));if(showDetail){svg.appendChild(G.s('line',{x1:g.sx(P[0]),y1:g.sy(P[1]),x2:g.sx(F[0]),y2:g.sy(F[1]),stroke:'#C1442D','stroke-width':3}));svg.appendChild(G.s('line',{x1:g.sx(P[0]),y1:g.sy(P[1]),x2:g.sx(H[0]),y2:g.sy(H[1]),stroke:'#2B6CA3','stroke-width':3}));svg.appendChild(G.s('circle',{cx:g.sx(F[0]),cy:g.sy(F[1]),r:7,fill:'#C1442D',stroke:'white','stroke-width':3}));svg.appendChild(G.s('text',{x:g.sx(F[0])+11,y:g.sy(F[1])-9,fill:'#C1442D','font-size':13,'font-weight':700},'F'));svg.appendChild(G.s('circle',{cx:g.sx(P[0]),cy:g.sy(P[1]),r:10,fill:'#7557A8',stroke:'white','stroke-width':3,'data-drag':'p'}));svg.appendChild(G.s('text',{x:g.sx(P[0])+13,y:g.sy(P[1])-12,fill:'#7557A8','font-size':13,'font-weight':700},'P'));}return{g,P,F,H}}
+function renderLab(){const r=drawParabola(labSvg,para.p,para.orient,true,para.t),d=Math.hypot(r.P[0]-r.F[0],r.P[1]-r.F[1]);document.getElementById('paraEquation').textContent=para.orient==='h'?`y² = ${(4*para.p).toFixed(1)}x`:`x² = ${(4*para.p).toFixed(1)}y`;document.getElementById('paraDistances').textContent=`PF = PH = ${d.toFixed(3)}`;document.getElementById('paraVerdict').textContent=Math.abs(Math.hypot(r.P[0]-r.H[0],r.P[1]-r.H[1])-d)<.001?'✓ 두 거리가 정확히 같습니다.':'';document.getElementById('paraPoint').textContent=`P(${r.P[0].toFixed(2)}, ${r.P[1].toFixed(2)})`;document.getElementById('paraPLabel').textContent=para.p.toFixed(1)}
+document.querySelectorAll('[data-orient]').forEach(b=>b.addEventListener('click',()=>{para.orient=b.dataset.orient;document.querySelectorAll('[data-orient]').forEach(x=>x.classList.toggle('active',x===b));renderLab()}));document.getElementById('paraPSlider').addEventListener('input',e=>{para.p=+e.target.value;renderLab()});document.getElementById('paraReset').addEventListener('click',()=>{para.p=2;para.t=2.4;document.getElementById('paraPSlider').value=2;renderLab()});
+let dragging=false;labSvg.addEventListener('pointerdown',e=>{if(e.target.dataset.drag==='p'){dragging=true;labSvg.setPointerCapture(e.pointerId)}});labSvg.addEventListener('pointermove',e=>{if(!dragging)return;const rect=labSvg.getBoundingClientRect(),px=(e.clientX-rect.left)/rect.width*640,py=(e.clientY-rect.top)/rect.height*400,g=G.cartesian(labSvg,{xmin:-4,xmax:6,ymin:-5,ymax:5});para.t=G.clamp(para.orient==='h'?g.yOf(py):g.xOf(px),-4.7,4.7);renderLab()});labSvg.addEventListener('pointerup',()=>dragging=false);labSvg.addEventListener('pointercancel',()=>dragging=false);renderLab();
+function optionRound(rng){
+  const p=1+Math.floor(rng()*3),o=rng()<.5?'h':'v',type=Math.floor(rng()*4),coef=4*p;
+  let question,correct,wrong,explanation;
+  if(type===0){
+    question=`${o==='h'?'y²':'x²'} = ${coef}${o==='h'?'x':'y'} 의 초점은?`;
+    correct=o==='h'?`(${p}, 0)`:`(0, ${p})`;
+    wrong=o==='h'?[`(-${p}, 0)`,`(0, ${p})`,`(${coef}, 0)`]:[`(0, -${p})`,`(${p}, 0)`,`(0, ${coef})`];
+    explanation=`4p=${coef}이므로 p=${p}. 초점은 ${correct}입니다.`;
+  }else if(type===1){
+    question=`${o==='h'?'y²':'x²'} = ${coef}${o==='h'?'x':'y'} 의 준선은?`;
+    correct=o==='h'?`x = -${p}`:`y = -${p}`;
+    wrong=o==='h'?[`x = ${p}`,`y = -${p}`,`x = -${coef}`]:[`y = ${p}`,`x = -${p}`,`y = -${coef}`];
+    explanation=`초점 반대편으로 p만큼 떨어진 직선 ${correct}가 준선입니다.`;
+  }else if(type===2){
+    question=`초점이 ${o==='h'?`(${p}, 0)`:`(0, ${p})`}인 포물선의 방정식은?`;
+    correct=o==='h'?`y² = ${coef}x`:`x² = ${coef}y`;
+    wrong=o==='h'?[`y² = -${coef}x`,`x² = ${coef}y`,`y² = ${p}x`]:[`x² = -${coef}y`,`y² = ${coef}x`,`x² = ${p}y`];
+    explanation=`표준형은 ${correct}입니다.`;
+  }else{
+    const t=2*p,x=t*t/(4*p);
+    question=o==='h'?`y=${t}일 때 포물선 위 점의 x좌표는?`:`x=${t}일 때 포물선 위 점의 y좌표는?`;
+    correct=String(x);wrong=[String(x+1),String(x-1),String(x+2)];
+    explanation=`${t}²=${coef}×좌표이므로 답은 ${x}입니다.`;
+  }
+  const choices=G.shuffle([correct,...wrong],rng);
+  return{p,o,question,choices,correct:choices.indexOf(correct),explanation};
+}
+new G.Arena(document.getElementById('parabolaArena'),{id:'parabola',roundMs:8000,createRounds:rng=>Array.from({length:8},()=>optionRound(rng)),draw:(svg,r)=>drawParabola(svg,r.p,r.o,false)});
+</script></body></html>

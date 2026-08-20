@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>곱의 미분법 · 석산고 미적분Ⅰ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700;900&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- KaTeX (자체 호스팅) — 동기 로드: 하단 인라인 스크립트가 katex 전역을 즉시 쓰기 때문 -->
+<link rel="stylesheet" href="../vendor/katex/katex.min.css">
+<script src="../vendor/katex/katex.min.js"></script>
+<script src="../vendor/katex/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  --paper:#EFF3EE; --panel:#FFFFFF; --grid:#D8E2D3; --dot:#E2E9DE;
+  --ink:#223027; --inkSoft:#5C6B60;
+  --left:#C1442D; --right:#2B6CA3; --gold:#C99A2E; --success:#3F7D4C; --border:#D3DAD0;
+  --font-display:'Noto Serif KR', serif;
+  --font-body:'IBM Plex Sans KR','Pretendard',sans-serif;
+  --font-mono:'IBM Plex Mono','Menlo',monospace;
+}
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); }
+.page-bg{ background-image:radial-gradient(var(--dot) 1px, transparent 1px); background-size:20px 20px; min-height:100vh; }
+.wrap{ max-width:600px; margin:0 auto; padding:14px 14px 40px; }
+.hidden{ display:none !important; }
+.card{ background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:18px; }
+.btn-primary{ width:100%; padding:14px; border-radius:14px; border:none; background:var(--ink); color:var(--paper); font-weight:700; font-size:15px; cursor:pointer; }
+.btn-secondary{ width:100%; padding:14px; border-radius:14px; border:1.5px solid var(--border); background:#fff; color:var(--ink); font-weight:600; font-size:14px; cursor:pointer; margin-bottom:10px; }
+
+.tabbar{ position:sticky; top:0; z-index:20; background:var(--paper); padding:10px 14px 8px; border-bottom:1px solid var(--border); }
+.tabbar-inner{ max-width:600px; margin:0 auto; display:flex; gap:8px; }
+.tab-btn{ flex:1; font-family:var(--font-body); font-size:12.5px; font-weight:700; padding:10px 6px; border-radius:12px; border:1.5px solid var(--border); background:var(--panel); color:var(--inkSoft); cursor:pointer; text-align:center; }
+.tab-btn.active{ border-color:var(--ink); background:var(--ink); color:var(--paper); }
+.tab-back{ flex:0 0 38px; display:flex; align-items:center; justify-content:center; border-radius:12px; border:1.5px solid var(--border); background:var(--panel); color:var(--inkSoft); text-decoration:none; font-size:16px; font-weight:700; }
+.tab-back:hover{ border-color:var(--ink); color:var(--ink); }
+
+.eyebrow{ font-family:var(--font-mono); font-size:11.5px; letter-spacing:1.5px; color:var(--inkSoft); text-transform:uppercase; margin-bottom:6px; }
+.title{ font-family:var(--font-display); font-weight:900; font-size:22px; margin:0 0 5px; line-height:1.28; }
+.desc{ color:var(--inkSoft); font-size:13px; line-height:1.55; margin:0 0 14px; }
+
+.theory-section{ margin-bottom:18px; }
+.theory-h2{ font-family:var(--font-display); font-weight:900; font-size:18px; margin:0 0 8px; }
+.theory-p{ font-size:13.5px; line-height:1.7; margin:0 0 10px; }
+.theorem-box{ background:#FBF3E0; border:1.5px solid var(--gold); border-radius:14px; padding:14px 16px; margin-bottom:10px; }
+.theorem-eyebrow{ font-family:var(--font-mono); font-size:10.5px; letter-spacing:1px; color:var(--gold); text-transform:uppercase; margin-bottom:6px; font-weight:700; }
+.theorem-formula{ font-family:var(--font-mono); font-size:13.5px; font-weight:600; line-height:2; }
+.misconception{ background:#F7E9E5; border:1.5px solid var(--left); border-radius:14px; padding:12px 14px; margin-bottom:10px; }
+.misconception-title{ font-weight:700; font-size:13px; color:var(--left); margin-bottom:4px; }
+.misconception-body{ font-size:12.5px; line-height:1.6; }
+.cta-row{ display:flex; gap:10px; margin-top:16px; }
+.prereq-note{ background:var(--panel); border:1px dashed var(--border); border-radius:12px; padding:10px 12px; font-size:12px; color:var(--inkSoft); margin-bottom:16px; line-height:1.6; }
+.form-card{ background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:13px 15px; margin-bottom:10px; }
+.form-card-tag{ display:inline-block; font-family:var(--font-mono); font-size:15px; font-weight:800; color:var(--gold); margin-bottom:5px; }
+.form-card-body{ font-size:12.5px; line-height:1.65; color:var(--ink); }
+
+.chips{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+.chip{ font-size:12.5px; font-weight:600; padding:9px 12px; border-radius:999px; border:1.5px solid var(--border); background:var(--panel); color:var(--ink); cursor:pointer; }
+.chip.active{ border-color:var(--ink); background:var(--ink); color:var(--paper); }
+
+.svg-wrap{ background:#fff; border:1px solid var(--border); border-radius:16px; padding:6px; margin-bottom:12px; }
+.svg-wrap svg{ width:100%; height:auto; display:block; }
+.svg-caption{ font-size:11.5px; color:var(--inkSoft); text-align:center; margin:2px 0 10px; }
+
+.slider-card{ background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:12px 14px; margin-bottom:12px; }
+.slider-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px; }
+.slider-head .sl{ font-size:11.5px; color:var(--inkSoft); }
+.slider-head .sv{ font-family:var(--font-mono); font-size:15px; font-weight:800; color:var(--right); }
+input[type=range]{ width:100%; accent-color:var(--right); }
+.slider-note{ font-size:11.5px; color:var(--gold); font-weight:600; margin-top:5px; min-height:16px; }
+
+.calc-box{ background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px; margin-bottom:12px; }
+.calc-line{ font-family:var(--font-mono); font-size:13.5px; line-height:2.1; overflow-x:auto; }
+.tag-a{ color:var(--left); font-weight:800; }
+.tag-b{ color:var(--right); font-weight:800; }
+.tag-c{ color:var(--gold); font-weight:800; }
+.calc-final{ background:#EAF3EA; border:1.5px solid var(--success); border-radius:12px; padding:11px 13px; font-size:13px; color:var(--success); font-weight:700; margin-top:8px; line-height:1.6; }
+
+.step-card{ background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:16px; margin-bottom:14px; min-height:170px; }
+.step-line{ font-family:var(--font-mono); font-size:13.5px; line-height:2.3; overflow-x:auto; padding:2px 0; }
+.step-line.pending{ opacity:.15; }
+.step-note{ font-size:11.5px; color:var(--gold); font-weight:600; margin-left:8px; }
+.step-controls{ display:flex; gap:8px; margin-bottom:14px; }
+.step-btn{ flex:1; padding:12px; border-radius:12px; border:1.5px solid var(--ink); background:#fff; color:var(--ink); font-weight:700; font-size:13.5px; cursor:pointer; }
+.step-btn:disabled{ opacity:.4; }
+.step-btn.primary{ background:var(--ink); color:var(--paper); }
+.final-box{ background:#EAF3EA; border:1.5px solid var(--success); border-radius:14px; padding:14px; text-align:center; margin-bottom:12px; }
+.final-box .val{ font-family:var(--font-mono); font-size:19px; font-weight:800; color:var(--success); overflow-x:auto; }
+
+.back-link{ font-size:12.5px; color:var(--inkSoft); text-decoration:underline; cursor:pointer; background:none; border:none; padding:0; margin-bottom:10px; display:inline-block; }
+.mode-btn{ width:100%; padding:16px; border-radius:14px; border:1.5px solid var(--border); background:#fff; color:var(--ink); font-weight:700; font-size:15px; cursor:pointer; margin-bottom:10px; text-align:left; }
+.mode-btn-desc{ font-size:12px; font-weight:400; color:var(--inkSoft); margin-top:3px; }
+.top-bar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; gap:8px; }
+.top-stat{ font-family:var(--font-mono); font-size:13px; color:var(--inkSoft); }
+.top-stat b{ color:var(--ink); font-size:17px; }
+.lives{ font-size:17px; letter-spacing:2px; }
+.timerbar-wrap{ width:100%; height:8px; background:var(--grid); border-radius:999px; overflow:hidden; margin-bottom:14px; }
+.timerbar-fill{ height:100%; border-radius:999px; }
+.q-card{ background:#fff; border:1.5px solid var(--ink); border-radius:14px; padding:16px 14px; margin-bottom:12px; text-align:center; }
+.q-label{ font-family:var(--font-mono); font-size:10.5px; letter-spacing:1px; color:var(--inkSoft); text-transform:uppercase; margin-bottom:6px; }
+.q-expr{ font-family:var(--font-mono); font-size:16px; font-weight:800; line-height:1.9; overflow-x:auto; padding:2px 0; }
+.q-arrow{ font-size:13px; color:var(--gold); margin:10px 0 6px; }
+.q-cand{ font-family:var(--font-mono); font-size:22px; font-weight:800; color:var(--right); }
+.choice-col{ display:flex; flex-direction:column; gap:8px; }
+.choice-btn{ width:100%; padding:13px 12px; border-radius:13px; border:1.5px solid var(--border); background:#fff; color:var(--ink); font-size:14px; font-weight:600; cursor:pointer; text-align:left; display:flex; align-items:center; gap:10px; overflow-x:auto; }
+.choice-btn:hover{ border-color:var(--ink); }
+.choice-btn:disabled{ opacity:.55; }
+.choice-btn .num{ font-family:var(--font-mono); font-weight:800; color:var(--inkSoft); flex:0 0 auto; }
+.choice-btn.right{ border-color:var(--success); background:#EAF3EA; }
+.choice-btn.wrong{ border-color:var(--left); background:#F7E9E5; }
+.btn-row2{ display:flex; gap:10px; }
+.big-btn{ flex:1; padding:16px 6px; border-radius:14px; border:none; font-size:15px; font-weight:800; cursor:pointer; color:#fff; }
+.big-btn.good{ background:var(--success); }
+.big-btn.bad{ background:var(--left); }
+.big-btn:disabled{ opacity:.5; }
+.fb-box{ font-size:12.5px; line-height:1.75; padding:12px 14px; border-radius:12px; margin-bottom:12px; }
+.fb-box.good{ background:#EAF3EA; border:1.5px solid var(--success); color:var(--success); }
+.fb-box.bad{ background:#F7E9E5; border:1.5px solid var(--left); color:var(--left); }
+.end-score{ font-family:var(--font-mono); font-size:38px; font-weight:700; text-align:center; margin:6px 0 4px; }
+.end-sub{ text-align:center; color:var(--inkSoft); font-size:13px; margin-bottom:8px; }
+.lb-title{ font-family:var(--font-display); font-weight:900; font-size:19px; margin:0 0 4px; }
+
+/* ---------- KaTeX 통합 ---------- */
+.katex{ font-size:1.05em; }
+.katex .base{ white-space:nowrap; }
+.theorem-formula .katex, .q-expr .katex, .fb-box .katex, .step-line .katex,
+.form-card-body .katex, .misconception-body .katex, .theory-p .katex,
+.form-card-tag .katex, .final-box .val .katex, .choice-btn .katex,
+.calc-line .katex, .calc-final .katex, .q-cand .katex, .slider-head .sv .katex{ font-size:1em; }
+.theorem-formula, .q-expr, .calc-line{ overflow-x:auto; overflow-y:hidden; padding:2px 0; }
+
+@media (prefers-reduced-motion: reduce){ .timerbar-fill{ transition:none; } }
+</style>
+</head>
+<body>
+<div class="page-bg">
+
+<div class="tabbar">
+  <div class="tabbar-inner">
+    <a href="index.html" class="tab-back" aria-label="목록으로 돌아가기" title="미적분Ⅰ 목록으로">←</a>
+    <button class="tab-btn active" data-tab="theory">① 원리</button>
+    <button class="tab-btn" data-tab="lab">② 실험실</button>
+    <button class="tab-btn" data-tab="game">③ 게임</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- THEORY -->
+<div id="page-theory">
+  <div class="eyebrow">석산고 미적분Ⅰ · 곱의 미분법</div>
+  <h1 class="title">앞미분 × 뒤 + 앞 × 뒤미분</h1>
+  <p class="desc">곱은 그냥 각각 미분해서 곱하면 안 돼요. 왜 두 항이 생기는지 넓이로 확인해봐요.</p>
+
+  <div class="prereq-note">🔗 이전 단원: 도함수와 미분법에서 \((x^{n})' = nx^{n-1}\)을 배웠다면, 이제 두 함수가 <b>곱해져 있을 때</b>를 다뤄요.</div>
+
+  <div class="theory-section">
+    <div class="theory-h2">1. 왜 \(f'g'\)이 아닐까?</div>
+    <p class="theory-p">가장 흔한 실수부터 막아둘게요. 곱의 미분은 <b>각각 미분해서 곱하는 게 아니에요.</b> 반례 하나면 충분해요.</p>
+    <div class="misconception">
+      <div class="misconception-title">❌ 반례로 확인</div>
+      <div class="misconception-body">\(f(x)=x,\ g(x)=x\)라면 \(f(x)g(x)=x^{2}\)이므로 \((fg)' = 2x\).<br>그런데 \(f'(x)g'(x) = 1 \times 1 = 1\). 완전히 다르죠?</div>
+    </div>
+    <p class="theory-p">곱은 두 값이 <b>동시에</b> 변해요. 가로도 늘고 세로도 늘기 때문에 넓이 증가분이 두 덩어리로 생겨요. 그래서 항이 두 개예요.</p>
+  </div>
+
+  <div class="theory-section">
+    <div class="theory-h2">2. 곱의 미분법</div>
+    <div class="theorem-box">
+      <div class="theorem-eyebrow">Product Rule</div>
+      <div class="theorem-formula">
+        \(\big\{f(x)g(x)\big\}' = f'(x)g(x) + f(x)g'(x)\)<br>
+        <span style="font-size:12.5px; color:#8a6a1a;">앞미분 × 뒤 &nbsp;+&nbsp; 앞 × 뒤미분</span>
+      </div>
+    </div>
+    <p class="theory-p">외울 때는 <b>"앞미분뒤, 앞뒤미분"</b> 리듬으로 외우면 순서를 안 잃어버려요. 두 항 모두 <b>한쪽만 미분</b>한다는 게 핵심이에요.</p>
+    <div class="svg-wrap"><svg id="theorySvg" viewBox="0 0 640 380" preserveAspectRatio="xMidYMid meet"></svg></div>
+    <p class="svg-caption">가로 \(f\), 세로 \(g\)인 직사각형의 넓이 변화 — 빨강 띠 + 파랑 띠가 두 항의 정체예요.</p>
+  </div>
+
+  <div class="theory-section">
+    <div class="theory-h2">3. 이렇게도 써요</div>
+    <div class="form-card">
+      <div class="form-card-tag">제곱 꼴</div>
+      <div class="form-card-body">\(\big\{f(x)\big\}^{2} = f(x)f(x)\)이므로 \(\big\{f(x)^{2}\big\}' = 2f(x)f'(x)\). 예: \(\big\{(x^{2}+1)^{2}\big\}' = 2(x^{2}+1)(2x)\).</div>
+    </div>
+    <div class="form-card">
+      <div class="form-card-tag">세 함수의 곱</div>
+      <div class="form-card-body">\((fgh)' = f'gh + fg'h + fgh'\) — <b>한 번에 하나씩만</b> 미분해서 전부 더해요. 항이 3개가 되죠.</div>
+    </div>
+    <div class="form-card">
+      <div class="form-card-tag">상수배</div>
+      <div class="form-card-body">\(k\)가 상수면 \((kf)' = k f'\). 상수의 미분은 0이라 \(k'f\) 항이 사라지기 때문이에요.</div>
+    </div>
+  </div>
+
+  <div class="theory-section">
+    <div class="theory-h2">4. 자주 하는 오해</div>
+    <div class="misconception">
+      <div class="misconception-title">❌ \((fg)' = f'g'\) 아닌가요?</div>
+      <div class="misconception-body">아니에요. 위 반례처럼 완전히 다른 값이 나와요. 헷갈릴 땐 \(f=g=x\)를 넣어 \(2x\)가 나오는지 확인해보세요.</div>
+    </div>
+    <div class="misconception">
+      <div class="misconception-title">❌ 부호가 \(f'g - fg'\) 아니었나요?</div>
+      <div class="misconception-body">그건 <b>몫의 미분법</b>의 분자예요. 곱은 <b>더하기</b>, 몫은 <b>빼기</b>. 넓이는 늘어나기만 하니 곱은 더하기라고 기억하면 좋아요.</div>
+    </div>
+    <div class="misconception">
+      <div class="misconception-title">❌ 전개해서 미분하면 답이 달라지지 않나요?</div>
+      <div class="misconception-body">똑같아요! \((x+1)(x+2)\)를 전개해 \(x^{2}+3x+2\)를 미분하면 \(2x+3\), 곱의 미분법으로 해도 \(1\cdot(x+2)+(x+1)\cdot 1 = 2x+3\). 실험실에서 직접 검산해봐요.</div>
+    </div>
+  </div>
+
+  <div class="cta-row"><button class="btn-primary" id="ctaToLab">🧪 실험실에서 넓이로 확인하기</button></div>
+  <div class="cta-row"><button class="btn-secondary" id="ctaToGame" style="margin-bottom:0;">🎮 게임으로 연습하기</button></div>
+</div>
+
+<!-- LAB -->
+<div id="page-lab" class="hidden">
+  <div class="eyebrow">석산고 미적분Ⅰ · Interactive Lab</div>
+  <h1 class="title">곱의 미분법 실험실</h1>
+  <p class="desc">넓이로 공식이 생기는 과정을 보고, 계산은 한 줄씩 따라가 보세요.</p>
+
+  <div class="chips" id="labChips"></div>
+
+  <!-- 넓이 -->
+  <div id="labArea">
+    <div class="svg-wrap"><svg id="areaSvg" viewBox="0 0 640 400" preserveAspectRatio="xMidYMid meet"></svg></div>
+    <p class="svg-caption">\(f(x)=2x\) 가 가로, \(g(x)=x+2\) 가 세로 · 지금 \(x=1\)</p>
+
+    <div class="slider-card">
+      <div class="slider-head">
+        <span class="sl">x의 증가량 h</span>
+        <span class="sv" id="areaH"></span>
+      </div>
+      <input type="range" id="areaSlider" min="0.02" max="1.2" step="0.01" value="0.9">
+      <div class="slider-note" id="areaNote"></div>
+    </div>
+
+    <div class="calc-box">
+      <div class="calc-line" id="areaCalc"></div>
+      <div class="calc-final" id="areaFinal"></div>
+    </div>
+  </div>
+
+  <!-- 스테퍼 -->
+  <div id="labStep" class="hidden">
+    <div class="step-card"><div id="stepLines"></div></div>
+    <div class="step-controls">
+      <button class="step-btn" id="btnPrev">◀ 이전</button>
+      <button class="step-btn primary" id="btnNext">다음 단계 →</button>
+    </div>
+    <div id="finalBox" class="final-box hidden">
+      <div style="font-size:12px; color:var(--inkSoft); margin-bottom:4px;">(fg)′(x)</div>
+      <div class="val" id="finalVal"></div>
+    </div>
+    <div id="checkBox" class="calc-box hidden">
+      <div style="font-size:11.5px; color:var(--inkSoft); margin-bottom:5px;">검산 — 먼저 전개하고 미분해도 같을까?</div>
+      <div class="calc-line" id="checkLine"></div>
+    </div>
+    <button class="btn-secondary" id="labNewProblem" style="margin-bottom:0;">🎲 다른 문제로 바꾸기</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="page-game" class="hidden">
+  <div id="gameHeader">
+    <div class="eyebrow">석산고 미적분Ⅰ · Interactive Lab</div>
+    <h1 class="title">곱의 미분 게임</h1>
+    <p class="desc">두 가지 모드 중 골라서 연습해보세요.</p>
+  </div>
+
+  <div id="modeSelect" class="card">
+    <button class="mode-btn" id="btnModeForm">🧩 공식 조립기<div class="mode-btn-desc">네 개의 후보 식 중 진짜 \((fg)'\)을 골라내기. 대표적인 실수들이 함정으로 나와요.</div></button>
+    <button class="mode-btn" id="btnModeValue" style="margin-bottom:0;">🎯 미분계수 저격<div class="mode-btn-desc">\((fg)'(a)\) 값이 맞는지 틀리는지 빠르게 판정. 순발력형.</div></button>
+  </div>
+
+  <!-- GAME 1 : 공식 조립기 -->
+  <div id="formApp" class="hidden">
+    <button class="back-link" id="formBack">← 모드 선택으로</button>
+    <div id="formStart" class="card">
+      <div id="formBest" style="text-align:center; margin-bottom:14px; font-size:13.5px; color:var(--inkSoft);"></div>
+      <button class="btn-primary" id="formBtnStart">게임 시작</button>
+    </div>
+    <div id="formPlay" class="card hidden">
+      <div class="top-bar">
+        <div class="top-stat">점수 <b id="formScore">0</b></div>
+        <div class="lives" id="formLives"></div>
+      </div>
+      <div class="timerbar-wrap"><div class="timerbar-fill" id="formTimer" style="width:100%; background:var(--success);"></div></div>
+      <div class="q-card">
+        <div class="q-label">주어진 함수</div>
+        <div class="q-expr" id="formGiven"></div>
+        <div class="q-arrow">↓ \((fg)'(x)\) 는?</div>
+      </div>
+      <div id="formFb" class="hidden"></div>
+      <div class="choice-col" id="formChoices"></div>
+    </div>
+    <div id="formEnd" class="card hidden">
+      <div class="lb-title" style="text-align:center;">게임 오버!</div>
+      <div class="end-score" id="formFinal">0</div>
+      <div class="end-sub" id="formSummary"></div>
+      <div class="end-sub" id="formCompare" style="font-weight:700; color:var(--gold);"></div>
+      <button class="btn-primary" id="formRetry">다시 시작</button>
+    </div>
+  </div>
+
+  <!-- GAME 2 : 미분계수 저격 -->
+  <div id="valueApp" class="hidden">
+    <button class="back-link" id="valueBack">← 모드 선택으로</button>
+    <div id="valueStart" class="card">
+      <div id="valueBest" style="text-align:center; margin-bottom:14px; font-size:13.5px; color:var(--inkSoft);"></div>
+      <button class="btn-primary" id="valueBtnStart">게임 시작</button>
+    </div>
+    <div id="valuePlay" class="card hidden">
+      <div class="top-bar">
+        <div class="top-stat">점수 <b id="valueScore">0</b></div>
+        <div class="lives" id="valueLives"></div>
+      </div>
+      <div class="timerbar-wrap"><div class="timerbar-fill" id="valueTimer" style="width:100%; background:var(--success);"></div></div>
+      <div class="q-card">
+        <div class="q-label">주어진 함수</div>
+        <div class="q-expr" id="valueGiven"></div>
+        <div class="q-arrow">↓ 제시된 값</div>
+        <div class="q-cand" id="valueCand"></div>
+      </div>
+      <div id="valueFb" class="hidden"></div>
+      <div class="btn-row2">
+        <button class="big-btn good" id="valueBtnGood">🟢 맞다</button>
+        <button class="big-btn bad" id="valueBtnBad">🔴 틀리다</button>
+      </div>
+    </div>
+    <div id="valueEnd" class="card hidden">
+      <div class="lb-title" style="text-align:center;">게임 오버!</div>
+      <div class="end-score" id="valueFinal">0</div>
+      <div class="end-sub" id="valueSummary"></div>
+      <div class="end-sub" id="valueCompare" style="font-weight:700; color:var(--gold);"></div>
+      <button class="btn-primary" id="valueRetry">다시 시작</button>
+    </div>
+  </div>
+
+  <p class="desc" id="gameFooter" style="margin-top:16px; text-align:center;">헷갈리면 <a href="#" id="toTheory" style="color:var(--ink); font-weight:600;">① 원리 탭</a>에서 복습하세요.</p>
+</div>
+
+</div>
+</div>
+
+<script>
+const COLORS = { ink:'#223027', inkSoft:'#5C6B60', left:'#C1442D', right:'#2B6CA3', gold:'#C99A2E', success:'#3F7D4C', paper:'#EFF3EE' };
+function rand(a,b){ return a + Math.random()*(b-a); }
+function randInt(a,b){ return Math.floor(rand(a,b+1)); }
+function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+function shuffle(arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+function fmt(v){ const r=Math.round(v*1000)/1000; return String(r); }
+
+// ============================================================
+// KaTeX 헬퍼
+// ============================================================
+function KX(tex, display){
+  try { return katex.renderToString(String(tex), { throwOnError:false, displayMode:!!display, strict:false }); }
+  catch(e){ return String(tex); }
+}
+function renderStaticMath(root){
+  if (typeof renderMathInElement !== 'function' || !root) return;
+  try {
+    renderMathInElement(root, {
+      delimiters: [ { left:'\\[', right:'\\]', display:true }, { left:'\\(', right:'\\)', display:false } ],
+      throwOnError: false,
+      ignoredTags: ['script','noscript','style','textarea','pre','code','option'],
+      ignoredClasses: ['katex'],
+    });
+  } catch(e){}
+}
+
+function showTab(name){
+  ['theory','lab','game'].forEach(n=>{
+    document.getElementById('page-'+n).classList.toggle('hidden', n!==name);
+    document.querySelector(`.tab-btn[data-tab="${n}"]`).classList.toggle('active', n===name);
+  });
+  window.scrollTo(0,0);
+}
+document.querySelectorAll('.tab-btn').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+
+// ============================================================
+// 다항식 유틸 — 계수는 오름차순 [c0, c1, c2, ...]
+// ============================================================
+function pTrim(p){ const q=p.slice(); while(q.length>1 && Math.abs(q[q.length-1])<1e-12) q.pop(); return q; }
+function pDer(p){ const q=[]; for(let i=1;i<p.length;i++) q.push(i*p[i]); return pTrim(q.length?q:[0]); }
+function pMul(a,b){ const r=new Array(a.length+b.length-1).fill(0);
+  for(let i=0;i<a.length;i++) for(let j=0;j<b.length;j++) r[i+j]+=a[i]*b[j]; return pTrim(r); }
+function pAdd(a,b){ const n=Math.max(a.length,b.length), r=[];
+  for(let i=0;i<n;i++) r.push((a[i]||0)+(b[i]||0)); return pTrim(r); }
+function pEval(p,x){ let s=0; for(let i=p.length-1;i>=0;i--) s=s*x+p[i]; return s; }
+function pEq(a,b){ const A=pTrim(a), B=pTrim(b); if(A.length!==B.length) return false;
+  return A.every((v,i)=>Math.abs(v-B[i])<1e-9); }
+function pDeg(p){ return pTrim(p).length-1; }
+function pTerms(p){ return pTrim(p).filter(c=>Math.abs(c)>1e-12).length; }
+function pTex(p){
+  const q=pTrim(p); const parts=[];
+  for(let i=q.length-1;i>=0;i--){
+    const c=q[i]; if(Math.abs(c)<1e-12) continue;
+    const ac=Math.abs(c); let t='';
+    if(i===0) t=String(ac);
+    else {
+      if(Math.abs(ac-1)>1e-12) t=String(ac);
+      t += (i===1 ? 'x' : `x^{${i}}`);
+    }
+    parts.push({ sign:c<0?'-':'+', t });
+  }
+  if(!parts.length) return '0';
+  let out=(parts[0].sign==='-'?'-':'')+parts[0].t;
+  for(let i=1;i<parts.length;i++) out += ` ${parts[i].sign} ${parts[i].t}`;
+  return out;
+}
+// 곱셈 안에 들어갈 때 괄호 처리
+function pTexP(p){
+  const t=pTex(p);
+  return (pTerms(p)>1 || t.charAt(0)==='-') ? `\\left(${t}\\right)` : t;
+}
+// 문제용 랜덤 다항식 (1~2차, 계수 작게)
+function randPoly(deg){
+  if(deg===undefined) deg = pick([1,1,2]);
+  if(deg===1){
+    const a=pick([-3,-2,-1,1,2,3]), b=randInt(-4,4);
+    return pTrim([b,a]);
+  }
+  const a=pick([-2,-1,1,2]), b=randInt(-3,3), c=randInt(-4,4);
+  return pTrim([c,b,a]);
+}
+function makePair(){
+  for(let t=0;t<200;t++){
+    const f=randPoly(), g=randPoly();
+    if(pDeg(f)+pDeg(g)>3) continue;              // 결과가 3차 이하로
+    if(pEq(f,g)) continue;
+    if(pDeg(f)<1 || pDeg(g)<1) continue;
+    return { f, g };
+  }
+  return { f:[1,1], g:[2,1] };
+}
+
+// ============================================================
+// THEORY / LAB 공용 : 넓이 그림
+// ============================================================
+const AREA = { f:p=>2*p, g:p=>p+2, fd:2, gd:1, x0:1, FMAX:3.6, GMAX:4.6 };
+function drawArea(h, V){
+  V = V || { w:640, h:400, pl:56, pr:24, pt:22, pb:52 };
+  const A=AREA;
+  const f0=A.f(A.x0), g0=A.g(A.x0);
+  const df=A.fd*h, dg=A.gd*h;
+  const sx=(V.w-V.pl-V.pr)/A.FMAX, sy=(V.h-V.pt-V.pb)/A.GMAX;
+  const ox=V.pl, oy=V.h-V.pb;
+  const X=u=>ox+u*sx, Y=v=>oy-v*sy;
+  let s='';
+  // 축
+  s+=`<line x1="${ox}" y1="${oy}" x2="${V.w-8}" y2="${oy}" stroke="${COLORS.ink}" stroke-width="1.6"/>`;
+  s+=`<line x1="${ox}" y1="${oy}" x2="${ox}" y2="${V.pt-4}" stroke="${COLORS.ink}" stroke-width="1.6"/>`;
+  // 기본 넓이 f·g
+  s+=`<rect x="${X(0)}" y="${Y(g0)}" width="${f0*sx}" height="${g0*sy}" fill="${COLORS.ink}" opacity="0.09"/>`;
+  s+=`<text x="${X(f0/2)}" y="${Y(g0/2)+5}" text-anchor="middle" font-family="var(--font-mono)" font-size="15" font-weight="800" fill="${COLORS.ink}">f · g</text>`;
+  // 오른쪽 띠 : Δf · g
+  s+=`<rect x="${X(f0)}" y="${Y(g0)}" width="${df*sx}" height="${g0*sy}" fill="${COLORS.left}" opacity="0.3"/>`;
+  if(df*sx>34) s+=`<text x="${X(f0+df/2)}" y="${Y(g0/2)+5}" text-anchor="middle" font-family="var(--font-mono)" font-size="13" font-weight="800" fill="${COLORS.left}">Δf·g</text>`;
+  // 위쪽 띠 : f · Δg
+  s+=`<rect x="${X(0)}" y="${Y(g0+dg)}" width="${f0*sx}" height="${dg*sy}" fill="${COLORS.right}" opacity="0.3"/>`;
+  if(dg*sy>20) s+=`<text x="${X(f0/2)}" y="${Y(g0+dg/2)+5}" text-anchor="middle" font-family="var(--font-mono)" font-size="13" font-weight="800" fill="${COLORS.right}">f·Δg</text>`;
+  // 모서리 : Δf · Δg
+  s+=`<rect x="${X(f0)}" y="${Y(g0+dg)}" width="${df*sx}" height="${dg*sy}" fill="${COLORS.gold}" opacity="0.6"/>`;
+  if(df*sx>44 && dg*sy>20) s+=`<text x="${X(f0+df/2)}" y="${Y(g0+dg/2)+5}" text-anchor="middle" font-family="var(--font-mono)" font-size="12" font-weight="800" fill="#7a5c12">Δf·Δg</text>`;
+  // 전체 테두리
+  s+=`<rect x="${X(0)}" y="${Y(g0+dg)}" width="${(f0+df)*sx}" height="${(g0+dg)*sy}" fill="none" stroke="${COLORS.ink}" stroke-width="2"/>`;
+  s+=`<rect x="${X(0)}" y="${Y(g0)}" width="${f0*sx}" height="${g0*sy}" fill="none" stroke="${COLORS.ink}" stroke-width="1.6" stroke-dasharray="5 4"/>`;
+  // 가로 라벨
+  s+=`<text x="${X(f0/2)}" y="${oy+22}" text-anchor="middle" font-family="var(--font-mono)" font-size="12.5" font-weight="700" fill="${COLORS.ink}">f = ${fmt(f0)}</text>`;
+  s+=`<text x="${X(f0+df/2)}" y="${oy+22}" text-anchor="middle" font-family="var(--font-mono)" font-size="12.5" font-weight="700" fill="${COLORS.left}">Δf = ${fmt(df)}</text>`;
+  // 세로 라벨
+  s+=`<text x="${ox-8}" y="${Y(g0/2)+4}" text-anchor="end" font-family="var(--font-mono)" font-size="12.5" font-weight="700" fill="${COLORS.ink}">g = ${fmt(g0)}</text>`;
+  s+=`<text x="${ox-8}" y="${Y(g0+dg/2)+4}" text-anchor="end" font-family="var(--font-mono)" font-size="12.5" font-weight="700" fill="${COLORS.right}">Δg = ${fmt(dg)}</text>`;
+  // 눈금
+  s+=`<line x1="${X(f0)}" y1="${oy}" x2="${X(f0)}" y2="${oy+6}" stroke="${COLORS.ink}" stroke-width="1.4"/>`;
+  s+=`<line x1="${ox}" y1="${Y(g0)}" x2="${ox-6}" y2="${Y(g0)}" stroke="${COLORS.ink}" stroke-width="1.4"/>`;
+  return s;
+}
+(function drawTheoryArea(){
+  document.getElementById('theorySvg').innerHTML = drawArea(0.7, { w:640, h:380, pl:56, pr:24, pt:22, pb:52 });
+})();
+
+// ============================================================
+// LAB
+// ============================================================
+const LabApp = (function(){
+  let mode=0;                       // 0 = 넓이, 1 = 스테퍼
+  let h=0.9;
+  let prob=null, idx=0;
+
+  function renderChips(){
+    const box=document.getElementById('labChips'); box.innerHTML='';
+    ['① 넓이로 보기','② 계산 스테퍼'].forEach((label,i)=>{
+      const b=document.createElement('button');
+      b.className='chip'+(i===mode?' active':'');
+      b.textContent=label;
+      b.onclick=()=>{ mode=i; renderChips(); syncMode(); };
+      box.appendChild(b);
+    });
+  }
+  function syncMode(){
+    document.getElementById('labArea').classList.toggle('hidden', mode!==0);
+    document.getElementById('labStep').classList.toggle('hidden', mode!==1);
+    if(mode===0) renderArea(); else renderStep();
+  }
+
+  // ---------- 넓이 ----------
+  function renderArea(){
+    const A=AREA, f0=A.f(A.x0), g0=A.g(A.x0), df=A.fd*h, dg=A.gd*h;
+    document.getElementById('areaSvg').innerHTML = drawArea(h);
+    document.getElementById('areaH').innerHTML = KX(`h = ${fmt(h)}`);
+    const dA = df*g0 + f0*dg + df*dg;
+    const line =
+      `<div>` + KX(`\\dfrac{\\Delta A}{h} = \\dfrac{\\Delta f}{h}\\,g + f\\,\\dfrac{\\Delta g}{h} + \\dfrac{\\Delta f \\cdot \\Delta g}{h}`) + `</div>` +
+      `<div><span class="tag-a">${fmt(df/h)} × ${fmt(g0)}</span> + <span class="tag-b">${fmt(f0)} × ${fmt(dg/h)}</span> + <span class="tag-c">${fmt(df*dg/h)}</span>` +
+      ` = <b>${fmt(dA/h)}</b></div>`;
+    document.getElementById('areaCalc').innerHTML = line;
+    document.getElementById('areaFinal').innerHTML =
+      `h → 0 이면 <span class="tag-c">모서리 항 ${fmt(df*dg/h)}</span> 이 0으로 사라져요 →<br>` +
+      KX(`(fg)'(1) = f'(1)g(1) + f(1)g'(1) = 2 \\times 3 + 2 \\times 1 = 8`);
+    const note=document.getElementById('areaNote');
+    if(h<0.12) note.textContent='💡 모서리(노란 사각형)가 거의 사라졌죠? 두 띠만 남아요.';
+    else if(h>0.9) note.textContent='💡 h가 크면 모서리 오차도 커요. 슬라이더를 왼쪽으로 줄여보세요.';
+    else note.textContent='';
+  }
+
+  // ---------- 스테퍼 ----------
+  function build(){
+    const {f,g}=makePair();
+    const fd=pDer(f), gd=pDer(g);
+    const A=pMul(fd,g), B=pMul(f,gd);
+    const sum=pAdd(A,B);
+    const expanded=pMul(f,g);
+    const steps=[
+      KX(`f(x) = ${pTex(f)}, \\quad g(x) = ${pTex(g)}`),
+      `각각 미분: ` + KX(`f'(x) = ${pTex(fd)}, \\quad g'(x) = ${pTex(gd)}`),
+      `곱의 미분법: ` + KX(`(fg)' = f'g + fg'`) + ` <span class="step-note">앞미분뒤 + 앞뒤미분</span>`,
+      KX(`= ${pTexP(fd)}${pTexP(g)} + ${pTexP(f)}${pTexP(gd)}`) + ` <span class="step-note">대입</span>`,
+      KX(`= ${pTexP(A)} + ${pTexP(B)}`) + ` <span class="step-note">각각 전개</span>`,
+      KX(`= ${pTex(sum)}`) + ` <span class="step-note">동류항 정리</span>`,
+    ];
+    return { f,g,fd,gd,A,B,sum,expanded, expDer:pDer(expanded), steps };
+  }
+  function renderStep(){
+    if(!prob){ prob=build(); idx=0; }
+    const el=document.getElementById('stepLines'); el.innerHTML='';
+    prob.steps.forEach((s,i)=>{
+      const d=document.createElement('div');
+      d.className='step-line'+(i>=idx?' pending':'');
+      d.innerHTML=s;
+      el.appendChild(d);
+    });
+    document.getElementById('btnPrev').disabled = idx===0;
+    document.getElementById('btnNext').disabled = idx>=prob.steps.length;
+    const done = idx>=prob.steps.length;
+    document.getElementById('finalBox').classList.toggle('hidden', !done);
+    document.getElementById('checkBox').classList.toggle('hidden', !done);
+    if(done){
+      document.getElementById('finalVal').innerHTML = KX(pTex(prob.sum));
+      document.getElementById('checkLine').innerHTML =
+        KX(`f(x)g(x) = ${pTex(prob.expanded)}`) + `<br>` +
+        KX(`\\Rightarrow \\ \\big(f g\\big)' = ${pTex(prob.expDer)}`) +
+        ` <span class="step-note">${pEq(prob.expDer, prob.sum) ? '✓ 완전히 같아요!' : '?'}</span>`;
+    }
+  }
+  function init(){
+    renderChips();
+    const sl=document.getElementById('areaSlider');
+    sl.value=h;
+    sl.addEventListener('input',()=>{ h=parseFloat(sl.value); renderArea(); });
+    document.getElementById('btnNext').addEventListener('click',()=>{ if(idx<prob.steps.length){ idx++; renderStep(); } });
+    document.getElementById('btnPrev').addEventListener('click',()=>{ if(idx>0){ idx--; renderStep(); } });
+    document.getElementById('labNewProblem').addEventListener('click',()=>{ prob=build(); idx=0; renderStep(); });
+    syncMode();
+  }
+  return { init };
+})();
+
+// ============================================================
+// 게임 모드 전환
+// ============================================================
+function showGameMode(mode){
+  document.getElementById('modeSelect').classList.toggle('hidden', mode!=='select');
+  document.getElementById('formApp').classList.toggle('hidden', mode!=='form');
+  document.getElementById('valueApp').classList.toggle('hidden', mode!=='value');
+  document.getElementById('gameHeader').classList.toggle('hidden', mode!=='select');
+  document.getElementById('gameFooter').classList.toggle('hidden', mode!=='select');
+}
+
+// ============================================================
+// GAME 1 : 공식 조립기
+// ============================================================
+const FormGame = (function(){
+  const START=13000, MIN=6500, EVERY=4, DEC=1100;
+  const st={ score:0, lives:3, streak:0, correct:0, time:START, round:null, raf:null, locked:false };
+
+  function makeRound(){
+    const {f,g}=makePair();
+    const fd=pDer(f), gd=pDer(g);
+    const P=pTexP;
+    const correctTex = `${P(fd)}${P(g)} + ${P(f)}${P(gd)}`;
+    const wrongs=[
+      { tex:`${P(fd)}${P(gd)}`,               why:'각각 미분해서 곱한 식이에요. 곱의 미분은 이렇게 하는 게 아니에요!' },
+      { tex:`${P(fd)}${P(g)} - ${P(f)}${P(gd)}`, why:'부호가 빼기예요. 빼기는 <b>몫의 미분법</b>의 분자랍니다.' },
+      { tex:`${P(fd)} + ${P(gd)}`,            why:'그냥 각각 미분해서 더한 식 — 그건 <b>합</b>의 미분법이에요.' },
+      { tex:`${P(f)}${P(g)} + ${P(fd)}${P(gd)}`, why:'미분 안 한 것과 다 미분한 것을 더했어요. 각 항은 <b>한쪽만</b> 미분해야 해요.' },
+    ];
+    const opts = shuffle(wrongs).slice(0,3).map(w=>({ tex:w.tex, ok:false, why:w.why }));
+    opts.push({ tex:correctTex, ok:true, why:'앞미분 × 뒤 + 앞 × 뒤미분 — 정확해요!' });
+    return { f, g, fd, gd, choices:shuffle(opts), sum:pAdd(pMul(fd,g), pMul(f,gd)) };
+  }
+
+  function loadBest(){ try{ const v=localStorage.getItem('prod_form_best'); return v?JSON.parse(v):null; }catch(e){ return null; } }
+  function saveBest(e){ try{ localStorage.setItem('prod_form_best', JSON.stringify(e)); }catch(e){} }
+  function renderBest(){
+    const b=loadBest();
+    document.getElementById('formBest').textContent = b?`🏆 내 최고 기록: ${b.score}점 (${b.correct}개 정답)`:'이 기기에 첫 기록이 저장돼요.';
+  }
+  function show(s){
+    ['Start','Play','End'].forEach(n=>document.getElementById('form'+n).classList.toggle('hidden', n.toLowerCase()!==s));
+    if(s==='start') renderBest();
+  }
+  function lives(){ let s=''; for(let i=0;i<3;i++) s+= i<st.lives?'❤️':'🤍'; document.getElementById('formLives').textContent=s; }
+  function timer(r){
+    const f=document.getElementById('formTimer');
+    f.style.width=(r*100)+'%';
+    f.style.backgroundColor = r>0.5?COLORS.success : r>0.2?COLORS.gold : COLORS.left;
+  }
+  function spawn(){
+    st.locked=false;
+    const r=makeRound(); st.round=r;
+    document.getElementById('formGiven').innerHTML = KX(`f(x) = ${pTex(r.f)}, \\quad g(x) = ${pTex(r.g)}`);
+    document.getElementById('formFb').classList.add('hidden');
+    const box=document.getElementById('formChoices'); box.innerHTML='';
+    const NUM=['①','②','③','④'];
+    r.choices.forEach((c,i)=>{
+      const b=document.createElement('button');
+      b.className='choice-btn';
+      b.innerHTML=`<span class="num">${NUM[i]}</span><span>${KX(c.tex)}</span>`;
+      b.onclick=()=>answer(i);
+      box.appendChild(b);
+    });
+    const t0=performance.now(), dur=st.time;
+    (function tick(now){
+      const rem=Math.max(0, dur-((now||performance.now())-t0));
+      timer(rem/dur);
+      if(rem<=0){ answer(null); return; }
+      st.raf=requestAnimationFrame(tick);
+    })(performance.now());
+  }
+  function answer(ch){
+    if(st.locked) return; st.locked=true;
+    cancelAnimationFrame(st.raf);
+    const r=st.round;
+    const btns=document.querySelectorAll('#formChoices .choice-btn');
+    btns.forEach((b,i)=>{
+      b.disabled=true;
+      if(r.choices[i].ok) b.classList.add('right');
+      else if(i===ch) b.classList.add('wrong');
+    });
+    const ok = (ch!==null && r.choices[ch].ok);
+    const fb=document.getElementById('formFb'); fb.classList.remove('hidden');
+    const tidy = `정리하면 ` + KX(`(fg)' = ${pTex(r.sum)}`);
+    if(ok){
+      const rr=parseFloat(document.getElementById('formTimer').style.width)/100||0;
+      const pts=18+Math.round(rr*20)+Math.min(st.streak,10);
+      st.score+=pts; st.streak++; st.correct++;
+      document.getElementById('formScore').textContent=st.score;
+      if(st.correct%EVERY===0) st.time=Math.max(MIN, st.time-DEC);
+      fb.className='fb-box good'; fb.innerHTML=`✓ +${pts}점 · ${tidy}`;
+      setTimeout(spawn,1800);
+    } else {
+      st.streak=0; st.lives--; lives();
+      fb.className='fb-box bad';
+      const why = (ch===null) ? '시간 안에 못 골랐어요.' : r.choices[ch].why;
+      fb.innerHTML=(ch===null?'⏱ 시간 초과! ':'✕ 틀렸어요. ')+why+'<br>'+tidy;
+      if(st.lives<=0) setTimeout(over,2600); else setTimeout(spawn,2600);
+    }
+  }
+  function start(){
+    st.score=0; st.lives=3; st.streak=0; st.correct=0; st.time=START;
+    document.getElementById('formScore').textContent=0;
+    lives(); show('play'); spawn();
+  }
+  function over(){
+    cancelAnimationFrame(st.raf); show('end');
+    document.getElementById('formFinal').textContent=st.score;
+    document.getElementById('formSummary').textContent=`${st.correct}개 정답`;
+    const b=loadBest(), isNew=!b||st.score>b.score;
+    document.getElementById('formCompare').textContent = isNew?'🎉 이 기기 최고 기록 갱신!':`내 최고 기록은 ${b.score}점이에요.`;
+    if(isNew) saveBest({score:st.score, correct:st.correct});
+  }
+  function init(){
+    document.getElementById('formBtnStart').addEventListener('click',start);
+    document.getElementById('formRetry').addEventListener('click',()=>show('start'));
+    document.getElementById('formBack').addEventListener('click',()=>{ cancelAnimationFrame(st.raf); showGameMode('select'); });
+    show('start');
+  }
+  return { init };
+})();
+
+// ============================================================
+// GAME 2 : 미분계수 저격
+// ============================================================
+const ValueGame = (function(){
+  const START=10000, MIN=5000, EVERY=4, DEC=900;
+  const st={ score:0, lives:3, streak:0, correct:0, time:START, round:null, raf:null, locked:false };
+
+  function makeRound(){
+    for(let t=0;t<200;t++){
+      const {f,g}=makePair();
+      const fd=pDer(f), gd=pDer(g);
+      const a=randInt(-2,2);
+      const fa=pEval(f,a), ga=pEval(g,a), fda=pEval(fd,a), gda=pEval(gd,a);
+      const truth = fda*ga + fa*gda;
+      const traps=[
+        { v:fda*gda,          why:'그건 ' + KX("f'(a)g'(a)") + ' — 각각 미분해서 곱한 값이에요.' },
+        { v:fda*ga - fa*gda,  why:'그건 ' + KX("f'(a)g(a) - f(a)g'(a)") + ' — 몫의 미분법 부호예요.' },
+        { v:fda + gda,        why:'그건 ' + KX("f'(a)+g'(a)") + ' — 합의 미분법이에요.' },
+        { v:fa*ga,            why:'그건 미분 안 한 ' + KX('f(a)g(a)') + ' 값이에요.' },
+      ].filter(w=>Math.abs(w.v-truth)>1e-9);
+      if(!traps.length) continue;
+      if(Math.abs(truth)>200) continue;
+      const showTrue = Math.random()<0.5;
+      const trap = pick(traps);
+      return { f,g,fd,gd,a, truth, cand: showTrue?truth:trap.v, answer: showTrue?'good':'bad',
+               why: showTrue?'':trap.why, detail:{fa,ga,fda,gda} };
+    }
+    return null;
+  }
+
+  function loadBest(){ try{ const v=localStorage.getItem('prod_value_best'); return v?JSON.parse(v):null; }catch(e){ return null; } }
+  function saveBest(e){ try{ localStorage.setItem('prod_value_best', JSON.stringify(e)); }catch(e){} }
+  function renderBest(){
+    const b=loadBest();
+    document.getElementById('valueBest').textContent = b?`🏆 내 최고 기록: ${b.score}점 (${b.correct}개 정답)`:'이 기기에 첫 기록이 저장돼요.';
+  }
+  function show(s){
+    ['Start','Play','End'].forEach(n=>document.getElementById('value'+n).classList.toggle('hidden', n.toLowerCase()!==s));
+    if(s==='start') renderBest();
+  }
+  function lives(){ let s=''; for(let i=0;i<3;i++) s+= i<st.lives?'❤️':'🤍'; document.getElementById('valueLives').textContent=s; }
+  function timer(r){
+    const f=document.getElementById('valueTimer');
+    f.style.width=(r*100)+'%';
+    f.style.backgroundColor = r>0.5?COLORS.success : r>0.2?COLORS.gold : COLORS.left;
+  }
+  function spawn(){
+    st.locked=false;
+    const r=makeRound(); if(!r){ setTimeout(spawn,10); return; }
+    st.round=r;
+    document.getElementById('valueGiven').innerHTML =
+      KX(`f(x) = ${pTex(r.f)}, \\quad g(x) = ${pTex(r.g)}`) + `<br>` + KX(`(fg)'(${r.a}) = \\ ?`);
+    document.getElementById('valueCand').innerHTML = KX(String(r.cand));
+    document.getElementById('valueFb').classList.add('hidden');
+    document.getElementById('valueBtnGood').disabled=false;
+    document.getElementById('valueBtnBad').disabled=false;
+    const t0=performance.now(), dur=st.time;
+    (function tick(now){
+      const rem=Math.max(0, dur-((now||performance.now())-t0));
+      timer(rem/dur);
+      if(rem<=0){ answer(null); return; }
+      st.raf=requestAnimationFrame(tick);
+    })(performance.now());
+  }
+  function answer(ch){
+    if(st.locked) return; st.locked=true;
+    cancelAnimationFrame(st.raf);
+    document.getElementById('valueBtnGood').disabled=true;
+    document.getElementById('valueBtnBad').disabled=true;
+    const r=st.round, ok = ch===r.answer, d=r.detail;
+    const truth = `실제 값: ` + KX(`f'(${r.a})g(${r.a}) + f(${r.a})g'(${r.a}) = (${d.fda})(${d.ga}) + (${d.fa})(${d.gda}) = ${r.truth}`);
+    const fb=document.getElementById('valueFb'); fb.classList.remove('hidden');
+    if(ok){
+      const rr=parseFloat(document.getElementById('valueTimer').style.width)/100||0;
+      const pts=15+Math.round(rr*20)+Math.min(st.streak,10);
+      st.score+=pts; st.streak++; st.correct++;
+      document.getElementById('valueScore').textContent=st.score;
+      if(st.correct%EVERY===0) st.time=Math.max(MIN, st.time-DEC);
+      fb.className='fb-box good'; fb.innerHTML=`✓ +${pts}점 · ${truth}`;
+      setTimeout(spawn,1900);
+    } else {
+      st.streak=0; st.lives--; lives();
+      fb.className='fb-box bad';
+      fb.innerHTML=(ch==null?'⏱ 시간 초과! ':'✕ 틀렸어요. ')+(r.why?r.why+'<br>':'')+truth;
+      if(st.lives<=0) setTimeout(over,2600); else setTimeout(spawn,2600);
+    }
+  }
+  function start(){
+    st.score=0; st.lives=3; st.streak=0; st.correct=0; st.time=START;
+    document.getElementById('valueScore').textContent=0;
+    lives(); show('play'); spawn();
+  }
+  function over(){
+    cancelAnimationFrame(st.raf); show('end');
+    document.getElementById('valueFinal').textContent=st.score;
+    document.getElementById('valueSummary').textContent=`${st.correct}개 정답`;
+    const b=loadBest(), isNew=!b||st.score>b.score;
+    document.getElementById('valueCompare').textContent = isNew?'🎉 이 기기 최고 기록 갱신!':`내 최고 기록은 ${b.score}점이에요.`;
+    if(isNew) saveBest({score:st.score, correct:st.correct});
+  }
+  function init(){
+    document.getElementById('valueBtnStart').addEventListener('click',start);
+    document.getElementById('valueRetry').addEventListener('click',()=>show('start'));
+    document.getElementById('valueBtnGood').addEventListener('click',()=>answer('good'));
+    document.getElementById('valueBtnBad').addEventListener('click',()=>answer('bad'));
+    document.getElementById('valueBack').addEventListener('click',()=>{ cancelAnimationFrame(st.raf); showGameMode('select'); });
+    show('start');
+  }
+  return { init };
+})();
+
+LabApp.init();
+FormGame.init();
+ValueGame.init();
+document.getElementById('btnModeForm').addEventListener('click',()=>showGameMode('form'));
+document.getElementById('btnModeValue').addEventListener('click',()=>showGameMode('value'));
+document.getElementById('ctaToLab').addEventListener('click',()=>showTab('lab'));
+document.getElementById('ctaToGame').addEventListener('click',()=>showTab('game'));
+document.getElementById('toTheory').addEventListener('click',e=>{ e.preventDefault(); showTab('theory'); });
+renderStaticMath(document.getElementById('page-theory'));
+renderStaticMath(document.getElementById('page-lab'));
+renderStaticMath(document.getElementById('modeSelect'));
+showGameMode('select');
+showTab('theory');
+</script>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="2022 개정 교육과정 기반 경제수학 경영 시뮬레이션과 경제 용어 학습">
+  <title>경제수학 · JP Math Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&family=Noto+Serif+KR:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-head">
+    <a class="brand" href="../index.html"><span>JP</span> Math Lab</a>
+    <nav aria-label="주요 메뉴">
+      <a href="교과서학습.html">교과서 학습</a>
+      <a href="#curriculum">교육과정 지도</a>
+      <a href="#play">게임 연구소</a>
+      <button class="term-button" type="button" data-open-glossary>경제 용어집</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">ECONOMICS × MATHEMATICS · 2022 개정</p>
+        <h1>숫자로 읽고,<br><em>결정으로 배운다.</em></h1>
+        <p class="hero-lede">경제는 어려운 말의 모음이 아니라 선택의 이야기입니다. 가격을 정하고, 두 지점을 운영하고, 단서 속 숫자를 해석하며 경제수학을 경험해 보세요.</p>
+        <div class="hero-actions">
+          <a class="primary-button" href="교과서학습.html">교과서 개념 학습하기</a>
+          <a class="text-button" href="#play">게임 연구소 바로가기 →</a>
+        </div>
+        <div class="hero-facts" aria-label="콘텐츠 특징">
+          <span><b>4</b> 교육과정 영역</span>
+          <span><b>3</b> 비아케이드 장르</span>
+          <span><b>14</b> 쉬운 경제 용어</span>
+        </div>
+      </div>
+      <div class="hero-board" aria-label="이번 주 경영 상황 예시">
+        <div class="board-top"><span>WEEKLY BOARD</span><span class="live-dot">의사결정 중</span></div>
+        <p class="board-kicker">동네빵 연구소 · 2호점 검토안</p>
+        <div class="mini-chart" aria-hidden="true">
+          <span style="--h:36%"><i>월</i></span><span style="--h:49%"><i>화</i></span><span style="--h:42%"><i>수</i></span><span style="--h:68%"><i>목</i></span><span class="active" style="--h:83%"><i>금</i></span>
+        </div>
+        <div class="board-metrics">
+          <div><small>예상 수요</small><strong>58개</strong><span class="up">▲ 12%</span></div>
+          <div><small>한계비용</small><strong>1,300원</strong><span>한 개 더 만들 때</span></div>
+        </div>
+        <div class="board-question"><span>오늘의 질문</span><b>가격을 올리면 매출도 늘어날까?</b></div>
+      </div>
+    </section>
+
+    <section class="curriculum" id="curriculum">
+      <div class="section-heading">
+        <div><p class="eyebrow">CURRICULUM MAP</p><h2>2022 개정 경제수학의 네 영역</h2></div>
+        <p>새 교육과정의 흐름을 게임 속 의사결정과 연결했습니다. 특히 <strong>행렬과 경제</strong>가 독립 영역으로 추가된 점을 반영했습니다.</p>
+      </div>
+      <ol class="curriculum-grid">
+        <li><span>01</span><h3>수와 경제</h3><p>경제지표 · 환율 · 세금 · 이자 · 연금</p><b>뉴스 속 숫자를 생활의 계산으로</b><a href="교과서학습.html#unit1">학습하기 →</a></li>
+        <li><span>02</span><h3>함수와 경제</h3><p>비용 · 생산 · 수요 · 공급 · 효용</p><b>가격과 선택의 관계를 그래프로</b><a href="교과서학습.html#unit2">학습하기 →</a></li>
+        <li><span>03</span><h3>행렬과 경제</h3><p>행렬의 연산 · 역행렬 · 경제 문제</p><b>여러 지점의 데이터를 한눈에</b><a href="교과서학습.html#unit3">학습하기 →</a></li>
+        <li><span>04</span><h3>미분과 경제</h3><p>한계 · 탄력성 · 최적화</p><b>‘한 개 더’가 만드는 변화를 판단</b><a href="교과서학습.html#unit4">학습하기 →</a></li>
+      </ol>
+    </section>
+
+    <section class="playground" id="play">
+      <div class="section-heading play-heading">
+        <div><p class="eyebrow">DECISION LAB</p><h2>오늘은 어떤 방식으로 배울까?</h2></div>
+        <p>순발력 대신 생각하고 비교하고 다시 결정하는 게임들입니다. 실패해도 숫자가 이유를 설명해 줍니다.</p>
+      </div>
+
+      <div class="game-tabs" role="tablist" aria-label="게임 장르 선택">
+        <button class="game-tab active" type="button" role="tab" aria-selected="true" aria-controls="game-sim" id="tab-sim" data-game="sim"><span>01</span><b>경영 시뮬레이션</b><small>가격·생산량 결정</small></button>
+        <button class="game-tab" type="button" role="tab" aria-selected="false" aria-controls="game-detective" id="tab-detective" data-game="detective"><span>02</span><b>경제 데이터 탐정</b><small>단서·추리·설명</small></button>
+        <button class="game-tab" type="button" role="tab" aria-selected="false" aria-controls="game-matrix" id="tab-matrix" data-game="matrix"><span>03</span><b>지점 운영 전략</b><small>행렬·자원 배분</small></button>
+      </div>
+
+      <section class="game-panel active" id="game-sim" role="tabpanel" aria-labelledby="tab-sim" data-panel="sim">
+        <div class="game-intro">
+          <div><span class="genre-tag">TURN-BASED MANAGEMENT</span><h3>동네빵 연구소 이사회</h3><p>4주 동안 가격과 생산량을 정해 조직을 운영하세요. 숫자만 큰 선택보다 조직의 목적에 맞는 선택이 더 좋은 결정일 수 있습니다.</p></div>
+          <div class="week-badge"><small>진행</small><strong><span data-week>1</span> / 4주</strong></div>
+        </div>
+
+        <div class="sim-layout">
+          <div class="decision-card">
+            <div class="decision-step">
+              <div class="step-label"><span>1</span><div><b>조직의 목적</b><small>첫 주에만 선택할 수 있어요.</small></div></div>
+              <div class="org-options">
+                <button class="org-card selected" type="button" data-org="profit"><b>영리기업</b><span>이익을 내고 성장하기</span><small>이익을 소유자에게 나눌 수 있어요.</small></button>
+                <button class="org-card" type="button" data-org="nonprofit"><b>비영리조직</b><span>지역의 식사 문제 해결하기</span><small>남은 돈은 목적 사업에 다시 써요.</small></button>
+              </div>
+              <button class="term-inline" type="button" data-term="영리기업">둘의 차이가 아직 헷갈려요</button>
+            </div>
+
+            <div class="decision-step">
+              <div class="step-label"><span>2</span><div><b>이번 주의 가격</b><small>가격이 오르면 한 개당 수입은 늘지만 수요는 줄 수 있어요.</small></div></div>
+              <div class="range-line"><input type="range" min="3000" max="6500" step="500" value="4500" id="priceRange"><output for="priceRange" data-price-output>4,500원</output></div>
+            </div>
+
+            <div class="decision-step">
+              <div class="step-label"><span>3</span><div><b>이번 주의 생산량</b><small>수요보다 많이 만들면 재고 비용이 생겨요.</small></div></div>
+              <div class="range-line"><input type="range" min="20" max="80" step="5" value="50" id="quantityRange"><output for="quantityRange" data-quantity-output>50개</output></div>
+            </div>
+
+            <div class="event-card"><span>이번 주 변수</span><b data-event-title>학교 축제 주간</b><p data-event-copy>평소보다 손님이 많아 예상 수요가 12개 늘어납니다.</p></div>
+            <button class="primary-button full" type="button" data-run-week>이 결정으로 1주 운영하기</button>
+          </div>
+
+          <aside class="result-board" aria-live="polite">
+            <div class="result-title"><span>예상 손익표</span><small>슬라이더를 움직이면 바로 계산돼요.</small></div>
+            <dl class="kpi-grid">
+              <div><dt>예상 수요</dt><dd data-demand>72개</dd></div>
+              <div><dt>판매량</dt><dd data-sold>50개</dd></div>
+              <div><dt>매출</dt><dd data-revenue>225,000원</dd></div>
+              <div><dt>총비용</dt><dd data-cost>110,000원</dd></div>
+            </dl>
+            <div class="profit-line"><span data-profit-label>이익</span><strong data-profit>+115,000원</strong></div>
+            <div class="formula-note"><b>핵심 관계</b><code>이익 = 매출 − 비용</code><p>매출은 들어온 돈 전체, 이익은 비용을 빼고 남은 돈입니다.</p></div>
+            <div class="coach-note" data-coach><span>이사회 코치</span><p>생산량이 수요보다 적어 완판되지만, 더 팔 기회를 놓칠 수 있어요.</p></div>
+            <div class="score-row"><div><small data-score-label>누적 기업가치</small><strong data-score>0점</strong></div><button type="button" class="reset-button" data-reset-sim>처음부터</button></div>
+          </aside>
+        </div>
+        <div class="week-report" hidden data-week-report></div>
+      </section>
+
+      <section class="game-panel" id="game-detective" role="tabpanel" aria-labelledby="tab-detective" data-panel="detective" hidden>
+        <div class="game-intro">
+          <div><span class="genre-tag detective">DATA MYSTERY</span><h3>숫자 뒤의 진실</h3><p>경제 기사에 적힌 표현이 정확한지 단서와 계산으로 판별하세요. 정답보다 ‘왜 그런지’ 설명하는 것이 사건 해결의 핵심입니다.</p></div>
+          <div class="week-badge"><small>해결한 사건</small><strong><span data-case-score>0</span> / 4</strong></div>
+        </div>
+        <div class="case-layout">
+          <div class="case-file">
+            <div class="file-stamp">CASE <span data-case-number>01</span></div>
+            <p class="case-source" data-case-source>교내 경제신문</p>
+            <h3 data-case-title>금리가 4%에서 6%로 올랐다</h3>
+            <blockquote data-case-claim>“금리가 2% 상승했습니다.”</blockquote>
+            <div class="clue-box"><span>확인할 단서</span><p data-case-clue>처음 값과 나중 값의 차이, 그리고 처음 값에 대한 변화율은 서로 다른 숫자입니다.</p></div>
+          </div>
+          <div class="answer-desk">
+            <p class="desk-question" data-case-question>이 문장을 가장 정확하게 고치면?</p>
+            <div class="answer-list" data-case-answers></div>
+            <div class="case-feedback" data-case-feedback hidden></div>
+            <button class="primary-button" type="button" data-next-case hidden>다음 사건 열기</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="game-panel" id="game-matrix" role="tabpanel" aria-labelledby="tab-matrix" data-panel="matrix" hidden>
+        <div class="game-intro">
+          <div><span class="genre-tag matrix">MATRIX STRATEGY</span><h3>두 지점, 두 상품</h3><p>행은 지점, 열은 상품입니다. 생산량을 배분한 뒤 ‘수량 행렬 × 가격 행렬’이 각 지점의 매출을 어떻게 계산하는지 확인하세요.</p></div>
+          <div class="week-badge"><small>목표 순수익</small><strong>250,000원</strong></div>
+        </div>
+        <div class="matrix-layout">
+          <div class="matrix-board">
+            <div class="matrix-head"><span>수량 행렬 Q</span><small>수요를 넘긴 수량은 1개당 1,000원의 폐기비용</small></div>
+            <div class="matrix-table" role="group" aria-label="지점별 상품 생산량">
+              <span></span><b>빵<br><small>3,500원</small></b><b>음료<br><small>5,500원</small></b>
+              <b>학교점<br><small>수요 32 · 24</small></b>
+              <label><span class="sr-only">학교점 빵 수량</span><input type="number" min="0" max="50" value="28" data-matrix-input="0"></label>
+              <label><span class="sr-only">학교점 음료 수량</span><input type="number" min="0" max="50" value="20" data-matrix-input="1"></label>
+              <b>공원점<br><small>수요 20 · 36</small></b>
+              <label><span class="sr-only">공원점 빵 수량</span><input type="number" min="0" max="50" value="18" data-matrix-input="2"></label>
+              <label><span class="sr-only">공원점 음료 수량</span><input type="number" min="0" max="50" value="30" data-matrix-input="3"></label>
+            </div>
+            <button class="primary-button full" type="button" data-calc-matrix>운영안 계산하기</button>
+          </div>
+          <aside class="matrix-result" aria-live="polite">
+            <div class="equation-visual"><span class="matrix-bracket" data-q-matrix>28　20<br>18　30</span><b>×</b><span class="matrix-bracket column">3,500<br>5,500</span><b>=</b><span class="matrix-bracket column accent" data-r-matrix>208,000<br>228,000</span></div>
+            <p class="equation-caption">Q × P = 지점별 매출 행렬</p>
+            <dl class="strategy-kpis"><div><dt>총매출</dt><dd data-matrix-revenue>436,000원</dd></div><div><dt>폐기비용</dt><dd data-matrix-waste>0원</dd></div><div><dt>순수익</dt><dd data-matrix-profit>252,200원</dd></div></dl>
+            <div class="strategy-feedback good" data-matrix-feedback><b>목표 달성!</b><p>수요 안에서 상품을 배분해 폐기 없이 목표 순수익을 넘겼습니다.</p></div>
+            <div class="formula-note"><b>행렬을 왜 쓸까?</b><p>지점이나 상품이 많아져도 같은 규칙으로 한꺼번에 계산할 수 있기 때문입니다.</p></div>
+          </aside>
+        </div>
+      </section>
+    </section>
+
+    <section class="next-labs">
+      <p class="eyebrow">NEXT LABS</p>
+      <h2>다음에 확장할 장르</h2>
+      <div class="next-grid"><article><span>BOARD GAME</span><h3>가계 자산 설계</h3><p>현재가치와 복리를 이용해 생애 예산을 만드는 보드게임</p></article><article><span>STORY RPG</span><h3>시장 균형 마을</h3><p>주민의 수요와 상인의 공급을 조정하는 대화형 이야기</p></article><article><span>PUZZLE</span><h3>한계의 정원</h3><p>한 단위를 더 투입할 때의 변화를 비교하는 최적화 퍼즐</p></article></div>
+    </section>
+  </main>
+
+  <footer>
+    <div><b>JP Math Lab · 경제수학</b><p>수학으로 합리적인 경제 의사결정을 연습하는 공간</p></div>
+    <div class="source-links"><span>교육과정 확인</span><a href="https://www.moe.go.kr/boardCnts/viewRenew.do?boardID=340&boardSeq=93073&lev=0" target="_blank" rel="noreferrer">교육부 2022 개정 안내</a><a href="https://www.nkis.re.kr/subject_view1.do?otpId=OTP_0000000000018006" target="_blank" rel="noreferrer">경제수학 학점 이수 지원 자료</a></div>
+  </footer>
+
+  <dialog class="glossary" id="glossaryDialog">
+    <div class="dialog-head"><div><p class="eyebrow">PLAIN ECONOMICS</p><h2>쉬운 경제 용어집</h2></div><button type="button" aria-label="용어집 닫기" data-close-glossary>×</button></div>
+    <p class="dialog-lede">교과서 말은 짧고, 처음 배우는 사람의 머릿속 질문은 깁니다. 일상 사례로 먼저 이해해 보세요.</p>
+    <label class="term-search"><span>용어 검색</span><input type="search" placeholder="예: 영리기업, 매출, 한계" data-term-search></label>
+    <div class="term-list" data-term-list></div>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
