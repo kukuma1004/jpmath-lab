@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" class="classroom-auth-pending">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,9 +9,28 @@
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500;600;700&amp;family=Noto+Serif+KR:wght@700;900&amp;display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../jp-math-typography.css">
   <link rel="stylesheet" href="style.css">
+  <script src="auth.js" data-classroom-entry></script>
+  <noscript><style>#classroomGate[hidden]{display:grid!important}.page-shell,.password-row{display:none!important}</style></noscript>
 </head>
 <body>
-  <main class="page-shell">
+  <section class="auth-gate" id="classroomGate" aria-labelledby="gateTitle" hidden>
+    <form class="auth-card" id="classroomLogin" novalidate>
+      <span class="lock-mark" aria-hidden="true">LOCKED</span>
+      <p class="auth-eyebrow">TEACHER ACCESS</p>
+      <h1 id="gateTitle">수업창고</h1>
+      <p>교사용 수업 자료입니다.<br>비밀번호를 입력해 주세요.</p>
+      <label for="classroomPassword">비밀번호</label>
+      <div class="password-row">
+        <input id="classroomPassword" name="password" type="password" autocomplete="current-password" required>
+        <button type="submit">입장하기</button>
+      </div>
+      <p class="auth-feedback" id="classroomFeedback" role="alert" aria-live="polite"></p>
+      <noscript><p class="auth-feedback">수업창고를 열려면 브라우저에서 자바스크립트를 켜 주세요.</p></noscript>
+      <a class="auth-back" href="../">← JP Math Lab으로 돌아가기</a>
+    </form>
+  </section>
+
+  <main class="page-shell" id="classroomContent">
     <nav class="breadcrumb" aria-label="현재 위치">
       <a href="../">JP Math Lab</a><span aria-hidden="true">/</span><strong>수업창고</strong>
     </nav>
@@ -53,23 +72,6 @@
       </ul>
     </section>
 
-    <section class="archive-section" aria-labelledby="csat-title">
-      <div class="section-heading">
-        <div>
-          <p class="section-number">02</p>
-          <h2 id="csat-title">수능 문제 탐구</h2>
-        </div>
-        <p>그래프와 질문으로 깊게 읽는 수능 수학</p>
-      </div>
-      <a class="collection-card" href="수능문제/">
-        <div>
-          <span class="collection-label">CSAT PROBLEM LAB</span>
-          <h3>수능 문제 수업 자료 모음</h3>
-          <p>학생용 탐구실과 교사용 수업 자료를 문제별로 찾아보세요.</p>
-        </div>
-        <span class="collection-arrow" aria-hidden="true">→</span>
-      </a>
-    </section>
   </main>
 </body>
 </html>
