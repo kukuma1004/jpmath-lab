@@ -239,6 +239,86 @@ function calculateMatrix() {
 document.querySelector('[data-calc-matrix]').addEventListener('click', calculateMatrix);
 matrixInputs.forEach(input => input.addEventListener('change', calculateMatrix));
 
+// 04 · 가계 자산 보드게임
+const assetEvents = [
+  {title:'첫 급여를 받았습니다', copy:'생활비를 제외한 돈 중 얼마를 미래로 보낼지 정하세요.', shock:0},
+  {title:'주거 보증금이 필요합니다', copy:'예상하지 못한 주거비 20만 원이 자산에서 빠집니다.', shock:-200000},
+  {title:'성과 보너스를 받았습니다', copy:'보너스 15만 원이 자산에 더해집니다.', shock:150000},
+  {title:'갑작스러운 병원비', copy:'의료비 10만 원을 지출한 뒤 마지막 저축 결정을 합니다.', shock:-100000}
+];
+const assetState = {round:0,total:0,principal:0};
+const assetSave = document.querySelector('[data-asset-save]');
+const assetRate = document.querySelector('[data-asset-rate]');
+const assetRun = document.querySelector('[data-run-assets]');
+function updateAssetBoard(){
+  const event=assetEvents[Math.min(assetState.round,3)];
+  document.querySelector('[data-asset-round]').textContent=Math.min(assetState.round+1,4);
+  document.querySelector('[data-asset-event]').textContent=event.title;
+  document.querySelector('[data-asset-copy]').textContent=event.copy;
+  document.querySelector('[data-asset-save-output]').textContent=won(Number(assetSave.value));
+  document.querySelector('[data-asset-rate-output]').textContent=`${assetRate.value}%`;
+  document.querySelector('[data-asset-total]').textContent=won(assetState.total);
+  document.querySelector('[data-asset-principal]').textContent=won(assetState.principal);
+  document.querySelector('[data-asset-interest]').textContent=won(Math.max(0,assetState.total-assetState.principal));
+  [...document.querySelectorAll('[data-life-board] span')].forEach((node,index)=>{node.classList.toggle('done',index<assetState.round);node.classList.toggle('active',index===assetState.round&&assetState.round<4)});
+}
+assetSave.addEventListener('input',updateAssetBoard);assetRate.addEventListener('input',updateAssetBoard);
+assetRun.addEventListener('click',()=>{
+  if(assetState.round>=4)return;
+  const save=Number(assetSave.value),rate=Number(assetRate.value)/100,event=assetEvents[assetState.round];
+  const before=assetState.total;
+  assetState.total=Math.max(0,Math.round(assetState.total*Math.pow(1+rate,5)+save+event.shock));
+  assetState.principal+=save;
+  const growth=Math.max(0,Math.round(before*Math.pow(1+rate,5)-before));
+  assetState.round+=1;
+  const feedback=document.querySelector('[data-asset-feedback]');
+  feedback.innerHTML=`<b>${assetState.round}번째 칸 완료 · 자산 ${won(assetState.total)}</b><p>지난 자산에서 복리로 ${won(growth)} 늘었고, 저축과 사건 금액이 반영됐습니다.</p>`;
+  if(assetState.round>=4){assetRun.disabled=true;assetRun.textContent='보드게임 완료';feedback.classList.add('success');feedback.innerHTML=`<b>미래 준비 완료 · 최종 자산 ${won(assetState.total)}</b><p>원금 ${won(assetState.principal)}과 시간의 효과를 비교해 보세요. 수익률이 높을수록 위험도 함께 커질 수 있습니다.</p>`}
+  updateAssetBoard();
+});
+document.querySelector('[data-reset-assets]').addEventListener('click',()=>{assetState.round=0;assetState.total=0;assetState.principal=0;assetSave.value=300000;assetRate.value=5;assetRun.disabled=false;assetRun.textContent='다음 칸으로 이동';const f=document.querySelector('[data-asset-feedback]');f.classList.remove('success');f.innerHTML='<b>첫 결정을 기다립니다.</b><p>현재 소비와 미래 준비 사이의 균형을 생각해 보세요.</p>';updateAssetBoard()});
+
+// 05 · 시장 균형 스토리 RPG
+const storyScenes=[
+  {speaker:'빵집 앞 주민',line:'“가격이 너무 낮아 아침마다 빵이 금방 동나요!”',d:80,s:50,choices:[['가격을 조금 올린다',-10,10,'가격 상승은 수요량을 줄이고 공급량을 늘려 차이를 좁혔습니다.'],['소비 쿠폰을 나눠준다',10,0,'수요가 더 늘어 품절이 심해졌습니다.'],['상인 영업시간을 줄인다',0,-10,'공급이 줄어 초과수요가 커졌습니다.']]},
+  {speaker:'채소가게 상인',line:'“비가 그치자 채소가 너무 많이 들어와 재고가 쌓였어요.”',d:45,s:70,choices:[['가격을 조금 내린다',10,-8,'가격 하락은 수요량을 늘리고 공급량을 줄여 재고를 완화했습니다.'],['가격을 더 올린다',-8,7,'사려는 양은 줄고 팔려는 양은 늘어 재고가 커졌습니다.'],['생산 보조금을 준다',0,10,'공급이 더 늘어 초과공급이 커졌습니다.']]},
+  {speaker:'마을 축제 준비위원',line:'“축제 날 간식 수요가 갑자기 늘어날 것 같아요.”',d:75,s:60,choices:[['임시 판매대를 허용한다',0,14,'공급이 수요 증가에 맞춰 늘어 균형에 가까워졌습니다.'],['구매 쿠폰만 더 지급한다',12,0,'수요가 더 늘어 품절 가능성이 커졌습니다.'],['판매대를 줄인다',0,-10,'공급이 줄어 시장 차이가 커졌습니다.']]}
+];
+const storyState={round:0,score:0};
+function marketDescription(d,s){const gap=d-s;if(Math.abs(gap)<=3)return['거의 균형','수요량과 공급량이 거의 같습니다.'];return gap>0?[`${gap}개의 초과수요`,'사려는 양이 팔려는 양보다 많아 품절이 생깁니다.']:[`${Math.abs(gap)}개의 초과공급`,'팔려는 양이 사려는 양보다 많아 재고가 쌓입니다.']}
+function renderStory(){
+  const scene=storyScenes[Math.min(storyState.round,2)];
+  document.querySelector('[data-story-round]').textContent=Math.min(storyState.round+1,3);document.querySelector('[data-story-speaker]').textContent=scene.speaker;document.querySelector('[data-story-line]').textContent=scene.line;document.querySelector('[data-story-demand]').textContent=scene.d;document.querySelector('[data-story-supply]').textContent=scene.s;document.querySelector('[data-story-gap]').textContent=Math.abs(scene.d-scene.s);
+  const desc=marketDescription(scene.d,scene.s);document.querySelector('[data-story-status]').textContent=desc[0];document.querySelector('[data-story-explain]').textContent=desc[1];
+  document.querySelector('[data-story-choices]').innerHTML=scene.choices.map((choice,index)=>`<button type="button" data-story-choice="${index}">${choice[0]}</button>`).join('');
+  document.querySelectorAll('[data-story-choice]').forEach(button=>button.addEventListener('click',()=>chooseStory(Number(button.dataset.storyChoice))));
+}
+function chooseStory(index){
+  const scene=storyScenes[storyState.round],choice=scene.choices[index],d=scene.d+choice[1],s=scene.s+choice[2],gap=Math.abs(d-s);storyState.score+=Math.max(0,30-gap);
+  document.querySelector('[data-story-demand]').textContent=d;document.querySelector('[data-story-supply]').textContent=s;document.querySelector('[data-story-gap]').textContent=gap;const desc=marketDescription(d,s);document.querySelector('[data-story-status]').textContent=desc[0];document.querySelector('[data-story-explain]').textContent=desc[1];document.querySelectorAll('[data-story-choice]').forEach(b=>b.disabled=true);
+  const feedback=document.querySelector('[data-story-feedback]');feedback.innerHTML=`<b>${choice[0]} · 시장 차이 ${gap}</b><p>${choice[3]}</p>`;
+  setTimeout(()=>{storyState.round+=1;if(storyState.round<3){renderStory()}else{feedback.classList.add('success');feedback.innerHTML=`<b>이야기 완료 · 균형 점수 ${storyState.score}점</b><p>수요가 많은지 공급이 많은지 먼저 판단하면 정책의 방향을 고르기 쉬워집니다.</p>`;document.querySelector('[data-story-choices]').innerHTML='<p class="story-end">마을의 세 시장을 모두 살펴봤습니다.</p>'}},850);
+}
+document.querySelector('[data-reset-story]').addEventListener('click',()=>{storyState.round=0;storyState.score=0;const f=document.querySelector('[data-story-feedback]');f.classList.remove('success');f.innerHTML='<b>첫 대화를 읽어보세요.</b><p>주민과 상인 중 어느 쪽의 양이 부족한지 먼저 판단하세요.</p>';renderStory()});
+
+// 06 · 한계의 정원 최적화 퍼즐
+const marginalA=[13,11,9,7,5,3,2,1,1,0],marginalB=[12,11,10,9,8,7,5,3,2,1];
+const garden={a:8,b:2};
+const sumFirst=(arr,count)=>arr.slice(0,count).reduce((a,b)=>a+b,0);
+function updateGarden(){
+  const ya=sumFirst(marginalA,garden.a),yb=sumFirst(marginalB,garden.b),total=ya+yb;
+  document.querySelector('[data-water-a-count]').textContent=garden.a;document.querySelector('[data-water-b-count]').textContent=garden.b;document.querySelector('[data-water-total]').textContent=garden.a+garden.b;document.querySelector('[data-garden-a-yield]').textContent=ya;document.querySelector('[data-garden-b-yield]').textContent=yb;document.querySelector('[data-garden-total]').textContent=total;
+  document.querySelector('[data-garden-a-dots]').innerHTML=marginalA.slice(0,garden.a).map(v=>`<i style="--h:${v*6}px" title="한계수확 ${v}"></i>`).join('');document.querySelector('[data-garden-b-dots]').innerHTML=marginalB.slice(0,garden.b).map(v=>`<i style="--h:${v*6}px" title="한계수확 ${v}"></i>`).join('');
+  const nextA=marginalA[garden.a]??0,nextB=marginalB[garden.b]??0;document.querySelector('[data-next-marginal]').textContent=`A ${nextA} · B ${nextB}`;
+  const feedback=document.querySelector('[data-garden-feedback]');feedback.classList.toggle('success',total>=92);feedback.classList.toggle('bad',total<82);feedback.innerHTML=total>=92?`<b>목표 달성! 총수확 ${total}</b><p>다음 한 통의 한계수확이 더 큰 밭으로 물을 옮긴 판단이 효과적이었습니다.</p>`:`<b>현재 총수확 ${total}</b><p>이미 물을 많이 받은 밭의 마지막 한 통과, 다른 밭의 다음 한 통 효과를 비교하세요.</p>`;
+}
+document.querySelectorAll('[data-water-a]').forEach(b=>b.addEventListener('click',()=>{const delta=Number(b.dataset.waterA);if(delta>0&&garden.b>0){garden.a++;garden.b--}if(delta<0&&garden.a>0){garden.a--;garden.b++}updateGarden()}));
+document.querySelectorAll('[data-water-b]').forEach(b=>b.addEventListener('click',()=>{const delta=Number(b.dataset.waterB);if(delta>0&&garden.a>0){garden.b++;garden.a--}if(delta<0&&garden.b>0){garden.b--;garden.a++}updateGarden()}));
+document.querySelector('[data-reset-garden]').addEventListener('click',()=>{garden.a=8;garden.b=2;updateGarden()});
+
 updateSimulation();
 renderCase();
 calculateMatrix();
+updateAssetBoard();
+renderStory();
+updateGarden();
