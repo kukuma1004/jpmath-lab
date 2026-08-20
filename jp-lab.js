@@ -362,14 +362,14 @@
      ══════════════════════════════════════════════════════════ */
   function labCount(root) {
     var A = 1, t = 2;
-    var state = { r: 3.67 };
+    var state = { r: +(root.dataset.r || 3.67) };
     var svg = root.querySelector('.lab-svg');
     var side = root.querySelector('.lab-side');
 
     side.innerHTML =
       '<div class="sl"><div class="sl-top"><span>남은 근 <span style="font-family:KaTeX_Math,serif;font-style:italic">r</span> 을 0.5부터 5까지</span>' +
       '<span class="sl-val" data-o="rv"></span></div>' +
-      '<input type="range" min="0.5" max="5" step="0.01" value="3.67" data-i="r">' +
+      '<input type="range" min="0.5" max="5" step="0.01" value="' + state.r + '" data-i="r">' +
       '<div class="sl-hint">칩 = 자연수 <span style="font-family:KaTeX_Math,serif;font-style:italic">m</span>, 아래 숫자 = 우극한의 부호</div></div>' +
       '<div class="chipbar" data-o="chips"></div>' +
       '<div class="verdict" data-o="v"><div class="vmark" data-o="vm"></div><div class="vtext" data-o="vt"></div></div>';
@@ -475,7 +475,8 @@
       var v1 = 3 * A * (1 + r);
       var v2 = (kind === 't0' ? -1 : 1) * 3.5 * A * (r - 1);
 
-      var W = 700, H = 440, base = 296, top = 52, floor = H - 46;
+      var hasNeg = (v1 < 0 || v2 < 0);
+      var W = 700, H = hasNeg ? 440 : 372, base = hasNeg ? 296 : 318, top = 52, floor = H - 40;
       svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
       svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
       svg.style.aspectRatio = W + ' / ' + H;
@@ -618,6 +619,8 @@
       if (fn) { try { fn(root); } catch (e) { console.error('lab error', root.dataset.lab, e); } }
     });
   }
+
+  window.JPLab = { render: renderTex, renderAll: renderAll, boot: boot, LABS: LABS };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();

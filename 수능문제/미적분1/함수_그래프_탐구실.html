@@ -1,106 +1,500 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>2026학년도 수능 수학 21번 | 함수 그래프 탐구실</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;family=Noto+Serif+KR:wght@700;900&amp;display=swap" rel="stylesheet">
-  <style>
-    :root{--ink:#16302b;--muted:#65726e;--paper:#f5f3ec;--panel:#fffefa;--line:#d4d5cd;--accent:#d45235;--soft:#f2dfd7;--green:#1f6a56;--green-soft:#dbe9e3;--yellow:#f1c75b;--shadow:0 18px 50px rgba(28,48,42,.1);--radius:18px}
-    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font-family:"Pretendard","Noto Sans KR","Malgun Gothic",sans-serif;line-height:1.55}button,input{font:inherit}button{cursor:pointer}button:active{transform:translateY(1px)}
-    .app{min-height:100dvh}.topbar{height:66px;padding:0 4vw;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);background:rgba(245,243,236,.92);position:sticky;top:0;z-index:20;backdrop-filter:blur(12px)}
-    .brand{font-weight:800;letter-spacing:-.03em}.brand a{color:var(--ink);text-decoration:none}.brand a:hover{text-decoration:underline}.brand small{color:var(--accent);font-weight:800;margin-left:8px}.top-actions{display:flex;align-items:center;gap:8px}.teacher-toggle{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:8px 13px}.teacher-toggle[aria-pressed="true"]{background:var(--ink);color:white;border-color:var(--ink)}
-    .layout{display:grid;grid-template-columns:260px minmax(0,1fr);max-width:1440px;margin:auto}.rail{padding:28px 22px 40px 4vw;border-right:1px solid var(--line);position:sticky;top:66px;height:calc(100dvh - 66px);align-self:start}.rail-title{font-size:12px;color:var(--muted);margin:0 0 16px}.steps{display:grid;gap:6px}.step{width:100%;display:grid;grid-template-columns:32px 1fr;align-items:center;text-align:left;border:0;background:transparent;color:var(--muted);padding:9px 6px;border-radius:12px}.step span:first-child{width:26px;height:26px;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;font-size:12px}.step.active{color:var(--ink);font-weight:700;background:var(--green-soft)}.step.active span:first-child{background:var(--green);color:white;border-color:var(--green)}.rail-note{position:absolute;bottom:30px;left:4vw;right:22px;color:var(--muted);font-size:12px}
-    main{padding:clamp(28px,5vw,72px) clamp(20px,6vw,90px) 80px;min-width:0}.scene{display:none;animation:enter .35s ease both}.scene.active{display:block}@keyframes enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-    .eyebrow{font-size:12px;font-weight:800;color:var(--accent);letter-spacing:.08em;margin-bottom:16px}.scene h1{font-size:clamp(34px,5vw,66px);letter-spacing:-.055em;line-height:1.05;margin:0 0 18px;max-width:900px}.scene h2{font-size:clamp(26px,3.4vw,44px);letter-spacing:-.04em;line-height:1.15;margin:0 0 18px}.lead{font-size:clamp(17px,1.8vw,22px);color:#44534e;max-width:760px;margin:0 0 34px}.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,.95fr);gap:clamp(28px,5vw,72px);align-items:start}.problem{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:clamp(20px,3vw,34px);box-shadow:var(--shadow);word-break:keep-all;overflow-wrap:break-word}.formula{font-family:"Cambria Math",Cambria,"Times New Roman",serif;font-size:clamp(19px,2.4vw,28px);text-align:center;margin:24px 0}.condition{border-top:1px solid var(--line);padding:18px 0 0;margin-top:22px}.condition>p{margin:0 0 18px}.cond-row{display:grid;grid-template-columns:34px minmax(0,1fr);gap:2px;margin:18px 0}.cond-label{font-weight:700}.cond-copy{min-width:0}.display-expr{display:flex;align-items:center;justify-content:center;min-height:54px;margin:9px 0 7px;font-size:1.08em}.ask{color:var(--accent);font-weight:800;margin-top:24px;padding-top:18px;border-top:1px solid var(--line)}.ask-main,.ask-given{display:block}.ask-given{margin-top:8px}.m{font-family:"Cambria Math",Cambria,"Times New Roman",serif;font-style:italic;white-space:nowrap}.piecewise{display:inline-flex;align-items:center;justify-content:center;gap:.28em}.piecewise .brace{font-family:"Times New Roman",serif;font-size:3.5em;font-weight:200;line-height:.72;transform:scaleX(.72);margin:0 -.12em}.case-grid{display:grid;grid-template-columns:auto auto;gap:.18em 1.15em;text-align:left;align-items:center}.frac{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;vertical-align:-.38em;line-height:1.02;margin:0 .16em;font-family:"Cambria Math",Cambria,serif;font-style:italic;white-space:nowrap}.frac .top{border-bottom:1.4px solid currentColor;padding:0 .22em .08em}.frac .bottom{padding:.08em .22em 0}.lim{display:inline-flex;flex-direction:column;align-items:center;vertical-align:-.34em;line-height:.88;margin-right:.12em;font-family:"Cambria Math",Cambria,serif}.lim .under{font-size:.6em;white-space:nowrap;font-style:italic}.math-group{display:inline-block;white-space:nowrap;margin:0 .1em}.condition .math-group{font-size:1.06em}
-    .prompt{border-left:5px solid var(--yellow);padding:4px 0 4px 18px;margin:24px 0;font-size:clamp(20px,2.3vw,29px);font-weight:800;letter-spacing:-.03em}.choices{display:flex;flex-wrap:wrap;gap:10px}.choice,.primary,.secondary{border-radius:12px;padding:12px 17px;font-weight:750}.choice,.secondary{border:1px solid var(--line);background:var(--panel);color:var(--ink)}.choice.selected{background:var(--green-soft);border-color:var(--green);color:var(--green)}.primary{border:1px solid var(--ink);background:var(--ink);color:white}.feedback{min-height:56px;margin-top:18px;padding:14px 16px;background:var(--green-soft);border-radius:12px;color:var(--green);font-weight:650;display:none}.feedback.show{display:block}.teacher{display:none;margin-top:22px;padding:16px 18px;border:1px dashed var(--accent);background:var(--soft);border-radius:12px;color:#77331f}.teacher.show{display:block}
-    .graph-wrap{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}canvas{display:block;width:100%;height:auto;aspect-ratio:16/10}.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--muted);margin:4px 4px 0}.swatch{display:inline-block;width:22px;height:3px;vertical-align:middle;margin-right:6px;background:var(--green)}.swatch.red{background:var(--accent)}.controls{display:grid;gap:16px;margin-top:20px}.control label{display:flex;justify-content:space-between;font-weight:700;margin-bottom:6px}.control output{font-family:ui-monospace,Consolas,monospace;color:var(--accent)}input[type=range]{width:100%;accent-color:var(--accent)}
-    .numberline{display:flex;gap:10px;flex-wrap:wrap;margin:24px 0}.nchip{width:48px;height:54px;border:1px solid var(--line);background:var(--panel);border-radius:12px;display:grid;place-items:center;font-weight:800;position:relative}.nchip.negative{background:var(--soft);border-color:var(--accent);color:var(--accent)}.nchip::after{content:attr(data-sign);position:absolute;bottom:3px;font-size:10px;font-weight:600;color:var(--muted)}.equation-stack{display:grid;gap:12px;margin:24px 0}.equation{background:var(--panel);border-left:4px solid var(--green);padding:17px 20px;font-family:"Cambria Math",Cambria,"Times New Roman",serif;font-size:clamp(20px,2.4vw,28px);letter-spacing:.01em}.symbol-map{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0 0 24px}.symbol-map>div{display:grid;grid-template-columns:50px 1fr;gap:12px;align-items:center;padding:16px 18px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}.symbol-map b{display:grid;place-items:center;min-height:42px;border-radius:10px;background:var(--green-soft);color:var(--green);font-size:22px}.symbol-map span{font-size:14px;line-height:1.55}.symbol-map small{display:block;margin-top:3px;color:var(--muted)}.reveal{display:none}.reveal.show{display:block;animation:enter .3s ease}.big-answer{font-size:clamp(72px,15vw,180px);line-height:.9;color:var(--accent);font-weight:900;letter-spacing:-.08em;margin:30px 0}.nav-actions{display:flex;justify-content:space-between;gap:12px;margin-top:42px;padding-top:24px;border-top:1px solid var(--line)}.nav-actions .spacer{flex:1}.mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.mini-grid>div{padding:18px;border-top:3px solid var(--green);background:var(--panel)}.mini-grid strong{display:block;font-size:24px;margin-bottom:6px}.problem-image-fallback{padding:44px 24px;text-align:center;color:var(--muted);background:var(--paper);border-radius:12px}.problem-image-fallback strong{display:block;color:var(--ink);font-size:18px;margin-bottom:7px}
-    @media(max-width:900px){.layout{grid-template-columns:1fr}.rail{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:14px 20px}.rail-title,.rail-note{display:none}.steps{display:flex;overflow:auto}.step{min-width:44px;width:auto;display:block;padding:4px}.step span:first-child{margin:auto}.step span:last-child{display:none}.split{grid-template-columns:1fr}.topbar{padding:0 18px}.mini-grid{grid-template-columns:1fr}}
-    @media(max-width:520px){main{padding:28px 16px 54px}.scene h1{font-size:38px}.brand small,.teacher-toggle{display:none}.problem{padding:18px}.formula{font-size:19px}.symbol-map{grid-template-columns:1fr}.nav-actions{flex-wrap:wrap}.nav-actions button{flex:1}.numberline{gap:6px}.nchip{width:40px;height:48px}}
-    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
-  </style>
-  <link rel="stylesheet" href="../../vendor/katex/katex.min.css">
-  <link rel="stylesheet" href="../../jp-math-typography.css">
-  <script defer src="../../vendor/katex/katex.min.js"></script>
-  <script defer src="../../jp-math-render.js"></script>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="noindex,nofollow,noarchive" name="robots"/>
+<link crossorigin="" href="https://cdn.jsdelivr.net" rel="preconnect"/>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;family=Noto+Serif+KR:wght@700;900&amp;display=swap" rel="stylesheet"/>
+<title>2026 수능 수학 21번 | 함수 그래프 탐구실</title>
+
+<!-- ── 공용 자산 ─────────────────────────────────────────────── -->
+<link rel="stylesheet" href="../../vendor/katex/katex.min.css"/>
+<link rel="stylesheet" href="../../jp-math-typography.css"/>
+<link rel="stylesheet" href="../../jp-lesson.css"/>
+<link rel="stylesheet" href="../../jp-explore.css"/>
+<script defer src="../../vendor/katex/katex.min.js"></script>
+<script defer src="../../jp-lab.js"></script>
 </head>
-<body data-math-style="upright">
-<div class="app">
-  <header class="topbar"><div class="brand"><a href="../">← 수능 문제</a><small>2026 수학 21번 · 함수 그래프 탐구실</small></div><div class="top-actions"><button class="teacher-toggle" id="teacherToggle" aria-pressed="false">교사용 힌트 보기</button></div></header>
-  <div class="layout">
-    <aside class="rail"><p class="rail-title">오늘의 탐구 경로</p><nav class="steps" id="steps"></nav><p class="rail-note">학생의 예측을 먼저 받은 뒤<br>그래프를 움직여 확인해 보세요.</p></aside>
-    <main>
-      <section class="scene active" data-scene="0">
-        <div class="eyebrow">2026학년도 대학수학능력시험</div>
-        <h1>수학 21번<br>함수 그래프 탐구</h1>
-        <p class="lead">먼저 문제를 천천히 읽어 보세요. 이 앱은 정답을 바로 보여주지 않고, 조건을 그래프로 바꾸는 과정을 한 단계씩 안내합니다.</p>
-        <div class="split">
-          <div class="problem" style="padding:clamp(10px,2vw,18px)"><img src="문제이미지/assets/original-problem.png" alt="최고차항의 계수가 양수인 삼차함수와 조각함수 g에 관한 수능 수학 문제" style="display:block;width:100%;height:auto;max-width:760px;margin:0 auto;border-radius:10px" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><div class="problem-image-fallback" hidden><strong>문제 원문 이미지 연결 대기 중</strong><span>문제이미지/assets/original-problem.png를 확인해 주세요.<br>아래 탐구 활동은 지금 바로 진행할 수 있어요.</span></div></div>
-          <div><div class="prompt">처음 보이는 핵심 장치는 무엇일까?</div><div class="choices" data-quiz="device"><button class="choice">삼차함수</button><button class="choice" data-correct="1">t에서 부호 반전</button><button class="choice">자연수 m</button></div><div class="feedback">맞아요. x=t의 왼쪽 그래프를 x축 대칭시키는 장치가 핵심입니다.</div><div class="teacher">판서 질문: “-f(x)는 f(x)의 그래프를 어떻게 움직인 것일까?”</div></div>
-        </div>
-        <div class="nav-actions"><span class="spacer"></span><button class="primary next">연속성부터 보기</button></div>
-      </section>
+<body class="tpl-math-lesson tpl-explore">
 
-      <section class="scene" data-scene="1">
-        <h2><span class="m">g</span>가 <span class="m">t</span>에서 이어지려면?</h2><p class="lead">왼쪽에서 다가온 값은 <span class="m">-f(t)</span>, 오른쪽 값은 <span class="m">f(t)</span>입니다.</p>
-        <div class="split"><div><div class="prompt">두 값이 같다는 조건을 식으로 만들면?</div><div class="choices" data-quiz="continuity"><button class="choice">f(t)=1</button><button class="choice" data-correct="1">f(t)=0</button><button class="choice">t=0</button></div><div class="feedback"><span data-math>-f(t)=f(t)</span>이므로 <span data-math>f(t)=0</span>. 즉, 접는 위치 <span data-math>t</span>는 <span data-math>f</span>의 근 중 하나입니다.</div><div class="teacher">아직 <span data-math>t=0</span>이라고 결론내리지 않습니다. 지금은 “접는 위치 t가 어떤 근과 겹친다”는 사실만 얻었습니다.</div></div><div class="graph-wrap"><canvas id="foldCanvas" width="760" height="470" aria-label="t에서 왼쪽 부분을 x축 대칭한 그래프"></canvas><div class="legend"><span><i class="swatch"></i>f(x)</span><span><i class="swatch red"></i>g(x)</span></div><div class="controls"><div class="control"><label>접는 위치 t <output id="foldT">1.0</output></label><input id="foldSlider" type="range" min="-2" max="3" value="1" step="0.1"></div></div></div></div>
-        <div class="nav-actions"><button class="secondary prev">이전</button><button class="primary next">위험 지점 찾기</button></div>
-      </section>
+<header class="ex-top">
+  <div class="ex-brand"><a href="../">← 수능 문제</a><small>2026 수학 21번 · 함수 그래프 탐구실</small></div>
+  <div class="ex-prog"><div class="ex-prog-bar"><i id="progFill"></i></div><span class="ex-prog-txt" id="progTxt">1 / 13</span></div>
+</header>
 
-      <section class="scene" data-scene="2">
-        <h2>분모가 0인 곳을 먼저 보자.</h2><p class="lead">다른 점에서는 연속함수의 몫입니다. 문제가 생길 수 있는 곳은 딱 두 군데입니다.</p>
-        <div class="split"><div><div class="formula">x(x-2)=0 ⇔ x=0, 2</div><div class="prompt">오른쪽 극한이 유한하게 존재하려면 <span data-math>g(0), g(2)</span>는?</div><div class="choices" data-quiz="holes"><button class="choice" data-correct="1">둘 다 0</button><button class="choice">둘 다 1</button><button class="choice">서로 반대</button></div><div class="feedback">분모가 0으로 갈 때 분자도 0이어야 합니다. 따라서 <span data-math>f(0)=f(2)=0</span>입니다.</div><div class="teacher">학생에게 “왜 a 전체를 보지 않고 0과 2만 보나요?”를 설명하게 해 보세요.</div></div><div class="problem"><p style="margin-top:0;font-weight:800">여기까지 얻은 정보를 구분해 보자.</p><div class="choices" id="dangerPoints"><button class="choice" data-point="0"><span data-math>x=0</span> 확인</button><button class="choice" data-point="2"><span data-math>x=2</span> 확인</button></div><div class="feedback show" id="dangerFeedback">0과 2는 조건 (가)가 확정한 근입니다. t는 접는 위치이며, 연속성 때문에 어떤 근과 겹쳐야 합니다.</div><div class="mini-grid"><div><strong id="zeroState">0</strong>확정된 근</div><div><strong id="twoState">2</strong>확정된 근</div><div><strong data-math>t</strong>접는 위치이자 근</div></div><p style="margin-top:22px"><span data-math>0, 2</span>는 서로 다른 근입니다. 이제 확인할 것은 접는 위치 <span data-math>t</span>가 이 둘과 다른 새 근인지, 둘 중 하나와 겹치는지입니다.</p></div></div>
-        <div class="nav-actions"><button class="secondary prev">이전</button><button class="primary next">경우 나누기</button></div>
-      </section>
+<div class="ex-layout">
+  <aside class="ex-rail">
+    <h3>탐구 경로</h3>
+    <nav class="ex-rail-nav" id="rail"></nav>
+    <p class="rail-tip">먼저 <b>내 생각을 고르고</b> 나서 그래프를 움직여 보세요.<br/>틀려도 괜찮습니다 — 틀린 곳에서 배웁니다.</p>
+  </aside>
 
-      <section class="scene" data-scene="3">
-        <h2><span data-math>t</span>가 <span data-math>0, 2</span>와 다른 새 근일 수 있을까?</h2><p class="lead">잠시 <span data-math>t≠0,2</span>라고 가정합니다. 이 가정이 조건 (나)와 맞는지 몫의 그래프로 확인합니다.</p>
-        <div class="split"><div class="graph-wrap"><canvas id="quotCanvas" width="760" height="470" aria-label="g(x)를 x(x-2)로 나눈 그래프"></canvas><div class="controls"><div class="control"><label>접는 위치 t <output id="qT">1.0</output></label><input id="qTSlider" type="range" min="-2" max="4" value="1" step="0.1"></div><div class="control"><label>최고차항 계수 A <output id="qA">1.0</output></label><input id="qASlider" type="range" min="0.2" max="2" value="1" step="0.1"></div></div></div><div><div class="equation">f(x)=A·x(x-2)(x-t)</div><div class="equation">g(x)/{x(x-2)}=A|x-t|</div><div class="prompt">이 V자 그래프가 음수가 될 수 있을까?</div><button class="primary reveal-btn" data-target="distinctReveal">가정 검증하기</button><div class="reveal" id="distinctReveal"><div class="feedback show">불가능합니다. 따라서 “t가 0, 2와 다른 새 근”이라는 가정은 틀렸습니다. 접는 위치 t는 0 또는 2 중 하나와 겹칩니다. 아직 어느 쪽인지는 정하지 않았습니다.</div></div><div class="teacher">결론은 “t가 사라졌다”가 아니라 “t가 이미 있는 근 0 또는 2와 겹친다”입니다.</div></div></div>
-        <div class="nav-actions"><button class="secondary prev">이전</button><button class="primary next">0과 2 비교하기</button></div>
-      </section>
+  <main class="ex-main">
 
-      <section class="scene" data-scene="4">
-        <h2>이제 <span data-math>t</span>와 <span data-math>r</span>의 역할을 나누자.</h2><p class="lead">접는 위치 <span data-math>t</span>는 0 또는 2입니다. 한편 삼차함수에는 아직 모르는 나머지 근이 하나 있고, 그 근을 새 기호 <span data-math>r</span>로 둡니다.</p>
-        <div class="symbol-map"><div><b data-math>t</b><span>조각이 바뀌는 접는 위치<small>후보: 0 또는 2</small></span></div><div><b data-math>r</b><span>삼차함수의 남은 세 번째 근<small>t를 이름만 바꾼 것이 아님</small></span></div></div>
-        <div class="equation">f(x)=Ax(x-2)(x-r)</div>
-        <div class="split"><div><div class="choices" id="tCase"><button class="choice" data-t="0"><span data-math>t=0</span></button><button class="choice selected" data-t="2"><span data-math>t=2</span></button></div><div class="controls"><div class="control"><label>남은 근 r <output id="rOut">3.7</output></label><input id="rSlider" type="range" min="-1" max="5" value="3.7" step="0.1"></div></div><div class="numberline" id="numberline"></div><div class="feedback show" id="caseFeedback"></div><div class="teacher"><span data-math>t=0</span>이면 <span data-math>-7g(1)/2</span>가 음수가 되어 자연수가 될 수 없습니다. 그래서 <span data-math>t=2</span>이고, <span data-math>3&lt;r≤4</span>가 됩니다.</div></div><div class="graph-wrap"><canvas id="caseCanvas" width="760" height="470" aria-label="t와 r에 따른 몫의 그래프"></canvas><div class="legend"><span><i class="swatch red"></i>음수 구간</span></div></div></div>
-        <div class="nav-actions"><button class="secondary prev">이전</button><button class="primary next">계수 결정하기</button></div>
-      </section>
-
-      <section class="scene" data-scene="5">
-        <h2 data-math>{g(-1), -7g(1)/2}={2,3}</h2><p class="lead">앞 단계에서 접는 위치는 <span data-math>t=2</span>로 결정됐고, 남은 근은 <span data-math>3&lt;r≤4</span>입니다. 이제 두 함수값을 2와 3에 배정합니다.</p>
-        <div class="split"><div><div class="equation">g(-1)=3A(1+r)</div><div class="equation">-7g(1)/2=(7/2)A(r-1)</div><div class="prompt"><span data-math>3&lt;r≤4</span>에서 더 큰 것은?</div><div class="choices" data-quiz="compare"><button class="choice" data-correct="1">g(-1)</button><button class="choice">-7g(1)/2</button><button class="choice">항상 같다</button></div><div class="feedback">비는 <span data-math>6(1+r) : 7(r-1)</span>이고 이 구간에서는 앞이 더 큽니다. 따라서 <span data-math>g(-1)=3</span>입니다.</div></div><div><button class="primary reveal-btn" data-target="solveReveal">연립해서 <span data-math>A, r</span> 구하기</button><div class="reveal" id="solveReveal"><div class="equation-stack"><div class="equation">A(1+r)=1</div><div class="equation">A(r-1)=4/7</div><div class="equation">A=3/14, r=11/3</div></div></div><div class="teacher">두 식을 뺄 때 <span data-math>2A=3/7</span>이 되는 과정을 학생이 직접 말하도록 기다려 주세요.</div></div></div>
-        <div class="nav-actions"><button class="secondary prev">이전</button><button class="primary next">마지막 계산</button></div>
-      </section>
-
-      <section class="scene" data-scene="6">
-        <h2>이제 <span data-math>g(-5)</span>를 계산하자.</h2><p class="lead"><span data-math>-5&lt;t=2</span>이므로 <span data-math>g(-5)=-f(-5)</span>입니다.</p>
-        <div class="split"><div><div class="equation">f(x)=(3/14)x(x-2)(x-11/3)</div><button class="primary reveal-btn" data-target="answerReveal">한 줄씩 계산</button><div class="reveal" id="answerReveal"><div class="equation-stack"><div class="equation">g(-5)=-f(-5)</div><div class="equation">=-(3/14)(-5)(-7)(-26/3)</div><div class="equation">=65</div></div></div></div><div><div class="big-answer">65</div><p class="prompt">기호를 다시 확인하면</p><p><span data-math>t=2</span>는 조각이 바뀌는 위치<br><span data-math>r=11/3</span>은 남은 세 번째 근<br><span data-math>-5&lt;t</span>이므로 왼쪽 조각 <span data-math>-f(x)</span> 사용</p></div></div>
-        <div class="nav-actions"><button class="secondary prev">이전</button><button class="secondary" id="restart">처음부터</button></div>
-      </section>
-    </main>
+<!-- ═══ STEP 1 ═══════════════════════════════════════════════════ -->
+<section class="scene is-on">
+<p class="scene-eyebrow">STEP 1 · 문제 읽기</p>
+<h2 class="scene-h2">먼저 <span class="accent">천천히</span> 읽어 봅시다</h2>
+<p class="scene-lead">이 탐구실은 답을 바로 알려주지 않습니다. 조건 하나하나를 그래프로 바꾸는 과정을 같이 따라가 볼 거예요. 계산은 맨 마지막에 딱 한 번만 합니다.</p>
+<div class="work">
+  <div class="figure"><img alt="2026학년도 수능 수학 21번 문제" src="문제이미지/assets/original-problem.png"/></div>
+  <div class="stack">
+    <div class="askbox">
+      <p class="askq">이 문제에서 최종적으로 구해야 하는 것은?</p>
+      <div class="opts">
+        <button class="opt">삼차함수 <span class="kx" data-k="f(x)"></span>의 식</button>
+        <button class="opt" data-correct="1"><span class="kx" data-k="g(-5)"></span>의 값</button>
+        <button class="opt">자연수 <span class="kx" data-k="m"></span>의 개수</button>
+      </div>
+      <div class="optfb" data-ok="맞아요. 다만 &lt;b&gt;g(-5)&lt;/b&gt;를 구하려면 결국 f의 식을 먼저 알아내야 합니다. 조건 (가)와 (나)가 그 열쇠예요." data-no="다시 한번 문제의 맨 마지막 줄을 읽어 보세요. '~의 값을 구하시오'라고 되어 있습니다."></div>
+      <div class="hintrow"><button class="hbtn" data-open="h1">힌트</button></div>
+      <div class="hint" data-key="h1"><p>문제의 <b>마지막 문장</b>이 늘 구할 것을 말해 줍니다. 조건 (가)·(나)는 그걸 구하기 위한 <b>재료</b>예요.</p></div>
+    </div>
+    <div class="grid g3">
+      <div class="card hot"><strong>주어진 것</strong><p>최고차항 계수가 양수인 삼차함수 <span class="kx" data-k="f"></span>, 실수 <span class="kx" data-k="t"></span></p></div>
+      <div class="card"><strong>만들어진 것</strong><p><span class="kx" data-k="t"></span>를 기준으로 왼쪽만 뒤집은 함수 <span class="kx" data-k="g"></span></p></div>
+      <div class="card"><strong>구할 것</strong><p><span class="kx" data-k="g(-5)"></span></p></div>
+    </div>
   </div>
 </div>
+<div class="scene-nav"><span class="sp"></span><button class="nbtn go" data-go="next">g가 어떻게 생겼는지 보기 →</button></div>
+</section>
+
+<!-- ═══ STEP 2 ═══════════════════════════════════════════════════ -->
+<section class="scene">
+<p class="scene-eyebrow">STEP 2 · 그래프 번역</p>
+<h2 class="scene-h2"><span class="kx" data-k="g"></span>는 <span class="kx" data-k="f"></span>를 <span class="accent">접은 그래프</span>입니다</h2>
+<p class="scene-lead"><span class="kx" data-k="x\lt t"></span>에서는 <span class="kx" data-k="-f(x)"></span>, <span class="kx" data-k="x\ge t"></span>에서는 <span class="kx" data-k="f(x)"></span>. 즉 <span class="kx" data-k="x=t"></span>를 기준으로 왼쪽만 <span class="kx" data-k="x"></span>축에 대해 뒤집은 것입니다.</p>
+<div class="work">
+  <div class="lab" data-lab="fold"><div class="lab-stage"><svg class="lab-svg"></svg></div><div class="lab-side"></div></div>
+  <div class="askbox">
+    <div class="try"><b>해보기</b><p>슬라이더를 왼쪽 끝에서 오른쪽 끝까지 천천히 끌어 보세요. 그래프가 <b>끊기지 않고 이어지는</b> 순간이 몇 군데 있습니다.</p></div>
+    <p class="askq">그래프가 이어지는 <span class="kx" data-k="t"></span>는 어떤 자리였나요?</p>
+    <div class="opts">
+      <button class="opt">어느 자리든 항상 이어진다</button>
+      <button class="opt" data-correct="1"><span class="kx" data-k="f"></span>의 그래프가 <span class="kx" data-k="x"></span>축과 만나는 자리</button>
+      <button class="opt"><span class="kx" data-k="t=0"></span> 일 때만</button>
+    </div>
+    <div class="optfb" data-ok="정확합니다. f의 그래프가 x축과 만나는 자리, 즉 &lt;b&gt;f의 근&lt;/b&gt;에서만 두 조각이 붙습니다." data-no="세 군데에서 붙었을 거예요. 그 세 자리의 공통점을 찾아보세요. 그래프가 x축을 지나는 곳 아닌가요?"></div>
+    <div class="hintrow"><button class="hbtn" data-open="h1">힌트</button><button class="hbtn" data-open="h2">한 걸음 더</button><button class="hbtn go" data-open="hs">확인하기</button></div>
+    <div class="hint" data-key="h1"><p>왼쪽에서 다가올 때의 높이는 <span class="kx" data-k="-f(t)"></span>, 오른쪽에서 다가올 때의 높이는 <span class="kx" data-k="f(t)"></span>입니다. 오른쪽 조작판의 숫자를 보세요.</p></div>
+    <div class="hint" data-key="h2"><p>두 높이가 <b>같아야</b> 이어집니다. <span class="kx" data-k="-f(t)=f(t)"></span> 를 <span class="kx" data-k="f(t)"></span>에 대해 풀면?</p></div>
+    <div class="hint solve" data-key="hs"><p><b>답</b> — <span class="kx" data-k="-f(t)=f(t)"></span> 이므로 <span class="kx" data-k="2f(t)=0"></span>, 즉 <span class="kx" data-k="f(t)=0"></span>.</p><p>문제에서 <span class="kx" data-k="g"></span>가 <b>실수 전체에서 연속</b>이라고 했으니, <span class="kx" data-k="t"></span>는 반드시 <span class="kx" data-k="f"></span>의 근이어야 합니다.</p></div>
+  </div>
+</div>
+<div class="scene-nav"><button class="nbtn" data-go="prev">← 이전</button><span class="sp"></span><button class="nbtn go" data-go="next">다음 →</button></div>
+</section>
+
+<!-- ═══ STEP 3 ═══════════════════════════════════════════════════ -->
+<section class="scene">
+<p class="scene-eyebrow">STEP 3 · 첫 번째 수확</p>
+<h2 class="scene-h2">"연속"이라는 말에서 <span class="accent">식 하나</span>를 건졌습니다</h2>
+<p class="scene-lead">말로 주어진 조건을 식으로 바꾸는 것, 이게 이 문제 내내 반복할 작업입니다.</p>
+<div class="stack">
+<div class="flow">
+  <div class="flow-box"><b>왼쪽 높이</b><span class="fb-text"><span class="kx" data-k="-f(t)"></span></span></div>
+  <div class="arrow">=</div>
+  <div class="flow-box"><b>오른쪽 높이</b><span class="fb-text"><span class="kx" data-k="f(t)"></span></span></div>
+  <div class="arrow">→</div>
+  <div class="flow-box"><b>결론</b><span class="fb-text"><span class="kx" data-k="f(t)=0"></span></span></div>
+</div>
+<div class="work">
+  <div class="askbox">
+    <p class="askq">그러면 <span class="kx" data-k="t"></span>에 대해 지금 확정된 사실은 무엇인가요?</p>
+    <div class="opts">
+      <button class="opt"><span class="kx" data-k="t=0"></span> 이다</button>
+      <button class="opt" data-correct="1"><span class="kx" data-k="t"></span>는 <span class="kx" data-k="f"></span>의 근 중 하나다</button>
+      <button class="opt"><span class="kx" data-k="t"></span>는 <span class="kx" data-k="f"></span>의 근이 아니다</button>
+    </div>
+    <div class="optfb" data-ok="그렇습니다. &lt;b&gt;어느 근인지는 아직 모릅니다.&lt;/b&gt; 여기서 성급하게 t=0이라고 정하면 뒤에서 꼬입니다." data-no="f(t)=0 이라는 식이 말해 주는 건 딱 하나입니다 — t를 넣으면 f가 0이 된다는 것. 그게 바로 '근'의 정의죠."></div>
+  </div>
+  <div class="note-strip warn"><span class="ic">주의</span><p><span class="kx" data-k="f"></span>의 근이 몇 개이고 어디에 있는지는 <b>아직 모릅니다</b>. 그건 조건 (가)가 알려 줄 거예요.</p></div>
+</div>
+</div>
+<div class="scene-nav"><button class="nbtn" data-go="prev">← 이전</button><span class="sp"></span><button class="nbtn go" data-go="next">조건 (가) 읽으러 가기 →</button></div>
+</section>
+
+<!-- ═══ STEP 4 ═══════════════════════════════════════════════════ -->
+<section class="scene">
+<p class="scene-eyebrow">STEP 4 · 조건 (가)</p>
+<h2 class="scene-h2">"모든 실수"를 정말 <span class="accent">다 조사</span>해야 할까요?</h2>
+<p class="scene-lead">조건 (가)는 모든 실수 <span class="kx" data-k="a"></span>에 대해 <span class="kx" data-k="\lim\limits_{x\to a^{+}}\dfrac{g(x)}{x(x-2)}"></span> 가 존재한다고 말합니다. 무한히 많은 점을 다 확인할 수는 없겠죠.</p>
+<div class="work flip">
+  <div class="askbox">
+    <p class="askq">이 중에서 <b>실제로 위험한</b> 점은 어디일까요?</p>
+    <div class="opts">
+      <button class="opt">모든 실수를 다 확인해야 한다</button>
+      <button class="opt" data-correct="1">분모가 0이 되는 <span class="kx" data-k="x=0,\,2"></span> 두 곳만</button>
+      <button class="opt"><span class="kx" data-k="x=t"></span> 한 곳만</button>
+    </div>
+    <div class="optfb" data-ok="맞아요. 분모가 0이 아닌 곳에서는 &lt;b&gt;연속함수의 몫&lt;/b&gt;이라 극한이 저절로 존재합니다. 따로 확인할 필요가 없어요." data-no="분수의 값이 이상해지는 건 언제인가요? 분모가 0이 될 때죠. x(x-2)=0 인 x를 찾아보세요."></div>
+    <div class="hintrow"><button class="hbtn" data-open="h1">힌트</button></div>
+    <div class="hint" data-key="h1"><p><span class="kx" data-k="g"></span>는 이미 연속입니다. 그러니 분모만 0이 아니면 이 분수 전체가 그 점에서 연속이고, 극한은 자동으로 존재합니다.</p><p><span class="kx" data-k="x=t"></span>도 <span class="kx" data-k="t"></span>가 0이나 2가 아니라면 위험하지 않습니다.</p></div>
+  </div>
+  <div class="stack">
+    <div class="fx boxed" data-k="x(x-2)=0 \iff x=0 \ \text{ 또는 } \ x=2"></div>
+    <div class="numline">
+      <div class="pt" style="--x:34%"><b>0</b><i></i><span>분모가 0</span></div>
+      <div class="pt" style="--x:64%"><b>2</b><i></i><span>분모가 0</span></div>
+    </div>
+  </div>
+</div>
+<div class="scene-nav"><button class="nbtn" data-go="prev">← 이전</button><span class="sp"></span><button class="nbtn go" data-go="next">그 두 점에서 무슨 일이? →</button></div>
+</section>
+
+<!-- ═══ STEP 5 ═══════════════════════════════════════════════════ -->
+<section class="scene">
+<p class="scene-eyebrow">STEP 5 · 직접 실험</p>
+<h2 class="scene-h2">분자가 0이 아니면 <span class="neg">그래프가 터집니다</span></h2>
+<p class="scene-lead">분모가 0으로 가는데 분자는 0이 아니라면 어떻게 될까요? 직접 확인해 봅시다.</p>
+<div class="work">
+  <div class="lab" data-lab="blowup"><div class="lab-stage"><svg class="lab-svg"></svg></div><div class="lab-side"></div></div>
+  <div class="askbox">
+    <div class="try"><b>해보기</b><p>슬라이더로 분자의 값 <span class="kx" data-k="g(0)"></span>을 0에 가깝게 만들어 보세요. 그래프가 어떻게 달라지나요?</p></div>
+    <p class="askq">극한이 존재하려면 <span class="kx" data-k="g(0)"></span>과 <span class="kx" data-k="g(2)"></span>는 얼마여야 할까요?</p>
+    <div class="opts">
+      <button class="opt">아무 값이나 괜찮다</button>
+      <button class="opt" data-correct="1">둘 다 <span class="kx" data-k="0"></span>이어야 한다</button>
+      <button class="opt">서로 부호가 반대여야 한다</button>
+    </div>
+    <div class="optfb" data-ok="맞습니다. 분모가 0으로 갈 때 분자도 같이 0이 되어야 유한한 값이 남습니다. 이른바 &lt;b&gt;0/0 꼴&lt;/b&gt;이죠." data-no="분자가 0이 아닌 채로 분모만 0에 가까워지면 분수의 크기가 무한히 커집니다. 슬라이더를 0에서 멀리 옮겨 보세요."></div>
+    <div class="hintrow"><button class="hbtn go" data-open="hs">확인하기</button></div>
+    <div class="hint solve" data-key="hs"><p><b>답</b> — <span class="kx" data-k="g(0)=0,\ g(2)=0"></span>.</p><p>그런데 <span class="kx" data-k="g"></span>는 <span class="kx" data-k="f"></span> 아니면 <span class="kx" data-k="-f"></span>이므로, 어느 쪽이든 <span class="kx" data-k="f(0)=0,\ f(2)=0"></span> 입니다.</p><p>즉 <b>0과 2는 <span class="kx" data-k="f"></span>의 근</b>입니다. 조건 (가)가 준 선물이에요.</p></div>
+  </div>
+</div>
+<div class="scene-nav"><button class="nbtn" data-go="prev">← 이전</button><span class="sp"></span><button class="nbtn go" data-go="next">f의 모양 정리하기 →</button></div>
+</section>
+
+<!-- ═══ STEP 6 ═══════════════════════════════════════════════════ -->
+<section class="scene">
+<p class="scene-eyebrow">STEP 6 · 정리</p>
+<h2 class="scene-h2">삼차함수의 <span class="accent">모양이 확정</span>됐습니다</h2>
+<p class="scene-lead">근 두 개(0, 2)를 알았고, 삼차함수니까 근이 하나 더 있습니다. 그 근을 <span class="kx" data-k="r"></span>이라 부르겠습니다.</p>
+<div class="stack">
+<div class="fx lg boxed hot" data-k="f(x)=A\,x(x-2)(x-r)\qquad (A\gt 0)"></div>
+<div class="work">
+  <div class="grid g2">
+    <div class="card hot"><strong><span class="kx" data-k="t"></span> — 접는 위치</strong><p>그래프를 뒤집는 기준선. STEP 3에서 <span class="kx" data-k="f"></span>의 근이라는 걸 알아냈습니다.</p></div>
+    <div class="card"><strong><span class="kx" data-k="r"></span> — 남은 세 번째 근</strong><p><span class="kx" data-k="t"></span>의 다른 이름이 <b>아닙니다</b>. 우연히 같을 수도, 다를 수도 있습니다.</p></div>
+  </div>
+  <div class="askbox">
+    <p class="askq"><span class="kx" data-k="t"></span>가 될 수 있는 후보는 모두 몇 개인가요?</p>
+    <div class="opts">
+      <button class="opt">1개 — <span class="kx" data-k="t=0"></span></button>
+      <button class="opt">2개 — <span class="kx" data-k="0"></span> 또는 <span class="kx" data-k="2"></span></button>
+      <button class="opt" data-correct="1">3개 — <span class="kx" data-k="0,\ 2,\ r"></span></button>
+    </div>
+    <div class="optfb" data-ok="맞아요. f의 근은 0, 2, r 세 개이고 t는 그중 하나입니다. &lt;b&gt;셋 다 따져 봐야&lt;/b&gt; 합니다." data-no="t는 f의 근이라고 했죠. f(x)=Ax(x-2)(x-r) 의 근을 전부 세어 보세요."></div>
+  </div>
+</div>
+<div class="note-strip"><span class="ic">진행</span><p>미지수가 <span class="kx" data-k="A"></span>와 <span class="kx" data-k="r"></span> <b>둘</b>로 줄었습니다. 처음 삼차함수의 미지수 4개에서 절반이 됐네요.</p></div>
+</div>
+<div class="scene-nav"><button class="nbtn" data-go="prev">← 이전</button><span class="sp"></span><button class="nbtn go" data-go="next">이 문제의 핵심으로 →</button></div>
+</section>
+
+<!-- ═══ STEP 7 ═══════════════════════════════════════════════════ -->
+<section class="scene">
+<p class="scene-eyebrow">STEP 7 · 이 문제의 심장</p>
+<h2 class="scene-h2">복잡한 분수가 <span class="accent">직선 두 조각</span>이 됩니다</h2>
+<p class="scene-lead">조건에 계속 나오는 <span class="kx" data-k="\dfrac{g(x)}{x(x-2)}"></span> 를 직접 정리해 봅시다. 이 문제의 진짜 주인공입니다.</p>
+<div class="work">
+  <div class="steps">
+    <div class="step"><span class="n">1</span><div class="body"><b><span class="kx" data-k="x\ge t"></span> 인 쪽 — <span class="kx" data-k="g=f"></span></b><p><span class="kx" data-k="\dfrac{A\,x(x-2)(x-r)}{x(x-2)}=A(x-r)"></span></p></div></div>
+    <div class="step"><span class="n">2</span><div class="body"><b><span class="kx" data-k="x\lt t"></span> 인 쪽 — <span class="kx" data-k="g=-f"></span></b><p><span class="kx" data-k="\dfrac{-A\,x(x-2)(x-r)}{x(x-2)}=-A(x-r)=A(r-x)"></span></p></div></div>
+    <div class="step yes"><span class="n">3</span><div class="body"><b>정리하면</b><p><span class="kx" data-k="\dfrac{g(x)}{x(x-2)}=\begin{cases}A(r-x)&(x\lt t)\\[2pt]A(x-r)&(x\ge t)\end{cases}"></span></p></div></div>
+  </div>
+  <div class="askbox">
+    <p class="askq">약분하고 나면 어떤 함수가 남나요?</p>
+    <div class="opts">
+      <button class="opt">여전히 삼차함수</button>
+      <button class="opt" data-correct="1">기울기가 <span class="kx" data-k="\pm A"></span>인 <b>직선 두 조각</b></button>
+      <button class="opt">이차함수</button>
+    </div>
+    <div class="optfb" data-ok="바로 그겁니다. &lt;b&gt;x(x-2)가 통째로 약분&lt;/b&gt;되면서 일차식만 남습니다. 이 사실 하나로 이 문제가 무너집니다." data-no="분자와 분모에 x(x-2)가 공통으로 들어 있습니다. 약분하고 남는 걸 보세요."></div>
+    <div class="hintrow"><button class="hbtn" data-open="h1">힌트</button></div>
+    <div class="hint" data-key="h1"><p>왼쪽 조각은 기울기 <span class="kx" data-k="-A"></span>(내려가는 직선), 오른쪽 조각은 기울기 <span class="kx" data-k="+A"></span>(올라가는 직선)입니다. 둘 다 연장하면 <span class="kx" data-k="x=r"></span>에서 0을 지나요.</p></div>
+    <div class="note-strip warn"><span class="ic">단</span><p><span class="kx" data-k="x=0"></span>과 <span class="kx" data-k="x=2"></span>에서는 원래 식이 정의되지 않으므로 그래프에 <b>구멍</b>이 뚫립니다.</p></div>
+  </div>
+</div>
+<div class="scene-nav"><button class="nbtn" data-go="prev">← 이전</button><span class="sp"></span><button class="nbtn go" data-go="next">세 경우 실험하러 가기 →</button></div>
+</section>
+
+<!-- ═══ STEP 8 ═══════════════════════════════════════════════════ -->
+<section class="scene">
+<p class="scene-eyebrow">STEP 8 · 직접 실험</p>
+<h2 class="scene-h2"><span class="kx" data-k="t"></span>를 바꿔 가며 <span class="accent">모양을 비교</span>해 봅시다</h2>
+<p class="scene-lead">조건 (나)는 <b>우극한이 음수가 되는 자연수</b>가 정확히 두 개라고 말합니다. 아래 그래프에서 <span class="neg">빨간 점</span>이 바로 그 자연수예요.</p>
+<div class="work">
+  <div class="lab" data-lab="quot" data-cases="r,0,2" data-t="r" data-r="3.67"><div class="lab-stage"><svg class="lab-svg"></svg></div><div class="lab-side"></div></div>
+  <div class="askbox">
+    <div class="try"><b>해보기</b><p>위쪽 버튼 세 개를 차례로 눌러 보고, 각 경우마다 <span class="kx" data-k="r"></span> 슬라이더도 움직여 보세요. 빨간 점이 <b>두 개</b>가 되게 만들 수 있나요?</p></div>
+    <p class="askq">빨간 점을 <b>두 개</b> 만들 수 있는 경우를 모두 고르면?</p>
+    <div class="opts">
+      <button class="opt"><span class="kx" data-k="t=r"></span> 뿐이다</button>
+      <button class="opt"><span class="kx" data-k="t=2"></span> 뿐이다</button>
+      <button class="opt" data-correct="1"><span class="kx" data-k="t=0"></span> 과 <span class="kx" data-k="t=2"></span> 둘 다</button>
+    </div>
+    <div class="optfb" data-ok="정확합니다. 그래서 &lt;b&gt;t=0도 아직 살아 있습니다.&lt;/b&gt; 개수만 보고 t=2라고 단정하면 안 돼요. 다음 두 단계에서 하나씩 지워 봅시다." data-no="세 버튼을 다 눌러 보셨나요? t=r 에서는 r을 아무리 움직여도 빨간 점이 안 생깁니다. 나머지 둘은 어떤가요?"></div>
+    <div class="hintrow"><button class="hbtn" data-open="h1">힌트</button></div>
+    <div class="hint" data-key="h1"><p><span class="kx" data-k="t=0"></span>일 때 <span class="kx" data-k="r"></span>을 2와 3 사이에 두면 빨간 점이 두 개(1, 2) 생깁니다. 직접 맞춰 보세요.</p></div>
+  </div>
+</div>
+<div class="scene-nav"><button class="nbtn" data-go="prev">← 이전</button><span class="sp"></span><button class="nbtn go" data-go="next">t=r 부터 지우기 →</button></div>
+</section>
+
+<!-- ═══ STEP 9 ═══════════════════════════════════════════════════ -->
+<section class="scene">
+<p class="scene-eyebrow">STEP 9 · 후보 1 지우기</p>
+<h2 class="scene-h2"><span class="kx" data-k="t=r"></span> 이면 그래프가 <span class="accent">V자</span>가 됩니다</h2>
+<p class="scene-lead">접는 위치가 세 번째 근과 겹치면, 두 직선이 <span class="kx" data-k="x"></span>축 위의 한 점에서 만납니다.</p>
+<div class="work">
+  <div class="lab" data-lab="quot" data-cases="r" data-t="r" data-r="3.2" data-nat="0"><div class="lab-stage"><svg class="lab-svg"></svg></div><div class="lab-side"></div></div>
+  <div class="askbox">
+    <p class="askq">이 V자 그래프가 <span class="kx" data-k="x"></span>축 <b>아래</b>로 내려가는 곳이 있나요?</p>
+    <div class="opts">
+      <button class="opt"><span class="kx" data-k="x\lt r"></span> 에서 내려간다</button>
+      <button class="opt" data-correct="1">한 곳도 없다</button>
+      <button class="opt"><span class="kx" data-k="r"></span> 값에 따라 다르다</button>
+    </div>
+    <div class="optfb" data-ok="맞아요. 식으로 쓰면 &lt;b&gt;A|x-r|&lt;/b&gt; — 절댓값이니 항상 0 이상입니다. r을 아무리 옮겨도 마찬가지죠." data-no="r 슬라이더를 끝에서 끝까지 움직여 보세요. 그래프가 x축 아래로 내려가는 순간이 한 번이라도 있나요?"></div>
+    <div class="hintrow"><button class="hbtn go" data-open="hs">확인하기</button></div>
+    <div class="hint solve" data-key="hs">
+      <p><b>왜 그럴까요?</b> <span class="kx" data-k="t=r"></span>이면 왼쪽 조각 <span class="kx" data-k="A(r-x)"></span>와 오른쪽 조각 <span class="kx" data-k="A(x-r)"></span>가 <span class="kx" data-k="x=r"></span>에서 만나 정확히 <span class="kx" data-k="A\lvert x-r\rvert"></span> 가 됩니다.</p>
+      <div class="fx sm" data-k="A\lvert x-r\rvert \ \ge 0 \quad\Longrightarrow\quad \text{음수가 되는 자연수는 없다}"></div>
+      <p>그런데 조건 (나)는 그런 자연수가 <b>두 개</b> 있다고 했습니다. <span class="kx" data-k="g(-1)\ne-\tfrac{7}{2}g(1)"></span> 이라는 단서가 <b>두 값이 서로 다르다</b>는 걸 보장하거든요. 모순이므로 <b><span class="kx" data-k="t\ne r"></span></b>.</p>
+    </div>
+  </div>
+</div>
+<div class="scene-nav"><button class="nbtn" data-go="prev">← 이전</button><span class="sp"></span><button class="nbtn go" data-go="next">t=0 지우기 →</button></div>
+</section>
+
+<!-- ═══ STEP 10 ══════════════════════════════════════════════════ -->
+<section class="scene">
+<p class="scene-eyebrow">STEP 10 · 후보 2 지우기</p>
+<h2 class="scene-h2"><span class="kx" data-k="t=0"></span> 은 <span class="neg">부호</span>에서 걸립니다</h2>
+<p class="scene-lead">개수는 맞출 수 있었죠. 그런데 조건 (나)의 집합은 <b>자연수의 집합</b>입니다. 그 안에 들어갈 두 값을 직접 계산해 봅시다.</p>
+<div class="work">
+  <div class="stack">
+    <div class="grid g2">
+      <div class="card"><strong><span class="kx" data-k="-1\lt t=0"></span> → 뒤집힌 조각</strong><p><span class="kx" data-k="g(-1)=-f(-1)=3A(1+r)"></span></p></div>
+      <div class="card"><strong><span class="kx" data-k="1\ge t=0"></span> → 원래 조각</strong><p><span class="kx" data-k="g(1)=f(1)=A(r-1)"></span></p></div>
+    </div>
+    <div class="lab solo" data-lab="values" data-case="t0"><div class="lab-stage"><svg class="lab-svg"></svg></div><div class="lab-side"></div></div>
+  </div>
+  <div class="askbox">
+    <p class="askq"><span class="kx" data-k="t=0"></span>에서 원소가 2개가 되려면 <span class="kx" data-k="2\lt r\le 3"></span> 이어야 합니다. 이때 <span class="kx" data-k="-\tfrac{7}{2}g(1)"></span> 의 부호는?</p>
+    <div class="opts">
+      <button class="opt">양수</button>
+      <button class="opt" data-correct="1">음수</button>
+      <button class="opt"><span class="kx" data-k="r"></span> 에 따라 달라진다</button>
+    </div>
+    <div class="optfb" data-ok="맞아요. r&gt;2 이므로 r-1&gt;0 이고 A&gt;0. 앞에 붙은 마이너스 때문에 &lt;b&gt;항상 음수&lt;/b&gt;입니다." data-no="r이 2보다 크니까 r-1은 양수죠. 거기에 A&gt;0을 곱하고, 다시 -7/2를 곱하면 부호가 어떻게 될까요?"></div>
+    <div class="hintrow"><button class="hbtn go" data-open="hs">그래서 결론은?</button></div>
+    <div class="hint solve" data-key="hs">
+      <div class="fx sm" data-k="-\tfrac{7}{2}g(1)=-\tfrac{7}{2}A(r-1)\ \lt 0"></div>
+      <p>음수는 <b>자연수가 될 수 없습니다</b>. 그런데 조건 (나)는 이 값이 자연수 집합의 원소라고 했죠. 모순입니다.</p>
+      <p>따라서 <b><span class="kx" data-k="t\ne 0"></span></b>. 남은 후보는 하나뿐 — <b><span class="kx" data-k="t=2"></span></b> 입니다.</p>
+    </div>
+  </div>
+</div>
+<div class="scene-nav"><button class="nbtn" data-go="prev">← 이전</button><span class="sp"></span><button class="nbtn go" data-go="next">t=2 확정 →</button></div>
+</section>
+
+<!-- ═══ STEP 11 ══════════════════════════════════════════════════ -->
+<section class="scene">
+<p class="scene-eyebrow">STEP 11 · 왜 2부터 세는가</p>
+<h2 class="scene-h2"><span class="kx" data-k="m=1"></span> 은 <span class="neg">처음부터 후보가 아닙니다</span></h2>
+<p class="scene-lead">이제 <span class="kx" data-k="t=2"></span>입니다. 자연수 <span class="kx" data-k="m"></span>을 1부터 대입해 보려는데, 1과 2는 <b>서로 다른 조각</b>에 살고 있습니다.</p>
+<div class="stack">
+<div class="grid g2">
+  <div class="card"><strong><span class="kx" data-k="m=1"></span> 은 접힘점 <span class="neg">왼쪽</span></strong><p><span class="kx" data-k="1\lt 2=t"></span> 이므로 뒤집힌 조각<br/><span class="kx" data-k="\lim\limits_{x\to1^{+}}\dfrac{g(x)}{x(x-2)}=A(r-1)"></span></p></div>
+  <div class="card hot"><strong><span class="kx" data-k="m\ge 2"></span> 는 접힘점 <span class="accent">오른쪽</span></strong><p><span class="kx" data-k="m\ge 2=t"></span> 이므로 원래 조각<br/><span class="kx" data-k="\lim\limits_{x\to m^{+}}\dfrac{g(x)}{x(x-2)}=A(m-r)"></span></p></div>
+</div>
+<div class="work">
+  <div class="askbox">
+    <p class="askq"><span class="kx" data-k="m=1"></span>이 집합에 들어가려면 <span class="kx" data-k="A(r-1)\lt 0"></span>, 즉 <span class="kx" data-k="r\lt 1"></span> 이어야 합니다. 그러면 <span class="kx" data-k="m\ge 2"></span> 인 자연수들은 어떻게 되나요?</p>
+    <div class="opts">
+      <button class="opt">일부는 음수가 된다</button>
+      <button class="opt" data-correct="1">전부 양수가 된다</button>
+      <button class="opt">알 수 없다</button>
+    </div>
+    <div class="optfb" data-ok="맞습니다. r&lt;1&lt;2≤m 이므로 m-r&gt;0. 그러면 집합의 원소가 &lt;b&gt;1 하나뿐&lt;/b&gt;이 되어 조건 (나)와 어긋납니다." data-no="r&lt;1 인데 m은 2 이상입니다. m-r 의 부호를 따져 보세요."></div>
+  </div>
+  <div class="steps">
+    <div class="step"><span class="n">1</span><div class="body"><b>가정</b><p><span class="kx" data-k="m=1"></span>이 집합에 들어간다 → <span class="kx" data-k="r\lt 1"></span></p></div></div>
+    <div class="step"><span class="n">2</span><div class="body"><b>따라가면</b><p><span class="kx" data-k="m\ge 2"></span>는 전부 <span class="kx" data-k="m-r\gt 0"></span> → 모두 양수</p></div></div>
+    <div class="step no"><span class="n">3</span><div class="body"><b>모순</b><p>집합 <span class="kx" data-k="=\{1\}"></span> — 원소가 1개뿐</p></div></div>
+    <div class="step yes"><span class="n">4</span><div class="body"><b>결론</b><p>검사는 <span class="kx" data-k="m=2"></span>부터 시작하면 된다</p></div></div>
+  </div>
+</div>
+<div class="note-strip"><span class="ic">구조</span><p>접힘점 <span class="kx" data-k="t=2"></span>와 검사점 <span class="kx" data-k="m=2"></span>가 <b>같은 자리</b>입니다. <span class="kx" data-k="x=2"></span> 바로 왼쪽은 <span class="kx" data-k="A(r-2)\gt0"></span>, 바로 오른쪽은 <span class="kx" data-k="A(2-r)\lt0"></span> — 부호가 정반대죠. 문제가 <b>우극한</b>을 묻기 때문에 <span class="kx" data-k="m=2"></span>가 집합에 들어갈 수 있습니다.</p></div>
+</div>
+<div class="scene-nav"><button class="nbtn" data-go="prev">← 이전</button><span class="sp"></span><button class="nbtn go" data-go="next">r의 범위 찾으러 가기 →</button></div>
+</section>
+
+<!-- ═══ STEP 12 ══════════════════════════════════════════════════ -->
+<section class="scene">
+<p class="scene-eyebrow">STEP 12 · 직접 찾기</p>
+<h2 class="scene-h2"><span class="kx" data-k="r"></span>을 움직여 <span class="accent">직접 찾아보세요</span></h2>
+<p class="scene-lead">이제 <span class="kx" data-k="m=2,3,4,\dots"></span> 를 차례로 검사합니다. <span class="kx" data-k="m\ge2"></span> 에서는 <span class="kx" data-k="A(m-r)\lt0"></span>, 즉 <span class="kx" data-k="m\lt r"></span> 일 때만 음수예요.</p>
+<div class="work">
+  <div class="lab" data-lab="count" data-r="2.4"><div class="lab-stage"><svg class="lab-svg"></svg></div><div class="lab-side"></div></div>
+  <div class="askbox">
+    <div class="try"><b>해보기</b><p>슬라이더를 끌어서 집합의 <b>원소가 정확히 2개</b>가 되도록 만들어 보세요. 되는 <span class="kx" data-k="r"></span>이 하나가 아니라 <b>구간</b>이라는 걸 확인해 보세요.</p></div>
+    <p class="askq">원소가 정확히 2개가 되는 <span class="kx" data-k="r"></span>의 범위는?</p>
+    <div class="opts">
+      <button class="opt"><span class="kx" data-k="2\lt r\le 3"></span></button>
+      <button class="opt" data-correct="1"><span class="kx" data-k="3\lt r\le 4"></span></button>
+      <button class="opt"><span class="kx" data-k="3\le r\lt 4"></span></button>
+    </div>
+    <div class="optfb" data-ok="정확합니다. 양 끝의 등호 방향이 &lt;b&gt;서로 다르다&lt;/b&gt;는 게 이 문제의 함정이에요. 아래에서 이유를 확인해 보세요." data-no="아깝습니다. 경계값 r=3.00 과 r=4.00 을 슬라이더로 정확히 맞춰 보고 집합이 어떻게 되는지 확인해 보세요."></div>
+    <div class="hintrow"><button class="hbtn" data-open="h1">힌트</button><button class="hbtn go" data-open="hs">경계 확인하기</button></div>
+    <div class="hint" data-key="h1"><p>슬라이더를 <b>3.00</b>에 정확히 맞춰 보세요. 그다음 <b>4.00</b>, 그다음 <b>4.05</b>. 집합이 어떻게 달라지나요?</p></div>
+    <div class="hint solve" data-key="hs">
+      <p><b><span class="kx" data-k="r=3"></span> 은 왜 제외?</b><br/><span class="kx" data-k="m=3"></span>에서 값이 <span class="kx" data-k="A(3-3)=0"></span>. <b>0은 음수가 아니므로</b> 3이 집합에 못 들어갑니다 → 원소 1개.</p>
+      <p><b><span class="kx" data-k="r=4"></span> 는 왜 포함?</b><br/><span class="kx" data-k="m=4"></span>에서 값이 <span class="kx" data-k="A(4-4)=0"></span>. 역시 음수가 아니라서 4가 <b>안</b> 들어갑니다 → 원소가 딱 2개(<span class="kx" data-k="\{2,3\}"></span>). 통과!</p>
+      <div class="fx boxed hot" data-k="\therefore\ 3\lt r\le 4"></div>
+      <p>같은 이유("0은 음수가 아니다")인데 한쪽은 손해, 한쪽은 이득이 됩니다.</p>
+    </div>
+  </div>
+</div>
+<div class="scene-nav"><button class="nbtn" data-go="prev">← 이전</button><span class="sp"></span><button class="nbtn go" data-go="next">마지막 계산 →</button></div>
+</section>
+
+<!-- ═══ STEP 13 ══════════════════════════════════════════════════ -->
+<section class="scene">
+<p class="scene-eyebrow">STEP 13 · 마지막 계산</p>
+<h2 class="scene-h2">이제 <span class="accent">계산할 시간</span>입니다</h2>
+<p class="scene-lead">집합이 <span class="kx" data-k="\{2,3\}"></span> 이라는 걸 알았습니다. 이제 <span class="kx" data-k="\{g(-1),\ -\tfrac{7}{2}g(1)\}=\{2,3\}"></span> 을 이용합니다. 단, <b>집합은 순서가 없다</b>는 걸 잊지 마세요.</p>
+<div class="work">
+  <div class="stack">
+    <div class="stack">
+      <div class="fx sm boxed" data-k="g(x)=-f(x)\quad(x\lt 2)"></div>
+      <div class="fx sm boxed" data-k="g(-1)=3A(1+r),\qquad -\tfrac{7}{2}g(1)=\tfrac{7}{2}A(r-1)"></div>
+    </div>
+    <div class="lab solo" data-lab="values" data-case="t2"><div class="lab-stage"><svg class="lab-svg"></svg></div><div class="lab-side"></div></div>
+  </div>
+  <div class="askbox">
+    <p class="askq"><span class="kx" data-k="3\lt r\le 4"></span> 에서 둘 중 <b>더 큰</b> 쪽은?</p>
+    <div class="opts">
+      <button class="opt" data-correct="1"><span class="kx" data-k="g(-1)"></span></button>
+      <button class="opt"><span class="kx" data-k="-\tfrac{7}{2}g(1)"></span></button>
+      <button class="opt"><span class="kx" data-k="r"></span> 에 따라 바뀐다</button>
+    </div>
+    <div class="optfb" data-ok="맞아요. 두 값의 차가 &lt;b&gt;A(13-r)/2&lt;/b&gt; 인데 r≤4 이므로 항상 양수입니다. 슬라이더로 확인해 보세요." data-no="차를 직접 계산해 보세요. 3A(1+r) - (7/2)A(r-1) 을 정리하면 어떤 식이 나오나요?"></div>
+    <div class="hintrow"><button class="hbtn" data-open="h1">차 계산하기</button><button class="hbtn go" data-open="hs">끝까지 풀기</button></div>
+    <div class="hint" data-key="h1"><div class="fx sm" data-k="3A(1+r)-\tfrac{7}{2}A(r-1)=\tfrac{A}{2}\big(6+6r-7r+7\big)=\tfrac{A}{2}(13-r)\ \gt 0"></div></div>
+    <div class="hint solve" data-key="hs">
+      <p>큰 쪽이 3, 작은 쪽이 2이므로 <span class="kx" data-k="g(-1)=3,\ -\tfrac{7}{2}g(1)=2"></span>.</p>
+      <div class="fx sm" data-k="A(1+r)=1,\qquad A(r-1)=\tfrac{4}{7}"></div>
+      <p>두 식을 <b>빼면</b> <span class="kx" data-k="2A=\tfrac{3}{7}"></span> → <span class="kx" data-k="A=\tfrac{3}{14}"></span>, 이어서 <span class="kx" data-k="1+r=\tfrac{14}{3}"></span> → <span class="kx" data-k="r=\tfrac{11}{3}"></span>.</p>
+      <p><span class="kx" data-k="\tfrac{11}{3}\approx3.67"></span> — 앞에서 구한 <span class="kx" data-k="3\lt r\le4"></span> 안에 잘 들어갑니다. <b>범위 검증은 꼭 하세요.</b></p>
+      <div class="fx sm boxed" data-k="f(x)=\tfrac{3}{14}\,x(x-2)\Big(x-\tfrac{11}{3}\Big)"></div>
+      <p><span class="kx" data-k="-5\lt 2=t"></span> 이므로 <b>뒤집힌 조각</b>을 씁니다.</p>
+      <div class="fx sm" data-k="g(-5)=-f(-5)=-\tfrac{3}{14}(-5)(-7)\Big(-\tfrac{26}{3}\Big)=65"></div>
+      <p class="answer-big">65</p>
+    </div>
+  </div>
+</div>
+<div class="stack" style="margin-top:34px">
+<div class="takeaways">
+  <div class="takeaway"><b>번역</b><span>"연속"·"극한이 존재"·"집합이 {…}" 같은 <b>말</b>을 전부 <b>그래프의 모양</b>으로 바꿨습니다.</span></div>
+  <div class="takeaway"><b>약분</b><span>복잡한 분수가 <b>직선 두 조각</b>이라는 걸 알아챈 순간 문제가 단순해졌습니다.</span></div>
+  <div class="takeaway"><b>배제</b><span>세 후보를 각각 가정하고 무너뜨려서 <span class="kx" data-k="t=2"></span> 하나만 남겼습니다.</span></div>
+  <div class="takeaway"><b>회수</b><span>모든 구조가 정해진 <b>맨 마지막에만</b> 계산했습니다.</span></div>
+</div>
+</div>
+<div class="scene-nav"><button class="nbtn" data-go="prev">← 이전</button><span class="sp"></span><button class="nbtn" data-go="restart">처음부터 다시</button></div>
+</section>
+
+  </main>
+</div>
+
 <script>
-document.querySelectorAll('.equation,.formula,.m').forEach(el=>el.setAttribute('data-math',''));
-document.querySelectorAll('[data-quiz] .choice').forEach(el=>{if(/[=\/≤≥]|[A-Za-z]\s*\(/.test(el.textContent))el.setAttribute('data-math','')});
-const labels=['문제 읽기','연속성','위험 지점','새 근 가정','기호와 경우','계수 결정','최종 계산'];
-const steps=document.getElementById('steps'); let current=0; let teacher=false;
-labels.forEach((label,i)=>{const b=document.createElement('button');b.className='step'+(i===0?' active':'');b.innerHTML=`<span>${i+1}</span><span>${label}</span>`;b.onclick=()=>show(i);steps.appendChild(b)});
-function show(i){current=Math.max(0,Math.min(6,i));document.querySelectorAll('.scene').forEach((s,j)=>s.classList.toggle('active',j===current));document.querySelectorAll('.step').forEach((s,j)=>s.classList.toggle('active',j===current));window.scrollTo({top:0,behavior:'smooth'});if(current===1)drawFold();if(current===3)drawQuot();if(current===4)updateCase()}
-document.querySelectorAll('.next').forEach(b=>b.onclick=()=>show(current+1));document.querySelectorAll('.prev').forEach(b=>b.onclick=()=>show(current-1));document.getElementById('restart').onclick=()=>show(0);
-document.getElementById('teacherToggle').onclick=e=>{teacher=!teacher;e.currentTarget.setAttribute('aria-pressed',teacher);e.currentTarget.textContent=teacher?'교사용 힌트 숨기기':'교사용 힌트 보기';document.querySelectorAll('.teacher').forEach(x=>x.classList.toggle('show',teacher))};
-document.querySelectorAll('[data-quiz]').forEach(q=>{const fb=q.nextElementSibling,answer=fb.textContent;q.querySelectorAll('.choice').forEach(b=>b.onclick=()=>{q.querySelectorAll('.choice').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');fb.classList.add('show');fb.textContent=b.dataset.correct?answer:'좋은 시도입니다. 그래프와 조건을 한 번 더 연결해 보세요.'})});
-document.querySelectorAll('.reveal-btn').forEach(b=>b.onclick=()=>document.getElementById(b.dataset.target).classList.add('show'));
-function chart(canvas,fn,opts={}){const c=canvas,ctx=c.getContext('2d'),W=c.width,H=c.height,p=44,xmin=-6,xmax=6,ymin=opts.ymin??-6,ymax=opts.ymax??8;ctx.clearRect(0,0,W,H);const X=x=>p+(x-xmin)/(xmax-xmin)*(W-2*p),Y=y=>H-p-(y-ymin)/(ymax-ymin)*(H-2*p);ctx.strokeStyle='#d4d5cd';ctx.lineWidth=1;for(let x=-6;x<=6;x++){ctx.beginPath();ctx.moveTo(X(x),p);ctx.lineTo(X(x),H-p);ctx.stroke()}for(let y=Math.ceil(ymin);y<=ymax;y+=2){ctx.beginPath();ctx.moveTo(p,Y(y));ctx.lineTo(W-p,Y(y));ctx.stroke()}ctx.strokeStyle='#16302b';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(p,Y(0));ctx.lineTo(W-p,Y(0));ctx.moveTo(X(0),p);ctx.lineTo(X(0),H-p);ctx.stroke();ctx.fillStyle='#65726e';ctx.font='13px sans-serif';for(let x=-6;x<=6;x+=2)ctx.fillText(x,X(x)-4,Y(0)+18);const segments=opts.segments||[{from:xmin,to:xmax,color:'#1f6a56',f:fn}];segments.forEach(s=>{ctx.strokeStyle=s.color;ctx.lineWidth=3;ctx.beginPath();let on=false;for(let i=0;i<=500;i++){const x=s.from+(s.to-s.from)*i/500,y=s.f(x);if(y<ymin-2||y>ymax+2){on=false;continue}if(!on){ctx.moveTo(X(x),Y(y));on=true}else ctx.lineTo(X(x),Y(y))}ctx.stroke()});if(opts.points)opts.points.forEach(pt=>{ctx.fillStyle=pt.color||'#d45235';ctx.beginPath();ctx.arc(X(pt.x),Y(pt.y),5,0,Math.PI*2);ctx.fill();ctx.fillStyle='#16302b';ctx.fillText(pt.label,X(pt.x)+8,Y(pt.y)-8)})}
-const foldSlider=document.getElementById('foldSlider');function drawFold(){const t=+foldSlider.value;document.getElementById('foldT').value=t.toFixed(1);const f=x=>.18*(x-t)*(x+2)*(x-3);chart(document.getElementById('foldCanvas'),f,{segments:[{from:-6,to:6,color:'#1f6a56',f},{from:-6,to:t,color:'#d45235',f:x=>-f(x)},{from:t,to:6,color:'#d45235',f}],points:[{x:t,y:0,label:'t'}],ymin:-8,ymax:8})}foldSlider.oninput=drawFold;
-document.querySelectorAll('#dangerPoints .choice').forEach(b=>b.onclick=()=>{const p=+b.dataset.point;document.querySelectorAll('#dangerPoints .choice').forEach(x=>x.classList.toggle('selected',x===b));document.getElementById(p===0?'zeroState':'twoState').textContent='0';document.getElementById('dangerFeedback').textContent=`x=${p}에서 분모는 0으로 갑니다. 유한한 극한을 가지려면 g(${p})=0이어야 합니다.`});
-const qTSlider=document.getElementById('qTSlider'),qASlider=document.getElementById('qASlider');function drawQuot(){const t=+qTSlider.value,A=+qASlider.value;document.getElementById('qT').value=t.toFixed(1);document.getElementById('qA').value=A.toFixed(1);chart(document.getElementById('quotCanvas'),x=>A*Math.abs(x-t),{points:[{x:t,y:0,label:'t'}],ymin:-2,ymax:10})}qTSlider.oninput=qASlider.oninput=drawQuot;
-let caseT=2;document.querySelectorAll('#tCase .choice').forEach(b=>b.onclick=()=>{caseT=+b.dataset.t;document.querySelectorAll('#tCase .choice').forEach(x=>x.classList.toggle('selected',x===b));updateCase()});document.getElementById('rSlider').oninput=updateCase;
-function qCase(x,t,r){return x<t?-(x-r):(x-r)}function updateCase(){const r=+document.getElementById('rSlider').value;document.getElementById('rOut').value=r.toFixed(1);const nl=document.getElementById('numberline');nl.innerHTML='';const neg=[];for(let m=1;m<=6;m++){const v=qCase(m,caseT,r);if(v<0)neg.push(m);const b=document.createElement('div');b.className='nchip'+(v<0?' negative':'');b.textContent=m;b.dataset.sign=v<0?'음수':v===0?'0':'양수';nl.appendChild(b)}const fb=document.getElementById('caseFeedback'),set=neg.length?'{'+neg.join(', ')+'}':'없음';if(caseT===0){fb.innerHTML=`<strong>t=0 검토:</strong> 현재 음수 입력은 ${set}. 정확히 두 개가 되면 {1, 2}이지만, 이때 <span data-math>-7g(1)/2&lt;0</span>이라 조건의 자연수가 될 수 없습니다. 따라서 <span data-math>t=0</span>은 탈락합니다.`}else{fb.innerHTML=`<strong>t=2 채택:</strong> t=0이 탈락했으므로 접는 위치는 <span data-math>t=2</span>입니다. 현재 음수 입력은 ${set}이며, 정확히 {2, 3}이 되는 범위는 <span data-math>3&lt;r≤4</span>입니다.`}if(window.JPMath)window.JPMath.scan(fb);const segments=[];const cuts=[-6,caseT,r,6].sort((a,b)=>a-b);for(let i=0;i<cuts.length-1;i++){const a=cuts[i],b=cuts[i+1],mid=(a+b)/2;segments.push({from:a,to:b,color:qCase(mid,caseT,r)<0?'#d45235':'#1f6a56',f:x=>qCase(x,caseT,r)})}chart(document.getElementById('caseCanvas'),x=>qCase(x,caseT,r),{segments,points:[{x:caseT,y:qCase(caseT+.0001,caseT,r),label:'t'},{x:r,y:0,label:'r'}],ymin:-6,ymax:8})}
-drawFold();drawQuot();updateCase();
+(function () {
+  'use strict';
+  var LABELS = ['문제 읽기','g는 접은 그래프','연속의 결론','위험한 점','분자도 0','f의 모양',
+                '몫함수의 정체','세 경우 실험','t=r 지우기','t=0 지우기','왜 2부터?','r의 범위','마지막 계산'];
+  var scenes = [].slice.call(document.querySelectorAll('.ex-main .scene'));
+  var rail = document.getElementById('rail');
+  var fill = document.getElementById('progFill');
+  var ptxt = document.getElementById('progTxt');
+  var seen = {0:1};
+  var cur = 0;
+
+  LABELS.forEach(function (label, i) {
+    var b = document.createElement('button');
+    b.className = 'rail-item' + (i === 0 ? ' active' : '');
+    b.innerHTML = '<i><span>' + (i + 1) + '</span></i><b>' + label + '</b>';
+    b.addEventListener('click', function () { go(i); });
+    rail.appendChild(b);
+  });
+  var items = [].slice.call(rail.children);
+
+  function go(i) {
+    cur = Math.max(0, Math.min(scenes.length - 1, i));
+    seen[cur] = 1;
+    scenes.forEach(function (s, j) { s.classList.toggle('is-on', j === cur); });
+    items.forEach(function (b, j) {
+      b.classList.toggle('active', j === cur);
+      b.classList.toggle('done', j !== cur && !!seen[j]);
+    });
+    fill.style.width = ((cur + 1) / scenes.length * 100) + '%';
+    ptxt.textContent = (cur + 1) + ' / ' + scenes.length;
+    var t = items[cur];
+    if (t && t.scrollIntoView && window.matchMedia('(max-width:1000px)').matches) {
+      t.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  go(0);
+
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest ? e.target.closest('[data-go]') : null;
+    if (t) {
+      var d = t.getAttribute('data-go');
+      go(d === 'next' ? cur + 1 : d === 'prev' ? cur - 1 : 0);
+      return;
+    }
+    /* 선택형 문제 */
+    var opt = e.target.closest ? e.target.closest('.opt') : null;
+    if (opt) {
+      var box = opt.closest('.askbox');
+      var ok = opt.hasAttribute('data-correct');
+      box.querySelectorAll('.opt').forEach(function (o) {
+        o.classList.remove('pick-ok', 'pick-no');
+        if (ok) o.classList.add('locked');
+      });
+      opt.classList.add(ok ? 'pick-ok' : 'pick-no');
+      var fb = box.querySelector('.optfb');
+      if (fb) {
+        fb.className = 'optfb on ' + (ok ? 'ok' : 'no');
+        fb.innerHTML = fb.getAttribute(ok ? 'data-ok' : 'data-no') || '';
+      }
+      if (ok && window.JPLab) window.JPLab.renderAll(box);
+      return;
+    }
+    /* 힌트 토글 */
+    var hb = e.target.closest ? e.target.closest('.hbtn') : null;
+    if (hb) {
+      var scope = hb.closest('.askbox');
+      var key = hb.getAttribute('data-open');
+      var body = scope.querySelector('.hint[data-key="' + key + '"]');
+      if (!body) return;
+      var open = body.classList.toggle('on');
+      hb.classList.toggle('is-open', open);
+      if (open && window.JPLab) window.JPLab.renderAll(body);
+    }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (/^(INPUT|TEXTAREA|BUTTON)$/.test((e.target.tagName || ''))) return;
+    if (e.key === 'ArrowRight') go(cur + 1);
+    if (e.key === 'ArrowLeft') go(cur - 1);
+  });
+})();
 </script>
 </body>
 </html>

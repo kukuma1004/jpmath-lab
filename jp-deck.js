@@ -191,7 +191,7 @@
 
         const title = s.getAttribute('data-title') ||
           (s.querySelector('h1,h2,h3')||{}).textContent || ('Slide '+(i+1));
-
+        
         // Create a container for the mini-slide
         const mini = document.createElement('div');
         mini.className = 'mini-slide';
@@ -203,7 +203,7 @@
         mini.style.transformOrigin = 'top left';
         mini.style.pointerEvents = 'none';
         mini.style.background = 'var(--bg)';
-
+        
         // Clone the slide content
         const clone = s.cloneNode(true);
         clone.className = 'slide is-active'; // force active styles
@@ -212,7 +212,7 @@
         clone.style.transform = 'none';
         clone.style.opacity = '1';
         clone.style.padding = '72px 96px'; // ensure padding is kept
-
+        
         mini.appendChild(clone);
         t.appendChild(mini);
 
@@ -224,7 +224,7 @@
         overlay.style.color = '#fff';
         overlay.style.zIndex = '10';
         overlay.style.pointerEvents = 'none';
-
+        
         const n = document.createElement('div');
         n.className = 'n';
         n.textContent = i + 1;
@@ -235,7 +235,7 @@
         n.style.fontSize = '16px';
         n.style.color = '#fff';
         n.style.textShadow = '0 1px 4px rgba(0,0,0,0.8)';
-
+        
         const text = document.createElement('div');
         text.className = 't';
         text.textContent = title.trim().slice(0,80);
@@ -247,7 +247,7 @@
         text.style.fontSize = '14px';
         text.style.color = '#fff';
         text.style.textShadow = '0 1px 4px rgba(0,0,0,0.8)';
-
+        
         overlay.appendChild(n);
         overlay.appendChild(text);
         t.appendChild(overlay);
@@ -1003,11 +1003,13 @@
 
 /* ─────────── ③ 하단 크롬 · 터치 네비 · 노트 드로어 ─────────── */
 (function () {
+  if(!document.querySelector('.deck')) return;      /* 덱이 없는 페이지(탐구실 등)에서는 아무것도 안 한다 */
   const sendDeckKey=key=>document.dispatchEvent(new KeyboardEvent('keydown',{key,bubbles:true}));
-  document.getElementById('touchPrev').addEventListener('click',()=>sendDeckKey('ArrowLeft'));
-  document.getElementById('touchNext').addEventListener('click',()=>sendDeckKey('ArrowRight'));
+  const on=(id,fn)=>{const el=document.getElementById(id); if(el) el.addEventListener('click',fn);};
+  on('touchPrev',()=>sendDeckKey('ArrowLeft'));
+  on('touchNext',()=>sendDeckKey('ArrowRight'));
   /* 아이패드에서는 팝업 창 대신 하단 노트 드로어를 연다 */
-  document.getElementById('touchNotes').addEventListener('click',()=>sendDeckKey('n'));
+  on('touchNotes',()=>sendDeckKey('n'));
 
   /* 하단 크롬(현재 장 / 전체 / 소제목) 동기화 */
   (function(){
@@ -1015,6 +1017,7 @@
     const slides=[...deck.children].filter(el=>el.classList.contains('slide'));
     const now=document.getElementById('cNow'),tot=document.getElementById('cTot'),
           chap=document.getElementById('chapLabel');
+    if(!now||!tot||!chap) return;
     tot.textContent=slides.length;
     function sync(){
       const i=slides.findIndex(s=>s.classList.contains('is-active'));
