@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow,noarchive"/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<title>2026 수능 수학 15번 | 교사용 수업 자료</title>
+<script src="../../auth.js" data-classroom-protected></script>
+<link rel="stylesheet" href="../../../vendor/katex/katex.min.css"/>
+<link rel="stylesheet" href="../../../jp-math-typography.css?v=3"/>
+<link rel="stylesheet" href="../../../jp-dark.css"/>
+<script defer src="../../../vendor/katex/katex.min.js"></script>
+<script defer src="../../../jp-lab-dark.js"></script>
+<script defer src="../../../jp-deck.js"></script>
+</head>
+<body class="tpl-dark is-deck teacher-locked">
+<a class="jp-back-link teacher-back" href="../../">← 수업창고</a>
+
+<div class="teacher-gate" id="teacherGate">
+  <form class="teacher-gate-card" id="teacherGateForm">
+    <span class="teacher-gate-badge">TEACHER ONLY</span>
+    <h1>교사용 수업 자료</h1>
+    <p>발문과 해설, 교사 노트가 포함된 자료입니다.<br/>교사용 비밀번호를 입력해 주세요.</p>
+    <label for="teacherPassword">비밀번호</label>
+    <div class="teacher-gate-row">
+      <input id="teacherPassword" type="password" autocomplete="current-password" required autofocus/>
+      <button type="submit">자료 열기</button>
+    </div>
+    <p class="teacher-gate-feedback" id="teacherGateFeedback" role="status" aria-live="polite"></p>
+  </form>
+</div>
+
+<div class="deck">
+
+<!-- 1 -->
+<section class="slide slide--title" data-title="문제와 만나기"><div class="s-body"><div class="title-layout">
+<div>
+<p class="eyebrow">2026학년도 대학수학능력시험 수학 15번 · 4점</p>
+<h1 class="h1 anim-fade-up">적분한 함수를<br/><span class="am">구하지 않고</span> 푸는 법</h1>
+<p class="lede">조각이 넷인 <span class="m" data-k="h"></span>를 직접 만들면 길이 막힙니다. 오늘은 <span class="m am" data-k="h'"></span>의 <b>부호</b>만 보고 끝까지 갑니다.</p>
+<div class="pause">첫 90초는 말하지 않기</div>
+</div>
+<div class="card" style="margin-top:0">
+  <div class="eq tight"><div class="eqrow"><span class="m md" data-k="f(x)=\begin{cases}-x^{2}&(x\lt 0)\\[2pt]x^{2}-x&(x\ge 0)\end{cases}"></span></div></div>
+  <div class="eq tight"><div class="eqrow"><span class="m md" data-k="g(x)=\begin{cases}ax+a&(x\lt -1)\\[2pt]0&(-1\le x\lt 1)\\[2pt]ax-a&(x\ge 1)\end{cases}"></span></div></div>
+  <div class="eq tight hot" style="margin-bottom:0"><div class="eqrow"><span class="m md am" data-k="h(x)=\int_{0}^{x}\big(g(t)-f(t)\big)dt"></span></div></div>
+  <p style="margin-top:12px;font-size:14.5px"><span class="m" data-k="h"></span>가 <b class="am">오직 하나의 극값</b>을 갖게 하는 <span class="m" data-k="a\gt0"></span>의 최댓값을 <span class="m" data-k="k"></span>라 할 때 <span class="m am" data-k="k+h(3)"></span> 은?</p>
+</div>
+</div></div>
+<aside class="notes"><p><strong>이 자료의 사용법.</strong> 21번 자료와 같은 조작법입니다 — ← → 이동, <em>N</em> 교사 노트, <em>S</em> 교사용 창(듀얼 모니터), <em>F</em> 전체화면, <em>O</em> 한눈에 보기.</p><p><strong>권장 시간</strong> 총 45분 · 도입 5 / 도함수 만들기 10 / 구간별 부호 12 / a의 최댓값 12 / 계산과 정리 6.</p><p><strong>학생용 짝 자료</strong>는 <em>수능문제 &gt; 미적분1 &gt; 정적분과 극값 탐구실</em>입니다. 수업 후 자습용으로 안내해 주세요.</p></aside>
+</section>
+
+<!-- 2 -->
+<section class="slide" data-title="오늘의 지도"><div class="s-head"><p class="eyebrow">전체 지도</p><h2 class="ct">이 문제는 <span class="am">네 개의 관문</span></h2></div><div class="s-body">
+<div class="grid4 anim-stagger-list">
+<div class="card" style="border-top:3px solid var(--am)"><span class="tag">GATE 1</span><h4 style="margin-top:10px">바꿔치기</h4><p><span class="m" data-k="h"></span>의 극값 → <span class="m am" data-k="h'=g-f"></span>의 부호변화</p></div>
+<div class="card" style="border-top:3px solid var(--am)"><span class="tag">GATE 2</span><h4 style="margin-top:10px">쪼개기</h4><p>경계 <span class="m" data-k="-1,0,1"></span> 로 네 구간. 각 구간이 만드는 극값 수</p></div>
+<div class="card" style="border-top:3px solid var(--am)"><span class="tag">GATE 3</span><h4 style="margin-top:10px">경계 결정</h4><p><span class="m" data-k="x\lt-1"></span> 이 조용할 조건 → <span class="m am" data-k="k=4"></span></p></div>
+<div class="card" style="border-top:3px solid var(--am)"><span class="tag">GATE 4</span><h4 style="margin-top:10px">회수</h4><p><span class="m" data-k="h(3)"></span> 을 넓이 두 조각으로</p></div>
+</div>
+<div class="card accent"><p><b class="am">오늘의 한 문장.</b> 적분으로 정의된 함수의 극값 문제는, <b>적분한 것을 구하지 말고 미분한 것의 부호만 보는</b> 문제입니다.</p></div>
+</div>
+<div class="s-ask"><p class="question">네 관문 중, 실제로 계산이 필요한 곳은 몇 번째일까?</p></div>
+<aside class="notes"><p>학생들은 <em>h</em>(<em>x</em>)를 구간별로 적분해서 4개의 식을 만들려 듭니다. 그 길은 계산량이 폭발하고, 게다가 <strong>극값 개수를 세는 데는 필요조차 없습니다</strong>. 여기서 못 박아 두세요.</p><p>GATE 3이 오늘의 심장입니다. 시간을 아끼지 마세요.</p></aside>
+</section>
+
+<!-- 3 -->
+<section class="slide" data-title="GATE 1 · 바꿔치기"><div class="s-head"><p class="eyebrow">GATE 1</p><h2 class="ct">미적분의 기본정리 한 줄</h2></div><div class="s-body">
+<div class="eq hot"><div class="eqrow"><span class="m md am" data-k="h(x)=\int_{0}^{x}\big(g(t)-f(t)\big)dt\quad\Longrightarrow\quad h'(x)=g(x)-f(x)"></span></div></div>
+<div class="grid2">
+<div class="card"><h4>버릴 것</h4><p><span class="m" data-k="h"></span>를 구간별로 적분해 네 개의 식을 만드는 길. 계산은 폭발하는데 정작 <b>극값 개수</b>는 안 보입니다.</p></div>
+<div class="card accent"><h4>가져갈 것</h4><p><span class="m am" data-k="\varphi(x)=g(x)-f(x)"></span> 하나. 이 함수의 <b class="am">부호가 몇 번 바뀌는가</b>만 세면 됩니다.</p></div>
+</div>
+</div>
+<div class="s-ask"><p class="question">"극값을 갖는다"는 말을 <span class="m" data-k="h'"></span>의 언어로 바꾸면 무엇인가?</p></div>
+<aside class="notes"><p>칠판에 <em>h</em>′(<em>x</em>) = <em>g</em>(<em>x</em>) − <em>f</em>(<em>x</em>) 한 줄만 크게 쓰고, 나머지는 지우세요. 오늘 수업 내내 이 줄만 봅니다.</p></aside>
+</section>
+
+<!-- 4 -->
+<section class="slide" data-title="극값의 정의"><div class="s-head"><p class="eyebrow">GATE 1 · 함정 예방</p><h2 class="ct"><span class="m" data-k="h'=0"></span> 은 <span class="rd">충분조건이 아니다</span></h2></div><div class="s-body">
+<div class="grid2">
+<div class="card"><h4><span class="m rd" data-k="h'(c)=0"></span> 만으로는 부족</h4><p><span class="m" data-k="y=x^{3}"></span>은 <span class="m" data-k="x=0"></span>에서 도함수가 0이지만 계속 증가합니다. 극값이 아닙니다.</p></div>
+<div class="card accent"><h4><span class="m am" data-k="h'"></span> 의 <b>부호가 바뀌어야</b></h4><p><span class="m" data-k="+\to-"></span> 이면 극대, <span class="m" data-k="-\to+"></span> 이면 극소. 이것이 필요충분조건입니다.</p></div>
+</div>
+<div class="card quote"><p>오늘 두 번 나올 함정입니다 — <b class="am"><span class="m am" data-k="x=0"></span></b> 에서 한 번, <b class="am"><span class="m am" data-k="a=4"></span></b> 에서 또 한 번. 둘 다 <b>0이 되지만 부호는 안 바뀌는</b> 자리입니다.</p></div>
+</div>
+<div class="s-ask"><p class="question">그렇다면 우리가 셀 것은 "<span class="m" data-k="\varphi=0"></span>인 점의 개수"일까, "<span class="m" data-k="\varphi"></span>의 부호가 바뀌는 횟수"일까?</p></div>
+<aside class="notes"><p><strong>이 장을 건너뛰지 마세요.</strong> 오늘 문제의 정답이 ③이 아니라 ④가 되는 이유가 전부 여기서 나옵니다. <em>a</em>=4에서 판별식이 0이 되는데, 그 <em>a</em>를 포함하느냐 마느냐가 최댓값을 가릅니다.</p><p><em>y</em>=<em>x</em>³ 반례를 학생이 직접 말하게 하면 좋습니다.</p></aside>
+</section>
+
+<!-- 5 -->
+<section class="slide" data-title="f 읽기"><div class="s-head"><p class="eyebrow">GATE 2 · 재료 확인 ①</p><h2 class="ct"><span class="m" data-k="f"></span> 는 <span class="am">고정된 곡선</span></h2></div><div class="s-body">
+<div class="eq"><div class="eqrow"><span class="m md" data-k="f(x)=\begin{cases}-x^{2}&(x\lt 0)\\[2pt]x^{2}-x&(x\ge 0)\end{cases}"></span><span class="note">a 가 들어 있지 않다</span></div></div>
+<div class="grid3">
+<div class="card"><h4><span class="m" data-k="x\lt 0"></span></h4><p><span class="m" data-k="-x^{2}"></span> — 위로 볼록, 항상 음수</p></div>
+<div class="card"><h4><span class="m" data-k="x\ge 0"></span></h4><p><span class="m" data-k="x^{2}-x=x(x-1)"></span> — <span class="m" data-k="0,1"></span> 에서 0</p></div>
+<div class="card accent"><h4><span class="m" data-k="x=0"></span> 에서</h4><p>좌우 모두 <span class="m" data-k="0"></span> — <b class="am">이어집니다</b>. 경계는 하나뿐입니다.</p></div>
+</div>
+</div>
+<div class="s-ask"><p class="question"><span class="m" data-k="f"></span>의 식이 바뀌는 자리는 몇 개인가?</p></div>
+<aside class="notes"><p><em>f</em>에는 <em>a</em>가 없습니다. 즉 <strong>움직이지 않는 배경</strong>입니다. 학생이 이걸 먼저 인식해야 나중에 "<em>a</em>를 움직인다"는 말이 와닿습니다.</p></aside>
+</section>
+
+<!-- 6 -->
+<section class="slide" data-title="g 읽기"><div class="s-head"><p class="eyebrow">GATE 2 · 재료 확인 ②</p><h2 class="ct"><span class="m" data-k="g"></span> 는 <span class="am">가운데가 눌린</span> 꺾은선</h2></div><div class="s-body">
+<div class="eq"><div class="eqrow"><span class="m md" data-k="g(x)=\begin{cases}a(x+1)&(x\lt -1)\\[2pt]0&(-1\le x\lt 1)\\[2pt]a(x-1)&(x\ge 1)\end{cases}"></span><span class="note">a &gt; 0</span></div></div>
+<div class="grid3">
+<div class="card"><h4>가운데</h4><p><span class="m" data-k="-1\le x\lt 1"></span> 에서 <b>딱 0</b>. 폭 2짜리 평평한 바닥.</p></div>
+<div class="card"><h4>양쪽 날개</h4><p>기울기 <span class="m am" data-k="a"></span> 인 직선 두 개가 <span class="m" data-k="x=\pm1"></span> 에서 <b>이어져</b> 뻗어 나갑니다.</p></div>
+<div class="card accent"><h4>미지수는 하나</h4><p><span class="m am" data-k="a"></span> 하나가 <b>날개의 기울기</b>를 결정합니다. 이 문제의 유일한 변수입니다.</p></div>
+</div>
+</div>
+<div class="s-ask"><p class="question"><span class="m" data-k="a"></span>가 커지면 <span class="m" data-k="g"></span>는 어떻게 변할까? 그러면 <span class="m" data-k="g-f"></span>는?</p></div>
+<aside class="notes"><p><em>g</em>는 연속입니다(<em>x</em>=±1에서 양쪽 다 0). 그런데 <strong>미분가능하지는 않습니다</strong> — 꺾이니까요. 그래도 <em>h</em>′=<em>g</em>−<em>f</em>가 연속이라 극값 판정에는 아무 문제가 없습니다. 질문이 나오면 이렇게 답해 주세요.</p></aside>
+</section>
+
+<!-- 7 -->
+<section class="slide" data-title="LAB · f와 g 겹쳐 보기"><div class="s-head"><p class="eyebrow">GATE 2 · 직접 관찰</p><h2 class="ct">둘을 <span class="am">겹쳐</span> 놓고 <span class="am">빼자</span></h2></div><div class="s-body">
+<div class="lab" data-dlab="pieces" data-a="2">
+  <div class="lab-head"><span class="tag">관찰 실험실</span><h4><span class="m" data-k="f"></span> 와 <span class="m" data-k="g"></span></h4><span class="hint">a 슬라이더를 끝에서 끝까지</span></div>
+  <div class="lab-body"><div class="cbox"><svg></svg></div><div class="panel"></div></div>
+</div>
+</div>
+<div class="s-ask"><p class="question">두 그래프의 <span class="accent am">세로 간격</span>이 곧 <span class="m" data-k="\varphi"></span>다. 어디에서 <span class="m" data-k="g"></span>가 <span class="m" data-k="f"></span> 아래로 내려가는가?</p></div>
+<aside class="notes"><p>슬라이더를 <strong>천천히</strong> 끌면서 "<em>g</em>가 <em>f</em>보다 위에 있으면 φ&gt;0"이라는 감각을 심어 주세요.</p><p><em>a</em>를 작게 하면 오른쪽 멀리서 <em>f</em>가 <em>g</em>를 추월합니다(φ&lt;0). <em>a</em>를 키우면 그 추월 지점이 오른쪽으로 밀립니다. 이게 나중에 "<em>x</em>=<em>a</em>에서 극대"의 정체입니다.</p></aside>
+</section>
+
+<!-- 8 -->
+<section class="slide" data-title="φ 구간별 계산"><div class="s-head"><p class="eyebrow">GATE 2 · 손으로</p><h2 class="ct">경계가 셋이니 <span class="am">구간이 넷</span></h2></div><div class="s-body">
+<table class="tb">
+<tr><th>구간</th><th><span class="m" data-k="g(x)"></span></th><th><span class="m" data-k="f(x)"></span></th><th><span class="m" data-k="\varphi=g-f"></span></th><th>부호</th></tr>
+<tr><td class="k"><span class="m" data-k="x\lt -1"></span></td><td><span class="m" data-k="a(x+1)"></span></td><td><span class="m" data-k="-x^{2}"></span></td><td class="k"><span class="m am" data-k="x^{2}+ax+a"></span></td><td class="k"><span class="rd">?</span></td></tr>
+<tr><td class="k"><span class="m" data-k="-1\le x\lt 0"></span></td><td><span class="m" data-k="0"></span></td><td><span class="m" data-k="-x^{2}"></span></td><td class="k"><span class="m am" data-k="x^{2}"></span></td><td class="yes">≥ 0</td></tr>
+<tr><td class="k"><span class="m" data-k="0\le x\lt 1"></span></td><td><span class="m" data-k="0"></span></td><td><span class="m" data-k="x^{2}-x"></span></td><td class="k"><span class="m am" data-k="x-x^{2}"></span></td><td class="yes">≥ 0</td></tr>
+<tr><td class="k"><span class="m" data-k="x\ge 1"></span></td><td><span class="m" data-k="a(x-1)"></span></td><td><span class="m" data-k="x^{2}-x"></span></td><td class="k"><span class="m am" data-k="(x-1)(a-x)"></span></td><td class="k"><span class="rd">?</span></td></tr>
+</table>
+<div class="card accent"><p>가운데 두 줄은 <span class="m" data-k="a"></span>가 <b>아예 없습니다</b>. 즉 <b class="am">건드릴 수 없는 구간</b>이고, 승부는 위·아래 두 줄에서 납니다.</p></div>
+</div>
+<div class="s-ask"><p class="question"><span class="m" data-k="a"></span>가 들어 있지 않은 두 구간에서는 극값이 몇 개 생길까?</p></div>
+<aside class="notes"><p>표를 <strong>학생이 채우게</strong> 하세요. 특히 세 번째 줄에서 부호 실수가 많습니다 — φ = 0 − (<em>x</em>²−<em>x</em>) = <em>x</em> − <em>x</em>², 앞에 마이너스가 붙는다는 걸 짚어 주세요.</p><p>첫 줄도 정리를 확인시키세요: <em>a</em>(<em>x</em>+1) − (−<em>x</em>²) = <em>x</em>² + <em>ax</em> + <em>a</em>.</p></aside>
+</section>
+
+<!-- 9 -->
+<section class="slide" data-title="LAB · φ의 부호 지도"><div class="s-head"><p class="eyebrow">GATE 2 · 직접 관찰</p><h2 class="ct">붉은 구간의 <span class="rd">시작과 끝</span>이 극값</h2></div><div class="s-body">
+<div class="lab" data-dlab="phi" data-a="2">
+  <div class="lab-head"><span class="tag">관찰 실험실</span><h4><span class="m" data-k="\varphi(x)=h'(x)"></span></h4><span class="hint">a를 4 근처에서 아주 천천히</span></div>
+  <div class="lab-body"><div class="cbox"><svg></svg></div><div class="panel"></div></div>
+</div>
+</div>
+<div class="s-ask"><p class="question"><span class="m" data-k="a"></span>를 키우다 보면 <span class="rd">왼쪽에 붉은 구간</span>이 갑자기 생긴다. 정확히 언제일까?</p></div>
+<aside class="notes"><p><strong>오늘 가장 중요한 화면입니다.</strong> <em>a</em>를 3.9 → 4.0 → 4.1로 아주 천천히 움직여 주세요. 4.0에서는 왼쪽이 x축에 <strong>닿기만</strong> 하고, 4.1이 되는 순간 <strong>뚫고 지나가면서</strong> 붉은 구간과 극값 2개가 생깁니다.</p><p>학생이 "왜 하필 4지?"라고 물어보면 성공입니다. 답은 GATE 3에서.</p></aside>
+</section>
+
+<!-- 10 -->
+<section class="slide" data-title="구간 ①② 는 조용하다"><div class="s-head"><p class="eyebrow">GATE 2 · 구간 ①②</p><h2 class="ct"><span class="m" data-k="-1\le x\lt 1"></span> 은 <span class="am">늘 0 이상</span></h2></div><div class="s-body">
+<div class="grid2">
+<div class="card"><h4><span class="m" data-k="-1\le x\lt 0"></span></h4><div class="eq tight" style="margin-top:8px"><div class="eqrow"><span class="m md" data-k="\varphi(x)=x^{2}\ \ge 0"></span></div></div><p><span class="m" data-k="x=0"></span> 에서만 0</p></div>
+<div class="card"><h4><span class="m" data-k="0\le x\lt 1"></span></h4><div class="eq tight" style="margin-top:8px"><div class="eqrow"><span class="m md" data-k="\varphi(x)=x(1-x)\ \ge 0"></span></div></div><p><span class="m" data-k="x=0,\,1"></span> 에서만 0</p></div>
+</div>
+<div class="eq hot"><div class="eqrow"><span class="m md am" data-k="-1\le x\lt 1 \ \Longrightarrow\ \varphi(x)\ge 0"></span><span class="note">이 구간이 만드는 극값 : 0 개</span></div></div>
+</div>
+<div class="s-ask"><p class="question"><span class="m" data-k="\varphi(0)=0"></span> 인데, 여기서는 왜 극값이 아닐까?</p></div>
+<aside class="notes"><p>두 식이 <em>x</em>=0에서 만나는 걸 확인시키세요 — 왼쪽 <em>x</em>²의 <em>x</em>→0⁻ 값도 0, 오른쪽 <em>x</em>−<em>x</em>²의 <em>x</em>→0⁺ 값도 0. 즉 φ는 연속입니다.</p></aside>
+</section>
+
+<!-- 11 -->
+<section class="slide" data-title="x=0 함정"><div class="s-head"><p class="eyebrow">GATE 2 · 첫 번째 함정</p><h2 class="ct">닿기만 하고 <span class="rd">뚫지 않는다</span></h2></div><div class="s-body">
+<div class="grid3">
+<div class="card"><h4><span class="m" data-k="x\to0^{-}"></span></h4><p><span class="m gr" data-k="\varphi=x^{2}\gt 0"></span></p></div>
+<div class="card"><h4><span class="m" data-k="x=0"></span></h4><p><span class="m am" data-k="\varphi=0"></span></p></div>
+<div class="card"><h4><span class="m" data-k="x\to0^{+}"></span></h4><p><span class="m gr" data-k="\varphi=x-x^{2}\gt 0"></span></p></div>
+</div>
+<div class="card quote"><p>양쪽 다 <b class="gr">양수</b>. <span class="m" data-k="h"></span>는 <b>계속 증가하다가 잠깐 평평해졌을 뿐</b>입니다. 봉우리도 골짜기도 아닙니다.</p></div>
+<div class="card accent"><p>같은 논리가 <span class="m" data-k="x=1"></span> 에서도 성립합니다 — 앞은 <span class="m" data-k="x(1-x)\gt0"></span>, 뒤는 <span class="m" data-k="(x-1)(a-x)"></span>. <span class="m" data-k="a\gt1"></span> 이면 뒤도 양수라 부호가 안 바뀝니다.</p></div>
+</div>
+<div class="s-ask"><p class="question">그러면 극값을 만들 수 있는 구간은 이제 <span class="am">둘</span>뿐이다. 어디와 어디인가?</p></div>
+<aside class="notes"><p>여기서 <strong>"0이 되는 것 ≠ 부호가 바뀌는 것"</strong>을 칠판에 크게 써 두세요. 20분 뒤 <em>a</em>=4에서 똑같은 논리를 다시 씁니다.</p></aside>
+</section>
+
+<!-- 12 -->
+<section class="slide" data-title="구간 ③"><div class="s-head"><p class="eyebrow">GATE 2 · 구간 ③</p><h2 class="ct"><span class="m" data-k="x\ge1"></span> 은 <span class="am">언제나 정확히 1개</span></h2></div><div class="s-body">
+<div class="eq hot"><div class="eqrow"><span class="m md am" data-k="\varphi(x)=(x-1)(a-x)\qquad(x\ge1)"></span></div></div>
+<div class="grid2">
+<div class="card accent"><h4>(i) <span class="m" data-k="a\gt1"></span></h4><p><span class="m" data-k="1\lt x\lt a"></span> 에서 <span class="m gr" data-k="\varphi\gt0"></span>, <span class="m" data-k="x\gt a"></span> 에서 <span class="m rd" data-k="\varphi\lt0"></span><br/>→ <span class="m am" data-k="x=a"></span> 에서 <b class="am">극대</b></p></div>
+<div class="card accent"><h4>(ii) <span class="m" data-k="0\lt a\le1"></span></h4><p><span class="m" data-k="x\gt1"></span> 이면 <span class="m" data-k="a-x\lt0"></span> 이라 계속 <span class="m rd" data-k="\varphi\lt0"></span><br/>앞 구간이 양수였으므로 → <span class="m am" data-k="x=1"></span> 에서 <b class="am">극대</b></p></div>
+</div>
+<div class="card quote"><p><b>직관으로는 한 줄.</b> 앞 구간에서 <b class="gr">양수</b>로 들어와서 <span class="m" data-k="x\to\infty"></span> 에서는 반드시 <b class="rd">음수</b>가 되니, <b class="am">중간에 딱 한 번</b> 부호가 바뀔 수밖에 없습니다.</p></div>
+</div>
+<div class="s-ask"><p class="question">그러면 "오직 하나"가 되려면, 남은 구간 <span class="m" data-k="x\lt-1"></span> 에서는?</p></div>
+<aside class="notes"><p>경우를 나누되 <strong>결론은 하나</strong>라는 걸 강조하세요. 학생들은 경우를 나누면 답도 갈린다고 생각합니다. 여기서는 자리만 달라지고 개수는 같습니다.</p><p>직관 버전(양수로 들어와 음수로 끝난다)을 먼저 말하고, 그다음에 경우 나누기로 확인시키는 순서가 좋습니다.</p></aside>
+</section>
+
+<!-- 13 -->
+<section class="slide" data-title="중간 정리"><div class="s-head"><p class="eyebrow">GATE 2 · 정리</p><h2 class="ct">지금까지의 <span class="am">장부</span></h2></div><div class="s-body">
+<table class="tb">
+<tr><th>구간</th><th><span class="m" data-k="\varphi"></span></th><th>부호변화</th><th>극값</th></tr>
+<tr class="dead"><td class="k"><span class="m" data-k="-1\le x\lt 0"></span></td><td><span class="m" data-k="x^{2}"></span></td><td>없음</td><td>0 개</td></tr>
+<tr class="dead"><td class="k"><span class="m" data-k="0\le x\lt 1"></span></td><td><span class="m" data-k="x-x^{2}"></span></td><td>없음</td><td>0 개</td></tr>
+<tr><td class="k"><span class="m" data-k="x\ge 1"></span></td><td><span class="m" data-k="(x-1)(a-x)"></span></td><td><span class="yes">1 회</span></td><td class="k">1 개</td></tr>
+<tr class="hit"><td class="k"><span class="m" data-k="x\lt -1"></span></td><td><span class="m" data-k="x^{2}+ax+a"></span></td><td><span class="rd">0 회 또는 2 회</span></td><td class="k">0 개 또는 2 개</td></tr>
+</table>
+<div class="eq hot"><div class="eqrow"><span class="m md am" data-k="\text{극값이 오직 하나} \iff x\lt-1 \text{ 에서 부호변화 } 0 \text{ 회}"></span></div></div>
+</div>
+<div class="s-ask"><p class="question">위로 볼록한 포물선이 <span class="m" data-k="x"></span>축을 <span class="rd">뚫지 않을</span> 조건은?</p></div>
+<aside class="notes"><p>장부를 한 번 정리하고 넘어가면 학생들이 "이제 하나만 남았다"는 안도감을 갖습니다. 남은 시간을 전부 마지막 줄에 씁니다.</p></aside>
+</section>
+
+<!-- 14 -->
+<section class="slide" data-title="GATE 3 · 결정적 관찰"><div class="s-head"><p class="eyebrow">GATE 3 · 먼저 볼 것</p><h2 class="ct"><span class="m" data-k="\varphi(-1)"></span> 은 <span class="am">언제나 1</span></h2></div><div class="s-body">
+<div class="eq hot"><div class="eqrow"><span class="m md am" data-k="\varphi(-1)=(-1)^{2}+a(-1)+a=1-a+a=1"></span><span class="note">a 와 무관!</span></div></div>
+<div class="grid2">
+<div class="card"><h4>고정점</h4><p>이 포물선은 <span class="m" data-k="a"></span>가 무엇이든 <b class="am">항상 <span class="m am" data-k="(-1,\,1)"></span> 을 지납니다.</b> 오른쪽 끝이 못 박혀 있는 셈입니다.</p></div>
+<div class="card"><h4>꼭짓점</h4><p><span class="m" data-k="x=-\dfrac{a}{2}\lt 0"></span> — <span class="m" data-k="a\gt0"></span> 이므로 언제나 <b>왼쪽</b>에 있습니다. <span class="m" data-k="a"></span>가 커질수록 더 왼쪽·더 아래로.</p></div>
+</div>
+<div class="card quote"><p>오른쪽 끝은 <b>1에 고정</b>, 꼭짓점은 <b class="am"><span class="m am" data-k="a"></span>가 커질수록 아래로</b>. 그러니 <b>언젠가 <span class="m" data-k="x"></span>축에 닿고, 더 가면 뚫습니다.</b> 언제 닿을까요?</p></div>
+</div>
+<div class="s-ask"><p class="question">두 근이 모두 <span class="m" data-k="-1"></span>보다 작다는 걸 어떻게 보일 수 있을까?</p></div>
+<aside class="notes"><p><strong>φ(−1)=1</strong>이 이 문제의 숨은 선물입니다. 이 값이 <em>a</em>와 무관하다는 걸 학생이 직접 계산해서 확인하게 하세요.</p><p>이 관찰 덕분에 "근이 <em>x</em>&lt;−1 안에 들어오는가"를 따로 따질 필요가 없습니다 — φ(−1)&gt;0 이고 꼭짓점이 −1보다 왼쪽이니, 근이 생기면 둘 다 자동으로 −1보다 작습니다.</p></aside>
+</section>
+
+<!-- 15 -->
+<section class="slide" data-title="판별식"><div class="s-head"><p class="eyebrow">GATE 3 · 조건 만들기</p><h2 class="ct">판별식 <span class="m am" data-k="D=a(a-4)"></span></h2></div><div class="s-body">
+<div class="eq"><div class="eqrow"><span class="m md" data-k="D=a^{2}-4a=a(a-4)"></span><span class="note">a &gt; 0 이므로 부호는 (a−4) 가 결정</span></div></div>
+<div class="grid3">
+<div class="card accent"><h4><span class="m" data-k="0\lt a\lt4"></span></h4><p><span class="m gr" data-k="D\lt0"></span> — 실근 없음. 늘 양수.<br/><b class="gr">부호변화 0회</b></p></div>
+<div class="card accent"><h4><span class="m" data-k="a=4"></span></h4><p><span class="m am" data-k="D=0"></span> — <span class="m" data-k="(x+2)^{2}"></span>. 닿기만 함.<br/><b class="am">부호변화 0회</b></p></div>
+<div class="card"><h4><span class="m" data-k="a\gt4"></span></h4><p><span class="m rd" data-k="D\gt0"></span> — 서로 다른 두 근.<br/><b class="rd">부호변화 2회</b></p></div>
+</div>
+</div>
+<div class="s-ask"><p class="question"><span class="m" data-k="a=4"></span> 는 조건을 만족할까, 안 할까? 이것이 최댓값을 가른다.</p></div>
+<aside class="notes"><p>여기서 <strong>학생 대부분이 <em>D</em>&lt;0, 즉 0&lt;<em>a</em>&lt;4로 답하고 최댓값이 없다고 당황합니다.</strong> "최댓값을 구하라"는 문제 문구가 이미 힌트입니다 — 등호가 포함돼야 최댓값이 존재하니까요.</p><p>다음 장에서 <em>a</em>=4를 직접 대입해서 확인시키세요.</p></aside>
+</section>
+
+<!-- 16 -->
+<section class="slide" data-title="LAB · 판별식 관찰"><div class="s-head"><p class="eyebrow">GATE 3 · 직접 관찰</p><h2 class="ct">닿는 순간을 <span class="am">눈으로</span></h2></div><div class="s-body">
+<div class="lab" data-dlab="disc" data-a="2">
+  <div class="lab-head"><span class="tag">관찰 실험실</span><h4><span class="m" data-k="x^{2}+ax+a"></span></h4><span class="hint">3.9 → 4.0 → 4.1 순서로</span></div>
+  <div class="lab-body"><div class="cbox"><svg></svg></div><div class="panel"></div></div>
+</div>
+</div>
+<div class="s-ask"><p class="question"><span class="m" data-k="a=4"></span> 일 때 <span class="m" data-k="\varphi(-2)=0"></span> 이다. 그런데 왜 극값이 아닐까?</p></div>
+<aside class="notes"><p>슬라이더를 <strong>정확히 4.00</strong>에 맞춰 주세요. 포물선이 x축에 접하고, 판정 배지가 "딱 접한다"로 바뀝니다.</p><p>그다음 4.02로 살짝 넘기면 근이 두 개 생기면서 판정이 바뀝니다. <strong>이 전환을 학생이 직접 만들어 보게</strong> 하세요.</p><p>오른쪽 패널의 "x=−1 에서의 값 = 1"이 <em>a</em>를 어떻게 움직여도 안 바뀐다는 것도 같이 확인시키면 좋습니다.</p></aside>
+</section>
+
+<!-- 17 -->
+<section class="slide" data-title="a=4 의 정체"><div class="s-head"><p class="eyebrow">GATE 3 · 두 번째 함정</p><h2 class="ct">또 <span class="am">닿기만</span> 하는 자리</h2></div><div class="s-body">
+<div class="eq hot"><div class="eqrow"><span class="m md am" data-k="a=4\ \Longrightarrow\ \varphi(x)=x^{2}+4x+4=(x+2)^{2}\ \ge 0"></span></div></div>
+<div class="grid2">
+<div class="card"><h4><span class="m" data-k="x=-2"></span> 에서 <span class="m" data-k="\varphi=0"></span></h4><p>맞습니다. 하지만 <b>완전제곱</b>이라 좌우 모두 양수 — <b class="am">부호가 바뀌지 않습니다</b>.</p></div>
+<div class="card accent"><h4>그래서 극값이 아니다</h4><p><span class="m" data-k="x=0"></span> 에서 본 것과 <b>똑같은 상황</b>입니다. <span class="m" data-k="a=4"></span> 는 조건을 <b class="gr">만족합니다</b>.</p></div>
+</div>
+<div class="eq hot"><div class="eqrow"><span class="m md am" data-k="\therefore\ \text{극값이 오직 하나} \iff 0\lt a\le 4,\qquad k=4"></span></div></div>
+</div>
+<div class="s-ask"><p class="question">등호를 빠뜨렸다면 답이 어떻게 달라졌을까?</p></div>
+<aside class="notes"><p>오늘 수업에서 <strong>두 번 반복한 논리</strong>가 여기서 회수됩니다 — <em>x</em>=0에서 한 번, <em>a</em>=4에서 또 한 번. 4번 슬라이드를 다시 띄워서 나란히 보여 주면 강하게 남습니다.</p><p>등호를 빠뜨리면 <em>a</em>&lt;4가 되어 최댓값이 존재하지 않습니다. <strong>"최댓값을 구하라"는 문구 자체가 등호를 포함하라는 신호</strong>라는 점을 알려 주세요.</p></aside>
+</section>
+
+<!-- 18 -->
+<section class="slide" data-title="LAB · h 로 확인"><div class="s-head"><p class="eyebrow">GATE 3 · 확인</p><h2 class="ct"><span class="m" data-k="h"></span> 를 그려서 <span class="am">눈으로 검산</span></h2></div><div class="s-body">
+<div class="lab" data-dlab="hgraph" data-a="4">
+  <div class="lab-head"><span class="tag gr">확인 실험실</span><h4><span class="m" data-k="y=h(x)"></span></h4><span class="hint">a = 4 를 넘겨 보세요</span></div>
+  <div class="lab-body"><div class="cbox"><svg></svg></div><div class="panel"></div></div>
+</div>
+</div>
+<div class="s-ask"><p class="question"><span class="m" data-k="a"></span>를 4보다 크게 하면 왼쪽에 무엇이 생기는가?</p></div>
+<aside class="notes"><p>φ만 보다가 <em>h</em> 자체를 보면 학생들이 안심합니다. <em>a</em>=4일 때 봉우리가 하나뿐이고, 4를 넘기면 왼쪽에 작은 봉우리와 골이 하나씩 생깁니다.</p><p>시간이 없으면 이 장은 건너뛰어도 논증에는 지장이 없습니다. 다만 <strong>"우리가 센 게 맞나?"라는 의심을 해소</strong>하는 데 효과가 큽니다.</p></aside>
+</section>
+
+<!-- 19 -->
+<section class="slide" data-title="GATE 4 · h(3)"><div class="s-head"><p class="eyebrow">GATE 4 · 회수</p><h2 class="ct">이제야 <span class="am">계산</span>할 시간</h2></div><div class="s-body">
+<div class="eq"><div class="eqrow"><span class="m md" data-k="a=k=4,\qquad h(3)=\int_{0}^{3}\varphi(t)\,dt"></span></div></div>
+<div class="grid2">
+<div class="card cyan"><h4><span class="m cy" data-k="0\le t\lt 1"></span></h4><div class="eq tight" style="margin-top:8px"><div class="eqrow"><span class="m md cy" data-k="\varphi(t)=t-t^{2}"></span></div></div></div>
+<div class="card"><h4><span class="m pu" data-k="1\le t\le 3"></span></h4><div class="eq tight" style="margin-top:8px"><div class="eqrow"><span class="m md pu" data-k="\varphi(t)=(t-1)(4-t)"></span></div></div></div>
+</div>
+<div class="card accent"><p><span class="m" data-k="3\lt 4=a"></span> 이므로 <span class="m" data-k="[1,3]"></span> 에서 <span class="m gr" data-k="\varphi\ge0"></span> — <b class="gr">두 조각 모두 x축 위</b>입니다. 부호를 걱정할 필요가 없습니다.</p></div>
+</div>
+<div class="s-ask"><p class="question">적분 구간이 왜 <span class="m" data-k="1"></span> 에서 끊기는가?</p></div>
+<aside class="notes"><p><em>t</em>=1이 φ의 식이 바뀌는 자리이므로 반드시 끊어야 합니다. 학생들이 한 식으로 밀어붙이다 틀립니다.</p><p>또 하나 — <em>a</em>=4이고 적분 상한이 3이라 <strong>[1,3] 전체가 극대점(x=4) 왼쪽</strong>입니다. 그래서 부호가 안 바뀝니다. 이걸 짚어 주면 넓이로 보는 다음 장이 자연스럽습니다.</p></aside>
+</section>
+
+<!-- 20 -->
+<section class="slide" data-title="LAB · 넓이로 보기"><div class="s-head"><p class="eyebrow">GATE 4 · 직접 관찰</p><h2 class="ct">적분은 <span class="am">넓이</span>다</h2></div><div class="s-body">
+<div class="lab" data-dlab="area" data-b="3">
+  <div class="lab-head"><span class="tag">넓이 실험실</span><h4><span class="m" data-k="h(b)=\int_{0}^{b}\varphi"></span></h4><span class="hint">b를 0에서 3까지</span></div>
+  <div class="lab-body"><div class="cbox"><svg></svg></div><div class="panel"></div></div>
+</div>
+</div>
+<div class="s-ask"><p class="question">두 조각의 넓이를 각각 어림해 보면 얼마쯤일까?</p></div>
+<aside class="notes"><p><em>b</em>를 0부터 천천히 끌면서 <strong>h가 누적되는 감각</strong>을 보여 주세요. <em>b</em>=1에서 0.1667, <em>b</em>=3에서 3.5.</p><p>계산하기 전에 <strong>"3.5쯤 되겠는데?"를 먼저 말하게</strong> 하면, 뒤에 나올 7/2이 확인처럼 느껴집니다.</p></aside>
+</section>
+
+<!-- 21 -->
+<section class="slide" data-title="계산"><div class="s-head"><p class="eyebrow">GATE 4 · 손으로</p><h2 class="ct">두 조각을 <span class="am">따로</span> 적분</h2></div><div class="s-body">
+<div class="eq">
+<div class="eqrow"><span class="m md cy" data-k="\int_{0}^{1}(t-t^{2})dt=\Big[\tfrac{t^{2}}{2}-\tfrac{t^{3}}{3}\Big]_{0}^{1}=\tfrac12-\tfrac13=\tfrac16"></span><span class="note">0 → 1</span></div>
+<div class="eqrow"><span class="m md pu" data-k="\int_{1}^{3}(t-1)(4-t)dt\ \overset{u=t-1}{=}\ \int_{0}^{2}u(3-u)du=\Big[\tfrac{3u^{2}}{2}-\tfrac{u^{3}}{3}\Big]_{0}^{2}=6-\tfrac83=\tfrac{10}{3}"></span><span class="note">1 → 3</span></div>
+<div class="eqrow"><span class="m md gr" data-k="h(3)=\tfrac16+\tfrac{10}{3}=\tfrac{1+20}{6}=\tfrac{21}{6}=\tfrac72"></span><span class="note">합</span></div>
+</div>
+<div class="card accent"><p><b>치환 한 번이 계산을 줄입니다.</b> <span class="m" data-k="u=t-1"></span> 로 두면 <span class="m" data-k="(t-1)(4-t)=u(3-u)"></span> — 원점에서 시작하는 깔끔한 이차식이 됩니다.</p></div>
+</div>
+<div class="s-ask"><p class="question">넓이 실험실에서 본 <span class="m" data-k="3.5"></span> 와 맞는가?</p></div>
+<aside class="notes"><p>치환 없이 전개해서 적분해도 됩니다. 다만 <em>u</em>=<em>t</em>−1 치환이 훨씬 짧다는 걸 보여 주면 좋습니다.</p><p>실수 지점 — <strong>1/6 + 10/3</strong>에서 통분을 서두르다 틀리는 학생이 있습니다. 20/6으로 고쳐 쓰는 과정을 같이 쓰세요.</p></aside>
+</section>
+
+<!-- 22 -->
+<section class="slide" data-title="최종 답"><div class="s-head"><p class="eyebrow">마무리</p><h2 class="ct"><span class="m am" data-k="k+h(3)"></span></h2></div><div class="s-body">
+<div class="eq hot"><div class="eqrow"><span class="m md am" data-k="k+h(3)=4+\tfrac72=\tfrac82+\tfrac72=\tfrac{15}{2}"></span></div></div>
+<p class="big"><span class="m" data-k="\dfrac{15}{2}"></span></p>
+<div class="card center"><p>정답 <b class="am">④</b></p></div>
+</div>
+<div class="s-ask"><p class="question">만약 <span class="m" data-k="a=4"></span> 를 제외했다면 어떤 답을 골랐을까?</p></div>
+<aside class="notes"><p><em>a</em>=4를 빼면 <em>k</em>가 존재하지 않아 아예 답을 못 냅니다. <em>k</em>=3으로 잘못 잡으면 <em>h</em>(3)이 달라져 ③ 13/2 근처로 흘러갑니다 — 오답 선택지가 그렇게 설계돼 있습니다.</p></aside>
+</section>
+
+<!-- 23 -->
+<section class="slide" data-title="검산"><div class="s-head"><p class="eyebrow">마무리 · 되짚기</p><h2 class="ct">모든 조건을 <span class="am">다시 확인</span></h2></div><div class="s-body">
+<table class="tb">
+<tr><th>확인할 것</th><th>내용</th><th>결과</th></tr>
+<tr><td class="k"><span class="m" data-k="a\gt0"></span></td><td><span class="m" data-k="a=4"></span></td><td class="yes">✓</td></tr>
+<tr><td class="k"><span class="m" data-k="x\lt-1"></span> 구간</td><td><span class="m" data-k="(x+2)^{2}\ge0"></span> — 닿기만 함</td><td class="yes">극값 0 개 ✓</td></tr>
+<tr><td class="k"><span class="m" data-k="-1\le x\lt1"></span></td><td><span class="m" data-k="\varphi\ge0"></span></td><td class="yes">극값 0 개 ✓</td></tr>
+<tr class="hit"><td class="k"><span class="m" data-k="x\ge1"></span></td><td><span class="m" data-k="(x-1)(4-x)"></span> — <span class="m" data-k="x=4"></span> 에서 전환</td><td class="yes">극값 1 개 ✓</td></tr>
+<tr><td class="k">최댓값</td><td><span class="m" data-k="a=4.01"></span> 이면 극값 3 개</td><td class="yes">더 못 키움 ✓</td></tr>
+<tr><td class="k"><span class="m" data-k="h(3)"></span></td><td><span class="m" data-k="\tfrac16+\tfrac{10}{3}"></span></td><td class="yes"><span class="m" data-k="\tfrac72"></span> ✓</td></tr>
+</table>
+</div>
+<div class="s-ask"><p class="question">이 중 하나라도 어긋났다면 어느 관문으로 돌아가야 할까?</p></div>
+<aside class="notes"><p>검산을 수업의 일부로 만드세요. 특히 <strong>"최댓값이 맞는지"</strong> — <em>a</em>를 조금만 키워도 조건이 깨지는 걸 확인해야 최댓값입니다. 16번 실험실로 돌아가 4.01을 찍어 보여 주면 완결됩니다.</p></aside>
+</section>
+
+<!-- 24 -->
+<section class="slide" data-title="사고의 뼈대"><div class="s-head"><p class="eyebrow">수업의 결론</p><h2 class="ct">오늘 쓴 <span class="am">다섯 가지 사고</span></h2></div><div class="s-body">
+<div class="grid2 anim-stagger-list">
+<div class="card accent"><h4>① 바꿔치기</h4><p><span class="m" data-k="h"></span>의 극값 문제를 <span class="m am" data-k="h'"></span>의 <b>부호 문제</b>로 바꿨습니다. 적분한 것을 구하지 않았습니다.</p></div>
+<div class="card accent"><h4>② 쪼개기</h4><p>경계 <span class="m" data-k="-1,0,1"></span> 로 네 구간을 나누고 <b>각 구간이 만드는 극값 수</b>를 따로 셌습니다.</p></div>
+<div class="card accent"><h4>③ 구별하기</h4><p><b>0이 되는 것</b>과 <b>부호가 바뀌는 것</b>은 다릅니다. <span class="m" data-k="x=0"></span> 과 <span class="m" data-k="a=4"></span> 가 같은 함정이었습니다.</p></div>
+<div class="card accent"><h4>④ 고정점 찾기</h4><p><span class="m am" data-k="\varphi(-1)=1"></span> 이 <span class="m" data-k="a"></span>와 무관하다는 관찰 하나가 근의 위치 논의를 통째로 없앴습니다.</p></div>
+</div>
+<div class="card quote"><p><b>⑤ 회수</b> — 모든 구조가 결정된 <b class="am">맨 마지막에만</b> 계산했습니다. 계산은 도구이지 출발점이 아닙니다.</p></div>
+</div>
+<aside class="notes"><p>마지막으로 물어보세요 — <strong>"오늘 가장 놀란 순간이 언제였나?"</strong> 대개 9번(φ의 부호 지도에서 4를 넘는 순간) 또는 14번(φ(−1)=1)을 꼽습니다. 그 장면을 다시 띄우고 끝내면 오래 남습니다.</p><p><strong>후속 과제</strong>: <em>g</em>의 가운데 구간을 <span>−1 ≤ x &lt; 2</span>로 바꾸면 <em>k</em>는? 학생용 탐구실 실험실로 직접 확인하게 하면 좋습니다.</p></aside>
+</section>
+
+</div>
+
+<div class="deck-chrome">
+  <div class="chrome-left"><span class="idx"><b id="cNow">1</b> / <span id="cTot">24</span></span><span class="sep"></span><span class="chap" id="chapLabel"></span></div>
+  <div class="chrome-right">
+    <div class="kbd-help">← → 이동 · N 교사 노트 · S 교사용 창 · F 전체화면 · O 한눈에 보기</div>
+    <div aria-label="슬라이드 조작" class="touch-nav">
+      <button aria-label="이전 슬라이드" id="touchPrev" type="button">‹</button>
+      <button id="touchNotes" type="button">교사 노트</button>
+      <button aria-label="다음 슬라이드" id="touchNext" type="button">›</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
