@@ -12,12 +12,12 @@
    ══════════════════════════════════════════════════════════════════════ */
 
 .tpl-dark{
-  --bg:#14151f; --bg2:#101019; --surf:#1c1f2e; --surf2:#242839; --ink:#0d0e16;
-  --line:rgba(192,202,245,.13); --line2:rgba(192,202,245,.26);
-  --t1:#e7ecff; --t2:#a9b1d6; --t3:#6b7398;
-  --am:#ffb545; --cy:#7dcfff; --gr:#9ece6a; --rd:#f7768e; --pu:#bb9af7;
-  --am-w:rgba(255,181,69,.13); --cy-w:rgba(125,207,255,.12);
-  --gr-w:rgba(158,206,106,.13); --rd-w:rgba(247,118,142,.12);
+  --bg:#f5f1e7; --bg2:#eee8db; --surf:#fffdf8; --surf2:#eee8db; --ink:#fbf7ee;
+  --line:rgba(58,49,37,.14); --line2:rgba(58,49,37,.27);
+  --t1:#211d17; --t2:#5f574b; --t3:#887e70;
+  --am:#a95232; --cy:#2f6670; --gr:#477454; --rd:#a74444; --pu:#755b82;
+  --am-w:rgba(169,82,50,.11); --cy-w:rgba(47,102,112,.10);
+  --gr-w:rgba(71,116,84,.11); --rd-w:rgba(167,68,68,.10);
   --sans:'Pretendard','IBM Plex Sans KR','Noto Sans KR','Malgun Gothic',sans-serif;
   --mono:'IBM Plex Mono','JetBrains Mono','D2Coding',Consolas,monospace;
   --math:KaTeX_Main,'STIX Two Math','Cambria Math',serif;
@@ -26,7 +26,7 @@
 
 /* ─────────── 리셋 ─────────── */
 .tpl-dark,.tpl-dark *,.tpl-dark *::before,.tpl-dark *::after{box-sizing:border-box}
-html:has(.tpl-dark){background:#14151f}
+html:has(.tpl-dark){background:#f5f1e7}
 body.tpl-dark{
   margin:0; background:var(--bg); color:var(--t1);
   font-family:var(--sans); line-height:1.7; letter-spacing:-.012em;
@@ -75,7 +75,7 @@ body.tpl-dark{
 .tpl-dark .m.pu,.tpl-dark .m.pu .katex{color:var(--pu)}
 .tpl-dark .mth{
   font-family:var(--sans); font-weight:600; color:var(--t1);
-  background:rgba(192,202,245,.07); border-radius:5px; padding:1px 7px;
+  background:rgba(58,49,37,.07); border-radius:5px; padding:1px 7px;
   white-space:nowrap; font-size:.97em;
 }
 .tpl-dark .eq{
@@ -85,7 +85,7 @@ body.tpl-dark{
 .tpl-dark .eq.tight{padding:13px 15px;margin:0 0 11px}
 .tpl-dark .eq.hot{border-color:rgba(255,181,69,.4);background:linear-gradient(180deg,rgba(255,181,69,.06),var(--ink) 60%)}
 .tpl-dark .eqrow{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:7px 0}
-.tpl-dark .eqrow+.eqrow{border-top:1px solid rgba(192,202,245,.06)}
+.tpl-dark .eqrow+.eqrow{border-top:1px solid rgba(58,49,37,.07)}
 .tpl-dark .eq .m.md{white-space:normal;flex:0 0 auto}
 .tpl-dark .eq .m.md .katex{font-size:1.22em}
 .tpl-dark .eq.tight .m.md .katex{font-size:1.1em}
@@ -181,7 +181,7 @@ body.tpl-dark{
 .tpl-dark button.b.cy.gh{background:transparent;color:var(--cy);border-color:var(--cy)}
 .tpl-dark button.b.cy.gh:hover{background:var(--cy-w)}
 .tpl-dark button.b.mute{background:transparent;color:var(--t2);border:1.5px solid var(--line2)}
-.tpl-dark button.b.mute:hover{background:rgba(192,202,245,.07);color:var(--t1)}
+.tpl-dark button.b.mute:hover{background:rgba(58,49,37,.07);color:var(--t1)}
 .tpl-dark .out{
   background:var(--ink); border:1px solid var(--line); border-radius:var(--r2);
   padding:13px 15px; display:flex; flex-direction:column; gap:9px;
@@ -196,7 +196,7 @@ body.tpl-dark{
 }
 .tpl-dark .verdict .vm{
   flex:0 0 auto;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;
-  font:800 15px/1 var(--sans);color:#14151f;background:var(--t3);
+  font:800 15px/1 var(--sans);color:#fffdf8;background:var(--t3);
 }
 .tpl-dark .verdict .vt{font-size:13.5px;line-height:1.55;color:var(--t2)}
 .tpl-dark .verdict .vt b{display:block;color:var(--t1);font-size:14.5px;margin-bottom:2px}
@@ -246,7 +246,7 @@ body.tpl-dark{
 .tpl-dark .sol.on{display:block}
 .tpl-dark .sol.intu{background:rgba(255,181,69,.07);border:1px solid rgba(255,181,69,.32)}
 .tpl-dark .sol.logi{background:rgba(125,207,255,.06);border:1px solid rgba(125,207,255,.3)}
-.tpl-dark .sol.hintbox{background:rgba(192,202,245,.05);border:1px solid var(--line2)}
+.tpl-dark .sol.hintbox{background:rgba(58,49,37,.05);border:1px solid var(--line2)}
 .tpl-dark .sol h5{font-size:13px;font-family:var(--mono);letter-spacing:.09em;margin:0 0 9px;font-weight:700}
 .tpl-dark .sol.intu h5{color:var(--am)}
 .tpl-dark .sol.logi h5{color:var(--cy)}
@@ -274,7 +274,7 @@ body.tpl-dark{
    셸 ①  학생용 페이지  <body class="tpl-dark is-page">
    ══════════════════════════════════════════════════════════════════════ */
 .tpl-dark.is-page header{
-  position:sticky; top:0; z-index:50; background:rgba(20,21,31,.94);
+  position:sticky; top:0; z-index:50; background:rgba(245,241,231,.94);
   backdrop-filter:blur(14px); border-bottom:1px solid var(--line);
 }
 .tpl-dark.is-page .hbar{
@@ -346,7 +346,7 @@ body.tpl-dark{
 
 /* 표지 */
 .tpl-dark .slide--title{
-  background:linear-gradient(150deg,#1b1d2c 0%,#14151f 55%,#191426 100%);
+  background:linear-gradient(150deg,#fffdf8 0%,#f5f1e7 58%,#eee5dc 100%);
 }
 .tpl-dark .slide--title .h1{
   font-size:clamp(42px,5.3vw,72px); font-weight:800; letter-spacing:-.045em;
@@ -395,11 +395,11 @@ body.tpl-dark{
 .tpl-dark .deck-footer{display:none}
 .tpl-dark .notes-overlay{
   position:fixed; inset:auto 0 0 0; max-height:48vh; z-index:80;
-  background:#0b0c14; color:var(--t1); border-top:1px solid var(--line2);
+  background:#fffdf8; color:var(--t1); border-top:1px solid var(--line2);
   border-radius:16px 16px 0 0; padding:24px clamp(22px,4vw,52px) 32px;
   font-family:var(--sans); font-size:16px; line-height:1.74; overflow:auto;
   transform:translateY(100%); transition:transform .26s var(--e);
-  box-shadow:0 -20px 60px rgba(0,0,0,.5);
+  box-shadow:0 -20px 60px rgba(58,49,37,.16);
 }
 .tpl-dark .notes-overlay.open{transform:translateY(0)}
 .tpl-dark .notes-overlay p{margin:0 0 11px;max-width:78ch;color:var(--t2)}
@@ -407,7 +407,7 @@ body.tpl-dark{
 .tpl-dark .notes-overlay em{color:var(--am);font-style:normal;font-weight:600}
 .tpl-dark .overview{
   position:fixed; inset:0; z-index:90; display:none; overflow:auto; padding:36px;
-  background:rgba(8,9,14,.94); backdrop-filter:blur(12px);
+  background:rgba(238,232,219,.95); backdrop-filter:blur(12px);
 }
 .tpl-dark .overview.open{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;align-content:start}
 .tpl-dark .overview .thumb{

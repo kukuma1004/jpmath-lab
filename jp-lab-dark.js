@@ -21,9 +21,9 @@
   'use strict';
 
   var C = {
-    ink:'#0d0e16', line:'rgba(192,202,245,.13)', line2:'rgba(192,202,245,.26)',
-    grid:'rgba(192,202,245,.055)', t1:'#e7ecff', t2:'#a9b1d6', t3:'#6b7398',
-    am:'#ffb545', cy:'#7dcfff', gr:'#9ece6a', rd:'#f7768e', pu:'#bb9af7'
+    ink:'#fbf7ee', line:'rgba(58,49,37,.14)', line2:'rgba(58,49,37,.27)',
+    grid:'rgba(58,49,37,.075)', t1:'#211d17', t2:'#5f574b', t3:'#887e70',
+    am:'#a95232', cy:'#2f6670', gr:'#477454', rd:'#a74444', pu:'#755b82'
   };
 
   function nf(v, d) {
@@ -214,7 +214,7 @@
         outRow('판별식 a(a−4)', 'disc','cy') +
       '</div>' +
       '<div class="verdict" data-o="vbox"><div class="vm" data-o="vm"></div><div class="vt" data-o="vt"></div></div>' +
-      '<p class="hintline">색칠된 <b class="rd" style="color:#f7768e">붉은 구간</b>이 <span style="font-family:KaTeX_Math,serif;font-style:italic">φ&lt;0</span>. 붉은 구간이 <b>시작·끝나는 자리</b>가 곧 h의 극값입니다.</p>';
+      '<p class="hintline">색칠된 <b class="rd" style="color:#a74444">붉은 구간</b>이 <span style="font-family:KaTeX_Math,serif;font-style:italic">φ&lt;0</span>. 붉은 구간이 <b>시작·끝나는 자리</b>가 곧 h의 극값입니다.</p>';
     var o = q(panel);
 
     function draw() {
@@ -287,7 +287,7 @@
            '" height="'+(p.Y(p.ymin)-p.Y(0))+'" fill="'+C.rd+'" opacity=".07"/>';
       /* x >= -1 은 흐리게 */
       s += '<rect x="'+p.X(-1)+'" y="'+p.Y(p.ymax)+'" width="'+(p.X(p.xmax)-p.X(-1))+
-           '" height="'+(p.Y(p.ymin)-p.Y(p.ymax))+'" fill="#14151f" opacity=".55"/>';
+           '" height="'+(p.Y(p.ymin)-p.Y(p.ymax))+'" fill="#eee8db" opacity=".72"/>';
       s += curve(p, Q, C.t3, 2.2, '5 5');
       s += curve(p, function(x){ return x <= -1 ? Q(x) : NaN; }, C.am, 3.4);
       s += vline(p, -1, C.line2, '4 4');
