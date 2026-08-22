@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>주제탐구 관리 · 수업창고</title>
+  <style id="classroomGuard">html{display:none!important}</style>
+  <script src="../auth.js" data-classroom-protected></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=Noto+Serif+KR:wght@700;900&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../jp-math-typography.css?v=3">
+  <link rel="stylesheet" href="manager.css?v=1">
+  <script src="manager.js?v=1" defer></script>
+</head>
+<body>
+  <header class="manager-header">
+    <div>
+      <a href="../">← 수업창고</a>
+      <p>TEACHER INQUIRY MANAGER · LOCAL-FIRST</p>
+    </div>
+    <a class="public-link" href="../../주제탐구/">공개 전시 미리보기 ↗</a>
+  </header>
+
+  <main>
+    <section class="manager-hero">
+      <div>
+        <p class="eyebrow">CURATOR WORKSPACE</p>
+        <h1>질문을 받고,<br><em>다음 질문을 만든다.</em></h1>
+        <p>현재 학생 제출 현황을 확인하고, 성취기준 매핑과 다음 발문을 준비하는 교사용 화면입니다.</p>
+      </div>
+      <div class="privacy-note">
+        <strong>PRIVATE DATA RULE</strong>
+        <p>이 사이트 저장소에는 실명·관찰·평가·세특 메모를 넣지 않습니다. 아래의 교사용 JSON 불러오기는 선택한 파일을 현재 브라우저 메모리에서만 읽습니다.</p>
+      </div>
+    </section>
+
+    <section class="workflow" aria-labelledby="workflowTitle">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">MATERIAL FLOW</p>
+          <h2 id="workflowTitle">학생에게 받을 자료 순서</h2>
+        </div>
+        <p>한 번에 긴 보고서를 받지 않고, 질문이 깊어지는 순서대로 짧게 누적합니다.</p>
+      </div>
+      <ol class="workflow-grid">
+        <li><span>01</span><strong>최초 질문</strong><p>관심 개념, 궁금한 점, 고른 이유, 만들고 싶은 것</p></li>
+        <li><span>02</span><strong>질문 정교화</strong><p>성취기준 연결, 용어 정의, 조건, 비교 대상</p></li>
+        <li><span>03</span><strong>예상·계획</strong><p>예상 결과, 확인 방법, 필요한 입력과 출력</p></li>
+        <li><span>04</span><strong>차시 기록</strong><p>수행, 발견, 오류, 피드백, 수정, 다음 질문</p></li>
+        <li><span>05</span><strong>웹앱 제출</strong><p>index.html, metadata.json, 상대경로, assets</p></li>
+        <li><span>06</span><strong>최종 성찰</strong><p>생각의 변화, 근거, 한계, 새롭게 생긴 질문</p></li>
+      </ol>
+    </section>
+
+    <section class="dashboard" aria-labelledby="dashboardTitle">
+      <div class="section-heading dashboard-heading">
+        <div>
+          <p class="eyebrow">CURRENT DASHBOARD</p>
+          <h2 id="dashboardTitle">현재 탐구 현황</h2>
+        </div>
+        <label class="file-loader">
+          <span>교사용 JSON 불러오기</span>
+          <input id="privateFile" type="file" accept="application/json,.json">
+        </label>
+      </div>
+      <p class="file-feedback" id="fileFeedback" aria-live="polite">공개용 익명 데이터만 표시하고 있습니다.</p>
+
+      <div class="metric-grid" aria-label="현재 탐구 통계">
+        <div><strong id="metricStudents">—</strong><span>학생</span></div>
+        <div><strong id="metricInquiries">—</strong><span>탐구</span></div>
+        <div><strong id="metricPending">—</strong><span>성취기준 미매핑</span></div>
+        <div><strong id="metricApps">—</strong><span>웹앱 미연결</span></div>
+      </div>
+
+      <div class="manager-grid">
+        <aside class="inquiry-list-panel">
+          <div class="list-tools">
+            <label for="subjectFilter">과목</label>
+            <select id="subjectFilter">
+              <option value="all">전체</option>
+              <option value="calculus-1">미적분Ⅰ</option>
+              <option value="geometry">기하</option>
+              <option value="mathematical-inquiry">통합·이론</option>
+            </select>
+          </div>
+          <div class="inquiry-list" id="inquiryList" aria-label="학생별 탐구 목록"></div>
+        </aside>
+
+        <article class="curator-panel" id="curatorPanel">
+          <p class="empty-selection">왼쪽에서 탐구를 선택하면 현재 상태와 다음 발문이 나타납니다.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="handoff" aria-labelledby="handoffTitle">
+      <div>
+        <p class="eyebrow">HANDOFF TO CODEX</p>
+        <h2 id="handoffTitle">새 학생 자료가 들어오면</h2>
+      </div>
+      <div class="handoff-copy">
+        <p>별도 작업 폴더의 <code>inbox/날짜/</code>에 원본 파일을 넣고 다음처럼 요청하면 됩니다.</p>
+        <pre id="handoffText">inbox에 새로 들어온 학생 자료를 처리해 줘.
+1. 원본은 보존하고 같은 학생의 최신본을 표시해 줘.
+2. 학생별 질문·선정 이유·탐구 계획·웹앱 계획을 JSON에 반영해 줘.
+3. 2022 개정 교육과정 성취기준을 정확히 매핑해 줘.
+4. 학생에게 보낼 다음 발문 3~5개를 만들어 줘.
+5. 공개용 데이터에는 개인정보와 교사 메모가 들어가지 않았는지 확인해 줘.</pre>
+        <button id="copyHandoff" type="button">요청 문장 복사</button>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>교사용 관리 화면에는 공개 가능한 데이터만 기본 탑재됩니다.</span>
+    <span>PRIVATE 원본은 별도 로컬 작업 폴더에서 관리</span>
+  </footer>
+</body>
+</html>
