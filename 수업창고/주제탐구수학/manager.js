@@ -41,7 +41,7 @@
     } else if (/연속|극한/.test(text)) {
       topicPrompts.push('함숫값의 존재, 극한값의 존재, 두 값의 일치를 각각 따로 깨뜨리는 예를 만들 수 있을까?');
       topicPrompts.push('그래프가 이어져 보이는 것과 연속의 정의가 다른 사례를 수식으로 설명할 수 있을까?');
-    } else if (/도함수|Function Detective|증가와 감소/.test(text)) {
+    } else if (/도함수|원함수 추리|증가와 감소/.test(text)) {
       topicPrompts.push('도함수의 부호와 영점만으로 확정할 수 있는 정보와 확정할 수 없는 정보는 무엇인가?');
       topicPrompts.push('서로 다른 두 원함수가 같은 단서를 갖는 예를 만들 수 있을까?');
     } else if (/평균값/.test(text)) {
@@ -152,7 +152,7 @@
     var engine = element('div', 'prompt-engine');
     var engineLabel = element('div', 'engine-label');
     engineLabel.appendChild(element('span', 'pulse-dot'));
-    engineLabel.appendChild(element('strong', '', 'AUTO QUESTION ENGINE'));
+    engineLabel.appendChild(element('strong', '', '자동 발문 도우미'));
     engineLabel.appendChild(element('small', '', '학생 질문·개념 기반 규칙 생성'));
     engine.appendChild(engineLabel);
     var modeBar = element('div', 'prompt-modes');

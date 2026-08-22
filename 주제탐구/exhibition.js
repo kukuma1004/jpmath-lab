@@ -128,12 +128,12 @@
       return;
     }
 
-    document.title = item.title + ' · 2026 Mathematical Inquiry Project';
+    document.title = item.title + ' · 2026 수학 주제탐구';
     document.body.setAttribute('data-subject', item.subject);
 
     var hero = element('header', 'detail-hero');
     var itemIndex = inquiries.indexOf(item) + 1;
-    hero.appendChild(element('p', 'detail-index', 'QUESTION ' + String(itemIndex).padStart(2, '0') + ' / ' + String(inquiries.length).padStart(2, '0')));
+    hero.appendChild(element('p', 'detail-index', '탐구 ' + String(itemIndex).padStart(2, '0') + ' / ' + String(inquiries.length).padStart(2, '0')));
     var meta = element('div', 'detail-meta');
     meta.appendChild(element('span', 'detail-chip', subjectLabels[item.subject] || item.subject));
     meta.appendChild(element('span', 'detail-chip orange', item.displayName));
@@ -155,28 +155,28 @@
 
     flow.appendChild(storyBlock(
       1,
-      'ORIGIN · CURRICULUM',
+      '출발 · 교육과정',
       '수학의 어디에서 출발했는가?',
       standards + ' · ' + item.concepts.join(' · ') + '을 중심으로 교육과정과 학생의 최초 질문을 연결합니다.',
       mappingNote
     ));
     flow.appendChild(storyBlock(
       2,
-      'QUESTION · CURIOSITY',
+      '질문 · 호기심',
       '모든 탐구는 하나의 질문에서 시작된다.',
       item.question,
       '현재는 학생의 최신 주제 제출 내용을 바탕으로 구성한 초안입니다.'
     ));
     flow.appendChild(storyBlock(
       3,
-      'EXPLORATION',
+      '탐구 과정',
       '어떻게 알아볼 것인가?',
       item.explorationPlan,
       '예상·수행·오류·수정 기록이 들어오면 실제 탐구 과정으로 교체됩니다.'
     ));
 
     var app = element('section', 'app-panel');
-    app.appendChild(element('p', 'story-label', 'BUILD · STUDENT WEB APP'));
+    app.appendChild(element('p', 'story-label', '제작 · 학생 웹앱'));
     app.appendChild(element('h2', '', '학생이 만든 탐구 도구'));
     if (item.studentApp && item.studentApp.entry) {
       app.appendChild(element('p', '', '학생이 질문을 조작하고 검증하기 위해 제작한 웹앱을 실행합니다.'));
@@ -193,14 +193,14 @@
 
     flow.appendChild(storyBlock(
       4,
-      'DISCOVERY',
+      '발견',
       '무엇을 발견하고 어떻게 설명했는가?',
       '탐구 결과를 단순한 정답이 아니라 조건, 관계, 근거가 드러나는 학생의 언어로 기록합니다.',
       '아직 실제 발견 기록이 제출되지 않았습니다.'
     ));
     flow.appendChild(storyBlock(
       5,
-      'CONNECTION · NEW QUESTION',
+      '연결 · 새로운 질문',
       '이 질문은 어디까지 이어지는가?',
       '다른 수학 개념이나 실제로 필요한 타 교과와 연결하고, 이번 발견에서 새롭게 생긴 질문을 남깁니다.',
       '연결과 새 질문은 탐구 과정에서 실제로 발생한 뒤에 공개합니다.'
