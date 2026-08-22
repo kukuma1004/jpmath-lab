@@ -80,34 +80,42 @@ const events = [
   {title:'지역 축제 마지막 주', copy:'주말 방문객이 늘지만 재료 배송비도 150원 오릅니다.', demand:10, variable:150, fixed:0, weather:'🎪'}
 ];
 
-const sim = {week:0, org:'profit', score:0, history:[]};
+const simStrategies = {
+  quality:{label:'품질 강화',demand:5,variable:250,fixed:0,trust:3},
+  promotion:{label:'홍보 집중',demand:10,variable:0,fixed:15000,trust:1},
+  community:{label:'지역 나눔',demand:4,variable:0,fixed:8000,trust:6}
+};
+let eventOrder=events.map((_,index)=>index).sort(()=>Math.random()-.5);
+const sim = {week:0, org:'profit', strategy:'quality', trust:50, score:0, history:[]};
 const priceRange = document.querySelector('#priceRange');
 const quantityRange = document.querySelector('#quantityRange');
 const runWeekButton = document.querySelector('[data-run-week]');
 
 function simulationNumbers() {
-  const event = events[sim.week] || events[events.length - 1];
+  const event = events[eventOrder[Math.min(sim.week,eventOrder.length-1)]];
+  const strategy = simStrategies[sim.strategy];
   const price = Number(priceRange.value);
   const quantity = Number(quantityRange.value);
-  const demand = Math.max(8, Math.round(105 - price / 100 + event.demand));
+  const demand = Math.max(8, Math.round(105 - price / 100 + event.demand + strategy.demand));
   const sold = Math.min(demand, quantity);
   const revenue = sold * price;
-  const variableCost = 1300 + event.variable;
-  const fixedCost = Math.max(20000, 45000 + event.fixed);
+  const variableCost = 1300 + event.variable + strategy.variable;
+  const fixedCost = Math.max(20000, 45000 + event.fixed + strategy.fixed);
   const cost = fixedCost + variableCost * quantity;
   const profit = revenue - cost;
-  return {price, quantity, demand, sold, revenue, cost, profit, unsold:Math.max(0, quantity - sold), missed:Math.max(0, demand - sold)};
+  return {price, quantity, demand, sold, revenue, cost, profit, strategy, unsold:Math.max(0, quantity - sold), missed:Math.max(0, demand - sold)};
 }
 
 function updateSimulation() {
   const data = simulationNumbers();
-  const event = events[sim.week] || events[events.length - 1];
+  const event = events[eventOrder[Math.min(sim.week,eventOrder.length-1)]];
   document.querySelector('[data-price-output]').textContent = won(data.price);
   document.querySelector('[data-quantity-output]').textContent = `${data.quantity}개`;
   document.querySelector('[data-demand]').textContent = `${data.demand}개`;
   document.querySelector('[data-sold]').textContent = `${data.sold}개`;
   document.querySelector('[data-revenue]').textContent = won(data.revenue);
   document.querySelector('[data-cost]').textContent = won(data.cost);
+  document.querySelector('[data-trust]').textContent = `${sim.trust}점 (+${data.strategy.trust})`;
   document.querySelector('[data-profit-label]').textContent = sim.org === 'profit' ? '이익' : '잉여';
   const profitNode = document.querySelector('[data-profit]');
   profitNode.textContent = `${data.profit >= 0 ? '+' : '−'}${won(Math.abs(data.profit))}`;
@@ -134,42 +142,53 @@ document.querySelectorAll('[data-org]').forEach(button => button.addEventListene
   document.querySelectorAll('[data-org]').forEach(item => item.classList.toggle('selected', item === button));
   updateSimulation();
 }));
+document.querySelectorAll('[data-sim-strategy]').forEach(button => button.addEventListener('click', () => {
+  if (sim.running) return;
+  sim.strategy = button.dataset.simStrategy;
+  document.querySelectorAll('[data-sim-strategy]').forEach(item => item.classList.toggle('selected', item === button));
+  updateSimulation();
+}));
 
 runWeekButton.addEventListener('click', () => {
   if (sim.week >= 8 || sim.running) return;
   sim.running = true;
   const data = simulationNumbers();
   const valueGain = sim.org === 'profit'
-    ? data.profit / 1000 - data.unsold * 1.2
-    : data.sold * 2 + Math.max(0, data.profit) / 1800 - Math.max(0, -data.profit) / 1000;
+    ? data.profit / 1000 - data.unsold * 1.2 + data.strategy.trust * .8
+    : data.sold * 2 + Math.max(0, data.profit) / 1800 - Math.max(0, -data.profit) / 1000 + data.strategy.trust * 2;
   const scene=document.querySelector('[data-operation-scene]');
   scene.classList.remove('running');void scene.offsetWidth;scene.classList.add('running');
   document.querySelector('[data-scene-title]').textContent=`${sim.week+1}주 운영 중 · 빵을 굽고 손님을 맞는 중`;
   document.querySelector('[data-scene-subtitle]').textContent=`예상 ${data.demand}명 · 생산 ${data.quantity}개`;
-  runWeekButton.disabled=true;priceRange.disabled=true;quantityRange.disabled=true;runWeekButton.textContent='가게 운영 중…';
+  runWeekButton.disabled=true;priceRange.disabled=true;quantityRange.disabled=true;document.querySelectorAll('[data-sim-strategy]').forEach(button=>button.disabled=true);runWeekButton.textContent='가게 운영 중…';
   setTimeout(()=>{
     sim.score += valueGain;
-    sim.history.push({...data, valueGain});
+    const trustChange=data.strategy.trust-(data.missed>=10?2:0)-(data.unsold>=15?1:0);
+    sim.trust=Math.max(0,Math.min(100,sim.trust+trustChange));
+    sim.history.push({...data, valueGain, trustChange});
     const report = document.querySelector('[data-week-report]');
     report.hidden = false;
-    report.innerHTML = `<b>${sim.week + 1}주 보고 · ${data.sold}개 판매</b><p>${sim.org === 'profit' ? `이익 ${won(data.profit)}과 재고 ${data.unsold}개를 기업가치에 반영했습니다.` : `빵 ${data.sold}개로 지역에 기여했고, 잉여 ${won(data.profit)}은 다음 목적 사업에 다시 사용합니다.`}</p>`;
+    report.innerHTML = `<b>${sim.week + 1}주 보고 · ${data.strategy.label} · ${data.sold}개 판매</b><p>${sim.org === 'profit' ? `이익 ${won(data.profit)}, 재고 ${data.unsold}개, 신뢰 ${trustChange>=0?'+':''}${trustChange}점을 기업가치에 반영했습니다.` : `빵 ${data.sold}개로 지역에 기여했고, 잉여 ${won(data.profit)}은 목적 사업에 다시 사용합니다. 신뢰는 ${trustChange>=0?'+':''}${trustChange}점입니다.`}</p>`;
     document.querySelector('[data-scene-title]').textContent=`${sim.week+1}주 영업 종료 · ${data.sold}개 판매`;
     document.querySelector('[data-scene-subtitle]').textContent=data.unsold?`재고 ${data.unsold}개가 남았습니다.`:`준비한 상품을 모두 판매했습니다.`;
     sim.week += 1;sim.running=false;
     document.querySelectorAll('[data-org]').forEach(button => button.disabled = true);
-    priceRange.disabled=false;quantityRange.disabled=false;
+    priceRange.disabled=false;quantityRange.disabled=false;document.querySelectorAll('[data-sim-strategy]').forEach(button=>button.disabled=false);
     if (sim.week >= 8) {
       runWeekButton.disabled = true;
-      report.innerHTML = `<b>8주 운영 완료 · 최종 ${sim.org === 'profit' ? '기업가치' : '사회가치'} ${Math.round(sim.score)}점</b><p>여덟 번의 시장 변화를 지나며 가격·생산량·조직 목적을 함께 살폈습니다.</p>`;
+      document.querySelectorAll('[data-sim-strategy]').forEach(button=>button.disabled=true);
+      const profile=sim.trust>=75&&sim.score>=500?'지속가능 경영자':sim.score>=500?'수익 집중 경영자':sim.trust>=75?'지역 신뢰 경영자':'도전 중인 경영자';
+      report.innerHTML = `<b>8주 운영 완료 · ${profile}</b><p>최종 ${sim.org === 'profit' ? '기업가치' : '사회가치'} ${Math.round(sim.score)}점 · 신뢰 ${sim.trust}점입니다. 이익과 재고뿐 아니라 선택한 전략의 비용과 신뢰 효과도 비교해 보세요.</p>`;
     } else runWeekButton.disabled=false;
     updateSimulation();
   },2850);
 });
 
 document.querySelector('[data-reset-sim]').addEventListener('click', () => {
-  sim.week = 0; sim.org = 'profit'; sim.score = 0; sim.history = []; sim.running=false;
+  sim.week = 0; sim.org = 'profit'; sim.strategy='quality'; sim.trust=50; sim.score = 0; sim.history = []; sim.running=false;eventOrder=events.map((_,index)=>index).sort(()=>Math.random()-.5);
   priceRange.value = 4500; quantityRange.value = 50;
   document.querySelectorAll('[data-org]').forEach(button => {button.disabled = false; button.classList.toggle('selected', button.dataset.org === 'profit');});
+  document.querySelectorAll('[data-sim-strategy]').forEach(button => {button.disabled=false;button.classList.toggle('selected',button.dataset.simStrategy==='quality')});
   runWeekButton.disabled = false;
   priceRange.disabled=false;quantityRange.disabled=false;
   document.querySelector('[data-week-report]').hidden = true;
@@ -190,8 +209,11 @@ const cases = [
 
 let caseIndex = 0;
 let caseScore = 0;
+let caseStreak = 0;
+let bestCaseStreak = 0;
+let caseOffset = Math.floor(Math.random()*cases.length);
 function renderCase() {
-  const item = cases[caseIndex];
+  const item = cases[(caseIndex+caseOffset)%cases.length];
   const caseLayout=document.querySelector('.case-layout');caseLayout.classList.remove('case-changing');void caseLayout.offsetWidth;caseLayout.classList.add('case-changing');
   document.querySelector('[data-case-number]').textContent = String(caseIndex + 1).padStart(2, '0');
   document.querySelector('[data-case-source]').textContent = item.source;
@@ -208,10 +230,12 @@ function renderCase() {
 }
 
 function answerCase(choice) {
-  const item = cases[caseIndex];
+  const item = cases[(caseIndex+caseOffset)%cases.length];
   const correct = choice === item.correct;
-  if (correct) caseScore += 1;
+  if (correct) {caseScore += 1;caseStreak += 1;bestCaseStreak=Math.max(bestCaseStreak,caseStreak)} else caseStreak=0;
   document.querySelector('[data-case-score]').textContent = caseScore;
+  const rank=caseScore>=7?'수석 분석관':caseScore>=5?'경제 기자':caseScore>=3?'자료 조사관':'신입 탐정';
+  document.querySelector('[data-case-rank]').textContent=`${rank} · 연속 ${caseStreak}`;
   document.querySelectorAll('[data-answer]').forEach((button, index) => {
     button.disabled = true;
     button.classList.toggle('correct', index === item.correct);
@@ -220,29 +244,36 @@ function answerCase(choice) {
   const feedback = document.querySelector('[data-case-feedback]');
   feedback.hidden = false;
   feedback.classList.toggle('wrong', !correct);
-  feedback.innerHTML = `<b>${correct ? '사건 해결!' : '단서를 한 번 더 연결해 봅시다.'}</b><p>${item.explain}</p>`;
+  feedback.innerHTML = `<b>${correct ? '사건 해결!' : '단서를 한 번 더 연결해 봅시다.'}</b><p>${item.explain}</p>${caseIndex===cases.length-1?`<p><strong>최종 역할: ${rank}</strong> · 최고 연속 해결 ${bestCaseStreak}건</p>`:''}`;
   const next = document.querySelector('[data-next-case]');
   next.hidden = false;
-  next.textContent = caseIndex === cases.length - 1 ? '사건 파일 다시 보기' : '다음 사건 열기';
+  next.textContent = caseIndex === cases.length - 1 ? '다른 순서로 다시 수사하기' : '다음 사건 열기';
 }
 
 document.querySelector('[data-next-case]').addEventListener('click', () => {
-  if (caseIndex === cases.length - 1) {caseIndex = 0; caseScore = 0; document.querySelector('[data-case-score]').textContent = 0;}
+  if (caseIndex === cases.length - 1) {caseIndex = 0; caseScore = 0;caseStreak=0;bestCaseStreak=0;caseOffset=(caseOffset+3)%cases.length; document.querySelector('[data-case-score]').textContent = 0;document.querySelector('[data-case-rank]').textContent='신입 탐정 · 연속 0';}
   else caseIndex += 1;
   renderCase();
 });
 
 const matrixInputs = [...document.querySelectorAll('[data-matrix-input]')];
+const deliveryPlans={
+  standard:{label:'일반 배송',cost:12000,demand:0,waste:.0},
+  fast:{label:'신선 배송',cost:26000,demand:2,waste:.0},
+  shared:{label:'공동 배송',cost:8000,demand:0,waste:.2}
+};
+let deliveryPlan='standard';
 const matrixMissions = [
-  {name:'등굣길 기본 시장',demand:[32,24,20,36],price:[3500,5500],cost:[1400,2100],waste:1000,fixed:15000,target:250000,condition:'기본 수요에서 폐기를 줄이세요.'},
-  {name:'운동회 음료 특수',demand:[28,40,18,45],price:[3600,5200],cost:[1450,2200],waste:1100,fixed:18000,target:315000,condition:'운동회로 음료 수요가 크게 늘었습니다.'},
-  {name:'비 오는 공원',demand:[35,20,12,18],price:[3800,5700],cost:[1550,2300],waste:1400,fixed:16000,target:205000,condition:'공원점 수요가 줄고 폐기비용이 올랐습니다.'},
-  {name:'지역축제 주말',demand:[38,34,32,46],price:[4000,6000],cost:[1650,2450],waste:900,fixed:26000,target:430000,condition:'두 지점 모두 붐비지만 고정비도 높습니다.'},
-  {name:'친환경 포장 도전',demand:[30,30,28,38],price:[4200,6200],cost:[1900,2750],waste:1800,fixed:22000,target:345000,condition:'단위비용과 폐기비가 높은 마지막 미션입니다.'}
+  {name:'등굣길 기본 시장',demand:[32,24,20,36],price:[3500,5500],cost:[1400,2100],waste:1000,fixed:15000,target:238000,condition:'기본 수요에서 폐기와 운송비를 줄이세요.'},
+  {name:'운동회 음료 특수',demand:[28,40,18,45],price:[3600,5200],cost:[1450,2200],waste:1100,fixed:18000,target:300000,condition:'운동회로 음료 수요가 크게 늘었습니다.'},
+  {name:'비 오는 공원',demand:[35,20,12,18],price:[3800,5700],cost:[1550,2300],waste:1400,fixed:16000,target:190000,condition:'공원점 수요가 줄고 폐기비용이 올랐습니다.'},
+  {name:'지역축제 주말',demand:[38,34,32,46],price:[4000,6000],cost:[1650,2450],waste:900,fixed:26000,target:415000,condition:'두 지점 모두 붐비지만 고정비도 높습니다.'},
+  {name:'친환경 포장 도전',demand:[30,30,28,38],price:[4200,6200],cost:[1900,2750],waste:1800,fixed:22000,target:330000,condition:'단위비용과 폐기비가 높은 마지막 미션입니다.'}
 ];
 let matrixMissionIndex=0;
+let matrixMissionOrder=matrixMissions.map((_,index)=>index).sort(()=>Math.random()-.5);
 function loadMatrixMission(){
-  const mission=matrixMissions[matrixMissionIndex];
+  const mission=matrixMissions[matrixMissionOrder[matrixMissionIndex]];
   document.querySelector('[data-matrix-mission]').textContent=matrixMissionIndex+1;
   document.querySelector('[data-matrix-condition]').textContent=`${mission.name} · ${mission.condition}`;
   document.querySelector('[data-price-one]').textContent=won(mission.price[0]);document.querySelector('[data-price-two]').textContent=won(mission.price[1]);document.querySelector('[data-price-matrix]').innerHTML=`${mission.price[0].toLocaleString('ko-KR')}<br>${mission.price[1].toLocaleString('ko-KR')}`;
@@ -252,7 +283,7 @@ function loadMatrixMission(){
   const next=document.querySelector('[data-next-matrix]');next.disabled=true;next.textContent=matrixMissionIndex===matrixMissions.length-1?'다섯 미션 다시 하기':'다음 시장 미션 →';
 }
 function calculateMatrix(unlock=true) {
-  const mission=matrixMissions[matrixMissionIndex],demandCaps=mission.demand,prices=[mission.price[0],mission.price[1],mission.price[0],mission.price[1]],unitCosts=[mission.cost[0],mission.cost[1],mission.cost[0],mission.cost[1]];
+  const mission=matrixMissions[matrixMissionOrder[matrixMissionIndex]],delivery=deliveryPlans[deliveryPlan],demandCaps=mission.demand.map(value=>value+delivery.demand),prices=[mission.price[0],mission.price[1],mission.price[0],mission.price[1]],unitCosts=[mission.cost[0],mission.cost[1],mission.cost[0],mission.cost[1]];
   const quantities = matrixInputs.map(input => Math.max(0, Math.min(50, Number(input.value) || 0)));
   matrixInputs.forEach((input, index) => input.value = quantities[index]);
   const sold = quantities.map((quantity, index) => Math.min(quantity, demandCaps[index]));
@@ -260,25 +291,27 @@ function calculateMatrix(unlock=true) {
   const branchRevenue = [sold[0] * prices[0] + sold[1] * prices[1], sold[2] * prices[2] + sold[3] * prices[3]];
   const revenue = branchRevenue[0] + branchRevenue[1];
   const productionCost = quantities.reduce((sum, quantity, index) => sum + quantity * unitCosts[index], 0);
-  const wasteCost = wasteCount * mission.waste;
-  const profit = revenue - productionCost - mission.fixed - wasteCost;
+  const wasteCost = Math.round(wasteCount * mission.waste * (1-delivery.waste));
+  const profit = revenue - productionCost - mission.fixed - wasteCost-delivery.cost;
   document.querySelector('[data-q-matrix]').innerHTML = `${quantities[0]}　${quantities[1]}<br>${quantities[2]}　${quantities[3]}`;
   document.querySelector('[data-r-matrix]').innerHTML = `${branchRevenue[0].toLocaleString('ko-KR')}<br>${branchRevenue[1].toLocaleString('ko-KR')}`;
   document.querySelector('[data-matrix-revenue]').textContent = won(revenue);
   document.querySelector('[data-matrix-waste]').textContent = won(wasteCost);
+  document.querySelector('[data-matrix-delivery]').textContent = won(delivery.cost);
   document.querySelector('[data-matrix-profit]').textContent = won(profit);
   const feedback = document.querySelector('[data-matrix-feedback]');
   const success = profit >= mission.target;
   feedback.classList.toggle('bad', !success);
   feedback.innerHTML = success
-    ? `<b>${matrixMissionIndex+1}번 미션 달성!</b><p>${wasteCount ? `폐기 ${wasteCount}개가 있지만` : '폐기 없이'} 목표 순수익을 넘겼습니다.</p>`
-    : `<b>목표까지 ${won(mission.target - profit)}</b><p>${wasteCount ? `수요를 넘긴 ${wasteCount}개에는 생산비와 폐기비용이 함께 듭니다.` : '수요 안에서 수익성이 높은 상품 배분을 조금 더 늘려보세요.'}</p>`;
+    ? `<b>${matrixMissionIndex+1}번 미션 달성 · ${delivery.label}</b><p>${wasteCount ? `폐기 ${wasteCount}개와 운송비를 포함하고도` : '폐기 없이 운송비까지 빼고'} 목표 순수익을 넘겼습니다.</p>`
+    : `<b>목표까지 ${won(mission.target - profit)}</b><p>${wasteCount ? `수요를 넘긴 ${wasteCount}개와 ${delivery.label} 비용이 함께 듭니다.` : `수량 행렬뿐 아니라 ${delivery.label}의 비용·수요 효과도 비교해 보세요.`}</p>`;
   if(unlock){const scene=document.querySelector('[data-branch-scene]');scene.classList.remove('dispatching');void scene.offsetWidth;scene.classList.add('dispatching');document.querySelector('[data-flow-message]').textContent=`학교점 ${won(branchRevenue[0])} · 공원점 ${won(branchRevenue[1])}`;document.querySelector('[data-next-matrix]').disabled=false;}
 }
 
 document.querySelector('[data-calc-matrix]').addEventListener('click',()=>calculateMatrix(true));
 matrixInputs.forEach(input => input.addEventListener('change',()=>calculateMatrix(true)));
-document.querySelector('[data-next-matrix]').addEventListener('click',()=>{matrixMissionIndex=matrixMissionIndex===matrixMissions.length-1?0:matrixMissionIndex+1;loadMatrixMission();calculateMatrix(false)});
+document.querySelectorAll('[data-delivery]').forEach(button=>button.addEventListener('click',()=>{deliveryPlan=button.dataset.delivery;document.querySelectorAll('[data-delivery]').forEach(item=>item.classList.toggle('selected',item===button));calculateMatrix(true)}));
+document.querySelector('[data-next-matrix]').addEventListener('click',()=>{if(matrixMissionIndex===matrixMissions.length-1){matrixMissionIndex=0;matrixMissionOrder=matrixMissions.map((_,index)=>index).sort(()=>Math.random()-.5)}else matrixMissionIndex+=1;loadMatrixMission();calculateMatrix(false)});
 
 // 04 · 가계 자산 보드게임
 const assetEvents = [
@@ -291,7 +324,12 @@ const assetEvents = [
   {title:'갑작스러운 병원비', copy:'의료비 10만 원을 지출하며 위험 관리의 필요성을 배웁니다.', shock:-100000},
   {title:'미래 준비 마지막 구간', copy:'마지막 저축을 결정하고 원금과 복리 효과를 비교하세요.', shock:0}
 ];
-const assetState = {round:0,total:0,principal:0,history:[]};
+const assetPlans={
+  safe:{label:'안정형',rate:-2,loss:.5,gain:.8},
+  balanced:{label:'균형형',rate:0,loss:1,gain:1},
+  growth:{label:'성장형',rate:2,loss:1.4,gain:1.1}
+};
+const assetState = {round:0,total:0,principal:0,interest:0,history:[],plan:'balanced'};
 const assetSave = document.querySelector('[data-asset-save]');
 const assetRate = document.querySelector('[data-asset-rate]');
 const assetRun = document.querySelector('[data-run-assets]');
@@ -304,24 +342,25 @@ function updateAssetBoard(){
   document.querySelector('[data-asset-rate-output]').textContent=`${assetRate.value}%`;
   document.querySelector('[data-asset-total]').textContent=won(assetState.total);
   document.querySelector('[data-asset-principal]').textContent=won(assetState.principal);
-  document.querySelector('[data-asset-interest]').textContent=won(Math.max(0,assetState.total-assetState.principal));
+  document.querySelector('[data-asset-interest]').textContent=won(assetState.interest);
   [...document.querySelectorAll('[data-life-board] span')].forEach((node,index)=>{node.classList.toggle('done',index<assetState.round);node.classList.toggle('active',index===assetState.round&&assetState.round<8)});
   const max=Math.max(1,...assetState.history);document.querySelector('[data-asset-history]').innerHTML=assetState.history.map(value=>`<i style="--h:${Math.max(8,value/max*100)}%" title="${won(value)}"></i>`).join('');
   const world=document.querySelector('.asset-world');world.style.setProperty('--pawn-x',`${4+Math.min(assetState.round,8)*11.5}%`);const growth=Math.min(100,18+assetState.total/40000);document.querySelectorAll('[data-wealth-city] i').forEach((tower,index)=>tower.style.setProperty('--h',`${Math.min(100,growth*(.45+index*.16))}%`));
 }
 assetSave.addEventListener('input',updateAssetBoard);assetRate.addEventListener('input',updateAssetBoard);
+document.querySelectorAll('[data-asset-plan]').forEach(button=>button.addEventListener('click',()=>{if(assetState.moving)return;assetState.plan=button.dataset.assetPlan;document.querySelectorAll('[data-asset-plan]').forEach(item=>item.classList.toggle('selected',item===button));updateAssetBoard()}));
 assetRun.addEventListener('click',()=>{
   if(assetState.round>=8||assetState.moving)return;
-  assetState.moving=true;assetRun.disabled=true;assetSave.disabled=true;assetRate.disabled=true;assetRun.textContent='주사위가 움직이는 중…';const world=document.querySelector('.asset-world');world.classList.remove('moving');void world.offsetWidth;world.classList.add('moving');
-  const save=Number(assetSave.value),rate=Number(assetRate.value)/100,event=assetEvents[assetState.round];
+  assetState.moving=true;assetRun.disabled=true;assetSave.disabled=true;assetRate.disabled=true;document.querySelectorAll('[data-asset-plan]').forEach(button=>button.disabled=true);assetRun.textContent='주사위가 움직이는 중…';const world=document.querySelector('.asset-world');world.classList.remove('moving');void world.offsetWidth;world.classList.add('moving');
+  const save=Number(assetSave.value),plan=assetPlans[assetState.plan],rate=Math.max(0,Number(assetRate.value)+plan.rate)/100,event=assetEvents[assetState.round],shock=Math.round(event.shock*(event.shock<0?plan.loss:plan.gain));
   const before=assetState.total;
   setTimeout(()=>{
-    assetState.total=Math.max(0,Math.round(assetState.total*Math.pow(1+rate,3)+save+event.shock));assetState.principal+=save;const growth=Math.max(0,Math.round(before*Math.pow(1+rate,3)-before));assetState.round+=1;assetState.history.push(assetState.total);assetState.moving=false;
-    const feedback=document.querySelector('[data-asset-feedback]');feedback.innerHTML=`<b>${assetState.round}번째 칸 완료 · 자산 ${won(assetState.total)}</b><p>지난 자산에서 복리로 ${won(growth)} 늘었고, 저축과 사건 금액이 반영됐습니다.</p>`;
-    assetSave.disabled=false;assetRate.disabled=false;if(assetState.round>=8){assetRun.disabled=true;assetRun.textContent='8칸 보드게임 완료';feedback.classList.add('success');feedback.innerHTML=`<b>미래 준비 완료 · 최종 자산 ${won(assetState.total)}</b><p>여덟 구간의 원금 ${won(assetState.principal)}과 시간의 효과를 비교해 보세요.</p>`}else{assetRun.disabled=false;assetRun.textContent='주사위를 굴리고 다음 칸으로'}updateAssetBoard();
+    assetState.total=Math.max(0,Math.round(assetState.total*Math.pow(1+rate,3)+save+shock));assetState.principal+=save;const growth=Math.max(0,Math.round(before*Math.pow(1+rate,3)-before));assetState.interest+=growth;assetState.round+=1;assetState.history.push(assetState.total);assetState.moving=false;
+    const feedback=document.querySelector('[data-asset-feedback]');feedback.innerHTML=`<b>${assetState.round}번째 칸 · ${plan.label} · 자산 ${won(assetState.total)}</b><p>적용 수익률 ${(rate*100).toFixed(1)}%, 복리 증가 ${won(growth)}, 사건 효과 ${shock>=0?'+':''}${won(shock)}가 반영됐습니다.</p>`;
+    assetSave.disabled=false;assetRate.disabled=false;document.querySelectorAll('[data-asset-plan]').forEach(button=>button.disabled=false);if(assetState.round>=8){assetRun.disabled=true;document.querySelectorAll('[data-asset-plan]').forEach(button=>button.disabled=true);assetRun.textContent='8칸 보드게임 완료';feedback.classList.add('success');const profile=assetState.interest>assetState.principal*.3?'성장 설계형':assetState.total>=assetState.principal*.9?'균형 축적형':'안전망 보완형';feedback.innerHTML=`<b>${profile} · 최종 자산 ${won(assetState.total)}</b><p>원금 ${won(assetState.principal)}, 복리 증가 ${won(assetState.interest)}, 사건 효과의 합성 결과를 비교하고 위험을 키웠을 때 손실 충격도 함께 커졌다는 점을 확인하세요.</p>`}else{assetRun.disabled=false;assetRun.textContent='주사위를 굴리고 다음 칸으로'}updateAssetBoard();
   },1300);
 });
-document.querySelector('[data-reset-assets]').addEventListener('click',()=>{assetState.round=0;assetState.total=0;assetState.principal=0;assetState.history=[];assetState.moving=false;assetSave.value=300000;assetRate.value=5;assetSave.disabled=false;assetRate.disabled=false;assetRun.disabled=false;assetRun.textContent='주사위를 굴리고 다음 칸으로';const f=document.querySelector('[data-asset-feedback]');f.classList.remove('success');f.innerHTML='<b>첫 결정을 기다립니다.</b><p>현재 소비와 미래 준비 사이의 균형을 생각해 보세요.</p>';updateAssetBoard()});
+document.querySelector('[data-reset-assets]').addEventListener('click',()=>{assetState.round=0;assetState.total=0;assetState.principal=0;assetState.interest=0;assetState.history=[];assetState.plan='balanced';assetState.moving=false;assetSave.value=300000;assetRate.value=5;assetSave.disabled=false;assetRate.disabled=false;document.querySelectorAll('[data-asset-plan]').forEach(button=>{button.disabled=false;button.classList.toggle('selected',button.dataset.assetPlan==='balanced')});assetRun.disabled=false;assetRun.textContent='주사위를 굴리고 다음 칸으로';const f=document.querySelector('[data-asset-feedback]');f.classList.remove('success');f.innerHTML='<b>첫 결정을 기다립니다.</b><p>현재 소비와 미래 준비 사이의 균형을 생각해 보세요.</p>';updateAssetBoard()});
 
 // 05 · 시장 균형 스토리 RPG
 const storyScenes=[
@@ -335,37 +374,48 @@ const storyScenes=[
   {speaker:'공예시장 협동조합',line:'“지역 기념품을 많이 만들었는데 창고에 재고가 쌓였어요.”',d:48,s:78,choices:[['축제 체험권과 묶어 할인한다',18,-10,'수요가 늘고 생산을 조절해 재고가 줄었습니다.'],['판매가격을 올린다',-10,6,'수요가 줄고 공급 유인이 늘어 재고가 커졌습니다.'],['생산 장려금을 더 준다',0,15,'공급량이 더 늘어 초과공급이 심해졌습니다.']]}
 ];
 const storyState={round:0,score:0};
+let storyOrder=storyScenes.map((_,index)=>index).sort(()=>Math.random()-.5);
 function marketDescription(d,s){const gap=d-s;if(Math.abs(gap)<=3)return['거의 균형','수요량과 공급량이 거의 같습니다.'];return gap>0?[`${gap}개의 초과수요`,'사려는 양이 팔려는 양보다 많아 품절이 생깁니다.']:[`${Math.abs(gap)}개의 초과공급`,'팔려는 양이 사려는 양보다 많아 재고가 쌓입니다.']}
 function renderStory(){
-  const scene=storyScenes[Math.min(storyState.round,7)],stage=document.querySelector('[data-village-stage]'),storyPanel=document.querySelector('.story-scene');stage.classList.remove('transitioning');storyPanel.classList.remove('changing');void stage.offsetWidth;stage.classList.add('transitioning');storyPanel.classList.add('changing');setTimeout(()=>{stage.classList.remove('transitioning');storyPanel.classList.remove('changing')},1050);
-  document.querySelector('[data-story-round]').textContent=Math.min(storyState.round+1,8);document.querySelector('[data-story-speaker]').textContent=scene.speaker;document.querySelector('[data-story-line]').textContent=scene.line;document.querySelector('[data-story-demand]').textContent=scene.d;document.querySelector('[data-story-supply]').textContent=scene.s;document.querySelector('[data-story-gap]').textContent=Math.abs(scene.d-scene.s);document.querySelector('[data-story-map-progress]').style.setProperty('--map',`${storyState.round/7*100}%`);document.querySelector('[data-story-hero]').style.left=`${8+storyState.round*10.5}%`;
+  const scene=storyScenes[storyOrder[Math.min(storyState.round,7)]],stage=document.querySelector('[data-village-stage]'),storyPanel=document.querySelector('.story-scene');stage.classList.remove('transitioning');storyPanel.classList.remove('changing');void stage.offsetWidth;stage.classList.add('transitioning');storyPanel.classList.add('changing');setTimeout(()=>{stage.classList.remove('transitioning');storyPanel.classList.remove('changing')},1050);
+  document.querySelector('[data-story-round]').textContent=Math.min(storyState.round+1,8);document.querySelector('[data-story-score]').textContent=storyState.score;document.querySelector('[data-story-speaker]').textContent=scene.speaker;document.querySelector('[data-story-line]').textContent=scene.line;document.querySelector('[data-story-demand]').textContent=scene.d;document.querySelector('[data-story-supply]').textContent=scene.s;document.querySelector('[data-story-gap]').textContent=Math.abs(scene.d-scene.s);document.querySelector('[data-story-map-progress]').style.setProperty('--map',`${storyState.round/7*100}%`);document.querySelector('[data-story-hero]').style.left=`${8+storyState.round*10.5}%`;
   const desc=marketDescription(scene.d,scene.s);document.querySelector('[data-story-status]').textContent=desc[0];document.querySelector('[data-story-explain]').textContent=desc[1];
   document.querySelector('[data-story-choices]').innerHTML=scene.choices.map((choice,index)=>`<button type="button" data-story-choice="${index}">${choice[0]}</button>`).join('');
   document.querySelectorAll('[data-story-choice]').forEach(button=>button.addEventListener('click',()=>chooseStory(Number(button.dataset.storyChoice))));
 }
 function chooseStory(index){
-  const scene=storyScenes[storyState.round],choice=scene.choices[index],d=scene.d+choice[1],s=scene.s+choice[2],gap=Math.abs(d-s);storyState.score+=Math.max(0,30-gap);
+  const scene=storyScenes[storyOrder[storyState.round]],choice=scene.choices[index],d=scene.d+choice[1],s=scene.s+choice[2],gap=Math.abs(d-s);storyState.score+=Math.max(0,30-gap);document.querySelector('[data-story-score]').textContent=storyState.score;
   document.querySelector('[data-story-demand]').textContent=d;document.querySelector('[data-story-supply]').textContent=s;document.querySelector('[data-story-gap]').textContent=gap;const desc=marketDescription(d,s);document.querySelector('[data-story-status]').textContent=desc[0];document.querySelector('[data-story-explain]').textContent=desc[1];document.querySelectorAll('[data-story-choice]').forEach(b=>b.disabled=true);
   const feedback=document.querySelector('[data-story-feedback]');feedback.innerHTML=`<b>${choice[0]} · 시장 차이 ${gap}</b><p>${choice[3]}</p>`;
-  setTimeout(()=>{storyState.round+=1;if(storyState.round<8){renderStory()}else{document.querySelector('[data-story-map-progress]').style.setProperty('--map','100%');feedback.classList.add('success');feedback.innerHTML=`<b>여덟 장소 완료 · 균형 점수 ${storyState.score}점</b><p>수요가 많은지 공급이 많은지 먼저 판단하면 정책의 방향을 고르기 쉬워집니다.</p>`;document.querySelector('[data-story-choices]').innerHTML='<p class="story-end">시장 균형 마을의 여덟 장소를 모두 살펴봤습니다.</p>'}},1150);
+  setTimeout(()=>{storyState.round+=1;if(storyState.round<8){renderStory()}else{document.querySelector('[data-story-map-progress]').style.setProperty('--map','100%');feedback.classList.add('success');const rank=storyState.score>=210?'균형 설계자':storyState.score>=150?'시장 조정관':'시장 관찰자';feedback.innerHTML=`<b>${rank} · 균형 점수 ${storyState.score}점</b><p>같은 사건도 선택에 따라 수요·공급의 차이가 다르게 남습니다. 다시 시작하면 장소 순서도 바뀝니다.</p>`;document.querySelector('[data-story-choices]').innerHTML='<p class="story-end">시장 균형 마을의 여덟 장소를 모두 살펴봤습니다.</p>'}},1150);
 }
-document.querySelector('[data-reset-story]').addEventListener('click',()=>{storyState.round=0;storyState.score=0;const f=document.querySelector('[data-story-feedback]');f.classList.remove('success');f.innerHTML='<b>첫 대화를 읽어보세요.</b><p>주민과 상인 중 어느 쪽의 양이 부족한지 먼저 판단하세요.</p>';renderStory()});
+document.querySelector('[data-reset-story]').addEventListener('click',()=>{storyState.round=0;storyState.score=0;storyOrder=storyScenes.map((_,index)=>index).sort(()=>Math.random()-.5);document.querySelector('[data-story-score]').textContent=0;const f=document.querySelector('[data-story-feedback]');f.classList.remove('success');f.innerHTML='<b>새로운 순서로 이야기를 시작합니다.</b><p>주민과 상인 중 어느 쪽의 양이 부족한지 먼저 판단하세요.</p>';renderStory()});
 
 // 06 · 한계의 정원 최적화 퍼즐
-const marginalA=[13,11,9,7,5,3,2,1,1,0],marginalB=[12,11,10,9,8,7,5,3,2,1];
-const garden={a:8,b:2};
+const gardenMissions=[
+  {name:'맑은 날 기본 정원',aName:'A 밭 · 토마토',bName:'B 밭 · 허브',a:[13,11,9,7,5,3,2,1,1,0],b:[12,11,10,9,8,7,5,3,2,1],start:[8,2],target:92},
+  {name:'가뭄 뒤 회복 정원',aName:'A 밭 · 파프리카',bName:'B 밭 · 상추',a:[16,13,10,7,4,2,1,0,0,0],b:[10,10,9,8,7,6,5,4,3,2],start:[7,3],target:91},
+  {name:'온실 수확 정원',aName:'A 밭 · 딸기',bName:'B 밭 · 바질',a:[11,10,9,8,7,6,5,4,3,2],b:[15,12,9,6,4,3,2,1,0,0],start:[2,8],target:89}
+];
+let gardenOrder=gardenMissions.map((_,index)=>index).sort(()=>Math.random()-.5);
+const firstGarden=gardenMissions[gardenOrder[0]];
+const garden={mission:0,a:firstGarden.start[0],b:firstGarden.start[1]};
 const sumFirst=(arr,count)=>arr.slice(0,count).reduce((a,b)=>a+b,0);
 function updateGarden(){
+  const mission=gardenMissions[gardenOrder[garden.mission]],marginalA=mission.a,marginalB=mission.b;
   const ya=sumFirst(marginalA,garden.a),yb=sumFirst(marginalB,garden.b),total=ya+yb;
+  document.querySelector('[data-garden-mission]').textContent=garden.mission+1;document.querySelector('[data-garden-target]').textContent=`${mission.target} 이상`;document.querySelector('[data-garden-a-name]').textContent=mission.aName;document.querySelector('[data-garden-b-name]').textContent=mission.bName;
   document.querySelector('[data-water-a-count]').textContent=garden.a;document.querySelector('[data-water-b-count]').textContent=garden.b;document.querySelector('[data-water-total]').textContent=garden.a+garden.b;document.querySelector('[data-garden-a-yield]').textContent=ya;document.querySelector('[data-garden-b-yield]').textContent=yb;document.querySelector('[data-garden-total]').textContent=total;
   document.querySelector('[data-garden-a-dots]').innerHTML=marginalA.slice(0,garden.a).map(v=>`<i style="--h:${v*6}px" title="한계수확 ${v}"></i>`).join('');document.querySelector('[data-garden-b-dots]').innerHTML=marginalB.slice(0,garden.b).map(v=>`<i style="--h:${v*6}px" title="한계수확 ${v}"></i>`).join('');
   const nextA=marginalA[garden.a]??0,nextB=marginalB[garden.b]??0;document.querySelector('[data-next-marginal]').textContent=`A ${nextA} · B ${nextB}`;
-  const feedback=document.querySelector('[data-garden-feedback]');feedback.classList.toggle('success',total>=92);feedback.classList.toggle('bad',total<82);feedback.innerHTML=total>=92?`<b>목표 달성! 총수확 ${total}</b><p>다음 한 통의 한계수확이 더 큰 밭으로 물을 옮긴 판단이 효과적이었습니다.</p>`:`<b>현재 총수확 ${total}</b><p>이미 물을 많이 받은 밭의 마지막 한 통과, 다른 밭의 다음 한 통 효과를 비교하세요.</p>`;
+  const success=total>=mission.target,feedback=document.querySelector('[data-garden-feedback]'),next=document.querySelector('[data-next-garden]');feedback.classList.toggle('success',success);feedback.classList.toggle('bad',total<mission.target-10);feedback.innerHTML=success?`<b>${mission.name} 목표 달성! 총수확 ${total}</b><p>다음 한 통의 한계수확이 더 큰 밭으로 물을 옮긴 판단이 효과적이었습니다.</p>`:`<b>${mission.name} · 현재 총수확 ${total}</b><p>목표 ${mission.target}까지 ${mission.target-total} 남았습니다. 두 밭의 마지막 한 통과 다음 한 통 효과를 비교하세요.</p>`;next.disabled=!success;next.textContent=garden.mission===gardenMissions.length-1?'세 미션을 새 순서로 다시 하기':'다음 정원 미션 →';
   document.querySelectorAll('.garden-plot').forEach(plot=>{plot.classList.remove('growing');void plot.offsetWidth;plot.classList.add('growing')});
 }
 document.querySelectorAll('[data-water-a]').forEach(b=>b.addEventListener('click',()=>{const delta=Number(b.dataset.waterA);if(delta>0&&garden.b>0){garden.a++;garden.b--}if(delta<0&&garden.a>0){garden.a--;garden.b++}updateGarden()}));
 document.querySelectorAll('[data-water-b]').forEach(b=>b.addEventListener('click',()=>{const delta=Number(b.dataset.waterB);if(delta>0&&garden.a>0){garden.b++;garden.a--}if(delta<0&&garden.b>0){garden.b--;garden.a++}updateGarden()}));
-document.querySelector('[data-reset-garden]').addEventListener('click',()=>{garden.a=8;garden.b=2;updateGarden()});
+function resetGardenMission(){const mission=gardenMissions[gardenOrder[garden.mission]];garden.a=mission.start[0];garden.b=mission.start[1];updateGarden()}
+document.querySelector('[data-reset-garden]').addEventListener('click',resetGardenMission);
+document.querySelector('[data-next-garden]').addEventListener('click',()=>{if(garden.mission===gardenMissions.length-1){gardenOrder=gardenMissions.map((_,index)=>index).sort(()=>Math.random()-.5);garden.mission=0}else garden.mission+=1;resetGardenMission()});
 
 updateSimulation();
 renderCase();

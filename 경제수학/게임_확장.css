@@ -1,0 +1,84 @@
+.game-page .kpi-grid div:last-child {
+  grid-column: 1 / -1;
+  border-right: 0;
+}
+
+.choice-cluster {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 15px;
+}
+
+.choice-cluster button {
+  min-width: 0;
+  padding: 13px 12px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: #fff;
+  color: var(--ink);
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color .18s ease, background .18s ease, transform .18s ease;
+}
+
+.choice-cluster button:hover:not(:disabled) {
+  border-color: var(--green);
+  transform: translateY(-1px);
+}
+
+.choice-cluster button.selected {
+  border-color: var(--green);
+  background: var(--green-light);
+  box-shadow: inset 0 0 0 1px var(--green);
+}
+
+.choice-cluster button:disabled {
+  cursor: default;
+  opacity: .62;
+}
+
+.choice-cluster b,
+.choice-cluster small {
+  display: block;
+}
+
+.choice-cluster b {
+  font-size: 13px;
+}
+
+.choice-cluster small {
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.choice-cluster.compact {
+  margin: 18px 0;
+}
+
+.garden-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 22px;
+}
+
+.garden-actions .game-reset,
+.garden-actions .mission-next {
+  margin: 0;
+}
+
+@media (max-width: 720px) {
+  .choice-cluster {
+    grid-template-columns: 1fr;
+  }
+
+  .garden-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
