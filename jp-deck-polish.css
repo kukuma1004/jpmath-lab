@@ -1,0 +1,42 @@
+/* JP Math Lab · standalone classroom deck finish */
+html{
+  background-color:#10161f;
+  background-image:
+    linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px),
+    radial-gradient(circle at 9% 9%,rgba(80,180,150,.14),transparent 28%),
+    radial-gradient(circle at 90% 16%,rgba(229,184,75,.12),transparent 30%);
+  background-size:32px 32px,32px 32px,auto,auto;
+  background-attachment:fixed;
+}
+
+body{background-color:transparent !important}
+
+:where(.slide,.ch){
+  background-image:
+    radial-gradient(circle at 88% 14%,rgba(125,207,255,.075),transparent 26%),
+    radial-gradient(circle at 10% 88%,rgba(255,181,69,.065),transparent 24%);
+}
+
+:where(.card,.gcard,.pcard,.box,.lab,.prob,.eq,.out,.sol,.claim,.mv-step){
+  border-radius:18px !important;
+  box-shadow:0 15px 42px rgba(0,0,0,.14);
+}
+
+:where(nav,.deck-footer,.deck-chrome){
+  backdrop-filter:blur(16px);
+}
+
+:where(button,.btn,.b,.fbtn){
+  min-height:40px;
+  border-radius:999px !important;
+}
+
+@media (max-width:720px){
+  html{background-size:24px 24px,24px 24px,auto,auto}
+  :where(.card,.gcard,.pcard,.box,.lab,.prob,.eq,.out,.sol){border-radius:14px !important}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *{transition:none !important;animation-duration:.01ms !important}
+}

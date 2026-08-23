@@ -371,7 +371,22 @@
     applyMode(saved);
   }
 
+  function applySectionTheme() {
+    var path = '';
+    try { path = decodeURIComponent(window.location.pathname); }
+    catch (e) { path = window.location.pathname; }
+
+    var section = '';
+    if (path.indexOf('/미적분1/') !== -1) section = 'calculus';
+    else if (path.indexOf('/기하/') !== -1) section = 'geometry';
+    else if (path.indexOf('/경제수학/') !== -1) section = 'economy';
+    else if (path.indexOf('/수능문제/') !== -1) section = 'csat';
+
+    if (section) document.documentElement.dataset.jpSection = section;
+  }
+
   function boot() {
+    try { applySectionTheme(); } catch (e) { console.warn('jp-theme:', e); }
     try { buildDisplayTools(); } catch (e) { console.warn('jp-display:', e); }
     scan(document);
     try { buildRail(); } catch (e) { console.warn('jp-rail:', e); }

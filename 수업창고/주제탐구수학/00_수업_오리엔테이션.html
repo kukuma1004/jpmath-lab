@@ -139,7 +139,7 @@ h4,.h4{font-size:22px;line-height:1.3;font-weight:600;margin:0 0 8px}
 .overview.open{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;align-content:start}
 .overview .thumb{background:var(--surface);border:1px solid var(--border);border-radius:12px;
   aspect-ratio:16/9;overflow:hidden;cursor:pointer;position:relative;color:var(--text-1);padding:16px;
-  font-size:11px;transition:transform .2s var(--ease)}
+  font-size:12px;transition:transform .2s var(--ease)}
 .overview .thumb:hover{transform:scale(1.04)}
 .overview .thumb .n{position:absolute;top:8px;left:10px;font-weight:700;font-size:14px;color:var(--text-3)}
 .overview .thumb .t{position:absolute;bottom:10px;left:14px;right:14px;font-weight:600;color:var(--text-1)}
@@ -382,7 +382,7 @@ kbd{font-family:var(--font-mono);font-size:.85em;background:var(--surface-2);
   padding:22px 24px;cursor:pointer;transition:transform .28s var(--ease),border-color .28s,box-shadow .28s;
   min-height:230px;display:flex;flex-direction:column;gap:12px}
 .claim:hover{transform:translateY(-5px);border-color:var(--accent)}
-.claim .who{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);
+.claim .who{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-2);
   font-family:var(--font-mono)}
 .claim .say{font-size:clamp(14px,1.15vw,17px);line-height:1.55;color:var(--text-1)}
 .claim .verdict{display:none;border-top:1px dashed var(--border-strong);padding-top:12px;
@@ -461,7 +461,7 @@ input[type=range]{width:100%;accent-color:var(--accent);height:26px;cursor:point
   line-height:1;color:var(--accent)}
 .mv-step.ai .ltr{color:var(--accent-2)}
 .mv-step .nm{font-size:clamp(12px,1vw,15px);font-weight:700;margin-top:8px;color:var(--text-1)}
-.mv-step .who{font-size:11px;color:var(--text-3);margin-top:4px;font-family:var(--font-mono)}
+.mv-step .who{font-size:12px;color:var(--text-2);margin-top:4px;font-family:var(--font-mono)}
 .mv-detail{margin-top:22px;background:var(--surface);border:1px solid var(--border);
   border-left:3px solid var(--accent);border-radius:var(--radius-sm);padding:20px 24px;
   font-size:clamp(14px,1.2vw,18px);line-height:1.6;color:var(--text-2);min-height:92px}
@@ -519,7 +519,7 @@ input[type=range]{width:100%;accent-color:var(--accent);height:26px;cursor:point
 .tcard.sel{border-color:var(--accent);background:rgba(255,181,69,.13)}
 .tcard .tt{font-size:14.5px;font-weight:700;color:var(--text-1);line-height:1.35}
 .tcard .tq{font-size:12px;color:var(--text-3);margin-top:5px;line-height:1.45}
-.tcard .tg2{font-size:10px;font-family:var(--font-mono);color:var(--accent);letter-spacing:.06em}
+.tcard .tg2{font-size:12px;font-family:var(--font-mono);color:var(--accent);letter-spacing:.05em}
 .tcard.geo .tg2{color:var(--accent-2)}
 .tb-right{display:flex;flex-direction:column;gap:12px;min-height:0}
 .basket{background:var(--surface);border:1.5px dashed var(--border-strong);border-radius:var(--radius);
@@ -541,11 +541,11 @@ input[type=range]{width:100%;accent-color:var(--accent);height:26px;cursor:point
 .gcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);
   padding:18px 18px 16px;transition:.25s var(--ease)}
 .gcard:hover{transform:translateY(-5px);border-color:var(--accent);box-shadow:var(--shadow-lg)}
-.gcard .track{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.1em;color:var(--accent)}
+.gcard .track{font-family:var(--font-mono);font-size:12px;letter-spacing:.08em;color:var(--accent)}
 .gcard.b .track{color:var(--accent-2)}
 .gcard h4{font-size:clamp(14px,1.15vw,17.5px);margin:7px 0 8px}
 .gcard p{font-size:clamp(11.5px,.95vw,13.5px);color:var(--text-2);line-height:1.5;margin:0}
-.gcard .rule{margin-top:10px;font-family:var(--font-mono);font-size:11px;color:var(--text-3);
+.gcard .rule{margin-top:10px;font-family:var(--font-mono);font-size:12px;color:var(--text-2);
   border-top:1px dashed var(--border);padding-top:9px}
 .bigrule{margin-top:24px;text-align:center;font-size:clamp(18px,2vw,30px);font-weight:800;
   color:var(--accent);letter-spacing:-.02em}
@@ -561,7 +561,7 @@ input[type=range]{width:100%;accent-color:var(--accent);height:26px;cursor:point
   border:1px solid var(--border)}
 .tseg{display:flex;flex-direction:column;align-items:center;justify-content:center;
   font-size:12px;color:#1a1408;font-weight:700;line-height:1.3;text-align:center;padding:0 4px}
-.tseg small{font-size:10.5px;opacity:.75;font-weight:600}
+.tseg small{font-size:12px;opacity:.88;font-weight:600}
 
 /* ── S15. 평가 배점 바 ──────────────────────────────── */
 .score-list{margin-top:26px;display:flex;flex-direction:column;gap:16px}
@@ -630,7 +630,7 @@ input[type=range]{width:100%;accent-color:var(--accent);height:26px;cursor:point
 .farrow{color:var(--text-3);font-size:15px}
 
 /* 진행바/푸터 */
-.deck-footer{font-size:11.5px;letter-spacing:.08em}
+.deck-footer{font-size:12px;letter-spacing:.06em}
 .progress-bar > span{background:var(--grad)}
 
 /* 좁은 화면(교실 노트북) 대응 */
@@ -694,6 +694,7 @@ input[type=range]{width:100%;accent-color:var(--accent);height:26px;cursor:point
   .mt-l{margin-top:20px}
 }
 </style>
+<link rel="stylesheet" href="../../jp-deck-polish.css?v=1">
 </head>
 <body>
 <div class="deck">
@@ -1576,10 +1577,10 @@ E(새 문제 만들기)는 세특 소재로도 가장 강력하다는 점을 슬
   }
   .pcard-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dot-color, #58a6ff); flex-shrink: 0; }
   .pcard-title {
-    font-size: 11px; letter-spacing: .15em; text-transform: uppercase;
+    font-size: 12px; letter-spacing: .1em; text-transform: uppercase;
     font-weight: 700; color: #8b949e; flex: 1;
   }
-  .pcard-meta { font-size: 11px; color: #6e7681; }
+  .pcard-meta { font-size: 12px; color: #89929f; }
 
   /* Card body */
   .pcard-body { flex: 1; position: relative; overflow: hidden; min-height: 0; }
@@ -1633,7 +1634,7 @@ E(새 문제 만들기)는 세특 소재로도 가장 강력하다는 점을 슬
     display: flex; align-items: center; gap: 12px;
     font-size: 14px; color: #8b949e;
   }
-  .timer-row .label { font-size: 10px; letter-spacing: .15em; text-transform: uppercase; color: #6e7681; }
+  .timer-row .label { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: #89929f; }
   .timer-row .val { color: #e6edf3; font-weight: 600; font-family: "SF Mono", monospace; }
   .timer-controls { display: flex; gap: 8px; flex-wrap: wrap; }
   .timer-btn {
@@ -1666,7 +1667,7 @@ E(새 문제 만들기)는 세특 소재로도 가장 강력하다는 점을 슬
     backdrop-filter: blur(10px);
     border-top: 1px solid rgba(255,255,255,.08);
     padding: 6px 16px;
-    font-size: 11px; color: #8b949e;
+    font-size: 12px; color: #a7b0bc;
     display: flex; gap: 18px; align-items: center;
     z-index: 1000;
   }
@@ -1674,7 +1675,7 @@ E(새 문제 만들기)는 세특 소재로도 가장 강력하다는 점을 슬
     background: rgba(255,255,255,.08);
     padding: 1px 6px; border-radius: 3px;
     font-family: "SF Mono", monospace;
-    font-size: 10px;
+    font-size: 12px;
     border: 1px solid rgba(255,255,255,.1);
     color: #e6edf3;
   }
@@ -1682,7 +1683,7 @@ E(새 문제 만들기)는 세특 소재로도 가장 강력하다는 점을 슬
     margin-left: auto;
     background: transparent; border: 1px solid rgba(255,255,255,.15);
     color: #8b949e; padding: 3px 10px; border-radius: 4px;
-    font-size: 11px; cursor: pointer; font-family: inherit;
+    font-size: 12px; cursor: pointer; font-family: inherit;
   }
   .hint-bar .reset-layout:hover { background: rgba(248,81,73,.15); border-color: #f85149; color: #f85149; }
 
@@ -2746,7 +2747,7 @@ function renderBasket(){
     var el = document.createElement('div');
     el.className = 'bitem';
     el.innerHTML = '<span class="n">'+(k+1)+'</span>'+
-      '<span><b>'+t.t+'</b><br><span style="color:var(--text-3);font-size:11.5px">'+t.n+'차시 · '+t.b+'</span></span>'+
+      '<span><b>'+t.t+'</b><br><span style="color:var(--text-2);font-size:12px">'+t.n+'차시 · '+t.b+'</span></span>'+
       '<span class="x" title="빼기">×</span>';
     el.querySelector('.x').addEventListener('click', function(e){
       e.stopPropagation(); toggleTopic(idx);

@@ -340,3 +340,303 @@ button:disabled{cursor:default}
 
 @media (max-width:899px){.jp-display-tools{display:none}}
 @media print{.jp-display-tools{display:none !important}}
+
+/* ===================================================================
+   13. JP Design System v5 · readable surfaces
+   -------------------------------------------------------------------
+   여러 과목의 개성은 유지하고, 작은 글씨의 크기·행간·대비와
+   카드/버튼의 반응만 공통 언어로 맞춘다.
+   =================================================================== */
+:root{
+  --jp-paper:#f4f3ed;
+  --jp-night:#172a24;
+  --jp-green:#2f6b5c;
+  --jp-gold:#c7972f;
+  --jp-coral:#c86f4a;
+  --jp-body-size:15px;
+  --jp-label-size:12px;
+  --jp-action-size:13px;
+}
+
+::selection{
+  background:rgba(199,151,47,.28);
+  color:inherit;
+}
+
+body{
+  text-rendering:optimizeLegibility;
+  -webkit-font-smoothing:antialiased;
+}
+
+small{
+  font-size:max(12px,.82em);
+  line-height:1.55;
+}
+
+:where(.eyebrow,.kicker,.code-chip,.card-code,.card-meta,.index-mark,
+       .theorem-eyebrow,.section-kicker,.section-sub,.slide-number,
+       .step-label,.form-card-tag,.topic-code,.unit-code,.skill-mini-code,
+       .skill-mini-status,.skill-mini-footer,.skill-mini-formula,
+       .skill-category em,.skill-section-head span,.calc-section-head span,
+       .view-btn span){
+  font-size:var(--jp-label-size) !important;
+  line-height:1.45 !important;
+  letter-spacing:.09em;
+}
+
+:where(.desc,.card-desc,.lede,.theory-p,.concept-box p,.question-card p,
+       .mini-card p,.visual-card p,.graph-card p,.step-note,.note,
+       .mode-btn-desc,.form-card-body,.end-sub,.plain-note,.hintline,
+       .calc-category small,.skill-category-button small,.skill-category small){
+  font-size:var(--jp-body-size) !important;
+  line-height:1.72 !important;
+}
+
+:where(.btn,.btn-primary,.btn-secondary,.big-btn,.tab-btn,.topic-tab,
+       .skill-tab,.mode-btn,.card-arrow,.card-footer,.chip){
+  font-size:var(--jp-action-size) !important;
+  line-height:1.35;
+}
+
+:where(a.card,a.resource-card,a.skill-mini,a.form-card,a.question-card){
+  transition:transform .28s var(--jp-ease),
+             box-shadow .28s var(--jp-ease),
+             border-color .24s var(--jp-ease-io);
+}
+
+@media (hover:hover){
+  :where(a.card,a.resource-card,a.skill-mini,a.form-card,a.question-card):hover{
+    transform:translateY(-3px);
+  }
+}
+
+@media (max-width:720px){
+  :root{
+    --jp-body-size:15px;
+    --jp-label-size:11.5px;
+    --jp-action-size:13px;
+  }
+
+  :where(button,.btn,.btn-primary,.btn-secondary,.big-btn,.tab-btn,
+         .topic-tab,.skill-tab,.mode-btn){
+    min-height:42px;
+  }
+}
+
+@media (prefers-reduced-motion:reduce){
+  :where(a.card,a.resource-card,a.skill-mini,a.form-card,a.question-card){
+    transform:none !important;
+  }
+}
+
+/* ===================================================================
+   14. JP Design System v6 · subject worlds
+   -------------------------------------------------------------------
+   과목마다 다른 색과 첫인상을 주면서, 모든 학습실의 배경·카드·탭을
+   같은 완성도로 묶는다. 콘텐츠 구조와 수학 상호작용은 그대로 둔다.
+   =================================================================== */
+html[data-jp-section="calculus"]{
+  --jp-theme:#c66f4c;
+  --jp-theme-dark:#1c3029;
+  --jp-theme-soft:#f2dfd3;
+  --jp-theme-glow:rgba(198,111,76,.24);
+}
+html[data-jp-section="geometry"]{
+  --jp-theme:#2f7161;
+  --jp-theme-dark:#17342d;
+  --jp-theme-soft:#dcebe6;
+  --jp-theme-glow:rgba(47,113,97,.22);
+}
+html[data-jp-section="economy"]{
+  --jp-theme:#bd8a28;
+  --jp-theme-dark:#1a2c24;
+  --jp-theme-soft:#f3e8bd;
+  --jp-theme-glow:rgba(189,138,40,.24);
+}
+html[data-jp-section="csat"]{
+  --jp-theme:#62789d;
+  --jp-theme-dark:#222f46;
+  --jp-theme-soft:#e1e8f2;
+  --jp-theme-glow:rgba(98,120,157,.24);
+}
+
+html[data-jp-section]{
+  background-color:#f1f1eb;
+  background-image:
+    linear-gradient(rgba(34,48,39,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(34,48,39,.035) 1px,transparent 1px),
+    radial-gradient(circle at 12% 5%,var(--jp-theme-glow),transparent 28%),
+    radial-gradient(circle at 92% 18%,rgba(255,255,255,.92),transparent 31%);
+  background-size:32px 32px,32px 32px,auto,auto;
+  background-attachment:fixed;
+}
+
+html[data-jp-section] body:not(.tpl-dark){
+  background:transparent !important;
+}
+
+html[data-jp-section] body.jp-hub-page{
+  position:relative;
+}
+
+html[data-jp-section] body.jp-hub-page > .breadcrumb{
+  display:inline-flex;
+  min-height:38px;
+  align-items:center;
+  margin-bottom:18px;
+  padding:0 14px;
+  border:1px solid rgba(34,48,39,.1);
+  border-radius:999px;
+  background:rgba(255,255,255,.7);
+  color:#67736e;
+  box-shadow:0 8px 26px rgba(34,48,39,.06);
+  backdrop-filter:blur(14px);
+}
+
+html[data-jp-section] body.jp-hub-page > .hero{
+  position:relative;
+  min-height:230px;
+  overflow:hidden;
+  margin-bottom:24px !important;
+  padding:clamp(30px,4vw,48px) clamp(28px,4.5vw,56px) !important;
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:32px;
+  color:#fff;
+  background:
+    radial-gradient(circle at 84% 22%,var(--jp-theme-glow),transparent 32%),
+    linear-gradient(135deg,var(--jp-theme-dark),color-mix(in srgb,var(--jp-theme-dark) 82%,var(--jp-theme)));
+  box-shadow:0 26px 70px rgba(24,45,38,.18);
+  isolation:isolate;
+}
+
+html[data-jp-section] body.jp-hub-page > .hero::after{
+  position:absolute;
+  z-index:-1;
+  right:clamp(22px,6vw,76px);
+  top:50%;
+  color:rgba(255,255,255,.095);
+  font:800 clamp(74px,12vw,150px)/1 var(--font-serif,"Noto Serif KR",serif);
+  transform:translateY(-50%) rotate(-7deg);
+  content:"f(x)";
+  pointer-events:none;
+}
+html[data-jp-section="calculus"] body.jp-hub-page > .hero::after{content:"∫ f"}
+html[data-jp-section="geometry"] body.jp-hub-page > .hero::after{content:"◯ △"}
+html[data-jp-section="csat"] body.jp-hub-page > .hero::after{content:"15 →"}
+
+html[data-jp-section] body.jp-hub-page > .hero :where(h1,h2,h3){color:#fff}
+html[data-jp-section] body.jp-hub-page > .hero :where(.eyebrow,.kicker){color:color-mix(in srgb,var(--jp-theme) 48%,white)}
+html[data-jp-section] body.jp-hub-page > .hero :where(.lede,p:last-child){
+  position:relative;
+  z-index:1;
+  max-width:720px;
+  color:rgba(255,255,255,.78) !important;
+}
+
+html[data-jp-section] :where(.view-switch,.unit-nav,.tabbar,.skill-nav){
+  border-color:rgba(34,48,39,.12) !important;
+  border-radius:20px !important;
+  background:rgba(255,255,255,.72) !important;
+  box-shadow:0 12px 36px rgba(34,48,39,.08);
+  backdrop-filter:blur(16px);
+}
+
+html[data-jp-section] :where(.view-btn,.tab-btn,.topic-tab,.skill-tab).active{
+  background:var(--jp-theme-dark) !important;
+  color:#fff !important;
+  box-shadow:0 8px 20px rgba(25,47,39,.16);
+}
+
+html[data-jp-section] :where(.skill-map-intro,.calc-map-intro,.section-hero,.topic-hero,.skill-hero,.mode-header){
+  position:relative;
+  overflow:hidden;
+  border:1px solid color-mix(in srgb,var(--jp-theme) 24%,#d7ddd9) !important;
+  border-radius:26px !important;
+  background:
+    linear-gradient(120deg,rgba(255,255,255,.92),color-mix(in srgb,var(--jp-theme-soft) 62%,white)) !important;
+  box-shadow:0 16px 42px rgba(34,48,39,.08);
+}
+
+html[data-jp-section] :where(.skill-map-intro,.calc-map-intro)::before{
+  position:absolute;
+  inset:0 auto 0 0;
+  width:6px;
+  background:var(--jp-theme);
+  content:"";
+}
+
+html[data-jp-section] :where(.card,.skill-category,.skill-mini,.calc-category-button,
+  .mini-card,.visual-card,.graph-card,.lab-graph-card,.concept-box,.theorem-box,
+  .limit-box,.question-card,.q-card,.lesson-block,.step-block,.panel-block){
+  border-color:rgba(34,48,39,.11) !important;
+  border-radius:22px !important;
+  background-color:rgba(255,255,255,.88) !important;
+  box-shadow:0 12px 36px rgba(34,48,39,.07);
+}
+
+html[data-jp-section] :where(.card,.skill-category,.skill-mini,.calc-category-button,
+  .mini-card,.visual-card,.graph-card,.lab-graph-card,.question-card,.q-card):hover{
+  border-color:color-mix(in srgb,var(--jp-theme) 48%,#d5dcd8) !important;
+  box-shadow:0 20px 48px rgba(34,48,39,.13) !important;
+}
+
+html[data-jp-section] :where(.code-chip,.chip,.skill-mini-code,.tag){
+  color:var(--jp-theme) !important;
+  background:color-mix(in srgb,var(--jp-theme-soft) 68%,white) !important;
+}
+
+html[data-jp-section] :where(.section-head,.calc-section-head,.skill-section-head){
+  padding-top:18px;
+  border-top:1px solid rgba(34,48,39,.1);
+}
+
+html[data-jp-section] :where(.readout-box,.out,.result-box,.formula-box,.eq-box){
+  border-radius:18px !important;
+  border-color:color-mix(in srgb,var(--jp-theme) 22%,#d5dcd8) !important;
+}
+
+html[data-jp-section="economy"] .site-head{
+  position:sticky;
+  top:0;
+  z-index:30;
+  background:rgba(245,241,231,.82);
+  backdrop-filter:blur(18px);
+}
+
+html[data-jp-section="economy"] .hero.home-only{
+  width:calc(100% - 48px);
+  min-height:calc(100vh - 120px);
+  margin:24px;
+  border:1px solid rgba(30,47,39,.12);
+  border-radius:34px;
+  background:
+    radial-gradient(circle at 8% 18%,rgba(255,255,255,.9),transparent 28%),
+    linear-gradient(135deg,rgba(247,242,226,.94),rgba(230,238,230,.88));
+  box-shadow:0 28px 72px rgba(31,48,40,.14);
+}
+
+html[data-jp-section="economy"] :where(.hero-board,.route-primary,.route-secondary,
+  .curriculum-grid,.curriculum-grid li,.game-tab,.game-panel,.next-grid article){
+  border-radius:20px !important;
+}
+
+@media (max-width:720px){
+  html[data-jp-section]{background-size:24px 24px,24px 24px,auto,auto}
+  html[data-jp-section] body.jp-hub-page > .breadcrumb{margin-bottom:12px}
+  html[data-jp-section] body.jp-hub-page > .hero{
+    min-height:210px;
+    padding:27px 24px !important;
+    border-radius:24px;
+  }
+  html[data-jp-section] body.jp-hub-page > .hero::after{
+    right:-4px;
+    top:28%;
+    font-size:76px;
+    opacity:.72;
+  }
+  html[data-jp-section="economy"] .hero.home-only{
+    width:calc(100% - 24px);
+    margin:12px;
+    border-radius:24px;
+  }
+}
