@@ -238,7 +238,11 @@
 
   function copyText(text, button, doneText) {
     var original = button.textContent;
-    function done() { button.textContent = doneText; window.setTimeout(function () { button.textContent = original; }, 1400); }
+    function done() {
+      button.textContent = doneText;
+      document.dispatchEvent(new CustomEvent('jp:feedback', { detail: { type: 'success', message: '클립보드에 복사했습니다.' } }));
+      window.setTimeout(function () { button.textContent = original; }, 1400);
+    }
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text, done); });
     else fallbackCopy(text, done);
   }
@@ -270,17 +274,29 @@
 
   function init() {
     bindControls();
+    var list = document.getElementById('inquiryList');
+    list.classList.add('is-loading');
+    list.setAttribute('aria-busy', 'true');
+    list.innerHTML = '<div class="jp-skeleton-card"><span class="jp-skeleton-line short"></span><span class="jp-skeleton-line long"></span><span class="jp-skeleton-line"></span></div>' +
+      '<div class="jp-skeleton-card"><span class="jp-skeleton-line short"></span><span class="jp-skeleton-line long"></span><span class="jp-skeleton-line"></span></div>' +
+      '<div class="jp-skeleton-card"><span class="jp-skeleton-line short"></span><span class="jp-skeleton-line long"></span><span class="jp-skeleton-line"></span></div>';
     fetch(DATA_URL, { cache: 'no-store' }).then(function (response) {
       if (!response.ok) throw new Error('탐구 초안 데이터를 불러오지 못했습니다.');
       return response.json();
     }).then(function (data) {
+      list.classList.remove('is-loading');
+      list.removeAttribute('aria-busy');
       state.inquiries = data.inquiries || [];
       updateMetrics();
       if (state.inquiries.length) state.selectedId = state.inquiries[0].id;
       renderList();
       if (state.inquiries.length) renderCurator(state.inquiries[0]);
     }).catch(function (error) {
-      document.getElementById('inquiryList').appendChild(element('p', 'list-empty', error.message));
+      list.classList.remove('is-loading');
+      list.removeAttribute('aria-busy');
+      list.textContent = '';
+      list.appendChild(element('p', 'list-empty', error.message));
+      document.dispatchEvent(new CustomEvent('jp:feedback', { detail: { type: 'error', message: error.message } }));
     });
   }
 

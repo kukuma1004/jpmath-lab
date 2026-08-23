@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=Noto+Serif+KR:wght@700;900&amp;display=swap" rel="stylesheet">
   <style>
-    :root { --ink:#102522; --muted:#63726f; --paper:#f4f2ea; --green:#176b5b; --orange:#d2683c; --line:#d9ddd6; }
+    :root { --ink:#102522; --muted:#63726f; --paper:#f4f2ea; --green:#176b5b; --orange:#d2683c; --line:#d9ddd6; --soft:#e5efeb; --ease:cubic-bezier(.16,1,.3,1); }
     * { box-sizing:border-box; }
     body { margin:0; color:var(--ink); background:radial-gradient(circle at 88% 8%,rgba(23,107,91,.16),transparent 28%),radial-gradient(circle at 8% 78%,rgba(210,104,60,.15),transparent 28%),var(--paper); font-family:'IBM Plex Sans KR',sans-serif; }
     button,input,textarea { font:inherit; }
@@ -19,58 +19,105 @@
     .eyebrow { margin:0 0 12px; color:var(--green); font-size:11px; font-weight:800; letter-spacing:.13em; }
     h1 { margin:0; font:900 clamp(44px,8vw,78px)/1.08 'Noto Serif KR',serif; letter-spacing:-.065em; }
     .hero-mark { display:grid; width:150px; aspect-ratio:1; place-items:center; border:1px solid rgba(23,107,91,.28); border-radius:50%; color:white; background:var(--green); font:900 72px 'Noto Serif KR',serif; box-shadow:24px 24px 0 rgba(210,104,60,.14); }
-    .panel { padding:clamp(24px,5vw,46px); border:1px solid var(--line); border-radius:28px; background:rgba(255,255,255,.84); box-shadow:0 24px 60px rgba(28,46,42,.08); }
+    .panel { padding:clamp(24px,5vw,46px); border:1px solid var(--line); border-radius:28px; background:rgba(255,255,255,.86); box-shadow:0 24px 60px rgba(28,46,42,.08); }
     .lookup { display:grid; grid-template-columns:1fr auto; gap:10px; margin-top:24px; }
     label { display:block; margin-bottom:8px; font-size:13px; font-weight:800; }
-    input,textarea { width:100%; border:1px solid var(--line); border-radius:14px; background:white; color:var(--ink); outline:none; }
+    input,textarea { width:100%; border:1px solid var(--line); border-radius:14px; background:white; color:var(--ink); outline:none; transition:border-color .18s ease,box-shadow .18s ease,background-color .18s ease; }
     input { min-height:52px; padding:0 16px; text-transform:uppercase; letter-spacing:.11em; }
-    textarea { min-height:140px; padding:15px 16px; resize:vertical; line-height:1.7; }
+    textarea { min-height:130px; padding:15px 16px; resize:vertical; line-height:1.7; }
     input:focus,textarea:focus { border-color:var(--green); box-shadow:0 0 0 3px rgba(23,107,91,.1); }
-    button { min-height:52px; padding:0 20px; border:0; border-radius:14px; color:white; background:var(--green); cursor:pointer; font-weight:800; }
-    button:hover { filter:brightness(.94); }
-    button:disabled { opacity:.45; cursor:wait; }
+    button { min-height:52px; padding:0 20px; border:0; border-radius:14px; color:white; background:var(--green); cursor:pointer; font-weight:800; transition:transform .18s var(--ease),box-shadow .18s ease,filter .18s ease,background-color .18s ease; }
+    button:hover { filter:brightness(.96); box-shadow:0 9px 24px rgba(23,107,91,.17); transform:translateY(-1px); }
+    button:active { transform:translateY(1px) scale(.985); }
+    button:focus-visible,input:focus-visible,textarea:focus-visible { outline:3px solid rgba(23,107,91,.25); outline-offset:3px; }
+    button:disabled { opacity:.48; cursor:not-allowed; }
+    button[aria-busy="true"]::before { display:inline-block; width:13px; height:13px; margin-right:8px; border:2px solid currentColor; border-right-color:transparent; border-radius:50%; vertical-align:-2px; animation:spin .7s linear infinite; content:''; }
     .message { min-height:24px; margin:12px 0 0; color:var(--orange); font-size:13px; }
-    .workspace[hidden],.success[hidden] { display:none; }
+    [hidden] { display:none!important; }
     .student-heading { display:flex; flex-wrap:wrap; align-items:end; justify-content:space-between; gap:18px; margin-bottom:24px; }
     .student-heading h2 { margin:0; font:900 34px 'Noto Serif KR',serif; letter-spacing:-.045em; }
     .student-heading p { margin:0; color:var(--muted); }
+    .subject-guide { margin:0 0 24px; padding:18px 20px; border-radius:16px; background:var(--soft); color:#42534f; font-size:13px; line-height:1.7; }
     .inquiry-tabs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:22px; }
-    .inquiry-tab { min-height:40px; padding:0 14px; border:1px solid var(--line); border-radius:999px; color:var(--muted); background:white; font-size:13px; }
+    .inquiry-tab { min-height:42px; padding:0 15px; border:1px solid var(--line); border-radius:999px; color:var(--muted); background:white; font-size:13px; }
     .inquiry-tab.is-active { border-color:var(--green); color:white; background:var(--green); }
+    .inquiry-tab.is-done { border-color:#b7c8c2; color:#45645c; background:#e5efeb; }
     .topic-card { margin-bottom:26px; padding:24px; border-radius:20px; color:white; background:linear-gradient(135deg,#0f4d43,var(--green)); }
     .topic-card span { color:#bce1d8; font-size:12px; font-weight:700; }
     .topic-card h3 { margin:8px 0 10px; font-size:28px; letter-spacing:-.04em; }
     .topic-card p { margin:0; color:#e2f0ec; line-height:1.65; }
+    .intake-title { margin:28px 0 8px; font:900 28px 'Noto Serif KR',serif; letter-spacing:-.04em; }
+    .intake-desc { margin:0 0 25px; color:var(--muted); line-height:1.7; }
     .prompt-field { margin-top:22px; }
     .prompt-number { display:inline-grid; width:28px; height:28px; margin-right:7px; place-items:center; border-radius:50%; color:white; background:var(--orange); font-size:12px; }
+    .hint { display:block; margin:7px 0 0; color:var(--muted); font-size:11px; font-weight:500; line-height:1.6; }
     .optional { margin-top:34px; padding-top:28px; border-top:1px solid var(--line); }
     .submit-row { display:flex; align-items:center; justify-content:space-between; gap:18px; margin-top:28px; }
     .privacy { color:var(--muted); font-size:12px; line-height:1.55; }
-    .success { text-align:center; }
-    .success strong { display:block; margin-bottom:12px; color:var(--green); font:900 42px 'Noto Serif KR',serif; }
-    .success p { color:var(--muted); line-height:1.7; }
+    .waiting,.success { text-align:center; }
+    .waiting-mark,.success strong { display:block; margin-bottom:16px; color:var(--green); font:900 42px 'Noto Serif KR',serif; }
+    .success strong::before { display:grid; width:52px; height:52px; margin:0 auto 17px; place-items:center; border-radius:50%; color:white; background:var(--green); box-shadow:0 0 0 9px rgba(23,107,91,.1); font:900 25px 'IBM Plex Sans KR',sans-serif; content:'✓'; animation:successIn .35s var(--ease) both; }
+    .waiting h2 { margin:0 0 12px; font:900 34px 'Noto Serif KR',serif; }
+    .waiting p,.success p { color:var(--muted); line-height:1.8; }
     .secondary { margin-top:18px; border:1px solid var(--line); color:var(--green); background:white; }
-    @media (max-width:640px) { .hero{grid-template-columns:1fr}.hero-mark{display:none}.lookup{grid-template-columns:1fr}.submit-row{align-items:stretch;flex-direction:column}.submit-row button{width:100%}.header{margin-bottom:34px} }
+    .panel-enter { animation:panelIn .3s var(--ease) both; }
+    .field-error { animation:errorNudge .26s ease both; }
+    .app-toast { position:fixed; z-index:50; right:18px; bottom:18px; display:grid; grid-template-columns:32px 1fr; align-items:center; gap:10px; width:min(370px,calc(100vw - 36px)); padding:13px 15px; border:1px solid rgba(23,107,91,.25); border-radius:16px; color:#17332e; background:#f8fcfa; box-shadow:0 18px 48px rgba(12,37,31,.18); opacity:0; transform:translateY(14px) scale(.98); transition:opacity .2s ease,transform .26s var(--ease); pointer-events:none; }
+    .app-toast.is-visible { opacity:1; transform:none; }
+    .app-toast.is-error { border-color:rgba(185,77,66,.3); color:#6a2d28; background:#fff9f8; }
+    .app-toast i { display:grid; width:32px; height:32px; place-items:center; border-radius:50%; color:white; background:var(--green); font-style:normal; font-weight:900; }
+    .app-toast.is-error i { background:#b94d42; }
+    .app-toast p { margin:0; font-size:13px; font-weight:700; line-height:1.45; }
+    @keyframes panelIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
+    @keyframes successIn { from{opacity:0;transform:scale(.72) rotate(-12deg)} to{opacity:1;transform:none} }
+    @keyframes errorNudge { 0%,100%{transform:translateX(0)} 30%{transform:translateX(-5px)} 65%{transform:translateX(4px)} }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    @media (max-width:640px) { .shell{width:min(100% - 22px,920px);padding-top:28px}.hero{grid-template-columns:1fr}.hero-mark{display:none}.panel{padding:24px 18px;border-radius:22px}.lookup{grid-template-columns:1fr}.submit-row{align-items:stretch;flex-direction:column}.submit-row button{width:100%}.header{margin-bottom:34px}.app-toast{right:11px;bottom:11px;width:calc(100vw - 22px)} }
+    @media (prefers-reduced-motion:reduce) { *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important} }
   </style>
 </head>
 <body>
   <main class="shell">
     <header class="header"><span class="brand">JP Math Lab</span><span class="edition">2026 수학 주제탐구</span></header>
     <section class="hero">
-      <div><p class="eyebrow">학생 질문함</p><h1>질문을 다듬고,<br>탐구를 시작합니다.</h1></div>
+      <div><p class="eyebrow">학생 질문함</p><h1>질문을 찾고,<br>탐구를 시작합니다.</h1></div>
       <div class="hero-mark" aria-hidden="true">?</div>
     </section>
 
     <section class="panel" id="loginPanel">
-      <p>선생님께 받은 학생 코드를 입력하면 나의 탐구 주제와 이번 발문을 확인할 수 있습니다.</p>
+      <p>학생 코드를 입력하면 지금 나에게 필요한 주제선정 질문 또는 맞춤 발문이 나타납니다.</p>
       <div class="lookup">
         <div><label for="studentCode">학생 코드</label><input id="studentCode" maxlength="12" autocomplete="off" placeholder="예: A1B2C3"></div>
-        <button type="button" id="lookupButton">내 발문 확인</button>
+        <button type="button" id="lookupButton">내 질문 확인</button>
       </div>
       <p class="message" id="loginMessage" role="alert"></p>
     </section>
 
-    <section class="panel workspace" id="workspace" hidden>
+    <section class="panel" id="intakePanel" hidden>
+      <div class="student-heading"><div><p class="eyebrow">주제선정 첫 단계</p><h2 id="intakeStudentName"></h2></div><p>미적분Ⅰ과 기하를 각각 작성합니다.</p></div>
+      <p class="subject-guide">잘 정리된 주제가 없어도 괜찮습니다. 지금 떠오르는 생각을 학생 자신의 말로 적어 주세요. 원문은 그대로 보존되고, 선생님이 다음 질문을 만드는 자료로 사용합니다.</p>
+      <div class="inquiry-tabs" id="intakeSubjectTabs"></div>
+      <h3 class="intake-title" id="intakeSubjectTitle"></h3>
+      <p class="intake-desc">아래 네 질문은 필수이고, 웹앱 아이디어와 선생님께 전할 말은 선택입니다.</p>
+      <form id="intakeForm">
+        <div class="prompt-field"><label for="concept"><span class="prompt-number">1</span>이 과목에서 흥미롭거나 더 알고 싶은 개념은 무엇인가?</label><textarea id="concept" required placeholder="단원명, 수학 용어, 이해가 잘 되지 않았던 내용도 좋습니다."></textarea></div>
+        <div class="prompt-field"><label for="curiosity"><span class="prompt-number">2</span>그 개념과 관련해 무엇이 궁금한가?</label><textarea id="curiosity" required placeholder="아직 완성된 질문이 아니어도 됩니다. ‘왜’, ‘언제’, ‘어떻게 달라질까’처럼 적어 보세요."></textarea></div>
+        <div class="prompt-field"><label for="reason"><span class="prompt-number">3</span>이것을 탐구하고 싶은 이유는 무엇인가?</label><textarea id="reason" required placeholder="수업, 일상 경험, 진로, 다른 과목과의 연결 등 나에게 의미 있는 이유를 적어 보세요."></textarea></div>
+        <div class="prompt-field"><label for="method"><span class="prompt-number">4</span>무엇을 비교·계산·실험하면 궁금증을 확인할 수 있을까?</label><textarea id="method" required placeholder="정확하지 않아도 괜찮습니다. 바꿔 볼 조건, 관찰할 결과, 사용할 예시를 적어 보세요."></textarea></div>
+        <div class="optional">
+          <div class="prompt-field"><label for="appIdea">웹앱으로 움직여 보거나 보여 주고 싶은 것은 무엇인가?</label><span class="hint">아이디어가 아직 없으면 비워 두어도 됩니다.</span><textarea id="appIdea" placeholder="예: 슬라이더로 조건을 바꾸면 그래프가 변하는 모습"></textarea></div>
+          <div class="prompt-field"><label for="intakeNote">선생님께 전하고 싶은 말</label><textarea id="intakeNote" placeholder="어려운 점이나 도움이 필요한 부분을 적어 주세요."></textarea></div>
+        </div>
+        <div class="submit-row"><span class="privacy">제출 원문은 비공개 Google Sheet에 그대로 보존됩니다.</span><button type="submit" id="intakeSubmitButton">이 과목 제출하기</button></div>
+        <p class="message" id="intakeMessage" role="alert"></p>
+      </form>
+    </section>
+
+    <section class="panel waiting" id="waitingPanel" hidden>
+      <span class="waiting-mark">✓</span><p class="eyebrow">기초응답 완료</p><h2 id="waitingStudentName"></h2><p id="waitingMessage"></p>
+    </section>
+
+    <section class="panel" id="workspace" hidden>
       <div class="student-heading"><div><p class="eyebrow">나의 탐구</p><h2 id="studentName"></h2></div><p>답변은 선생님에게만 전달됩니다.</p></div>
       <div class="inquiry-tabs" id="inquiryTabs"></div>
       <div class="topic-card"><span id="subject"></span><h3 id="topicTitle"></h3><p id="currentQuestion"></p></div>
@@ -86,48 +133,138 @@
     </section>
 
     <section class="panel success" id="successPanel" hidden>
-      <strong>제출 완료</strong><p id="successMessage"></p><button type="button" class="secondary" id="continueButton">다른 탐구 답변하기</button>
+      <strong>제출 완료</strong><p id="successMessage"></p><button type="button" class="secondary" id="continueButton">계속하기</button>
     </section>
   </main>
 
   <script>
     (function () {
       'use strict';
-      var state = { studentCode: '', inquiries: [], selectedIndex: 0 };
+      var state = { studentCode:'', inquiries:[], selectedIndex:0, subjects:[], selectedSubject:'', afterSuccess:'prompts' };
       var byId = function (id) { return document.getElementById(id); };
+      var panelIds = ['loginPanel','intakePanel','waitingPanel','workspace','successPanel'];
 
       byId('studentCode').addEventListener('input', function () { this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); });
       byId('studentCode').addEventListener('keydown', function (event) { if (event.key === 'Enter') lookup(); });
       byId('lookupButton').addEventListener('click', lookup);
-      byId('responseForm').addEventListener('submit', submit);
-      byId('continueButton').addEventListener('click', function () { byId('successPanel').hidden = true; byId('workspace').hidden = false; });
+      byId('intakeForm').addEventListener('submit', submitIntake);
+      byId('responseForm').addEventListener('submit', submitPrompts);
+      byId('continueButton').addEventListener('click', function () {
+        if (state.afterSuccess === 'lookup') return loadWorkspace(state.studentCode, true);
+        showOnly('workspace');
+      });
+
+      function showOnly(id) {
+        panelIds.forEach(function (panelId) { byId(panelId).hidden = panelId !== id; });
+        var panel=byId(id); panel.classList.remove('panel-enter'); void panel.offsetWidth; panel.classList.add('panel-enter');
+      }
+
+      function notify(type,message) {
+        var old=document.querySelector('.app-toast'); if(old) old.remove();
+        var toast=document.createElement('div'); toast.className='app-toast'+(type==='error'?' is-error':'');
+        toast.setAttribute('role','status'); toast.innerHTML='<i aria-hidden="true">'+(type==='error'?'!':'✓')+'</i><p></p>';
+        toast.querySelector('p').textContent=message; document.body.appendChild(toast);
+        requestAnimationFrame(function(){toast.classList.add('is-visible');});
+        window.setTimeout(function(){toast.classList.remove('is-visible');window.setTimeout(function(){toast.remove();},260);},type==='error'?4200:2700);
+      }
 
       function lookup() {
         var code = byId('studentCode').value.trim();
         if (!code) return showMessage('loginMessage', '학생 코드를 입력해 주세요.');
-        setBusy('lookupButton', true, '확인 중…');
+        loadWorkspace(code, false);
+      }
+
+      function loadWorkspace(code, quiet) {
+        if (!quiet) setBusy('lookupButton', true, '확인 중…');
         showMessage('loginMessage', '');
         google.script.run.withSuccessHandler(function (result) {
-          setBusy('lookupButton', false, '내 발문 확인');
-          if (!result || !result.ok) return showMessage('loginMessage', result ? result.message : '발문을 불러오지 못했습니다.');
+          if (!quiet) setBusy('lookupButton', false, '내 질문 확인');
+          if (!result || !result.ok) { showOnly('loginPanel'); return showMessage('loginMessage', result ? result.message : '질문을 불러오지 못했습니다.'); }
           state.studentCode = result.student.code;
-          state.inquiries = result.inquiries;
-          state.selectedIndex = 0;
-          byId('studentName').textContent = result.student.name + ' 학생';
-          byId('loginPanel').hidden = true;
-          byId('workspace').hidden = false;
-          drawTabs();
-          drawInquiry();
+          if (result.mode === 'intake') return openIntake(result);
+          if (result.mode === 'waiting') return openWaiting(result);
+          openPrompts(result);
         }).withFailureHandler(function () {
-          setBusy('lookupButton', false, '내 발문 확인');
+          if (!quiet) setBusy('lookupButton', false, '내 질문 확인');
+          showOnly('loginPanel');
           showMessage('loginMessage', '연결 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.');
         }).getStudentWorkspace(code);
+      }
+
+      function openIntake(result) {
+        state.subjects = result.subjects;
+        var firstOpen = result.subjects.find(function (item) { return !item.submitted; });
+        state.selectedSubject = firstOpen ? firstOpen.name : '';
+        byId('intakeStudentName').textContent = result.student.name + ' 학생';
+        clearIntake();
+        drawIntakeTabs();
+        showOnly('intakePanel');
+      }
+
+      function drawIntakeTabs() {
+        var tabs = byId('intakeSubjectTabs');
+        tabs.textContent = '';
+        state.subjects.forEach(function (item) {
+          var button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'inquiry-tab' + (item.submitted ? ' is-done' : '') + (item.name === state.selectedSubject ? ' is-active' : '');
+          button.textContent = item.name + (item.submitted ? ' · 제출 완료' : ' · 작성하기');
+          button.disabled = item.submitted;
+          button.addEventListener('click', function () { state.selectedSubject = item.name; clearIntake(); drawIntakeTabs(); });
+          tabs.appendChild(button);
+        });
+        byId('intakeSubjectTitle').textContent = state.selectedSubject + '에서 나의 첫 질문 찾기';
+      }
+
+      function clearIntake() {
+        ['concept','curiosity','reason','method','appIdea','intakeNote'].forEach(function (id) { byId(id).value = ''; });
+        showMessage('intakeMessage', '');
+      }
+
+      function submitIntake(event) {
+        event.preventDefault();
+        var required = ['concept','curiosity','reason','method'].map(function (id) { return byId(id).value.trim(); });
+        if (required.some(function (value) { return value.length < 2; })) return showMessage('intakeMessage', '필수 질문 네 가지에 모두 답해 주세요.');
+        setBusy('intakeSubmitButton', true, '제출 중…');
+        google.script.run.withSuccessHandler(function (result) {
+          setBusy('intakeSubmitButton', false, '이 과목 제출하기');
+          if (!result || !result.ok) return showMessage('intakeMessage', result ? result.message : '기초 질문을 저장하지 못했습니다.');
+          state.afterSuccess = 'lookup';
+          byId('successMessage').textContent = result.allCompleted ? '두 과목의 기초 질문을 모두 제출했습니다. 선생님이 읽고 다음 맞춤 발문을 준비합니다.' : result.message + ' 이제 남은 과목도 작성해 주세요.';
+          byId('continueButton').textContent = result.allCompleted ? '완료 상태 확인' : '다른 과목 작성하기';
+          showOnly('successPanel');
+          notify('success','기초 질문이 안전하게 저장되었습니다.');
+        }).withFailureHandler(function () {
+          setBusy('intakeSubmitButton', false, '이 과목 제출하기');
+          showMessage('intakeMessage', '연결 중 문제가 발생했습니다. 작성한 내용은 지우지 말고 다시 시도해 주세요.');
+          notify('error','저장하지 못했습니다. 작성한 내용은 화면에 그대로 남아 있습니다.');
+        }).submitInitialIntake({
+          studentCode:state.studentCode, subject:state.selectedSubject,
+          concept:byId('concept').value, curiosity:byId('curiosity').value,
+          reason:byId('reason').value, method:byId('method').value,
+          appIdea:byId('appIdea').value, studentNote:byId('intakeNote').value
+        });
+      }
+
+      function openWaiting(result) {
+        byId('waitingStudentName').textContent = result.student.name + ' 학생';
+        byId('waitingMessage').textContent = result.message;
+        showOnly('waitingPanel');
+      }
+
+      function openPrompts(result) {
+        state.inquiries = result.inquiries;
+        state.selectedIndex = 0;
+        byId('studentName').textContent = result.student.name + ' 학생';
+        drawTabs();
+        drawInquiry();
+        showOnly('workspace');
       }
 
       function drawTabs() {
         var tabs = byId('inquiryTabs');
         tabs.textContent = '';
-        state.inquiries.forEach(function (item, index) {
+        state.inquiries.forEach(function (item,index) {
           var button = document.createElement('button');
           button.type = 'button';
           button.className = 'inquiry-tab' + (index === state.selectedIndex ? ' is-active' : '');
@@ -144,56 +281,40 @@
         byId('currentQuestion').textContent = '“' + item.question + '”';
         var fields = byId('promptFields');
         fields.textContent = '';
-        item.prompts.forEach(function (prompt, index) {
-          var wrap = document.createElement('div');
-          wrap.className = 'prompt-field';
-          var label = document.createElement('label');
-          label.htmlFor = 'answer' + index;
-          var number = document.createElement('span');
-          number.className = 'prompt-number';
-          number.textContent = index + 1;
-          label.appendChild(number);
-          label.appendChild(document.createTextNode(prompt));
-          var area = document.createElement('textarea');
-          area.id = 'answer' + index;
-          area.required = true;
-          area.placeholder = '내 생각과 그 근거를 함께 적어 보세요.';
-          wrap.appendChild(label);
-          wrap.appendChild(area);
-          fields.appendChild(wrap);
+        item.prompts.forEach(function (prompt,index) {
+          var wrap=document.createElement('div'); wrap.className='prompt-field';
+          var label=document.createElement('label'); label.htmlFor='answer'+index;
+          var number=document.createElement('span'); number.className='prompt-number'; number.textContent=index+1;
+          label.appendChild(number); label.appendChild(document.createTextNode(prompt));
+          var area=document.createElement('textarea'); area.id='answer'+index; area.required=true; area.placeholder='내 생각과 그 근거를 함께 적어 보세요.';
+          wrap.appendChild(label); wrap.appendChild(area); fields.appendChild(wrap);
         });
-        byId('newQuestion').value = '';
-        byId('studentNote').value = '';
-        showMessage('submitMessage', '');
+        byId('newQuestion').value=''; byId('studentNote').value=''; showMessage('submitMessage','');
       }
 
-      function submit(event) {
+      function submitPrompts(event) {
         event.preventDefault();
-        var item = state.inquiries[state.selectedIndex];
-        var answers = [0, 1, 2].map(function (index) { return byId('answer' + index).value.trim(); });
-        if (answers.some(function (answer) { return answer.length < 2; })) return showMessage('submitMessage', '세 발문에 대한 답변을 모두 작성해 주세요.');
-        setBusy('submitButton', true, '제출 중…');
-        showMessage('submitMessage', '');
+        var item=state.inquiries[state.selectedIndex];
+        var answers=[0,1,2].map(function (index) { return byId('answer'+index).value.trim(); });
+        if (answers.some(function (answer) { return answer.length<2; })) return showMessage('submitMessage','세 발문에 대한 답변을 모두 작성해 주세요.');
+        setBusy('submitButton',true,'제출 중…');
         google.script.run.withSuccessHandler(function (result) {
-          setBusy('submitButton', false, '답변 제출하기');
-          if (!result || !result.ok) return showMessage('submitMessage', result ? result.message : '답변을 저장하지 못했습니다.');
-          byId('workspace').hidden = true;
-          byId('successPanel').hidden = false;
-          byId('successMessage').textContent = item.title + ' 답변이 저장되었습니다. 선생님의 다음 발문을 기다려 주세요.';
+          setBusy('submitButton',false,'답변 제출하기');
+          if (!result || !result.ok) return showMessage('submitMessage',result ? result.message : '답변을 저장하지 못했습니다.');
+          state.afterSuccess='prompts';
+          byId('successMessage').textContent=item.title+' 답변이 저장되었습니다. 선생님의 다음 발문을 기다려 주세요.';
+          byId('continueButton').textContent='다른 탐구 답변하기';
+          showOnly('successPanel');
+          notify('success','답변이 안전하게 저장되었습니다.');
         }).withFailureHandler(function () {
-          setBusy('submitButton', false, '답변 제출하기');
-          showMessage('submitMessage', '연결 중 문제가 발생했습니다. 작성한 답변을 보존하고 다시 시도해 주세요.');
-        }).submitStudentResponse({
-          studentCode: state.studentCode,
-          inquiryId: item.id,
-          answers: answers,
-          newQuestion: byId('newQuestion').value,
-          studentNote: byId('studentNote').value
-        });
+          setBusy('submitButton',false,'답변 제출하기');
+          showMessage('submitMessage','연결 중 문제가 발생했습니다. 작성한 답변을 보존하고 다시 시도해 주세요.');
+          notify('error','저장하지 못했습니다. 답변은 화면에 그대로 남아 있습니다.');
+        }).submitStudentResponse({studentCode:state.studentCode,inquiryId:item.id,answers:answers,newQuestion:byId('newQuestion').value,studentNote:byId('studentNote').value});
       }
 
-      function setBusy(id, busy, label) { var button = byId(id); button.disabled = busy; button.textContent = label; }
-      function showMessage(id, message) { byId(id).textContent = message; }
+      function setBusy(id,busy,label) { var button=byId(id); button.disabled=busy; button.textContent=label; if(busy) button.setAttribute('aria-busy','true'); else button.removeAttribute('aria-busy'); }
+      function showMessage(id,message) { var node=byId(id); node.textContent=message; if(message){node.classList.remove('field-error');void node.offsetWidth;node.classList.add('field-error');} }
     }());
   </script>
 </body>
