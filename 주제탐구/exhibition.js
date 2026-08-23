@@ -62,6 +62,7 @@
     document.getElementById('appCount').textContent = apps + ' / ' + inquiries.length;
 
     var grid = document.getElementById('inquiryGrid');
+    grid.removeAttribute('aria-busy');
     var filters = document.querySelectorAll('[data-filter]');
 
     function draw(filter) {
@@ -217,6 +218,7 @@
     var item = inquiries.find(function (entry) { return entry.id === id; });
     var shell = document.getElementById('inquiryDetail');
     shell.textContent = '';
+    shell.removeAttribute('aria-busy');
 
     if (!item) {
       shell.appendChild(element('p', 'error-message', '해당 탐구를 찾을 수 없습니다. 목록에서 다시 선택해 주세요.'));
@@ -328,7 +330,9 @@
     var target = document.getElementById('inquiryGrid') || document.getElementById('inquiryDetail');
     if (!target) return;
     target.textContent = '';
+    target.removeAttribute('aria-busy');
     target.appendChild(element('p', 'error-message', error.message + ' 로컬에서는 간단한 웹 서버로 열어 주세요.'));
+    document.dispatchEvent(new CustomEvent('jp:feedback', { detail: { type: 'error', message: error.message } }));
   }
 
   function init() {

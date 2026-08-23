@@ -10,7 +10,7 @@
 :root{
   --jp-ease:cubic-bezier(.16,1,.3,1);   /* 감속이 긴 곡선 — 부드럽게 멈춘다 */
   --jp-ease-io:cubic-bezier(.4,0,.2,1);
-  --jp-dur:.52s;
+  --jp-dur:.34s;
 }
 
 /* ── 1. 부드러운 스크롤 ───────────────────────────────────── */
@@ -40,7 +40,7 @@ html{
   from{opacity:0;transform:translateY(12px)}
   to  {opacity:1;transform:none}
 }
-.jp-panel-in{animation:jpPanelIn .44s var(--jp-ease) both}
+.jp-panel-in{animation:jpPanelIn .32s var(--jp-ease) both}
 
 /* 탭 버튼 자체의 반응 */
 .tab-btn{
@@ -639,4 +639,125 @@ html[data-jp-section="economy"] :where(.hero-board,.route-primary,.route-seconda
     margin:12px;
     border-radius:24px;
   }
+}
+
+/* ===================================================================
+   JP Design System · Motion UX v7
+   =================================================================== */
+:root{
+  --jp-space-1:4px;--jp-space-2:8px;--jp-space-3:12px;--jp-space-4:16px;
+  --jp-space-5:24px;--jp-space-6:32px;
+  --jp-radius-sm:10px;--jp-radius-md:16px;--jp-radius-lg:24px;
+  --jp-motion-fast:180ms;--jp-motion-base:260ms;--jp-motion-slow:340ms;
+  --jp-shadow-rest:0 1px 2px rgba(17,35,30,.04),0 8px 24px rgba(17,35,30,.055);
+  --jp-shadow-hover:0 2px 4px rgba(17,35,30,.06),0 16px 36px rgba(17,35,30,.11);
+  --jp-feedback:#176b5b;--jp-danger:#b94d42;
+}
+
+@view-transition{navigation:auto}
+::view-transition-old(root){animation:jpPageOut 140ms ease both}
+::view-transition-new(root){animation:jpPageIn 260ms var(--jp-ease) both}
+@keyframes jpPageIn{from{opacity:0;transform:translate3d(0,8px,0)}to{opacity:1;transform:none}}
+@keyframes jpPageOut{to{opacity:0;transform:translate3d(0,-3px,0)}}
+@keyframes jpSpin{to{transform:rotate(360deg)}}
+@keyframes jpCheckPop{from{opacity:0;transform:scale(.68) rotate(-10deg)}to{opacity:1;transform:none}}
+@keyframes jpErrorNudge{0%,100%{transform:translateX(0)}30%{transform:translateX(-5px)}65%{transform:translateX(4px)}}
+@keyframes jpSkeleton{from{background-position:120% 0}to{background-position:-120% 0}}
+@keyframes jpDataChanged{
+  0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--jp-feedback) 28%,transparent);background-color:color-mix(in srgb,var(--jp-feedback) 12%,transparent)}
+  100%{box-shadow:0 0 0 10px transparent;background-color:transparent}
+}
+
+.jp-motion-ready body{animation:jpPageIn var(--jp-motion-slow) var(--jp-ease) both}
+html[data-jp-motion="teacher"] body{--jp-motion-slow:260ms;--jp-motion-base:220ms}
+html[data-jp-motion="dashboard"] body{--jp-motion-slow:300ms;--jp-motion-base:240ms}
+
+button,.btn,[role="button"],a.resource-card,a.inquiry-card,a.tile{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button,.btn,[role="button"]{
+  transition:transform var(--jp-motion-fast) var(--jp-ease),color var(--jp-motion-fast) ease,
+    background-color var(--jp-motion-fast) ease,border-color var(--jp-motion-fast) ease,
+    box-shadow var(--jp-motion-fast) ease,filter var(--jp-motion-fast) ease;
+}
+button:not(:disabled):active,.btn:active,[role="button"]:active{transform:translateY(1px) scale(.985)}
+button:focus-visible,.btn:focus-visible,[role="button"]:focus-visible,
+input:focus-visible,textarea:focus-visible,select:focus-visible,a:focus-visible{
+  outline:3px solid color-mix(in srgb,currentColor 44%,transparent);outline-offset:3px;
+}
+input,textarea,select{transition:border-color var(--jp-motion-fast) ease,box-shadow var(--jp-motion-fast) ease,background-color var(--jp-motion-fast) ease}
+
+@media (hover:hover) and (pointer:fine){
+  a.resource-card:hover,a.inquiry-card:hover,a.tile:hover,.overview-card:hover,.question-card:hover,
+  .q-card:hover,.skill-category:hover,.calc-category:hover{transform:translate3d(0,-4px,0);box-shadow:var(--jp-shadow-hover)}
+  button:not(:disabled):hover,.btn:hover,[role="button"]:hover{filter:saturate(1.04)}
+}
+
+.jp-tab-track{position:relative;isolation:isolate}
+.jp-tab-track > :not(.jp-tab-indicator){position:relative;z-index:1}
+.jp-tab-indicator{
+  position:absolute;z-index:0;left:0;top:0;width:0;height:0;
+  border:1px solid color-mix(in srgb,var(--accent,var(--jp-feedback)) 52%,transparent);
+  border-radius:999px;background:color-mix(in srgb,var(--accent,var(--jp-feedback)) 10%,transparent);
+  box-shadow:0 5px 18px color-mix(in srgb,var(--accent,var(--jp-feedback)) 13%,transparent);
+  opacity:0;pointer-events:none;
+  transition:transform var(--jp-motion-base) var(--jp-ease),width var(--jp-motion-base) var(--jp-ease),
+    height var(--jp-motion-base) var(--jp-ease),opacity 120ms ease;
+}
+.jp-tab-indicator.is-visible{opacity:1}
+
+[aria-busy="true"],.is-loading{cursor:progress}
+button[aria-busy="true"]::before,.jp-button-busy::before{
+  display:inline-block;width:13px;height:13px;margin-right:8px;border:2px solid currentColor;
+  border-right-color:transparent;border-radius:50%;vertical-align:-2px;animation:jpSpin .7s linear infinite;content:'';
+}
+.loading,.jp-skeleton-line{
+  position:relative;overflow:hidden;border-radius:var(--jp-radius-sm);
+  background:linear-gradient(100deg,rgba(127,139,134,.08) 20%,rgba(255,255,255,.78) 42%,rgba(127,139,134,.08) 64%);
+  background-size:220% 100%;animation:jpSkeleton 1.15s ease-in-out infinite;
+}
+.loading{min-height:52px;padding:17px 20px;color:var(--muted,#63726f)}
+.jp-skeleton-card{display:grid;gap:11px;padding:18px;border-radius:16px;background:rgba(255,255,255,.55)}
+.jp-skeleton-line{display:block;height:12px}.jp-skeleton-line.short{width:44%}.jp-skeleton-line.long{width:82%}
+
+.error-message{
+  border:1px dashed color-mix(in srgb,var(--jp-danger) 26%,transparent);
+  border-radius:var(--jp-radius-md);background:color-mix(in srgb,var(--jp-danger) 4%,white);
+}
+.list-empty,.empty-state,.term-empty{
+  border:1px dashed color-mix(in srgb,var(--jp-feedback) 22%,transparent);
+  border-radius:var(--jp-radius-md);background:color-mix(in srgb,var(--jp-feedback) 3%,white);
+}
+.jp-error-shake{animation:jpErrorNudge 260ms ease both}
+.jp-data-changed,.jp-value-changed{animation:jpDataChanged 560ms var(--jp-ease) both}
+
+.jp-toast-region{
+  position:fixed;z-index:10050;right:max(16px,env(safe-area-inset-right));
+  bottom:max(18px,calc(env(safe-area-inset-bottom) + 12px));display:grid;
+  width:min(390px,calc(100vw - 32px));gap:10px;pointer-events:none;
+}
+.jp-toast{
+  display:grid;grid-template-columns:34px 1fr;align-items:center;gap:11px;padding:13px 16px 13px 13px;
+  border:1px solid color-mix(in srgb,var(--jp-feedback) 28%,transparent);border-radius:16px;
+  color:#17332e;background:color-mix(in srgb,#fff 94%,var(--jp-feedback));
+  box-shadow:0 18px 48px rgba(12,37,31,.18);opacity:0;transform:translate3d(0,14px,0) scale(.98);
+  transition:opacity 200ms ease,transform 260ms var(--jp-ease);
+}
+.jp-toast.is-visible{opacity:1;transform:none}.jp-toast.is-error{--jp-feedback:var(--jp-danger);color:#572b27}
+.jp-toast p{margin:0;font-size:13.5px;font-weight:700;line-height:1.45}
+.jp-toast-mark{display:grid;width:32px;height:32px;place-items:center;border-radius:50%;color:#fff;background:var(--jp-feedback)}
+.jp-toast-mark::after{content:'✓';font-size:17px;font-weight:900}.jp-toast.is-error .jp-toast-mark::after{content:'!'}
+.jp-toast.is-visible .jp-toast-mark{animation:jpCheckPop 280ms var(--jp-ease) both}
+
+details{transition:background-color var(--jp-motion-base) ease,border-color var(--jp-motion-base) ease}
+details > summary{cursor:pointer;touch-action:manipulation}
+details[open]{background-color:color-mix(in srgb,var(--jp-feedback) 3%,transparent)}
+
+@media (max-width:640px){
+  :root{--jp-radius-lg:20px}.jp-toast-region{right:16px;left:16px;width:auto}
+  .jp-toast{grid-template-columns:30px 1fr;padding:11px 13px}.jp-toast-mark{width:29px;height:29px}
+}
+@media (prefers-reduced-motion:reduce){
+  @view-transition{navigation:none}
+  .jp-motion-ready body,.loading,.jp-skeleton-line,.jp-error-shake,.jp-data-changed,
+  button[aria-busy="true"]::before,.jp-toast.is-visible .jp-toast-mark{animation:none!important}
+  .jp-tab-indicator,.jp-toast{transition:none!important}.jp-toast{transform:none}
 }

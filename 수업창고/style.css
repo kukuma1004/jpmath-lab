@@ -177,7 +177,10 @@ a { color: inherit; }
   border-radius: 28px;
   background: #fffdf9;
   box-shadow: 0 25px 65px rgba(41,34,46,.15);
+  transition: opacity .24s ease, transform .28s cubic-bezier(.16,1,.3,1), box-shadow .24s ease;
 }
+.auth-card.is-authenticated { opacity: .78; transform: translateY(-7px) scale(.985); box-shadow: 0 14px 36px rgba(41,34,46,.1); }
+.auth-card.is-authenticated .lock-mark { color: #176b5b; background: #e3f1ec; }
 
 .lock-mark {
   display: inline-grid;

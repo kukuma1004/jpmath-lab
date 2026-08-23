@@ -302,6 +302,7 @@
 
   function buildDisplayTools() {
     if (document.querySelector('.jp-display-tools')) return;
+    if (document.querySelector('main.bento')) return;
 
     var bodyMax = parseFloat(getComputedStyle(document.body).maxWidth);
     if (isFinite(bodyMax) && bodyMax > 0 && bodyMax <= 1400) {
@@ -414,3 +415,260 @@
     boot();
   }
 })();
+
+/* ===================================================================
+   JP Design System · Motion UX v7
+   입력 → 반응 → 결과 확인을 공통 규칙으로 연결한다.
+   기존 페이지 로직과 데이터는 바꾸지 않고 시각 피드백만 관찰·추가한다.
+   =================================================================== */
+(function () {
+  'use strict';
+
+  var media = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  var reduce = media && media.matches;
+  var cardSelector = [
+    '.tile', '.resource-card', '.overview-card', '.process-track > li',
+    '.inquiry-card', '.inquiry-button', '.request-card', '.summary-card', '.curator-section',
+    '.slide-step', '.skill-category', '.calc-category',
+    '.mini-card', '.visual-card', '.graph-card', '.lab-graph-card',
+    '.question-card', '.q-card', '.term-card', '.practice-card'
+  ].join(',');
+  var tabGroups = '.tabbar-inner, .subject-tabs, .filters, .filter-row, .inquiry-tabs, .prompt-modes, .tabs, .main-tabs';
+  var tabItems = '.tab-btn, .filter, [data-filter], [data-subject], .inquiry-tab, [role="tab"]';
+
+  function ready(fn) {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn, { once: true });
+    else fn();
+  }
+
+  function profile() {
+    var path = '';
+    try { path = decodeURIComponent(location.pathname); } catch (e) { path = location.pathname; }
+    var value = path.indexOf('/수업창고/') !== -1 ? 'teacher'
+      : path.indexOf('/주제탐구/') !== -1 ? 'dashboard' : 'lab';
+    document.documentElement.dataset.jpMotion = value;
+    return value;
+  }
+
+  function animateIn(element, index) {
+    if (reduce || element.__jpMotionIn || !element.getClientRects().length) return;
+    element.__jpMotionIn = true;
+    var kind = document.documentElement.dataset.jpMotion;
+    var distance = kind === 'lab' ? 16 : (kind === 'dashboard' ? 10 : 7);
+    var duration = kind === 'lab' ? 330 : (kind === 'dashboard' ? 280 : 230);
+    if (element.animate) {
+      element.animate([
+        { opacity: 0, transform: 'translate3d(0,' + distance + 'px,0)' },
+        { opacity: 1, transform: 'translate3d(0,0,0)' }
+      ], {
+        duration: duration,
+        delay: Math.min(index || 0, 5) * (kind === 'lab' ? 42 : 28),
+        easing: 'cubic-bezier(.16,1,.3,1)',
+        fill: 'both'
+      });
+    }
+  }
+
+  function revealCards(root) {
+    var nodes = Array.prototype.slice.call((root || document).querySelectorAll(cardSelector));
+    nodes.forEach(function (node, index) { animateIn(node, index); });
+  }
+
+  function isActive(node) {
+    return node.classList.contains('active') || node.classList.contains('is-active') ||
+      node.classList.contains('on') || node.getAttribute('aria-selected') === 'true' ||
+      node.getAttribute('aria-current') === 'true';
+  }
+
+  function updateTrack(group) {
+    var indicator = group.querySelector(':scope > .jp-tab-indicator');
+    if (!indicator) return;
+    var items = Array.prototype.slice.call(group.querySelectorAll(tabItems));
+    var active = items.find(isActive);
+    if (!active || !active.getClientRects().length) {
+      indicator.classList.remove('is-visible');
+      return;
+    }
+    var groupBox = group.getBoundingClientRect();
+    var box = active.getBoundingClientRect();
+    indicator.style.width = box.width + 'px';
+    indicator.style.height = box.height + 'px';
+    indicator.style.transform = 'translate3d(' + (box.left - groupBox.left + group.scrollLeft) + 'px,' +
+      (box.top - groupBox.top + group.scrollTop) + 'px,0)';
+    indicator.classList.add('is-visible');
+  }
+
+  function wireTabTracks(root) {
+    Array.prototype.forEach.call((root || document).querySelectorAll(tabGroups), function (group) {
+      var items = group.querySelectorAll(tabItems);
+      if (items.length < 2) return;
+      if (!group.__jpTrack) {
+        group.__jpTrack = true;
+        group.classList.add('jp-tab-track');
+        var indicator = document.createElement('span');
+        indicator.className = 'jp-tab-indicator';
+        indicator.setAttribute('aria-hidden', 'true');
+        group.insertBefore(indicator, group.firstChild);
+        if ('ResizeObserver' in window) {
+          group.__jpTrackResize = new ResizeObserver(function () { updateTrack(group); });
+          group.__jpTrackResize.observe(group);
+        }
+      }
+      requestAnimationFrame(function () { updateTrack(group); });
+    });
+  }
+
+  function countElement(node) {
+    if (reduce || node.__jpCounted || node.dataset.jpCounting === 'true') return;
+    var raw = node.textContent.trim().replace(/,/g, '');
+    if (!/^\d+(?:\.\d+)?$/.test(raw)) return;
+    var target = Number(raw);
+    if (!isFinite(target)) return;
+    node.__jpCounted = true;
+    node.dataset.jpCounting = 'true';
+    var decimals = raw.indexOf('.') >= 0 ? raw.split('.')[1].length : 0;
+    var start = performance.now();
+    function tick(now) {
+      var progress = Math.min(1, (now - start) / 480);
+      var eased = 1 - Math.pow(1 - progress, 3);
+      var value = target * eased;
+      node.textContent = decimals ? value.toFixed(decimals) : Math.round(value).toLocaleString('ko-KR');
+      if (progress < 1) requestAnimationFrame(tick);
+      else {
+        node.textContent = target.toLocaleString('ko-KR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+        delete node.dataset.jpCounting;
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+
+  function wireCounts(root) {
+    var selector = '.overview-card strong, .stats strong, [data-countup]';
+    Array.prototype.forEach.call((root || document).querySelectorAll(selector), function (node) {
+      countElement(node);
+      if (node.__jpCountWatch) return;
+      node.__jpCountWatch = new MutationObserver(function () { countElement(node); });
+      node.__jpCountWatch.observe(node, { childList: true, characterData: true, subtree: true });
+    });
+  }
+
+  function drawStaticGraphs(root) {
+    if (reduce) return;
+    var svgSelector = '.slide-art svg, .visual-card svg, .graph-card svg, [data-jp-draw] svg';
+    Array.prototype.forEach.call((root || document).querySelectorAll(svgSelector), function (svg) {
+      if (svg.__jpDrawn || !svg.getClientRects().length) return;
+      svg.__jpDrawn = true;
+      Array.prototype.forEach.call(svg.querySelectorAll('path.curve, path.strong, polyline'), function (path) {
+        if (!path.getTotalLength || !path.animate) return;
+        var length;
+        try { length = path.getTotalLength(); } catch (e) { return; }
+        if (!isFinite(length) || length < 12) return;
+        path.animate([
+          { strokeDasharray: length, strokeDashoffset: length, opacity: .35 },
+          { strokeDasharray: length, strokeDashoffset: 0, opacity: 1 }
+        ], { duration: 620, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'both' });
+      });
+      Array.prototype.forEach.call(svg.querySelectorAll('.bars rect'), function (bar, index) {
+        if (!bar.animate) return;
+        bar.style.transformBox = 'fill-box';
+        bar.style.transformOrigin = 'center bottom';
+        bar.animate([{ transform: 'scaleY(.05)', opacity: .35 }, { transform: 'scaleY(1)', opacity: 1 }], {
+          duration: 360, delay: index * 38, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'both'
+        });
+      });
+    });
+  }
+
+  function wireDetails(root) {
+    Array.prototype.forEach.call((root || document).querySelectorAll('details'), function (detail) {
+      if (detail.__jpDetail) return;
+      detail.__jpDetail = true;
+      detail.addEventListener('toggle', function () {
+        if (reduce || !detail.open || !detail.animate) return;
+        detail.animate([
+          { opacity: .5, transform: 'translateY(-6px)' },
+          { opacity: 1, transform: 'translateY(0)' }
+        ], { duration: 240, easing: 'cubic-bezier(.16,1,.3,1)' });
+      });
+    });
+  }
+
+  function toast(type, message) {
+    if (!message) return;
+    var region = document.querySelector('.jp-toast-region');
+    if (!region) {
+      region = document.createElement('div');
+      region.className = 'jp-toast-region';
+      region.setAttribute('aria-live', 'polite');
+      region.setAttribute('aria-atomic', 'true');
+      document.body.appendChild(region);
+    }
+    var item = document.createElement('div');
+    item.className = 'jp-toast is-' + (type || 'success');
+    item.innerHTML = '<span class="jp-toast-mark" aria-hidden="true"></span><p></p>';
+    item.querySelector('p').textContent = message;
+    region.appendChild(item);
+    requestAnimationFrame(function () { item.classList.add('is-visible'); });
+    window.setTimeout(function () {
+      item.classList.remove('is-visible');
+      window.setTimeout(function () { item.remove(); }, 260);
+    }, type === 'error' ? 4200 : 2600);
+  }
+
+  function pulse(node, className) {
+    if (!node || reduce) return;
+    node.classList.remove(className);
+    void node.offsetWidth;
+    node.classList.add(className);
+  }
+
+  function scan(root) {
+    revealCards(root);
+    wireTabTracks(root);
+    wireCounts(root);
+    wireDetails(root);
+    drawStaticGraphs(root);
+  }
+
+  function boot() {
+    profile();
+    document.documentElement.classList.add('jp-motion-ready');
+    requestAnimationFrame(function () { document.documentElement.classList.add('jp-page-entered'); });
+    scan(document);
+
+    document.addEventListener('jp:feedback', function (event) {
+      var detail = event.detail || {};
+      toast(detail.type || 'success', detail.message || '완료되었습니다.');
+    });
+    document.addEventListener('jp:data-change', function (event) {
+      pulse(event.detail && event.detail.target, 'jp-data-changed');
+    });
+    document.addEventListener('click', function (event) {
+      var tab = event.target.closest(tabItems);
+      if (tab) window.setTimeout(function () {
+        var group = tab.closest(tabGroups);
+        if (group) updateTrack(group);
+      }, 20);
+    }, true);
+    window.addEventListener('resize', function () {
+      document.querySelectorAll('.jp-tab-track').forEach(updateTrack);
+    }, { passive: true });
+
+    var pending;
+    var observer = new MutationObserver(function (records) {
+      var visiblePanel = null;
+      records.forEach(function (record) {
+        if (record.type === 'attributes' && record.target.getClientRects().length) visiblePanel = record.target;
+      });
+      if (visiblePanel && !reduce && visiblePanel.animate) {
+        visiblePanel.animate([{ opacity: .72 }, { opacity: 1 }], { duration: 220, easing: 'ease-out' });
+      }
+      clearTimeout(pending);
+      pending = window.setTimeout(function () { scan(document); }, 70);
+    });
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'hidden', 'aria-expanded', 'aria-selected'] });
+  }
+
+  window.jpMotionFeedback = function (type, message) { toast(type, message); };
+  ready(boot);
+}());

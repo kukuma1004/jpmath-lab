@@ -16,6 +16,15 @@
     const form = document.getElementById('teacherGateForm');
     const input = document.getElementById('teacherPassword');
     const feedback = document.getElementById('teacherGateFeedback');
+    const PASSWORD_HASH = 'e0ad82bd71992decb0a4a4441fee75bd69b062d6b80de94435f3f665d43b1cdd';
+    function matchesPassword(value) {
+      if (!window.crypto || !window.crypto.subtle || !window.TextEncoder) return Promise.resolve(false);
+      return window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)).then(function (buffer) {
+        return Array.from(new Uint8Array(buffer)).map(function (byte) {
+          return byte.toString(16).padStart(2, '0');
+        }).join('') === PASSWORD_HASH;
+      });
+    }
     function unlock() {
       document.body.classList.remove('teacher-locked');
       gate.hidden = true;
@@ -25,15 +34,17 @@
     } catch (error) {}
     form.addEventListener('submit', function (event) {
       event.preventDefault();
-      if (input.value === 'jpmath') {
-        try { sessionStorage.setItem(ACCESS_KEY, 'granted'); } catch (error) {}
-        feedback.textContent = '';
-        unlock();
-        return;
-      }
-      input.value = '';
-      feedback.textContent = '비밀번호가 맞지 않습니다. 다시 확인해 주세요.';
-      input.focus();
+      matchesPassword(input.value).then(function (matched) {
+        if (matched) {
+          try { sessionStorage.setItem(ACCESS_KEY, 'granted'); } catch (error) {}
+          feedback.textContent = '';
+          unlock();
+          return;
+        }
+        input.value = '';
+        feedback.textContent = '비밀번호가 맞지 않습니다. 대소문자를 확인해 주세요.';
+        input.focus();
+      });
     });
   })();
 })();
