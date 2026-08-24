@@ -1,7 +1,8 @@
 (function () {
   'use strict';
 
-  var DATA_URL = 'data/inquiries.json';
+  var PUBLIC_DATA_URL = 'data/inquiries.json';
+  var PRIVATE_DATA_URL = 'data-private/inquiries.local.json';
   var subjectLabels = {
     'calculus-1': '미적분Ⅰ',
     geometry: '기하',
@@ -37,11 +38,23 @@
     nodes.forEach(function (node) { observer.observe(node); });
   }
 
-  function loadData() {
-    return fetch(DATA_URL, { cache: 'no-store' }).then(function (response) {
-      if (!response.ok) throw new Error('탐구 데이터를 불러오지 못했습니다.');
+  function isLocalView() {
+    return location.protocol === 'file:' || /^(localhost|127\.0\.0\.1|\[::1\])$/i.test(location.hostname);
+  }
+
+  function fetchData(urls, index) {
+    return fetch(urls[index], { cache: 'no-store' }).then(function (response) {
+      if (!response.ok) throw new Error('not-found');
       return response.json();
+    }).catch(function () {
+      if (index + 1 < urls.length) return fetchData(urls, index + 1);
+      throw new Error('탐구 데이터를 불러오지 못했습니다.');
     });
+  }
+
+  function loadData() {
+    var urls = isLocalView() ? [PRIVATE_DATA_URL, PUBLIC_DATA_URL] : [PUBLIC_DATA_URL];
+    return fetchData(urls, 0);
   }
 
   function renderHome(data) {

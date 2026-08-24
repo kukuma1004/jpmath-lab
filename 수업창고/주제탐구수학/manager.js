@@ -1,7 +1,8 @@
 (function () {
   'use strict';
 
-  var DATA_URL = '../../주제탐구/data/inquiries.json';
+  var PUBLIC_DATA_URL = '../../주제탐구/data/inquiries.json';
+  var PRIVATE_DATA_URL = '../../주제탐구/data-private/inquiries.local.json';
   var SHEET_URL = 'https://docs.google.com/spreadsheets/d/1shQ8CxS3nEO9wM6OT6-9DLgPilNtIaH0vsYPE21hscg/edit';
   var state = { inquiries: [], selectedId: null, promptMode: 'balanced', subject: 'all', query: '' };
   var subjectLabels = { 'calculus-1': '미적분Ⅰ', geometry: '기하', 'mathematical-inquiry': '통합·이론' };
@@ -11,6 +12,24 @@
     if (className) node.className = className;
     if (typeof text === 'string') node.textContent = text;
     return node;
+  }
+
+  function isLocalView() {
+    return location.protocol === 'file:' || /^(localhost|127\.0\.0\.1|\[::1\])$/i.test(location.hostname);
+  }
+
+  function loadInquiryData() {
+    var urls = isLocalView() ? [PRIVATE_DATA_URL, PUBLIC_DATA_URL] : [PUBLIC_DATA_URL];
+    function attempt(index) {
+      return fetch(urls[index], { cache: 'no-store' }).then(function (response) {
+        if (!response.ok) throw new Error('not-found');
+        return response.json();
+      }).catch(function () {
+        if (index + 1 < urls.length) return attempt(index + 1);
+        throw new Error('탐구 초안 데이터를 불러오지 못했습니다.');
+      });
+    }
+    return attempt(0);
   }
 
   function subjectLabel(item) { return subjectLabels[item.subject] || item.subject; }
@@ -280,10 +299,7 @@
     list.innerHTML = '<div class="jp-skeleton-card"><span class="jp-skeleton-line short"></span><span class="jp-skeleton-line long"></span><span class="jp-skeleton-line"></span></div>' +
       '<div class="jp-skeleton-card"><span class="jp-skeleton-line short"></span><span class="jp-skeleton-line long"></span><span class="jp-skeleton-line"></span></div>' +
       '<div class="jp-skeleton-card"><span class="jp-skeleton-line short"></span><span class="jp-skeleton-line long"></span><span class="jp-skeleton-line"></span></div>';
-    fetch(DATA_URL, { cache: 'no-store' }).then(function (response) {
-      if (!response.ok) throw new Error('탐구 초안 데이터를 불러오지 못했습니다.');
-      return response.json();
-    }).then(function (data) {
+    loadInquiryData().then(function (data) {
       list.classList.remove('is-loading');
       list.removeAttribute('aria-busy');
       state.inquiries = data.inquiries || [];
