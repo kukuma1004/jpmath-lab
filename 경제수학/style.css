@@ -24,7 +24,7 @@ footer{padding:45px clamp(22px,6vw,96px);display:flex;justify-content:space-betw
 @media(max-width:1000px){.hero{grid-template-columns:1fr;gap:55px}.hero-board{max-width:650px}.curriculum-grid{grid-template-columns:1fr 1fr}.curriculum-grid li:nth-child(2){border-right:0}.curriculum-grid li:nth-child(-n+2){border-bottom:1px solid}.sim-layout,.matrix-layout{grid-template-columns:1fr}.decision-card,.matrix-board{border-right:0;border-bottom:1px solid var(--ink)}.case-layout{grid-template-columns:1fr}.case-file{border-right:0;border-bottom:1px solid var(--ink)}}
 @media(max-width:720px){.site-head{height:62px}.site-head nav a{display:none}.site-head nav{gap:0}.hero{padding-top:55px;min-height:auto}.hero h1{font-size:48px}.hero-board{padding:20px;box-shadow:9px 9px 0 #d7cbb4}.section-heading{grid-template-columns:1fr;gap:18px}.curriculum,.playground{padding-top:70px;padding-bottom:78px}.curriculum-grid{grid-template-columns:1fr}.curriculum-grid li{border-right:0;border-bottom:1px solid var(--ink)!important;min-height:200px}.curriculum-grid li:last-child{border-bottom:0!important}.game-tabs{grid-template-columns:1fr}.game-tab{min-height:82px}.game-intro{align-items:flex-start;padding:24px;flex-direction:column}.week-badge{border-left:0;padding-left:0}.decision-card,.result-board,.answer-desk,.case-file,.matrix-board,.matrix-result{padding:24px}.org-options{grid-template-columns:1fr}.range-line{grid-template-columns:1fr 88px}.kpi-grid{grid-template-columns:1fr}.kpi-grid div{border-right:0;border-bottom:1px solid var(--line)!important}.kpi-grid div:last-child{border-bottom:0!important}.matrix-table{grid-template-columns:1.15fr 1fr 1fr}.matrix-table>*{min-height:72px;padding:6px;font-size:13px}.matrix-table input{width:58px;font-size:18px}.equation-visual{gap:6px;transform:scale(.88)}.next-grid{grid-template-columns:1fr}.source-links{flex-direction:column;align-items:flex-start;gap:8px}footer{flex-direction:column}.hero-facts{gap:16px}.hero-actions{align-items:flex-start;flex-direction:column}}
 
-/* 경제수학 메인은 두 학습 경로만 또렷하게 보여 준다. */
+/* 경제수학 메인은 개념·개인 전략·친구방 LIVE의 세 학습 경로를 보여 준다. */
 .home-only{min-height:calc(100vh - 72px)}
 .route-actions{align-items:stretch;gap:13px}
 .route-primary,.route-secondary{width:min(310px,100%);min-height:112px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:18px 21px;text-decoration:none}
@@ -33,6 +33,8 @@ footer{padding:45px clamp(22px,6vw,96px);display:flex;justify-content:space-betw
 .route-primary span,.route-secondary span{font-size:12px;opacity:.78}
 .route-secondary{border:1px solid var(--ink);background:var(--white);color:var(--ink);box-shadow:5px 5px 0 #d7cbb4;transition:.16s}
 .route-secondary:hover{transform:translate(2px,2px);box-shadow:2px 2px 0 #d7cbb4}
+.route-live{background:#f4d36f;border-color:#7a5a0d;box-shadow:5px 5px 0 #7a5a0d;color:#241b08}
+.route-live:hover{box-shadow:2px 2px 0 #7a5a0d}
 .board-link{display:block;margin-top:17px;padding-top:15px;border-top:1px solid #34423b;color:var(--yellow);font-size:13px;font-weight:700;text-decoration:none}
 .home-footer{min-height:112px;padding-top:28px;padding-bottom:28px}
 @media(max-width:720px){.home-only{min-height:auto;padding-bottom:74px}.site-head nav a:last-child{display:block}.route-actions{width:100%}.route-primary,.route-secondary{width:100%}}

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="같은 경제 상황에서 서로 다른 선택을 비교하는 경제수학 전략 LIVE 체험판">
+  <title>경제수학 LIVE · JP Math Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500;600;700&amp;family=Noto+Serif+KR:wght@700;900&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../style.css?v=5">
+  <link rel="stylesheet" href="live.css?v=1">
+  <link rel="stylesheet" href="../../jp-polish.css?v=7">
+  <script src="../../jp-polish.js?v=7" defer></script>
+  <script src="games.js?v=1" defer></script>
+  <script src="live-engine.js?v=1" defer></script>
+  <script src="app.js?v=1" defer></script>
+</head>
+<body class="live-page">
+  <header class="site-head">
+    <a class="brand" href="../index.html"><span>JP</span> 경제수학</a>
+    <nav aria-label="주요 메뉴"><a href="../index.html">경제수학 홈</a><a href="../게임.html">혼자 플레이</a><a href="../교과서학습.html">개념 학습</a></nav>
+  </header>
+
+  <main class="live-main">
+    <section class="live-hero">
+      <div>
+        <p class="eyebrow">ECONOMY LIVE · STRATEGY WITH FRIENDS</p>
+        <h1>같은 뉴스,<br><em>다른 선택.</em></h1>
+        <p>친구들과 같은 경제 상황을 보고 각자 전략을 고릅니다. 결과가 공개되면 누가 이겼는지만 보지 않고, <strong>어떤 경제수학이 결과를 만들었는지</strong> 함께 확인합니다.</p>
+      </div>
+      <aside class="prototype-note">
+        <span>첫 구현 · 한 기기 체험판</span>
+        <b>실시간 친구방을 만들기 전,<br>수업 흐름과 계산 규칙을 먼저 검증합니다.</b>
+        <p>2~6명이 한 기기를 번갈아 사용합니다. 닉네임과 게임 기록은 이 기기에만 임시 저장됩니다.</p>
+      </aside>
+    </section>
+
+    <ol class="live-flow" aria-label="경제수학 LIVE 진행 순서">
+      <li class="active"><span>01</span><b>상황 공개</b></li>
+      <li><span>02</span><b>각자 선택</b></li>
+      <li><span>03</span><b>함께 공개</b></li>
+      <li><span>04</span><b>수학으로 설명</b></li>
+      <li><span>05</span><b>다음 전략</b></li>
+    </ol>
+
+    <section class="live-stage" data-lobby>
+      <div class="stage-head">
+        <div><span class="stage-code">첫 번째 LIVE 게임</span><h2>JP 투자왕</h2><p>5번의 경제 뉴스를 지나며 예금·채권·주식·외화에 자산을 배분하세요.</p></div>
+        <div class="game-spec"><span>2~6명</span><span>약 8분</span><span>수와 경제</span></div>
+      </div>
+      <div class="lobby-grid">
+        <div class="lobby-form">
+          <div class="field-head"><label for="player-1">참가자 닉네임</label><small>실명 대신 수업용 별명을 권장합니다.</small></div>
+          <div class="player-inputs" data-player-inputs>
+            <label><span>1</span><input id="player-1" type="text" maxlength="12" autocomplete="off" aria-label="참가자 1 닉네임" placeholder="예: 균형잡힌곰"></label>
+            <label><span>2</span><input type="text" maxlength="12" autocomplete="off" aria-label="참가자 2 닉네임" placeholder="예: 과감한토끼"></label>
+          </div>
+          <div class="lobby-actions">
+            <button class="add-player" type="button" data-add-player>＋ 참가자 추가</button>
+            <button class="start-live" type="button" data-start>방 만들고 시작하기 <span>→</span></button>
+          </div>
+          <p class="form-error" data-form-error role="alert" hidden></p>
+        </div>
+        <aside class="game-rule">
+          <span>승리 조건</span>
+          <h3>5라운드 뒤 최종 자산</h3>
+          <ul>
+            <li>모든 참가자에게 같은 뉴스가 주어집니다.</li>
+            <li>선택은 공개 전까지 서로 볼 수 없습니다.</li>
+            <li>결과는 무작위가 아니라 금리·물가·성장률·환율 관계로 계산합니다.</li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <section class="live-stage game-room" data-game-room hidden>
+      <header class="room-bar">
+        <div><span>방 코드</span><b data-room-code>000000</b></div>
+        <div class="round-progress"><span>진행</span><b><i data-round-number>1</i> / 5 라운드</b><div><span data-round-meter></span></div></div>
+        <button type="button" data-leave>방 나가기</button>
+      </header>
+
+      <div class="market-strip" aria-label="현재 경제 지표">
+        <div><span>기준금리</span><strong data-rate>3.5%</strong></div>
+        <div><span>물가상승률</span><strong data-inflation>2.1%</strong></div>
+        <div><span>경제성장률</span><strong data-growth>2.8%</strong></div>
+        <div><span>원·달러 환율</span><strong data-exchange>1,320원</strong></div>
+      </div>
+
+      <article class="news-card" data-news-card>
+        <div class="news-label"><span>JP 경제속보</span><time data-news-time>ROUND 01</time></div>
+        <h2 data-event-title></h2>
+        <p data-event-copy></p>
+        <div class="signal-list" data-signals></div>
+      </article>
+
+      <section class="private-turn" data-turn-gate>
+        <span>다음 결정자</span>
+        <h2><b data-current-name></b>님의 차례입니다.</h2>
+        <p>다른 참가자는 화면을 보지 않도록 잠시 기다려 주세요.</p>
+        <button type="button" data-open-decision>내 전략 선택하기</button>
+      </section>
+
+      <section class="decision-room" data-decision hidden>
+        <div class="decision-heading"><div><span data-decision-player></span><h2>이번 뉴스에 맞는 전략을 고르세요.</h2></div><b>운용 자산 <span data-player-money>10,000,000원</span></b></div>
+        <div class="strategy-grid" data-strategies></div>
+        <div class="allocation-preview" data-allocation-preview>
+          <div class="allocation-head"><b>선택한 자산 배분</b><span>합계 100%</span></div>
+          <div class="allocation-bars" data-allocation-bars></div>
+        </div>
+        <button class="lock-choice" type="button" data-lock disabled>이 전략으로 선택 잠그기</button>
+      </section>
+
+      <section class="reveal-room" data-reveal hidden>
+        <header><span>ROUND <i data-reveal-round>01</i> 결과</span><h2>선택을 함께 공개합니다.</h2><p>같은 뉴스라도 자산 배분에 따라 결과가 달라졌습니다.</p></header>
+        <div class="return-board" data-return-board></div>
+        <div class="ranking" data-ranking></div>
+        <article class="math-explain">
+          <span>왜 이런 결과가 나왔을까?</span>
+          <h3 data-explain-title></h3>
+          <p data-explain-copy></p>
+          <code data-explain-formula></code>
+        </article>
+        <button class="next-round" type="button" data-next-round>다음 경제 뉴스 보기 <span>→</span></button>
+      </section>
+
+      <section class="final-room" data-final hidden>
+        <span>JP 투자왕 · 최종 결과</span>
+        <h2><b data-winner></b>님이 투자왕이 되었습니다.</h2>
+        <p>높은 수익만 쫓기보다 뉴스가 어떤 지표를 움직이는지 읽고 자산을 배분한 전략이 중요했습니다.</p>
+        <div class="final-ranking" data-final-ranking></div>
+        <div class="final-actions"><button type="button" data-rematch>한 판 더</button><a href="../경제수학_학습.html?id=compound">복리 개념 다시 보기</a></div>
+      </section>
+    </section>
+
+    <section class="live-roadmap">
+      <div class="roadmap-heading"><p class="eyebrow">ECONOMY LIVE MAP</p><h2>하나의 엔진, 서로 다른 승리 조건</h2><p>모든 게임을 ‘가장 부자가 이기는 게임’으로 만들지 않습니다. 단원에 따라 판단해야 할 목표가 달라집니다.</p></div>
+      <div class="roadmap-grid">
+        <article class="ready"><span>01 · 수와 경제</span><h3>JP 투자왕</h3><p>복리·수익률·실질가치</p><b>최종 자산</b></article>
+        <article><span>02 · 수와 경제</span><h3>은행 CEO</h3><p>예금·대출·금리</p><b>수익성과 건전성</b></article>
+        <article><span>03 · 수와 경제</span><h3>내 집 마련</h3><p>대출·상환·현재가치</p><b>주거 안정과 부채 부담</b></article>
+        <article><span>04 · 수와 경제</span><h3>환율 전쟁</h3><p>환율·비율·변화율</p><b>무역 이익과 위험</b></article>
+        <article><span>05 · 수와 경제</span><h3>인플레이션 생존</h3><p>지수·비율·실질가치</p><b>구매력 방어</b></article>
+        <article><span>06 · 함수와 경제</span><h3>스타트업 CEO</h3><p>비용·매출·손익분기점</p><b>기업가치와 현금흐름</b></article>
+        <article><span>07 · 함수와 경제</span><h3>펀드매니저</h3><p>수익률·위험·분산</p><b>위험 조정 성과</b></article>
+        <article><span>08 · 통합</span><h3>경제정책 시뮬레이션</h3><p>금리·물가·고용·성장</p><b>사회 전체의 균형</b></article>
+      </div>
+    </section>
+  </main>
+
+  <footer><div><b>JP Math Lab · 경제수학 LIVE</b><p>상황을 읽고, 선택하고, 결과를 수학으로 설명합니다.</p></div><div class="source-links"><a href="../index.html">경제수학 홈</a><a href="../게임.html">혼자 플레이</a></div></footer>
+</body>
+</html>
