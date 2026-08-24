@@ -322,8 +322,9 @@
     .calc { grid-column: span 5; min-height: 330px; --accent: var(--orange); }
     .geometry { grid-column: span 3; min-height: 330px; --accent: var(--green); }
     .economy { grid-column: span 4; min-height: 330px; --accent: #bb8426; background: #f7edcf; }
-    .csat { grid-column: span 7; min-height: 300px; --accent: var(--blue); }
-    .classroom { grid-column: span 5; min-height: 300px; --accent: var(--violet); background: #eee9f0; }
+    .csat { grid-column: span 4; min-height: 300px; --accent: var(--blue); }
+    .inquiry { grid-column: span 4; min-height: 300px; --accent: var(--green); background: linear-gradient(150deg, #eef7f1, #d9ebe3); }
+    .classroom { grid-column: span 4; min-height: 300px; --accent: var(--violet); background: #eee9f0; }
 
     .subject-card::before {
       position: absolute;
@@ -417,6 +418,30 @@
       height: 118px;
     }
 
+    .inquiry-visual {
+      position: absolute;
+      right: 22px;
+      bottom: 20px;
+      width: 150px;
+      aspect-ratio: 1;
+      border: 1px solid rgba(23,107,91,.18);
+      border-radius: 50%;
+      box-shadow: 0 0 0 22px rgba(23,107,91,.06), 0 0 0 46px rgba(23,107,91,.035);
+      opacity: .85;
+    }
+
+    .inquiry-visual::before {
+      position: absolute;
+      inset: 43px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: white;
+      background: var(--green);
+      content: '?';
+      font: 900 42px/1 var(--serif);
+    }
+
     .paper-card {
       position: absolute;
       inset: 0 18px 18px 0;
@@ -468,7 +493,7 @@
     @media (max-width: 900px) {
       .hero-tile { grid-column: span 7; }
       .question-tile { grid-column: span 5; }
-      .calc, .geometry, .economy, .csat, .classroom { grid-column: span 6; }
+      .calc, .geometry, .economy, .csat, .inquiry, .classroom { grid-column: span 6; }
       .top-link.secondary { display: none; }
     }
 
@@ -491,7 +516,7 @@
       .question-tile { min-height: 160px; padding: 18px 20px; }
       .question-title { margin-top: 9px; font-size: 18px; line-height: 1.35; }
       .question-foot { right: 20px; bottom: 12px; left: 20px; padding-top: 7px; font-size: 11.5px; }
-      .calc, .geometry, .economy, .csat, .classroom { grid-column: span 12; min-height: 300px; }
+      .calc, .geometry, .economy, .csat, .inquiry, .classroom { grid-column: span 12; min-height: 300px; }
       .geometry .plot { width: 58%; height: 58%; }
       .principles { align-items: flex-start; flex-direction: column; padding: 24px 4px; }
       .principle-flow { justify-content: flex-start; }
@@ -575,6 +600,14 @@
           <p class="card-desc">문제의 조건을 그래프와 단계별 질문으로 바꾸어, 답보다 먼저 구조를 읽습니다.</p>
           <canvas class="plot" data-plot="csat" aria-hidden="true"></canvas>
           <div class="card-bottom"><span>문제 선택하기</span><span class="arrow" aria-hidden="true">→</span></div>
+        </a>
+
+        <a class="tile subject-card inquiry" href="주제탐구/">
+          <p class="card-code">05 · 질문에서 발견으로</p>
+          <h2 class="card-title">주제탐구 수학</h2>
+          <p class="card-desc">프로젝트의 수업 방식과 탐구 흐름을 먼저 확인합니다. 지금은 학생용 오리엔테이션을 공개합니다.</p>
+          <div class="inquiry-visual" aria-hidden="true"></div>
+          <div class="card-bottom"><span>수업 오리엔테이션 보기</span><span class="arrow" aria-hidden="true">→</span></div>
         </a>
 
         <a class="tile subject-card classroom" href="수업창고/">

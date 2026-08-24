@@ -51,8 +51,12 @@ body {
 .public-hold > *:not(.hold-orbit) { position: relative; z-index: 2; }
 .public-hold p { margin: 0 0 24px; color: #8ed8c7; font: 700 12px var(--mono); letter-spacing: .18em; }
 .public-hold h1 { margin: 0; font: 900 clamp(54px, 9vw, 118px)/.98 var(--serif); letter-spacing: -.07em; }
-.public-hold > span { margin-top: 28px; color: rgba(255,255,255,.7); font-size: clamp(16px, 2vw, 22px); }
-.public-hold > a { margin-top: 38px; padding: 13px 18px; border: 1px solid rgba(255,255,255,.25); border-radius: 999px; text-decoration: none; }
+.public-hold > span { max-width: 720px; margin-top: 28px; color: rgba(255,255,255,.7); font-size: clamp(16px, 2vw, 22px); line-height: 1.65; word-break: keep-all; }
+.hold-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 38px; }
+.hold-actions a { display: inline-flex; min-height: 48px; align-items: center; padding: 0 19px; border: 1px solid rgba(255,255,255,.25); border-radius: 999px; text-decoration: none; transition: transform .2s ease, background .2s ease; }
+.hold-actions a:hover { transform: translateY(-2px); background: rgba(255,255,255,.09); }
+.hold-actions .hold-primary { border-color: #f5cf68; color: #102926; background: #f5cf68; font-weight: 800; }
+.hold-actions .hold-primary:hover { background: #ffe08b; }
 .hold-orbit { position: absolute; width: min(68vw, 720px); aspect-ratio: 1; right: -10vw; top: 50%; transform: translateY(-50%); opacity: .7; }
 .hold-orbit i { position: absolute; inset: 12%; border: 1px solid rgba(255,255,255,.25); border-radius: 50%; transform: scaleY(.45) rotate(24deg); }
 .hold-orbit i:nth-child(2) { inset: 4%; border-color: rgba(255,142,88,.42); transform: scaleY(.36) rotate(72deg); }
