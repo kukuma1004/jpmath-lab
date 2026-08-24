@@ -4,15 +4,16 @@
   const $ = selector => document.querySelector(selector);
   const money = value => `${Math.round(value).toLocaleString('ko-KR')}원`;
   const signed = value => `${value >= 0 ? '+' : ''}${value.toFixed(1)}%`;
-  const storageKey = 'jp-economy-live-room-v1';
+  const storageKey = 'jp-economy-live-room-v2';
   const assetMeta = {
-    deposit: { name: '예금', color: '#1f6b50' },
-    bond: { name: '채권', color: '#315f78' },
-    stock: { name: '주식', color: '#d96f32' },
-    fx: { name: '외화', color: '#8c6aa5' }
+    deposit: { name: '예금', color: '#1f6b50', hint: '금리 수익 · 낮은 변동' },
+    bond: { name: '채권', color: '#315f78', hint: '금리와 반대 방향의 가격 변화' },
+    stock: { name: '주식', color: '#d96f32', hint: '성장 기대 · 높은 변동' },
+    fx: { name: '외화', color: '#8c6aa5', hint: '원·달러 환율 변화' }
   };
   let room = null;
-  let selectedStrategy = null;
+  let selectedAllocation = null;
+  let selectedQuestion = '';
 
   function saveRoom() {
     if (room) localStorage.setItem(storageKey, JSON.stringify(room));
@@ -87,6 +88,7 @@
     const event = engine.getEvent(room);
     const preview = engine.previewMarket(room.market, event);
     $('[data-round-number]').textContent = room.round + 1;
+    $('[data-round-total]').textContent = game.rounds;
     $('[data-round-meter]').style.setProperty('--progress', `${(room.round + 1) / game.rounds * 100}%`);
     renderMarket(preview);
     $('[data-news-time]').textContent = `ROUND ${String(room.round + 1).padStart(2, '0')}`;
@@ -111,53 +113,107 @@
     const player = room.players[room.currentPlayer];
     $('[data-current-name]').textContent = player.name;
     $('[data-turn-gate]').hidden = false;
-    selectedStrategy = null;
+    selectedAllocation = null;
+    selectedQuestion = '';
     saveRoom();
   }
 
   function openDecision() {
     const player = room.players[room.currentPlayer];
+    const previous = player.history[player.history.length - 1];
     $('[data-turn-gate]').hidden = true;
     $('[data-decision]').hidden = false;
     $('[data-decision-player]').textContent = `${room.currentPlayer + 1}번째 결정 · ${player.name}`;
     $('[data-player-money]').textContent = money(player.money);
-    $('[data-lock]').disabled = true;
-    renderStrategies();
-    renderAllocation(null);
+    selectedAllocation = previous && previous.allocation
+      ? { ...previous.allocation }
+      : { deposit: 25, bond: 25, stock: 25, fx: 25 };
+    selectedQuestion = questionForPlayer(engine.getEvent(room), player);
+    $('[data-decision-question]').textContent = selectedQuestion;
+    $('[data-decision-reason]').value = '';
+    $('[data-reason-count]').textContent = '0';
+    renderAllocationControls();
+    renderAllocation();
     updateFlow(1);
   }
 
-  function renderStrategies() {
-    $('[data-strategies]').innerHTML = game.strategies.map((strategy, index) => `
-      <button class="strategy-card${selectedStrategy && selectedStrategy.id === strategy.id ? ' selected' : ''}" type="button" data-strategy="${strategy.id}">
-        <span>STRATEGY ${String(index + 1).padStart(2, '0')}</span><b>${strategy.name}</b><p>${strategy.copy}</p>
-        <small>${Object.entries(strategy.allocation).map(([key, value]) => `${assetMeta[key].name} ${value}%`).join(' · ')}</small>
-      </button>`).join('');
-    document.querySelectorAll('[data-strategy]').forEach(button => button.addEventListener('click', () => chooseStrategy(button.dataset.strategy)));
+  function questionForPlayer(event, player) {
+    const questions = event.questions && event.questions.length ? event.questions : ['어떤 지표를 가장 중요하게 보고 이 비율을 정했나요?'];
+    const seed = `${room.roomCode}-${room.round}-${player.id}-${event.id}`;
+    const value = Array.from(seed).reduce((sum, char) => (sum * 33 + char.charCodeAt(0)) >>> 0, 5381);
+    return questions[value % questions.length];
   }
 
-  function chooseStrategy(id) {
-    selectedStrategy = game.strategies.find(strategy => strategy.id === id);
-    renderStrategies();
-    renderAllocation(selectedStrategy.allocation);
-    $('[data-lock]').disabled = false;
+  function allocationTotal() {
+    return Object.values(selectedAllocation || {}).reduce((sum, value) => sum + Number(value || 0), 0);
   }
 
-  function renderAllocation(allocation) {
-    const values = allocation || { deposit: 0, bond: 0, stock: 0, fx: 0 };
+  function renderAllocationControls() {
+    $('[data-allocation-controls]').innerHTML = Object.entries(assetMeta).map(([key, meta]) => `
+      <article class="allocation-control" style="--asset-color:${meta.color}">
+        <header><div><span>${meta.name}</span><small>${meta.hint}</small></div><output data-allocation-output="${key}">${selectedAllocation[key]}%</output></header>
+        <div class="allocation-input-row">
+          <button type="button" data-allocation-step="${key}" data-step="-5" aria-label="${meta.name} 5% 줄이기">−</button>
+          <input type="range" min="0" max="100" step="5" value="${selectedAllocation[key]}" data-allocation-input="${key}" aria-label="${meta.name} 배분 비율">
+          <button type="button" data-allocation-step="${key}" data-step="5" aria-label="${meta.name} 5% 늘리기">＋</button>
+        </div>
+      </article>`).join('');
+
+    document.querySelectorAll('[data-allocation-input]').forEach(input => input.addEventListener('input', () => {
+      selectedAllocation[input.dataset.allocationInput] = Number(input.value);
+      renderAllocation();
+    }));
+    document.querySelectorAll('[data-allocation-step]').forEach(button => button.addEventListener('click', () => {
+      const key = button.dataset.allocationStep;
+      selectedAllocation[key] = Math.max(0, Math.min(100, selectedAllocation[key] + Number(button.dataset.step)));
+      renderAllocation();
+    }));
+  }
+
+  function renderAllocation() {
+    const values = selectedAllocation || { deposit: 0, bond: 0, stock: 0, fx: 0 };
+    const total = allocationTotal();
+    const chart = $('[data-allocation-chart]');
+    let cumulative = 0;
+    Object.entries(values).forEach(([key, value], index) => {
+      cumulative += value;
+      chart.style.setProperty(`--stop-${index + 1}`, `${Math.min(100, cumulative)}%`);
+      const input = document.querySelector(`[data-allocation-input="${key}"]`);
+      const output = document.querySelector(`[data-allocation-output="${key}"]`);
+      if (input) input.value = value;
+      if (output) output.textContent = `${value}%`;
+    });
     $('[data-allocation-bars]').innerHTML = Object.entries(values).map(([key, value]) => `
       <div><span>${assetMeta[key].name}</span><i><span style="--w:${value}%;--bar-color:${assetMeta[key].color}"></span></i><b>${value}%</b></div>`).join('');
+    $('[data-allocation-total]').textContent = `${total}%`;
+    $('[data-allocation-total-label]').textContent = `합계 ${total}%`;
+    const difference = 100 - total;
+    const status = $('[data-allocation-status]');
+    status.className = total === 100 ? 'is-ready' : 'needs-work';
+    status.textContent = total === 100
+      ? '100% 배분 완료 · 판단 근거를 적으면 제출할 수 있습니다.'
+      : difference > 0 ? `${difference}%가 남았습니다.` : `${Math.abs(difference)}%를 줄여야 합니다.`;
+    updateLockState();
+  }
+
+  function updateLockState() {
+    const reason = $('[data-decision-reason]').value.trim();
+    $('[data-lock]').disabled = allocationTotal() !== 100 || reason.length < 4;
   }
 
   function lockChoice() {
-    if (!selectedStrategy) return;
+    const reason = $('[data-decision-reason]').value.trim();
+    if (!selectedAllocation || allocationTotal() !== 100 || reason.length < 4) return;
     room.players[room.currentPlayer].choice = {
-      id: selectedStrategy.id,
-      name: selectedStrategy.name,
-      allocation: { ...selectedStrategy.allocation }
+      id: 'custom',
+      name: '직접 배분',
+      allocation: { ...selectedAllocation },
+      question: selectedQuestion,
+      reason
     };
     room.currentPlayer += 1;
-    selectedStrategy = null;
+    selectedAllocation = null;
+    selectedQuestion = '';
     if (room.currentPlayer < room.players.length) renderTurn();
     else {
       engine.settleRound(room);
@@ -175,7 +231,11 @@
     return players.map((player, index) => {
       const last = player.history[player.history.length - 1];
       const change = last ? last.after - last.before : 0;
-      return `<div class="rank-row"><span>${String(index + 1).padStart(2, '0')}</span><b>${player.name}</b><small>${final ? `누적 ${player.history.length}라운드` : `${last.strategy === 'safe' ? '안정 방어형' : last.strategy === 'balanced' ? '균형 분산형' : last.strategy === 'growth' ? '성장 집중형' : '환율 방어형'} · ${change >= 0 ? '+' : ''}${money(change)}`}</small><strong class="${change >= 0 ? 'gain' : 'loss'}">${money(player.money)}</strong></div>`;
+      const focus = last && last.allocation
+        ? Object.entries(last.allocation).sort((a, b) => b[1] - a[1])[0]
+        : ['deposit', 0];
+      const decision = `${assetMeta[focus[0]].name} ${focus[1]}% 중심`;
+      return `<div class="rank-row"><span>${String(index + 1).padStart(2, '0')}</span><b>${player.name}</b><small>${final ? `누적 ${player.history.length}라운드 · 마지막 ${decision}` : `${decision} · ${change >= 0 ? '+' : ''}${money(change)}`}</small><strong class="${change >= 0 ? 'gain' : 'loss'}">${money(player.money)}</strong></div>`;
     }).join('');
   }
 
@@ -227,6 +287,7 @@
   function rematch() {
     const names = room.players.map(player => player.name);
     room = engine.createRoom(names, makeRoomCode());
+    $('[data-room-code]').textContent = room.roomCode;
     saveRoom();
     renderTurn();
     $('[data-game-room]').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -244,7 +305,10 @@
   function restoreRoom() {
     try {
       const saved = JSON.parse(localStorage.getItem(storageKey));
-      if (!saved || saved.version !== 1 || !Array.isArray(saved.players) || !saved.players.length) return;
+      if (!saved || saved.version !== 2 || !Array.isArray(saved.players) || !saved.players.length) {
+        localStorage.removeItem(storageKey);
+        return;
+      }
       room = saved;
       openRoom();
     } catch (error) {
@@ -255,6 +319,10 @@
   $('[data-add-player]').addEventListener('click', addPlayerInput);
   $('[data-start]').addEventListener('click', startGame);
   $('[data-open-decision]').addEventListener('click', openDecision);
+  $('[data-decision-reason]').addEventListener('input', event => {
+    $('[data-reason-count]').textContent = String(event.target.value.length);
+    updateLockState();
+  });
   $('[data-lock]').addEventListener('click', lockChoice);
   $('[data-next-round]').addEventListener('click', nextRound);
   $('[data-rematch]').addEventListener('click', rematch);
