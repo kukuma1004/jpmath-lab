@@ -108,10 +108,18 @@
     return dbSdk.onValue(dbSdk.ref(database, `economyRooms/${code}`), snapshot => callback(snapshot.val()));
   }
 
-  async function submitChoice(code, round, strategyId) {
+  async function submitChoice(code, round, choice) {
     const { auth, database, dbSdk } = await ready();
+    const value = typeof choice === 'string' ? { strategyId: choice } : choice;
+    const payload = {
+      strategyId: String(value.strategyId || 'mix').slice(0, 30),
+      allocation: Object.fromEntries(Object.entries(value.allocation || {}).map(([key, amount]) => [key, Math.max(0, Math.min(100, Number(amount) || 0))])),
+      reason: String(value.reason || '').slice(0, 100),
+      question: String(value.question || '').slice(0, 160),
+      submittedAt: dbSdk.serverTimestamp()
+    };
     await dbSdk.set(dbSdk.ref(database, `economyChoices/${code}/${round}/${auth.currentUser.uid}`), {
-      strategyId, submittedAt: dbSdk.serverTimestamp()
+      ...payload
     });
   }
 

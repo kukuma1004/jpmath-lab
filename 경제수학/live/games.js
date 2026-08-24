@@ -1,9 +1,9 @@
 (function () {
   const strategies = [
-    { id: 'safe', name: '안정 방어형', copy: '예금과 채권을 중심으로 변동을 줄입니다.', allocation: { deposit: 50, bond: 30, stock: 10, fx: 10 } },
-    { id: 'balanced', name: '균형 분산형', copy: '네 자산에 위험을 나누어 담습니다.', allocation: { deposit: 30, bond: 25, stock: 30, fx: 15 } },
-    { id: 'growth', name: '성장 집중형', copy: '경제성장과 기업 실적에 무게를 둡니다.', allocation: { deposit: 10, bond: 15, stock: 60, fx: 15 } },
-    { id: 'currency', name: '환율 방어형', copy: '원화 가치 하락에 대비해 외화 비중을 높입니다.', allocation: { deposit: 20, bond: 15, stock: 15, fx: 50 } }
+    { id: 'deposit', name: '예금', copy: '금리 수익을 얻고 가격 변동을 낮춥니다.', facts: '금리 수익 · 낮은 변동', color: '#1f6b50' },
+    { id: 'bond', name: '채권', copy: '시장금리 변화에 따라 가격이 움직입니다.', facts: '금리와 반대 방향의 가격 변화', color: '#315f78' },
+    { id: 'stock', name: '주식', copy: '성장과 기업 이익의 변화를 반영합니다.', facts: '성장 기대 · 높은 변동', color: '#d96f32' },
+    { id: 'fx', name: '외화', copy: '원·달러 환율 변화에 대응합니다.', facts: '원화 가치 하락 방어', color: '#8c6aa5' }
   ];
 
   const events = [
@@ -159,5 +159,24 @@
     }
   ];
 
-  window.JPEconomyGames = { investmentKing: { id: 'investment-king', rounds: 8, startingMoney: 10000000, strategies, events } };
+  function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
+  events.forEach(event => {
+    const market = { rate: 3.5 + event.delta.rate, inflation: 2.1 + event.delta.inflation, growth: 2.8 + event.delta.growth };
+    const pressure = Math.max(0, market.inflation - 3);
+    event.payoffs = {
+      deposit: Math.round(clamp(market.rate - market.inflation * 0.25, -1, 8) * 10) / 10,
+      bond: Math.round(clamp(3.2 - event.delta.rate * 6 + event.delta.bondBoost - market.inflation * 0.15, -7, 10) * 10) / 10,
+      stock: Math.round(clamp(market.growth * 1.25 - event.delta.rate * 3.5 - pressure * 0.8 + event.delta.stockBoost, -9, 13) * 10) / 10,
+      fx: Math.round(clamp(event.delta.exchangePct, -8, 10) * 10) / 10
+    };
+  });
+
+  window.JPEconomyGames = {
+    investmentKing: {
+      id: 'investment-king', number: '01', title: 'JP 투자왕', domain: '수와 경제', accent: '#1f6b50',
+      subtitle: '금리·물가·성장률·환율을 읽고 네 자산의 비율을 직접 설계합니다.',
+      victory: '8라운드 뒤 최종 자산', scoreLabel: '투자 성과', controlLabel: '자산 배분',
+      rounds: 8, startingMoney: 10000000, strategies, events
+    }
+  };
 }());

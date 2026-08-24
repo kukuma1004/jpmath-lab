@@ -4,7 +4,7 @@
   const $ = selector => document.querySelector(selector);
   const money = value => `${Math.round(value).toLocaleString('ko-KR')}원`;
   const signed = value => `${value >= 0 ? '+' : ''}${value.toFixed(1)}%`;
-  const storageKey = 'jp-economy-live-room-v2';
+  const storageKey = 'jp-economy-live-room-v3';
   const assetMeta = {
     deposit: { name: '예금', color: '#1f6b50', hint: '금리 수익 · 낮은 변동' },
     bond: { name: '채권', color: '#315f78', hint: '금리와 반대 방향의 가격 변화' },
@@ -138,6 +138,7 @@
   }
 
   function questionForPlayer(event, player) {
+    if (event.question) return event.question;
     const questions = event.questions && event.questions.length ? event.questions : ['어떤 지표를 가장 중요하게 보고 이 비율을 정했나요?'];
     const seed = `${room.roomCode}-${room.round}-${player.id}-${event.id}`;
     const value = Array.from(seed).reduce((sum, char) => (sum * 33 + char.charCodeAt(0)) >>> 0, 5381);
@@ -305,7 +306,7 @@
   function restoreRoom() {
     try {
       const saved = JSON.parse(localStorage.getItem(storageKey));
-      if (!saved || saved.version !== 2 || !Array.isArray(saved.players) || !saved.players.length) {
+      if (!saved || saved.version !== 3 || !Array.isArray(saved.players) || !saved.players.length) {
         localStorage.removeItem(storageKey);
         return;
       }

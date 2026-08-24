@@ -1,5 +1,6 @@
 (function () {
   const assets = ['deposit', 'bond', 'stock', 'fx'];
+  const runtime = window.JPEconomyGameRuntime;
 
   function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
 
@@ -17,7 +18,7 @@
   function createRoom(names, roomCode) {
     const game = window.JPEconomyGames.investmentKing;
     return {
-      version: 2,
+      version: 3,
       roomCode,
       gameId: game.id,
       round: 0,
@@ -25,14 +26,13 @@
       currentPlayer: 0,
       market: { rate: 3.5, inflation: 2.1, growth: 2.8, exchange: 1320 },
       players: names.map((name, index) => ({ id: index + 1, name, money: game.startingMoney, history: [], choice: null })),
-      events: seededOrder(game.events, roomCode).slice(0, game.rounds).map(event => event.id)
+      events: runtime.createScenario(game, roomCode)
     };
   }
 
   function getEvent(room) {
     const game = window.JPEconomyGames.investmentKing;
-    const id = room.events[room.round];
-    return game.events.find(event => event.id === id) || game.events[room.round % game.events.length];
+    return runtime.resolveEvent(game, room.events[room.round], room.round);
   }
 
   function previewMarket(market, event) {
