@@ -63,6 +63,8 @@
     if (key === 'game-already-started') return '이미 시작된 방입니다. 진행자에게 새 방을 요청해 주세요.';
     if (key === 'room-full') return '이 방에는 이미 6명이 참여하고 있습니다.';
     if (key === 'config-missing') return 'Firebase 연결 정보가 아직 설정되지 않았습니다.';
+    if (key === 'database-url-missing' || key === 'database-not-created') return 'Firebase에서 Realtime Database를 먼저 만들어 주세요.';
+    if (key === 'auth/operation-not-allowed' || key === 'auth/configuration-not-found') return 'Firebase Authentication에서 익명 로그인을 활성화해 주세요.';
     return '친구방 연결에 실패했습니다. 잠시 후 다시 시도해 주세요.';
   }
 
@@ -76,6 +78,12 @@
     } else if (status.reason === 'config-missing') {
       $('[data-connection-title]').textContent = '친구방 연결 정보가 필요합니다.';
       $('[data-connection-copy]').textContent = '현재는 8개 게임의 한 기기 체험판을 이용할 수 있습니다.';
+    } else if (status.reason === 'auth/operation-not-allowed' || status.reason === 'auth/configuration-not-found') {
+      $('[data-connection-title]').textContent = '익명 로그인을 켜 주세요.';
+      $('[data-connection-copy]').textContent = 'Firebase Authentication의 로그인 방식에서 익명을 활성화하면 됩니다.';
+    } else if (status.reason === 'database-url-missing' || status.reason === 'database-not-created') {
+      $('[data-connection-title]').textContent = 'Realtime Database를 만들어 주세요.';
+      $('[data-connection-copy]').textContent = '데이터베이스 생성 후 준비된 보안 규칙을 게시하면 친구방이 연결됩니다.';
     } else {
       $('[data-connection-title]').textContent = '실시간 서버에 연결하지 못했습니다.';
       $('[data-connection-copy]').textContent = '인터넷 연결과 Firebase 설정을 확인해 주세요.';

@@ -8,9 +8,36 @@
     return String(100000 + data[0] % 900000);
   }
 
+  function databaseCandidates(config) {
+    const urls = [config.databaseURL, ...(config.databaseURLs || [])].filter(Boolean);
+    if (config.projectId) {
+      urls.push(
+        `https://${config.projectId}-default-rtdb.asia-southeast1.firebasedatabase.app`,
+        `https://${config.projectId}-default-rtdb.firebaseio.com`
+      );
+    }
+    return [...new Set(urls.map(url => String(url).replace(/\/$/, '')))];
+  }
+
+  async function findDatabaseURL(config, token) {
+    const candidates = databaseCandidates(config);
+    if (!candidates.length) throw new Error('database-url-missing');
+    for (const url of candidates) {
+      try {
+        const response = await fetch(`${url}/.json?shallow=true&auth=${encodeURIComponent(token)}`, {
+          cache: 'no-store'
+        });
+        if ([200, 401, 403].includes(response.status)) return url;
+      } catch (error) {
+        // 다음 지역의 Realtime Database 주소를 확인합니다.
+      }
+    }
+    throw new Error('database-not-created');
+  }
+
   async function connect() {
     const config = window.JPEconomyFirebaseConfig;
-    if (!config || !config.apiKey || !config.databaseURL) return { available: false, reason: 'config-missing' };
+    if (!config || !config.apiKey || !config.projectId) return { available: false, reason: 'config-missing' };
     if (services) return { available: true, uid: services.auth.currentUser && services.auth.currentUser.uid };
     try {
       const appSdk = await import(`https://www.gstatic.com/firebasejs/${SDK_VERSION}/firebase-app.js`);
@@ -19,9 +46,11 @@
       const app = appSdk.initializeApp(config);
       const auth = authSdk.getAuth(app);
       if (!auth.currentUser) await authSdk.signInAnonymously(auth);
-      const database = dbSdk.getDatabase(app);
-      services = { auth, database, dbSdk };
-      return { available: true, uid: auth.currentUser.uid };
+      const token = await auth.currentUser.getIdToken();
+      const databaseURL = await findDatabaseURL(config, token);
+      const database = dbSdk.getDatabase(app, databaseURL);
+      services = { auth, database, dbSdk, databaseURL };
+      return { available: true, uid: auth.currentUser.uid, databaseURL };
     } catch (error) {
       return { available: false, reason: error.code || error.message || 'connection-failed' };
     }

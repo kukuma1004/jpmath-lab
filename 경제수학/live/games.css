@@ -3,3 +3,12 @@
 @media(max-width:1000px){.catalog-grid{grid-template-columns:1fr 1fr}.realtime-preview{grid-template-columns:1fr}.connection-state{position:static;grid-column:1/-1}.strategy-payoffs{grid-template-columns:1fr 1fr}}
 @media(max-width:720px){.catalog-hero{padding-top:58px}.catalog-heading{align-items:flex-start;flex-direction:column}.catalog-grid{grid-template-columns:1fr}.catalog-card{min-height:190px}.arena-lobby,.arena-room{width:calc(100% - 22px);margin:38px auto}.arena-title{padding:24px;align-items:flex-start;flex-direction:column}.arena-room .room-bar{grid-template-columns:1fr auto}.strategy-payoffs{grid-template-columns:1fr 1fr}.realtime-preview{padding-top:62px;padding-bottom:62px}}
 .connection-state{font-weight:700;text-underline-offset:4px}
+
+/* 내용이 두 줄 이상이어도 하단 정보와 겹치지 않는 유연한 카드 구조 */
+.catalog-card{display:flex;min-height:245px;flex-direction:column;align-items:flex-start}
+.catalog-card span{line-height:1.5}
+.catalog-card h3{line-height:1.35}
+.catalog-card p{line-height:1.65;overflow-wrap:anywhere}
+.catalog-card b{position:static;margin-top:auto;padding-top:22px;line-height:1.55}
+.catalog-card i{position:static;margin-top:8px;line-height:1.5}
+@media(max-width:720px){.catalog-card{min-height:215px}}

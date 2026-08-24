@@ -14,7 +14,7 @@
 - 진행자만 다음 라운드와 재대결을 시작할 수 있음
 - 8개 게임이 같은 친구방 구조를 공유
 
-코드는 준비되었지만 현재 JP Math Lab 저장소에는 Firebase 프로젝트 연결 정보가 없어서 실제 실시간 서버는 비활성 상태다. 연결 전에도 `games.html`의 한 기기 체험판 8개는 모두 작동한다.
+Firebase 웹 앱 `jpmathlab`의 연결 정보는 적용되어 있다. 실제 친구방을 활성화하려면 Firebase 콘솔에서 익명 로그인과 Realtime Database를 켜고 보안 규칙을 게시해야 한다. 연결 전에도 `games.html`의 한 기기 체험판 8개는 모두 작동한다.
 
 ## 선생님이 Firebase 콘솔에서 할 일
 
@@ -38,7 +38,7 @@ Firebase 공식 문서:
 
 ### 3. 웹 연결 정보 넣기
 
-`firebase-config.example.js`를 참고해 `firebase-config.js`의 `null`을 실제 설정으로 바꾼다.
+웹 앱 연결 정보는 `firebase-config.js`에 설정되어 있다. Realtime Database 주소가 지역에 따라 달라질 수 있어 싱가포르와 미국 기본 주소를 자동 확인한다. 콘솔에서 데이터베이스를 만든 뒤에도 연결되지 않으면 데이터 화면에 표시된 정확한 URL을 `databaseURL`로 추가한다.
 
 ```js
 window.JPEconomyFirebaseConfig = {
