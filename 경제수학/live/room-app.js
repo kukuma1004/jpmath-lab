@@ -2,6 +2,8 @@
   const catalog = window.JPEconomyAllGames;
   const runtime = window.JPEconomyGameRuntime;
   const realtime = window.JPEconomyRealtime;
+  const toolkit = window.JPEconomyMathToolkit;
+  const motion = window.JPEconomyMotion;
   const $ = selector => document.querySelector(selector);
   const fallbackColors = ['#1f6b50', '#315f78', '#d96f32', '#8c6aa5'];
   let connection = null;
@@ -12,6 +14,8 @@
   let game = catalog[0];
   let selectedAllocation = null;
   let selectedQuestion = '';
+  let selectedTools = new Set();
+  let toolkitController = null;
   let lastAllocation = null;
   let submittedRound = null;
   let editingRound = null;
@@ -19,6 +23,9 @@
   let stopChoiceWatch = null;
   let choiceWatchRound = null;
   let settling = false;
+  let announcedRound = null;
+  let lastNewsKey = null;
+  let lastRevealKey = null;
 
   function escapeHtml(value) {
     return String(value).replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
@@ -45,7 +52,7 @@
     card.classList.toggle('error', !status.available);
     if (status.available) {
       $('[data-connection-title]').textContent = '실시간 친구방에 연결되었습니다.';
-      $('[data-connection-copy]').textContent = '8개 게임의 비율·근거·결과를 각 휴대폰에서 실시간으로 주고받습니다.';
+      $('[data-connection-copy]').textContent = '8개 게임의 1% 비율·수학 도구 사용·결과를 각 휴대폰에서 실시간으로 주고받습니다.';
     } else if (status.reason === 'config-missing') {
       $('[data-connection-title]').textContent = '친구방 연결 정보가 필요합니다.';
       $('[data-connection-copy]').textContent = '현재는 8개 게임의 한 기기 체험판을 이용할 수 있습니다.';
@@ -142,10 +149,12 @@
     $('[data-live-round]').textContent = onlineRoom.round + 1;
     $('[data-live-round-total]').textContent = game.rounds;
     $('[data-live-meter]').style.setProperty('--progress', `${(onlineRoom.round + 1) / game.rounds * 100}%`);
-    $('[data-live-news-round]').textContent = `ROUND ${String(onlineRoom.round + 1).padStart(2, '0')} · 변동계수 ${Math.round(event.factor * 100)}`;
+    $('[data-live-news-round]').textContent = `ROUND ${String(onlineRoom.round + 1).padStart(2, '0')} · ${event.roundType} · 변동계수 ${Math.round(event.factor * 100)}`;
     $('[data-live-event-title]').textContent = event.title;
     $('[data-live-event-copy]').textContent = event.copy;
     $('[data-live-signals]').innerHTML = event.signals.map(signal => `<span>${signal}</span>`).join('');
+    const newsKey = `${game.id}-${onlineRoom.round}-${event.id}`;
+    if (lastNewsKey !== newsKey) { lastNewsKey = newsKey; motion.enter($('.online-news')); }
   }
 
   function renderTurn() {
@@ -153,6 +162,10 @@
     $('[data-online-game]').hidden = false;
     hideOnlinePanels();
     renderEvent();
+    if (announcedRound !== onlineRoom.round) {
+      announcedRound = onlineRoom.round;
+      motion.announceRound(onlineRoom.round, game.title, onlineRoom.round === game.rounds - 1 ? 'FINAL ROUND' : 'LIVE MARKET');
+    }
     const me = onlineRoom.players[myUid];
     $('[data-my-name]').textContent = `${me.nickname} · ${game.scoreLabel} ${Number(me.score || 100).toFixed(1)}점`;
     if (submittedRound === onlineRoom.round) {
@@ -166,8 +179,13 @@
       editingRound = onlineRoom.round;
       selectedAllocation = lastAllocation ? { ...lastAllocation } : runtime.equalAllocation(game);
       selectedQuestion = currentEvent().question;
-      $('[data-live-reason]').value = '';
-      $('[data-live-reason-count]').textContent = '0';
+      selectedTools = new Set();
+      toolkitController = toolkit.mount($('[data-math-toolkit]'), {
+        game,
+        round: onlineRoom.round,
+        event: currentEvent(),
+        onUse: (id, tools) => { selectedTools = new Set(tools); }
+      });
       renderChoiceControls();
     }
     $('[data-live-control-title]').textContent = `${game.controlLabel} 100%를 직접 설계하세요.`;
@@ -177,7 +195,7 @@
   }
 
   function renderChoiceControls() {
-    $('[data-live-allocation-controls]').innerHTML = game.strategies.map((strategy, index) => `<article class="allocation-control" style="--asset-color:${strategyColor(strategy, index)}"><header><div><span>${strategy.name}</span><small>${strategy.facts}</small></div><output data-live-allocation-output="${strategy.id}">${selectedAllocation[strategy.id]}%</output></header><div class="allocation-input-row"><button type="button" data-live-step="${strategy.id}" data-step="-5" aria-label="${strategy.name} 5% 줄이기">−</button><input type="range" min="0" max="100" step="5" value="${selectedAllocation[strategy.id]}" data-live-input="${strategy.id}" aria-label="${strategy.name} 배분 비율"><button type="button" data-live-step="${strategy.id}" data-step="5" aria-label="${strategy.name} 5% 늘리기">＋</button></div></article>`).join('');
+    $('[data-live-allocation-controls]').innerHTML = game.strategies.map((strategy, index) => `<article class="allocation-control" style="--asset-color:${strategyColor(strategy, index)}"><header><div><span>${strategy.name}</span><small>${strategy.facts}</small></div><output data-live-allocation-output="${strategy.id}">${selectedAllocation[strategy.id]}%</output></header><div class="allocation-input-row"><button type="button" data-live-step="${strategy.id}" data-step="-1" aria-label="${strategy.name} 1% 줄이기">−</button><input type="range" min="0" max="100" step="1" value="${selectedAllocation[strategy.id]}" data-live-input="${strategy.id}" aria-label="${strategy.name} 배분 비율"><button type="button" data-live-step="${strategy.id}" data-step="1" aria-label="${strategy.name} 1% 늘리기">＋</button></div></article>`).join('');
     document.querySelectorAll('[data-live-input]').forEach(input => input.addEventListener('input', () => { selectedAllocation[input.dataset.liveInput] = Number(input.value); renderChoiceAllocation(); }));
     document.querySelectorAll('[data-live-step]').forEach(button => button.addEventListener('click', () => { const key = button.dataset.liveStep; selectedAllocation[key] = Math.max(0, Math.min(100, selectedAllocation[key] + Number(button.dataset.step))); renderChoiceAllocation(); }));
   }
@@ -202,20 +220,18 @@
     const difference = 100 - total;
     const status = $('[data-live-allocation-status]');
     status.className = total === 100 ? 'is-ready' : 'needs-work';
-    status.textContent = total === 100 ? '100% 배분 완료 · 판단 근거를 적으면 제출할 수 있습니다.' : difference > 0 ? `${difference}%가 남았습니다.` : `${Math.abs(difference)}%를 줄여야 합니다.`;
+    status.textContent = total === 100 ? '100% 배분 완료 · 바로 제출하거나 수학 도구로 비교해 보세요.' : difference > 0 ? `${difference}%가 남았습니다.` : `${Math.abs(difference)}%를 줄여야 합니다.`;
     updateSubmitState();
   }
 
   function updateSubmitState() {
-    const reason = $('[data-live-reason]').value.trim();
-    $('[data-submit-live]').disabled = runtime.allocationTotal(selectedAllocation) !== 100 || reason.length < 4;
+    $('[data-submit-live]').disabled = runtime.allocationTotal(selectedAllocation) !== 100;
   }
 
   async function submitChoice() {
-    const reason = $('[data-live-reason]').value.trim();
-    if (!selectedAllocation || runtime.allocationTotal(selectedAllocation) !== 100 || reason.length < 4) return;
+    if (!selectedAllocation || runtime.allocationTotal(selectedAllocation) !== 100) return;
     $('[data-submit-live]').disabled = true;
-    const choice = { strategyId: 'mix', allocation: { ...selectedAllocation }, reason, question: selectedQuestion };
+    const choice = { strategyId: 'mix', allocation: { ...selectedAllocation }, question: selectedQuestion, tools: toolkitController ? toolkitController.getUsedTools() : Array.from(selectedTools) };
     await realtime.submitChoice(roomCode, onlineRoom.round, choice);
     lastAllocation = { ...selectedAllocation };
     submittedRound = onlineRoom.round;
@@ -245,7 +261,7 @@
       const delta = runtime.weightedScore(event, allocation);
       const score = Math.max(0, Math.min(1000, Math.round(((player.score || 100) + delta) * 10) / 10));
       const focus = runtime.dominant(game, allocation);
-      results[player.uid] = { strategyId: 'mix', allocation, reason: choice.reason || '', question: choice.question || '', dominantId: focus.id, delta, score };
+      results[player.uid] = { strategyId: 'mix', allocation, question: choice.question || '', tools: Array.isArray(choice.tools) ? choice.tools.slice(0, 5) : [], dominantId: focus.id, delta, score };
       patch[`players/${player.uid}/score`] = score;
     });
     patch.results = results;
@@ -261,7 +277,8 @@
   function resultRows(final) {
     return rankedResults().map((player, index) => {
       const focus = runtime.dominant(game, player.result.allocation);
-      const detail = final ? `${game.scoreLabel} · 마지막 ${focus.name} ${focus.value}%` : `${focus.name} ${focus.value}% 중심 · ${player.result.delta >= 0 ? '+' : ''}${Number(player.result.delta).toFixed(1)}점`;
+      const tools = player.result.tools && player.result.tools.length ? ` · ${player.result.tools.map(toolkit.label).join('·')}` : '';
+      const detail = final ? `${game.scoreLabel} · 마지막 ${focus.name} ${focus.value}%${tools}` : `${focus.name} ${focus.value}% 중심 · ${player.result.delta >= 0 ? '+' : ''}${Number(player.result.delta).toFixed(1)}점${tools}`;
       return `<div class="rank-row"><span>${String(index + 1).padStart(2, '0')}</span><b>${escapeHtml(player.nickname)}</b><small>${detail}</small><strong class="${player.result.delta >= 0 ? 'gain' : 'loss'}">${Number(player.result.score).toFixed(1)}점</strong></div>`;
     }).join('');
   }
@@ -274,13 +291,21 @@
     const event = currentEvent();
     $('[data-online-reveal]').hidden = false;
     $('[data-online-result-round]').textContent = `ROUND ${String(onlineRoom.round + 1).padStart(2, '0')} · ${game.title}`;
-    $('[data-online-payoffs]').innerHTML = game.strategies.map(strategy => { const value = event.payoffs[strategy.id]; return `<div class="payoff-card"><span>${strategy.name} 100%일 때</span><strong class="${value >= 0 ? 'up' : 'down'}">${value >= 0 ? '+' : ''}${Number(value).toFixed(1)}점</strong></div>`; }).join('');
+    $('[data-online-payoffs]').innerHTML = game.strategies.map(strategy => { const value = event.payoffs[strategy.id]; return `<div class="payoff-card"><span>${strategy.name} 100%일 때</span><strong class="${value >= 0 ? 'up' : 'down'}" data-online-payoff="${value}">${value >= 0 ? '+' : ''}${Number(value).toFixed(1)}점</strong></div>`; }).join('');
     $('[data-online-ranking]').innerHTML = resultRows(false);
     $('[data-online-explain]').textContent = event.explain;
     $('[data-online-formula]').textContent = event.formula;
+    const used = new Set(rankedResults().flatMap(player => player.result.tools || []));
+    $('[data-online-tools-used]').innerHTML = used.size ? Array.from(used).map(id => `<b>${toolkit.label(id)}</b>`).join('') : '<small>이번 라운드는 수학 도구 없이 판단했습니다.</small>';
     $('[data-host-next]').hidden = !isHost;
     $('[data-host-next]').innerHTML = onlineRoom.round === game.rounds - 1 ? '최종 결과 보기 <span>→</span>' : '다음 경제 사건 보기 <span>→</span>';
     $('[data-next-wait]').hidden = isHost;
+    const revealKey = `${game.id}-${onlineRoom.round}-${event.id}`;
+    if (lastRevealKey !== revealKey) {
+      lastRevealKey = revealKey;
+      document.querySelectorAll('[data-online-payoff]').forEach(element => motion.count(element, Number(element.dataset.onlinePayoff), value => `${value >= 0 ? '+' : ''}${Number(value).toFixed(1)}점`, 650));
+      motion.enter($('[data-online-reveal]'));
+    }
   }
 
   function renderFinal() {
@@ -308,7 +333,7 @@
     if (!isHost || playersArray().length < 2) return;
     const patch = { status: 'turn', round: 0, submittedCount: 0, results: null, eventOrder: runtime.createScenario(game, roomCode) };
     playersArray().forEach(player => { patch[`players/${player.uid}/score`] = 100; });
-    submittedRound = null; editingRound = null; selectedAllocation = null; lastAllocation = null;
+    submittedRound = null; editingRound = null; selectedAllocation = null; lastAllocation = null; selectedTools = new Set(); announcedRound = null; lastNewsKey = null; lastRevealKey = null;
     await realtime.hostUpdate(roomCode, patch);
   }
 
@@ -323,7 +348,7 @@
   async function hostRematch() {
     if (!isHost) return;
     await realtime.clearRoundChoices(roomCode, onlineRoom.round);
-    submittedRound = null; editingRound = null; selectedAllocation = null; lastAllocation = null;
+    submittedRound = null; editingRound = null; selectedAllocation = null; lastAllocation = null; selectedTools = new Set(); announcedRound = null; lastNewsKey = null; lastRevealKey = null;
     const patch = { status: 'turn', round: 0, results: null, submittedCount: 0, eventOrder: runtime.createScenario(game, `${roomCode}-${Date.now()}`) };
     playersArray().forEach(player => { patch[`players/${player.uid}/score`] = 100; });
     await realtime.hostUpdate(roomCode, patch);
@@ -343,7 +368,6 @@
     $('[data-join-room]').addEventListener('click', joinRoom);
     $('[data-host-start]').addEventListener('click', hostStart);
     $('[data-submit-live]').addEventListener('click', submitChoice);
-    $('[data-live-reason]').addEventListener('input', event => { $('[data-live-reason-count]').textContent = String(event.target.value.length); updateSubmitState(); });
     $('[data-host-next]').addEventListener('click', hostNext);
     $('[data-host-rematch]').addEventListener('click', hostRematch);
     $('[data-online-leave]').addEventListener('click', leaveOnline);

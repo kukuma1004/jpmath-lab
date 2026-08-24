@@ -5,6 +5,7 @@
     { label: '속보', copy: '시장 반응이 예상보다 빠르게 번지고 있습니다.' },
     { label: '긴급', copy: '충격의 폭이 커져 추가 대응이 필요합니다.' }
   ];
+  const roundTypes = ['전략', '수학 분석', '전략', '수학 분석', '돌발 상황', '수학 분석', '전략', '최종 의사결정'];
 
   function hash(text) {
     return Array.from(String(text)).reduce((value, char) => (value * 33 + char.charCodeAt(0)) >>> 0, 5381);
@@ -92,7 +93,8 @@
       question,
       factor,
       baseIndex: eventIndex,
-      scenarioCode
+      scenarioCode,
+      roundType: roundTypes[Math.min(roundTypes.length - 1, Math.max(0, Number(round) || 0))]
     };
   }
 

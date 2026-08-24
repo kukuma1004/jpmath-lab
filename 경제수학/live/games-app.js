@@ -1,13 +1,20 @@
 (function () {
   const catalog = window.JPEconomyGameCatalog;
   const runtime = window.JPEconomyGameRuntime;
+  const toolkit = window.JPEconomyMathToolkit;
+  const motion = window.JPEconomyMotion;
   const $ = selector => document.querySelector(selector);
-  const storageKey = 'jp-economy-seven-games-v2';
+  const storageKey = 'jp-economy-seven-games-v3';
   const fallbackColors = ['#1f6b50', '#315f78', '#d96f32', '#8c6aa5'];
   let game = catalog.find(item => item.id === new URLSearchParams(location.search).get('game')) || catalog.find(item => item.id === 'currency-war') || catalog[0];
   let room = null;
   let selectedAllocation = null;
   let selectedQuestion = '';
+  let selectedTools = new Set();
+  let toolkitController = null;
+  let announcedRound = null;
+  let lastNewsKey = null;
+  let lastRevealKey = null;
 
   function makeCode() {
     const buffer = new Uint32Array(1);
@@ -59,7 +66,7 @@
   function createLocalRoom(names) {
     const code = makeCode();
     return {
-      version: 2, gameId: game.id, code, round: 0, phase: 'turn', currentPlayer: 0,
+      version: 3, gameId: game.id, code, round: 0, phase: 'turn', currentPlayer: 0,
       eventOrder: runtime.createScenario(game, code),
       players: names.map((name, index) => ({ id: index + 1, name, score: 100, history: [], choice: null }))
     };
@@ -100,10 +107,12 @@
     $('[data-round]').textContent = room.round + 1;
     $('[data-round-total]').textContent = game.rounds;
     $('[data-meter]').style.setProperty('--progress', `${(room.round + 1) / game.rounds * 100}%`);
-    $('[data-news-round]').textContent = `ROUND ${String(room.round + 1).padStart(2, '0')} · 변동계수 ${Math.round(event.factor * 100)}`;
+    $('[data-news-round]').textContent = `ROUND ${String(room.round + 1).padStart(2, '0')} · ${event.roundType} · 변동계수 ${Math.round(event.factor * 100)}`;
     $('[data-event-title]').textContent = event.title;
     $('[data-event-copy]').textContent = event.copy;
     $('[data-signals]').innerHTML = event.signals.map(signal => `<span>${signal}</span>`).join('');
+    const newsKey = `${game.id}-${room.round}-${event.id}`;
+    if (lastNewsKey !== newsKey) { lastNewsKey = newsKey; motion.enter($('.arena-news')); }
   }
 
   function renderTurn() {
@@ -112,9 +121,14 @@
     renderRound();
     selectedAllocation = null;
     selectedQuestion = '';
+    selectedTools = new Set();
     const player = room.players[room.currentPlayer];
     $('[data-current-name]').textContent = player.name;
     $('[data-gate]').hidden = false;
+    if (room.currentPlayer === 0 && announcedRound !== room.round) {
+      announcedRound = room.round;
+      motion.announceRound(room.round, game.title, room.round === game.rounds - 1 ? 'FINAL ROUND' : 'BREAKING NEWS');
+    }
     saveRoom();
   }
 
@@ -131,8 +145,13 @@
     selectedAllocation = previous && previous.allocation ? { ...previous.allocation } : runtime.equalAllocation(game);
     selectedQuestion = event.question;
     $('[data-decision-question]').textContent = selectedQuestion;
-    $('[data-decision-reason]').value = '';
-    $('[data-reason-count]').textContent = '0';
+    selectedTools = new Set();
+    toolkitController = toolkit.mount($('[data-math-toolkit]'), {
+      game,
+      round: room.round,
+      event,
+      onUse: (id, tools) => { selectedTools = new Set(tools); }
+    });
     renderAllocationControls();
     renderAllocation();
   }
@@ -142,7 +161,7 @@
       const color = strategyColor(strategy, index);
       return `<article class="allocation-control" style="--asset-color:${color}">
         <header><div><span>${strategy.name}</span><small>${strategy.facts}</small></div><output data-allocation-output="${strategy.id}">${selectedAllocation[strategy.id]}%</output></header>
-        <div class="allocation-input-row"><button type="button" data-allocation-step="${strategy.id}" data-step="-5" aria-label="${strategy.name} 5% 줄이기">−</button><input type="range" min="0" max="100" step="5" value="${selectedAllocation[strategy.id]}" data-allocation-input="${strategy.id}" aria-label="${strategy.name} 배분 비율"><button type="button" data-allocation-step="${strategy.id}" data-step="5" aria-label="${strategy.name} 5% 늘리기">＋</button></div>
+        <div class="allocation-input-row"><button type="button" data-allocation-step="${strategy.id}" data-step="-1" aria-label="${strategy.name} 1% 줄이기">−</button><input type="range" min="0" max="100" step="1" value="${selectedAllocation[strategy.id]}" data-allocation-input="${strategy.id}" aria-label="${strategy.name} 배분 비율"><button type="button" data-allocation-step="${strategy.id}" data-step="1" aria-label="${strategy.name} 1% 늘리기">＋</button></div>
       </article>`;
     }).join('');
     document.querySelectorAll('[data-allocation-input]').forEach(input => input.addEventListener('input', () => { selectedAllocation[input.dataset.allocationInput] = Number(input.value); renderAllocation(); }));
@@ -173,19 +192,17 @@
     const difference = 100 - total;
     const status = $('[data-allocation-status]');
     status.className = total === 100 ? 'is-ready' : 'needs-work';
-    status.textContent = total === 100 ? '100% 배분 완료 · 판단 근거를 적으면 제출할 수 있습니다.' : difference > 0 ? `${difference}%가 남았습니다.` : `${Math.abs(difference)}%를 줄여야 합니다.`;
+    status.textContent = total === 100 ? '100% 배분 완료 · 바로 결정하거나 수학 도구로 비교해 보세요.' : difference > 0 ? `${difference}%가 남았습니다.` : `${Math.abs(difference)}%를 줄여야 합니다.`;
     updateLockState();
   }
 
   function updateLockState() {
-    const reason = $('[data-decision-reason]').value.trim();
-    $('[data-lock]').disabled = runtime.allocationTotal(selectedAllocation) !== 100 || reason.length < 4;
+    $('[data-lock]').disabled = runtime.allocationTotal(selectedAllocation) !== 100;
   }
 
   function lockChoice() {
-    const reason = $('[data-decision-reason]').value.trim();
-    if (!selectedAllocation || runtime.allocationTotal(selectedAllocation) !== 100 || reason.length < 4) return;
-    room.players[room.currentPlayer].choice = { allocation: { ...selectedAllocation }, question: selectedQuestion, reason };
+    if (!selectedAllocation || runtime.allocationTotal(selectedAllocation) !== 100) return;
+    room.players[room.currentPlayer].choice = { allocation: { ...selectedAllocation }, question: selectedQuestion, tools: toolkitController ? toolkitController.getUsedTools() : Array.from(selectedTools) };
     room.currentPlayer += 1;
     selectedAllocation = null;
     if (room.currentPlayer < room.players.length) renderTurn();
@@ -197,7 +214,7 @@
     room.players.forEach(player => {
       const delta = runtime.weightedScore(event, player.choice.allocation);
       player.score = Math.max(0, Math.min(1000, Math.round((player.score + delta) * 10) / 10));
-      player.history.push({ round: room.round + 1, allocation: { ...player.choice.allocation }, question: player.choice.question, reason: player.choice.reason, delta, score: player.score });
+      player.history.push({ round: room.round + 1, allocation: { ...player.choice.allocation }, question: player.choice.question, tools: player.choice.tools || [], delta, score: player.score });
       player.choice = null;
     });
     room.phase = 'reveal';
@@ -211,7 +228,8 @@
     return players.map((player, index) => {
       const last = player.history[player.history.length - 1];
       const focus = runtime.dominant(game, last && last.allocation);
-      const detail = final ? `누적 ${player.history.length}라운드 · 마지막 ${focus.name} ${focus.value}%` : `${focus.name} ${focus.value}% 중심 · ${last.delta >= 0 ? '+' : ''}${last.delta.toFixed(1)}점`;
+      const tools = last && last.tools && last.tools.length ? ` · ${last.tools.map(toolkit.label).join('·')}` : '';
+      const detail = final ? `누적 ${player.history.length}라운드 · 마지막 ${focus.name} ${focus.value}%${tools}` : `${focus.name} ${focus.value}% 중심 · ${last.delta >= 0 ? '+' : ''}${last.delta.toFixed(1)}점${tools}`;
       return `<div class="rank-row"><span>${String(index + 1).padStart(2, '0')}</span><b>${escapeHtml(player.name)}</b><small>${detail}</small><strong class="${!last || last.delta >= 0 ? 'gain' : 'loss'}">${formatScore(player.score)}</strong></div>`;
     }).join('');
   }
@@ -225,12 +243,17 @@
     $('[data-result-round]').textContent = `ROUND ${String(room.round + 1).padStart(2, '0')} · ${game.title}`;
     $('[data-payoffs]').innerHTML = game.strategies.map(strategy => {
       const value = event.payoffs[strategy.id];
-      return `<div class="payoff-card"><span>${strategy.name} 100%일 때</span><strong class="${value >= 0 ? 'up' : 'down'}">${value >= 0 ? '+' : ''}${Number(value).toFixed(1)}점</strong></div>`;
+      return `<div class="payoff-card"><span>${strategy.name} 100%일 때</span><strong class="${value >= 0 ? 'up' : 'down'}" data-payoff-value="${value}">${value >= 0 ? '+' : ''}${Number(value).toFixed(1)}점</strong></div>`;
     }).join('');
     $('[data-ranking]').innerHTML = rankRows(ranked(), false);
     $('[data-explain]').textContent = event.explain;
     $('[data-formula]').textContent = event.formula;
+    const used = new Set(room.players.flatMap(player => (player.history[player.history.length - 1] || {}).tools || []));
+    $('[data-tools-used]').innerHTML = used.size ? Array.from(used).map(id => `<b>${toolkit.label(id)}</b>`).join('') : '<small>이번 라운드는 수학 도구 없이 판단했습니다.</small>';
     $('[data-next]').innerHTML = room.round === game.rounds - 1 ? '최종 결과 보기 <span>→</span>' : '다음 경제 사건 보기 <span>→</span>';
+    document.querySelectorAll('[data-payoff-value]').forEach(element => motion.count(element, Number(element.dataset.payoffValue), value => `${value >= 0 ? '+' : ''}${Number(value).toFixed(1)}점`, 650));
+    const revealKey = `${game.id}-${room.round}-${event.id}`;
+    if (lastRevealKey !== revealKey) { lastRevealKey = revealKey; motion.enter($('[data-reveal]')); }
     saveRoom();
   }
 
@@ -258,6 +281,9 @@
   function rematch() {
     const names = room.players.map(player => player.name);
     room = createLocalRoom(names);
+    announcedRound = null;
+    lastNewsKey = null;
+    lastRevealKey = null;
     saveRoom();
     renderTurn();
   }
@@ -278,7 +304,7 @@
     try {
       const saved = JSON.parse(localStorage.getItem(storageKey));
       const savedGame = saved && catalog.find(item => item.id === saved.gameId);
-      if (!saved || saved.version !== 2 || !savedGame || !Array.isArray(saved.players)) { localStorage.removeItem(storageKey); return; }
+      if (!saved || saved.version !== 3 || !savedGame || !Array.isArray(saved.players)) { localStorage.removeItem(storageKey); return; }
       game = savedGame;
       room = saved;
       selectGame(game.id, false);
@@ -292,7 +318,6 @@
   $('[data-start]').addEventListener('click', startGame);
   $('[data-change-game]').addEventListener('click', () => $('.catalog-section').scrollIntoView({ behavior: 'smooth' }));
   $('[data-open]').addEventListener('click', openDecision);
-  $('[data-decision-reason]').addEventListener('input', event => { $('[data-reason-count]').textContent = String(event.target.value.length); updateLockState(); });
   $('[data-lock]').addEventListener('click', lockChoice);
   $('[data-next]').addEventListener('click', nextRound);
   $('[data-rematch]').addEventListener('click', rematch);

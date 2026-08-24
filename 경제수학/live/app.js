@@ -1,10 +1,12 @@
 (function () {
   const game = window.JPEconomyGames.investmentKing;
   const engine = window.JPEconomyLiveEngine;
+  const toolkit = window.JPEconomyMathToolkit;
+  const motion = window.JPEconomyMotion;
   const $ = selector => document.querySelector(selector);
   const money = value => `${Math.round(value).toLocaleString('ko-KR')}원`;
   const signed = value => `${value >= 0 ? '+' : ''}${value.toFixed(1)}%`;
-  const storageKey = 'jp-economy-live-room-v3';
+  const storageKey = 'jp-economy-live-room-v4';
   const assetMeta = {
     deposit: { name: '예금', color: '#1f6b50', hint: '금리 수익 · 낮은 변동' },
     bond: { name: '채권', color: '#315f78', hint: '금리와 반대 방향의 가격 변화' },
@@ -14,6 +16,11 @@
   let room = null;
   let selectedAllocation = null;
   let selectedQuestion = '';
+  let selectedTools = new Set();
+  let toolkitController = null;
+  let announcedRound = null;
+  let lastNewsKey = null;
+  let lastRevealKey = null;
 
   function saveRoom() {
     if (room) localStorage.setItem(storageKey, JSON.stringify(room));
@@ -91,10 +98,12 @@
     $('[data-round-total]').textContent = game.rounds;
     $('[data-round-meter]').style.setProperty('--progress', `${(room.round + 1) / game.rounds * 100}%`);
     renderMarket(preview);
-    $('[data-news-time]').textContent = `ROUND ${String(room.round + 1).padStart(2, '0')}`;
+    $('[data-news-time]').textContent = `ROUND ${String(room.round + 1).padStart(2, '0')} · ${event.roundType}`;
     $('[data-event-title]').textContent = event.title;
     $('[data-event-copy]').textContent = event.copy;
     $('[data-signals]').innerHTML = event.signals.map(signal => `<span>${signal}</span>`).join('');
+    const newsKey = `${room.round}-${event.id}`;
+    if (lastNewsKey !== newsKey) { lastNewsKey = newsKey; motion.enter($('[data-news-card]')); }
   }
 
   function hidePlayPanels() {
@@ -115,6 +124,11 @@
     $('[data-turn-gate]').hidden = false;
     selectedAllocation = null;
     selectedQuestion = '';
+    selectedTools = new Set();
+    if (room.currentPlayer === 0 && announcedRound !== room.round) {
+      announcedRound = room.round;
+      motion.announceRound(room.round, game.title, room.round === game.rounds - 1 ? 'FINAL ROUND' : 'MARKET OPEN');
+    }
     saveRoom();
   }
 
@@ -130,8 +144,13 @@
       : { deposit: 25, bond: 25, stock: 25, fx: 25 };
     selectedQuestion = questionForPlayer(engine.getEvent(room), player);
     $('[data-decision-question]').textContent = selectedQuestion;
-    $('[data-decision-reason]').value = '';
-    $('[data-reason-count]').textContent = '0';
+    selectedTools = new Set();
+    toolkitController = toolkit.mount($('[data-math-toolkit]'), {
+      game,
+      round: room.round,
+      event: engine.getEvent(room),
+      onUse: (id, tools) => { selectedTools = new Set(tools); }
+    });
     renderAllocationControls();
     renderAllocation();
     updateFlow(1);
@@ -154,9 +173,9 @@
       <article class="allocation-control" style="--asset-color:${meta.color}">
         <header><div><span>${meta.name}</span><small>${meta.hint}</small></div><output data-allocation-output="${key}">${selectedAllocation[key]}%</output></header>
         <div class="allocation-input-row">
-          <button type="button" data-allocation-step="${key}" data-step="-5" aria-label="${meta.name} 5% 줄이기">−</button>
-          <input type="range" min="0" max="100" step="5" value="${selectedAllocation[key]}" data-allocation-input="${key}" aria-label="${meta.name} 배분 비율">
-          <button type="button" data-allocation-step="${key}" data-step="5" aria-label="${meta.name} 5% 늘리기">＋</button>
+          <button type="button" data-allocation-step="${key}" data-step="-1" aria-label="${meta.name} 1% 줄이기">−</button>
+          <input type="range" min="0" max="100" step="1" value="${selectedAllocation[key]}" data-allocation-input="${key}" aria-label="${meta.name} 배분 비율">
+          <button type="button" data-allocation-step="${key}" data-step="1" aria-label="${meta.name} 1% 늘리기">＋</button>
         </div>
       </article>`).join('');
 
@@ -192,25 +211,23 @@
     const status = $('[data-allocation-status]');
     status.className = total === 100 ? 'is-ready' : 'needs-work';
     status.textContent = total === 100
-      ? '100% 배분 완료 · 판단 근거를 적으면 제출할 수 있습니다.'
+      ? '100% 배분 완료 · 바로 결정하거나 수학 도구로 비교해 보세요.'
       : difference > 0 ? `${difference}%가 남았습니다.` : `${Math.abs(difference)}%를 줄여야 합니다.`;
     updateLockState();
   }
 
   function updateLockState() {
-    const reason = $('[data-decision-reason]').value.trim();
-    $('[data-lock]').disabled = allocationTotal() !== 100 || reason.length < 4;
+    $('[data-lock]').disabled = allocationTotal() !== 100;
   }
 
   function lockChoice() {
-    const reason = $('[data-decision-reason]').value.trim();
-    if (!selectedAllocation || allocationTotal() !== 100 || reason.length < 4) return;
+    if (!selectedAllocation || allocationTotal() !== 100) return;
     room.players[room.currentPlayer].choice = {
       id: 'custom',
       name: '직접 배분',
       allocation: { ...selectedAllocation },
       question: selectedQuestion,
-      reason
+      tools: toolkitController ? toolkitController.getUsedTools() : Array.from(selectedTools)
     };
     room.currentPlayer += 1;
     selectedAllocation = null;
@@ -225,7 +242,8 @@
 
   function renderReturns() {
     $('[data-return-board]').innerHTML = Object.entries(room.lastReturns).map(([key, value]) => `
-      <div><span>${assetMeta[key].name} 라운드 수익률</span><strong class="${value >= 0 ? 'positive' : 'negative'}">${signed(value)}</strong></div>`).join('');
+      <div><span>${assetMeta[key].name} 라운드 수익률</span><strong class="${value >= 0 ? 'positive' : 'negative'}" data-return-value="${value}">${signed(value)}</strong></div>`).join('');
+    document.querySelectorAll('[data-return-value]').forEach(element => motion.count(element, Number(element.dataset.returnValue), signed, 720));
   }
 
   function rankRows(players, final) {
@@ -253,8 +271,12 @@
     $('[data-explain-title]').textContent = event.explainTitle;
     $('[data-explain-copy]').textContent = event.explainCopy;
     $('[data-explain-formula]').textContent = event.formula;
+    const used = new Set(room.players.flatMap(player => (player.history[player.history.length - 1] || {}).tools || []));
+    $('[data-tools-used]').innerHTML = used.size ? Array.from(used).map(id => `<b>${toolkit.label(id)}</b>`).join('') : '<small>이번 라운드는 수학 도구 없이 판단했습니다.</small>';
     $('[data-next-round]').innerHTML = room.round === game.rounds - 1 ? '최종 결과 보기 <span>→</span>' : '다음 경제 뉴스 보기 <span>→</span>';
     updateFlow(3);
+    const revealKey = `${room.round}-${event.id}`;
+    if (lastRevealKey !== revealKey) { lastRevealKey = revealKey; motion.enter($('[data-reveal]')); }
     saveRoom();
   }
 
@@ -288,6 +310,9 @@
   function rematch() {
     const names = room.players.map(player => player.name);
     room = engine.createRoom(names, makeRoomCode());
+    announcedRound = null;
+    lastNewsKey = null;
+    lastRevealKey = null;
     $('[data-room-code]').textContent = room.roomCode;
     saveRoom();
     renderTurn();
@@ -306,7 +331,7 @@
   function restoreRoom() {
     try {
       const saved = JSON.parse(localStorage.getItem(storageKey));
-      if (!saved || saved.version !== 3 || !Array.isArray(saved.players) || !saved.players.length) {
+      if (!saved || saved.version !== 4 || !Array.isArray(saved.players) || !saved.players.length) {
         localStorage.removeItem(storageKey);
         return;
       }
@@ -320,10 +345,6 @@
   $('[data-add-player]').addEventListener('click', addPlayerInput);
   $('[data-start]').addEventListener('click', startGame);
   $('[data-open-decision]').addEventListener('click', openDecision);
-  $('[data-decision-reason]').addEventListener('input', event => {
-    $('[data-reason-count]').textContent = String(event.target.value.length);
-    updateLockState();
-  });
   $('[data-lock]').addEventListener('click', lockChoice);
   $('[data-next-round]').addEventListener('click', nextRound);
   $('[data-rematch]').addEventListener('click', rematch);

@@ -18,7 +18,7 @@
   function createRoom(names, roomCode) {
     const game = window.JPEconomyGames.investmentKing;
     return {
-      version: 3,
+      version: 4,
       roomCode,
       gameId: game.id,
       round: 0,
@@ -74,7 +74,7 @@
         strategy: player.choice.id,
         allocation: { ...allocation },
         question: player.choice.question || '',
-        reason: player.choice.reason || ''
+        tools: Array.isArray(player.choice.tools) ? player.choice.tools.slice(0, 5) : []
       });
       player.choice = null;
     });

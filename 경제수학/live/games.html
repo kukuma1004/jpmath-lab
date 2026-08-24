@@ -9,13 +9,15 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500;600;700&amp;family=Noto+Serif+KR:wght@700;900&amp;display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../style.css?v=5">
-  <link rel="stylesheet" href="live.css?v=3">
-  <link rel="stylesheet" href="games.css?v=3">
+  <link rel="stylesheet" href="live.css?v=4">
+  <link rel="stylesheet" href="games.css?v=4">
   <link rel="stylesheet" href="../../jp-polish.css?v=7">
   <script src="../../jp-polish.js?v=7" defer></script>
   <script src="games-catalog.js?v=2" defer></script>
-  <script src="game-runtime.js?v=1" defer></script>
-  <script src="games-app.js?v=2" defer></script>
+  <script src="game-runtime.js?v=2" defer></script>
+  <script src="math-toolkit.js?v=1" defer></script>
+  <script src="game-motion.js?v=1" defer></script>
+  <script src="games-app.js?v=3" defer></script>
 </head>
 <body class="live-page catalog-page">
   <header class="site-head">
@@ -31,7 +33,7 @@
     </section>
 
     <section class="catalog-section" aria-labelledby="catalog-title">
-      <div class="catalog-heading"><div><span>PLAYABLE CATALOG</span><h2 id="catalog-title">게임을 선택하세요.</h2></div><p>빠른 계산보다 상황을 읽고 전략의 이유를 설명하는 데 초점을 둡니다.</p></div>
+      <div class="catalog-heading"><div><span>PLAYABLE CATALOG</span><h2 id="catalog-title">게임을 선택하세요.</h2></div><p>수학 문제를 따로 풀지 않고, 필요할 때 도구를 꺼내 더 좋은 선택을 만듭니다.</p></div>
       <div class="catalog-grid">
         <a class="catalog-card investment-card" href="index.html">
           <span>01 · 수와 경제</span><h3>JP 투자왕</h3><p>복리·수익률·실질가치</p><b>8라운드 뒤 최종 자산</b><i>직접 자산 배분하기 →</i>
@@ -55,7 +57,7 @@
           <div class="lobby-actions"><button class="add-player" type="button" data-add-player>＋ 참가자 추가</button><button class="start-live" type="button" data-start>이 게임 시작하기 <span>→</span></button></div>
           <p class="form-error" data-form-error role="alert" hidden></p>
         </div>
-        <aside class="game-rule"><span>승리 조건</span><h3 data-game-victory></h3><ul><li>모든 참가자에게 같은 사건과 수치가 주어집니다.</li><li>네 가지 대응에 100%를 직접 배분하고 판단 근거를 남깁니다.</li><li>8라운드 뒤 게임별 지수가 가장 높은 참가자가 이깁니다.</li></ul></aside>
+        <aside class="game-rule"><span>승리 조건</span><h3 data-game-victory></h3><ul><li>모든 참가자에게 같은 사건과 수치가 주어집니다.</li><li>네 가지 대응을 1% 단위로 조정하고 바로 결정합니다.</li><li>수학 도구를 쓰면 복리·환율·현재가치를 더 정확히 비교할 수 있습니다.</li><li>8라운드 뒤 게임별 지수가 가장 높은 참가자가 이깁니다.</li></ul></aside>
       </div>
     </section>
 
@@ -76,13 +78,13 @@
 
       <section class="decision-room" data-decision hidden>
         <div class="decision-heading"><div><span data-player-label></span><h2 data-control-title>네 가지 대응의 비율을 직접 설계하세요.</h2></div><b data-score-label></b></div>
-        <article class="decision-question"><span>이번 라운드의 판단 질문</span><h3 data-decision-question></h3></article>
+        <article class="decision-question"><span>생각해볼 질문 · 답을 쓰지 않아도 됩니다</span><h3 data-decision-question></h3></article>
         <div class="allocation-workbench">
           <div class="allocation-controls" data-allocation-controls></div>
           <aside class="allocation-summary"><div class="allocation-donut" data-allocation-chart><strong data-allocation-total>100%</strong><span>배분 합계</span></div><p data-allocation-status></p><small>한 대응을 늘리면 다른 대응을 줄여 합계를 100%로 맞추세요.</small></aside>
         </div>
         <div class="allocation-preview"><div class="allocation-head"><b data-allocation-label>내가 만든 의사결정 조합</b><span data-allocation-total-label>합계 100%</span></div><div class="allocation-bars" data-allocation-bars></div></div>
-        <label class="reason-field"><span>판단 근거 한 줄</span><textarea data-decision-reason maxlength="100" rows="2" placeholder="어떤 수치와 관계를 근거로 이 비율을 정했는지 적어보세요."></textarea><small><b data-reason-count>0</b>/100 · 짧게라도 이유를 적어야 제출할 수 있습니다.</small></label>
+        <div class="math-toolkit-host" data-math-toolkit></div>
         <button class="lock-choice" type="button" data-lock disabled>이 조합으로 결정 잠그기</button>
       </section>
 
@@ -90,7 +92,7 @@
         <header><span data-result-round></span><h2>선택을 함께 공개합니다.</h2><p>한 전략이 모든 상황에서 항상 유리하지는 않습니다.</p></header>
         <div class="strategy-payoffs" data-payoffs></div>
         <div class="ranking" data-ranking></div>
-        <article class="math-explain"><span>왜 이런 결과가 나왔을까?</span><h3 data-explain></h3><code data-formula></code></article>
+        <article class="math-explain"><span>왜 이런 결과가 나왔을까?</span><h3 data-explain></h3><code data-formula></code><div class="used-math" data-tools-used></div></article>
         <button class="next-round" type="button" data-next>다음 경제 사건 보기 <span>→</span></button>
       </section>
 
@@ -102,7 +104,7 @@
 
     <section class="realtime-preview">
       <div><p class="eyebrow">NEXT · REALTIME ROOM</p><h2>다음 단계는 각자 휴대폰으로 입장합니다.</h2><p>진행자가 게임을 고르고 6자리 코드를 띄우면, 학생은 닉네임과 코드만 입력합니다. 선택은 각 휴대폰에서 받고 결과는 동시에 공개합니다.</p></div>
-      <ol><li><span>01</span>진행자가 방 만들기</li><li><span>02</span>학생이 코드로 입장</li><li><span>03</span>각자 비율과 근거 제출</li><li><span>04</span>결과 동시 공개</li></ol>
+      <ol><li><span>01</span>진행자가 방 만들기</li><li><span>02</span>학생이 코드로 입장</li><li><span>03</span>각자 비율 설계·도구 사용</li><li><span>04</span>결과 동시 공개</li></ol>
       <a class="connection-state" href="room.html">실시간 친구방 열기 →</a>
     </section>
   </main>

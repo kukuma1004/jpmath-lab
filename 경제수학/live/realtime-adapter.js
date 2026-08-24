@@ -114,8 +114,8 @@
     const payload = {
       strategyId: String(value.strategyId || 'mix').slice(0, 30),
       allocation: Object.fromEntries(Object.entries(value.allocation || {}).map(([key, amount]) => [key, Math.max(0, Math.min(100, Number(amount) || 0))])),
-      reason: String(value.reason || '').slice(0, 100),
       question: String(value.question || '').slice(0, 160),
+      tools: Array.isArray(value.tools) ? value.tools.map(item => String(item).slice(0, 20)).slice(0, 5) : [],
       submittedAt: dbSdk.serverTimestamp()
     };
     await dbSdk.set(dbSdk.ref(database, `economyChoices/${code}/${round}/${auth.currentUser.uid}`), {
