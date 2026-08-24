@@ -182,6 +182,7 @@
   function renderReveal() {
     hidePlayPanels();
     room.phase = 'reveal';
+    renderRoundHeader();
     renderMarket(room.market);
     $('[data-reveal]').hidden = false;
     $('[data-reveal-round]').textContent = String(room.round + 1).padStart(2, '0');
