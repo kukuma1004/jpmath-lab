@@ -26,3 +26,4 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #e07b
 .strategy-card p{line-height:1.65}
 .strategy-card small{display:block;position:static;margin-top:auto;padding-top:15px;line-height:1.6;overflow-wrap:anywhere}
 @media(max-width:720px){.strategy-grid{grid-template-columns:1fr}.strategy-card{min-height:165px}}
+.roadmap-heading a{display:inline-block;margin-top:12px;color:var(--live-yellow);font-weight:700;text-underline-offset:4px}

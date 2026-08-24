@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="6자리 방 코드로 각자 휴대폰에서 참여하는 경제수학 실시간 친구방">
+  <title>경제수학 친구방 · JP Math Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500;600;700&amp;family=Noto+Serif+KR:wght@700;900&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../style.css?v=5">
+  <link rel="stylesheet" href="live.css?v=2">
+  <link rel="stylesheet" href="games.css?v=1">
+  <link rel="stylesheet" href="room.css?v=1">
+  <link rel="stylesheet" href="../../jp-polish.css?v=7">
+  <script src="../../jp-polish.js?v=7" defer></script>
+  <script src="games-catalog.js?v=1" defer></script>
+  <script src="firebase-config.js?v=1" defer></script>
+  <script src="realtime-adapter.js?v=1" defer></script>
+  <script src="room-app.js?v=1" defer></script>
+</head>
+<body class="live-page realtime-page">
+  <header class="site-head">
+    <a class="brand" href="../index.html"><span>JP</span> 경제수학</a>
+    <nav aria-label="주요 메뉴"><a href="games.html">8개 게임</a><a href="index.html">JP 투자왕</a><a href="../index.html">경제수학 홈</a></nav>
+  </header>
+
+  <main class="realtime-main">
+    <section class="room-hero">
+      <div><p class="eyebrow">ECONOMY LIVE · 6-DIGIT ROOM</p><h1>각자 휴대폰에서<br><em>같은 사건을 만납니다.</em></h1><p>진행자는 방을 만들고, 참가자는 코드와 닉네임만 입력합니다. 전략은 결과 공개 전까지 다른 사람에게 보이지 않습니다.</p></div>
+      <aside class="connection-card" data-connection-card><span data-connection-dot></span><b data-connection-title>실시간 연결을 확인하고 있습니다.</b><p data-connection-copy>잠시만 기다려 주세요.</p></aside>
+    </section>
+
+    <section class="room-entry" data-entry>
+      <div class="entry-tabs" role="tablist" aria-label="친구방 입장 방법">
+        <button class="active" type="button" data-entry-tab="create" aria-selected="true">방 만들기</button>
+        <button type="button" data-entry-tab="join" aria-selected="false">코드로 입장</button>
+      </div>
+      <div class="entry-panel" data-create-panel>
+        <div class="entry-copy"><span>진행자</span><h2>게임을 골라 새 방을 만듭니다.</h2><p>방이 만들어지면 6자리 코드를 전자칠판에 띄워 주세요.</p></div>
+        <label class="room-field"><span>게임 선택</span><select data-game-select></select></label>
+        <label class="room-field"><span>진행자 닉네임</span><input type="text" maxlength="12" autocomplete="off" data-host-name placeholder="예: 경제반장"></label>
+        <button class="room-primary" type="button" data-create-room disabled>6자리 방 만들기</button>
+      </div>
+      <div class="entry-panel" data-join-panel hidden>
+        <div class="entry-copy"><span>참가자</span><h2>전자칠판의 코드를 입력합니다.</h2><p>로그인이나 학생 실명은 필요하지 않습니다.</p></div>
+        <label class="room-field code-field"><span>6자리 방 코드</span><input type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" data-join-code placeholder="000000"></label>
+        <label class="room-field"><span>참가자 닉네임</span><input type="text" maxlength="12" autocomplete="off" data-join-name placeholder="예: 환율토끼"></label>
+        <button class="room-primary" type="button" data-join-room disabled>친구방 입장하기</button>
+      </div>
+      <p class="room-error" data-room-error role="alert" hidden></p>
+    </section>
+
+    <section class="online-lobby" data-online-lobby hidden>
+      <div class="code-board"><span>친구방 코드</span><strong data-live-code>000000</strong><p>같은 화면을 친구들에게 보여 주세요.</p></div>
+      <div class="waiting-board"><header><div><span data-wait-game></span><h2>참가자를 기다리고 있습니다.</h2></div><b><i data-player-count>1</i> / 6명</b></header><div class="online-players" data-online-players></div><button class="room-primary" type="button" data-host-start hidden>이 인원으로 게임 시작</button><p data-guest-wait hidden>진행자가 게임을 시작할 때까지 기다려 주세요.</p></div>
+    </section>
+
+    <section class="online-game" data-online-game hidden>
+      <header class="room-bar"><div><span>방 코드</span><b data-game-code></b></div><div class="round-progress"><span data-live-game-title></span><b><i data-live-round>1</i> / 4 라운드</b><div><span data-live-meter></span></div></div><button type="button" data-online-leave>나가기</button></header>
+      <article class="news-card online-news"><div class="news-label"><span>JP 경제속보</span><time data-live-news-round></time></div><h2 data-live-event-title></h2><p data-live-event-copy></p><div class="signal-list" data-live-signals></div></article>
+      <section class="online-choice" data-online-choice><header><span data-my-name></span><h2>내 휴대폰에서 전략을 선택하세요.</h2></header><div class="strategy-grid" data-live-strategies></div><button class="lock-choice" type="button" data-submit-live disabled>전략 제출하기</button></section>
+      <section class="online-waiting" data-online-waiting hidden><span class="waiting-pulse"></span><h2>선택을 제출했습니다.</h2><p><b data-submitted-count>0</b> / <b data-total-count>0</b>명이 선택했습니다. 모두 고르면 결과가 동시에 열립니다.</p></section>
+      <section class="reveal-room" data-online-reveal hidden><header><span data-online-result-round></span><h2>모두의 선택을 공개합니다.</h2></header><div class="strategy-payoffs" data-online-payoffs></div><div class="ranking" data-online-ranking></div><article class="math-explain"><span>왜 이런 결과가 나왔을까?</span><h3 data-online-explain></h3><code data-online-formula></code></article><button class="next-round" type="button" data-host-next hidden>다음 경제 사건 보기 <span>→</span></button><p data-next-wait hidden>진행자가 다음 사건을 열 때까지 기다려 주세요.</p></section>
+      <section class="final-room" data-online-final hidden><span data-online-final-game></span><h2><b data-online-winner></b>님의 전략이 가장 균형 잡혔습니다.</h2><p data-online-final-copy></p><div class="final-ranking" data-online-final-ranking></div><div class="final-actions"><button type="button" data-host-rematch hidden>한 판 더</button><a href="games.html">다른 게임 보기</a></div></section>
+    </section>
+  </main>
+
+  <footer><div><b>JP Math Lab · 경제수학 친구방</b><p>로그인 없이 닉네임과 방 코드로 참여합니다.</p></div><div class="source-links"><a href="games.html">8개 게임</a><a href="../index.html">경제수학 홈</a></div></footer>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="경제수학의 선택과 결과를 친구들과 비교하는 8개 전략 게임">
+  <title>경제수학 8게임 · JP Math Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500;600;700&amp;family=Noto+Serif+KR:wght@700;900&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../style.css?v=5">
+  <link rel="stylesheet" href="live.css?v=2">
+  <link rel="stylesheet" href="games.css?v=1">
+  <link rel="stylesheet" href="../../jp-polish.css?v=7">
+  <script src="../../jp-polish.js?v=7" defer></script>
+  <script src="games-catalog.js?v=1" defer></script>
+  <script src="games-app.js?v=1" defer></script>
+</head>
+<body class="live-page catalog-page">
+  <header class="site-head">
+    <a class="brand" href="../index.html"><span>JP</span> 경제수학</a>
+    <nav aria-label="주요 메뉴"><a href="index.html">JP 투자왕</a><a href="../게임.html">혼자 플레이</a><a href="../교과서학습.html">개념 학습</a></nav>
+  </header>
+
+  <main class="catalog-main">
+    <section class="catalog-hero">
+      <p class="eyebrow">8 ECONOMY STRATEGY GAMES</p>
+      <h1>경제의 규칙은 같아도,<br><em>이기는 기준은 다릅니다.</em></h1>
+      <p>자산, 은행, 주거, 환율, 물가, 기업, 펀드, 정책으로 이어지는 여덟 게임입니다. 지금은 한 기기에서 번갈아 플레이하고, 같은 엔진을 실제 친구방으로 연결합니다.</p>
+    </section>
+
+    <section class="catalog-section" aria-labelledby="catalog-title">
+      <div class="catalog-heading"><div><span>PLAYABLE CATALOG</span><h2 id="catalog-title">게임을 선택하세요.</h2></div><p>빠른 계산보다 상황을 읽고 전략의 이유를 설명하는 데 초점을 둡니다.</p></div>
+      <div class="catalog-grid">
+        <a class="catalog-card investment-card" href="index.html">
+          <span>01 · 수와 경제</span><h3>JP 투자왕</h3><p>복리·수익률·실질가치</p><b>최종 자산</b><i>기존 체험판 →</i>
+        </a>
+        <div data-game-catalog></div>
+      </div>
+    </section>
+
+    <section class="arena-lobby" data-lobby>
+      <header class="arena-title">
+        <div><span data-game-domain></span><h2 data-game-title>환율 전쟁</h2><p data-game-subtitle></p></div>
+        <button type="button" data-change-game>다른 게임 선택</button>
+      </header>
+      <div class="lobby-grid">
+        <div class="lobby-form">
+          <div class="field-head"><label for="arena-player-1">참가자 닉네임</label><small>실명 대신 수업용 별명을 권장합니다.</small></div>
+          <div class="player-inputs" data-player-inputs>
+            <label><span>1</span><input id="arena-player-1" type="text" maxlength="12" autocomplete="off" aria-label="참가자 1 닉네임" placeholder="예: 전략곰"></label>
+            <label><span>2</span><input type="text" maxlength="12" autocomplete="off" aria-label="참가자 2 닉네임" placeholder="예: 판단토끼"></label>
+          </div>
+          <div class="lobby-actions"><button class="add-player" type="button" data-add-player>＋ 참가자 추가</button><button class="start-live" type="button" data-start>이 게임 시작하기 <span>→</span></button></div>
+          <p class="form-error" data-form-error role="alert" hidden></p>
+        </div>
+        <aside class="game-rule"><span>승리 조건</span><h3 data-game-victory></h3><ul><li>모든 참가자에게 같은 사건이 주어집니다.</li><li>결과 공개 전까지 서로의 전략을 볼 수 없습니다.</li><li>4라운드 뒤 게임별 지수가 가장 높은 참가자가 이깁니다.</li></ul></aside>
+      </div>
+    </section>
+
+    <section class="arena-room" data-room hidden>
+      <header class="room-bar">
+        <div><span>게임</span><b data-room-title></b></div>
+        <div class="round-progress"><span>진행</span><b><i data-round>1</i> / 4 라운드</b><div><span data-meter></span></div></div>
+        <button type="button" data-leave>게임 나가기</button>
+      </header>
+      <article class="news-card arena-news">
+        <div class="news-label"><span>JP 경제속보</span><time data-news-round></time></div>
+        <h2 data-event-title></h2><p data-event-copy></p><div class="signal-list" data-signals></div>
+      </article>
+
+      <section class="private-turn" data-gate>
+        <span>다음 결정자</span><h2><b data-current-name></b>님의 차례입니다.</h2><p>다른 참가자는 화면을 보지 않도록 잠시 기다려 주세요.</p><button type="button" data-open>내 전략 선택하기</button>
+      </section>
+
+      <section class="decision-room" data-decision hidden>
+        <div class="decision-heading"><div><span data-player-label></span><h2>이번 상황에서 실행할 전략을 고르세요.</h2></div><b data-score-label></b></div>
+        <div class="strategy-grid" data-strategies></div>
+        <button class="lock-choice" type="button" data-lock disabled>이 전략으로 선택 잠그기</button>
+      </section>
+
+      <section class="reveal-room" data-reveal hidden>
+        <header><span data-result-round></span><h2>선택을 함께 공개합니다.</h2><p>한 전략이 모든 상황에서 항상 유리하지는 않습니다.</p></header>
+        <div class="strategy-payoffs" data-payoffs></div>
+        <div class="ranking" data-ranking></div>
+        <article class="math-explain"><span>왜 이런 결과가 나왔을까?</span><h3 data-explain></h3><code data-formula></code></article>
+        <button class="next-round" type="button" data-next>다음 경제 사건 보기 <span>→</span></button>
+      </section>
+
+      <section class="final-room" data-final hidden>
+        <span data-final-game></span><h2><b data-winner></b>님의 전략이 가장 균형 잡혔습니다.</h2><p data-final-copy></p><div class="final-ranking" data-final-ranking></div>
+        <div class="final-actions"><button type="button" data-rematch>한 판 더</button><button class="outline-action" type="button" data-pick-another>다른 게임 선택</button></div>
+      </section>
+    </section>
+
+    <section class="realtime-preview">
+      <div><p class="eyebrow">NEXT · REALTIME ROOM</p><h2>다음 단계는 각자 휴대폰으로 입장합니다.</h2><p>진행자가 게임을 고르고 6자리 코드를 띄우면, 학생은 닉네임과 코드만 입력합니다. 선택은 각 휴대폰에서 받고 결과는 동시에 공개합니다.</p></div>
+      <ol><li><span>01</span>진행자가 방 만들기</li><li><span>02</span>학생이 코드로 입장</li><li><span>03</span>각자 전략 제출</li><li><span>04</span>결과 동시 공개</li></ol>
+      <a class="connection-state" href="room.html">실시간 친구방 열기 →</a>
+    </section>
+  </main>
+
+  <footer><div><b>JP Math Lab · 경제수학 8게임</b><p>서로 다른 경제 목표와 승리 조건을 하나의 전략 엔진으로 탐구합니다.</p></div><div class="source-links"><a href="../index.html">경제수학 홈</a><a href="index.html">JP 투자왕</a></div></footer>
+</body>
+</html>
