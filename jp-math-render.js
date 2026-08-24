@@ -7,6 +7,7 @@
     '.example-equation',
     '.question-equation',
     '.rush-eq',
+    '.boss-eq',
     '.answer-btn',
     '.game-choice',
     '.core-formula strong',
@@ -23,7 +24,7 @@
     '⁺':'+','⁻':'-','ⁿ':'n'
   };
 
-  const fitTargets = '.formula-main,.rule-strip strong,.example-equation,.question-equation,.rush-eq,.answer-btn,.game-choice';
+  const fitTargets = '.formula-main,.rule-strip strong,.example-equation,.question-equation,.rush-eq,.boss-eq,.answer-btn,.game-choice';
 
   // 풀이의 중심이 되는 수식은 본문형이 아니라 전시형으로 조판한다.
   // 특히 lim, sum, int의 위·아래 조건과 큰 분수의 균형이 달라진다.
@@ -32,6 +33,7 @@
     '.example-equation',
     '.question-equation',
     '.rush-eq',
+    '.boss-eq',
     '.core-formula strong',
     '[data-example-equation]',
     '[data-drill-equation]',

@@ -52,6 +52,7 @@ samp,
 .example-equation,
 .question-equation,
 .rush-eq,
+.boss-eq,
 .answer-btn,
 .game-choice,
 .core-formula strong,
@@ -83,6 +84,7 @@ samp,
 .example-equation,
 .question-equation,
 .rush-eq,
+.boss-eq,
 .equation,
 .formula {
   line-height: 1.45;
@@ -105,6 +107,10 @@ samp,
 .core-formula strong .katex,
 .question-equation .katex {
   font-size: 1.24em;
+}
+
+.boss-eq .katex {
+  font-size: 1.28em;
 }
 
 .answer-btn .katex,
@@ -140,6 +146,7 @@ samp,
 .example-equation .katex-display,
 .question-equation .katex-display,
 .rush-eq .katex-display,
+.boss-eq .katex-display,
 .core-formula strong .katex-display {
   margin: .18em 0;
 }
