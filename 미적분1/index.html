@@ -331,7 +331,8 @@
 </style>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;family=Noto+Serif+KR:wght@700;900&amp;display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../vendor/katex/katex.min.css">
-<link rel="stylesheet" href="../jp-math-typography.css?v=3">
+<link rel="stylesheet" href="../jp-math-typography.css?v=4">
+<link rel="stylesheet" href="미적분1_허브.css?v=1">
   <link rel="stylesheet" href="../jp-polish.css?v=7">
   <script src="../jp-polish.js?v=7" defer></script>
 </head>
@@ -342,15 +343,37 @@
   <header class="hero">
     <p class="eyebrow">CALC Ⅰ</p>
     <h1>미적분Ⅰ</h1>
-    <p class="lede">원하는 단원을 고른 뒤, 필요한 개념만 펼쳐서 시작하세요.</p>
+    <p class="lede">오늘의 함수에 도전하거나, 움직이고 겨루며 변화의 원리를 발견하세요.</p>
   </header>
 
+  <section class="calc-experience" aria-label="미적분 학습 방식">
+    <a class="experience-daily" href="오늘의_미적분.html">
+      <div><span class="experience-kicker">DAILY · 3 MINUTES · 5 MISSIONS</span><h2>오늘의 함수 하나를<br>끝까지 정복하세요.</h2><p>극한 → 접선 → 증가·감소 → 극값 → 누적 변화. 날짜마다 달라지는 하나의 함수를 다섯 번 다른 눈으로 바라봅니다.</p></div>
+      <div class="daily-enter"><strong id="dailyScorePreview">START</strong><span id="dailyStatusPreview">오늘의 미적분 도전</span></div>
+    </a>
+    <div class="experience-grid">
+      <a class="experience-card" style="--mode:#C1442D" href="#arcade"><span>ARCADE</span><h3>그래프로 게임하기</h3><p>극값과 함수 개형을 제한시간 안에 판별합니다.</p><b>게임 고르기 →</b></a>
+      <a class="experience-card" style="--mode:#7A4E8C" href="#arcade"><span>BATTLE</span><h3>친구와 1:1</h3><p>같은 기기의 같은 문제로 기록을 겨룹니다.</p><b>대결 고르기 →</b></a>
+      <a class="experience-card" style="--mode:#2B6CA3" href="#skills"><span>TRAINING</span><h3>계산 스킬 훈련</h3><p>28개 루틴을 5문제·60초 러시·보스로 익힙니다.</p><b>훈련 지도 →</b></a>
+      <a class="experience-card" style="--mode:#176B5B" href="#topics"><span>LEARN</span><h3>개념 실험실</h3><p>24개 개념의 그래프와 조건을 직접 움직입니다.</p><b>개념 고르기 →</b></a>
+    </div>
+  </section>
+
+  <section class="arcade-shelf" id="arcade" aria-labelledby="arcadeTitle">
+    <div class="arcade-head"><div><span>CALCULUS ARCADE · 현재 플레이 가능</span><h2 id="arcadeTitle">변화를 빠르게 읽는 세 가지 게임</h2></div><p>멀티플레이를 억지로 붙이지 않고, 그래프의 개형과 부호를 빠르게 발견하는 미적분다운 게임부터 모았습니다.</p></div>
+    <div class="arcade-grid">
+      <a class="arcade-game" style="--accent:#A03D62" href="미적분1_극대극소.html"><small>EXTREME HUNT</small><h3>극값 사냥</h3><p>도함수의 부호 변화로 극대·극소를 잡습니다.</p><b>혼자 기록전 · 로컬 1:1 →</b></a>
+      <a class="arcade-game" style="--accent:#2B6CA3" href="미적분1_삼차함수그래프.html"><small>CUBIC SHAPE</small><h3>삼차함수 개형전</h3><p>최고차항과 판별식으로 함수의 모양을 고릅니다.</p><b>8문제 아레나 →</b></a>
+      <a class="arcade-game" style="--accent:#7A4E8C" href="미적분1_사차함수그래프.html"><small>DERIVATIVE LINK</small><h3>사차함수 연결전</h3><p>도함수의 근과 원함수의 극값 구조를 연결합니다.</p><b>8문제 아레나 →</b></a>
+    </div>
+  </section>
+
   <div class="view-switch" aria-label="미적분 학습 방식 선택">
-    <button class="view-btn" data-main-view="concepts">개념 학습 <span>24</span></button>
-    <button class="view-btn active" data-main-view="skills">수능·계산 스킬 <span>28</span></button>
+    <button class="view-btn active" data-main-view="concepts">개념 학습 <span>24</span></button>
+    <button class="view-btn" data-main-view="skills">수능·계산 스킬 <span>28</span></button>
   </div>
 
-  <div class="main-panel hidden" data-main-panel="concepts">
+  <div class="main-panel" data-main-panel="concepts">
   <ul class="grid">
     <li>
       <a class="card" style="--accent:#C1442D" href="미적분1_극한.html">
@@ -671,7 +694,7 @@
   </ul>
   </div>
 
-  <div class="main-panel" data-main-panel="skills">
+  <div class="main-panel hidden" data-main-panel="skills">
     <div class="skill-map-intro"><div><h2>28개 미적분Ⅰ 계산 스킬 지도</h2><p>2022 개정 교육과정의 다항함수 범위로 구성하고, 로피탈 정리만 교육과정 밖 검산 도구로 따로 표시했습니다. 미적분Ⅱ 선행 내용과 초월함수는 제외했습니다.</p></div></div>
     <div data-skill-map></div>
   </div>
@@ -837,9 +860,20 @@
 
     const skillInitial = (location.hash.match(/^#skills-(limit|differentiate|graph|integral)$/)||[])[1];
     const conceptInitial = (location.hash.match(/^#(limits|derivative|integral)$/) || [])[1];
-    showView(location.hash==='#topics' || conceptInitial ? 'concepts' : 'skills',false);
+    const wantsSkills = location.hash==='#skills' || Boolean(skillInitial);
+    showView(wantsSkills ? 'skills' : 'concepts',false);
     if (conceptInitial) setCategory(conceptInitial, false);
     if (skillInitial) setSkillCategory(skillInitial, false);
+  })();
+  </script>
+
+  <script>
+  (function(){
+    try{
+      var key='jp-calculus-daily-v1',store=JSON.parse(localStorage.getItem(key)||'{}'),now=new Date(),today=[now.getFullYear(),String(now.getMonth()+1).padStart(2,'0'),String(now.getDate()).padStart(2,'0')].join('-'),record=store.plays&&store.plays[today];
+      if(record){document.getElementById('dailyScorePreview').textContent=record.score;document.getElementById('dailyStatusPreview').textContent='오늘 최고 · 다시 도전하기';}
+      else if(store.streak){document.getElementById('dailyStatusPreview').textContent='연속 '+store.streak+'일 · 오늘 기록 이어가기';}
+    }catch(e){}
   })();
   </script>
 
