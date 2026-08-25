@@ -3,6 +3,12 @@
 > 이 문서는 제이피매쓰랩을 이어서 작업할 교사, 개발자, AI를 위한 프로젝트 인수인계 문서다.  
 > 화면을 수정하기 전에 먼저 이 문서와 루트 `README.md`, 해당 과목 폴더의 문서를 읽는다.
 
+> **2026-08-25 JP Math Lab 2.0 기준 추가:** 아래 문서의 기존 디자인 설명보다 다음 세 문서를 우선한다.
+> 1. `JP_MATH_LAB_2.0_AUDIT.md`
+> 2. `JP_MATH_LAB_2.0_SITE_EXPERIENCE_MAP.md`
+> 3. `JP_MATH_LAB_2.0_DESIGN_SYSTEM.md`
+> 새 기능은 `Audit → Site Map → Experience Map → Visual/Motion/Math/3D System → 대표 화면 → 전체 확장` 순서를 지나기 전 먼저 추가하지 않는다.
+
 ## 1. 프로젝트 한눈에 보기
 
 JP Math Lab은 공식을 읽고 기억하는 사이트보다, 학생이 **그래프를 움직이고 조건을 바꾸고 결과를 비교하면서 수학적 질문을 만드는 학습 공간**을 지향한다.

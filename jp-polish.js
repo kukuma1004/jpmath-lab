@@ -447,6 +447,34 @@
     var value = path.indexOf('/수업창고/') !== -1 ? 'teacher'
       : path.indexOf('/주제탐구/') !== -1 ? 'dashboard' : 'lab';
     document.documentElement.dataset.jpMotion = value;
+    document.documentElement.classList.add('jp-v2');
+
+    var route = path.indexOf('/미적분1/') !== -1 ? 'calculus'
+      : path.indexOf('/기하/') !== -1 ? 'geometry'
+      : path.indexOf('/경제수학/') !== -1 ? 'economy'
+      : path.indexOf('/수능문제/') !== -1 ? 'csat'
+      : path.indexOf('/주제탐구/') !== -1 ? 'research'
+      : path.indexOf('/수업창고/') !== -1 ? 'teacher' : 'home';
+    document.documentElement.dataset.jpRoute = route;
+
+    var file = path.split('/').filter(Boolean).pop() || 'index.html';
+    var view = /오늘의_/.test(file) ? 'daily'
+      : file === 'index.html' || !/\.html$/i.test(file) ? 'hub' : 'content';
+    document.documentElement.dataset.jpView = view;
+
+    // 기존 페이지의 인라인 스타일보다 뒤에서 2.0 시스템을 읽는다.
+    // script 경로를 기준으로 계산하므로 루트와 하위 폴더에서 모두 같은 파일을 사용한다.
+    if (!document.querySelector('link[data-jp-system]')) {
+      var scripts = document.querySelectorAll('script[src*="jp-polish.js"]');
+      var source = scripts.length ? scripts[scripts.length - 1].src : '';
+      if (source) {
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = source.replace(/jp-polish\.js(?:\?.*)?$/, 'jp-system.css?v=6');
+        link.dataset.jpSystem = '';
+        document.head.appendChild(link);
+      }
+    }
     return value;
   }
 
