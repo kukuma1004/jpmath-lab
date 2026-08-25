@@ -18,8 +18,8 @@
   const sub=(a,b)=>a.map((v,i)=>v-b[i]),dot=(a,b)=>a.reduce((q,v,i)=>q+v*b[i],0),cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
   function tabs(){
     const buttons=[...document.querySelectorAll('.tab-btn')],pages=[...document.querySelectorAll('[data-page]')];
-    function show(name){buttons.forEach(b=>b.classList.toggle('active',b.dataset.tab===name));pages.forEach(p=>p.classList.toggle('hidden',p.dataset.page!==name));window.dispatchEvent(new CustomEvent('geolab:tab',{detail:name}))}
-    buttons.forEach(b=>b.addEventListener('click',()=>show(b.dataset.tab)));document.querySelectorAll('[data-go-tab]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.goTab)));show('theory');return{show}
+    function show(name,updateHash=false){if(!['theory','lab','game'].includes(name))name='theory';buttons.forEach(b=>b.classList.toggle('active',b.dataset.tab===name));pages.forEach(p=>p.classList.toggle('hidden',p.dataset.page!==name));if(updateHash)history.replaceState(null,'',`#${name}`);window.dispatchEvent(new CustomEvent('geolab:tab',{detail:name}))}
+    buttons.forEach(b=>b.addEventListener('click',()=>show(b.dataset.tab,true)));document.querySelectorAll('[data-go-tab]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.goTab,true)));const initial=(location.hash.match(/^#(theory|lab|game)$/)||[])[1]||'theory';show(initial);return{show}
   }
   function renderMath(root=document.body){if(window.renderMathInElement)renderMathInElement(root,{delimiters:[{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}],throwOnError:false})}
   class Arena{

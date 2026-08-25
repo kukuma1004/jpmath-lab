@@ -26,15 +26,56 @@
 <link rel="stylesheet" href="../vendor/katex/katex.min.css">
 <link rel="stylesheet" href="../jp-math-typography.css?v=3">
 <link rel="stylesheet" href="../jp-polish.css?v=8">
+<link rel="stylesheet" href="기하_허브_flow.css?v=1">
 <script src="../jp-polish.js?v=14" defer></script>
 </head>
 <body>
 <p class="breadcrumb"><a href="../index.html">JP Math Lab</a> / <span class="current">기하</span></p>
-<header class="hero"><p class="eyebrow">GEOMETRY · 2022 개정 교육과정</p><h1>기하</h1><p class="lede">이차곡선·공간도형·벡터의 14개 핵심 개념을 직접 움직이고, 친구와 겨뤄보세요.</p></header>
+<header class="hero">
+  <div class="hero-copy">
+    <p class="eyebrow">기하 · 공간과 관계</p>
+    <h1>공간을 돌리고,<br>관계를 찾아보세요.</h1>
+    <p class="lede">눈에 보이는 모양을 외우기보다 시점을 바꾸고 점·선·면을 움직이며 공간의 원리를 발견합니다.</p>
+  </div>
+  <div class="hero-space-map" aria-label="회전하는 공간도형과 벡터를 나타낸 그림">
+    <svg viewBox="0 0 460 190" role="img" aria-hidden="true">
+      <path class="space-grid" d="M28 150L182 74L340 145L184 179ZM182 74L182 23M28 150L28 99M340 145L340 93M184 179L184 126M28 99L182 23L340 93L184 126Z"/>
+      <path class="space-edge edge-back" d="M28 99L184 126L340 93M184 126V179"/>
+      <path class="space-edge edge-front" d="M28 150L182 74L340 145L184 179ZM182 74V23M28 99L182 23L340 93"/>
+      <path class="space-plane" d="M83 132L197 77L292 119L179 157Z"/>
+      <path class="space-vector" d="M182 126L279 63M279 63L260 67M279 63L271 81"/>
+      <path class="space-projection" d="M279 63L241 120"/>
+      <circle class="space-point" cx="279" cy="63" r="6"/>
+      <circle class="space-foot" cx="241" cy="120" r="5"/>
+    </svg>
+    <span class="space-label rotate">시점 회전</span>
+    <span class="space-label vector">벡터</span>
+    <span class="space-label plane">평면과 정사영</span>
+  </div>
+</header>
 
-<div class="view-switch" aria-label="기하 학습 방식 선택"><button class="view-btn" data-main-view="concepts">교육과정 개념 <span>14</span></button><button class="view-btn active" data-main-view="skills">내신 연산 스킬 <span>36</span></button></div>
+<section class="geo-experience" aria-label="기하 학습 방식">
+  <div class="experience-heading"><span>지금 시작하기</span><p>기하는 그림을 보는 과목이 아니라, 직접 돌리고 옮기며 관계를 찾아내는 과목입니다.</p></div>
+  <a class="experience-space" href="기하_공간에서의위치관계.html#lab">
+    <div><span class="experience-kicker">공간 실험 · 3D LAB</span><h2>정육면체를 돌려<br>꼬인 위치를 찾아보세요.</h2><p>한 화면에서는 만나 보이는 두 직선도, 시점을 돌리면 진짜 관계가 드러납니다.</p><div class="space-route-mini"><span>잡기</span><i></i><span>회전</span><i></i><span>관찰</span><i></i><span>판별</span></div></div>
+    <div class="space-enter"><strong>DRAG</strong><span>공간도형 직접 돌리기</span></div>
+  </a>
+  <div class="experience-grid">
+    <a class="experience-card" style="--mode:#7557A8" href="기하_포물선.html#lab"><span>CONIC</span><h3>곡선의 자취 만들기</h3><p>초점과 거리 조건을 움직여 이차곡선을 만듭니다.</p><b>포물선 실험 →</b></a>
+    <a class="experience-card" style="--mode:#176B5B" href="기하_벡터와연산.html#lab"><span>VECTOR</span><h3>화살표로 목표 찾기</h3><p>벡터를 더하고 빼며 점의 이동을 읽습니다.</p><b>벡터 조작 →</b></a>
+    <a class="experience-card" style="--mode:#C1442D" href="기하_공간에서의위치관계.html#game"><span>ARENA</span><h3>8초 공간 판별전</h3><p>혼자 기록전과 같은 기기 1:1로 공간 감각을 겨룹니다.</p><b>아레나 입장 →</b></a>
+    <a class="experience-card" style="--mode:#2B6CA3" href="#skills" data-open-view="skills"><span>TRAINING</span><h3>36개 내신 스킬</h3><p>원리·5문제·60초 러시·보스로 계산 루틴을 익힙니다.</p><b>훈련 지도 →</b></a>
+  </div>
+</section>
 
-<div class="main-panel hidden" data-main-panel="concepts">
+<section class="library-heading" aria-labelledby="libraryTitle">
+  <div><span>필요한 만큼 더 깊게</span><h2 id="libraryTitle">개념과 계산 지도</h2></div>
+  <p data-library-lede>14개 개념 LAB에서 공간을 조작하거나, 36개 스킬에서 계산을 짧게 반복하세요.</p>
+</section>
+
+<div class="view-switch" id="learningMap" aria-label="기하 학습 방식 선택"><button class="view-btn active" data-main-view="concepts">개념 LAB <span>14</span></button><button class="view-btn" data-main-view="skills">내신 연산 스킬 <span>36</span></button></div>
+
+<div class="main-panel" data-main-panel="concepts">
 
 <section class="section"><div class="section-head"><h2 class="section-title">Ⅰ. 이차곡선</h2><span class="section-sub">CONIC SECTIONS · 4 LABS</span></div><ul class="grid">
 <li><a class="card" style="--accent:#7557A8" href="기하_포물선.html"><span class="index-mark">01</span><div class="card-top"><span class="icon-tile"><svg viewBox="0 0 24 24" fill="none"><path d="M5 3c11 4 11 14 0 18" stroke="var(--accent)" stroke-width="1.8"/><circle cx="11" cy="12" r="1.7" fill="var(--accent)"/></svg></span><span class="code-chip">PARABOLA</span></div><h3 class="card-title">포물선</h3><p class="card-desc">초점과 준선까지의 같은 거리가 만드는 곡선</p><div class="card-footer"><span class="card-meta">y²=4px</span><span class="card-arrow">입장 →</span></div></a></li>
@@ -80,9 +121,11 @@
   let openCategory=null;
   function setCategory(key,updateHash=true){const same=openCategory===key;openCategory=same?null:key;document.querySelectorAll('.skill-category').forEach(b=>{const on=b.dataset.category===openCategory;b.classList.toggle('active',on);b.setAttribute('aria-expanded',String(on))});document.querySelectorAll('[data-skill-category]').forEach(s=>s.classList.toggle('hidden',s.dataset.skillCategory!==openCategory));emptyState.classList.toggle('hidden',!!openCategory);if(updateHash)history.replaceState(null,'',openCategory?`#skills-${openCategory}`:'#skills')}
   categoryNav.querySelectorAll('.skill-category').forEach(b=>b.addEventListener('click',()=>setCategory(b.dataset.category)));
-  const lede=document.querySelector('.lede');
-  function show(v){document.querySelectorAll('[data-main-panel]').forEach(p=>p.classList.toggle('hidden',p.dataset.mainPanel!==v));document.querySelectorAll('[data-main-view]').forEach(b=>b.classList.toggle('active',b.dataset.mainView===v));lede.textContent=v==='skills'?'내신에서 반복되는 36개 계산 스킬을 분야별로 펼쳐 훈련하세요.':'이차곡선·공간도형·벡터의 14개 핵심 개념을 직접 움직이고, 친구와 겨뤄보세요.';history.replaceState(null,'',v==='concepts'?'#concepts':openCategory?`#skills-${openCategory}`:'#skills')}
-  document.querySelectorAll('[data-main-view]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.mainView)));const initialCategory=(location.hash.match(/^#skills-(conic|space|vector)$/)||[])[1];show(location.hash==='#concepts'?'concepts':'skills');if(initialCategory)setCategory(initialCategory,false);
+  const libraryLede=document.querySelector('[data-library-lede]'),learningMap=document.getElementById('learningMap');
+  function show(v){document.querySelectorAll('[data-main-panel]').forEach(p=>p.classList.toggle('hidden',p.dataset.mainPanel!==v));document.querySelectorAll('[data-main-view]').forEach(b=>b.classList.toggle('active',b.dataset.mainView===v));libraryLede.textContent=v==='skills'?'이차곡선·공간도형·벡터의 36개 계산 루틴을 분야별로 펼쳐 훈련하세요.':'14개 개념 LAB에서 점·선·면과 곡선의 조건을 직접 움직여 보세요.';history.replaceState(null,'',v==='concepts'?'#concepts':openCategory?`#skills-${openCategory}`:'#skills')}
+  document.querySelectorAll('[data-main-view]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.mainView)));
+  document.querySelectorAll('[data-open-view]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();show(a.dataset.openView);requestAnimationFrame(()=>learningMap.scrollIntoView({behavior:'smooth',block:'start'}))}));
+  const initialCategory=(location.hash.match(/^#skills-(conic|space|vector)$/)||[])[1];show(location.hash.startsWith('#skills')?'skills':'concepts');if(initialCategory)setCategory(initialCategory,false);
 })();
 </script>
 </body></html>
