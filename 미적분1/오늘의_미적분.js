@@ -5,6 +5,7 @@
   const $ = selector => document.querySelector(selector);
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
   const rounded = value => Math.round(value * 10) / 10;
+  const MISSION_COLORS = ['#d4553f', '#d1843d', '#168068', '#596bd8', '#8461a9'];
 
   function dateKey(date = new Date()) {
     const year = date.getFullYear();
@@ -33,6 +34,7 @@
     if (window.katex) window.katex.render(tex, element, { throwOnError: false, displayMode: true, output: 'html' });
     else element.textContent = fallback || tex;
   }
+  function formatAnswer(value) { return typeof value === 'number' ? String(rounded(value)) : String(value); }
 
   function buildDaily(key) {
     const rng = seeded(`jp-calculus-${key}`);
@@ -60,6 +62,8 @@
     const missions = [
       {
         id: 'limit', kind: 'choice', kicker: '01 · 극한 탐정', title: '사라진 점의 기울기',
+        sense: '극한', goal: '두 점의 평균 기울기가 한 점의 접선 기울기로 가까워지는 과정',
+        skillId: 'derivative_definition', skillTitle: '미분계수의 정의',
         prompt: `x가 ${limitX}에 가까워질 때 두 점을 잇는 기울기는 어디에 가까워질까요?`,
         formula: `lim [f(x) − f(${limitX})] ÷ (x − ${limitX})`, tex: `\\lim_{x\\to ${limitX}}\\frac{f(x)-f(${limitX})}{x-${limitX < 0 ? `(${limitX})` : limitX}}`, correct: fp(limitX),
         choices: shuffle(limitChoices, rng),
@@ -67,24 +71,32 @@
       },
       {
         id: 'tangent', kind: 'slider', kicker: '02 · 접선 스나이퍼', title: '접선을 목표점에 맞혀라',
+        sense: '접선', goal: '곡선의 순간 진행 방향과 접선의 기울기를 그래프로 맞추기',
+        skillId: 'tangent_equation', skillTitle: '접선의 방정식',
         prompt: `x=${tangentX}에서 접선의 기울기를 조절하세요. 선이 곡선의 진행 방향과 가장 자연스럽게 겹치는 값을 찾으면 됩니다.`,
         x: tangentX, formula: `목표점 P(${tangentX}, ${f(tangentX)})`, tex: `P\\bigl(${tangentX},\\,${f(tangentX)}\\bigr)\\qquad f'(${tangentX})=?`, correct: fp(tangentX), tolerance: .35,
         range: [fp(tangentX) - 12, fp(tangentX) + 12], explain: `정확한 기울기는 f′(${tangentX})=${fp(tangentX)}입니다.`
       },
       {
         id: 'direction', kind: 'choice', kicker: '03 · 변화 방향', title: '지금 오르는 중일까?',
+        sense: '증감', goal: '도함수의 부호를 원함수의 증가·감소 방향으로 번역하기',
+        skillId: 'monotonic_interval', skillTitle: '도함수의 부호와 증감',
         prompt: `x=${testX} 부근에서 x가 증가할 때 함수값의 움직임을 판정하세요.`,
         x: testX, formula: `f′(${testX}) = ${fp(testX)}`, tex: `f'(${testX})=${fp(testX)}\\quad\\Longrightarrow\\quad \\operatorname{sign} f'(${testX})=?`, correct: fp(testX) > 0 ? '증가' : fp(testX) < 0 ? '감소' : '정지',
         choices: ['증가', '감소', '정지'], explain: `도함수의 부호가 ${fp(testX) > 0 ? '양수이므로 증가' : fp(testX) < 0 ? '음수이므로 감소' : '0이므로 순간적으로 정지'}합니다.`
       },
       {
         id: 'extreme', kind: 'choice', kicker: '04 · 극값 사냥', title: '가장 높은 봉우리를 찾아라',
+        sense: '극값', goal: '도함수가 0인 점의 좌우 부호를 보고 극대와 극소 구분하기',
+        skillId: 'extrema_sign', skillTitle: '극값과 도함수 부호',
         prompt: '도함수가 0인 두 지점 중 극대가 일어나는 x좌표를 선택하세요.',
         formula: `f′(x)=0 → x=${h - d}, ${h + d}`, tex: `f'(x)=0\\quad\\Longrightarrow\\quad x=${h - d},\\;${h + d}`, correct: maxX,
         choices: shuffle([h - d, h + d, h], rng), explain: `x=${maxX}의 좌우에서 f′의 부호가 +에서 −로 바뀌므로 극대입니다.`
       },
       {
         id: 'accumulation', kind: 'slider', kicker: '05 · 누적 변화', title: '도함수의 넓이를 원함수로',
+        sense: '누적', goal: '도함수의 부호 있는 넓이를 원함수의 전체 변화량으로 연결하기',
+        skillId: 'fundamental_theorem', skillTitle: '미적분의 기본정리',
         prompt: `x=${left}부터 x=${right}까지 f′(x)를 누적한 값을 맞혀 보세요. 그래프 위와 아래의 부호를 함께 생각해야 합니다.`,
         formula: `∫[${left}→${right}] f′(x)dx = f(${right}) − f(${left})`, tex: `\\int_{${left}}^{${right}} f'(x)\\,dx=f(${right})-f(${left})`, correct: accumulation, tolerance: .5,
         range: [accumulation - 18, accumulation + 18], explain: `미적분의 기본정리에 따라 누적 변화는 f(${right})−f(${left})=${accumulation}입니다.`
@@ -100,6 +112,15 @@
     const accuracy = mission.kind === 'slider' ? clamp(1 - error / scale, 0, 1) : error === 0 ? 1 : 0;
     const speed = accuracy >= .8 ? clamp(1 - seconds / 30, 0, 1) : 0;
     return { points: Math.round(160 * accuracy + 40 * speed), accuracy, success: error <= (mission.tolerance || 0) };
+  }
+
+  function buildResultProfile(missions, attempts) {
+    const rows = missions.map((mission, index) => {
+      const attempt = attempts.find(item => item.id === mission.id) || { accuracy: 0, points: 0, seconds: 0 };
+      return { ...attempt, mission, index };
+    });
+    const weakest = rows.slice().sort((a, b) => a.accuracy - b.accuracy || a.points - b.points)[0];
+    return { rows, weakest };
   }
 
   function readStore() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { plays: {}, streak: 0, lastDate: '' }; } catch (_) { return { plays: {}, streak: 0, lastDate: '' }; } }
@@ -159,37 +180,74 @@
   }
 
   function init() {
-    const key = dateKey(); const daily = buildDaily(key); const store = readStore(); let index = 0, score = 0, combo = 0, bestCombo = 0, accuracySum = 0, answer = null, startedAt = 0, timer = 0;
+    const key = dateKey(); const daily = buildDaily(key); const store = readStore(); let index = 0, score = 0, combo = 0, bestCombo = 0, accuracySum = 0, answer = null, startedAt = 0, timer = 0, attempts = [];
     $('[data-today-label]').textContent = `${key.replaceAll('-', '.')} · CALCULUS DAILY`;
     renderMath($('[data-function-formula]'), daily.tex, daily.formula);
     renderMath($('[data-play-function]'), daily.tex, daily.formula);
+    renderMath($('[data-result-function]'), daily.tex, daily.formula);
     const todayRecord = store.plays[key]; $('[data-saved-score]').textContent = todayRecord ? `${todayRecord.score}점` : '아직 없음'; $('[data-saved-streak]').textContent = `${store.streak || 0}일`;
     requestAnimationFrame(() => drawGraph($('[data-intro-canvas]'), daily)); window.addEventListener('resize', () => { if (!$('[data-screen="intro"]').hidden) drawGraph($('[data-intro-canvas]'), daily); else if (!$('[data-screen="play"]').hidden) drawGraph($('[data-mission-canvas]'), daily, daily.missions[index], answer); }, { passive: true });
 
     function show(name) { document.querySelectorAll('[data-screen]').forEach(screen => { screen.hidden = screen.dataset.screen !== name; }); window.scrollTo({ top: 0, behavior: 'smooth' }); }
     function tick() { if ($('[data-screen="play"]').hidden) return; $('[data-time]').textContent = `${((performance.now() - startedAt) / 1000).toFixed(1)}초`; timer = requestAnimationFrame(tick); }
-    function start() { index = 0; score = 0; combo = 0; bestCombo = 0; accuracySum = 0; show('play'); renderMission(); }
+    function start() { index = 0; score = 0; combo = 0; bestCombo = 0; accuracySum = 0; attempts = []; show('play'); renderMission(); }
     function renderMission() {
       cancelAnimationFrame(timer); const mission = daily.missions[index]; answer = mission.kind === 'slider' ? clamp(0, mission.range[0], mission.range[1]) : null; startedAt = performance.now();
       $('[data-round-label]').textContent = `MISSION ${index + 1} / ${daily.missions.length}`; $('[data-progress]').style.width = `${(index + 1) / daily.missions.length * 100}%`; $('[data-score]').textContent = score; $('[data-combo]').textContent = `×${combo}`;
-      $('[data-mission-kicker]').textContent = mission.kicker; $('[data-mission-title]').textContent = mission.title; $('[data-mission-prompt]').textContent = mission.prompt; renderMath($('[data-mission-formula]'), mission.tex, mission.formula); $('[data-graph-note]').textContent = index === 1 ? '슬라이더를 움직이면 접선이 회전합니다' : index === 4 ? '노란 영역은 부호를 가진 누적 변화입니다' : '그래프의 모양과 수치를 함께 보세요';
+      document.querySelectorAll('[data-route]').forEach((item, routeIndex) => {
+        item.classList.toggle('is-done', routeIndex < index);
+        item.classList.toggle('is-active', routeIndex === index);
+        if (routeIndex === index) item.setAttribute('aria-current', 'step'); else item.removeAttribute('aria-current');
+      });
+      $('[data-mission-kicker]').textContent = mission.kicker; $('[data-mission-title]').textContent = mission.title; $('[data-mission-prompt]').textContent = mission.prompt; $('[data-mission-goal]').textContent = mission.goal; renderMath($('[data-mission-formula]'), mission.tex, mission.formula); $('[data-graph-note]').textContent = index === 1 ? '슬라이더를 움직이면 접선이 회전합니다' : index === 4 ? '노란 영역은 부호를 가진 누적 변화입니다' : '그래프의 모양과 수치를 함께 보세요';
       const controls = $('[data-controls]'); controls.innerHTML = ''; const submit = $('[data-submit]'); submit.hidden = false; submit.disabled = mission.kind !== 'slider'; $('[data-next]').hidden = true; $('[data-feedback]').hidden = true;
       if (mission.kind === 'choice') { const grid = document.createElement('div'); grid.className = 'choice-grid'; mission.choices.forEach(value => { const button = document.createElement('button'); button.type = 'button'; button.className = 'choice-button'; button.textContent = typeof value === 'number' ? String(rounded(value)) : value; button.addEventListener('click', () => { answer = value; grid.querySelectorAll('button').forEach(item => item.classList.toggle('selected', item === button)); submit.disabled = false; }); grid.appendChild(button); }); controls.appendChild(grid); }
       else { controls.innerHTML = `<div class="slider-control"><input type="range" min="${mission.range[0]}" max="${mission.range[1]}" step="0.1" value="${answer}" aria-label="${mission.title} 값 조절"><div class="slider-value"><span>나의 예측</span><strong>${rounded(answer)}</strong></div></div>`; const input = controls.querySelector('input'); input.addEventListener('input', () => { answer = Number(input.value); controls.querySelector('strong').textContent = rounded(answer); drawGraph($('[data-mission-canvas]'), daily, mission, answer); }); }
       requestAnimationFrame(() => drawGraph($('[data-mission-canvas]'), daily, mission, answer)); timer = requestAnimationFrame(tick);
     }
     function submitMission() {
-      cancelAnimationFrame(timer); const mission = daily.missions[index]; const seconds = (performance.now() - startedAt) / 1000; const result = scoreAttempt(mission, answer, seconds); score += result.points; accuracySum += result.accuracy; combo = result.accuracy >= .8 ? combo + 1 : 0; bestCombo = Math.max(bestCombo, combo);
-      $('[data-score]').textContent = score; $('[data-combo]').textContent = `×${combo}`; const feedback = $('[data-feedback]'); feedback.className = `mission-feedback ${result.accuracy >= .8 ? 'good' : result.accuracy >= .4 ? 'mid' : 'bad'}`; feedback.innerHTML = `<strong>${result.accuracy >= .8 ? `좋습니다 · +${result.points}점` : result.accuracy >= .4 ? `거의 도착했습니다 · +${result.points}점` : '그래프의 신호를 한 번 더 확인해 보세요.'}</strong><br>${mission.explain}`; feedback.hidden = false; $('[data-submit]').hidden = true; $('[data-next]').hidden = false; $('[data-next]').textContent = index === daily.missions.length - 1 ? '오늘의 결과 보기 →' : '다음 미션 →'; document.querySelectorAll('.choice-button,input[type="range"]').forEach(control => { control.disabled = true; });
+      cancelAnimationFrame(timer);
+      const mission = daily.missions[index];
+      const seconds = (performance.now() - startedAt) / 1000;
+      const result = scoreAttempt(mission, answer, seconds);
+      const attempt = { id: mission.id, answer, correct: mission.correct, seconds: rounded(seconds), points: result.points, accuracy: result.accuracy, success: result.success };
+      attempts[index] = attempt;
+      score += result.points; accuracySum += result.accuracy; combo = result.accuracy >= .8 ? combo + 1 : 0; bestCombo = Math.max(bestCombo, combo);
+      $('[data-score]').textContent = score; $('[data-combo]').textContent = `×${combo}`;
+      document.querySelectorAll('.choice-button').forEach(button => {
+        if (button.textContent === formatAnswer(mission.correct)) button.classList.add('is-correct');
+        else if (button.classList.contains('selected')) button.classList.add('is-wrong');
+      });
+      const feedback = $('[data-feedback]');
+      const verdict = result.accuracy >= .8 ? `좋습니다 · +${result.points}점` : result.accuracy >= .4 ? `거의 도착했습니다 · +${result.points}점` : '그래프의 신호를 한 번 더 확인해 보세요.';
+      feedback.className = `mission-feedback ${result.accuracy >= .8 ? 'good' : result.accuracy >= .4 ? 'mid' : 'bad'}`;
+      feedback.innerHTML = `<div class="feedback-verdict"><span>나의 판단</span><strong>${formatAnswer(answer)} → 정답 ${formatAnswer(mission.correct)}</strong></div><div class="feedback-connection"><span>${verdict}</span><strong>${mission.explain}</strong></div>`;
+      feedback.hidden = false;
+      $('[data-submit]').hidden = true; $('[data-next]').hidden = false; $('[data-next]').textContent = index === daily.missions.length - 1 ? '오늘의 결과 보기 →' : '다음 미션 →';
+      document.querySelectorAll('.choice-button,input[type="range"]').forEach(control => { control.disabled = true; });
     }
     function next() { if (index < daily.missions.length - 1) { index += 1; renderMission(); } else finish(); }
     function finish() {
-      const accuracy = Math.round(accuracySum / daily.missions.length * 100); const saved = saveResult(key, { score, accuracy, combo: bestCombo }); const record = saved.plays[key];
-      $('[data-result-score]').textContent = score; $('[data-result-accuracy]').textContent = `${accuracy}%`; $('[data-result-combo]').textContent = `×${bestCombo}`; $('[data-result-streak]').textContent = `${saved.streak}일`; $('[data-result-best]').textContent = record.score; $('[data-result-message]').textContent = accuracy >= 90 ? '그래프와 식을 거의 동시에 읽었습니다. 내일은 새로운 함수 구조가 기다립니다.' : accuracy >= 65 ? '변화의 방향은 잘 잡았습니다. 접선과 누적 변화의 수치를 한 번 더 맞혀 보세요.' : '오늘은 함수의 지도를 만든 날입니다. 같은 함수로 다시 도전하면 연결이 훨씬 선명해집니다.'; show('result');
+      const accuracy = Math.round(accuracySum / daily.missions.length * 100);
+      const abilitySummary = attempts.map(item => ({ id: item.id, accuracy: Math.round(item.accuracy * 100), points: item.points }));
+      const saved = saveResult(key, { score, accuracy, combo: bestCombo, abilities: abilitySummary });
+      const record = saved.plays[key];
+      $('[data-result-score]').textContent = score; $('[data-result-accuracy]').textContent = `${accuracy}%`; $('[data-result-combo]').textContent = `×${bestCombo}`; $('[data-result-streak]').textContent = `${saved.streak}일`; $('[data-result-best]').textContent = record.score;
+      $('[data-result-message]').textContent = accuracy >= 90 ? '그래프와 식을 거의 동시에 읽었습니다. 내일은 새로운 함수 구조가 기다립니다.' : accuracy >= 65 ? '변화의 방향은 잘 잡았습니다. 아래 읽기 지도에서 한 번 더 연결할 감각을 확인해 보세요.' : '오늘은 함수의 지도를 만든 날입니다. 약한 관점 하나를 연습한 뒤 같은 함수로 다시 도전해 보세요.';
+      const profile = buildResultProfile(daily.missions, attempts);
+      $('[data-result-missions]').innerHTML = profile.rows.map(row => {
+        const percent = Math.round(row.accuracy * 100);
+        return `<article class="reading-item" style="--item-color:${MISSION_COLORS[row.index]}"><span>${String(row.index + 1).padStart(2, '0')} · ${row.mission.sense}</span><strong>${row.points}점</strong><small>정확도 ${percent}% · ${row.seconds}초</small><div class="reading-meter"><i style="width:${percent}%"></i></div></article>`;
+      }).join('');
+      const weak = profile.weakest;
+      $('[data-recommend-title]').textContent = `${weak.mission.sense} 감각을 계산으로 굳혀 보세요.`;
+      $('[data-recommend-text]').textContent = `${weak.mission.title}에서 확인한 연결을 ‘${weak.mission.skillTitle}’ 5문제로 짧게 반복하면, 다음 DAILY에서 그래프를 더 빠르게 읽을 수 있습니다.`;
+      const recommendLink = $('[data-recommend-link]'); recommendLink.href = `미적분1_계산스킬.html?id=${weak.mission.skillId}`; recommendLink.textContent = `${weak.mission.skillTitle} 연습 시작 →`;
+      show('result');
     }
     $('[data-start]').addEventListener('click', start); $('[data-submit]').addEventListener('click', submitMission); $('[data-next]').addEventListener('click', next); $('[data-replay]').addEventListener('click', start);
   }
 
-  window.JPCalculusDaily = { buildDaily, scoreAttempt, dateKey };
+  window.JPCalculusDaily = { buildDaily, scoreAttempt, buildResultProfile, dateKey };
   if (typeof document !== 'undefined') document.addEventListener('DOMContentLoaded', init);
 }());
