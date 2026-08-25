@@ -426,6 +426,9 @@
 
   var media = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
   var reduce = media && media.matches;
+  var polishScripts = document.querySelectorAll('script[src*="jp-polish.js"]');
+  var polishSource = polishScripts.length ? polishScripts[polishScripts.length - 1].src : '';
+  var assetRoot = polishSource ? new URL('.', polishSource).href : '';
   var cardSelector = [
     '.tile', '.resource-card', '.overview-card', '.process-track > li',
     '.inquiry-card', '.inquiry-button', '.request-card', '.summary-card', '.curator-section',
@@ -476,6 +479,60 @@
       }
     }
     return value;
+  }
+
+  function ensureStyle(url, marker) {
+    if (!url || document.querySelector('link[' + marker + ']')) return;
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = url;
+    link.setAttribute(marker, '');
+    document.head.appendChild(link);
+  }
+
+  function loadScript(url, marker, readyTest) {
+    if (readyTest && readyTest()) return Promise.resolve();
+    var current = document.querySelector('script[' + marker + ']');
+    if (current) {
+      return new Promise(function (resolve, reject) {
+        current.addEventListener('load', resolve, { once: true });
+        current.addEventListener('error', reject, { once: true });
+      });
+    }
+    return new Promise(function (resolve, reject) {
+      var script = document.createElement('script');
+      script.src = url;
+      script.defer = true;
+      script.setAttribute(marker, '');
+      script.addEventListener('load', resolve, { once: true });
+      script.addEventListener('error', reject, { once: true });
+      document.head.appendChild(script);
+    });
+  }
+
+  function ensureMathSystem() {
+    if (!assetRoot || window.JPMath) return;
+    var route = document.documentElement.dataset.jpRoute;
+    if (route === 'home' || route === 'research') return;
+
+    ensureStyle(assetRoot + 'vendor/katex/katex.min.css', 'data-jp-katex-style');
+    var katexReady = function () { return !!window.katex; };
+    var rendererReady = function () { return !!window.JPMath; };
+    var katexTask = katexReady()
+      ? Promise.resolve()
+      : loadScript(assetRoot + 'vendor/katex/katex.min.js?v=1', 'data-jp-katex-loader', katexReady);
+
+    katexTask
+      .then(function () {
+        return loadScript(assetRoot + 'jp-math-render.js?v=5', 'data-jp-math-loader', rendererReady);
+      })
+      .then(function () {
+        document.dispatchEvent(new CustomEvent('jp:math-ready'));
+      })
+      .catch(function (error) {
+        document.documentElement.dataset.jpMath = 'error';
+        console.warn('[JP Math] 공통 수식 시스템을 불러오지 못했습니다.', error);
+      });
   }
 
   function animateIn(element, index) {
@@ -695,6 +752,9 @@
       pending = window.setTimeout(function () { scan(document); }, 70);
     });
     observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'hidden', 'aria-expanded', 'aria-selected'] });
+
+    if (document.readyState === 'complete') ensureMathSystem();
+    else window.addEventListener('load', ensureMathSystem, { once: true });
   }
 
   window.jpMotionFeedback = function (type, message) { toast(type, message); };

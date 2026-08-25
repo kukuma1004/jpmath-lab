@@ -8,10 +8,17 @@
     '.question-equation',
     '.rush-eq',
     '.boss-eq',
+    '.boss-problem',
     '.answer-btn',
     '.game-choice',
     '.core-formula strong',
     '.mini-formula',
+    '.skill-mini-formula',
+    '.q-expr',
+    '.q-formula',
+    '.rule-box-formula',
+    '.theorem-formula',
+    '.formula-strip',
     '[data-example-equation]',
     '[data-drill-equation]',
     '[data-game-equation]',
@@ -24,7 +31,7 @@
     '⁺':'+','⁻':'-','ⁿ':'n'
   };
 
-  const fitTargets = '.formula-main,.rule-strip strong,.example-equation,.question-equation,.rush-eq,.boss-eq,.answer-btn,.game-choice';
+  const fitTargets = '.formula-main,.rule-strip strong,.example-equation,.question-equation,.rush-eq,.boss-eq,.boss-problem,.answer-btn,.game-choice,.q-expr,.q-formula,.rule-box-formula,.theorem-formula,.formula-strip';
 
   // 풀이의 중심이 되는 수식은 본문형이 아니라 전시형으로 조판한다.
   // 특히 lim, sum, int의 위·아래 조건과 큰 분수의 균형이 달라진다.
@@ -34,7 +41,13 @@
     '.question-equation',
     '.rush-eq',
     '.boss-eq',
+    '.boss-problem',
     '.core-formula strong',
+    '.q-expr',
+    '.q-formula',
+    '.rule-box-formula',
+    '.theorem-formula',
+    '.formula-strip',
     '[data-example-equation]',
     '[data-drill-equation]',
     '[data-game-equation]',
@@ -129,18 +142,27 @@
     if (!window.katex || el.querySelector('.katex')) return;
     const source = (el.dataset.tex || el.textContent).trim();
     if (!source) return;
+    const explicit = el.hasAttribute('data-tex') || el.hasAttribute('data-math');
+    const looksMathematical = /[0-9A-Za-z=+\-*/^()[\]{}<>|]|[⁰¹²³⁴⁵⁶⁷⁸⁹]|lim|∫|√|∞|→|′|Δ/.test(source);
+    if (!explicit && !looksMathematical) return;
     try {
       const tex = toTex(source);
       const readableTex = el.closest('[data-math-style="upright"]') ? `\\mathsf{${tex}}` : tex;
       const displayMode = el.matches(displayTargets);
+      el.dataset.mathSource = source;
       window.katex.render(readableTex, el, {
         displayMode,
         throwOnError: false,
         strict: false,
         output: 'htmlAndMathml'
       });
+      el.dataset.mathRendered = 'true';
+      delete el.dataset.mathError;
       requestAnimationFrame(() => fitRendered(el));
-    } catch (_) {}
+    } catch (error) {
+      el.dataset.mathError = 'true';
+      console.warn('[JP Math] 수식을 표시하지 못했습니다.', { source, error });
+    }
   }
 
   function scan(root) {
@@ -151,12 +173,32 @@
 
   const refitAll = () => document.querySelectorAll(fitTargets).forEach(fitRendered);
 
+  function audit(root = document) {
+    const nodes = Array.from(root.querySelectorAll(targets));
+    const rendered = nodes.filter(el => el.querySelector('.katex'));
+    const errors = nodes.filter(el => el.dataset.mathError === 'true');
+    const pending = nodes.filter(el => {
+      if (el.querySelector('.katex') || el.dataset.mathError === 'true') return false;
+      const source = (el.dataset.tex || el.textContent || '').trim();
+      return /[0-9A-Za-z=+\-*/^()[\]{}<>|]|[⁰¹²³⁴⁵⁶⁷⁸⁹]|lim|∫|√|∞|→|′|Δ/.test(source);
+    });
+    const overflow = rendered.filter(el => el.scrollWidth > el.clientWidth + 2);
+    return {
+      targets: nodes.length,
+      rendered: rendered.length,
+      errors: errors.map(el => el.dataset.mathSource || el.textContent.trim()),
+      pending: pending.map(el => (el.dataset.tex || el.textContent || '').trim()),
+      overflow: overflow.map(el => el.dataset.mathSource || el.textContent.trim())
+    };
+  }
+
   window.JPMath = Object.assign(window.JPMath || {}, {
     toTex,
     render: renderOne,
     scan,
     fit: fitRendered,
-    refit: refitAll
+    refit: refitAll,
+    audit
   });
 
   let queued = false;
@@ -171,6 +213,7 @@
 
   function start() {
     scan(document);
+    document.documentElement.dataset.jpMath = 'ready';
     observer.observe(document.body, { childList: true, subtree: true, characterData: true });
     window.addEventListener('resize', refitAll, { passive: true });
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(refitAll);
