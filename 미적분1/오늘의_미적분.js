@@ -27,6 +27,12 @@
     return `${sign} ${size === 1 && variable ? '' : size}${variable}`;
   }
   function shiftedX(h) { return h === 0 ? 'x' : `x ${signed(-h)}`; }
+  function texShiftedX(h) { return h === 0 ? 'x' : h > 0 ? `x-${h}` : `x+${Math.abs(h)}`; }
+  function renderMath(element, tex, fallback) {
+    if (!element) return;
+    if (window.katex) window.katex.render(tex, element, { throwOnError: false, displayMode: true, output: 'html' });
+    else element.textContent = fallback || tex;
+  }
 
   function buildDaily(key) {
     const rng = seeded(`jp-calculus-${key}`);
@@ -37,7 +43,10 @@
     const f = x => s * (x - h) ** 3 - 3 * s * d ** 2 * (x - h) + c;
     const fp = x => 3 * s * ((x - h) ** 2 - d ** 2);
     const base = shiftedX(h);
+    const texBase = texShiftedX(h);
     const centered = `f(x) = ${s < 0 ? '−' : ''}(${base})³ ${term(-3 * s * d ** 2, `(${base})`)} ${c ? term(c, '') : ''}`.replace(/\s+/g, ' ').trim();
+    const linearCoefficient = -3 * s * d ** 2;
+    const tex = `f(x)=${s < 0 ? '-' : ''}(${texBase})^3${linearCoefficient < 0 ? '-' : '+'}${Math.abs(linearCoefficient) === 1 ? '' : Math.abs(linearCoefficient)}(${texBase})${c < 0 ? c : c > 0 ? `+${c}` : ''}`;
     const limitX = h + ri(rng, -2, 2);
     const tangentX = h + (rng() < .5 ? -d - 1 : d + 1);
     const testX = h + [-(d + 1), 0, d + 1][ri(rng, 0, 2)];
@@ -52,36 +61,36 @@
       {
         id: 'limit', kind: 'choice', kicker: '01 · 극한 탐정', title: '사라진 점의 기울기',
         prompt: `x가 ${limitX}에 가까워질 때 두 점을 잇는 기울기는 어디에 가까워질까요?`,
-        formula: `lim [f(x) − f(${limitX})] ÷ (x − ${limitX})`, correct: fp(limitX),
+        formula: `lim [f(x) − f(${limitX})] ÷ (x − ${limitX})`, tex: `\\lim_{x\\to ${limitX}}\\frac{f(x)-f(${limitX})}{x-${limitX < 0 ? `(${limitX})` : limitX}}`, correct: fp(limitX),
         choices: shuffle(limitChoices, rng),
         explain: `차분몫의 극한은 f′(${limitX})입니다. 오늘 함수에서는 ${fp(limitX)}에 가까워집니다.`
       },
       {
         id: 'tangent', kind: 'slider', kicker: '02 · 접선 스나이퍼', title: '접선을 목표점에 맞혀라',
         prompt: `x=${tangentX}에서 접선의 기울기를 조절하세요. 선이 곡선의 진행 방향과 가장 자연스럽게 겹치는 값을 찾으면 됩니다.`,
-        x: tangentX, formula: `목표점 P(${tangentX}, ${f(tangentX)})`, correct: fp(tangentX), tolerance: .35,
+        x: tangentX, formula: `목표점 P(${tangentX}, ${f(tangentX)})`, tex: `P\\bigl(${tangentX},\\,${f(tangentX)}\\bigr)\\qquad f'(${tangentX})=?`, correct: fp(tangentX), tolerance: .35,
         range: [fp(tangentX) - 12, fp(tangentX) + 12], explain: `정확한 기울기는 f′(${tangentX})=${fp(tangentX)}입니다.`
       },
       {
         id: 'direction', kind: 'choice', kicker: '03 · 변화 방향', title: '지금 오르는 중일까?',
         prompt: `x=${testX} 부근에서 x가 증가할 때 함수값의 움직임을 판정하세요.`,
-        x: testX, formula: `f′(${testX}) = ${fp(testX)}`, correct: fp(testX) > 0 ? '증가' : fp(testX) < 0 ? '감소' : '정지',
+        x: testX, formula: `f′(${testX}) = ${fp(testX)}`, tex: `f'(${testX})=${fp(testX)}\\quad\\Longrightarrow\\quad \\operatorname{sign} f'(${testX})=?`, correct: fp(testX) > 0 ? '증가' : fp(testX) < 0 ? '감소' : '정지',
         choices: ['증가', '감소', '정지'], explain: `도함수의 부호가 ${fp(testX) > 0 ? '양수이므로 증가' : fp(testX) < 0 ? '음수이므로 감소' : '0이므로 순간적으로 정지'}합니다.`
       },
       {
         id: 'extreme', kind: 'choice', kicker: '04 · 극값 사냥', title: '가장 높은 봉우리를 찾아라',
         prompt: '도함수가 0인 두 지점 중 극대가 일어나는 x좌표를 선택하세요.',
-        formula: `f′(x)=0 → x=${h - d}, ${h + d}`, correct: maxX,
+        formula: `f′(x)=0 → x=${h - d}, ${h + d}`, tex: `f'(x)=0\\quad\\Longrightarrow\\quad x=${h - d},\\;${h + d}`, correct: maxX,
         choices: shuffle([h - d, h + d, h], rng), explain: `x=${maxX}의 좌우에서 f′의 부호가 +에서 −로 바뀌므로 극대입니다.`
       },
       {
         id: 'accumulation', kind: 'slider', kicker: '05 · 누적 변화', title: '도함수의 넓이를 원함수로',
         prompt: `x=${left}부터 x=${right}까지 f′(x)를 누적한 값을 맞혀 보세요. 그래프 위와 아래의 부호를 함께 생각해야 합니다.`,
-        formula: `∫[${left}→${right}] f′(x)dx = f(${right}) − f(${left})`, correct: accumulation, tolerance: .5,
+        formula: `∫[${left}→${right}] f′(x)dx = f(${right}) − f(${left})`, tex: `\\int_{${left}}^{${right}} f'(x)\\,dx=f(${right})-f(${left})`, correct: accumulation, tolerance: .5,
         range: [accumulation - 18, accumulation + 18], explain: `미적분의 기본정리에 따라 누적 변화는 f(${right})−f(${left})=${accumulation}입니다.`
       }
     ];
-    return { key, s, h, d, c, f, fp, formula: centered, missions };
+    return { key, s, h, d, c, f, fp, formula: centered, tex, missions };
   }
 
   function scoreAttempt(mission, answer, seconds) {
@@ -151,7 +160,9 @@
 
   function init() {
     const key = dateKey(); const daily = buildDaily(key); const store = readStore(); let index = 0, score = 0, combo = 0, bestCombo = 0, accuracySum = 0, answer = null, startedAt = 0, timer = 0;
-    $('[data-today-label]').textContent = `${key.replaceAll('-', '.')} · CALCULUS DAILY`; $('[data-function-formula]').textContent = daily.formula;
+    $('[data-today-label]').textContent = `${key.replaceAll('-', '.')} · CALCULUS DAILY`;
+    renderMath($('[data-function-formula]'), daily.tex, daily.formula);
+    renderMath($('[data-play-function]'), daily.tex, daily.formula);
     const todayRecord = store.plays[key]; $('[data-saved-score]').textContent = todayRecord ? `${todayRecord.score}점` : '아직 없음'; $('[data-saved-streak]').textContent = `${store.streak || 0}일`;
     requestAnimationFrame(() => drawGraph($('[data-intro-canvas]'), daily)); window.addEventListener('resize', () => { if (!$('[data-screen="intro"]').hidden) drawGraph($('[data-intro-canvas]'), daily); else if (!$('[data-screen="play"]').hidden) drawGraph($('[data-mission-canvas]'), daily, daily.missions[index], answer); }, { passive: true });
 
@@ -161,7 +172,7 @@
     function renderMission() {
       cancelAnimationFrame(timer); const mission = daily.missions[index]; answer = mission.kind === 'slider' ? clamp(0, mission.range[0], mission.range[1]) : null; startedAt = performance.now();
       $('[data-round-label]').textContent = `MISSION ${index + 1} / ${daily.missions.length}`; $('[data-progress]').style.width = `${(index + 1) / daily.missions.length * 100}%`; $('[data-score]').textContent = score; $('[data-combo]').textContent = `×${combo}`;
-      $('[data-mission-kicker]').textContent = mission.kicker; $('[data-mission-title]').textContent = mission.title; $('[data-mission-prompt]').textContent = mission.prompt; $('[data-mission-formula]').textContent = mission.formula; $('[data-graph-note]').textContent = index === 1 ? '슬라이더를 움직이면 접선이 회전합니다' : index === 4 ? '노란 영역은 부호를 가진 누적 변화입니다' : '그래프의 모양과 수치를 함께 보세요';
+      $('[data-mission-kicker]').textContent = mission.kicker; $('[data-mission-title]').textContent = mission.title; $('[data-mission-prompt]').textContent = mission.prompt; renderMath($('[data-mission-formula]'), mission.tex, mission.formula); $('[data-graph-note]').textContent = index === 1 ? '슬라이더를 움직이면 접선이 회전합니다' : index === 4 ? '노란 영역은 부호를 가진 누적 변화입니다' : '그래프의 모양과 수치를 함께 보세요';
       const controls = $('[data-controls]'); controls.innerHTML = ''; const submit = $('[data-submit]'); submit.hidden = false; submit.disabled = mission.kind !== 'slider'; $('[data-next]').hidden = true; $('[data-feedback]').hidden = true;
       if (mission.kind === 'choice') { const grid = document.createElement('div'); grid.className = 'choice-grid'; mission.choices.forEach(value => { const button = document.createElement('button'); button.type = 'button'; button.className = 'choice-button'; button.textContent = typeof value === 'number' ? String(rounded(value)) : value; button.addEventListener('click', () => { answer = value; grid.querySelectorAll('button').forEach(item => item.classList.toggle('selected', item === button)); submit.disabled = false; }); grid.appendChild(button); }); controls.appendChild(grid); }
       else { controls.innerHTML = `<div class="slider-control"><input type="range" min="${mission.range[0]}" max="${mission.range[1]}" step="0.1" value="${answer}" aria-label="${mission.title} 값 조절"><div class="slider-value"><span>나의 예측</span><strong>${rounded(answer)}</strong></div></div>`; const input = controls.querySelector('input'); input.addEventListener('input', () => { answer = Number(input.value); controls.querySelector('strong').textContent = rounded(answer); drawGraph($('[data-mission-canvas]'), daily, mission, answer); }); }
