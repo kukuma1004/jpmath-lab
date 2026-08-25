@@ -334,6 +334,7 @@
 <link rel="stylesheet" href="../jp-math-typography.css?v=4">
 <link rel="stylesheet" href="미적분1_허브.css?v=1">
 <link rel="stylesheet" href="../jp-polish.css?v=8">
+<link rel="stylesheet" href="미적분1_허브_flow.css?v=3">
 <script src="../jp-polish.js?v=14" defer></script>
 </head>
 <body>
@@ -341,21 +342,37 @@
   <p class="breadcrumb"><a href="../index.html">JP Math Lab</a> / <span class="current">미적분Ⅰ</span></p>
 
   <header class="hero">
-    <p class="eyebrow">CALC Ⅰ</p>
-    <h1>미적분Ⅰ</h1>
-    <p class="lede">오늘의 함수에 도전하거나, 움직이고 겨루며 변화의 원리를 발견하세요.</p>
+    <div class="hero-copy">
+      <p class="eyebrow">미적분Ⅰ · 변화와 누적</p>
+      <h1>변화를 읽는<br>네 가지 방법</h1>
+      <p class="lede">오늘의 도전, 그래프 게임, 계산 훈련, 개념 실험 중 지금 필요한 한 가지를 고르세요.</p>
+    </div>
+    <div class="hero-motion-map" aria-label="함수와 접선, 누적 변화를 나타낸 그림">
+      <svg viewBox="0 0 460 180" role="img" aria-hidden="true">
+        <path class="motion-grid" d="M20 30H440M20 70H440M20 110H440M20 150H440M70 12V168M150 12V168M230 12V168M310 12V168M390 12V168"/>
+        <path class="motion-axis" d="M20 110H440M230 12V168"/>
+        <path class="motion-curve" d="M30 145C80 142 99 38 155 42S225 142 279 130 348 41 430 35"/>
+        <path class="motion-tangent" d="M106 123L236 55"/>
+        <circle class="motion-point" cx="171" cy="89" r="6"/>
+        <path class="motion-area" d="M280 130C320 113 351 56 390 43V110H280Z"/>
+      </svg>
+      <span class="motion-label curve">함수의 변화</span>
+      <span class="motion-label tangent">순간 기울기</span>
+      <span class="motion-label area">누적</span>
+    </div>
   </header>
 
   <section class="calc-experience" aria-label="미적분 학습 방식">
+    <div class="experience-heading"><span>지금 시작하기</span><p>무엇을 공부할지보다, 지금 어떤 방식으로 수학을 만나고 싶은지 먼저 고르세요.</p></div>
     <a class="experience-daily" href="오늘의_미적분.html">
-      <div><span class="experience-kicker">DAILY · 3 MINUTES · 5 MISSIONS</span><h2>오늘의 함수 하나를<br>끝까지 정복하세요.</h2><p>극한 → 접선 → 증가·감소 → 극값 → 누적 변화. 날짜마다 달라지는 하나의 함수를 다섯 번 다른 눈으로 바라봅니다.</p></div>
+      <div><span class="experience-kicker">오늘의 도전 · DAILY</span><h2>오늘의 함수 하나를<br>끝까지 읽어 보세요.</h2><p>하나의 함수를 다섯 번 다른 눈으로 바라보며 변화의 연결을 만듭니다.</p><div class="daily-route-mini"><span>극한</span><i></i><span>접선</span><i></i><span>증감</span><i></i><span>극값</span><i></i><span>누적</span></div></div>
       <div class="daily-enter"><strong id="dailyScorePreview">START</strong><span id="dailyStatusPreview">오늘의 미적분 도전</span></div>
     </a>
     <div class="experience-grid">
       <a class="experience-card" style="--mode:#C1442D" href="#arcade"><span>ARCADE</span><h3>그래프로 게임하기</h3><p>극값과 함수 개형을 제한시간 안에 판별합니다.</p><b>게임 고르기 →</b></a>
-      <a class="experience-card" style="--mode:#7A4E8C" href="#arcade"><span>BATTLE</span><h3>친구와 1:1</h3><p>같은 기기의 같은 문제로 기록을 겨룹니다.</p><b>대결 고르기 →</b></a>
-      <a class="experience-card" style="--mode:#2B6CA3" href="#skills"><span>TRAINING</span><h3>계산 스킬 훈련</h3><p>28개 루틴을 5문제·60초 러시·보스로 익힙니다.</p><b>훈련 지도 →</b></a>
-      <a class="experience-card" style="--mode:#176B5B" href="#topics"><span>LEARN</span><h3>개념 실험실</h3><p>24개 개념의 그래프와 조건을 직접 움직입니다.</p><b>개념 고르기 →</b></a>
+      <a class="experience-card" style="--mode:#7A4E8C" href="#arcade"><span>BATTLE</span><h3>기록으로 겨루기</h3><p>혼자 기록전과 같은 기기 1:1로 순발력을 겨룹니다.</p><b>대결 고르기 →</b></a>
+      <a class="experience-card" style="--mode:#2B6CA3" href="#skills" data-open-view="skills"><span>TRAINING</span><h3>계산 스킬 훈련</h3><p>28개 루틴을 5문제·60초 러시·보스로 익힙니다.</p><b>훈련 지도 →</b></a>
+      <a class="experience-card" style="--mode:#176B5B" href="#topics" data-open-view="concepts"><span>LAB</span><h3>개념 실험실</h3><p>24개 개념의 그래프와 조건을 직접 움직입니다.</p><b>개념 고르기 →</b></a>
     </div>
   </section>
 
@@ -368,12 +385,17 @@
     </div>
   </section>
 
-  <div class="view-switch" aria-label="미적분 학습 방식 선택">
+  <section class="library-heading" aria-labelledby="libraryTitle">
+    <div><span>필요한 만큼 더 깊게</span><h2 id="libraryTitle">개념과 계산 지도</h2></div>
+    <p data-library-lede>원하는 단원을 고른 뒤, 필요한 개념만 펼쳐서 시작하세요.</p>
+  </section>
+
+  <div class="view-switch" id="learningMap" aria-label="미적분 학습 방식 선택">
     <button class="view-btn active" data-main-view="concepts">개념 학습 <span>24</span></button>
     <button class="view-btn" data-main-view="skills">수능·계산 스킬 <span>28</span></button>
   </div>
 
-  <div class="main-panel" data-main-panel="concepts">
+  <div class="main-panel" id="topics" data-main-panel="concepts">
   <ul class="grid">
     <li>
       <a class="card" style="--accent:#C1442D" href="미적분1_극한.html">
@@ -694,7 +716,7 @@
   </ul>
   </div>
 
-  <div class="main-panel hidden" data-main-panel="skills">
+  <div class="main-panel hidden" id="skills" data-main-panel="skills">
     <div class="skill-map-intro"><div><h2>28개 미적분Ⅰ 계산 스킬 지도</h2><p>2022 개정 교육과정의 다항함수 범위로 구성하고, 로피탈 정리만 교육과정 밖 검산 도구로 따로 표시했습니다. 미적분Ⅱ 선행 내용과 초월함수는 제외했습니다.</p></div></div>
     <div data-skill-map></div>
   </div>
@@ -849,14 +871,19 @@
     }
     skillNav.querySelectorAll('.skill-category-button').forEach(button => button.addEventListener('click',()=>setSkillCategory(button.dataset.skillCategoryButton)));
 
-    const lede = document.querySelector('.lede');
+    const libraryLede = document.querySelector('[data-library-lede]');
     function showView(view, updateHash=true) {
       document.querySelectorAll('[data-main-panel]').forEach(panel => panel.classList.toggle('hidden',panel.dataset.mainPanel!==view));
       document.querySelectorAll('[data-main-view]').forEach(button => button.classList.toggle('active',button.dataset.mainView===view));
-      lede.textContent = view==='skills' ? '수능에서 반복되는 계산과 그래프 스킬을 분야별로 펼쳐 훈련하세요.' : '원하는 단원을 고른 뒤, 필요한 개념만 펼쳐서 시작하세요.';
+      libraryLede.textContent = view==='skills' ? '수능에서 반복되는 계산과 그래프 스킬을 분야별로 펼쳐 훈련하세요.' : '원하는 단원을 고른 뒤, 필요한 개념만 펼쳐서 시작하세요.';
       if(updateHash) history.replaceState(null,'',view==='skills'?(openSkill?`#skills-${openSkill}`:'#skills'):(openCategory?`#${openCategory}`:'#topics'));
     }
     document.querySelectorAll('[data-main-view]').forEach(button => button.addEventListener('click',()=>showView(button.dataset.mainView)));
+    document.querySelectorAll('[data-open-view]').forEach(link => link.addEventListener('click', event => {
+      event.preventDefault();
+      showView(link.dataset.openView);
+      requestAnimationFrame(() => document.getElementById('learningMap').scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    }));
 
     const skillInitial = (location.hash.match(/^#skills-(limit|differentiate|graph|integral)$/)||[])[1];
     const conceptInitial = (location.hash.match(/^#(limits|derivative|integral)$/) || [])[1];
