@@ -1,6 +1,76 @@
 (() => {
   'use strict';
 
+  const navScript = document.currentScript || document.querySelector('script[src*="jp-nav-2.js"]');
+  const siteRoot = new URL('.', navScript?.src || document.baseURI);
+  const sectionName = navScript?.dataset.jpSection || '';
+
+  function siteHref(path = '') {
+    return new URL(path, siteRoot).href;
+  }
+
+  function safeText(value) {
+    return String(value).replace(/[&<>"']/g, character => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[character]);
+  }
+
+  function buildInjectedNavigation() {
+    if (document.querySelector('[data-global-menu]')) return;
+    const locationLabel = sectionName ? `JP / ${safeText(sectionName)}` : 'JP MATH LAB';
+    const markup = `
+      <header class="global-header" data-global-header data-theme="light">
+        <a class="global-brand" href="${siteHref('')}" aria-label="JP Math Lab 홈">
+          <span class="global-brand-mark" aria-hidden="true">JP</span>
+          <span class="global-brand-name">${locationLabel}</span>
+        </a>
+        <button class="menu-open" type="button" aria-haspopup="dialog" aria-controls="globalMenu" aria-expanded="false" data-menu-open>
+          <span>메뉴</span><span class="menu-open-icon" aria-hidden="true"><i></i><i></i></span>
+        </button>
+      </header>
+      <div class="global-header-spacer" aria-hidden="true"></div>
+      <div class="global-menu" id="globalMenu" role="dialog" aria-modal="true" aria-labelledby="globalMenuTitle" aria-hidden="true" data-global-menu>
+        <div class="global-menu-top">
+          <p id="globalMenuTitle"><span>JP</span> 공간 선택</p>
+          <button class="menu-close" type="button" aria-label="전체 메뉴 닫기" data-menu-close><span aria-hidden="true"></span></button>
+        </div>
+        <nav class="global-menu-nav" aria-label="JP Math Lab 전체 메뉴">
+          <section class="menu-group" style="--group-index:0">
+            <p class="menu-group-label"><span>01</span> 배우기</p>
+            <div class="menu-group-links">
+              <a href="${siteHref('미적분1/')}"><strong>미적분Ⅰ</strong><small>변화를 움직여 보기</small></a>
+              <a href="${siteHref('기하/')}"><strong>기하</strong><small>공간을 직접 만지기</small></a>
+              <a href="${siteHref('경제수학/')}"><strong>경제수학</strong><small>계산하고 선택하기</small></a>
+            </div>
+          </section>
+          <section class="menu-group" style="--group-index:1">
+            <p class="menu-group-label"><span>02</span> 도전하기</p>
+            <div class="menu-group-links">
+              <a href="${siteHref('미적분1/오늘의_미적분.html')}"><strong>오늘의 도전</strong><small>오늘의 함수를 깊게 보기</small></a>
+              <a href="${siteHref('미적분1/#arcade')}"><strong>수학 아케이드</strong><small>개념을 게임으로 확인하기</small></a>
+              <a href="${siteHref('경제수학/live/')}"><strong>친구방 LIVE</strong><small>함께 결정하고 비교하기</small></a>
+            </div>
+          </section>
+          <section class="menu-group" style="--group-index:2">
+            <p class="menu-group-label"><span>03</span> 탐구하기</p>
+            <div class="menu-group-links">
+              <a href="${siteHref('수능문제/')}"><strong>수능 문제 탐구</strong><small>조건을 질문으로 바꾸기</small></a>
+              <a href="${siteHref('주제탐구/')}"><strong>주제탐구</strong><small>호기심을 탐구로 연결하기</small></a>
+            </div>
+          </section>
+          <section class="menu-group menu-group-teacher" style="--group-index:3">
+            <p class="menu-group-label"><span>04</span> 교사용</p>
+            <div class="menu-group-links"><a href="${siteHref('수업창고/')}"><strong>수업창고</strong><small>수업 자료와 탐구 운영</small></a></div>
+          </section>
+        </nav>
+        <p class="global-menu-foot">수학을 보고 · 움직이고 · 직접 발견하는 공간</p>
+      </div>`;
+    document.body.insertAdjacentHTML('afterbegin', markup);
+    document.body.classList.add('jp-global-nav-ready');
+  }
+
+  buildInjectedNavigation();
+
   const menu = document.querySelector('[data-global-menu]');
   const openers = [...document.querySelectorAll('[data-menu-open], [data-menu-open-bottom]')];
   const closeButton = document.querySelector('[data-menu-close]');
