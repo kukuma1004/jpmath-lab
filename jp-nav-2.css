@@ -123,6 +123,11 @@ button, input { font: inherit; }
 .jp-subject-nav a:focus-visible { color: var(--jp-ink); background: rgba(20,33,31,.07); transform: translateY(-1px); }
 
 .jp-global-nav-ready .site-head { top: 76px; }
+.jp-global-nav-ready .tabbar,
+.jp-global-nav-ready .skill-nav,
+.jp-global-nav-ready .topic-nav,
+.jp-global-nav-ready .daily-nav { top: 76px; }
+.jp-global-nav-ready .daily-function-dock { top: 144px; }
 
 .global-brand {
   display: inline-flex;
@@ -351,6 +356,11 @@ button, input { font: inherit; }
   .jp-subject-nav { top: 66px; overflow-x: auto; margin-right: -4px; margin-left: -4px; border-radius: 13px; scrollbar-width: none; }
   .jp-subject-nav::-webkit-scrollbar { display: none; }
   .jp-global-nav-ready .site-head { top: 66px; }
+  .jp-global-nav-ready .tabbar,
+  .jp-global-nav-ready .skill-nav,
+  .jp-global-nav-ready .topic-nav,
+  .jp-global-nav-ready .daily-nav { top: 66px; }
+  .jp-global-nav-ready .daily-function-dock { top: 132px; }
   .global-menu-nav { grid-template-columns: 1fr; align-content: start; padding: 16px 0 28px; }
   .menu-group { grid-template-columns: 88px 1fr; padding: 13px 0; }
   .menu-group-links a { min-height: 50px; grid-template-columns: 1fr; gap: 2px; }
