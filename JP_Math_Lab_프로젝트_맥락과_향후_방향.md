@@ -4,9 +4,10 @@
 > 화면을 수정하기 전에 먼저 이 문서와 루트 `README.md`, 해당 과목 폴더의 문서를 읽는다.
 
 > **2026-08-25 JP Math Lab 2.0 기준 추가:** 아래 문서의 기존 디자인 설명보다 다음 세 문서를 우선한다.
-> 1. `JP_MATH_LAB_2.0_AUDIT.md`
-> 2. `JP_MATH_LAB_2.0_SITE_EXPERIENCE_MAP.md`
-> 3. `JP_MATH_LAB_2.0_DESIGN_SYSTEM.md`
+> 1. `JP_MATH_LAB_2.0_MASTER_SPEC.md`
+> 2. `JP_MATH_LAB_2.0_AUDIT.md`
+> 3. `JP_MATH_LAB_2.0_SITE_EXPERIENCE_MAP.md`
+> 4. `JP_MATH_LAB_2.0_DESIGN_SYSTEM.md`
 > 새 기능은 `Audit → Site Map → Experience Map → Visual/Motion/Math/3D System → 대표 화면 → 전체 확장` 순서를 지나기 전 먼저 추가하지 않는다.
 
 ## 1. 프로젝트 한눈에 보기
@@ -395,6 +396,8 @@ student_apps_private/
 태그는 학생을 점수화하기 위한 자동 평가가 아니라, 교사가 구체적 장면을 다시 찾기 위한 색인이다. 태그마다 가능하면 날짜, 학생 발언, 수정 전후의 차이 같은 근거를 함께 남긴다.
 
 ## 13. 지금까지 구현한 주요 변화
+
+> 아래 목록은 구현 이력이다. 특히 카드형 HOME 설명은 최종 2.0 목표가 아니다. 최신 HOME 구조는 `JP_MATH_LAB_2.0_MASTER_SPEC.md`의 장면형 스크롤과 Full-screen Menu를 따른다.
 
 - 메인 화면을 과목별 입구가 잘 보이는 카드형 구조로 재설계
 - 상단 녹색·노란색 영역의 시각적 비중 축소
