@@ -5,16 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>탐구 운영실 · 수업창고</title>
   <style id="classroomGuard">html{display:none!important}</style>
-  <script src="../auth.js" data-classroom-protected></script>
+  <script src="../auth.js?v=2" data-classroom-protected></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=Noto+Serif+KR:wght@700;900&amp;display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../jp-math-typography.css?v=3">
-  <link rel="stylesheet" href="manager.css?v=4">
-  <link rel="stylesheet" href="../../jp-polish.css?v=8">
+  <link rel="stylesheet" href="manager.css?v=5">
+  <link rel="stylesheet" href="../../jp-polish.css?v=9">
   <link rel="stylesheet" href="../../jp-nav-2.css?v=4">
-  <script src="manager.js?v=3" defer></script>
-  <script src="../../jp-polish.js?v=14" defer></script>
+  <script src="manager.js?v=4" defer></script>
+  <script src="../../jp-polish.js?v=16" defer></script>
   <script src="../../jp-nav-2.js?v=3" data-jp-section="수업창고 / 탐구 운영실" defer></script>
 </head>
 <body>
@@ -37,11 +37,11 @@
         <h1 id="pageTitle">학생의 한 문장을<br><em>수학적 질문으로.</em></h1>
         <p class="hero-description">25명의 기초응답부터 질문 정교화, 탐구 과정, 학생 웹앱과 전시 승인까지 한 흐름으로 관리합니다.</p>
       </div>
-      <aside class="connection-card" aria-label="데이터 연결 상태">
-        <div class="connection-head"><span class="live-dot"></span><strong>학생 질문함 운영 중</strong><small>LIVE</small></div>
-        <p>학생이 작성한 원문은 비공개 Google Sheet에 즉시 저장됩니다.</p>
+      <aside class="connection-card" data-connection-card aria-label="데이터 연결 상태" aria-busy="true">
+        <div class="connection-head"><span class="live-dot"></span><strong id="connectionTitle">학생 자료 확인 중</strong><small id="connectionBadge">CHECK</small></div>
+        <p id="connectionDescription">공개 자료와 로컬 전용 자료의 범위를 확인하고 있습니다.</p>
         <div class="connection-route"><span>학생 입력</span><b>→</b><span>Sheet</span><b>→</b><span>교사 검토</span><b>→</b><span>전시 승인</span></div>
-        <div class="connection-note"><strong>현재 단계</strong><span>Sheet → 큐레이터 자동 동기화 준비 중</span></div>
+        <div class="connection-note"><strong>현재 상태</strong><span id="connectionNote">자료 범위를 확인하고 있습니다.</span></div>
       </aside>
     </section>
 
@@ -84,11 +84,11 @@
               <button type="button" data-subject="geometry">기하</button>
             </div>
           </div>
-          <div class="browser-caption"><span id="resultCount">0개 탐구</span><small>검토할 탐구를 선택하세요</small></div>
-          <div class="inquiry-list" id="inquiryList" aria-label="학생별 탐구 목록"></div>
+          <div class="browser-caption"><span id="resultCount" aria-live="polite">0개 탐구</span><small>검토할 탐구를 선택하세요</small></div>
+          <div class="inquiry-list" id="inquiryList" aria-label="학생별 탐구 목록" aria-live="polite"></div>
         </aside>
 
-        <article class="curator-panel" id="curatorPanel">
+        <article class="curator-panel" id="curatorPanel" aria-live="polite">
           <div class="empty-state"><span>✦</span><strong>탐구를 선택해 주세요</strong><p>학생 원문부터 발문과 슬라이드 진행도를 한 화면에서 확인합니다.</p></div>
         </article>
       </div>

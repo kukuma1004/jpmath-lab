@@ -78,11 +78,36 @@
     grid.removeAttribute('aria-busy');
     var filters = document.querySelectorAll('[data-filter]');
 
+    if (!inquiries.length) {
+      grid.textContent = '';
+      var empty = element('div', 'collection-empty');
+      empty.appendChild(element('span', 'collection-empty-mark', '✓'));
+      empty.appendChild(element('h3', '', '공개 전시는 아직 준비 중입니다.'));
+      empty.appendChild(element('p', '', '학생 원문·학생코드·전체 명단은 공개 저장소에 넣지 않습니다. 교사가 승인한 탐구만 이후 이곳에 나타납니다.'));
+      var orientation = element('a', '', '수업 오리엔테이션 보기 →');
+      orientation.href = 'orientation.html';
+      empty.appendChild(orientation);
+      grid.appendChild(empty);
+      filters.forEach(function (button) {
+        button.disabled = true;
+        button.setAttribute('aria-disabled', 'true');
+      });
+      return;
+    }
+
     function draw(filter) {
       grid.textContent = '';
       var shown = inquiries.filter(function (item) {
         return filter === 'all' || item.subject === filter;
       });
+
+      if (!shown.length) {
+        var empty = element('div', 'collection-empty is-filter-empty');
+        empty.appendChild(element('h3', '', '이 과목의 승인된 전시가 아직 없습니다.'));
+        empty.appendChild(element('p', '', '다른 과목을 선택하거나 탐구 기록이 더 쌓인 뒤 다시 확인해 주세요.'));
+        grid.appendChild(empty);
+        return;
+      }
 
       shown.forEach(function (item, index) {
         var card = element('a', 'inquiry-card');
@@ -111,8 +136,13 @@
     }
 
     filters.forEach(function (button) {
+      button.setAttribute('aria-pressed', button.classList.contains('is-active') ? 'true' : 'false');
       button.addEventListener('click', function () {
-        filters.forEach(function (other) { other.classList.toggle('is-active', other === button); });
+        filters.forEach(function (other) {
+          var active = other === button;
+          other.classList.toggle('is-active', active);
+          other.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
         draw(button.getAttribute('data-filter'));
       });
     });

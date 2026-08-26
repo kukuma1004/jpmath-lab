@@ -4,7 +4,7 @@
   var PUBLIC_DATA_URL = '../../주제탐구/data/inquiries.json';
   var PRIVATE_DATA_URL = '../../주제탐구/data-private/inquiries.local.json';
   var SHEET_URL = 'https://docs.google.com/spreadsheets/d/1shQ8CxS3nEO9wM6OT6-9DLgPilNtIaH0vsYPE21hscg/edit';
-  var state = { inquiries: [], selectedId: null, promptMode: 'balanced', subject: 'all', query: '' };
+  var state = { inquiries: [], selectedId: null, promptMode: 'balanced', subject: 'all', query: '', dataSource: '' };
   var subjectLabels = { 'calculus-1': '미적분Ⅰ', geometry: '기하', 'mathematical-inquiry': '통합·이론' };
 
   function element(tag, className, text) {
@@ -19,17 +19,59 @@
   }
 
   function loadInquiryData() {
-    var urls = isLocalView() ? [PRIVATE_DATA_URL, PUBLIC_DATA_URL] : [PUBLIC_DATA_URL];
+    var sources = isLocalView()
+      ? [{ url: PRIVATE_DATA_URL, kind: 'private-local' }, { url: PUBLIC_DATA_URL, kind: 'public-approved' }]
+      : [{ url: PUBLIC_DATA_URL, kind: 'secure-public' }];
     function attempt(index) {
-      return fetch(urls[index], { cache: 'no-store' }).then(function (response) {
+      return fetch(sources[index].url, { cache: 'no-store' }).then(function (response) {
         if (!response.ok) throw new Error('not-found');
         return response.json();
+      }).then(function (data) {
+        return { data: data, source: sources[index].kind };
       }).catch(function () {
-        if (index + 1 < urls.length) return attempt(index + 1);
+        if (index + 1 < sources.length) return attempt(index + 1);
         throw new Error('탐구 초안 데이터를 불러오지 못했습니다.');
       });
     }
     return attempt(0);
+  }
+
+  function updateConnectionStatus(source, count) {
+    var card = document.querySelector('[data-connection-card]');
+    var title = document.getElementById('connectionTitle');
+    var badge = document.getElementById('connectionBadge');
+    var description = document.getElementById('connectionDescription');
+    var note = document.getElementById('connectionNote');
+    if (!card) return;
+    card.setAttribute('aria-busy', 'false');
+    card.setAttribute('data-data-mode', source || 'error');
+
+    if (source === 'error') {
+      title.textContent = '자료 연결을 확인해 주세요';
+      badge.textContent = 'CHECK';
+      description.textContent = '탐구 자료를 읽는 중 문제가 발생했습니다.';
+      note.textContent = '로컬 파일 또는 네트워크 연결 확인 필요';
+      return;
+    }
+
+    if (source === 'private-local') {
+      title.textContent = '로컬 전용 탐구 자료 연결됨';
+      badge.textContent = 'LOCAL';
+      description.textContent = '학생별 초안 ' + count + '개를 이 컴퓨터의 비공개 자료에서 불러왔습니다.';
+      note.textContent = '학생 원문 보존 → 교사 검토 → 공개 승인';
+      return;
+    }
+    if (source === 'secure-public') {
+      title.textContent = '학생 자료 비공개 모드';
+      badge.textContent = 'SAFE';
+      description.textContent = '공개 배포본에는 실제 학생 명단·원문·학생코드를 저장하지 않습니다.';
+      note.textContent = '학생 자료는 로컬 또는 비공개 Google Sheet에서 확인';
+      return;
+    }
+    title.textContent = '교사 승인 전시 자료 연결됨';
+    badge.textContent = 'PUBLIC';
+    description.textContent = '교사가 공개 승인한 탐구 ' + count + '개만 표시합니다.';
+    note.textContent = '승인 데이터만 공개 전시에 반영';
   }
 
   function subjectLabel(item) { return subjectLabels[item.subject] || item.subject; }
@@ -122,6 +164,7 @@
       var button = element('button', 'inquiry-button');
       button.type = 'button';
       button.classList.toggle('is-active', state.selectedId === item.id);
+      button.setAttribute('aria-pressed', state.selectedId === item.id ? 'true' : 'false');
       var number = String(parseInt((item.studentId || '').replace(/\D/g, ''), 10) || 0).padStart(2, '0');
       button.appendChild(element('span', 'student-avatar', number));
       var copy = element('span', 'inquiry-copy');
@@ -137,6 +180,38 @@
       });
       list.appendChild(button);
     });
+  }
+
+  function renderSecureEmptyState() {
+    var list = document.getElementById('inquiryList');
+    var panel = document.getElementById('curatorPanel');
+    list.textContent = '';
+    var listState = element('div', 'list-empty secure-list-empty');
+    var localMissing = isLocalView() && state.dataSource === 'public-approved';
+    listState.appendChild(element('strong', '', localMissing ? '로컬 전용 자료를 찾지 못했습니다.' : '학생 자료를 배포하지 않았습니다.'));
+    listState.appendChild(element('span', '', localMissing
+      ? 'data-private/inquiries.local.json을 연결하면 학생별 초안이 이 목록에 나타납니다.'
+      : '이 화면은 정상입니다. 로컬 전용 자료 또는 비공개 Google Sheet에서 학생별 응답을 확인합니다.'));
+    list.appendChild(listState);
+
+    panel.textContent = '';
+    var empty = element('div', 'empty-state secure-empty');
+    empty.appendChild(element('span', '', '✓'));
+    empty.appendChild(element('strong', '', localMissing ? '로컬 자료 연결 대기' : '공개 저장소 안전 모드'));
+    empty.appendChild(element('p', '', localMissing
+      ? '현재는 공개 승인 데이터만 확인됩니다. 로컬 전용 JSON을 준비하면 학생 원문을 공개하지 않고 이 운영실에서 검토할 수 있습니다.'
+      : '실제 학생 명단, 학생코드, 원문 응답은 GitHub에 올리지 않았습니다. 이 컴퓨터에서 로컬 서버로 열면 비공개 탐구 초안을 확인할 수 있습니다.'));
+    var actions = element('div', 'secure-empty-actions');
+    var sheet = element('a', '', '비공개 Google Sheet 열기 ↗');
+    sheet.href = SHEET_URL;
+    sheet.target = '_blank';
+    sheet.rel = 'noopener';
+    actions.appendChild(sheet);
+    var guide = element('a', '', '자료 흐름 다시 보기 ↑');
+    guide.href = '#processTitle';
+    actions.appendChild(guide);
+    empty.appendChild(actions);
+    panel.appendChild(empty);
   }
 
   function addSummary(panel, title, text, privateData) {
@@ -204,6 +279,7 @@
     [['balanced', '균형'], ['concept', '개념 정교화'], ['verify', '검증·반례'], ['extend', '확장·연결']].forEach(function (mode) {
       var button = element('button', state.promptMode === mode[0] ? 'is-active' : '', mode[1]);
       button.type = 'button';
+      button.setAttribute('aria-pressed', state.promptMode === mode[0] ? 'true' : 'false');
       button.addEventListener('click', function () { state.promptMode = mode[0]; renderCurator(item); });
       modes.appendChild(button);
     });
@@ -280,9 +356,14 @@
   function bindControls() {
     document.getElementById('studentSearch').addEventListener('input', function () { state.query = this.value.trim(); renderList(); });
     Array.prototype.forEach.call(document.querySelectorAll('[data-subject]'), function (button) {
+      button.setAttribute('aria-pressed', button.classList.contains('is-active') ? 'true' : 'false');
       button.addEventListener('click', function () {
         state.subject = this.getAttribute('data-subject');
-        Array.prototype.forEach.call(document.querySelectorAll('[data-subject]'), function (node) { node.classList.toggle('is-active', node === button); });
+        Array.prototype.forEach.call(document.querySelectorAll('[data-subject]'), function (node) {
+          var active = node === button;
+          node.classList.toggle('is-active', active);
+          node.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
         renderList();
       });
     });
@@ -299,11 +380,17 @@
     list.innerHTML = '<div class="jp-skeleton-card"><span class="jp-skeleton-line short"></span><span class="jp-skeleton-line long"></span><span class="jp-skeleton-line"></span></div>' +
       '<div class="jp-skeleton-card"><span class="jp-skeleton-line short"></span><span class="jp-skeleton-line long"></span><span class="jp-skeleton-line"></span></div>' +
       '<div class="jp-skeleton-card"><span class="jp-skeleton-line short"></span><span class="jp-skeleton-line long"></span><span class="jp-skeleton-line"></span></div>';
-    loadInquiryData().then(function (data) {
+    loadInquiryData().then(function (payload) {
       list.classList.remove('is-loading');
       list.removeAttribute('aria-busy');
-      state.inquiries = data.inquiries || [];
+      state.dataSource = payload.source;
+      state.inquiries = payload.data.inquiries || [];
+      updateConnectionStatus(state.dataSource, state.inquiries.length);
       updateMetrics();
+      if (!state.inquiries.length) {
+        renderSecureEmptyState();
+        return;
+      }
       if (state.inquiries.length) state.selectedId = state.inquiries[0].id;
       renderList();
       if (state.inquiries.length) renderCurator(state.inquiries[0]);
@@ -312,6 +399,7 @@
       list.removeAttribute('aria-busy');
       list.textContent = '';
       list.appendChild(element('p', 'list-empty', error.message));
+      updateConnectionStatus('error', 0);
       document.dispatchEvent(new CustomEvent('jp:feedback', { detail: { type: 'error', message: error.message } }));
     });
   }

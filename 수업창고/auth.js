@@ -35,6 +35,13 @@
     document.dispatchEvent(new CustomEvent('jp:feedback', { detail: { type: type, message: message } }));
   }
 
+  function setFeedback(node, type, message) {
+    if (!node) return;
+    node.classList.toggle('is-error', type === 'error');
+    node.classList.toggle('is-success', type === 'success');
+    node.textContent = message || '';
+  }
+
   if (isProtectedPage) {
     if (!hasAccess()) {
       var entryUrl = new URL('./', script.src);
@@ -102,11 +109,12 @@
     form.addEventListener('submit', function (event) {
       event.preventDefault();
       if (!input.value) {
-        feedback.textContent = '비밀번호를 입력해 주세요.';
+        setFeedback(feedback, 'error', '비밀번호를 입력해 주세요.');
+        announce('error', '비밀번호를 입력해 주세요.');
         input.focus();
         return;
       }
-      feedback.textContent = '';
+      setFeedback(feedback, '', '');
       submit.disabled = true;
       submit.setAttribute('aria-busy', 'true');
       submit.textContent = '확인 중…';
@@ -115,7 +123,7 @@
         submit.removeAttribute('aria-busy');
         submit.textContent = '입장하기';
         if (!matched) {
-          feedback.textContent = '비밀번호가 맞지 않습니다. 대소문자를 확인해 주세요.';
+          setFeedback(feedback, 'error', '비밀번호가 맞지 않습니다. 대소문자를 확인해 주세요.');
           form.classList.remove('jp-error-shake');
           void form.offsetWidth;
           form.classList.add('jp-error-shake');
@@ -126,7 +134,7 @@
 
         grantAccess();
         form.classList.add('is-authenticated');
-        feedback.textContent = '확인되었습니다. 수업창고를 엽니다.';
+        setFeedback(feedback, 'success', '확인되었습니다. 수업창고를 엽니다.');
         announce('success', '수업창고 인증이 완료되었습니다.');
         var nextUrl = safeNextUrl();
         window.setTimeout(function () {
@@ -137,7 +145,7 @@
         submit.disabled = false;
         submit.removeAttribute('aria-busy');
         submit.textContent = '입장하기';
-        feedback.textContent = '브라우저에서 안전한 비밀번호 확인을 실행하지 못했습니다.';
+        setFeedback(feedback, 'error', '브라우저에서 안전한 비밀번호 확인을 실행하지 못했습니다.');
         announce('error', '비밀번호 확인 중 문제가 발생했습니다.');
       });
     });

@@ -204,6 +204,7 @@ a { color: inherit; }
 .password-row button { height: 50px; padding: 0 19px; border: 0; border-radius: 12px; background: var(--violet); color: white; font: 700 14px 'IBM Plex Sans KR', sans-serif; cursor: pointer; }
 .password-row button:hover { background: #624073; }
 .auth-feedback { min-height: 21px; margin: 9px 0 15px; color: #b43f35; font-size: 12px; }
+.auth-feedback.is-success { color: var(--green); }
 .auth-back { color: #6c747c; font-size: 12px; text-decoration: none; }
 .auth-back:hover { text-decoration: underline; }
 

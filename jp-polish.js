@@ -440,7 +440,7 @@
   var tabItems = '.tab-btn, .filter, [data-filter], [data-subject], .inquiry-tab, [role="tab"]';
   var feedbackSelector = [
     '.answer-feedback', '.game-feedback', '.boss-status', '.mission-feedback',
-    '.result-card', '.decision-result', '.feedback', '.error-message', '.room-error',
+    '.result-card', '.decision-result', '.feedback', '.error-message', '.auth-feedback', '.room-error',
     '[data-game-feedback]', '[data-arena-feedback]', '[data-drill-feedback]',
     '[data-boss-feedback]', '[data-room-error]', '[data-connection-card]'
   ].join(',');
