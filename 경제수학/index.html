@@ -8,40 +8,80 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500;600;700&amp;family=Noto+Serif+KR:wght@700;900&amp;display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=6">
   <link rel="stylesheet" href="../jp-polish.css?v=8">
-  <link rel="stylesheet" href="../jp-nav-2.css?v=3">
+  <link rel="stylesheet" href="경제수학_허브_flow.css?v=1">
+  <link rel="stylesheet" href="../jp-nav-2.css?v=4">
   <script src="../jp-polish.js?v=14" defer></script>
+  <script src="경제수학_허브_flow.js?v=1" defer></script>
   <script src="../jp-nav-2.js?v=3" data-jp-section="경제수학" defer></script>
 </head>
-<body>
-  <header class="site-head" aria-label="경제수학 내부 메뉴">
-    <a class="brand" href="index.html"><span>JP</span> 경제수학</a>
-    <nav aria-label="주요 메뉴"><a href="교과서학습.html">개념 학습</a><a href="게임.html">혼자 플레이</a><a href="live/">친구방 LIVE</a></nav>
-  </header>
-  <main>
-    <section class="hero home-only">
-      <div class="hero-copy">
-        <p class="eyebrow">ECONOMICS × MATHEMATICS · 2022 개정</p>
-        <h1>숫자로 읽고,<br><em>결정으로 배운다.</em></h1>
-        <p class="hero-lede">경제는 어려운 말의 모음이 아니라 선택의 이야기입니다. 먼저 개념을 이해하고, 혼자 전략을 시험하고, 친구와 같은 상황에서 서로 다른 결정을 비교해 보세요.</p>
-        <div class="hero-actions route-actions">
-          <a class="primary-button route-primary" href="교과서학습.html"><small>15 CONCEPT LABS</small><b>교과서 개념 학습</b><span>용어부터 조작 활동까지 →</span></a>
-          <a class="route-secondary" href="게임.html"><small>PLAY SOLO</small><b>혼자 전략 실험</b><span>6가지 의사결정 게임 →</span></a>
-          <a class="route-secondary route-live" href="live/games.html"><small>8 ECONOMY GAMES</small><b>친구와 경제 대결</b><span>서로 다른 8가지 승리 조건 →</span></a>
-        </div>
-        <div class="hero-facts" aria-label="콘텐츠 특징"><span><b>4</b> 교육과정 영역</span><span><b>15</b> 개념 학습실</span><span><b>6</b> 혼자 플레이</span><span><b>LIVE</b> 친구방 전략</span></div>
+<body class="econ-hub-page">
+  <nav class="jp-subject-nav" aria-label="경제수학 내부 메뉴">
+    <strong>경제수학</strong>
+    <a href="#decisionLab">결정 실험</a>
+    <a href="교과서학습.html">개념 학습</a>
+    <a href="게임.html">혼자 플레이</a>
+    <a href="live/games.html">친구방 LIVE</a>
+  </nav>
+
+  <main class="econ-hub-main">
+    <header class="econ-hero">
+      <div class="econ-hero-copy">
+        <p class="econ-eyebrow">경제수학 · 수와 선택</p>
+        <h1>숫자를 움직이고,<br><em>선택의 이유를 만드세요.</em></h1>
+        <p>경제수학은 답을 외우는 과목이 아니라 조건을 읽고, 계산하고, 서로 다른 결정을 설명하는 과목입니다.</p>
       </div>
-      <div class="hero-board" aria-label="경제수학 LIVE 미리보기">
-        <div class="board-top"><span>JP 투자왕 · ROUND 03</span><span class="live-dot">4명 선택 완료</span></div>
-        <p class="board-kicker">속보 · 기준금리 0.5%p 인상</p>
-        <div class="mini-chart" aria-hidden="true"><span style="--h:62%"><i>예금</i></span><span style="--h:42%"><i>채권</i></span><span style="--h:34%"><i>주식</i></span><span class="active" style="--h:78%"><i>환율</i></span></div>
-        <div class="board-metrics"><div><small>기준금리</small><strong>4.0%</strong><span class="up">▲ 0.5%p</span></div><div><small>원·달러 환율</small><strong>1,358원</strong><span>원화 가치 하락</span></div></div>
-        <div class="board-question"><span>이번 라운드의 질문</span><b>금리가 오를 때 어떤 자산이 유리할까?</b></div>
-        <a class="board-link" href="live/">JP 투자왕 체험하기 →</a>
+      <div class="econ-hero-visual" aria-label="시장 지표가 서로 영향을 주는 모습을 나타낸 그림">
+        <span class="market-label rate">금리</span>
+        <span class="market-label price">물가</span>
+        <span class="market-label exchange">환율</span>
+        <svg viewBox="0 0 520 210" role="img" aria-hidden="true">
+          <path class="market-grid" d="M35 35H490M35 85H490M35 135H490M35 185H490M75 20V195M165 20V195M255 20V195M345 20V195M435 20V195"/>
+          <path class="market-line market-line-a" d="M40 155C96 150 117 74 170 91S247 168 299 127 379 48 480 67"/>
+          <path class="market-line market-line-b" d="M40 122C107 115 130 141 190 130S284 62 341 83 409 154 480 124"/>
+          <circle cx="299" cy="127" r="6"/>
+          <circle cx="341" cy="83" r="6"/>
+        </svg>
+      </div>
+    </header>
+
+    <section class="econ-start" id="decisionLab" aria-labelledby="decisionTitle">
+      <div class="econ-section-heading">
+        <div><span>지금 시작하기</span><h2 id="decisionTitle">뉴스를 읽고 100%를 배분해 보세요.</h2></div>
+        <p>정답을 고르기 전에 숫자를 직접 바꾸면 선택의 기준이 보입니다.</p>
+      </div>
+
+      <div class="decision-lab">
+        <div class="decision-news">
+          <div class="news-meta"><span id="scenarioLabel">상황 1 · 금리</span><button type="button" id="nextScenario">다른 뉴스 보기</button></div>
+          <h3 id="scenarioTitle">기준금리 0.5%p 인상</h3>
+          <p id="scenarioDescription">예금 이자는 오르지만 기업과 가계의 이자 부담도 커질 전망입니다.</p>
+          <div class="market-chips" id="marketChips" aria-label="시장 변화"></div>
+          <div class="decision-question"><span>생각할 질문</span><b id="scenarioQuestion">어떤 자산의 비중을 늘리겠습니까?</b></div>
+        </div>
+
+        <div class="allocation-panel" aria-label="가상 자산 배분">
+          <div class="allocation-head"><span>나의 자산 배분</span><strong><b id="allocationTotal">100</b>%</strong></div>
+          <div class="allocation-list" id="allocationList"></div>
+          <button class="decision-submit" id="decisionSubmit" type="button">이 배분으로 결과 보기</button>
+          <div class="decision-result" id="decisionResult" role="status" aria-live="polite" hidden>
+            <span>이번 상황의 예상 변화</span><strong id="expectedReturn">+0.0%</strong><p id="resultMessage"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="econ-routes" aria-labelledby="routeTitle">
+      <div class="econ-section-heading compact"><div><span>다음 선택</span><h2 id="routeTitle">어떤 방식으로 더 알아볼까요?</h2></div></div>
+      <div class="route-grid">
+        <a class="route-card concept" href="교과서학습.html"><span>개념 학습</span><h3>용어를 움직여 이해하기</h3><p>4개 영역, 15개 개념을 짧은 조작 활동으로 익힙니다.</p><b>개념 학습실 →</b></a>
+        <a class="route-card solo" href="게임.html"><span>혼자 플레이</span><h3>내 전략을 반복해서 시험하기</h3><p>숫자와 뉴스가 바뀌는 의사결정 게임으로 기록을 높입니다.</p><b>혼자 플레이 →</b></a>
+        <a class="route-card live" href="live/games.html"><span>친구방 LIVE</span><h3>같은 조건, 서로 다른 결정</h3><p>방코드로 접속해 8가지 경제 게임의 선택을 비교합니다.</p><b>친구방 고르기 →</b></a>
       </div>
     </section>
   </main>
-  <footer class="home-footer"><div><b>JP Math Lab · 경제수학</b><p>개념을 이해하고, 전략을 시험하고, 선택의 차이를 설명하는 공간</p></div><div class="source-links"><span>바로가기</span><a href="교과서학습.html">개념 학습</a><a href="게임.html">혼자 플레이</a><a href="live/games.html">경제수학 8게임</a><a href="live/room.html">실시간 친구방</a></div></footer>
+
+  <footer class="econ-footer"><b>JP Math Lab · 경제수학</b><p>계산하고 · 선택하고 · 결과를 설명하는 공간</p></footer>
 </body>
 </html>
