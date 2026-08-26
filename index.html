@@ -565,7 +565,141 @@
 
     .principle-flow i { color: #a2ada9; font-style: normal; }
 
+    /* 메인 첫 장면 · 직접 조작 미니 LAB */
+    html.jp-v2[data-jp-route="home"] .hero-tile.hero-interactive {
+      min-height: 360px;
+      grid-template-columns: minmax(0, 1.02fr) minmax(330px, .98fr);
+      grid-template-rows: 1fr;
+      gap: clamp(24px, 3vw, 42px);
+      align-items: stretch;
+    }
+
+    .hero-message {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .hero-message .hero-copy { margin-top: 18px; }
+
+    .home-live {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      min-width: 0;
+      overflow: hidden;
+      flex-direction: column;
+      padding: 15px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 22px;
+      color: #f6faf7;
+      background:
+        radial-gradient(circle at 85% 0%, rgba(124,209,181,.2), transparent 44%),
+        #122521;
+      box-shadow: 0 22px 44px rgba(13,41,37,.16);
+    }
+
+    .home-live-head,
+    .home-live-readout,
+    .home-live-tabs {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .home-live-kicker { color: #9ee4cf; font: 700 10px var(--mono); letter-spacing: .1em; }
+    .home-live-hint { color: #b8cac4; font-size: 11px; }
+    .home-live canvas {
+      display: block;
+      width: 100%;
+      height: 176px;
+      margin: 9px 0;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px;
+      background: rgba(255,255,255,.035);
+      cursor: crosshair;
+      touch-action: none;
+    }
+    .home-live canvas:focus-visible { outline: 3px solid rgba(243,200,97,.7); outline-offset: 3px; }
+    .home-live-readout { min-height: 30px; }
+    .home-live-readout strong { color: #fff; font: 700 12px var(--mono); }
+    .home-live-link { color: #f3c861; font-size: 11px; font-weight: 800; text-decoration: none; }
+    .home-live-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .home-live-tabs { justify-content: flex-start; margin-top: 10px; }
+    .home-live-tab {
+      min-height: 36px;
+      padding: 0 12px;
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 999px;
+      color: #b8cac4;
+      background: rgba(255,255,255,.035);
+      font: 700 11px var(--sans);
+      cursor: pointer;
+      transition: transform .18s ease, color .2s ease, background .2s ease, border-color .2s ease;
+    }
+    .home-live-tab:hover { transform: translateY(-1px); color: #fff; }
+    .home-live-tab.active { border-color: #9ee4cf; color: #122521; background: #9ee4cf; }
+    .home-live-tab:focus-visible { outline: 3px solid rgba(243,200,97,.55); outline-offset: 2px; }
+
+    html.jp-v2[data-jp-route="home"] .question-tile.question-enhanced { padding-bottom: 92px; }
+    .question-actions {
+      position: absolute;
+      z-index: 3;
+      right: 22px;
+      bottom: 43px;
+      left: 22px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .question-link,
+    .question-next {
+      display: inline-flex;
+      min-height: 34px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      text-decoration: none;
+      transition: transform .18s ease, background .2s ease;
+    }
+    .question-link { padding: 0 13px; color: #fff; background: #17211e; }
+    .question-next { width: 34px; padding: 0; border: 1px solid rgba(23,33,30,.2); color: #17211e; background: rgba(255,255,255,.48); cursor: pointer; }
+    .question-link:hover,.question-next:hover { transform: translateY(-1px); }
+    .question-link:focus-visible,.question-next:focus-visible { outline: 3px solid rgba(23,33,30,.24); outline-offset: 2px; }
+    .question-title.question-change { animation: questionSwap .28s cubic-bezier(.16,1,.3,1); }
+    @keyframes questionSwap { from { opacity: .2; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+    .subject-meta {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 14px;
+    }
+    .subject-meta span {
+      padding: 5px 8px;
+      border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+      border-radius: 999px;
+      color: color-mix(in srgb, var(--accent) 78%, #17211e);
+      background: color-mix(in srgb, var(--accent) 6%, #fff);
+      font: 700 9.5px var(--mono);
+    }
+
     @media (max-width: 900px) {
+      html.jp-v2[data-jp-route="home"] .hero-tile.hero-interactive {
+        min-height: 660px;
+        grid-template-columns: 1fr;
+      }
+      .home-live { grid-column: 1; min-height: 300px; }
       .hero-tile { grid-column: span 7; }
       .question-tile { grid-column: span 5; }
       .calc, .geometry, .economy, .csat, .inquiry, .classroom { grid-column: span 6; }
@@ -586,12 +720,22 @@
       .bento { gap: 12px; }
       .tile { border-radius: 22px; }
       .hero-tile { min-height: 190px; grid-template-columns: 1fr; grid-template-rows: auto auto 1fr; padding: 19px 21px; }
+      html.jp-v2[data-jp-route="home"] .hero-tile.hero-interactive { min-height: 650px; padding: 22px 18px; gap: 18px; }
+      .home-live { min-height: 300px; padding: 12px; border-radius: 18px; }
+      .home-live canvas { height: 172px; }
+      .home-live-head { align-items: flex-start; flex-direction: column; gap: 2px; }
+      .home-live-tabs { gap: 6px; }
+      .home-live-tab { min-height: 44px; flex: 1; padding: 0 8px; }
       .hero-tile .eyebrow, .hero-title, .hero-copy { grid-column: 1; }
       .hero-title { margin: 11px 0 0; font-size: 32px; }
       .hero-copy { margin-top: 7px; font-size: 14px; line-height: 1.55; }
       .question-tile { min-height: 160px; padding: 18px 20px; }
+      html.jp-v2[data-jp-route="home"] .question-tile.question-enhanced { min-height: 260px; padding-bottom: 91px; }
       .question-title { margin-top: 9px; font-size: 18px; line-height: 1.35; }
       .question-foot { right: 20px; bottom: 12px; left: 20px; padding-top: 7px; font-size: 11.5px; }
+      .question-actions { right: 20px; bottom: 43px; left: 20px; }
+      .question-link,.question-next { min-height: 44px; }
+      .question-next { width: 44px; }
       .action-stage { padding: 18px; border-radius: 23px; }
       .action-head, .subject-divider { align-items: flex-start; flex-direction: column; }
       .action-head > p { text-align: left; }
@@ -628,23 +772,45 @@
 
     <main>
       <section class="bento" aria-label="JP Math Lab 학습 공간">
-        <article class="tile hero-tile" id="heroTile">
-          <p class="eyebrow">JP MATH LAB · INTERACTIVE LEARNING</p>
-          <h1 class="hero-title">수학을 <em>보고, 움직이고,</em><br>만들어 봅니다.</h1>
-          <p class="hero-copy">공식만 기억하는 대신 그래프를 움직이고, 조건을 바꾸고, 자신만의 질문을 만들어 수학의 원리를 발견하는 학습 공간입니다.</p>
-          <div class="hero-notes" aria-label="학습 방식">
-            <span>그래프 조작</span>
-            <span>조건 실험</span>
-            <span>질문 탐구</span>
-            <span>웹앱 제작</span>
+        <article class="tile hero-tile hero-interactive" id="heroTile">
+          <div class="hero-message">
+            <p class="eyebrow">JP MATH LAB · INTERACTIVE LEARNING</p>
+            <h1 class="hero-title">수학을 <em>보고, 움직이고,</em><br>만들어 봅니다.</h1>
+            <p class="hero-copy">공식만 기억하는 대신 그래프를 움직이고, 조건을 바꾸고, 자신만의 질문을 만들어 수학의 원리를 발견하는 학습 공간입니다.</p>
+            <div class="hero-notes" aria-label="학습 방식">
+              <span>그래프 조작</span>
+              <span>조건 실험</span>
+              <span>질문 탐구</span>
+              <span>웹앱 제작</span>
+            </div>
           </div>
-          <span class="hero-formula" aria-hidden="true">∫</span>
+          <div class="home-live" id="homeLive">
+            <div class="home-live-head">
+              <span class="home-live-kicker">TOUCH · MOVE · DISCOVER</span>
+              <span class="home-live-hint" id="homeStageHint">점을 움직여 접선의 변화를 보세요.</span>
+            </div>
+            <canvas id="homeStage" width="520" height="176" tabindex="0" role="img" aria-label="점을 움직여 수학적 관계가 변하는 모습을 확인하는 미니 실험실"></canvas>
+            <div class="home-live-readout">
+              <strong id="homeStageReadout">x = 0.40 · 기울기 = 0.80</strong>
+              <a class="home-live-link" id="homeStageLink" href="미적분1/">전체 실험실 →</a>
+            </div>
+            <div class="home-live-tabs" role="tablist" aria-label="미니 실험 선택">
+              <button type="button" class="home-live-tab active" data-home-mode="calculus" role="tab" aria-selected="true">미적분</button>
+              <button type="button" class="home-live-tab" data-home-mode="geometry" role="tab" aria-selected="false">기하</button>
+              <button type="button" class="home-live-tab" data-home-mode="economy" role="tab" aria-selected="false">경제수학</button>
+            </div>
+          </div>
+          <span class="hero-formula" id="homeFormula" aria-hidden="true">∫</span>
         </article>
 
-        <article class="tile question-tile">
+        <article class="tile question-tile question-enhanced">
           <p class="eyebrow" id="questionEyebrow">오늘의 수학적 질문</p>
           <h2 class="question-title" id="questionTitle">곡선 위의 한 점을 움직이면 접선의 기울기는 어떻게 달라질까?</h2>
           <span class="question-mark" aria-hidden="true">?</span>
+          <div class="question-actions">
+            <a class="question-link" id="questionLink" href="미적분1/">이 질문 탐구하기 →</a>
+            <button class="question-next" id="questionNext" type="button" aria-label="다른 수학적 질문 보기">↻</button>
+          </div>
           <div class="question-foot">
             <span>관찰 → 예상 → 조작 → 설명</span>
             <span id="questionNumber">01</span>
@@ -687,7 +853,7 @@
           </div>
         </section>
 
-        <header class="subject-divider">
+        <header class="subject-divider" id="subjectLabs">
           <div><p class="eyebrow">SUBJECT LABS</p><h2>과목별 실험실</h2></div>
           <p>개념을 차근차근 살펴보고 싶다면 과목에서 시작하세요.</p>
         </header>
@@ -696,6 +862,7 @@
           <p class="card-code">01 · 변화와 누적</p>
           <h2 class="card-title">미적분Ⅰ</h2>
           <p class="card-desc">극한에서 접선의 방정식까지, 그래프를 직접 움직이며 변화의 순간을 확인합니다.</p>
+          <div class="subject-meta"><span>24개 개념 LAB</span><span>28개 계산 훈련</span></div>
           <canvas class="plot" data-plot="calculus" aria-hidden="true"></canvas>
           <div class="card-bottom"><span>그래프 실험실 입장</span><span class="arrow" aria-hidden="true">→</span></div>
         </a>
@@ -704,6 +871,7 @@
           <p class="card-code">02 · 곡선과 공간</p>
           <h2 class="card-title">기하</h2>
           <p class="card-desc">도형을 움직이며 보이지 않던 관계를 발견합니다.</p>
+          <div class="subject-meta"><span>14개 개념 LAB</span><span>36개 내신 훈련</span></div>
           <canvas class="plot" data-plot="geometry" aria-hidden="true"></canvas>
           <div class="card-bottom"><span>기하 실험실 입장</span><span class="arrow" aria-hidden="true">→</span></div>
         </a>
@@ -712,6 +880,7 @@
           <p class="card-code">03 · 선택과 변화</p>
           <h2 class="card-title">경제수학</h2>
           <p class="card-desc">가격·수요·비용을 직접 결정하고 숫자 뒤에 숨은 경제 원리를 발견합니다.</p>
+          <div class="subject-meta"><span>8개 의사결정 게임</span><span>LIVE 친구방</span></div>
           <canvas class="plot" data-plot="economy" aria-hidden="true"></canvas>
           <div class="card-bottom"><span>의사결정 시작</span><span class="arrow" aria-hidden="true">→</span></div>
         </a>
@@ -720,6 +889,7 @@
           <p class="card-code">04 · 조건을 질문으로</p>
           <h2 class="card-title">수능 문제 탐구</h2>
           <p class="card-desc">문제의 조건을 그래프와 단계별 질문으로 바꾸어, 답보다 먼저 구조를 읽습니다.</p>
+          <div class="subject-meta"><span>조건 분석</span><span>발문 중심 탐구</span></div>
           <canvas class="plot" data-plot="csat" aria-hidden="true"></canvas>
           <div class="card-bottom"><span>문제 선택하기</span><span class="arrow" aria-hidden="true">→</span></div>
         </a>
@@ -728,6 +898,7 @@
           <p class="card-code">05 · 질문에서 발견으로</p>
           <h2 class="card-title">주제탐구 수학</h2>
           <p class="card-desc">프로젝트의 수업 방식과 탐구 흐름을 먼저 확인합니다. 지금은 학생용 오리엔테이션을 공개합니다.</p>
+          <div class="subject-meta"><span>질문 정교화</span><span>학생 웹앱 연결</span></div>
           <div class="inquiry-visual" aria-hidden="true"></div>
           <div class="card-bottom"><span>수업 오리엔테이션 보기</span><span class="arrow" aria-hidden="true">→</span></div>
         </a>
@@ -736,6 +907,7 @@
           <p class="card-code">TEACHER ARCHIVE</p>
           <h2 class="card-title">수업창고</h2>
           <p class="card-desc">탐구 수업 자료와 학생 질문을 교사가 큐레이터처럼 살펴보는 공간입니다.</p>
+          <div class="subject-meta"><span>교사용</span><span>관찰·발문·기록</span></div>
           <div class="classroom-visual" aria-hidden="true"><span class="paper-card"></span></div>
           <div class="card-bottom"><span>교사용 공간 입장</span><span class="arrow" aria-hidden="true">→</span></div>
         </a>
@@ -753,27 +925,42 @@
   <script>
     (() => {
       const dailyQuestions = [
-        ['미적분Ⅰ · 오늘의 질문', '곡선 위의 한 점을 움직이면 접선의 기울기는 어떻게 달라질까?'],
-        ['기하 · 오늘의 질문', '포물선 위의 모든 점은 왜 초점과 준선에서 같은 거리에 있을까?'],
-        ['경제수학 · 오늘의 질문', '가격을 올렸는데도 매출이 줄어드는 순간은 언제일까?'],
-        ['미적분Ⅰ · 오늘의 질문', '작은 구간의 넓이를 계속 더하면 어떻게 정확한 넓이에 가까워질까?'],
-        ['기하 · 오늘의 질문', '같은 입체도 바라보는 방향에 따라 정사영의 넓이가 어떻게 달라질까?'],
-        ['수능 문제 탐구 · 오늘의 질문', '문제의 조건 하나를 바꾸면 그래프의 모양은 어디부터 달라질까?'],
-        ['미적분Ⅰ · 오늘의 질문', '평균변화율과 순간변화율이 같아지는 점은 항상 존재할까?'],
-        ['기하 · 오늘의 질문', '두 벡터의 내적이 0이라는 사실은 공간에서 무엇을 뜻할까?']
+        { label: '미적분Ⅰ · 오늘의 질문', question: '곡선 위의 한 점을 움직이면 접선의 기울기는 어떻게 달라질까?', href: '미적분1/미적분1_접선의방정식.html' },
+        { label: '기하 · 오늘의 질문', question: '포물선 위의 모든 점은 왜 초점과 준선에서 같은 거리에 있을까?', href: '기하/기하_포물선.html' },
+        { label: '경제수학 · 오늘의 질문', question: '가격을 올렸는데도 매출이 줄어드는 순간은 언제일까?', href: '경제수학/' },
+        { label: '미적분Ⅰ · 오늘의 질문', question: '작은 구간의 넓이를 계속 더하면 어떻게 정확한 넓이에 가까워질까?', href: '미적분1/미적분1_정적분넓이.html' },
+        { label: '기하 · 오늘의 질문', question: '같은 입체도 바라보는 방향에 따라 정사영의 넓이가 어떻게 달라질까?', href: '기하/기하_정사영.html' },
+        { label: '수능 문제 탐구 · 오늘의 질문', question: '문제의 조건 하나를 바꾸면 그래프의 모양은 어디부터 달라질까?', href: '수능문제/' },
+        { label: '미적분Ⅰ · 오늘의 질문', question: '평균변화율과 순간변화율이 같아지는 점은 항상 존재할까?', href: '미적분1/미적분1_평균값정리.html' },
+        { label: '기하 · 오늘의 질문', question: '두 벡터의 내적이 0이라는 사실은 공간에서 무엇을 뜻할까?', href: '기하/기하_벡터의내적.html' }
       ];
       const today = new Date();
       const dayKey = Math.floor(new Date(today.getFullYear(), today.getMonth(), today.getDate()) / 86400000);
       const dailyIndex = ((dayKey % dailyQuestions.length) + dailyQuestions.length) % dailyQuestions.length;
-      const dailyQuestion = dailyQuestions[dailyIndex];
       const questionEyebrow = document.getElementById('questionEyebrow');
       const questionTitle = document.getElementById('questionTitle');
       const questionNumber = document.getElementById('questionNumber');
-      if (questionEyebrow && questionTitle && questionNumber) {
-        questionEyebrow.textContent = dailyQuestion[0];
-        questionTitle.textContent = dailyQuestion[1];
-        questionNumber.textContent = String(dailyIndex + 1).padStart(2, '0');
+      const questionLink = document.getElementById('questionLink');
+      const questionNext = document.getElementById('questionNext');
+      let visibleQuestion = dailyIndex;
+      function showQuestion(index, animate = false) {
+        const item = dailyQuestions[index];
+        if (!questionEyebrow || !questionTitle || !questionNumber || !questionLink) return;
+        questionEyebrow.textContent = item.label;
+        questionTitle.textContent = item.question;
+        questionNumber.textContent = String(index + 1).padStart(2, '0');
+        questionLink.href = item.href;
+        if (animate) {
+          questionTitle.classList.remove('question-change');
+          void questionTitle.offsetWidth;
+          questionTitle.classList.add('question-change');
+        }
       }
+      showQuestion(visibleQuestion);
+      questionNext?.addEventListener('click', () => {
+        visibleQuestion = (visibleQuestion + 1) % dailyQuestions.length;
+        showQuestion(visibleQuestion, true);
+      });
 
       const colors = {
         ink: '#142321', green: '#176b5b', orange: '#d3663b', blue: '#3e6b91', gold: '#b57a1f'
@@ -861,9 +1048,127 @@
         });
       }
 
+      const homeStage = document.getElementById('homeStage');
+      const homeStageReadout = document.getElementById('homeStageReadout');
+      const homeStageHint = document.getElementById('homeStageHint');
+      const homeStageLink = document.getElementById('homeStageLink');
+      const homeFormula = document.getElementById('homeFormula');
+      const homeState = { mode: 'calculus', x: .6, y: .34 };
+      const homeModes = {
+        calculus: { hint: '점을 움직여 접선의 변화를 보세요.', href: '미적분1/', label: '미적분 전체 실험실 →', formula: '∫' },
+        geometry: { hint: '끝점을 움직여 벡터를 만들어 보세요.', href: '기하/', label: '기하 전체 실험실 →', formula: '→' },
+        economy: { hint: '가격을 바꾸고 매출의 변화를 보세요.', href: '경제수학/', label: '경제수학 게임 시작 →', formula: '₩' }
+      };
+
+      function homeStageGrid(ctx, w, h) {
+        ctx.strokeStyle = 'rgba(255,255,255,.075)';
+        ctx.lineWidth = 1;
+        for (let x = 16; x < w; x += 28) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
+        for (let y = 16; y < h; y += 28) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+      }
+
+      function dot(ctx, x, y, color, radius = 6) {
+        ctx.fillStyle = color;
+        ctx.beginPath(); ctx.arc(x, y, radius + 5, 0, Math.PI * 2); ctx.fillStyle = color.replace('1)', '.18)'); ctx.fill();
+        ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+      }
+
+      function drawHomeStage() {
+        if (!homeStage) return;
+        const { ctx, w, h } = prepare(homeStage);
+        homeStageGrid(ctx, w, h);
+        if (homeState.mode === 'calculus') {
+          const pad = 24, xScale = (w - pad * 2) / 4, yScale = h * .42;
+          const map = (x, y) => ({ x: pad + (x + 2) * xScale, y: h * .51 - y * yScale });
+          ctx.strokeStyle = 'rgba(255,255,255,.24)'; ctx.lineWidth = 1;
+          let a = map(-2, 0), b = map(2, 0); ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+          ctx.strokeStyle = '#f08063'; ctx.lineWidth = 3; ctx.beginPath();
+          for (let i = 0; i <= 100; i++) {
+            const x = -2 + i / 100 * 4, y = .35 * x * x - .5, p = map(x, y);
+            i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y);
+          }
+          ctx.stroke();
+          const x = -2 + homeState.x * 4, y = .35 * x * x - .5, slope = .7 * x, p = map(x, y);
+          const left = map(x - 1.2, y - slope * 1.2), right = map(x + 1.2, y + slope * 1.2);
+          ctx.strokeStyle = '#f3c861'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(left.x, left.y); ctx.lineTo(right.x, right.y); ctx.stroke();
+          dot(ctx, p.x, p.y, 'rgba(240,128,99,1)');
+          homeStageReadout.textContent = `x = ${x.toFixed(2)} · 접선 기울기 = ${slope.toFixed(2)}`;
+        } else if (homeState.mode === 'geometry') {
+          const ox = w * .5, oy = h * .56, ex = 24 + homeState.x * (w - 48), ey = 20 + homeState.y * (h - 40);
+          ctx.strokeStyle = 'rgba(255,255,255,.22)'; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(18, oy); ctx.lineTo(w - 18, oy); ctx.moveTo(ox, 12); ctx.lineTo(ox, h - 12); ctx.stroke();
+          ctx.strokeStyle = '#8fa3ff'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(ex, ey); ctx.stroke();
+          const angle = Math.atan2(ey - oy, ex - ox), head = 12;
+          ctx.fillStyle = '#8fa3ff'; ctx.beginPath(); ctx.moveTo(ex, ey); ctx.lineTo(ex - head * Math.cos(angle - .52), ey - head * Math.sin(angle - .52)); ctx.lineTo(ex - head * Math.cos(angle + .52), ey - head * Math.sin(angle + .52)); ctx.closePath(); ctx.fill();
+          dot(ctx, ex, ey, 'rgba(143,163,255,1)', 5);
+          const vx = (ex - ox) / 34, vy = (oy - ey) / 34, length = Math.hypot(vx, vy);
+          homeStageReadout.textContent = `벡터 (${vx.toFixed(1)}, ${vy.toFixed(1)}) · 크기 ${length.toFixed(2)}`;
+        } else {
+          const pad = 24, graphW = w - pad * 2, graphH = h - 38;
+          ctx.strokeStyle = 'rgba(255,255,255,.22)'; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(pad, 12); ctx.lineTo(pad, h - 24); ctx.lineTo(w - pad, h - 24); ctx.stroke();
+          ctx.strokeStyle = '#78d0b3'; ctx.lineWidth = 2.5; ctx.beginPath();
+          for (let i = 0; i <= 100; i++) {
+            const price = i / 100 * 20, demand = Math.max(0, 120 - 6 * price), px = pad + i / 100 * graphW, py = h - 24 - demand / 120 * graphH;
+            i ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
+          }
+          ctx.stroke();
+          ctx.strokeStyle = '#f3c861'; ctx.lineWidth = 3; ctx.beginPath();
+          for (let i = 0; i <= 100; i++) {
+            const price = i / 100 * 20, revenue = price * Math.max(0, 120 - 6 * price), px = pad + i / 100 * graphW, py = h - 24 - revenue / 600 * graphH;
+            i ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
+          }
+          ctx.stroke();
+          const price = 5 + homeState.x * 10, demand = 120 - 6 * price, revenue = price * demand;
+          const px = pad + price / 20 * graphW, py = h - 24 - revenue / 600 * graphH;
+          ctx.strokeStyle = 'rgba(255,255,255,.26)'; ctx.setLineDash([4, 5]); ctx.beginPath(); ctx.moveTo(px, h - 24); ctx.lineTo(px, py); ctx.stroke(); ctx.setLineDash([]);
+          dot(ctx, px, py, 'rgba(243,200,97,1)');
+          homeStageReadout.textContent = `가격 ${price.toFixed(1)} · 수요 ${demand.toFixed(0)} · 매출 ${revenue.toFixed(0)}`;
+        }
+      }
+
+      function setHomeMode(mode) {
+        homeState.mode = mode;
+        document.querySelectorAll('[data-home-mode]').forEach(button => {
+          const active = button.dataset.homeMode === mode;
+          button.classList.toggle('active', active);
+          button.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
+        const info = homeModes[mode];
+        if (homeStageHint) homeStageHint.textContent = info.hint;
+        if (homeStageLink) { homeStageLink.href = info.href; homeStageLink.textContent = info.label; }
+        if (homeFormula) homeFormula.textContent = info.formula;
+        drawHomeStage();
+      }
+
+      function updateHomePoint(event) {
+        if (!homeStage) return;
+        const rect = homeStage.getBoundingClientRect();
+        homeState.x = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+        if (homeState.mode === 'geometry') homeState.y = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
+        drawHomeStage();
+      }
+
+      document.querySelectorAll('[data-home-mode]').forEach(button => button.addEventListener('click', () => setHomeMode(button.dataset.homeMode)));
+      homeStage?.addEventListener('pointerdown', event => { homeStage.setPointerCapture(event.pointerId); updateHomePoint(event); });
+      homeStage?.addEventListener('pointermove', event => { if (event.buttons) updateHomePoint(event); });
+      homeStage?.addEventListener('keydown', event => {
+        if (!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)) return;
+        event.preventDefault();
+        if (event.key === 'ArrowLeft') homeState.x -= .04;
+        if (event.key === 'ArrowRight') homeState.x += .04;
+        if (event.key === 'ArrowUp') homeState.y -= .04;
+        if (event.key === 'ArrowDown') homeState.y += .04;
+        homeState.x = Math.max(0, Math.min(1, homeState.x));
+        homeState.y = Math.max(0, Math.min(1, homeState.y));
+        drawHomeStage();
+      });
+
       const drawers = { calculus, geometry, economy, csat };
       function drawAll() {
         document.querySelectorAll('canvas[data-plot]').forEach(canvas => drawers[canvas.dataset.plot]?.(canvas));
+        drawHomeStage();
       }
 
       let frame;
