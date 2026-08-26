@@ -568,6 +568,7 @@
     /* 메인 첫 장면 · 직접 조작 미니 LAB */
     html.jp-v2[data-jp-route="home"] .hero-tile.hero-interactive {
       min-height: 360px;
+      overflow: clip;
       grid-template-columns: minmax(0, 1.02fr) minmax(330px, .98fr);
       grid-template-rows: 1fr;
       gap: clamp(24px, 3vw, 42px);
@@ -647,7 +648,7 @@
     .home-live-tab.active { border-color: #9ee4cf; color: #122521; background: #9ee4cf; }
     .home-live-tab:focus-visible { outline: 3px solid rgba(243,200,97,.55); outline-offset: 2px; }
 
-    html.jp-v2[data-jp-route="home"] .question-tile.question-enhanced { padding-bottom: 92px; }
+    html.jp-v2[data-jp-route="home"] .question-tile.question-enhanced { overflow: clip; padding-bottom: 92px; }
     .question-actions {
       position: absolute;
       z-index: 3;
