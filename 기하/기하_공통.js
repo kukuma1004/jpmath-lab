@@ -21,7 +21,7 @@
     function show(name,updateHash=false){if(!['theory','lab','game'].includes(name))name='theory';buttons.forEach(b=>b.classList.toggle('active',b.dataset.tab===name));pages.forEach(p=>p.classList.toggle('hidden',p.dataset.page!==name));if(updateHash)history.replaceState(null,'',`#${name}`);window.dispatchEvent(new CustomEvent('geolab:tab',{detail:name}))}
     buttons.forEach(b=>b.addEventListener('click',()=>show(b.dataset.tab,true)));document.querySelectorAll('[data-go-tab]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.goTab,true)));const initial=(location.hash.match(/^#(theory|lab|game)$/)||[])[1]||'theory';show(initial);return{show}
   }
-  function renderMath(root=document.body){if(window.renderMathInElement)renderMathInElement(root,{delimiters:[{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}],throwOnError:false})}
+  function renderMath(root=document.body){if(!window.katex||!window.renderMathInElement)return;try{window.renderMathInElement(root,{delimiters:[{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}],throwOnError:false})}catch(error){console.warn('[GeoLab] 수식 자동 렌더링을 건너뜁니다.',error)}}
   class Arena{
     constructor(root,config){this.root=root;this.c=config;this.mode='solo';this.seed=0;this.rounds=[];this.session=0;this.results=[];this.timer=0;this.locked=false;this.audio=null;this.lastTick=-1;this.bind();this.show('start');this.renderLeaders()}
     q(sel){return this.root.querySelector(sel)}
