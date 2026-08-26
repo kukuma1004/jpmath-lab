@@ -243,6 +243,7 @@
       $('[data-recommend-title]').textContent = `${weak.mission.sense} 감각을 계산으로 굳혀 보세요.`;
       $('[data-recommend-text]').textContent = `${weak.mission.title}에서 확인한 연결을 ‘${weak.mission.skillTitle}’ 5문제로 짧게 반복하면, 다음 DAILY에서 그래프를 더 빠르게 읽을 수 있습니다.`;
       const recommendLink = $('[data-recommend-link]'); recommendLink.href = `미적분1_계산스킬.html?id=${weak.mission.skillId}`; recommendLink.textContent = `${weak.mission.skillTitle} 연습 시작 →`;
+      if (window.jpMotionFeedback) window.jpMotionFeedback('success', `오늘의 함수 읽기를 ${score}점으로 저장했습니다.`);
       show('result');
     }
     $('[data-start]').addEventListener('click', start); $('[data-submit]').addEventListener('click', submitMission); $('[data-next]').addEventListener('click', next); $('[data-replay]').addEventListener('click', start);

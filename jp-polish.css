@@ -667,6 +667,7 @@ html[data-jp-section="economy"] :where(.hero-board,.route-primary,.route-seconda
   0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--jp-feedback) 28%,transparent);background-color:color-mix(in srgb,var(--jp-feedback) 12%,transparent)}
   100%{box-shadow:0 0 0 10px transparent;background-color:transparent}
 }
+@keyframes jpFeedbackIn{0%{opacity:.62;transform:translate3d(0,7px,0);box-shadow:0 0 0 0 color-mix(in srgb,var(--jp-feedback) 18%,transparent)}100%{opacity:1;transform:none;box-shadow:0 0 0 9px transparent}}
 
 .jp-motion-ready body{animation:jpPageIn var(--jp-motion-slow) var(--jp-ease) both}
 html[data-jp-motion="teacher"] body{--jp-motion-slow:260ms;--jp-motion-base:220ms}
@@ -728,6 +729,11 @@ button[aria-busy="true"]::before,.jp-button-busy::before{
 }
 .jp-error-shake{animation:jpErrorNudge 260ms ease both}
 .jp-data-changed,.jp-value-changed{animation:jpDataChanged 560ms var(--jp-ease) both}
+.jp-inline-feedback{transition:border-color var(--jp-motion-fast) ease,background-color var(--jp-motion-fast) ease,box-shadow var(--jp-motion-base) ease}
+.jp-inline-feedback[data-jp-feedback-state="success"]{--jp-feedback:#176b5b}
+.jp-inline-feedback[data-jp-feedback-state="error"]{--jp-feedback:var(--jp-danger)}
+.jp-inline-feedback.jp-feedback-active{animation:jpFeedbackIn 300ms var(--jp-ease) both}
+.jp-inline-feedback.jp-feedback-error{animation:jpErrorNudge 260ms ease both}
 
 .jp-toast-region{
   position:fixed;z-index:10050;right:max(16px,env(safe-area-inset-right));
@@ -758,6 +764,6 @@ details[open]{background-color:color-mix(in srgb,var(--jp-feedback) 3%,transpare
 @media (prefers-reduced-motion:reduce){
   @view-transition{navigation:none}
   .jp-motion-ready body,.loading,.jp-skeleton-line,.jp-error-shake,.jp-data-changed,
-  button[aria-busy="true"]::before,.jp-toast.is-visible .jp-toast-mark{animation:none!important}
+  .jp-feedback-active,.jp-feedback-error,button[aria-busy="true"]::before,.jp-toast.is-visible .jp-toast-mark{animation:none!important}
   .jp-tab-indicator,.jp-toast{transition:none!important}.jp-toast{transform:none}
 }

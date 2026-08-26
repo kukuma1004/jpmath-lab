@@ -34,7 +34,12 @@
   function currentEvent() { return runtime.resolveEvent(game, (onlineRoom.eventOrder || [])[onlineRoom.round], onlineRoom.round); }
   function playersArray() { return Object.entries((onlineRoom && onlineRoom.players) || {}).map(([uid, player]) => ({ uid, ...player })).sort((a, b) => (b.score || 0) - (a.score || 0)); }
 
-  function showError(message) { const box = $('[data-room-error]'); box.textContent = message; box.hidden = false; }
+  function showError(message) {
+    const box = $('[data-room-error]');
+    box.textContent = message;
+    box.hidden = false;
+    if (window.jpMotionFeedback) window.jpMotionFeedback('error', message);
+  }
   function friendlyError(error) {
     const key = error && error.message;
     if (key === 'room-not-found') return '해당 방을 찾지 못했습니다. 6자리 코드를 다시 확인해 주세요.';
@@ -48,6 +53,7 @@
 
   function setConnectionCard(status) {
     const card = $('[data-connection-card]');
+    card.setAttribute('aria-busy', 'false');
     card.classList.toggle('ready', status.available);
     card.classList.toggle('error', !status.available);
     if (status.available) {
@@ -68,6 +74,7 @@
     }
     $('[data-create-room]').disabled = !status.available;
     $('[data-join-room]').disabled = !status.available;
+    if (status.available && window.jpMotionFeedback) window.jpMotionFeedback('success', '실시간 친구방이 준비되었습니다.');
   }
 
   function switchTab(key) {
@@ -87,12 +94,18 @@
     if (!nickname) { showError('진행자 닉네임을 입력해 주세요.'); return; }
     try {
       $('[data-create-room]').disabled = true;
+      if (window.jpMotionBusy) window.jpMotionBusy($('[data-create-room]'), true, '방을 만들고 있습니다');
       const created = await realtime.createRoom(gameId, nickname);
       roomCode = created.code; myUid = created.uid; isHost = true;
       game = catalog.find(item => item.id === gameId) || catalog[0];
       await realtime.hostUpdate(roomCode, { eventOrder: runtime.createScenario(game, roomCode) });
+      if (window.jpMotionBusy) window.jpMotionBusy($('[data-create-room]'), false);
       await enterRoom();
-    } catch (error) { showError(friendlyError(error)); $('[data-create-room]').disabled = !connection.available; }
+    } catch (error) {
+      showError(friendlyError(error));
+      if (window.jpMotionBusy) window.jpMotionBusy($('[data-create-room]'), false);
+      $('[data-create-room]').disabled = !connection.available;
+    }
   }
 
   async function joinRoom() {
@@ -101,11 +114,17 @@
     if (code.length !== 6 || !nickname) { showError('6자리 방 코드와 닉네임을 모두 입력해 주세요.'); return; }
     try {
       $('[data-join-room]').disabled = true;
+      if (window.jpMotionBusy) window.jpMotionBusy($('[data-join-room]'), true, '방을 찾고 있습니다');
       const joined = await realtime.joinRoom(code, nickname);
       roomCode = joined.code; myUid = joined.uid; isHost = joined.isHost;
       game = catalog.find(item => item.id === joined.room.gameId) || catalog[0];
+      if (window.jpMotionBusy) window.jpMotionBusy($('[data-join-room]'), false);
       await enterRoom();
-    } catch (error) { showError(friendlyError(error)); $('[data-join-room]').disabled = !connection.available; }
+    } catch (error) {
+      showError(friendlyError(error));
+      if (window.jpMotionBusy) window.jpMotionBusy($('[data-join-room]'), false);
+      $('[data-join-room]').disabled = !connection.available;
+    }
   }
 
   async function enterRoom() {

@@ -438,6 +438,12 @@
   ].join(',');
   var tabGroups = '.tabbar-inner, .subject-tabs, .filters, .filter-row, .inquiry-tabs, .prompt-modes, .tabs, .main-tabs';
   var tabItems = '.tab-btn, .filter, [data-filter], [data-subject], .inquiry-tab, [role="tab"]';
+  var feedbackSelector = [
+    '.answer-feedback', '.game-feedback', '.boss-status', '.mission-feedback',
+    '.result-card', '.decision-result', '.feedback', '.error-message', '.room-error',
+    '[data-game-feedback]', '[data-arena-feedback]', '[data-drill-feedback]',
+    '[data-boss-feedback]', '[data-room-error]', '[data-connection-card]'
+  ].join(',');
 
   function ready(fn) {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn, { once: true });
@@ -707,12 +713,55 @@
     node.classList.add(className);
   }
 
+  function feedbackState(node) {
+    var marker = (node.className || '') + ' ' + (node.textContent || '');
+    if (/\b(?:bad|wrong|error|fail|failed|is-wrong)\b|오답|실패|오류|못했습니다|줄여야 합니다/.test(marker)) return 'error';
+    if (/\b(?:good|success|correct|clear|ready|is-correct)\b|정답|완료|클리어|연결되었습니다/.test(marker)) return 'success';
+    return 'info';
+  }
+
+  function feedbackVisible(node) {
+    return !node.hidden && !node.classList.contains('hidden') && !!node.getClientRects().length;
+  }
+
+  function refreshFeedback(node, initial) {
+    var text = (node.textContent || '').replace(/\s+/g, ' ').trim();
+    var state = feedbackState(node);
+    var visible = feedbackVisible(node);
+    var signature = String(visible) + '|' + state + '|' + text;
+    if (signature === node.__jpFeedbackSignature) return;
+    node.__jpFeedbackSignature = signature;
+    node.dataset.jpFeedbackState = state;
+    if (node.dataset.jpOwnsLive === 'true') {
+      node.setAttribute('role', state === 'error' ? 'alert' : 'status');
+      node.setAttribute('aria-live', state === 'error' ? 'assertive' : 'polite');
+    }
+    if (!visible || !text || initial) return;
+    pulse(node, state === 'error' ? 'jp-feedback-error' : 'jp-feedback-active');
+  }
+
+  function wireFeedback(root) {
+    Array.prototype.forEach.call((root || document).querySelectorAll(feedbackSelector), function (node) {
+      if (node.__jpFeedbackWatch) return;
+      node.__jpFeedbackWatch = true;
+      node.classList.add('jp-inline-feedback');
+      if (!node.hasAttribute('role') && !node.hasAttribute('aria-live')) node.dataset.jpOwnsLive = 'true';
+      if (!node.hasAttribute('role')) node.setAttribute('role', feedbackState(node) === 'error' ? 'alert' : 'status');
+      if (!node.hasAttribute('aria-live')) node.setAttribute('aria-live', feedbackState(node) === 'error' ? 'assertive' : 'polite');
+      node.setAttribute('aria-atomic', 'true');
+      refreshFeedback(node, true);
+      var observer = new MutationObserver(function () { refreshFeedback(node, false); });
+      observer.observe(node, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ['class', 'hidden'] });
+    });
+  }
+
   function scan(root) {
     revealCards(root);
     wireTabTracks(root);
     wireCounts(root);
     wireDetails(root);
     drawStaticGraphs(root);
+    wireFeedback(root);
   }
 
   function boot() {
@@ -758,5 +807,17 @@
   }
 
   window.jpMotionFeedback = function (type, message) { toast(type, message); };
+  window.jpMotionBusy = function (button, busy, label) {
+    if (!button) return;
+    button.setAttribute('aria-busy', String(!!busy));
+    button.classList.toggle('jp-button-busy', !!busy);
+    if (busy) {
+      if (!button.dataset.jpBusyLabel) button.dataset.jpBusyLabel = button.textContent;
+      if (label) button.textContent = label;
+    } else if (button.dataset.jpBusyLabel) {
+      button.textContent = button.dataset.jpBusyLabel;
+      delete button.dataset.jpBusyLabel;
+    }
+  };
   ready(boot);
 }());
