@@ -479,7 +479,7 @@
       if (source) {
         var link = document.createElement('link');
         link.rel = 'stylesheet';
-        link.href = source.replace(/jp-polish\.js(?:\?.*)?$/, 'jp-system.css?v=6');
+        link.href = source.replace(/jp-polish\.js(?:\?.*)?$/, 'jp-system.css?v=7');
         link.dataset.jpSystem = '';
         document.head.appendChild(link);
       }

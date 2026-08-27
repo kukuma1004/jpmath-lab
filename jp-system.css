@@ -233,6 +233,15 @@ html.jp-v2[data-jp-view="hub"] body:not(:has(.shell)) {
     radial-gradient(circle at 95% 0%, color-mix(in srgb, var(--jp-accent) 9%, transparent), transparent 24rem),
     var(--jp-canvas) !important;
 }
+
+/* 수업창고와 탐구 운영실은 각 페이지가 이미 가운데 정렬·와이드 폭을
+   관리한다. 과목 허브용 1280px body 제한을 적용하면 초광폭 화면에서
+   body 자체가 왼쪽 절반에 붙으므로 교사용 경로에서는 원래 레이아웃을 유지한다. */
+html.jp-v2[data-jp-route="teacher"][data-jp-view="hub"] body {
+  max-width: none;
+  margin-inline: 0;
+  padding: 0;
+}
 html.jp-v2[data-jp-view="hub"] .breadcrumb {
   margin-bottom: 38px;
   color: #8a9490;

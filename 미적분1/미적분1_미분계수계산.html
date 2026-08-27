@@ -52,6 +52,33 @@ html,body{ margin:0; padding:0; background:var(--paper); color:var(--ink); font-
 .cta-row{ display:flex; gap:10px; margin-top:16px; }
 .prereq-note{ background:var(--panel); border:1px dashed var(--border); border-radius:12px; padding:10px 12px; font-size:12px; color:var(--inkSoft); margin-bottom:16px; line-height:1.6; }
 
+/* 선생님의 실제 질문에서 출발하는 개념 장면 */
+.secant-question{ margin:0 0 20px; padding:18px; border-radius:20px; color:#F7F2E8; background:linear-gradient(145deg,#1D2D25 0%,#263E32 62%,#365443 100%); box-shadow:0 18px 42px rgba(34,48,39,.16); overflow:hidden; }
+.secant-kicker{ font-family:var(--font-mono); font-size:10px; font-weight:700; letter-spacing:1.35px; color:#E8C76E; margin-bottom:7px; }
+.secant-question h2{ margin:0; font-family:var(--font-display); font-size:24px; line-height:1.28; }
+.secant-lead{ margin:7px 0 15px; color:rgba(247,242,232,.78); font-size:13px; line-height:1.65; }
+.secant-stage{ border:1px solid rgba(255,255,255,.15); border-radius:16px; padding:9px; background:rgba(8,16,12,.22); }
+.secant-stage svg{ display:block; width:100%; height:auto; touch-action:none; }
+.secant-controls{ display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px 14px; align-items:center; margin-top:13px; }
+.secant-controls label{ font-size:12px; color:rgba(247,242,232,.72); }
+.secant-controls input[type="range"]{ grid-column:1 / -1; width:100%; margin:0; accent-color:#E8C76E; cursor:pointer; }
+.secant-controls input[type="range"]:focus-visible{ outline:3px solid rgba(232,199,110,.42); outline-offset:4px; border-radius:999px; }
+.secant-value{ min-width:76px; text-align:right; font-family:var(--font-mono); font-size:13px; color:#F3D980; }
+.secant-readout{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-top:11px; }
+.secant-metric{ min-width:0; padding:10px 11px; border-radius:12px; background:rgba(255,255,255,.08); }
+.secant-metric span{ display:block; margin-bottom:4px; color:rgba(247,242,232,.64); font-size:10.5px; }
+.secant-metric b{ display:block; overflow-x:auto; color:#fff; font-family:var(--font-mono); font-size:12.5px; font-weight:600; line-height:1.6; white-space:nowrap; }
+.secant-answer{ margin:11px 0 0; min-height:44px; padding:11px 12px; border-left:3px solid #E8C76E; border-radius:0 10px 10px 0; background:rgba(232,199,110,.1); color:#F7F2E8; font-size:12.5px; line-height:1.65; }
+.secant-definition{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-top:10px; }
+.secant-definition div{ padding:10px 11px; border:1px solid rgba(255,255,255,.12); border-radius:12px; color:rgba(247,242,232,.76); font-size:11.5px; line-height:1.55; }
+.secant-definition strong{ color:#fff; }
+@media(max-width:430px){
+  .secant-question{ padding:15px; }
+  .secant-question h2{ font-size:21px; }
+  .secant-readout{ grid-template-columns:1fr; }
+  .secant-definition{ grid-template-columns:1fr; }
+}
+
 /* fraction / math formatting */
 .frac{ display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle; margin:0 3px; line-height:1.15; }
 .frac .num{ border-bottom:1.4px solid currentColor; padding:0 4px 1px; }
@@ -144,6 +171,43 @@ html,body{ margin:0; padding:0; background:var(--paper); color:var(--ink); font-
   <p class="desc">"미분 가능한지"는 판정해봤으니, 이제 f'(a) 값 자체를 정의로부터 계산하는 연습을 해요.</p>
 
   <div class="prereq-note">🔗 이전 단원: 미분가능성 학습 스위트에서 f'(a) = lim[f(a+h)−f(a)]/h 의 극한값이 존재하는지를 다뤘다면, 이제 그 극한을 실제로 계산해서 숫자로 뽑아내는 게 목표예요.</div>
+
+  <section class="secant-question" aria-labelledby="secantQuestionTitle">
+    <div class="secant-kicker">선생님의 진짜 질문 · 먼저 움직여 보기</div>
+    <h2 id="secantQuestionTitle">“할선이 뭐지?”</h2>
+    <p class="secant-lead">공식부터 외우지 말고, 곡선 위 두 점을 잇는 선을 직접 움직여 보세요. 노란 점 B가 초록 점 A에 가까워질수록 무슨 일이 생길까요?</p>
+    <div class="secant-stage">
+      <svg id="secantSvg" viewBox="0 0 520 260" role="img" aria-label="함수 y=x제곱 위 두 점 A와 B를 잇는 할선이 접선으로 가까워지는 그래프">
+        <g opacity=".18" stroke="#F7F2E8" stroke-width="1">
+          <path d="M32 20V232M136 20V232M240 20V232M344 20V232M448 20V232"/>
+          <path d="M32 32H488M32 82H488M32 132H488M32 182H488M32 232H488"/>
+        </g>
+        <line x1="32" y1="221" x2="488" y2="221" stroke="rgba(247,242,232,.42)"/>
+        <line x1="156" y1="20" x2="156" y2="238" stroke="rgba(247,242,232,.42)"/>
+        <path id="secantCurve" fill="none" stroke="#F7F2E8" stroke-width="4" stroke-linecap="round"/>
+        <line id="secantTangent" stroke="#7CC69A" stroke-width="2.5" stroke-dasharray="8 7" opacity=".45"/>
+        <line id="secantLine" stroke="#E8C76E" stroke-width="4" stroke-linecap="round"/>
+        <circle id="secantPointA" r="7" fill="#7CC69A" stroke="#1D2D25" stroke-width="3"/>
+        <circle id="secantPointB" r="7" fill="#E8C76E" stroke="#1D2D25" stroke-width="3"/>
+        <text id="secantLabelA" fill="#B8E4C8" font-size="14" font-family="IBM Plex Mono, monospace">A</text>
+        <text id="secantLabelB" fill="#F3D980" font-size="14" font-family="IBM Plex Mono, monospace">B</text>
+      </svg>
+    </div>
+    <div class="secant-controls">
+      <label for="secantH">점 B의 거리 h를 0에 가깝게 움직여 보세요.</label>
+      <output class="secant-value" id="secantHValue" for="secantH"></output>
+      <input id="secantH" type="range" min="-2" max="2" step="0.1" value="1.8" aria-describedby="secantAnswer">
+    </div>
+    <div class="secant-readout">
+      <div class="secant-metric"><span>두 점의 x좌표</span><b id="secantPoints"></b></div>
+      <div class="secant-metric"><span>두 점을 잇는 선의 기울기</span><b id="secantSlope"></b></div>
+    </div>
+    <p class="secant-answer" id="secantAnswer" aria-live="polite"></p>
+    <div class="secant-definition">
+      <div><strong>할선</strong><br>곡선 위의 서로 다른 두 점을 지나는 직선</div>
+      <div><strong>접선</strong><br>두 번째 점이 첫 점으로 다가갈 때 할선이 가까워지는 직선</div>
+    </div>
+  </section>
 
   <div class="theory-section">
     <div class="theory-h2">1. 두 가지 표현, 같은 뜻</div>
@@ -654,6 +718,82 @@ const GameApp = (function(){
 })();
 
 // ============================================================
+// TEACHER QUESTION · "할선이 뭐지?"
+// ============================================================
+function initSecantQuestion(){
+  const slider = document.getElementById('secantH');
+  const svgCurve = document.getElementById('secantCurve');
+  const secantLine = document.getElementById('secantLine');
+  const tangentLine = document.getElementById('secantTangent');
+  const pointA = document.getElementById('secantPointA');
+  const pointB = document.getElementById('secantPointB');
+  const labelA = document.getElementById('secantLabelA');
+  const labelB = document.getElementById('secantLabelB');
+  const hValue = document.getElementById('secantHValue');
+  const points = document.getElementById('secantPoints');
+  const slope = document.getElementById('secantSlope');
+  const answer = document.getElementById('secantAnswer');
+
+  const box = { left:32, right:488, top:20, bottom:232, xMin:-1.2, xMax:3.2, yMin:-0.6, yMax:10.5 };
+  const sx = (x) => box.left + (x - box.xMin) / (box.xMax - box.xMin) * (box.right - box.left);
+  const sy = (y) => box.bottom - (y - box.yMin) / (box.yMax - box.yMin) * (box.bottom - box.top);
+  const f = (x) => x * x;
+  const a = 1;
+
+  let curveD = '';
+  for(let i=0;i<=120;i++){
+    const x = box.xMin + (box.xMax-box.xMin) * i / 120;
+    curveD += (i ? 'L' : 'M') + sx(x).toFixed(2) + ' ' + sy(f(x)).toFixed(2) + ' ';
+  }
+  svgCurve.setAttribute('d', curveD);
+
+  function lineCoords(m){
+    const y1 = f(a) + m * (box.xMin-a);
+    const y2 = f(a) + m * (box.xMax-a);
+    return [sx(box.xMin),sy(y1),sx(box.xMax),sy(y2)];
+  }
+  function placeLine(node, coords){
+    ['x1','y1','x2','y2'].forEach((key,index) => node.setAttribute(key, coords[index].toFixed(2)));
+  }
+  function texDecimal(value){
+    const clean = Math.abs(value) < 0.0001 ? 0 : value;
+    return Number.isInteger(clean) ? String(clean) : clean.toFixed(1);
+  }
+  function update(){
+    const h = Math.round(Number(slider.value) * 10) / 10;
+    const atLimit = Math.abs(h) < 0.0001;
+    const bx = a + h;
+    const by = f(bx);
+    const m = 2 + h;
+
+    placeLine(tangentLine, lineCoords(2));
+    placeLine(secantLine, lineCoords(m));
+    secantLine.style.opacity = atLimit ? '0' : '1';
+    tangentLine.style.opacity = atLimit ? '1' : '.42';
+
+    pointA.setAttribute('cx', sx(a)); pointA.setAttribute('cy', sy(f(a)));
+    pointB.setAttribute('cx', sx(bx)); pointB.setAttribute('cy', sy(by));
+    pointB.style.opacity = atLimit ? '0' : '1';
+    labelA.setAttribute('x', sx(a)-20); labelA.setAttribute('y', sy(f(a))-12);
+    labelB.setAttribute('x', sx(bx)+10); labelB.setAttribute('y', sy(by)-10);
+    labelB.style.opacity = atLimit ? '0' : '1';
+
+    hValue.textContent = 'h = ' + texDecimal(h);
+    if(atLimit){
+      points.textContent = 'B → A(1, 1)';
+      slope.textContent = 'h → 0일 때 2 + h → 2';
+      answer.innerHTML = '<strong>바로 h=0을 넣으면 두 점이 하나가 되어 할선은 사라져요.</strong> 하지만 양쪽에서 가까워진 할선의 기울기는 2로 모이고, 그 극한 위치가 접선이 됩니다.';
+    }else{
+      points.textContent = 'A(1, 1) · B(' + texDecimal(bx) + ', ' + texDecimal(by) + ')';
+      slope.textContent = '[f(1+h) − f(1)] ÷ h = 2 + h = ' + texDecimal(m);
+      answer.innerHTML = '<strong>지금 노란 직선이 할선이에요.</strong> 곡선 위의 서로 다른 두 점 A와 B를 지나며, 두 점 사이의 평균변화율이 곧 이 선의 기울기입니다.';
+    }
+  }
+  slider.addEventListener('input', update);
+  update();
+}
+
+// ============================================================
 // THEORY (small setup)
 // ============================================================
 document.getElementById('theoryDef1').innerHTML = KX("\\displaystyle f'(a) = \\lim_{h \\to 0} \\frac{f(a+h) - f(a)}{h}");
@@ -663,6 +803,7 @@ document.getElementById('ctaToGame').addEventListener('click', () => showTab('ga
 
 LabApp.init();
 GameApp.init();
+initSecantQuestion();
 renderStaticMath(document.getElementById('page-theory'));   // 이론 탭의 \(...\) 일괄 렌더
 showTab('theory');
 </script>

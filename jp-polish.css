@@ -565,6 +565,16 @@ html[data-jp-section] :where(.skill-map-intro,.calc-map-intro)::before{
   content:"";
 }
 
+/* 위 소개 상자는 공통 마감에서 밝은 배경으로 바뀐다. 각 과목의 기존
+   흰색 글자를 그대로 두면 사라지므로 제목과 설명도 밝은 면용 색으로 맞춘다. */
+html[data-jp-section] :where(.skill-map-intro,.calc-map-intro),
+html[data-jp-section] :where(.skill-map-intro,.calc-map-intro) :where(h1,h2,h3,strong){
+  color:var(--jp-theme-dark,#223027) !important;
+}
+html[data-jp-section] :where(.skill-map-intro,.calc-map-intro) :where(p,small,span){
+  color:#64716c !important;
+}
+
 html[data-jp-section] :where(.card,.skill-category,.skill-mini,.calc-category-button,
   .mini-card,.visual-card,.graph-card,.lab-graph-card,.concept-box,.theorem-box,
   .limit-box,.question-card,.q-card,.lesson-block,.step-block,.panel-block){
