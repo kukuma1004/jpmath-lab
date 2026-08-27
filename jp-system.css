@@ -228,6 +228,7 @@ html.jp-v2[data-jp-view="hub"][data-jp-route="economy"] { --jp-accent: var(--jp-
 
 html.jp-v2[data-jp-view="hub"] body:not(:has(.shell)) {
   max-width: 1280px;
+  margin-inline: auto;
   padding: 30px clamp(16px, 3vw, 36px) 80px;
   background:
     radial-gradient(circle at 95% 0%, color-mix(in srgb, var(--jp-accent) 9%, transparent), transparent 24rem),
