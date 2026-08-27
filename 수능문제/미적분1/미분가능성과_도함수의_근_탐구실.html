@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow,noarchive"/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<title>수능형 15번 | 미분가능성과 도함수의 근 탐구실</title>
+<link rel="stylesheet" href="../../vendor/katex/katex.min.css"/>
+<link rel="stylesheet" href="../../jp-dark.css?v=4"/>
+<link rel="stylesheet" href="../../jp-polish.css?v=9"/>
+<script defer src="../../vendor/katex/katex.min.js"></script>
+<script defer src="../../jp-lab-dark.js?v=2"></script>
+<script defer src="../../jp-polish.js?v=17"></script>
+<link rel="stylesheet" href="../../jp-nav-2.css?v=3"/>
+<script src="../../jp-nav-2.js?v=3" data-jp-section="수능 문제 탐구" defer></script>
+<style>
+.root-lab{margin:22px 0;border:1px solid rgba(47,102,112,.2);border-radius:24px;overflow:hidden;background:#fff}.root-lab-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:17px 20px;border-bottom:1px solid rgba(58,49,37,.12)}.root-lab-head h4{margin:0;font-size:18px}.root-lab-head span{color:#2f6670;font:700 10px 'IBM Plex Mono',monospace;letter-spacing:.08em}.root-lab-body{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(250px,.7fr);min-height:360px}.root-stage{display:flex;align-items:center;padding:20px;background:linear-gradient(145deg,#fbfaf6,#f4efe4)}.root-stage svg{display:block;width:100%;height:auto}.root-panel{padding:22px;border-left:1px solid rgba(58,49,37,.12)}.root-control{margin-bottom:20px}.root-control label{display:flex;justify-content:space-between;gap:12px;margin-bottom:8px;color:#5f574b;font-size:12px}.root-control label b{color:#a95232;font-family:'IBM Plex Mono',monospace}.root-control input{width:100%;accent-color:#a95232}.root-output{display:grid;gap:9px;margin-top:18px}.root-row{display:flex;justify-content:space-between;gap:12px;padding:10px 11px;border-radius:11px;background:#f6f2e9;font-size:12px}.root-row b{color:#2f6670;font-family:'IBM Plex Mono',monospace}.root-count{display:grid;place-items:center;min-height:82px;margin-top:14px;border-radius:15px;color:#fff;background:#253b36;text-align:center}.root-count strong{display:block;font:700 30px 'IBM Plex Mono',monospace}.root-count span{font-size:11px;color:rgba(255,255,255,.7)}.root-count.ok{background:#477454;box-shadow:0 0 0 4px rgba(71,116,84,.12)}.root-hint{margin:12px 0 0;color:#776e61;font-size:11.5px;line-height:1.6}.set-map{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:18px}.set-map .card{min-height:118px}.set-map strong{display:block;margin-bottom:8px;color:#a95232}.root-chain{display:flex;align-items:center;justify-content:center;gap:9px;flex-wrap:wrap;margin:18px 0}.root-chain span{display:grid;place-items:center;min-width:72px;min-height:54px;padding:8px 12px;border:1px solid rgba(58,49,37,.15);border-radius:14px;background:#fff;font:700 18px 'IBM Plex Mono',monospace}.root-chain i{color:#a95232;font:700 12px 'IBM Plex Mono',monospace}.mini-answer{font-size:clamp(46px,8vw,84px);font-weight:800;color:#a95232;text-align:center;letter-spacing:-.06em}.reveal-note{margin-top:12px;color:#6b6256;font-size:13px;text-align:center}.prob .eqrow{overflow-x:auto}.choice{min-height:48px}.choice.chosen{border-color:#2f6670!important;background:#eef6f5!important;box-shadow:0 0 0 3px rgba(47,102,112,.1)}.formula-scroll{overflow-x:auto;padding-bottom:4px}.formula-scroll .katex-display{min-width:max-content}
+.flow{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:stretch;margin:22px 0}.flow-box{display:grid;place-items:center;gap:8px;min-height:116px;padding:16px;border:1px solid rgba(58,49,37,.14);border-radius:17px;background:#fff;text-align:center}.flow-box:last-child{border-color:rgba(169,82,50,.35);background:#fff6ef}.flow-box b{color:#6c6357;font-size:12px}.flow-box .fb-text{font-size:18px}.flow .arrow{display:grid;place-items:center;color:#a95232;font-weight:800}
+@media(max-width:800px){.root-lab-body{grid-template-columns:1fr}.root-panel{border-top:1px solid rgba(58,49,37,.12);border-left:0}.root-stage{padding:10px}.set-map{grid-template-columns:1fr}}
+@media(max-width:650px){.flow{grid-template-columns:1fr}.flow .arrow{min-height:20px}.root-row{align-items:flex-start;flex-direction:column}.root-row b{word-break:break-all}}
+</style>
+</head>
+<body class="tpl-dark is-page">
+
+<header>
+  <div class="hbar">
+    <h1>미분가능성과 도함수의 근 탐구실</h1>
+    <span class="src">수능형 문제 <b>15번</b> · 4점</span>
+    <a class="back" href="../">← 수능 문제</a>
+  </div>
+  <nav id="nav"></nav>
+  <div class="pbar"><span id="pfill"></span></div>
+</header>
+
+<main>
+<section class="ch on" data-ch="0">
+  <p class="eyebrow">STEP 01 · 문제 만나기</p>
+  <h2 class="ct">식을 풀기 전에 <span class="am">조건이 움직이는 방향</span>부터 보자</h2>
+  <p class="lede">이 문제의 핵심은 삼차함수의 근을 직접 푸는 것이 아닙니다. <b>미분가능성</b>과 <b>근 집합의 4만큼 평행이동</b>을 연결하는 문제입니다.</p>
+  <div class="prob">
+    <div class="prob-head"><span class="yr">제시 문항</span><h4>수능형 15번</h4><span class="pts">4점</span></div>
+    <div class="prob-body">
+      <div class="qtext">
+        <p>상수 <span class="m" data-k="a\;(a\ne3\sqrt5)"></span>와 최고차항의 계수가 음수인 이차함수 <span class="m" data-k="f(x)"></span>에 대하여 함수</p>
+        <div class="eq"><div class="eqrow"><span class="m md" data-k="g(x)=\begin{cases}x^3+ax^2+15x+7&(x\le0)\\[2pt]f(x)&(x\gt0)\end{cases}"></span></div></div>
+        <p>가 다음을 만족시킨다.</p>
+        <div class="card accent"><p><b>(가)</b> 함수 <span class="m" data-k="g(x)"></span>는 실수 전체에서 미분가능하다.<br/><b>(나)</b> 방정식 <span class="m" data-k="g'(x)\,g'(x-4)=0"></span>의 서로 다른 실근의 개수는 4이다.</p></div>
+        <p><span class="m am" data-k="g(-2)+g(2)"></span>의 값은?</p>
+      </div>
+      <div class="choices" data-q="first" data-ans="1" data-mode="record">
+        <button class="choice" data-i="0">① 30</button><button class="choice" data-i="1">② 32</button><button class="choice" data-i="2">③ 34</button><button class="choice" data-i="3">④ 36</button><button class="choice" data-i="4">⑤ 38</button>
+      </div>
+      <p class="hintline" style="margin-top:12px">처음 답은 기록만 해 두세요. 마지막에 다시 선택해 봅니다.</p>
+    </div>
+  </div>
+  <div class="prob">
+    <div class="prob-head"><span class="yr">첫 질문</span><h4>조건 (가)는 어느 지점을 보라는 뜻일까?</h4></div>
+    <div class="prob-body">
+      <div class="choices" data-q="boundary" data-ans="2">
+        <button class="choice" data-i="0">모든 실수에서 두 식을 비교한다</button>
+        <button class="choice" data-i="1"><span class="m" data-k="x=4"></span>만 조사한다</button>
+        <button class="choice" data-i="2">식이 바뀌는 <span class="m" data-k="x=0"></span>만 조사한다</button>
+        <button class="choice" data-i="3">이차함수의 꼭짓점만 조사한다</button>
+      </div>
+    </div>
+  </div>
+  <div class="chnav"><span class="sp"></span><button class="b" data-go="next">경계 조건 만들기 →</button></div>
+</section>
+
+<section class="ch" data-ch="1">
+  <p class="eyebrow">STEP 02 · 미분가능성 번역</p>
+  <h2 class="ct"><span class="am">값과 기울기</span>가 동시에 이어져야 한다</h2>
+  <p class="lede"><span class="m" data-k="f(x)=bx^2+cx+d\;(b\lt0)"></span>라 두고 <span class="m" data-k="x=0"></span>에서 연속과 미분가능 조건을 차례로 적용합니다.</p>
+  <div class="flow">
+    <div class="flow-box"><b>함숫값 연결</b><span class="fb-text"><span class="m" data-k="f(0)=7"></span></span></div><div class="arrow">+</div>
+    <div class="flow-box"><b>기울기 연결</b><span class="fb-text"><span class="m" data-k="f'(0)=15"></span></span></div><div class="arrow">→</div>
+    <div class="flow-box"><b>오른쪽 식</b><span class="fb-text"><span class="m" data-k="f(x)=bx^2+15x+7"></span></span></div>
+  </div>
+  <div class="card quote"><p>따라서 계수는 하나만 남습니다. 최고차항의 계수가 음수이므로 <span class="m am" data-k="b\lt0"></span>.</p></div>
+  <div class="prob">
+    <div class="prob-head"><span class="yr">미분</span><h4><span class="m" data-k="g'(x)"></span>를 구간별로 쓰기</h4></div>
+    <div class="prob-body">
+      <div class="eq"><div class="eqrow"><span class="m md" data-k="g'(x)=\begin{cases}3x^2+2ax+15&(x\le0)\\[2pt]2bx+15&(x\gt0)\end{cases}"></span></div></div>
+      <div class="qtext"><p><span class="m" data-k="x\gt0"></span>에서 <span class="m" data-k="2bx+15=0"></span>은 몇 개의 양의 근을 가질까요?</p></div>
+      <div class="choices" data-q="positive" data-ans="1">
+        <button class="choice" data-i="0">0개</button><button class="choice" data-i="1">항상 1개</button><button class="choice" data-i="2">항상 2개</button><button class="choice" data-i="3"><span class="m" data-k="b"></span>에 따라 달라진다</button>
+      </div>
+      <div class="sol-btns"><button class="b mute" data-sol="positiveSol">이유 확인</button></div>
+      <div class="sol intu" id="positiveSol"><h5>왜 항상 하나일까?</h5><div class="step"><span class="m" data-k="b\lt0"></span>이므로 <span class="m" data-k="r=-\dfrac{15}{2b}\gt0"></span>.</div><div class="ans"><span class="lbl">오른쪽 근</span><span class="m" data-k="r=-\dfrac{15}{2b}"></span> 하나</div></div>
+    </div>
+  </div>
+  <div class="chnav"><button class="b mute" data-go="prev">← 이전</button><span class="sp"></span><button class="b" data-go="next">근을 직접 움직이기 →</button></div>
+</section>
+
+<section class="ch" data-ch="2">
+  <p class="eyebrow">STEP 03 · 근 평행이동 실험실</p>
+  <h2 class="ct">근 집합을 <span class="am">4만큼 옮겨</span> 겹쳐 보자</h2>
+  <p class="lede"><span class="m" data-k="g'(x)=0"></span>의 근 집합을 <span class="m" data-k="S"></span>라 하면, <span class="m" data-k="g'(x-4)=0"></span>의 근은 모두 4만큼 오른쪽으로 옮겨진 <span class="m am" data-k="S+4"></span>입니다.</p>
+  <div class="root-lab" id="rootLab">
+    <div class="root-lab-head"><h4>서로 다른 근이 4개가 되는 조합 찾기</h4><span>MOVE · COUNT · COMPARE</span></div>
+    <div class="root-lab-body">
+      <div class="root-stage"><svg id="rootSvg" viewBox="0 0 760 300" role="img" aria-label="g프라임의 근과 그 근을 4만큼 옮긴 위치를 비교하는 수직선"></svg></div>
+      <div class="root-panel">
+        <div class="root-control"><label for="rootA"><span>삼차식의 계수 <span class="m" data-k="a"></span></span><b id="rootAOut"></b></label><input id="rootA" type="range" min="6.8" max="12" step="0.1" value="8"/></div>
+        <div class="root-control"><label for="rootB"><span>이차함수의 계수 <span class="m" data-k="b"></span></span><b id="rootBOut"></b></label><input id="rootB" type="range" min="-6" max="-1" step="0.1" value="-3.5"/></div>
+        <div class="root-output"><div class="root-row"><span><span class="m" data-k="S"></span></span><b id="rootSet"></b></div><div class="root-row"><span><span class="m" data-k="S+4"></span></span><b id="rootShift"></b></div></div>
+        <div class="root-count" id="rootCount"><div><strong>6</strong><span>서로 다른 근</span></div></div>
+        <p class="root-hint">초록점은 <span class="m" data-k="S"></span>, 노란 고리는 <span class="m" data-k="S+4"></span>입니다. 같은 자리에 오면 근 하나로 셉니다.</p>
+      </div>
+    </div>
+  </div>
+  <div class="prob"><div class="prob-head"><span class="yr">관찰</span><h4>처음에는 최대 6개인데, 왜 4개가 될까?</h4></div><div class="prob-body">
+    <div class="choices" data-q="overlap" data-ans="2"><button class="choice" data-i="0">근 두 개가 없어져야 한다</button><button class="choice" data-i="1">모든 근이 중근이어야 한다</button><button class="choice" data-i="2"><span class="m" data-k="S"></span>와 <span class="m" data-k="S+4"></span>가 두 자리에서 겹쳐야 한다</button><button class="choice" data-i="3">양의 근이 없어야 한다</button></div>
+  </div></div>
+  <div class="chnav"><button class="b mute" data-go="prev">← 이전</button><span class="sp"></span><button class="b" data-go="next">겹침 구조 설명하기 →</button></div>
+</section>
+
+<section class="ch" data-ch="3">
+  <p class="eyebrow">STEP 04 · 네 근의 구조</p>
+  <h2 class="ct">두 번 겹치려면 세 근이 <span class="am">4 간격의 사슬</span>이 된다</h2>
+  <p class="lede"><span class="m" data-k="g'(x)=0"></span>의 근을 작은 순서로 <span class="m" data-k="u\lt v\lt r"></span>라 합시다. 앞의 두 근은 음수, <span class="m" data-k="r"></span>은 양수입니다.</p>
+  <div class="root-chain"><span>u</span><i>+4</i><span>v</span><i>+4</i><span>r</span></div>
+  <div class="card quote"><p>두 자리에서 겹치려면 <span class="m am" data-k="v-u=4,\quad r-v=4"></span>. 즉 세 근이 4 간격으로 이어져야 합니다.</p></div>
+  <div class="prob"><div class="prob-head"><span class="yr">비에타</span><h4>음의 두 근 <span class="m" data-k="u,v"></span>부터 결정하기</h4></div><div class="prob-body">
+    <p>두 근은 <span class="m" data-k="3x^2+2ax+15=0"></span>의 근이므로 <span class="m" data-k="uv=5"></span>. 또 <span class="m" data-k="v=u+4"></span>입니다.</p>
+    <div class="formula-scroll"><div class="eq"><div class="eqrow"><span class="m md" data-k="u(u+4)=5\;\Longrightarrow\;(u-1)(u+5)=0"></span></div></div></div>
+    <div class="choices" data-q="negativeRoot" data-ans="1"><button class="choice" data-i="0"><span class="m" data-k="u=1"></span></button><button class="choice" data-i="1"><span class="m" data-k="u=-5"></span></button><button class="choice" data-i="2"><span class="m" data-k="u=-1"></span></button><button class="choice" data-i="3"><span class="m" data-k="u=5"></span></button></div>
+    <div class="sol-btns"><button class="b gh" data-sol="structureSol">구조 완성하기</button></div>
+    <div class="sol logi" id="structureSol"><h5>논리</h5>
+      <div class="step">음의 근이므로 <span class="m" data-k="u=-5"></span>, 따라서 <span class="m" data-k="v=-1"></span>, <span class="m" data-k="r=3"></span>.</div>
+      <div class="step"><span class="m" data-k="u+v=-6=-\dfrac{2a}{3}"></span>이므로 <span class="m am" data-k="a=9"></span>.</div>
+      <div class="step"><span class="m" data-k="r=-\dfrac{15}{2b}=3"></span>이므로 <span class="m am" data-k="b=-\dfrac52"></span>.</div>
+      <div class="ans"><span class="lbl">결정</span><span class="m" data-k="f(x)=-\dfrac52x^2+15x+7"></span></div>
+    </div>
+  </div></div>
+  <div class="card accent"><p><b>왜 <span class="m" data-k="a\ne3\sqrt5"></span>일까?</b> 그 값에서는 왼쪽 이차식이 중근 하나만 가져 처음부터 근의 수가 줄어듭니다. 문제는 그 별도 가능성을 제외하고 ‘세 근의 평행이동 겹침’을 보게 합니다.</p></div>
+  <div class="chnav"><button class="b mute" data-go="prev">← 이전</button><span class="sp"></span><button class="b" data-go="next">마지막 값 계산하기 →</button></div>
+</section>
+
+<section class="ch" data-ch="4">
+  <p class="eyebrow">STEP 05 · 회수와 검산</p>
+  <h2 class="ct">구조가 끝난 뒤에만 <span class="am">값을 계산</span>한다</h2>
+  <div class="grid2">
+    <div class="card"><h4><span class="m" data-k="g(-2)"></span></h4><div class="eq tight"><div class="eqrow"><span class="m md" data-k="(-2)^3+9(-2)^2+15(-2)+7=5"></span></div></div></div>
+    <div class="card"><h4><span class="m" data-k="g(2)"></span></h4><div class="eq tight"><div class="eqrow"><span class="m md" data-k="-\dfrac52(2)^2+15(2)+7=27"></span></div></div></div>
+  </div>
+  <div class="prob"><div class="prob-head"><span class="yr">최종 선택</span><h4><span class="m" data-k="g(-2)+g(2)"></span></h4></div><div class="prob-body">
+    <div class="choices" data-q="final" data-ans="1"><button class="choice" data-i="0">① 30</button><button class="choice" data-i="1">② 32</button><button class="choice" data-i="2">③ 34</button><button class="choice" data-i="3">④ 36</button><button class="choice" data-i="4">⑤ 38</button></div>
+    <div class="sol-btns"><button class="b gh" data-sol="finalSol">정답 확인</button></div>
+    <div class="sol intu" id="finalSol"><h5>마무리</h5><p class="mini-answer">32</p><p class="reveal-note">정답 ② · <span class="m" data-k="5+27=32"></span></p></div>
+  </div></div>
+  <div class="card quote pad"><h3>오늘 쓴 생각의 뼈대</h3><ul class="bul"><li><b class="am">경계</b> — 조각함수의 미분가능성은 식이 바뀌는 점에서 값과 기울기를 맞춘다.</li><li><b class="am">집합</b> — 곱이 0인 방정식의 근은 두 근 집합의 합집합이다.</li><li><b class="am">평행이동</b> — <span class="m" data-k="g'(x-4)=0"></span>은 원래 근을 4만큼 오른쪽으로 옮긴다.</li><li><b class="am">겹침</b> — ‘서로 다른 근의 개수’는 중복된 위치를 한 번만 센다.</li></ul></div>
+  <div class="chnav"><button class="b mute" data-go="prev">← 이전</button><span class="sp"></span><button class="b gh" data-go="top">처음으로</button></div>
+</section>
+</main>
+
+<script>
+(function(){
+  'use strict';
+  var labels=['문제 만나기','경계 조건','근 실험실','겹침 구조','마지막 계산'];
+  var chs=[].slice.call(document.querySelectorAll('main > section.ch'));
+  var nav=document.getElementById('nav'),fill=document.getElementById('pfill'),cur=0;
+  labels.forEach(function(t,i){var b=document.createElement('button');b.className=i===0?'on':'';b.innerHTML='<span class="n">0'+(i+1)+'</span>'+t;b.addEventListener('click',function(){go(i);});nav.appendChild(b);});
+  var tabs=[].slice.call(nav.children);
+  function go(i){cur=Math.max(0,Math.min(chs.length-1,i));chs.forEach(function(s,j){s.classList.toggle('on',j===cur);});tabs.forEach(function(b,j){b.classList.toggle('on',j===cur);});fill.style.width=((cur+1)/chs.length*100)+'%';if(tabs[cur]&&tabs[cur].scrollIntoView)tabs[cur].scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});window.scrollTo({top:0,behavior:'smooth'});}go(0);
+  document.addEventListener('click',function(e){
+    var t=e.target.closest&&e.target.closest('[data-go]');if(t){var d=t.getAttribute('data-go');go(d==='next'?cur+1:d==='prev'?cur-1:0);return;}
+    var c=e.target.closest&&e.target.closest('.choice');if(c){var box=c.parentElement;if(box.getAttribute('data-mode')==='record'){box.querySelectorAll('.choice').forEach(function(x){x.classList.remove('chosen');});c.classList.add('chosen');return;}var ans=+box.getAttribute('data-ans'),ok=+c.getAttribute('data-i')===ans;box.querySelectorAll('.choice').forEach(function(x){x.classList.remove('right','wrong');});c.classList.add(ok?'right':'wrong');if(!ok){var right=box.querySelector('.choice[data-i="'+ans+'"]');setTimeout(function(){if(right)right.classList.add('right');},650);}return;}
+    var s=e.target.closest&&e.target.closest('[data-sol]');if(s){var el=document.getElementById(s.getAttribute('data-sol'));if(!el)return;var open=el.classList.toggle('on');s.style.opacity=open?'1':'';if(open&&window.JPDark)window.JPDark.texAll(el);}
+  });
+  document.addEventListener('keydown',function(e){if(/^(INPUT|TEXTAREA|BUTTON)$/.test(e.target.tagName||''))return;if(e.key==='ArrowRight')go(cur+1);if(e.key==='ArrowLeft')go(cur-1);});
+
+  var aInput=document.getElementById('rootA'),bInput=document.getElementById('rootB'),svg=document.getElementById('rootSvg');
+  var aOut=document.getElementById('rootAOut'),bOut=document.getElementById('rootBOut'),setOut=document.getElementById('rootSet'),shiftOut=document.getElementById('rootShift'),countBox=document.getElementById('rootCount');
+  function fmt(x){var s=(Math.round(x*100)/100).toFixed(2).replace(/0+$/,'').replace(/\.$/,'');return s==='-0'?'0':s;}
+  function unique(xs){var out=[];xs.slice().sort(function(x,y){return x-y;}).forEach(function(x){if(!out.length||Math.abs(x-out[out.length-1])>.045)out.push(x);});return out;}
+  function drawRoots(){
+    var a=+aInput.value,b=+bInput.value,d=a*a-45,roots=[];
+    if(d>=0){var q=Math.sqrt(d),u=(-a-q)/3,v=(-a+q)/3;if(u<=0)roots.push(u);if(v<=0&&Math.abs(v-u)>.001)roots.push(v);}
+    roots.push(-15/(2*b));roots.sort(function(x,y){return x-y;});var shifted=roots.map(function(x){return x+4;}),all=unique(roots.concat(shifted));
+    aOut.textContent='a = '+fmt(a);bOut.textContent='b = '+fmt(b);setOut.textContent='{ '+roots.map(fmt).join(', ')+' }';shiftOut.textContent='{ '+shifted.map(fmt).join(', ')+' }';
+    countBox.classList.toggle('ok',all.length===4);countBox.innerHTML='<div><strong>'+all.length+'</strong><span>'+(all.length===4?'조건 달성!':'서로 다른 근')+'</span></div>';
+    var W=760,L=42,R=28,y=145,xmin=-8,xmax=10,X=function(x){return L+(x-xmin)/(xmax-xmin)*(W-L-R);};var s='';
+    s+='<line x1="'+L+'" y1="'+y+'" x2="'+(W-R)+'" y2="'+y+'" stroke="#807767" stroke-width="2"/>';
+    for(var i=-8;i<=10;i++){s+='<line x1="'+X(i)+'" y1="'+(y-7)+'" x2="'+X(i)+'" y2="'+(y+7)+'" stroke="rgba(58,49,37,.35)"/><text x="'+X(i)+'" y="'+(y+27)+'" text-anchor="middle" font-size="11" fill="#887e70" font-family="IBM Plex Mono">'+i+'</text>';}
+    s+='<text x="42" y="48" fill="#477454" font-size="13" font-weight="700">S · g′(x)=0</text><text x="42" y="78" fill="#a37a22" font-size="13" font-weight="700">S+4 · g′(x−4)=0</text>';
+    roots.forEach(function(x){if(x<xmin||x>xmax)return;s+='<circle cx="'+X(x)+'" cy="'+(y-18)+'" r="8" fill="#477454"/><text x="'+X(x)+'" y="'+(y-35)+'" text-anchor="middle" font-size="12" fill="#31543b" font-family="IBM Plex Mono">'+fmt(x)+'</text>';});
+    shifted.forEach(function(x){if(x<xmin||x>xmax)return;s+='<circle cx="'+X(x)+'" cy="'+(y+18)+'" r="9" fill="#fbfaf6" stroke="#c69a32" stroke-width="4"/><text x="'+X(x)+'" y="'+(y+52)+'" text-anchor="middle" font-size="12" fill="#8f6a18" font-family="IBM Plex Mono">'+fmt(x)+'</text>';});
+    all.forEach(function(x){var hit=roots.some(function(r){return Math.abs(r-x)<.045;})&&shifted.some(function(r){return Math.abs(r-x)<.045;});if(hit)s+='<circle cx="'+X(x)+'" cy="'+y+'" r="17" fill="none" stroke="#a95232" stroke-width="3" stroke-dasharray="4 4"/>';});svg.innerHTML=s;
+  }
+  [aInput,bInput].forEach(function(el){el.addEventListener('input',drawRoots);});drawRoots();
+})();
+</script>
+</body>
+</html>

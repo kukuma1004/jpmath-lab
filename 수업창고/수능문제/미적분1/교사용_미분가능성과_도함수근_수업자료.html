@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow,noarchive"/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<title>수능형 15번 | 미분가능성과 도함수의 근 · 교사용</title>
+<script src="../../auth.js" data-classroom-protected></script>
+<link rel="stylesheet" href="../../../vendor/katex/katex.min.css"/>
+<link rel="stylesheet" href="../../../jp-math-typography.css?v=3"/>
+<link rel="stylesheet" href="../../../jp-dark.css?v=4"/>
+<link rel="stylesheet" href="../../../jp-polish.css?v=9"/>
+<script defer src="../../../vendor/katex/katex.min.js"></script>
+<script defer src="../../../jp-lab-dark.js?v=2"></script>
+<script defer src="../../../jp-deck.js"></script>
+<script defer src="../../../jp-polish.js?v=17"></script>
+<style>
+.root-strip{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin:24px 0}.root-strip .root{display:grid;place-items:center;min-width:92px;min-height:66px;padding:10px 16px;border:1px solid rgba(58,49,37,.16);border-radius:16px;background:#fff;font:700 22px 'IBM Plex Mono',monospace}.root-strip .move{color:#a95232;font:700 12px 'IBM Plex Mono',monospace}.set-pair{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:20px}.set-card{padding:20px;border:1px solid rgba(58,49,37,.14);border-radius:18px;background:#fff}.set-card h4{margin-bottom:12px}.set-card .chips{display:flex;gap:9px;flex-wrap:wrap}.set-card .chips span{padding:8px 12px;border-radius:999px;background:#f1ecdf;font:700 15px 'IBM Plex Mono',monospace}.set-card.shift .chips span{border:2px solid #c69a32;background:#fff9e8}.overlap{color:#a95232!important;box-shadow:0 0 0 3px rgba(169,82,50,.12)}.teacher-em{font-size:clamp(28px,4vw,54px);font-weight:800;line-height:1.18;text-align:center;letter-spacing:-.05em}.answer-big{font-size:clamp(70px,12vw,150px);font-weight:900;color:#a95232;line-height:1;text-align:center}.compact-table td,.compact-table th{padding:10px 12px!important}
+.flow{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:stretch;margin:18px 0}.flow-box{display:grid;place-items:center;gap:8px;min-height:108px;padding:15px;border:1px solid rgba(58,49,37,.14);border-radius:16px;background:#fff;text-align:center}.flow-box:last-child{border-color:rgba(169,82,50,.35);background:#fff6ef}.flow-box b{font-size:12px}.flow-box .fb-text{font-size:17px}.flow .arrow{display:grid;place-items:center;color:#a95232;font-weight:800}.compare{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:stretch}.compare .case{padding:24px;border:1px solid rgba(58,49,37,.14);border-radius:19px;background:#fff}.compare .case h3{margin:14px 0 10px}.compare .versus{display:grid;place-items:center;color:#a95232;font:800 12px 'IBM Plex Mono',monospace}.tri{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.tcard{padding:19px;border:1px solid rgba(58,49,37,.14);border-radius:17px;background:#fff}.tcard.dead{opacity:.58;border-style:dashed}.tcard.live{border-color:rgba(71,116,84,.4);background:#f5faf6}.tcard h3{margin-bottom:9px}.note-strip{display:flex;align-items:flex-start;gap:13px;margin-top:18px;padding:15px 17px;border-left:4px solid #2f6670;border-radius:0 13px 13px 0;background:#eef6f5}.note-strip.warn{border-color:#a95232;background:#fff4ed}.note-strip .ic{flex:0 0 auto;color:#a95232;font:800 10px 'IBM Plex Mono',monospace}.note-strip p{margin:0}
+@media(max-width:760px){.set-pair{grid-template-columns:1fr}.root-strip .root{min-width:70px}}
+@media(max-width:720px){.flow,.compare,.tri{grid-template-columns:1fr}.flow .arrow,.compare .versus{min-height:18px}}
+</style>
+</head>
+<body class="tpl-dark is-deck">
+<a class="jp-back-link teacher-back" href="../../">← 수업창고</a>
+<div class="deck">
+
+<section class="slide slide--title" data-title="문제와 만나기"><div class="s-body"><div class="title-layout">
+  <div><p class="eyebrow">수능형 문제 15번 · 4점</p><h1 class="h1 anim-fade-up">근을 풀지 말고<br/><span class="am">근의 이동</span>을 보자</h1><p class="lede">미분가능성으로 식을 정리하고, <span class="m" data-k="g'(x)=0"></span>의 근 집합과 그 집합을 4만큼 옮긴 모습을 겹쳐 읽는 수업입니다.</p><div class="pause">첫 90초는 말하지 않기</div></div>
+  <div class="card" style="margin-top:0"><p>상수 <span class="m" data-k="a\;(a\ne3\sqrt5)"></span>와 최고차항의 계수가 음수인 이차함수 <span class="m" data-k="f"></span>에 대하여</p><div class="eq tight"><div class="eqrow"><span class="m md" data-k="g(x)=\begin{cases}x^3+ax^2+15x+7&(x\le0)\\f(x)&(x\gt0)\end{cases}"></span></div></div><p><b>(가)</b> <span class="m" data-k="g"></span>는 실수 전체에서 미분가능<br/><b>(나)</b> <span class="m" data-k="g'(x)g'(x-4)=0"></span>의 서로 다른 실근은 4개</p><div class="eq tight hot"><div class="eqrow"><span class="m md am" data-k="g(-2)+g(2)=\;?"></span></div></div></div>
+</div></div><aside class="notes"><p><strong>권장 시간</strong> 45분 · 문제 읽기 4 / 미분가능성 8 / 근 구조 10 / 평행이동과 겹침 13 / 계산과 정리 7 / 여유 3.</p><p><strong>학생용 짝 자료</strong>는 수능문제 &gt; 미적분1 &gt; 미분가능성과 도함수의 근 탐구실입니다.</p><p>처음 90초 동안은 풀이 방향을 말하지 말고, 학생이 조건 (가)와 (나) 중 무엇부터 쓸지 표시하게 하세요.</p></aside></section>
+
+<section class="slide" data-title="수업의 지도"><div class="s-head"><p class="eyebrow">전체 지도</p><h2 class="ct">네 개의 <span class="am">번역</span>을 통과한다</h2></div><div class="s-body"><div class="grid4 anim-stagger-list">
+  <div class="card accent"><span class="tag">GATE 1</span><h4>경계</h4><p>미분가능 → <span class="m" data-k="x=0"></span>에서 값과 기울기 연결</p></div>
+  <div class="card accent"><span class="tag">GATE 2</span><h4>근 집합</h4><p><span class="m" data-k="g'(x)=0"></span>의 음의 두 근과 양의 한 근</p></div>
+  <div class="card accent"><span class="tag">GATE 3</span><h4>평행이동</h4><p><span class="m" data-k="g'(x-4)=0"></span> → 모든 근을 오른쪽으로 4</p></div>
+  <div class="card accent"><span class="tag">GATE 4</span><h4>겹침</h4><p>6개가 4개 → 두 자리에서 중복</p></div>
+</div><div class="card quote"><p><b>수업의 한 문장.</b> ‘서로 다른 근의 개수’는 방정식을 더 풀라는 뜻이 아니라, <b class="am">두 근 집합을 겹쳐 세라</b>는 뜻이다.</p></div></div><div class="s-ask"><p class="question">계산보다 먼저 써야 할 조건은 (가)일까, (나)일까?</p></div><aside class="notes"><p>대부분 (나)의 식부터 전개하려 합니다. (가)를 먼저 사용하면 미지계수가 3개에서 1개로 줄어든다는 점을 발견하게 하세요.</p></aside></section>
+
+<section class="slide" data-title="GATE 1 · 미분가능성"><div class="s-head"><p class="eyebrow">GATE 1</p><h2 class="ct">경계에서는 <span class="am">높이와 기울기</span>를 모두 맞춘다</h2></div><div class="s-body"><div class="grid2">
+  <div class="card"><h4>연속</h4><div class="eq tight"><div class="eqrow"><span class="m md" data-k="f(0)=0^3+a\cdot0^2+15\cdot0+7=7"></span></div></div></div>
+  <div class="card"><h4>미분계수</h4><div class="eq tight"><div class="eqrow"><span class="m md" data-k="f'(0)=3\cdot0^2+2a\cdot0+15=15"></span></div></div></div>
+</div><div class="flow"><div class="flow-box"><b>일반 이차함수</b><span class="fb-text"><span class="m" data-k="f(x)=bx^2+cx+d"></span></span></div><div class="arrow">→</div><div class="flow-box"><b>두 조건 적용</b><span class="fb-text"><span class="m" data-k="d=7,\;c=15"></span></span></div><div class="arrow">→</div><div class="flow-box"><b>한 계수만 남음</b><span class="fb-text"><span class="m am" data-k="f(x)=bx^2+15x+7,\;b\lt0"></span></span></div></div></div><div class="s-ask"><p class="question">미분가능 조건에서 ‘연속’만 확인하면 무엇을 놓치게 될까?</p></div><aside class="notes"><p><strong>오개념</strong>: 미분가능을 연속으로만 처리해 <em>f</em>(0)=7만 쓰는 경우가 많습니다. “그래프가 끊기지 않는 것”과 “꺾이지 않는 것”을 손짓으로 구분해 보이세요.</p></aside></section>
+
+<section class="slide" data-title="GATE 2 · 도함수의 근"><div class="s-head"><p class="eyebrow">GATE 2</p><h2 class="ct"><span class="m" data-k="g'(x)=0"></span>은 음의 두 근과 양의 한 근</h2></div><div class="s-body"><div class="eq hot"><div class="eqrow"><span class="m md" data-k="g'(x)=\begin{cases}3x^2+2ax+15&(x\le0)\\2bx+15&(x\gt0)\end{cases}"></span></div></div><div class="grid2">
+  <div class="card accent"><h4>왼쪽 <span class="m" data-k="x\le0"></span></h4><p>두 근의 곱은 <span class="m" data-k="5\gt0"></span>. 두 근이 존재하고 합이 음수가 되면 둘 다 음수입니다.</p><div class="eq tight"><div class="eqrow"><span class="m md" data-k="D=4(a^2-45)"></span></div></div></div>
+  <div class="card accent"><h4>오른쪽 <span class="m" data-k="x\gt0"></span></h4><p><span class="m" data-k="b\lt0"></span>이므로 근 하나는 반드시 양수입니다.</p><div class="eq tight"><div class="eqrow"><span class="m md" data-k="r=-\dfrac{15}{2b}\gt0"></span></div></div></div>
+</div><div class="card quote"><p>조건 (나)를 만족하려면 결국 <span class="m" data-k="a\gt3\sqrt5"></span>이고, <span class="m" data-k="g'(x)=0"></span>은 서로 다른 세 근 <span class="m am" data-k="u\lt v\lt0\lt r"></span>을 갖습니다.</p></div></div><div class="s-ask"><p class="question"><span class="m" data-k="a\lt-3\sqrt5"></span>이면 이차방정식의 두 실근은 왜 <span class="m" data-k="g'(x)=0"></span>의 근이 되지 못할까?</p></div><aside class="notes"><p>식의 근과 조각함수의 근을 구별해야 합니다. <span>3x²+2ax+15</span>의 근이 양수이면 그 구간에서는 실제 도함수가 <span>2bx+15</span>이므로 사용할 수 없습니다.</p></aside></section>
+
+<section class="slide" data-title="제외 조건의 역할"><div class="s-head"><p class="eyebrow">조건 읽기</p><h2 class="ct">왜 <span class="m am" data-k="a\ne3\sqrt5"></span>를 따로 주었을까?</h2></div><div class="s-body"><div class="compare">
+  <div class="case"><span class="tag">제외된 경우</span><h3><span class="m" data-k="a=3\sqrt5"></span></h3><p>왼쪽 이차식은 음의 중근 하나. 오른쪽 양의 근과 합쳐 <span class="m" data-k="g'(x)=0"></span>의 서로 다른 근은 처음부터 2개뿐입니다.</p></div><div class="versus">VS</div>
+  <div class="case"><span class="tag gr">우리가 볼 경우</span><h3><span class="m" data-k="a\gt3\sqrt5"></span></h3><p>음의 서로 다른 두 근과 양의 한 근. 원래 3개와 이동한 3개를 겹쳐 4개로 만들어야 합니다.</p></div>
+</div><div class="note-strip warn"><span class="ic">WHY</span><p>제외 조건은 장식이 아닙니다. <b>근 개수를 줄이는 별도 경로를 차단</b>하고, 평행이동에 의한 겹침을 유일한 구조로 만듭니다.</p></div></div><div class="s-ask"><p class="question">이 제외 조건이 없다면 조건 (나)를 만족하는 방식은 몇 갈래가 될까?</p></div><aside class="notes"><p>좋은 상위권 발문입니다. “왜 굳이 이 값을 제외했지?”를 묻도록 하세요. 출제자가 특정 구조를 유도하려고 예외를 잘라냈다는 읽기 습관을 길러 줍니다.</p></aside></section>
+
+<section class="slide" data-title="GATE 3 · 평행이동"><div class="s-head"><p class="eyebrow">GATE 3</p><h2 class="ct"><span class="m" data-k="x"></span> 대신 <span class="m" data-k="x-4"></span>가 들어가면 근은 오른쪽으로 4</h2></div><div class="s-body"><div class="eq hot"><div class="eqrow"><span class="m md" data-k="g'(t)=0\text{의 근이 }t=s\quad\Longrightarrow\quad g'(x-4)=0\text{의 근은 }x=s+4"></span></div></div><div class="set-pair">
+  <div class="set-card"><h4><span class="m" data-k="S"></span> · 원래 근</h4><div class="chips"><span>u</span><span>v</span><span>r</span></div></div>
+  <div class="set-card shift"><h4><span class="m" data-k="S+4"></span> · 이동한 근</h4><div class="chips"><span>u+4</span><span>v+4</span><span>r+4</span></div></div>
+</div><div class="card quote"><p><span class="m" data-k="g'(x)g'(x-4)=0"></span>의 근은 <span class="m am" data-k="S\cup(S+4)"></span>. 같은 위치에 두 근이 와도 ‘서로 다른 실근’은 하나로 셉니다.</p></div></div><div class="s-ask"><p class="question"><span class="m" data-k="g'(x+4)=0"></span>이었다면 근은 어느 방향으로 움직일까?</p></div><aside class="notes"><p><strong>오개념</strong>: <em>x</em>−4를 보고 왼쪽으로 4라고 답합니다. <em>x</em>−4=<em>s</em>를 직접 풀어 <em>x</em>=<em>s</em>+4를 쓰게 하세요.</p></aside></section>
+
+<section class="slide" data-title="GATE 4 · 두 번 겹침"><div class="s-head"><p class="eyebrow">GATE 4</p><h2 class="ct">6개가 4개가 되려면 <span class="am">두 자리에서 겹친다</span></h2></div><div class="s-body"><p class="teacher-em"><span class="m" data-k="|S|=3,\quad|S+4|=3,\quad|S\cup(S+4)|=4"></span></p><div class="root-strip"><span class="root">u</span><span class="move">+4</span><span class="root overlap">v</span><span class="move">+4</span><span class="root overlap">r</span><span class="move">+4</span><span class="root">r+4</span></div><div class="grid2">
+  <div class="card"><h4>첫 겹침</h4><p><span class="m" data-k="u+4=v"></span></p></div><div class="card"><h4>둘째 겹침</h4><p><span class="m" data-k="v+4=r"></span></p></div>
+</div><div class="card accent"><p>세 근은 반드시 <span class="m am" data-k="u,\;u+4,\;u+8"></span>의 4 간격 사슬입니다.</p></div></div><div class="s-ask"><p class="question">세 점으로 두 번 겹치려면 왜 두 간격이 모두 4여야 할까?</p></div><aside class="notes"><p>학생이 “그냥 두 개가 겹친다”고 말하면 어느 점과 어느 점인지 화살표로 연결하게 하세요. 가능한 차이 4의 쌍이 두 개이려면 세 점이 연속된 사슬이 됩니다.</p></aside></section>
+
+<section class="slide" data-title="음의 두 근 결정"><div class="s-head"><p class="eyebrow">비에타</p><h2 class="ct">간격 4와 곱 5가 <span class="am">두 음의 근</span>을 정한다</h2></div><div class="s-body"><div class="flow"><div class="flow-box"><b>두 근의 간격</b><span class="fb-text"><span class="m" data-k="v=u+4"></span></span></div><div class="arrow">+</div><div class="flow-box"><b>두 근의 곱</b><span class="fb-text"><span class="m" data-k="uv=5"></span></span></div><div class="arrow">→</div><div class="flow-box"><b>방정식</b><span class="fb-text"><span class="m" data-k="u(u+4)=5"></span></span></div></div><div class="eq hot"><div class="eqrow"><span class="m md" data-k="u^2+4u-5=0\quad\Longrightarrow\quad(u-1)(u+5)=0"></span></div></div><div class="tri">
+  <div class="tcard dead"><h3><span class="tag">탈락</span><span class="m" data-k="u=1"></span></h3><p><span class="m" data-k="u"></span>는 음의 근이어야 합니다.</p></div>
+  <div class="tcard live"><h3><span class="tag">생존</span><span class="m" data-k="u=-5"></span></h3><p><span class="m" data-k="v=-1,\;r=3"></span></p></div>
+  <div class="tcard live"><h3><span class="tag">근 집합</span><span class="m" data-k="S=\{-5,-1,3\}"></span></h3><p><span class="m" data-k="S\cup(S+4)=\{-5,-1,3,7\}"></span></p></div>
+</div></div><div class="s-ask"><p class="question"><span class="m" data-k="u=1"></span>을 버릴 때 사용한 것은 방정식 조건일까, 구간 조건일까?</p></div><aside class="notes"><p>마지막 후보 제거는 반드시 “<em>x</em>≤0 구간의 근”이라는 정의역 조건으로 말하게 하세요. 계산 결과만 보고 음수라서 선택했다고 끝내지 않습니다.</p></aside></section>
+
+<section class="slide" data-title="계수 회수"><div class="s-head"><p class="eyebrow">계수 결정</p><h2 class="ct">근의 합과 양의 근에서 <span class="am">a,b</span>를 회수한다</h2></div><div class="s-body"><div class="grid2">
+  <div class="card accent"><h4><span class="m" data-k="a"></span> 결정</h4><div class="eq tight"><div class="eqrow"><span class="m md" data-k="u+v=-6=-\dfrac{2a}{3}\quad\Longrightarrow\quad a=9"></span></div></div></div>
+  <div class="card accent"><h4><span class="m" data-k="b"></span> 결정</h4><div class="eq tight"><div class="eqrow"><span class="m md" data-k="r=3=-\dfrac{15}{2b}\quad\Longrightarrow\quad b=-\dfrac52"></span></div></div></div>
+</div><div class="eq hot"><div class="eqrow"><span class="m md am" data-k="f(x)=-\dfrac52x^2+15x+7"></span></div></div><table class="tb compact-table"><tr><th>확인</th><th>결과</th></tr><tr><td><span class="m" data-k="a\ne3\sqrt5"></span></td><td class="yes"><span class="m" data-k="9\ne3\sqrt5"></span> ✓</td></tr><tr><td>최고차항 계수 음수</td><td class="yes"><span class="m" data-k="-\tfrac52\lt0"></span> ✓</td></tr><tr><td>서로 다른 근</td><td class="yes"><span class="m" data-k="-5,-1,3,7"></span> 네 개 ✓</td></tr></table></div><div class="s-ask"><p class="question">계수를 구한 뒤 반드시 되돌아가 확인해야 할 원래 조건은 무엇인가?</p></div><aside class="notes"><p>상위권 학생도 조건 회수를 생략합니다. 제외값, 최고차항 부호, 서로 다른 근 개수를 짧게라도 모두 검산하게 하세요.</p></aside></section>
+
+<section class="slide" data-title="마지막 계산"><div class="s-head"><p class="eyebrow">회수</p><h2 class="ct">구조가 끝난 뒤에만 계산한다</h2></div><div class="s-body"><div class="grid2">
+  <div class="card"><h4><span class="m" data-k="g(-2)"></span></h4><div class="eq tight"><div class="eqrow"><span class="m md" data-k="-8+36-30+7=5"></span></div></div></div>
+  <div class="card"><h4><span class="m" data-k="g(2)=f(2)"></span></h4><div class="eq tight"><div class="eqrow"><span class="m md" data-k="-\dfrac52\cdot4+30+7=27"></span></div></div></div>
+</div><div class="answer-big">32</div><div class="eq tight hot"><div class="eqrow"><span class="m md am" data-k="g(-2)+g(2)=5+27=32"></span></div></div></div><div class="s-ask"><p class="question">이 문제에서 계산은 전체 풀이의 몇 퍼센트쯤이었나?</p></div><aside class="notes"><p>정답은 ② 32. 마지막 계산은 30초면 끝납니다. 시간을 쓴 곳은 식 계산이 아니라 조건을 집합과 이동으로 번역한 부분임을 강조하세요.</p></aside></section>
+
+<section class="slide" data-title="오개념 점검"><div class="s-head"><p class="eyebrow">교사 체크</p><h2 class="ct">학생이 자주 멈추는 <span class="am">네 지점</span></h2></div><div class="s-body"><table class="tb compact-table"><tr><th>멈춤</th><th>학생 반응</th><th>되묻기</th></tr>
+  <tr><td>미분가능</td><td><span class="m" data-k="f(0)=7"></span>만 씀</td><td>“그래프가 이어져도 꺾일 수 있지?”</td></tr>
+  <tr><td>조각의 정의역</td><td>왼쪽 이차식의 양의 근도 셈</td><td>“그 <span class="m" data-k="x"></span>에서 실제 <span class="m" data-k="g'"></span> 식은 무엇이지?”</td></tr>
+  <tr><td>평행이동</td><td><span class="m" data-k="x-4"></span>라서 왼쪽 이동</td><td>“<span class="m" data-k="x-4=s"></span>를 <span class="m" data-k="x"></span>에 대해 풀어 봐.”</td></tr>
+  <tr><td>근 개수</td><td>3+3=6에서 멈춤</td><td>“서로 다른 근은 같은 자리를 몇 번 세지?”</td></tr>
+</table><div class="note-strip"><span class="ic">ORDER</span><p>설명보다 먼저 <b>표시 → 예상 → 조작 → 언어화</b> 순서를 지키면 발문이 정답 전달로 바뀌지 않습니다.</p></div></div><div class="s-ask"><p class="question">우리 반에서는 네 지점 중 어디에서 가장 많이 멈출까?</p></div><aside class="notes"><p>학생 반응을 수업 후 기록해 다음 번 발문 순서를 조정하세요. 특히 평행이동 방향 오류가 많다면 <em>x</em>−4=<em>s</em> 한 줄을 루틴으로 만듭니다.</p></aside></section>
+
+<section class="slide" data-title="사고의 뼈대"><div class="s-head"><p class="eyebrow">수업의 결론</p><h2 class="ct">오늘 쓴 <span class="am">다섯 가지 사고</span></h2></div><div class="s-body"><div class="grid2 anim-stagger-list">
+  <div class="card accent"><h4>① 경계 찾기</h4><p>조각함수는 식이 바뀌는 점에서 값과 기울기를 맞췄다.</p></div><div class="card accent"><h4>② 정의역 지키기</h4><p>각 식의 근 중 실제 조각의 구간에 속하는 근만 남겼다.</p></div><div class="card accent"><h4>③ 집합으로 보기</h4><p>곱이 0인 방정식을 두 근 집합의 합집합으로 바꿨다.</p></div><div class="card accent"><h4>④ 이동해 겹치기</h4><p>함수 안의 <span class="m" data-k="x-4"></span>를 근의 4만큼 이동으로 번역했다.</p></div>
+</div><div class="card quote"><p><b>⑤ 마지막에 회수하기</b> — 구조가 모두 결정된 뒤 계수와 함숫값을 계산했다. <b class="am">답은 ② 32.</b></p></div></div><aside class="notes"><p>퇴장 질문: “만약 4 대신 6이었다면 근의 간격 구조는 어떻게 바뀔까?” 정답 계산 없이 구조만 말하게 하세요.</p></aside></section>
+
+</div>
+<div class="deck-chrome"><div class="chrome-left"><span class="idx"><b id="cNow">1</b> / <span id="cTot">12</span></span><span class="sep"></span><span class="chap" id="chapLabel"></span></div><div class="chrome-right"><div class="kbd-help">← → 이동 · N 교사 노트 · S 교사용 창 · F 전체화면 · O 한눈에 보기</div><div aria-label="슬라이드 조작" class="touch-nav"><button aria-label="이전 슬라이드" id="touchPrev" type="button">‹</button><button id="touchNotes" type="button">교사 노트</button><button aria-label="다음 슬라이드" id="touchNext" type="button">›</button></div></div></div>
+</body>
+</html>
