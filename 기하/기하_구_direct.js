@@ -35,7 +35,7 @@
     {plane:'yz',center:[1,-1,1],point:[1,2,1],start:1.5},
     {plane:'xz',center:[-1,0,-1],point:[1,0,1],start:1}
   ];
-  const state={center:[1,-1,1],radius:2,dir:[1,0,0],plane:'xz',mission:'free',targetIndex:0,target:null,through:null,view:{yaw:-.7,pitch:.45,scale:63,cx:320,cy:215}};
+  const state={center:[1,-1,1],radius:2,dir:[1,0,0],plane:'xz',mission:'free',targetIndex:0,target:null,through:null,view:{yaw:-.7,pitch:.45,scale:54,cx:320,cy:190}};
   const colors={center:'#c1442d',surface:'#7557a8',axisX:'#c1442d',axisY:'#2f7d58',axisZ:'#2b6ca3',gold:'#b8882e',soft:'#96a39d'};let action=null,last=null;
 
   function project(p){return G.project3(p,state.view);}
@@ -44,12 +44,82 @@
   function add(tag,attrs,text){const n=G.s(tag,attrs,text);svg.appendChild(n);return n;}
   function line3(a,b,attrs){const p=project(a),q=project(b);return add('line',Object.assign({x1:p.x,y1:p.y,x2:q.x,y2:q.y},attrs||{}));}
   function text3(p,value,color,dx,dy,anchor){const q=project(p);return add('text',{x:q.x+(dx||0),y:q.y+(dy||0),'text-anchor':anchor||'start',fill:color,'font-size':12,'font-weight':900,'pointer-events':'none'},value);}
-  function defs(){const d=G.s('defs'),glow=G.s('filter',{id:'sphereGlow',x:'-90%',y:'-90%',width:'280%',height:'280%'});glow.appendChild(G.s('feGaussianBlur',{stdDeviation:5,result:'blur'}));const merge=G.s('feMerge');merge.appendChild(G.s('feMergeNode',{in:'blur'}));merge.appendChild(G.s('feMergeNode',{in:'SourceGraphic'}));glow.appendChild(merge);d.appendChild(glow);svg.appendChild(d);}
+  function defs(){const d=G.s('defs'),glow=G.s('filter',{id:'sphereGlow',x:'-90%',y:'-90%',width:'280%',height:'280%'});glow.appendChild(G.s('feGaussianBlur',{stdDeviation:5,result:'blur'}));const merge=G.s('feMerge');merge.appendChild(G.s('feMergeNode',{in:'blur'}));merge.appendChild(G.s('feMergeNode',{in:'SourceGraphic'}));glow.appendChild(merge);d.appendChild(glow);const g=G.s('radialGradient',{id:'sphereBody',cx:'.34',cy:'.30',r:'.82'});g.appendChild(G.s('stop',{offset:'0%','stop-color':'#efeaf7','stop-opacity':'.95'}));g.appendChild(G.s('stop',{offset:'46%','stop-color':'#b9a5da','stop-opacity':'.55'}));g.appendChild(G.s('stop',{offset:'82%','stop-color':'#6f52a3','stop-opacity':'.34'}));g.appendChild(G.s('stop',{offset:'100%','stop-color':'#3d2c60','stop-opacity':'.22'}));d.appendChild(g);svg.appendChild(d);}
   function activePlane(){return state.plane==='xy'?[0,1,2]:state.plane==='xz'?[0,2,1]:[1,2,0];}
   function drawGrid(){const ij=activePlane(),i=ij[0],j=ij[1];for(let v=-4;v<=4;v++){const a=[0,0,0],b=[0,0,0],c=[0,0,0],d=[0,0,0];a[i]=-4;a[j]=v;b[i]=4;b[j]=v;c[i]=v;c[j]=-4;d[i]=v;d[j]=4;line3(a,b,{stroke:'#c5cfc9','stroke-width':.75,opacity:.52,'pointer-events':'none'});line3(c,d,{stroke:'#c5cfc9','stroke-width':.75,opacity:.52,'pointer-events':'none'});}}
   function drawAxes(){const O=[0,0,0];[[[4.6,0,0],colors.axisX,'x'],[[0,4.6,0],colors.axisY,'y'],[[0,0,4.6],colors.axisZ,'z']].forEach(function(a){line3(O,a[0],{stroke:a[1],'stroke-width':2,opacity:.8,'pointer-events':'none'});text3(a[0],a[2],a[1],5,-5);});}
   function circlePath(center,r,plane){let d='';for(let n=0;n<=96;n++){const t=n/96*Math.PI*2,p=center.slice();if(plane==='xy'){p[0]+=r*Math.cos(t);p[1]+=r*Math.sin(t);}else if(plane==='xz'){p[0]+=r*Math.cos(t);p[2]+=r*Math.sin(t);}else{p[1]+=r*Math.cos(t);p[2]+=r*Math.sin(t);}const q=project(p);d+=(n?'L':'M')+q.x+' '+q.y;}return d;}
-  function drawSphere(center,r,color,ghost){const q=project(center);add('circle',{cx:q.x,cy:q.y,r:r*state.view.scale,fill:color,opacity:ghost?.025:.075,stroke:ghost?color:'none','stroke-width':ghost?2:0,'stroke-dasharray':ghost?'8 7':'','pointer-events':'none'});['xy','xz','yz'].forEach(function(pl,index){add('path',{d:circlePath(center,r,pl),fill:'none',stroke:color,'stroke-width':ghost?1.6:2.1,opacity:ghost?.65:index===0?1:.62,'stroke-dasharray':ghost?'8 6':'','pointer-events':'none'});});}
+  // ── 구 그리기 ────────────────────────────────────────────────────────
+  // 큰 원 세 개만으로는 구로 보이지 않는다. 세 가지를 더한다.
+  //  1) 빛 방향이 있는 음영 (왼쪽 위가 밝고 가장자리로 갈수록 어두워짐)
+  //  2) 위도·경도 격자 (지구본처럼 곡률을 읽게 함)
+  //  3) 앞뒤 구분 — 뒤로 넘어간 반쪽은 흐리고 점선으로 그린다
+  const SPHERE_LATS=[-60,-30,0,30,60];
+  const SPHERE_LONS=[0,30,60,90,120,150];
+
+  // 극축은 화면 위쪽과 가까운 월드 y축으로 둔다 (지구본과 같은 인상)
+  function ringPoints(center,r,kind,deg){
+    const ang=deg*Math.PI/180,pts=[],N=112;
+    for(let n=0;n<=N;n++){
+      const t=n/N*Math.PI*2;
+      if(kind==='lat'){
+        const rr=r*Math.cos(ang),yy=r*Math.sin(ang);
+        pts.push([center[0]+rr*Math.cos(t),center[1]+yy,center[2]+rr*Math.sin(t)]);
+      }else{
+        pts.push([center[0]+r*Math.cos(t)*Math.cos(ang),center[1]+r*Math.sin(t),center[2]+r*Math.cos(t)*Math.sin(ang)]);
+      }
+    }
+    return pts;
+  }
+
+  // 시점 기준 깊이로 앞/뒤 구간을 나눈다. project3 의 z는 화면 앞쪽이 큰 값이다.
+  function splitByDepth(points,centerZ){
+    const runs=[];let cur=null;
+    points.forEach(function(p){
+      const q=project(p),front=q.z>=centerZ;
+      if(!cur||cur.front!==front){
+        if(cur)cur.d+='L'+q.x+' '+q.y;      // 구간 사이가 벌어지지 않게 경계점을 공유한다
+        cur={front:front,d:'M'+q.x+' '+q.y};
+        runs.push(cur);
+      }else cur.d+='L'+q.x+' '+q.y;
+    });
+    return runs;
+  }
+
+  function drawSphere(center,r,color,ghost){
+    const q=project(center),R=r*state.view.scale;
+    if(ghost){
+      // 목표 구는 실루엣만 점선으로 보여 준다
+      add('circle',{cx:q.x,cy:q.y,r:R,fill:'none',stroke:color,'stroke-width':2,'stroke-dasharray':'8 7',opacity:.7,'pointer-events':'none'});
+      ['lat','lon'].forEach(function(kind){
+        [0,90].forEach(function(deg){
+          splitByDepth(ringPoints(center,r,kind,deg),q.z).forEach(function(run){
+            add('path',{d:run.d,fill:'none',stroke:color,'stroke-width':1.3,opacity:run.front?.5:.2,'stroke-dasharray':'6 6','pointer-events':'none'});
+          });
+        });
+      });
+      return;
+    }
+    // 1) 몸통 — 왼쪽 위에서 빛이 오는 것처럼 채운다
+    add('circle',{cx:q.x,cy:q.y,r:R,fill:'url(#sphereBody)','pointer-events':'none'});
+    // 2) 뒤쪽 격자를 먼저, 앞쪽 격자를 나중에 그려 앞뒤가 겹쳐 보이게 한다
+    const rings=[];
+    SPHERE_LATS.forEach(function(d){rings.push({pts:ringPoints(center,r,'lat',d),main:d===0})});
+    SPHERE_LONS.forEach(function(d){rings.push({pts:ringPoints(center,r,'lon',d),main:false})});
+    [false,true].forEach(function(wantFront){
+      rings.forEach(function(ring){
+        splitByDepth(ring.pts,q.z).forEach(function(run){
+          if(run.front!==wantFront)return;
+          add('path',{d:run.d,fill:'none',stroke:color,
+            'stroke-width':run.front?(ring.main?1.9:1.15):.9,
+            opacity:run.front?(ring.main?.9:.5):.16,
+            'stroke-dasharray':run.front?'':'3 4','pointer-events':'none'});
+        });
+      });
+    });
+    // 3) 실루엣 — 구의 가장자리를 또렷하게 닫아 준다
+    add('circle',{cx:q.x,cy:q.y,r:R,fill:'none',stroke:color,'stroke-width':2.2,opacity:.85,'pointer-events':'none'});
+  }
   function drawHandle(name,p,color,enabled){const q=project(p),locked=!enabled;add('circle',{cx:q.x,cy:q.y,r:44,fill:'transparent','data-sphere-point':name,class:'sphere-point-hit'+(locked?' sphere-locked':'')});add('circle',{cx:q.x,cy:q.y,r:17,fill:color,opacity:.2,'data-sphere-point':name,class:'sphere-point-halo'+(locked?' sphere-locked':''),filter:'url(#sphereGlow)'});add('circle',{cx:q.x,cy:q.y,r:11,fill:color,stroke:'#fff','stroke-width':3,'data-sphere-point':name,class:'sphere-point-handle'+(locked?' sphere-locked':'')});add('circle',{cx:q.x,cy:q.y,r:3,fill:'#fff','pointer-events':'none'});text3(p,name,color,name==='C'?-14:14,-13,name==='C'?'end':'start');}
   function draw(){
     G.clear(svg);defs();drawGrid();drawAxes();
@@ -69,8 +139,8 @@
   function render(){const P=draw();updateReadouts(P);updateMission();}
   function normalizeDir(){const ij=activePlane(),next=[0,0,0];next[ij[0]]=state.dir[ij[0]];next[ij[1]]=state.dir[ij[1]];const n=Math.hypot(next[ij[0]],next[ij[1]]);if(n<.01)next[ij[0]]=1;else{next[ij[0]]/=n;next[ij[1]]/=n;}state.dir=next;}
   function setPlane(name){state.plane=name;normalizeDir();planeBar.querySelectorAll('[data-sphere-plane]').forEach(function(b){b.classList.toggle('active',b.dataset.spherePlane===name);});render();}
-  function restoreView(){state.view={yaw:-.7,pitch:.45,scale:63,cx:320,cy:215};render();}
-  function resetMission(){state.view={yaw:-.7,pitch:.45,scale:63,cx:320,cy:215};state.dir=[1,0,0];
+  function restoreView(){state.view={yaw:-.7,pitch:.45,scale:54,cx:320,cy:190};render();}
+  function resetMission(){state.view={yaw:-.7,pitch:.45,scale:54,cx:320,cy:190};state.dir=[1,0,0];
     if(state.mission==='free'){state.center=[1,-1,1];state.radius=2;state.target=null;state.through=null;setPlane('xz');return;}
     if(state.mission==='target'){const q=sphereTargets[state.targetIndex%sphereTargets.length];state.center=q.start.slice();state.radius=1;state.target={center:q.center.slice(),radius:q.radius};state.through=null;setPlane(q.plane);return;}
     const q=throughTargets[state.targetIndex%throughTargets.length];state.center=q.center.slice();state.radius=q.start;state.through={point:q.point.slice()};state.target=null;setPlane(q.plane);
