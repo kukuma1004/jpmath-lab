@@ -35,7 +35,7 @@
     {plane:'xy',C:[-2,1,0],r:3,startC:[0,1,0],startS:[1,1,0]},
     {plane:'yz',C:[1,-2,-1],r:2,startC:[1,0,-1],startS:[1,1,-1]}
   ];
-  const state={mode:'plane',mission:'free',missionIndex:0,P:[-1,0,0],n:[1,1,1],C:[1,-1,1],S:[3,-1,1],plane:'xz',targetPlane:null,targetPoint:null,targetSphere:null,view:{yaw:-.7,pitch:.45,scale:67,cx:320,cy:215}};
+  const state={mode:'plane',mission:'free',missionIndex:0,P:[-1,0,0],n:[1,1,1],C:[1,-1,1],S:[3,-1,1],plane:'xz',targetPlane:null,targetPoint:null,targetSphere:null,view:{yaw:-.7,pitch:.45,scale:54,cx:320,cy:190}};
   const colors={base:'#c1442d',definition:'#2b6ca3',surface:'#2f7d58',ghost:'#7557a8',soft:'#91a19a'};let action=null,last=null;
 
   function N(){return state.P.map(function(x,i){return x+state.n[i];});}
@@ -49,13 +49,20 @@
   function cross(a,b){return[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];}
   function norm(a){return Math.hypot.apply(null,a);}
   function normalized(a){const l=norm(a);return l?a.map(function(x){return x/l;}):[0,0,0];}
-  function defs(){const d=G.s('defs');[['psNormal',colors.definition],['psRadius',colors.surface],['psGhost',colors.ghost]].forEach(function(pair){const marker=G.s('marker',{id:pair[0],viewBox:'0 0 10 10',refX:8,refY:5,markerWidth:7,markerHeight:7,orient:'auto-start-reverse'});marker.appendChild(G.s('path',{d:'M0 0L10 5L0 10Z',fill:pair[1]}));d.appendChild(marker);});const glow=G.s('filter',{id:'psGlow',x:'-90%',y:'-90%',width:'280%',height:'280%'});glow.appendChild(G.s('feGaussianBlur',{stdDeviation:5,result:'blur'}));const merge=G.s('feMerge');merge.appendChild(G.s('feMergeNode',{in:'blur'}));merge.appendChild(G.s('feMergeNode',{in:'SourceGraphic'}));glow.appendChild(merge);d.appendChild(glow);svg.appendChild(d);}
+  function defs(){const d=G.s('defs');[['psNormal',colors.definition],['psRadius',colors.surface],['psGhost',colors.ghost]].forEach(function(pair){const marker=G.s('marker',{id:pair[0],viewBox:'0 0 10 10',refX:8,refY:5,markerWidth:7,markerHeight:7,orient:'auto-start-reverse'});marker.appendChild(G.s('path',{d:'M0 0L10 5L0 10Z',fill:pair[1]}));d.appendChild(marker);});d.appendChild(G.solid.gradient('psSphereBody',['#e8f0f8','#a8c4de','#4f7ba8','#22405c']));const glow=G.s('filter',{id:'psGlow',x:'-90%',y:'-90%',width:'280%',height:'280%'});glow.appendChild(G.s('feGaussianBlur',{stdDeviation:5,result:'blur'}));const merge=G.s('feMerge');merge.appendChild(G.s('feMergeNode',{in:'blur'}));merge.appendChild(G.s('feMergeNode',{in:'SourceGraphic'}));glow.appendChild(merge);d.appendChild(glow);svg.appendChild(d);}
   function activePlane(){return state.plane==='xy'?[0,1,2]:state.plane==='xz'?[0,2,1]:[1,2,0];}
   function drawMovementPlane(){const ij=activePlane(),i=ij[0],j=ij[1],k=ij[2],corners=[[-4,-4],[4,-4],[4,4],[-4,4]].map(function(pair){const p=[0,0,0];p[i]=pair[0];p[j]=pair[1];p[k]=0;return project(p);});add('polygon',{points:corners.map(function(p){return p.x+','+p.y;}).join(' '),fill:'#2b6ca3',opacity:.035,stroke:'#2b6ca3','stroke-width':1,'stroke-dasharray':'6 7','pointer-events':'none'});}
   function drawAxes(){const o=[0,0,0];[[[4.5,0,0],colors.base,'x'],[[0,4.5,0],colors.surface,'y'],[[0,0,4.5],colors.definition,'z']].forEach(function(item){line3(o,item[0],{stroke:item[1],'stroke-width':2,opacity:.75,'pointer-events':'none'});const q=project(item[0]);add('text',{x:q.x+5,y:q.y-4,fill:item[1],'font-size':11,'font-weight':900,'pointer-events':'none'},item[2]);});}
   function planeBasis(n){const unit=normalized(n),helper=Math.abs(unit[2])<.82?[0,0,1]:[0,1,0],u=normalized(cross(unit,helper)),w=normalized(cross(unit,u));return[u,w];}
-  function drawPlanePatch(p,n,color,opacity,ghost){if(norm(n)<.001)return;const basis=planeBasis(n),u=basis[0],w=basis[1],size=3.1,corners=[[-1,-1],[1,-1],[1,1],[-1,1]].map(function(pair){return p.map(function(x,i){return x+size*pair[0]*u[i]+size*pair[1]*w[i];});}),projected=corners.map(project);add('polygon',{points:projected.map(function(q){return q.x+','+q.y;}).join(' '),fill:color,opacity:opacity,stroke:color,'stroke-width':ghost?2.5:1.8,'stroke-dasharray':ghost?'8 6':'none','pointer-events':'none'});if(!ghost)for(let k=-2;k<=2;k++){line3(p.map(function(x,i){return x+k*u[i]-size*w[i];}),p.map(function(x,i){return x+k*u[i]+size*w[i];}),{stroke:color,'stroke-width':.7,opacity:.3,'pointer-events':'none'});line3(p.map(function(x,i){return x+k*w[i]-size*u[i];}),p.map(function(x,i){return x+k*w[i]+size*u[i];}),{stroke:color,'stroke-width':.7,opacity:.3,'pointer-events':'none'});}}
-  function drawSphere(c,r,color,opacity,ghost){if(r<.001)return;['xy','xz','yz'].forEach(function(plane){let path='';for(let i=0;i<=80;i++){const t=i/80*Math.PI*2,p=plane==='xy'?[c[0]+r*Math.cos(t),c[1]+r*Math.sin(t),c[2]]:plane==='xz'?[c[0]+r*Math.cos(t),c[1],c[2]+r*Math.sin(t)]:[c[0],c[1]+r*Math.cos(t),c[2]+r*Math.sin(t)],q=project(p);path+=(i?'L':'M')+q.x+' '+q.y;}add('path',{d:path,fill:'none',stroke:color,'stroke-width':ghost?2.5:2.2,'stroke-dasharray':ghost?'8 6':'none',opacity:opacity,'pointer-events':'none'});});}
+  function drawPlanePatch(p,n,color,opacity,ghost){
+    if(norm(n)<.001)return;
+    const basis=planeBasis(n);
+    G.solid.planePatch(add,project,{p:p,u:basis[0],w:basis[1],size:3.1,color:color,opacity:opacity,ghost:ghost});
+  }
+  function drawSphere(c,r,color,opacity,ghost){
+    G.solid.sphere(add,project,{center:c,r:r,color:color,scale:state.view.scale,
+      gradientId:ghost?null:'psSphereBody',ghost:ghost,opacity:opacity});
+  }
   function handle(name,p,color){const q=project(p);add('circle',{cx:q.x,cy:q.y,r:44,fill:'transparent',stroke:'transparent','data-ps-point':name,class:'ps-point-hit',tabindex:0,role:'slider','aria-label':'점 '+name+' '+fmt(p)});add('circle',{cx:q.x,cy:q.y,r:17,fill:color,opacity:.2,'data-ps-point':name,class:'ps-point-halo',filter:'url(#psGlow)'});add('circle',{cx:q.x,cy:q.y,r:11,fill:color,stroke:'#fff','stroke-width':3,'data-ps-point':name,class:'ps-point-handle'});add('circle',{cx:q.x,cy:q.y,r:3,fill:'#fff','pointer-events':'none'});add('text',{x:q.x+(name==='P'||name==='C'?-13:13),y:q.y-12,'text-anchor':name==='P'||name==='C'?'end':'start',fill:color,'font-size':12,'font-weight':900,'pointer-events':'none'},name);}
 
   function drawPlaneMode(){
@@ -84,8 +91,8 @@
   function render(focusName){draw();updateReadouts();updateMission(success());if(focusName)requestAnimationFrame(function(){const el=svg.querySelector('.ps-point-hit[data-ps-point="'+focusName+'"]');if(el)el.focus();});}
 
   function setPlane(name,doRender){state.plane=name;planeBar.querySelectorAll('[data-ps-plane]').forEach(function(b){b.classList.toggle('active',b.dataset.psPlane===name);});if(doRender!==false)render();}
-  function resetView(){state.view={yaw:-.7,pitch:.45,scale:67,cx:320,cy:215};render();}
-  function resetMission(){state.targetPlane=null;state.targetPoint=null;state.targetSphere=null;state.view={yaw:-.7,pitch:.45,scale:67,cx:320,cy:215};
+  function resetView(){state.view={yaw:-.7,pitch:.45,scale:54,cx:320,cy:190};render();}
+  function resetMission(){state.targetPlane=null;state.targetPoint=null;state.targetSphere=null;state.view={yaw:-.7,pitch:.45,scale:54,cx:320,cy:190};
     if(state.mission==='free'){if(state.mode==='plane'){state.P=[-1,0,0];state.n=[1,1,1];setPlane('xz',false);}else{state.C=[1,-1,1];state.S=[3,-1,1];setPlane('xz',false);}}
     if(state.mission==='plane'){const q=targetPlanes[state.missionIndex%targetPlanes.length];state.mode='plane';state.P=q.startP.slice();state.n=q.startN.map(function(x,i){return x-q.startP[i];});state.targetPlane={P:q.P.slice(),n:q.n.slice()};setPlane(q.plane,false);}
     if(state.mission==='point'){const q=pointTargets[state.missionIndex%pointTargets.length];state.mode='plane';state.P=q.P.slice();state.n=q.n.slice();state.targetPoint=q.Q.slice();setPlane(q.plane,false);}
