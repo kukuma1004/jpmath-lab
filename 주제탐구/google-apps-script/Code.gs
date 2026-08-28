@@ -6,13 +6,14 @@ const SHEET_NAMES = Object.freeze({
   settings: '설정'
 });
 
-const REQUIRED_SUBJECTS = Object.freeze(['미적분Ⅰ', '기하']);
+const AVAILABLE_SUBJECTS = Object.freeze(['미적분Ⅰ', '기하', '경제수학', '과목 확인 필요']);
+const TARGET_INTAKE_COUNT = 2;
 
 const SHEET_SCHEMAS = Object.freeze({
   '학생명단': ['학생ID', '학생코드', '이름', '상태', '등록일', '비고'],
-  '기초응답': ['제출ID', '제출일시', '학생코드', '학생ID', '이름', '과목', '관심개념', '궁금한점', '선정이유', '탐구방법', '웹앱아이디어', '학생메모', '처리상태', '교사확정주제', '교사확정질문', '가공메모'],
+  '기초응답': ['제출ID', '제출일시', '학생코드', '학생ID', '이름', '과목', '관심개념', '궁금한점', '선정이유', '탐구방법', '웹앱아이디어', '학생메모', '처리상태', '교사확정주제', '교사확정질문', '가공메모', '수정일시', '수정횟수', '교사검토상태', '교사피드백', '과목확인'],
   '학생발문': ['학생코드', '학생ID', '탐구ID', '이름', '과목', '주제', '현재질문', '핵심개념', '발문1', '발문2', '발문3', '발문버전', '상태', '수정일'],
-  '학생답변': ['제출ID', '제출시각', '학생코드', '학생ID', '탐구ID', '이름', '과목', '주제', '발문버전', '답변1', '답변2', '답변3', '새로운질문', '학생메모', '교사검토상태'],
+  '학생답변': ['제출ID', '제출시각', '학생코드', '학생ID', '탐구ID', '이름', '과목', '주제', '발문버전', '답변1', '답변2', '답변3', '새로운질문', '학생메모', '교사검토상태', '수정시각', '수정횟수', '교사피드백'],
   '설정': ['설정키', '값', '설명']
 });
 
@@ -21,6 +22,8 @@ function onOpen() {
     .createMenu('주제탐구 관리')
     .addItem('시트 구조 점검', 'setupInquiryWorkbook')
     .addItem('현재 운영 상태', 'showInquiryStatus')
+    .addSeparator()
+    .addItem('실시간 교사용 페이지 열기', 'showTeacherDashboardLink')
     .addToUi();
 }
 
@@ -29,7 +32,8 @@ function setupInquiryWorkbook() {
   Object.keys(SHEET_SCHEMAS).forEach(function (sheetName) {
     ensureSheet_(spreadsheet, sheetName, SHEET_SCHEMAS[sheetName]);
   });
-  ensureSetting_('SUBMISSION_OPEN', 'TRUE', 'TRUE이면 학생 제출을 받습니다.');
+  ensureSetting_('SUBMISSION_OPEN', 'TRUE', 'TRUE이면 학생 제출과 수정을 받습니다.');
+  ensureTeacherToken_();
   return getInquirySystemStatus();
 }
 
@@ -39,14 +43,32 @@ function showInquiryStatus() {
     '2026 수학 주제탐구 운영 상태',
     [
       '등록 학생: ' + status.students + '명',
-      '기초응답: ' + status.intakes + '건 / 예상 ' + status.expectedIntakes + '건',
-      '두 과목 완료: ' + status.completedStudents + '명',
+      '기초응답: ' + status.intakes + '건 / 목표 ' + status.expectedIntakes + '건',
+      '2개 탐구 작성: ' + status.completedStudents + '명',
+      '과목 확인 필요: ' + status.subjectReviewCount + '건',
       '발문 공개: ' + status.promptRows + '건',
       '학생답변: ' + status.responseRows + '건',
-      '제출 상태: ' + (status.submissionOpen ? '열림' : '닫힘')
+      '제출·수정 상태: ' + (status.submissionOpen ? '열림' : '닫힘')
     ].join('\n'),
     SpreadsheetApp.getUi().ButtonSet.OK
   );
+}
+
+function showTeacherDashboardLink() {
+  const deploymentUrl = ScriptApp.getService().getUrl();
+  if (!deploymentUrl) {
+    SpreadsheetApp.getUi().alert('먼저 웹앱을 배포한 뒤 다시 실행해 주세요.');
+    return;
+  }
+  const url = deploymentUrl + '?view=teacher&token=' + encodeURIComponent(ensureTeacherToken_());
+  const html = HtmlService.createHtmlOutput(
+    '<div style="font:14px/1.7 sans-serif;padding:20px">' +
+    '<h3 style="margin-top:0">실시간 교사용 페이지</h3>' +
+    '<p>이 링크에는 교사용 열쇠가 포함되어 있으므로 학생에게 전달하지 마세요.</p>' +
+    '<p><a href="' + escapeHtml_(url) + '" target="_blank" style="display:inline-block;padding:11px 15px;border-radius:10px;color:#fff;background:#176b5b;text-decoration:none;font-weight:700">교사용 페이지 열기 ↗</a></p>' +
+    '<p style="color:#687773;font-size:12px;word-break:break-all">' + escapeHtml_(url) + '</p></div>'
+  ).setWidth(560).setHeight(260);
+  SpreadsheetApp.getUi().showModalDialog(html, '주제탐구 실시간 연결');
 }
 
 function getInquirySystemStatus() {
@@ -54,25 +76,32 @@ function getInquirySystemStatus() {
   const intakes = getIntakeRows_();
   const completedStudents = roster.filter(function (student) {
     const code = normalizeCode_(student['학생코드']);
-    return REQUIRED_SUBJECTS.every(function (subject) {
-      return intakes.some(function (row) {
-        return normalizeCode_(row['학생코드']) === code && row['과목'] === subject;
-      });
-    });
+    return intakes.filter(function (row) { return normalizeCode_(row['학생코드']) === code; }).length >= TARGET_INTAKE_COUNT;
   }).length;
   return {
     ok: true,
     students: roster.length,
     intakes: intakes.length,
-    expectedIntakes: roster.length * REQUIRED_SUBJECTS.length,
+    expectedIntakes: roster.length * TARGET_INTAKE_COUNT,
     completedStudents: completedStudents,
+    subjectReviewCount: intakes.filter(function (row) { return subjectConcern_(row).needsReview; }).length,
     promptRows: getPromptRows_().filter(function (row) { return row['상태'] !== '비활성'; }).length,
-    responseRows: getRows_(SHEET_NAMES.responses).length,
+    responseRows: getResponseRows_().length,
     submissionOpen: String(getSetting_('SUBMISSION_OPEN')).toUpperCase() === 'TRUE'
   };
 }
 
-function doGet() {
+function doGet(event) {
+  const params = event && event.parameter ? event.parameter : {};
+  if (params.view === 'teacher') {
+    if (!validTeacherToken_(params.token)) {
+      return HtmlService.createHtmlOutput('<meta charset="utf-8"><div style="max-width:620px;margin:80px auto;padding:30px;font:15px/1.7 sans-serif"><h2>교사용 링크를 확인해 주세요.</h2><p>Google Sheet의 <b>주제탐구 관리 → 실시간 교사용 페이지 열기</b>에서 안전한 링크로 접속할 수 있습니다.</p></div>')
+        .setTitle('교사용 연결 확인');
+    }
+    return HtmlService.createHtmlOutputFromFile('Teacher')
+      .setTitle('주제탐구 실시간 교사용 페이지')
+      .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+  }
   return HtmlService.createHtmlOutputFromFile('Index')
     .setTitle('2026 수학 주제탐구 학생 질문함')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
@@ -87,9 +116,15 @@ function getStudentWorkspace(studentCode) {
   });
   if (!student) return failure_('코드를 확인하지 못했습니다. 선생님께 받은 코드를 다시 확인해 주세요.');
 
+  const intakeRows = getIntakeRows_().filter(function (row) {
+    return normalizeCode_(row['학생코드']) === code;
+  });
   const base = {
     ok: true,
-    student: { code: code, id: student['학생ID'], name: student['이름'] }
+    student: { code: code, id: student['학생ID'], name: student['이름'] },
+    availableSubjects: AVAILABLE_SUBJECTS.slice(),
+    targetIntakeCount: TARGET_INTAKE_COUNT,
+    intakes: intakeRows.map(studentIntake_)
   };
 
   if (student['상태'] === '질문정교화') {
@@ -97,8 +132,12 @@ function getStudentWorkspace(studentCode) {
       return normalizeCode_(row['학생코드']) === code && row['상태'] !== '비활성';
     });
     if (rows.length) {
+      const responses = getResponseRows_().filter(function (row) { return normalizeCode_(row['학생코드']) === code; });
       base.mode = 'prompts';
       base.inquiries = rows.map(function (row) {
+        const previous = responses.filter(function (response) {
+          return response['탐구ID'] === row['탐구ID'] && response['발문버전'] === row['발문버전'];
+        }).pop();
         return {
           id: row['탐구ID'],
           subject: row['과목'],
@@ -106,31 +145,29 @@ function getStudentWorkspace(studentCode) {
           question: row['현재질문'],
           concepts: row['핵심개념'],
           promptVersion: row['발문버전'],
-          prompts: [row['발문1'], row['발문2'], row['발문3']]
+          prompts: [row['발문1'], row['발문2'], row['발문3']],
+          response: previous ? {
+            submissionId: previous['제출ID'],
+            answers: [previous['답변1'], previous['답변2'], previous['답변3']],
+            newQuestion: previous['새로운질문'],
+            studentNote: previous['학생메모'],
+            reviewStatus: previous['교사검토상태'] || '검토 대기',
+            teacherFeedback: previous['교사피드백'] || '',
+            updatedAt: previous['수정시각'] || previous['제출시각']
+          } : null
         };
       });
       return base;
     }
   }
 
-  const intakeRows = getIntakeRows_().filter(function (row) {
-    return normalizeCode_(row['학생코드']) === code;
-  });
-  const completedSubjects = REQUIRED_SUBJECTS.filter(function (subject) {
-    return intakeRows.some(function (row) { return row['과목'] === subject; });
-  });
-
-  if (completedSubjects.length === REQUIRED_SUBJECTS.length) {
+  if (intakeRows.length >= TARGET_INTAKE_COUNT) {
     base.mode = 'waiting';
-    base.completedSubjects = completedSubjects;
-    base.message = '미적분Ⅰ과 기하의 기초 질문이 모두 제출되었습니다. 선생님이 내용을 읽고 다음 맞춤 발문을 준비하고 있습니다.';
+    base.message = '기초 질문 ' + TARGET_INTAKE_COUNT + '개가 저장되어 있습니다. 선생님이 읽는 동안에도 아래에서 언제든 수정할 수 있습니다.';
     return base;
   }
 
   base.mode = 'intake';
-  base.subjects = REQUIRED_SUBJECTS.map(function (subject) {
-    return { name: subject, submitted: completedSubjects.indexOf(subject) !== -1 };
-  });
   return base;
 }
 
@@ -139,18 +176,16 @@ function submitInitialIntake(payload) {
   if (!lock.tryLock(10000)) return failure_('제출이 몰리고 있습니다. 잠시 후 다시 시도해 주세요.');
 
   try {
-    if (String(getSetting_('SUBMISSION_OPEN')).toUpperCase() !== 'TRUE') {
-      return failure_('현재는 답변 제출 기간이 아닙니다.');
-    }
-
+    if (String(getSetting_('SUBMISSION_OPEN')).toUpperCase() !== 'TRUE') return failure_('현재는 답변 제출·수정 기간이 아닙니다.');
     payload = payload || {};
     const code = normalizeCode_(payload.studentCode);
     const subject = cleanText_(payload.subject, 30);
+    const submissionId = cleanText_(payload.submissionId, 120);
     const student = getRosterRows_().find(function (row) {
       return normalizeCode_(row['학생코드']) === code && row['상태'] !== '비활성';
     });
     if (!student) return failure_('학생 정보를 확인하지 못했습니다. 코드를 다시 확인해 주세요.');
-    if (REQUIRED_SUBJECTS.indexOf(subject) === -1) return failure_('과목을 다시 선택해 주세요.');
+    if (AVAILABLE_SUBJECTS.indexOf(subject) === -1) return failure_('과목을 다시 선택해 주세요.');
 
     const fields = {
       concept: cleanText_(payload.concept, 3000),
@@ -164,43 +199,52 @@ function submitInitialIntake(payload) {
       return failure_('필수 질문 네 가지에 모두 답해 주세요. 아직 확실하지 않다면 현재 생각을 그대로 적어도 됩니다.');
     }
 
-    const alreadySubmitted = getIntakeRows_().some(function (row) {
-      return normalizeCode_(row['학생코드']) === code && row['과목'] === subject;
-    });
-    if (alreadySubmitted) return failure_(subject + ' 기초 질문은 이미 제출되었습니다. 수정이 필요하면 선생님께 알려 주세요.');
+    const rows = getIntakeRows_().filter(function (row) { return normalizeCode_(row['학생코드']) === code; });
+    const existing = submissionId ? rows.find(function (row) { return row['제출ID'] === submissionId; }) : null;
+    if (submissionId && !existing) return failure_('수정할 기록을 찾지 못했습니다. 화면을 새로 불러와 주세요.');
+    if (!existing && rows.length >= TARGET_INTAKE_COUNT) return failure_('이미 두 탐구를 작성했습니다. 새로 추가하지 말고 기존 탐구를 선택해 수정해 주세요.');
+    const duplicate = rows.some(function (row) { return row['제출ID'] !== submissionId && row['과목'] === subject && subject !== '과목 확인 필요'; });
+    if (duplicate) return failure_(subject + ' 탐구가 이미 있습니다. 기존 기록을 선택해 수정해 주세요.');
+
+    const now = new Date();
+    const record = {
+      '제출ID': existing ? existing['제출ID'] : Utilities.getUuid(),
+      '제출일시': existing ? existing['제출일시'] : now,
+      '학생코드': code,
+      '학생ID': student['학생ID'],
+      '이름': student['이름'],
+      '과목': subject,
+      '관심개념': fields.concept,
+      '궁금한점': fields.curiosity,
+      '선정이유': fields.reason,
+      '탐구방법': fields.method,
+      '웹앱아이디어': fields.appIdea,
+      '학생메모': fields.studentNote,
+      '처리상태': existing ? '수정됨 · 가공 대기' : '가공 대기',
+      '교사확정주제': existing ? existing['교사확정주제'] : '',
+      '교사확정질문': existing ? existing['교사확정질문'] : '',
+      '가공메모': existing ? existing['가공메모'] : '',
+      '수정일시': now,
+      '수정횟수': existing ? Number(existing['수정횟수'] || 0) + 1 : 0,
+      '교사검토상태': existing ? '재검토 대기' : '검토 대기',
+      '교사피드백': existing ? existing['교사피드백'] : '',
+      '과목확인': ''
+    };
+    record['과목확인'] = subjectConcern_(record).needsReview ? '확인 필요' : '';
 
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.intake);
-    if (!sheet) throw new Error('기초응답 시트를 찾을 수 없습니다.');
-    const submissionId = Utilities.getUuid();
-    sheet.appendRow([
-      submissionId,
-      new Date(),
-      safeCell_(code),
-      safeCell_(student['학생ID']),
-      safeCell_(student['이름']),
-      safeCell_(subject),
-      safeCell_(fields.concept),
-      safeCell_(fields.curiosity),
-      safeCell_(fields.reason),
-      safeCell_(fields.method),
-      safeCell_(fields.appIdea),
-      safeCell_(fields.studentNote),
-      '가공 대기',
-      '',
-      '',
-      ''
-    ]);
+    if (existing) updateRecordRow_(sheet, existing._rowNumber, record);
+    else appendRecord_(sheet, record);
 
-    const completedCount = getIntakeRows_().filter(function (row) {
-      return normalizeCode_(row['학생코드']) === code;
-    }).length;
-    if (completedCount >= REQUIRED_SUBJECTS.length) updateRosterStatus_(student['학생ID'], '기초응답완료');
+    const completedCount = existing ? rows.length : rows.length + 1;
+    if (completedCount >= TARGET_INTAKE_COUNT) updateRosterStatus_(student['학생ID'], '기초응답완료');
 
     return {
       ok: true,
-      submissionId: submissionId,
-      message: subject + ' 기초 질문이 저장되었습니다.',
-      allCompleted: completedCount >= REQUIRED_SUBJECTS.length
+      submissionId: record['제출ID'],
+      updated: Boolean(existing),
+      message: subject + (existing ? ' 기초 질문을 수정했습니다.' : ' 기초 질문을 저장했습니다.'),
+      allCompleted: completedCount >= TARGET_INTAKE_COUNT
     };
   } catch (error) {
     console.error(error);
@@ -213,52 +257,50 @@ function submitInitialIntake(payload) {
 function submitStudentResponse(payload) {
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(10000)) return failure_('제출이 몰리고 있습니다. 잠시 후 다시 시도해 주세요.');
-
   try {
-    if (String(getSetting_('SUBMISSION_OPEN')).toUpperCase() !== 'TRUE') {
-      return failure_('현재는 답변 제출 기간이 아닙니다.');
-    }
-
+    if (String(getSetting_('SUBMISSION_OPEN')).toUpperCase() !== 'TRUE') return failure_('현재는 답변 제출·수정 기간이 아닙니다.');
     payload = payload || {};
     const code = normalizeCode_(payload.studentCode);
     const inquiryId = cleanText_(payload.inquiryId, 120);
-    const answers = Array.isArray(payload.answers) ? payload.answers.map(function (answer) {
-      return cleanText_(answer, 5000);
-    }) : [];
-
+    const responseId = cleanText_(payload.responseId, 120);
+    const answers = Array.isArray(payload.answers) ? payload.answers.map(function (answer) { return cleanText_(answer, 5000); }) : [];
     if (!code || !inquiryId) return failure_('학생 코드와 탐구 정보를 확인해 주세요.');
-    if (answers.length !== 3 || answers.some(function (answer) { return answer.length < 2; })) {
-      return failure_('세 발문에 대한 답변을 모두 작성해 주세요.');
-    }
+    if (answers.length !== 3 || answers.some(function (answer) { return answer.length < 2; })) return failure_('세 발문에 대한 답변을 모두 작성해 주세요.');
 
     const promptRow = getPromptRows_().find(function (row) {
       return normalizeCode_(row['학생코드']) === code && row['탐구ID'] === inquiryId && row['상태'] !== '비활성';
     });
     if (!promptRow) return failure_('현재 발문을 찾지 못했습니다. 화면을 새로 불러와 주세요.');
 
-    const responseSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.responses);
-    if (!responseSheet) throw new Error('학생답변 시트를 찾을 수 없습니다.');
-
-    const submissionId = Utilities.getUuid();
-    responseSheet.appendRow([
-      submissionId,
-      new Date(),
-      safeCell_(code),
-      safeCell_(promptRow['학생ID']),
-      safeCell_(promptRow['탐구ID']),
-      safeCell_(promptRow['이름']),
-      safeCell_(promptRow['과목']),
-      safeCell_(promptRow['주제']),
-      safeCell_(promptRow['발문버전']),
-      safeCell_(answers[0]),
-      safeCell_(answers[1]),
-      safeCell_(answers[2]),
-      safeCell_(cleanText_(payload.newQuestion, 3000)),
-      safeCell_(cleanText_(payload.studentNote, 2000)),
-      '검토 대기'
-    ]);
-
-    return { ok: true, submissionId: submissionId, message: '답변이 선생님께 전달되었습니다.' };
+    const existing = responseId ? getResponseRows_().find(function (row) {
+      return row['제출ID'] === responseId && normalizeCode_(row['학생코드']) === code && row['탐구ID'] === inquiryId;
+    }) : null;
+    if (responseId && !existing) return failure_('수정할 답변을 찾지 못했습니다. 화면을 새로 불러와 주세요.');
+    const now = new Date();
+    const record = {
+      '제출ID': existing ? existing['제출ID'] : Utilities.getUuid(),
+      '제출시각': existing ? existing['제출시각'] : now,
+      '학생코드': code,
+      '학생ID': promptRow['학생ID'],
+      '탐구ID': promptRow['탐구ID'],
+      '이름': promptRow['이름'],
+      '과목': promptRow['과목'],
+      '주제': promptRow['주제'],
+      '발문버전': promptRow['발문버전'],
+      '답변1': answers[0],
+      '답변2': answers[1],
+      '답변3': answers[2],
+      '새로운질문': cleanText_(payload.newQuestion, 3000),
+      '학생메모': cleanText_(payload.studentNote, 2000),
+      '교사검토상태': existing ? '재검토 대기' : '검토 대기',
+      '수정시각': now,
+      '수정횟수': existing ? Number(existing['수정횟수'] || 0) + 1 : 0,
+      '교사피드백': existing ? existing['교사피드백'] : ''
+    };
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.responses);
+    if (existing) updateRecordRow_(sheet, existing._rowNumber, record);
+    else appendRecord_(sheet, record);
+    return { ok: true, submissionId: record['제출ID'], updated: Boolean(existing), message: existing ? '수정한 답변이 선생님께 전달되었습니다.' : '답변이 선생님께 전달되었습니다.' };
   } catch (error) {
     console.error(error);
     return failure_('저장 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.');
@@ -267,9 +309,127 @@ function submitStudentResponse(payload) {
   }
 }
 
+function getTeacherDashboard(token) {
+  if (!validTeacherToken_(token)) return failure_('교사용 연결이 만료되었거나 올바르지 않습니다. Sheet 메뉴에서 다시 열어 주세요.');
+  const rows = getIntakeRows_();
+  const items = rows.map(function (row) {
+    const concern = subjectConcern_(row);
+    return {
+      id: row['제출ID'],
+      studentId: row['학생ID'],
+      name: row['이름'],
+      subject: row['과목'],
+      concept: row['관심개념'],
+      curiosity: row['궁금한점'],
+      reason: row['선정이유'],
+      method: row['탐구방법'],
+      appIdea: row['웹앱아이디어'],
+      studentNote: row['학생메모'],
+      submittedAt: row['제출일시'],
+      updatedAt: row['수정일시'] || row['제출일시'],
+      revisionCount: Number(row['수정횟수'] || 0),
+      reviewStatus: row['교사검토상태'] || '검토 대기',
+      teacherFeedback: row['교사피드백'] || '',
+      processStatus: row['처리상태'] || '가공 대기',
+      needsSubjectReview: concern.needsReview,
+      subjectReason: concern.reason
+    };
+  });
+  return {
+    ok: true,
+    syncedAt: Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss'),
+    items: items,
+    stats: {
+      total: items.length,
+      waiting: items.filter(function (item) { return /대기|재검토/.test(item.reviewStatus); }).length,
+      needsRevision: items.filter(function (item) { return item.reviewStatus === '보완 필요' || item.reviewStatus === '반려'; }).length,
+      subjectReview: items.filter(function (item) { return item.needsSubjectReview; }).length,
+      approved: items.filter(function (item) { return item.reviewStatus === '승인'; }).length
+    }
+  };
+}
+
+function reviewIntake(token, payload) {
+  if (!validTeacherToken_(token)) return failure_('교사용 연결을 확인해 주세요.');
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(10000)) return failure_('다른 저장 작업이 진행 중입니다. 잠시 후 다시 시도해 주세요.');
+  try {
+    payload = payload || {};
+    const id = cleanText_(payload.submissionId, 120);
+    const status = cleanText_(payload.status, 30);
+    const feedback = cleanText_(payload.feedback, 3000);
+    const subject = cleanText_(payload.subject, 30);
+    if (['승인', '보완 필요', '반려', '검토 대기'].indexOf(status) === -1) return failure_('검토 상태를 다시 선택해 주세요.');
+    if ((status === '보완 필요' || status === '반려') && feedback.length < 2) return failure_('학생이 고칠 수 있도록 교사 피드백을 입력해 주세요.');
+    if (subject && AVAILABLE_SUBJECTS.indexOf(subject) === -1) return failure_('과목을 다시 선택해 주세요.');
+    const row = getIntakeRows_().find(function (item) { return item['제출ID'] === id; });
+    if (!row) return failure_('검토할 응답을 찾지 못했습니다. 새로고침해 주세요.');
+    const updates = {
+      '교사검토상태': status,
+      '교사피드백': feedback,
+      '처리상태': status === '승인' ? '교사 승인' : (status === '검토 대기' ? '가공 대기' : status)
+    };
+    if (subject) {
+      updates['과목'] = subject;
+      updates['과목확인'] = subject === '과목 확인 필요' ? '확인 필요' : '확인 완료';
+    }
+    updateRecordRow_(SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.intake), row._rowNumber, updates);
+    return { ok: true, message: row['이름'] + ' 학생의 응답을 ' + status + ' 상태로 저장했습니다.' };
+  } catch (error) {
+    console.error(error);
+    return failure_('검토 상태를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.');
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function studentIntake_(row) {
+  const concern = subjectConcern_(row);
+  return {
+    submissionId: row['제출ID'],
+    subject: row['과목'],
+    concept: row['관심개념'],
+    curiosity: row['궁금한점'],
+    reason: row['선정이유'],
+    method: row['탐구방법'],
+    appIdea: row['웹앱아이디어'],
+    studentNote: row['학생메모'],
+    reviewStatus: row['교사검토상태'] || '검토 대기',
+    teacherFeedback: row['교사피드백'] || '',
+    needsSubjectReview: concern.needsReview,
+    subjectReason: concern.reason,
+    updatedAt: row['수정일시'] || row['제출일시'],
+    revisionCount: Number(row['수정횟수'] || 0)
+  };
+}
+
+function subjectConcern_(row) {
+  if (row['과목확인'] === '확인 완료') return { needsReview: false, reason: '' };
+  const subject = row['과목'];
+  if (subject === '과목 확인 필요' || AVAILABLE_SUBJECTS.indexOf(subject) === -1) {
+    return { needsReview: true, reason: '학생이 과목을 확정하지 못했습니다.' };
+  }
+  const text = [row['관심개념'], row['궁금한점'], row['선정이유'], row['탐구방법']].join(' ').toLowerCase();
+  const groups = {
+    '미적분Ⅰ': ['극한', '미분', '적분', '도함수', '변화율', '연속', '극값', '리만', '접선'],
+    '기하': ['벡터', '공간', '평면', '직선', '원뿔', '이차곡선', '포물선', '타원', '쌍곡선', '내적', '정사영'],
+    '경제수학': ['경제', '금리', '환율', '물가', '수요', '공급', '금융', '자산', '투자', '대출', '보험', '세금', '주식', '채권', '예금']
+  };
+  const scores = {};
+  Object.keys(groups).forEach(function (name) {
+    scores[name] = groups[name].filter(function (word) { return text.indexOf(word) !== -1; }).length;
+  });
+  const strongest = Object.keys(scores).sort(function (a, b) { return scores[b] - scores[a]; })[0];
+  if (strongest !== subject && scores[strongest] >= 2 && scores[strongest] >= scores[subject] + 2) {
+    return { needsReview: true, reason: '선택 과목은 ' + subject + '이지만 내용에는 ' + strongest + ' 관련 표현이 더 많이 보입니다.' };
+  }
+  return { needsReview: false, reason: '' };
+}
+
 function getRosterRows_() { return getRows_(SHEET_NAMES.roster); }
 function getIntakeRows_() { return getRows_(SHEET_NAMES.intake); }
 function getPromptRows_() { return getRows_(SHEET_NAMES.prompts); }
+function getResponseRows_() { return getRows_(SHEET_NAMES.responses); }
 
 function getRows_(sheetName) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
@@ -277,12 +437,24 @@ function getRows_(sheetName) {
   const values = sheet.getDataRange().getDisplayValues();
   if (values.length < 2) return [];
   const headers = values[0];
-  return values.slice(1).filter(function (row) {
-    return row.some(function (cell) { return cell !== ''; });
-  }).map(function (row) {
-    const record = {};
-    headers.forEach(function (header, index) { record[header] = row[index] || ''; });
+  return values.slice(1).map(function (row, index) {
+    if (!row.some(function (cell) { return cell !== ''; })) return null;
+    const record = { _rowNumber: index + 2 };
+    headers.forEach(function (header, column) { record[header] = row[column] || ''; });
     return record;
+  }).filter(Boolean);
+}
+
+function appendRecord_(sheet, record) {
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getDisplayValues()[0];
+  sheet.appendRow(headers.map(function (header) { return safeCell_(record[header]); }));
+}
+
+function updateRecordRow_(sheet, rowNumber, updates) {
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getDisplayValues()[0];
+  Object.keys(updates).forEach(function (header) {
+    const index = headers.indexOf(header);
+    if (index !== -1) sheet.getRange(rowNumber, index + 1).setValue(safeCell_(updates[header]));
   });
 }
 
@@ -303,31 +475,25 @@ function updateRosterStatus_(studentId, status) {
 function ensureSheet_(spreadsheet, sheetName, headers) {
   let sheet = spreadsheet.getSheetByName(sheetName);
   if (!sheet) sheet = spreadsheet.insertSheet(sheetName);
-
-  const existing = sheet.getRange(1, 1, 1, headers.length).getDisplayValues()[0];
-  const isEmpty = existing.every(function (value) { return value === ''; });
-  if (isEmpty) {
+  const lastColumn = Math.max(sheet.getLastColumn(), 1);
+  const existing = sheet.getRange(1, 1, 1, lastColumn).getDisplayValues()[0].filter(function (value) { return value !== ''; });
+  if (!existing.length) {
     sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
   } else {
-    const mismatched = headers.filter(function (header, index) { return existing[index] !== header; });
-    if (mismatched.length) {
-      throw new Error(sheetName + ' 시트의 열 순서가 예상과 다릅니다: ' + mismatched.join(', '));
-    }
+    const missing = headers.filter(function (header) { return existing.indexOf(header) === -1; });
+    if (missing.length) sheet.getRange(1, existing.length + 1, 1, missing.length).setValues([missing]);
   }
-
   sheet.setFrozenRows(1);
-  const headerRange = sheet.getRange(1, 1, 1, headers.length);
-  headerRange.setFontWeight('bold').setBackground('#173f37').setFontColor('#ffffff');
-  sheet.autoResizeColumns(1, headers.length);
+  const width = sheet.getLastColumn();
+  sheet.getRange(1, 1, 1, width).setFontWeight('bold').setBackground('#173f37').setFontColor('#ffffff');
+  sheet.autoResizeColumns(1, width);
   return sheet;
 }
 
 function ensureSetting_(key, value, description) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.settings);
   const values = sheet.getDataRange().getDisplayValues();
-  for (let index = 1; index < values.length; index += 1) {
-    if (values[index][0] === key) return;
-  }
+  for (let index = 1; index < values.length; index += 1) if (values[index][0] === key) return;
   sheet.appendRow([key, value, description]);
 }
 
@@ -335,25 +501,32 @@ function getSetting_(key) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.settings);
   if (!sheet) return '';
   const values = sheet.getDataRange().getDisplayValues();
-  for (let index = 1; index < values.length; index += 1) {
-    if (values[index][0] === key) return values[index][1];
-  }
+  for (let index = 1; index < values.length; index += 1) if (values[index][0] === key) return values[index][1];
   return '';
 }
 
-function normalizeCode_(value) {
-  return String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12);
+function ensureTeacherToken_() {
+  const properties = PropertiesService.getScriptProperties();
+  let token = properties.getProperty('TEACHER_DASHBOARD_TOKEN');
+  if (!token) {
+    token = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '');
+    properties.setProperty('TEACHER_DASHBOARD_TOKEN', token);
+  }
+  return token;
 }
 
-function cleanText_(value, maxLength) {
-  return String(value || '').replace(/\u0000/g, '').trim().slice(0, maxLength);
+function validTeacherToken_(value) {
+  const expected = PropertiesService.getScriptProperties().getProperty('TEACHER_DASHBOARD_TOKEN');
+  const received = cleanText_(value, 100);
+  return Boolean(expected && received && expected.length === received.length && expected === received);
 }
 
+function normalizeCode_(value) { return String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12); }
+function cleanText_(value, maxLength) { return String(value || '').replace(/\u0000/g, '').trim().slice(0, maxLength); }
 function safeCell_(value) {
-  const text = String(value || '');
+  if (value instanceof Date) return value;
+  const text = String(value === undefined || value === null ? '' : value);
   return /^[=+\-@]/.test(text) ? "'" + text : text;
 }
-
-function failure_(message) {
-  return { ok: false, message: message };
-}
+function escapeHtml_(value) { return String(value || '').replace(/[&<>"']/g, function (character) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]; }); }
+function failure_(message) { return { ok: false, message: message }; }

@@ -5,7 +5,7 @@
   var PRIVATE_DATA_URL = '../../주제탐구/data-private/inquiries.local.json';
   var SHEET_URL = 'https://docs.google.com/spreadsheets/d/1shQ8CxS3nEO9wM6OT6-9DLgPilNtIaH0vsYPE21hscg/edit';
   var state = { inquiries: [], selectedId: null, promptMode: 'balanced', subject: 'all', query: '', dataSource: '' };
-  var subjectLabels = { 'calculus-1': '미적분Ⅰ', geometry: '기하', 'mathematical-inquiry': '통합·이론' };
+  var subjectLabels = { 'calculus-1': '미적분Ⅰ', geometry: '기하', economics: '경제수학', 'economic-math': '경제수학', 'subject-review': '과목 확인 필요', 'mathematical-inquiry': '통합·이론' };
 
   function element(tag, className, text) {
     var node = document.createElement(tag);
@@ -76,6 +76,25 @@
 
   function subjectLabel(item) { return subjectLabels[item.subject] || item.subject; }
 
+  function needsSubjectReview(item) {
+    if (item.needsSubjectReview || item.subjectReview === 'required' || item.subject === 'subject-review') return true;
+    var subject = subjectLabel(item);
+    if (['미적분Ⅰ', '기하', '경제수학', '통합·이론'].indexOf(subject) === -1) return true;
+    var text = [item.title, item.question, item.explorationPlan, (item.concepts || []).join(' ')].join(' ').toLowerCase();
+    var groups = {
+      '미적분Ⅰ': ['극한', '미분', '적분', '도함수', '변화율', '연속', '극값', '리만'],
+      '기하': ['벡터', '공간', '평면', '원뿔', '이차곡선', '포물선', '타원', '쌍곡선', '내적', '정사영'],
+      '경제수학': ['경제', '금리', '환율', '물가', '수요', '공급', '금융', '자산', '투자', '대출', '보험', '주식', '채권']
+    };
+    if (!groups[subject]) return false;
+    var scores = {};
+    Object.keys(groups).forEach(function (name) {
+      scores[name] = groups[name].filter(function (word) { return text.indexOf(word) !== -1; }).length;
+    });
+    var strongest = Object.keys(scores).sort(function (a, b) { return scores[b] - scores[a]; })[0];
+    return strongest !== subject && scores[strongest] >= 2 && scores[strongest] >= scores[subject] + 2;
+  }
+
   function promptSet(item, mode) {
     var text = [item.title, item.question, item.explorationPlan, (item.concepts || []).join(' ')].join(' ');
     var conceptPrompts = [
@@ -143,7 +162,8 @@
   function filteredInquiries() {
     var query = state.query.toLowerCase();
     return state.inquiries.filter(function (item) {
-      if (state.subject !== 'all' && item.subject !== state.subject) return false;
+      if (state.subject === 'subject-review' && !needsSubjectReview(item)) return false;
+      if (state.subject !== 'all' && state.subject !== 'subject-review' && item.subject !== state.subject) return false;
       if (!query) return true;
       return [item.displayName, item.title, item.question, (item.concepts || []).join(' ')].join(' ').toLowerCase().indexOf(query) !== -1;
     });
@@ -162,6 +182,7 @@
 
     items.forEach(function (item) {
       var button = element('button', 'inquiry-button');
+      if (needsSubjectReview(item)) button.classList.add('needs-subject-review');
       button.type = 'button';
       button.classList.toggle('is-active', state.selectedId === item.id);
       button.setAttribute('aria-pressed', state.selectedId === item.id ? 'true' : 'false');
@@ -170,7 +191,7 @@
       var copy = element('span', 'inquiry-copy');
       copy.appendChild(element('span', '', subjectLabel(item) + ' · ' + item.displayName));
       copy.appendChild(element('strong', '', item.title));
-      copy.appendChild(element('small', '', item.curriculumMapping === 'complete' ? '성취기준 확정' : '교사 검토용 초안'));
+      copy.appendChild(element('small', '', needsSubjectReview(item) ? '과목 확인 필요 · 먼저 검토' : (item.curriculumMapping === 'complete' ? '성취기준 확정' : '교사 검토용 초안')));
       button.appendChild(copy);
       button.appendChild(element('span', 'inquiry-arrow', '›'));
       button.addEventListener('click', function () {
@@ -241,10 +262,18 @@
     top.appendChild(element('span', 'status-badge', '교사 검토용 초안'));
     top.appendChild(element('span', 'detail-tag', subjectLabel(item)));
     top.appendChild(element('span', 'detail-tag', item.displayName));
+    if (needsSubjectReview(item)) top.appendChild(element('span', 'status-badge subject-alert', '과목 확인 필요'));
     top.appendChild(element('span', 'curator-updated', '최근 반영 ' + (item.updatedAt || '—')));
     panel.appendChild(top);
     panel.appendChild(element('h2', 'curator-title', item.title));
     panel.appendChild(element('p', 'curator-question', '“' + item.question + '”'));
+
+    if (needsSubjectReview(item)) {
+      var subjectWarning = element('div', 'subject-warning');
+      subjectWarning.appendChild(element('strong', '', '이 탐구는 과목을 먼저 확인해야 합니다.'));
+      subjectWarning.appendChild(element('p', '', '선택 과목과 질문의 수학 내용이 어긋날 수 있습니다. 실시간 교사용 페이지에서 과목을 바로잡아 승인하거나, 보완 필요·반려로 학생에게 돌려보내세요.'));
+      panel.appendChild(subjectWarning);
+    }
 
     var summary = element('div', 'curator-summary');
     addSummary(summary, '학생 원문', 'Google Sheet의 기초응답이 연결되면 관심 개념·궁금한 점·선정 이유를 원문 그대로 표시합니다.', true);
