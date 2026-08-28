@@ -64,7 +64,7 @@
     if (source === 'secure-public') {
       title.textContent = '학생 자료 비공개 모드';
       badge.textContent = 'SAFE';
-      description.textContent = '공개 배포본에는 실제 학생 명단·원문·학생코드를 저장하지 않습니다.';
+      description.textContent = '학생 확인과 승인은 실시간 교사용 페이지에서 합니다. 이 운영실은 전시용 초안을 다듬는 자리입니다.';
       note.textContent = '학생 자료는 로컬 또는 비공개 Google Sheet에서 확인';
       return;
     }
@@ -221,7 +221,16 @@
     empty.appendChild(element('strong', '', localMissing ? '로컬 자료 연결 대기' : '공개 저장소 안전 모드'));
     empty.appendChild(element('p', '', localMissing
       ? '현재는 공개 승인 데이터만 확인됩니다. 로컬 전용 JSON을 준비하면 학생 원문을 공개하지 않고 이 운영실에서 검토할 수 있습니다.'
-      : '실제 학생 명단, 학생코드, 원문 응답은 GitHub에 올리지 않았습니다. 이 컴퓨터에서 로컬 서버로 열면 비공개 탐구 초안을 확인할 수 있습니다.'));
+      : '실제 학생 명단, 학생코드, 원문 응답은 GitHub에 올리지 않았습니다. 이 운영실은 전시용 초안을 다듬는 곳이라 이 컴퓨터에서 로컬 서버로 열어야 합니다.'));
+
+    // 이 화면이 비어 있다고 학생을 못 보는 것이 아니다.
+    // 학생 확인과 승인은 어느 기기에서나 되는 실시간 교사용 페이지에서 한다.
+    var live = element('div', 'live-hint');
+    live.appendChild(element('strong', '', '학생이 낸 내용을 지금 보려면'));
+    live.appendChild(element('p', '', '실시간 교사용 페이지에서 확인합니다. 휴대폰·학교 PC 어디서나 열리고, 8초마다 새로고침되며 승인·보완 필요·반려까지 그 자리에서 처리합니다.'));
+    live.appendChild(element('p', 'live-hint-path', '구글시트 → 주제탐구 관리 → 실시간 교사용 페이지 열기'));
+    live.appendChild(element('small', '', '링크에 교사용 열쇠가 들어 있어 이 페이지에 저장해 두지 않습니다. 학생에게 전달하지 마세요.'));
+    empty.appendChild(live);
     var actions = element('div', 'secure-empty-actions');
     var sheet = element('a', '', '비공개 Google Sheet 열기 ↗');
     sheet.href = SHEET_URL;
