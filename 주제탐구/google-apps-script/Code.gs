@@ -24,6 +24,7 @@ function onOpen() {
     .addItem('현재 운영 상태', 'showInquiryStatus')
     .addSeparator()
     .addItem('실시간 교사용 페이지 열기', 'showTeacherDashboardLink')
+    .addItem('운영실용 JSON 내보내기', 'exportManagerJson')
     .addToUi();
 }
 
@@ -205,6 +206,25 @@ function submitInitialIntake(payload) {
     if (!existing && rows.length >= TARGET_INTAKE_COUNT) return failure_('이미 두 탐구를 작성했습니다. 새로 추가하지 말고 기존 탐구를 선택해 수정해 주세요.');
     const duplicate = rows.some(function (row) { return row['제출ID'] !== submissionId && row['과목'] === subject && subject !== '과목 확인 필요'; });
     if (duplicate) return failure_(subject + ' 탐구가 이미 있습니다. 기존 기록을 선택해 수정해 주세요.');
+
+    const unchanged = existing &&
+      cleanText_(existing['과목'], 30) === subject &&
+      cleanText_(existing['관심개념'], 3000) === fields.concept &&
+      cleanText_(existing['궁금한점'], 5000) === fields.curiosity &&
+      cleanText_(existing['선정이유'], 5000) === fields.reason &&
+      cleanText_(existing['탐구방법'], 5000) === fields.method &&
+      cleanText_(existing['웹앱아이디어'], 4000) === fields.appIdea &&
+      cleanText_(existing['학생메모'], 2000) === fields.studentNote;
+    if (unchanged) {
+      return {
+        ok: true,
+        submissionId: existing['제출ID'],
+        updated: false,
+        unchanged: true,
+        message: '내용이 바뀌지 않아 기존 검토 상태를 유지했습니다.',
+        allCompleted: rows.length >= TARGET_INTAKE_COUNT
+      };
+    }
 
     const now = new Date();
     const record = {
@@ -530,3 +550,95 @@ function safeCell_(value) {
 }
 function escapeHtml_(value) { return String(value || '').replace(/[&<>"']/g, function (character) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]; }); }
 function failure_(message) { return { ok: false, message: message }; }
+
+/**
+ * 운영실용 JSON 내보내기
+ *
+ * 운영실(수업창고/주제탐구수학/관리.html)은 시트를 직접 읽지 못하고
+ * 주제탐구/data-private/inquiries.local.json 파일만 읽는다.
+ * 이 함수가 그 파일 내용을 만들어 준다.
+ *
+ * 시트에서 그대로 나오는 값만 채우고, 교사가 읽고 정해야 하는
+ * 제목·성취기준·핵심개념은 빈 채로 둔다. 그 세 가지는 운영실 화면에서 채운다.
+ */
+
+const EXPORT_SUBJECT_KEYS = Object.freeze({
+  '미적분Ⅰ': 'calculus-1',
+  '기하': 'geometry',
+  '경제수학': 'economics',
+  '과목 확인 필요': 'subject-review'
+});
+
+function exportManagerJson() {
+  const payload = buildManagerJson_();
+  const html = HtmlService.createHtmlOutput(
+    '<div style="font:14px/1.6 -apple-system,BlinkMacSystemFont,\'Malgun Gothic\',sans-serif;padding:14px">' +
+    '<p style="margin:0 0 6px"><b>' + payload.count + '건</b>을 내보냈습니다. ' +
+    (payload.skipped ? '승인 전 ' + payload.skipped + '건은 제외했습니다.' : '') + '</p>' +
+    '<p style="margin:0 0 10px;color:#555">아래 내용을 모두 복사해 ' +
+    '<code>주제탐구/data-private/inquiries.local.json</code> 에 덮어써 주세요.</p>' +
+    '<textarea id="out" style="width:100%;height:330px;font:12px/1.5 Consolas,monospace" readonly>' +
+    payload.text.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</textarea>' +
+    '<button style="margin-top:10px;padding:8px 14px;font-size:14px;cursor:pointer" ' +
+    'onclick="var t=document.getElementById(\'out\');t.select();document.execCommand(\'copy\');this.textContent=\'복사했습니다\'">' +
+    '전체 복사</button></div>')
+    .setWidth(620).setHeight(520);
+  SpreadsheetApp.getUi().showModalDialog(html, '운영실용 JSON');
+}
+
+function buildManagerJson_() {
+  const rows = getIntakeRows_();
+  const tz = Session.getScriptTimeZone() || 'Asia/Seoul';
+  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const asDate = function (value) {
+    if (!value) return '';
+    if (Object.prototype.toString.call(value) === '[object Date]') return Utilities.formatDate(value, tz, 'yyyy-MM-dd');
+    return String(value).slice(0, 10);
+  };
+
+  let skipped = 0;
+  const inquiries = [];
+  rows.forEach(function (row) {
+    // 승인된 응답만 내보낸다. 검토 중인 초안이 운영실에 섞이지 않게 한다.
+    if (String(row['교사검토상태'] || '') !== '승인') { skipped += 1; return; }
+    const subjectKey = EXPORT_SUBJECT_KEYS[row['과목']] || 'subject-review';
+    const studentId = String(row['학생ID'] || row['학생코드'] || '').trim();
+    inquiries.push({
+      id: studentId + '-' + subjectKey,
+      studentId: studentId,
+      displayName: String(row['이름'] || '').trim(),
+      subject: subjectKey,
+
+      // 교사가 정하는 값. 운영실 화면에서 채운다.
+      title: '',
+      curriculumStandards: [],
+      concepts: [],
+      curriculumMapping: 'draft',
+
+      // 학생이 쓴 값
+      question: String(row['궁금한점'] || '').trim(),
+      explorationPlan: String(row['탐구방법'] || '').trim(),
+      studentConcept: String(row['관심개념'] || '').trim(),
+      studentReason: String(row['선정이유'] || '').trim(),
+      studentApp: String(row['웹앱아이디어'] || '').trim() || null,
+      studentNote: String(row['학생메모'] || '').trim(),
+
+      teacherFeedback: String(row['교사피드백'] || '').trim(),
+      status: 'topic-submitted',
+      visibility: 'draft',
+      updatedAt: asDate(row['수정일시'] || row['제출일시']) || today
+    });
+  });
+
+  const text = JSON.stringify({
+    schemaVersion: '1.0',
+    project: {
+      title: '2026 수학 주제탐구 프로젝트',
+      updatedAt: today,
+      notice: '시트의 승인된 기초응답에서 내보낸 실명 초안입니다. 공개 저장소에 올리지 않습니다.'
+    },
+    inquiries: inquiries
+  }, null, 2);
+
+  return { text: text, count: inquiries.length, skipped: skipped };
+}

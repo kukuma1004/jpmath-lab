@@ -254,6 +254,134 @@
     ];
   }
 
+  // ── 교사 큐레이션 ────────────────────────────────────────────────────
+  // 시트에서 내보낸 JSON은 제목·성취기준·핵심개념이 비어 있다.
+  // 학생이 쓰지 않는 값이라 교사가 읽고 정해야 하고, 그 자리가 여기다.
+  // 정적 페이지라 파일에 바로 쓸 수 없으므로 편집분은 브라우저에 보관했다가
+  // "완성 JSON 내려받기"로 한 번에 파일로 만든다.
+  var CURATION_KEY = 'jp-inquiry-curation-v1';
+
+  function loadCuration() {
+    try { return JSON.parse(localStorage.getItem(CURATION_KEY) || '{}'); }
+    catch (error) { return {}; }
+  }
+
+  function saveCuration(map) {
+    try { localStorage.setItem(CURATION_KEY, JSON.stringify(map)); }
+    catch (error) { /* 저장이 막힌 브라우저에서도 편집 자체는 계속된다 */ }
+  }
+
+  // 저장해 둔 편집분을 원본 위에 얹는다
+  function applyCuration(list) {
+    var saved = loadCuration();
+    list.forEach(function (item) {
+      var patch = saved[item.id];
+      if (!patch) return;
+      if (patch.title != null) item.title = patch.title;
+      if (patch.curriculumStandards) item.curriculumStandards = patch.curriculumStandards;
+      if (patch.concepts) item.concepts = patch.concepts;
+      if (patch.curriculumMapping) item.curriculumMapping = patch.curriculumMapping;
+    });
+    return list;
+  }
+
+  function recordCuration(item, field, value) {
+    var saved = loadCuration();
+    var patch = saved[item.id] || (saved[item.id] = {});
+    patch[field] = value;
+    item[field] = value;
+    saveCuration(saved);
+  }
+
+  // 쉼표와 줄바꿈만 구분자로 쓴다. 가운뎃점은 '극대·극소'처럼 개념 이름 안에 들어간다.
+  var splitTags = function (text) {
+    return String(text || '').split(/[,\n]/).map(function (x) { return x.trim(); })
+      .filter(function (x) { return x.length; });
+  };
+
+  function curationRow(parent, label, hint, value, onChange) {
+    var row = element('div', 'curation-row');
+    var head = element('label', 'curation-label');
+    head.appendChild(element('span', '', label));
+    if (hint) head.appendChild(element('small', '', hint));
+    row.appendChild(head);
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'curation-input';
+    input.value = value || '';
+    input.placeholder = hint || '';
+    input.addEventListener('change', function () { onChange(this.value); });
+    head.setAttribute('for', input.id = 'cur-' + Math.random().toString(36).slice(2, 8));
+    row.appendChild(input);
+    parent.appendChild(row);
+    return input;
+  }
+
+  function renderCuration(panel, item) {
+    var section = element('section', 'curator-section curation-block');
+    var label = element('div', 'section-label');
+    label.appendChild(element('h3', '', '교사가 정하는 값'));
+    label.appendChild(element('small', '', '학생이 쓰지 않는 항목입니다'));
+    section.appendChild(label);
+
+    curationRow(section, '탐구 제목', '예: 합성함수의 극값 탐구', item.title,
+      function (v) { recordCuration(item, 'title', v.trim()); renderList(); renderCurator(item); });
+    curationRow(section, '성취기준', '쉼표로 구분 · 예: 12미적Ⅰ02-07', (item.curriculumStandards || []).join(', '),
+      function (v) { recordCuration(item, 'curriculumStandards', splitTags(v)); renderCurator(item); });
+    curationRow(section, '핵심 개념', '쉼표로 구분 · 예: 합성함수, 극대·극소', (item.concepts || []).join(', '),
+      function (v) { recordCuration(item, 'concepts', splitTags(v)); renderCurator(item); });
+
+    var stateRow = element('div', 'curation-row');
+    var stateLabel = element('label', 'curation-label');
+    stateLabel.appendChild(element('span', '', '매핑 상태'));
+    stateRow.appendChild(stateLabel);
+    var select = document.createElement('select');
+    select.className = 'curation-input';
+    [['draft', '초안'], ['review', '원문 대조 중'], ['complete', '확정']].forEach(function (pair) {
+      var option = document.createElement('option');
+      option.value = pair[0]; option.textContent = pair[1];
+      if ((item.curriculumMapping || 'draft') === pair[0]) option.selected = true;
+      select.appendChild(option);
+    });
+    select.addEventListener('change', function () {
+      recordCuration(item, 'curriculumMapping', this.value); renderCurator(item);
+    });
+    stateLabel.setAttribute('for', select.id = 'cur-map-' + item.id);
+    stateRow.appendChild(select);
+    section.appendChild(stateRow);
+
+    panel.appendChild(section);
+  }
+
+  // 편집분을 얹은 완성본을 파일로 내려받는다
+  function downloadCurated() {
+    var payload = {
+      schemaVersion: '1.0',
+      project: {
+        title: '2026 수학 주제탐구 프로젝트',
+        updatedAt: new Date().toISOString().slice(0, 10),
+        notice: '운영실에서 제목·성취기준·핵심개념을 채운 실명 초안입니다. 공개 저장소에 올리지 않습니다.'
+      },
+      inquiries: state.inquiries
+    };
+    var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement('a');
+    link.href = url;
+    link.download = 'inquiries.local.json';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  function curationProgress() {
+    var done = state.inquiries.filter(function (item) {
+      return item.title && (item.curriculumStandards || []).length;
+    }).length;
+    return { done: done, total: state.inquiries.length };
+  }
+
   function renderCurator(item) {
     var panel = document.getElementById('curatorPanel');
     panel.textContent = '';
@@ -276,7 +404,10 @@
     }
 
     var summary = element('div', 'curator-summary');
-    addSummary(summary, '학생 원문', 'Google Sheet의 기초응답이 연결되면 관심 개념·궁금한 점·선정 이유를 원문 그대로 표시합니다.', true);
+    var raw = [item.studentConcept && ('관심 개념 · ' + item.studentConcept),
+               item.studentReason && ('선정 이유 · ' + item.studentReason)]
+      .filter(Boolean).join(String.fromCharCode(10));
+    addSummary(summary, '학생 원문', raw || 'Google Sheet에서 내보낸 JSON을 연결하면 관심 개념·선정 이유가 원문 그대로 표시됩니다.', true);
     addSummary(summary, '현재 가공 초안', item.explorationPlan || '아직 탐구 계획이 입력되지 않았습니다.', false);
     panel.appendChild(summary);
 
@@ -292,6 +423,7 @@
     mapping.appendChild(mappingBox);
     if (item.curriculumMapping !== 'complete') mapping.appendChild(element('p', 'mapping-warning', '현재 값은 기존 자료 기반 초안입니다. 2022 개정 교육과정 원문 대조 후 확정합니다.'));
     panel.appendChild(mapping);
+    renderCuration(panel, item);
 
     var promptSection = element('section', 'curator-section');
     var promptLabel = element('div', 'section-label');
@@ -399,6 +531,15 @@
     document.getElementById('copyHandoff').addEventListener('click', function () {
       copyText(document.getElementById('handoffText').textContent, this, '복사됨');
     });
+    var download = document.getElementById('downloadCurated');
+    if (download) download.addEventListener('click', function () {
+      if (!state.inquiries.length) return;
+      downloadCurated();
+      var progress = curationProgress();
+      this.textContent = progress.total + '건 내려받음 · 성취기준까지 정리된 것 ' + progress.done + '건';
+      var button = this;
+      setTimeout(function () { button.textContent = '완성 JSON 내려받기'; }, 2600);
+    });
   }
 
   function init() {
@@ -413,7 +554,7 @@
       list.classList.remove('is-loading');
       list.removeAttribute('aria-busy');
       state.dataSource = payload.source;
-      state.inquiries = payload.data.inquiries || [];
+      state.inquiries = applyCuration(payload.data.inquiries || []);
       updateConnectionStatus(state.dataSource, state.inquiries.length);
       updateMetrics();
       if (!state.inquiries.length) {
