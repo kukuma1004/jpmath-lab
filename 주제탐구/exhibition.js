@@ -3,14 +3,27 @@
 
   var PUBLIC_DATA_URL = 'data/inquiries.json';
   var PRIVATE_DATA_URL = 'data-private/inquiries.local.json';
+  var CLASSROOM_KEY = 'jp-classroom-access-v1';
+  var FEED_KEY = 'jp-inquiry-token-v1';
+  var FEED_REFRESH_MS = 8000;
+  var FEED_TIMEOUT_MS = 25000;
+  var feedTimer = null;
+  var feedSeq = 0;
+  var volatileFeedToken = '';
   var subjectLabels = {
     'calculus-1': '미적분Ⅰ',
     geometry: '기하',
+    economics: '경제수학',
+    'economic-math': '경제수학',
+    'subject-review': '과목 확인 필요',
     'mathematical-inquiry': '통합·이론 탐구'
   };
   var statusLabels = {
     'topic-submitted': '주제 제출',
     questioning: '질문 정교화',
+    'prompt-published': '교사 발문 공개',
+    'response-draft': '답변 작성 중',
+    'response-submitted': '답변 제출',
     exploring: '탐구 중',
     revising: '수정 중',
     complete: '전시 완료'
@@ -42,6 +55,83 @@
     return location.protocol === 'file:' || /^(localhost|127\.0\.0\.1|\[::1\])$/i.test(location.hostname);
   }
 
+  function isTeacherView() {
+    try { return sessionStorage.getItem(CLASSROOM_KEY) === 'granted'; }
+    catch (error) { return false; }
+  }
+
+  function feedBase() {
+    var href = String(document.body.getAttribute('data-feed-base') || '');
+    return /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(href) ? href : '';
+  }
+
+  function readToken(text) {
+    var value = String(text || '').trim();
+    if (!value) return '';
+    var found = value.match(/[?&]token=([^&\s]+)/);
+    if (found) {
+      try { return decodeURIComponent(found[1]); } catch (error) { return found[1]; }
+    }
+    return /^[\w.~-]{8,200}$/.test(value) ? value : '';
+  }
+
+  function savedToken() {
+    try { return sessionStorage.getItem(FEED_KEY) || volatileFeedToken; }
+    catch (error) { return volatileFeedToken; }
+  }
+
+  function storeToken(token) {
+    volatileFeedToken = token || '';
+    try {
+      if (token) sessionStorage.setItem(FEED_KEY, token);
+      else sessionStorage.removeItem(FEED_KEY);
+    } catch (error) { /* 저장이 막혀도 이 탭에서만 유지한다. */ }
+  }
+
+  function feedError(code, detail) {
+    var error = new Error(code);
+    error.code = code;
+    error.detail = detail || '';
+    return error;
+  }
+
+  function feedMessage(error) {
+    var code = error && error.code;
+    if (code === 'denied') return error.detail || '연결 열쇠가 맞지 않습니다.';
+    if (code === 'timeout') return '시트 응답이 늦습니다. 잠시 뒤 다시 시도해 주세요.';
+    if (code === 'unreachable') return '시트 배포 주소에 닿지 못했습니다.';
+    if (code === 'nobase') return '시트 연결 주소를 찾지 못했습니다.';
+    return '시트와 연결하지 못했습니다.';
+  }
+
+  function fetchTeacherFeed(token) {
+    return new Promise(function (resolve, reject) {
+      var base = feedBase();
+      if (!base) { reject(feedError('nobase')); return; }
+      var name = 'jpExhibitionFeed' + (++feedSeq);
+      var script = document.createElement('script');
+      var timer = setTimeout(function () { cleanup(); reject(feedError('timeout')); }, FEED_TIMEOUT_MS);
+      function cleanup() {
+        clearTimeout(timer);
+        try { delete window[name]; } catch (error) { window[name] = undefined; }
+        if (script.parentNode) script.parentNode.removeChild(script);
+      }
+      window[name] = function (payload) {
+        cleanup();
+        if (!payload || !payload.ok) {
+          reject(feedError('denied', payload && payload.error ? payload.error : ''));
+          return;
+        }
+        payload._source = 'live-sheet';
+        resolve(payload);
+      };
+      script.onerror = function () { cleanup(); reject(feedError('unreachable')); };
+      script.src = base + '?view=inquiries&token=' + encodeURIComponent(token) +
+        '&callback=' + name + '&_=' + Date.now();
+      document.head.appendChild(script);
+    });
+  }
+
   function fetchData(urls, index) {
     return fetch(urls[index], { cache: 'no-store' }).then(function (response) {
       if (!response.ok) throw new Error('not-found');
@@ -52,9 +142,139 @@
     });
   }
 
-  function loadData() {
+  function loadStaticData() {
     var urls = isLocalView() ? [PRIVATE_DATA_URL, PUBLIC_DATA_URL] : [PUBLIC_DATA_URL];
-    return fetchData(urls, 0);
+    return fetchData(urls, 0).then(function (data) {
+      data._source = isLocalView() && urls[0] === PRIVATE_DATA_URL ? 'local-private' : 'public-approved';
+      return data;
+    });
+  }
+
+  function loadData() {
+    if (!isTeacherView()) return loadStaticData();
+    var token = savedToken();
+    if (!token) {
+      return loadStaticData().then(function (data) {
+        data._teacherNeedsConnection = true;
+        return data;
+      });
+    }
+    return fetchTeacherFeed(token).catch(function (error) {
+      return loadStaticData().then(function (data) {
+        data._teacherNeedsConnection = true;
+        data._feedError = error;
+        return data;
+      });
+    });
+  }
+
+  function inquirySummary(inquiries) {
+    var students = {};
+    (inquiries || []).forEach(function (item) {
+      var key = item.studentId || item.displayName || item.id;
+      if (key) students[key] = true;
+    });
+    return { students: Object.keys(students).length, inquiries: (inquiries || []).length };
+  }
+
+  function stopFeedTimer() {
+    if (feedTimer) { clearInterval(feedTimer); feedTimer = null; }
+  }
+
+  function startFeedTimer() {
+    stopFeedTimer();
+    if (!isTeacherView() || !savedToken() || document.body.getAttribute('data-page') !== 'home') return;
+    feedTimer = setInterval(function () {
+      fetchTeacherFeed(savedToken()).then(function (data) { renderHome(data); }).catch(function () {
+        /* 자동 새로고침 실패는 현재 화면을 지우지 않고 다음 회차에 다시 시도한다. */
+      });
+    }, FEED_REFRESH_MS);
+  }
+
+  function renderTeacherPanel(data) {
+    var host = document.getElementById('teacherLivePanel');
+    if (!host || !isTeacherView()) return;
+    host.hidden = false;
+    host.textContent = '';
+    host.classList.toggle('is-error', Boolean(data._feedError));
+
+    var copy = element('div', 'teacher-live-copy');
+    var actions = element('div', 'teacher-live-actions');
+    var summary = inquirySummary(data.inquiries);
+
+    if (data._source === 'live-sheet') {
+      copy.appendChild(element('span', '', 'SHEET LIVE · 교사용'));
+      copy.appendChild(element('strong', '', '현재 탐구 현황이 실시간으로 연결되었습니다.'));
+      copy.appendChild(element('p', '', '현재 탐구자 ' + summary.students + '명 · 등록된 질문 ' + summary.inquiries + '개' +
+        (data.syncedAt ? ' · 마지막 확인 ' + data.syncedAt : '') + ' · 8초마다 자동으로 확인합니다.'));
+
+      var refresh = element('button', 'secondary', '지금 새로고침');
+      refresh.type = 'button';
+      refresh.onclick = function () {
+        refresh.disabled = true;
+        refresh.textContent = '확인 중…';
+        fetchTeacherFeed(savedToken()).then(function (next) {
+          renderHome(next);
+        }).catch(function (error) {
+          data._feedError = error;
+          renderTeacherPanel(data);
+        });
+      };
+      var disconnect = element('button', 'secondary', '연결 끊기');
+      disconnect.type = 'button';
+      disconnect.onclick = function () {
+        stopFeedTimer();
+        storeToken('');
+        loadStaticData().then(function (next) {
+          next._teacherNeedsConnection = true;
+          renderHome(next);
+        }).catch(fail);
+      };
+      actions.appendChild(refresh);
+      actions.appendChild(disconnect);
+    } else {
+      copy.appendChild(element('span', '', data._feedError ? 'CONNECTION CHECK' : 'TEACHER PREVIEW'));
+      copy.appendChild(element('strong', '', data._source === 'local-private'
+        ? '로컬 탐구 초안을 보고 있습니다.'
+        : '현재 탐구 질문을 시트와 연결하세요.'));
+      copy.appendChild(element('p', '', data._feedError
+        ? feedMessage(data._feedError) + ' 아래에 연결 열쇠를 다시 붙여 넣어 주세요.'
+        : '구글시트의 운영실 실시간 연결 열쇠를 붙이면 현재 탐구자와 등록 질문이 이 전시에 나타납니다. 학생 원문은 GitHub에 저장하지 않습니다.'));
+
+      var input = document.createElement('input');
+      input.type = 'password';
+      input.placeholder = '연결 열쇠 또는 연결 주소 붙여 넣기';
+      input.setAttribute('aria-label', '시트 연결 열쇠');
+      var connect = element('button', '', '실시간 연결');
+      connect.type = 'button';
+      var attempt = function () {
+        var token = readToken(input.value);
+        if (!token) {
+          host.classList.add('is-error');
+          copy.querySelector('p').textContent = '연결 열쇠를 찾지 못했습니다. 시트에서 받은 내용을 그대로 붙여 넣어 주세요.';
+          return;
+        }
+        connect.disabled = true;
+        connect.textContent = '연결 중…';
+        fetchTeacherFeed(token).then(function (next) {
+          storeToken(token);
+          renderHome(next);
+        }).catch(function (error) {
+          data._feedError = error;
+          renderTeacherPanel(data);
+        });
+      };
+      connect.onclick = attempt;
+      input.onkeydown = function (event) { if (event.key === 'Enter') attempt(); };
+      var manager = element('a', 'secondary', '교사 관리로 이동');
+      manager.href = '../수업창고/주제탐구수학/관리.html';
+      actions.appendChild(input);
+      actions.appendChild(connect);
+      actions.appendChild(manager);
+    }
+
+    host.appendChild(copy);
+    host.appendChild(actions);
   }
 
   function renderHome(data) {
@@ -64,7 +284,7 @@
     var apps = 0;
 
     inquiries.forEach(function (item) {
-      students[item.studentId] = true;
+      students[item.studentId || item.displayName || item.id] = true;
       if (item.curriculumMapping === 'draft' || item.curriculumMapping === 'complete') mapped += 1;
       if (item.studentApp && item.studentApp.entry) apps += 1;
     });
@@ -73,17 +293,24 @@
     document.getElementById('inquiryCount').textContent = inquiries.length;
     document.getElementById('mappedCount').textContent = mapped + ' / ' + inquiries.length;
     document.getElementById('appCount').textContent = apps + ' / ' + inquiries.length;
+    renderTeacherPanel(data);
 
     var grid = document.getElementById('inquiryGrid');
     grid.removeAttribute('aria-busy');
     var filters = document.querySelectorAll('[data-filter]');
+    filters.forEach(function (button) {
+      button.disabled = false;
+      button.removeAttribute('aria-disabled');
+    });
 
     if (!inquiries.length) {
       grid.textContent = '';
       var empty = element('div', 'collection-empty');
       empty.appendChild(element('span', 'collection-empty-mark', '✓'));
-      empty.appendChild(element('h3', '', '공개 전시는 아직 준비 중입니다.'));
-      empty.appendChild(element('p', '', '학생 원문·학생코드·전체 명단은 공개 저장소에 넣지 않습니다. 교사가 승인한 탐구만 이후 이곳에 나타납니다.'));
+      empty.appendChild(element('h3', '', isTeacherView() ? '아직 연결된 탐구 질문이 없습니다.' : '공개 전시는 아직 준비 중입니다.'));
+      empty.appendChild(element('p', '', isTeacherView()
+        ? '위 교사용 연결 영역에서 시트 연결 열쇠를 입력하면 현재 탐구자와 등록 질문을 바로 확인할 수 있습니다.'
+        : '학생 원문·학생코드·전체 명단은 공개 저장소에 넣지 않습니다. 교사가 승인한 탐구만 이후 이곳에 나타납니다.'));
       var orientation = element('a', '', '수업 오리엔테이션 보기 →');
       orientation.href = 'orientation.html';
       empty.appendChild(orientation);
@@ -137,17 +364,18 @@
 
     filters.forEach(function (button) {
       button.setAttribute('aria-pressed', button.classList.contains('is-active') ? 'true' : 'false');
-      button.addEventListener('click', function () {
+      button.onclick = function () {
         filters.forEach(function (other) {
           var active = other === button;
           other.classList.toggle('is-active', active);
           other.setAttribute('aria-pressed', active ? 'true' : 'false');
         });
         draw(button.getAttribute('data-filter'));
-      });
+      };
     });
 
     draw('all');
+    if (data._source === 'live-sheet') startFeedTimer();
   }
 
   function illustration(name) {

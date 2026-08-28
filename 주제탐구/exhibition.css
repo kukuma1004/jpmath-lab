@@ -254,6 +254,41 @@ footer {
 .stats strong { display: block; color: var(--green); font: 700 42px var(--mono); letter-spacing: -.06em; }
 .stats span { display: block; margin-top: 7px; color: var(--muted); font-size: 13px; }
 
+/* 수업창고 인증 뒤에만 나타나는 교사용 실시간 연결 상태 */
+.teacher-live {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+  margin: 28px 0 0;
+  padding: 22px 25px;
+  border: 1px solid rgba(47,107,92,.22);
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(47,107,92,.09), rgba(199,151,47,.10));
+  box-shadow: 0 14px 40px rgba(23,42,36,.07);
+}
+.teacher-live[hidden] { display: none !important; }
+.teacher-live-copy { display: grid; gap: 6px; }
+.teacher-live-copy span { color: var(--green); font: 800 11px var(--mono); letter-spacing: .13em; }
+.teacher-live-copy strong { font: 900 clamp(20px,2.2vw,29px)/1.25 var(--serif); letter-spacing: -.035em; }
+.teacher-live-copy p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.65; }
+.teacher-live-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+.teacher-live input {
+  width: min(310px, 50vw); min-height: 43px; padding: 0 14px;
+  border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,.92);
+  color: var(--ink); font: 600 13px var(--sans); outline: none;
+}
+.teacher-live input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(47,107,92,.11); }
+.teacher-live button,.teacher-live a {
+  display: inline-flex; min-height: 43px; align-items: center; justify-content: center;
+  padding: 0 15px; border: 1px solid var(--green); border-radius: 999px;
+  color: white; background: var(--green); font: 800 12px var(--sans); text-decoration: none; cursor: pointer;
+}
+.teacher-live button.secondary,.teacher-live a.secondary { color: var(--green); background: transparent; }
+.teacher-live button:disabled { cursor: wait; opacity: .6; }
+.teacher-live.is-error { border-color: rgba(185,63,55,.3); background: rgba(185,63,55,.07); }
+.teacher-live.is-error .teacher-live-copy span { color: #a63831; }
+
 .collection { padding: 110px 0 120px; }
 .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 50px; }
 .section-heading h2 { margin: 9px 0 0; font: 900 clamp(35px, 5vw, 58px) var(--serif); letter-spacing: -.06em; }
@@ -366,6 +401,7 @@ footer a:hover { color: var(--green); }
 /* 학생별 탐구 · 한 화면씩 넘기는 슬라이드 전시 */
 body[data-subject="calculus-1"] { --deck-accent: #ff8353; --deck-secondary: #ffd36b; }
 body[data-subject="geometry"] { --deck-accent: #45d2b1; --deck-secondary: #7ad9ff; }
+body[data-subject="economics"] { --deck-accent: #d6a63b; --deck-secondary: #71b69d; }
 body[data-subject="mathematical-inquiry"] { --deck-accent: #c895ff; --deck-secondary: #ff8aaa; }
 .detail-deck-ready { overflow: hidden; background: #071b28; }
 .detail-deck-ready .site-header {
@@ -485,6 +521,9 @@ body[data-subject="mathematical-inquiry"] { --deck-accent: #c895ff; --deck-secon
   .stats div { border-bottom: 1px solid var(--line); }
   .stats div:nth-child(2) { border-right: 0; }
   .stats div:nth-child(n+3) { border-bottom: 0; }
+  .teacher-live { grid-template-columns: 1fr; padding: 20px; }
+  .teacher-live-actions { justify-content: flex-start; }
+  .teacher-live input { width: 100%; }
   .inquiry-grid { grid-template-columns: 1fr; }
   .collection { padding: 80px 0; }
   .manifesto { padding: 52px 25px; border-radius: 26px; }
