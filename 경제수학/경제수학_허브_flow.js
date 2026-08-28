@@ -29,10 +29,10 @@
     }
   ];
   const assets = [
-    { name: '예금', color: '#2f745d' },
-    { name: '채권', color: '#5a7694' },
-    { name: '주식', color: '#b85e3d' },
-    { name: '외화', color: '#aa851d' }
+    { name: '예금', color: '#12735d' },
+    { name: '채권', color: '#3f5c86' },
+    { name: '주식', color: '#a94f28' },
+    { name: '외화', color: '#7a5a0d' }
   ];
   let scenarioIndex = 0;
   let allocation = [25, 25, 25, 25];

@@ -222,9 +222,9 @@ html.jp-v2[data-jp-route="home"] .subject-card .card-desc { color: var(--jp-mute
 
 /* ---------- Subject hubs ---------- */
 
-html.jp-v2[data-jp-view="hub"][data-jp-route="calculus"] { --jp-accent: var(--jp-motion); }
-html.jp-v2[data-jp-view="hub"][data-jp-route="geometry"] { --jp-accent: var(--jp-space); }
-html.jp-v2[data-jp-view="hub"][data-jp-route="economy"] { --jp-accent: var(--jp-simulation); }
+html.jp-v2[data-jp-view="hub"][data-jp-route="calculus"] { --jp-accent: var(--jp-motion); --jp-accent-ink: #bf4630; }
+html.jp-v2[data-jp-view="hub"][data-jp-route="geometry"] { --jp-accent: var(--jp-space); --jp-accent-ink: #4c5fd0; }
+html.jp-v2[data-jp-view="hub"][data-jp-route="economy"] { --jp-accent: var(--jp-simulation); --jp-accent-ink: var(--jp-simulation); }
 
 html.jp-v2[data-jp-view="hub"] body:not(:has(.shell)) {
   max-width: 1280px;
@@ -249,7 +249,8 @@ html.jp-v2[data-jp-view="hub"] .breadcrumb {
   font-family: var(--jp-mono);
   font-size: 11px;
 }
-html.jp-v2[data-jp-view="hub"] .breadcrumb .current { color: var(--jp-accent); }
+/* 작은 글씨에는 과목색을 한 단계 눌러 쓴다. 원색 그대로는 흰 배경 대비 4.5:1 에 못 미친다. */
+html.jp-v2[data-jp-view="hub"] .breadcrumb .current { color: var(--jp-accent-ink, var(--jp-accent)); }
 html.jp-v2[data-jp-view="hub"] .hero { margin-bottom: 34px; }
 html.jp-v2[data-jp-view="hub"] body:not(:has(.shell)) > .hero,
 html.jp-v2[data-jp-view="hub"] body:not(:has(.shell)) > header.hero {
@@ -278,7 +279,7 @@ html.jp-v2[data-jp-view="hub"] body:not(:has(.shell)) > header.hero::after {
     0 0 0 88px color-mix(in srgb, var(--jp-accent) 2%, transparent);
   content: "";
 }
-html.jp-v2[data-jp-view="hub"] .hero .eyebrow { margin-bottom: 10px; color: var(--jp-accent); }
+html.jp-v2[data-jp-view="hub"] .hero .eyebrow { margin-bottom: 10px; color: var(--jp-accent-ink, var(--jp-accent)); }
 html.jp-v2[data-jp-view="hub"] .hero h1 {
   margin: 0 0 12px;
   color: var(--jp-ink) !important;
@@ -343,7 +344,10 @@ html.jp-v2[data-jp-view="hub"] .icon-tile { background: color-mix(in srgb, var(-
 html.jp-v2[data-jp-view="hub"] .code-chip { color: var(--accent); background: transparent; }
 html.jp-v2[data-jp-view="hub"] .card-title { font-size: 21px; }
 html.jp-v2[data-jp-view="hub"] .card-desc { color: var(--jp-muted); font-size: 13.5px; line-height: 1.6; }
-html.jp-v2[data-jp-view="hub"] .card-meta { color: #7b8681; }
+/* 카드 아래 수식 요약은 장식이 아니라 읽는 정보다. 흰 배경 대비 4.9:1 을 지킨다. */
+html.jp-v2[data-jp-view="hub"] .card-meta { color: var(--jp-muted, #68736f); }
+/* 카드 번호도 학생이 서로 부르는 정보라 흐리게 두지 않는다 (2.5:1 -> 4.9:1) */
+html.jp-v2[data-jp-view="hub"] .index-mark { color: var(--jp-muted, #68736f); opacity: 1; }
 
 html.jp-v2[data-jp-route="geometry"] .skill-map-intro,
 html.jp-v2[data-jp-route="geometry"] .skill-category-empty {

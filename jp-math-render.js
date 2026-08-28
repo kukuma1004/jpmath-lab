@@ -23,7 +23,8 @@
     '[data-drill-equation]',
     '[data-game-equation]',
     '[data-math]',
-    '[data-tex]'
+    '[data-tex]',
+    '[data-tex-raw]'
   ].join(',');
 
   const superMap = {
@@ -140,13 +141,16 @@
 
   function renderOne(el) {
     if (!window.katex || el.querySelector('.katex')) return;
-    const source = (el.dataset.tex || el.textContent).trim();
+    // data-tex-raw 는 이미 정확한 LaTeX 이므로 toTex 의 추정 변환을 거치지 않는다.
+    // (행렬·첨자·분수처럼 유니코드 표기로는 정확히 적을 수 없는 식에 쓴다)
+    const raw = el.getAttribute('data-tex-raw');
+    const source = (raw || el.dataset.tex || el.textContent).trim();
     if (!source) return;
-    const explicit = el.hasAttribute('data-tex') || el.hasAttribute('data-math');
+    const explicit = raw !== null || el.hasAttribute('data-tex') || el.hasAttribute('data-math');
     const looksMathematical = /[0-9A-Za-z=+\-*/^()[\]{}<>|]|[⁰¹²³⁴⁵⁶⁷⁸⁹]|lim|∫|√|∞|→|′|Δ/.test(source);
     if (!explicit && !looksMathematical) return;
     try {
-      const tex = toTex(source);
+      const tex = raw !== null ? source : toTex(source);
       const readableTex = el.closest('[data-math-style="upright"]') ? `\\mathsf{${tex}}` : tex;
       const displayMode = el.matches(displayTargets);
       el.dataset.mathSource = source;
@@ -179,7 +183,7 @@
     const errors = nodes.filter(el => el.dataset.mathError === 'true');
     const pending = nodes.filter(el => {
       if (el.querySelector('.katex') || el.dataset.mathError === 'true') return false;
-      const source = (el.dataset.tex || el.textContent || '').trim();
+      const source = (el.getAttribute('data-tex-raw') || el.dataset.tex || el.textContent || '').trim();
       return /[0-9A-Za-z=+\-*/^()[\]{}<>|]|[⁰¹²³⁴⁵⁶⁷⁸⁹]|lim|∫|√|∞|→|′|Δ/.test(source);
     });
     const overflow = rendered.filter(el => el.scrollWidth > el.clientWidth + 2);
@@ -187,7 +191,7 @@
       targets: nodes.length,
       rendered: rendered.length,
       errors: errors.map(el => el.dataset.mathSource || el.textContent.trim()),
-      pending: pending.map(el => (el.dataset.tex || el.textContent || '').trim()),
+      pending: pending.map(el => (el.getAttribute('data-tex-raw') || el.dataset.tex || el.textContent || '').trim()),
       overflow: overflow.map(el => el.dataset.mathSource || el.textContent.trim())
     };
   }

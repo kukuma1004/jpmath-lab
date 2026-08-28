@@ -479,7 +479,7 @@
       if (source) {
         var link = document.createElement('link');
         link.rel = 'stylesheet';
-        link.href = source.replace(/jp-polish\.js(?:\?.*)?$/, 'jp-system.css?v=8');
+        link.href = source.replace(/jp-polish\.js(?:\?.*)?$/, 'jp-system.css?v=11');
         link.dataset.jpSystem = '';
         document.head.appendChild(link);
       }
@@ -530,7 +530,7 @@
 
     katexTask
       .then(function () {
-        return loadScript(assetRoot + 'jp-math-render.js?v=5', 'data-jp-math-loader', rendererReady);
+        return loadScript(assetRoot + 'jp-math-render.js?v=6', 'data-jp-math-loader', rendererReady);
       })
       .then(function () {
         document.dispatchEvent(new CustomEvent('jp:math-ready'));

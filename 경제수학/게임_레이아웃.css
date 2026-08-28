@@ -72,12 +72,12 @@
 }
 
 /* 장르별 강조선 색 */
-.six-tabs .game-tab[data-genre="sim"]      {--gc:#1f6b50}
-.six-tabs .game-tab[data-genre="detective"]{--gc:#315f78}
-.six-tabs .game-tab[data-genre="matrix"]   {--gc:#9f4320}
-.six-tabs .game-tab[data-genre="assets"]   {--gc:#a8801a}
-.six-tabs .game-tab[data-genre="village"]  {--gc:#67417d}
-.six-tabs .game-tab[data-genre="garden"]   {--gc:#4a7c1f}
+.six-tabs .game-tab[data-genre="sim"]      {--gc:var(--jp-subject-ink,#12735d)}
+.six-tabs .game-tab[data-genre="detective"]{--gc:var(--jp-subject-ink,#12735d)}
+.six-tabs .game-tab[data-genre="matrix"]   {--gc:var(--jp-subject-ink,#12735d)}
+.six-tabs .game-tab[data-genre="assets"]   {--gc:var(--jp-subject-ink,#12735d)}
+.six-tabs .game-tab[data-genre="village"]  {--gc:var(--jp-subject-ink,#12735d)}
+.six-tabs .game-tab[data-genre="garden"]   {--gc:var(--jp-subject-ink,#12735d)}
 
 .six-tabs .game-tab{
   position:relative;

@@ -435,29 +435,32 @@ small{
    과목마다 다른 색과 첫인상을 주면서, 모든 학습실의 배경·카드·탭을
    같은 완성도로 묶는다. 콘텐츠 구조와 수학 상호작용은 그대로 둔다.
    =================================================================== */
-html[data-jp-section="calculus"]{
-  --jp-theme:#c66f4c;
-  --jp-theme-dark:#1c3029;
-  --jp-theme-soft:#f2dfd3;
-  --jp-theme-glow:rgba(198,111,76,.24);
+/* 과목색은 DESIGN_SYSTEM 의 토큰을 따른다.
+   --jp-theme 는 작은 글씨(칩·코드·태그)에 그대로 쓰이므로,
+   흰 배경 대비 4.5:1 이상이 되도록 토큰을 한 단계 눌러 사용한다. */
+html[data-jp-section="calculus"]{            /* MOTION · #d4553f */
+  --jp-theme:#bf4630;
+  --jp-theme-dark:#2c1a15;
+  --jp-theme-soft:#f8e3dd;
+  --jp-theme-glow:rgba(212,85,63,.24);
 }
-html[data-jp-section="geometry"]{
-  --jp-theme:#2f7161;
-  --jp-theme-dark:#17342d;
-  --jp-theme-soft:#dcebe6;
-  --jp-theme-glow:rgba(47,113,97,.22);
+html[data-jp-section="geometry"]{            /* SPACE · #596bd8 */
+  --jp-theme:#4c5fd0;
+  --jp-theme-dark:#1a2044;
+  --jp-theme-soft:#e3e6fb;
+  --jp-theme-glow:rgba(89,107,216,.24);
 }
-html[data-jp-section="economy"]{
-  --jp-theme:#bd8a28;
-  --jp-theme-dark:#1a2c24;
-  --jp-theme-soft:#f3e8bd;
-  --jp-theme-glow:rgba(189,138,40,.24);
+html[data-jp-section="economy"]{             /* SIMULATION · #168068 */
+  --jp-theme:#168068;
+  --jp-theme-dark:#0f2a24;
+  --jp-theme-soft:#d9ece6;
+  --jp-theme-glow:rgba(22,128,104,.24);
 }
-html[data-jp-section="csat"]{
-  --jp-theme:#62789d;
-  --jp-theme-dark:#222f46;
-  --jp-theme-soft:#e1e8f2;
-  --jp-theme-glow:rgba(98,120,157,.24);
+html[data-jp-section="csat"]{                /* DEEP THINKING · #8461a9 */
+  --jp-theme:#8461a9;
+  --jp-theme-dark:#271f36;
+  --jp-theme-soft:#ece3f4;
+  --jp-theme-glow:rgba(132,97,169,.24);
 }
 
 html[data-jp-section]{
@@ -545,6 +548,13 @@ html[data-jp-section] :where(.view-btn,.tab-btn,.topic-tab,.skill-tab).active{
   background:var(--jp-theme-dark) !important;
   color:#fff !important;
   box-shadow:0 8px 20px rgba(25,47,39,.16);
+}
+
+/* 활성 탭 안의 개수 배지도 어두운 면용 색으로 함께 바꾼다.
+   (과목색을 그대로 두면 어두운 배경 위에서 3.3:1 까지 떨어진다) */
+html[data-jp-section] :where(.view-btn,.tab-btn,.topic-tab,.skill-tab).active :where(span,b,small,em){
+  color:color-mix(in srgb,var(--jp-theme) 55%,white) !important;
+  opacity:1 !important;
 }
 
 html[data-jp-section] :where(.skill-map-intro,.calc-map-intro,.section-hero,.topic-hero,.skill-hero,.mode-header){
