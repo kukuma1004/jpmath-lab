@@ -35,7 +35,7 @@
     {plane:'xy',C:[-2,1,0],r:3,startC:[0,1,0],startS:[1,1,0]},
     {plane:'yz',C:[1,-2,-1],r:2,startC:[1,0,-1],startS:[1,1,-1]}
   ];
-  const state={mode:'plane',mission:'free',missionIndex:0,P:[-1,0,0],n:[1,1,1],C:[1,-1,1],S:[3,-1,1],plane:'xz',targetPlane:null,targetPoint:null,targetSphere:null,view:{yaw:-.7,pitch:.45,scale:54,cx:320,cy:190}};
+  const state={mode:'plane',mission:'free',missionIndex:0,P:[-1,0,0],n:[1,2,1],C:[1,-1,1],S:[3,-1,1],plane:'xz',targetPlane:null,targetPoint:null,targetSphere:null,view:{yaw:-.7,pitch:.45,scale:54,cx:320,cy:190}};
   const colors={base:'#c1442d',definition:'#2b6ca3',surface:'#2f7d58',ghost:'#7557a8',soft:'#91a19a'};let action=null,last=null;
 
   function N(){return state.P.map(function(x,i){return x+state.n[i];});}
@@ -63,13 +63,42 @@
     G.solid.sphere(add,project,{center:c,r:r,color:color,scale:state.view.scale,
       gradientId:ghost?null:'psSphereBody',ghost:ghost,opacity:opacity});
   }
-  function handle(name,p,color){const q=project(p);add('circle',{cx:q.x,cy:q.y,r:44,fill:'transparent',stroke:'transparent','data-ps-point':name,class:'ps-point-hit',tabindex:0,role:'slider','aria-label':'점 '+name+' '+fmt(p)});add('circle',{cx:q.x,cy:q.y,r:17,fill:color,opacity:.2,'data-ps-point':name,class:'ps-point-halo',filter:'url(#psGlow)'});add('circle',{cx:q.x,cy:q.y,r:11,fill:color,stroke:'#fff','stroke-width':3,'data-ps-point':name,class:'ps-point-handle'});add('circle',{cx:q.x,cy:q.y,r:3,fill:'#fff','pointer-events':'none'});add('text',{x:q.x+(name==='P'||name==='C'?-13:13),y:q.y-12,'text-anchor':name==='P'||name==='C'?'end':'start',fill:color,'font-size':12,'font-weight':900,'pointer-events':'none'},name);}
+  function handle(name,p,color,shift){const q=project(p);add('circle',{cx:q.x,cy:q.y,r:44,fill:'transparent',stroke:'transparent','data-ps-point':name,class:'ps-point-hit',tabindex:0,role:'slider','aria-label':'점 '+name+' '+fmt(p)});add('circle',{cx:q.x,cy:q.y,r:17,fill:color,opacity:.2,'data-ps-point':name,class:'ps-point-halo',filter:'url(#psGlow)'});add('circle',{cx:q.x,cy:q.y,r:11,fill:color,stroke:'#fff','stroke-width':3,'data-ps-point':name,class:'ps-point-handle'});add('circle',{cx:q.x,cy:q.y,r:3,fill:'#fff','pointer-events':'none'});if(shift){
+      add('line',{x1:q.x,y1:q.y,x2:q.x+shift.dx,y2:q.y+shift.dy,stroke:color,'stroke-width':1,opacity:.45,'pointer-events':'none'});
+      add('text',{x:q.x+shift.dx+(shift.dx<0?-4:4),y:q.y+shift.dy+4,'text-anchor':shift.dx<0?'end':'start',fill:color,'font-size':12,'font-weight':900,'pointer-events':'none'},name);
+    }else add('text',{x:q.x+(name==='P'||name==='C'?-13:13),y:q.y-12,'text-anchor':name==='P'||name==='C'?'end':'start',fill:color,'font-size':12,'font-weight':900,'pointer-events':'none'},name);}
+
+  // 법선은 시점 방향에 가까울수록 화면에서 짧아진다. 방향을 잃지 않도록 두 가지를 덧그린다.
+  //  · 지지선 — 단위법선 방향으로 고정 길이만큼 뻗는 얇은 점선
+  //  · 밑동 고리 — 평면 위에 놓인 작은 원. 법선이 면에서 솟는 지점을 보여 준다.
+  function drawNormalGuide(p,n,color){
+    if(norm(n)<.001)return;
+    const unit=normalized(n),basis=planeBasis(n),a=basis[0],b=basis[1];
+    line3(p,p.map(function(x,i){return x+2.6*unit[i];}),
+      {stroke:color,'stroke-width':1.2,'stroke-dasharray':'5 6',opacity:.45,'pointer-events':'none'});
+    let d='';
+    for(let k=0;k<=48;k++){
+      const t=k/48*Math.PI*2,
+        q=project(p.map(function(x,i){return x+.45*(Math.cos(t)*a[i]+Math.sin(t)*b[i]);}));
+      d+=(k?'L':'M')+q.x+' '+q.y;
+    }
+    add('path',{d:d,fill:'none',stroke:color,'stroke-width':1.4,opacity:.6,'pointer-events':'none'});
+  }
+
+  // 두 핸들이 화면에서 가까우면 라벨을 서로 반대쪽으로 밀 방향을 계산한다
+  function labelShifts(qa,qb){
+    const dx=qb.x-qa.x,dy=qb.y-qa.y,sep=Math.hypot(dx,dy);
+    if(sep>=34)return[null,null];
+    const ux=sep>1?dx/sep:1,uy=sep>1?dy/sep:0,px=-uy,py=ux;
+    return[{dx:-px*26-10,dy:-py*26-6},{dx:px*26+10,dy:py*26+6}];
+  }
 
   function drawPlaneMode(){
     if(state.mission==='plane'&&state.targetPlane){drawPlanePatch(state.targetPlane.P,state.targetPlane.n,colors.ghost,.07,true);const a=state.targetPlane.P,b=a.map(function(x,i){return x+state.targetPlane.n[i];});line3(a,b,{stroke:colors.ghost,'stroke-width':3,'stroke-dasharray':'6 5','marker-end':'url(#psGhost)','pointer-events':'none'});}
-    drawPlanePatch(state.P,state.n,colors.definition,.14,false);if(norm(state.n)>.001)line3(state.P,N(),{stroke:colors.definition,'stroke-width':4,'marker-end':'url(#psNormal)','pointer-events':'none'});
+    drawPlanePatch(state.P,state.n,colors.definition,.14,false);drawNormalGuide(state.P,state.n,colors.definition);if(norm(state.n)>.001)line3(state.P,N(),{stroke:colors.definition,'stroke-width':4,'marker-end':'url(#psNormal)','pointer-events':'none'});
     if(state.mission==='point'&&state.targetPoint){const q=project(state.targetPoint);add('circle',{cx:q.x,cy:q.y,r:16,fill:'none',stroke:colors.ghost,'stroke-width':3,'stroke-dasharray':'6 5','pointer-events':'none'});add('circle',{cx:q.x,cy:q.y,r:4,fill:colors.ghost,'pointer-events':'none'});add('text',{x:q.x+12,y:q.y+18,fill:colors.ghost,'font-size':11,'font-weight':900,'pointer-events':'none'},'Q '+fmt(state.targetPoint));if(norm(state.n)>.001){const residual=dot(state.n,state.targetPoint.map(function(x,i){return x-state.P[i];})),den=dot(state.n,state.n),foot=state.targetPoint.map(function(x,i){return x-residual/den*state.n[i];});line3(state.targetPoint,foot,{stroke:colors.ghost,'stroke-width':2,'stroke-dasharray':'5 5','pointer-events':'none'});}}
-    handle('P',state.P,colors.base);handle('N',N(),colors.definition);
+    const shifts=labelShifts(project(state.P),project(N()));
+    handle('P',state.P,colors.base,shifts[0]);handle('N',N(),colors.definition,shifts[1]);
   }
   function drawSphereMode(){if(state.mission==='sphere'&&state.targetSphere)drawSphere(state.targetSphere.C,state.targetSphere.r,colors.ghost,.75,true);drawSphere(state.C,radius(),colors.definition,.85,false);line3(state.C,state.S,{stroke:colors.surface,'stroke-width':4,'marker-end':'url(#psRadius)','pointer-events':'none'});handle('C',state.C,colors.base);handle('S',state.S,colors.surface);}
   function draw(){G.clear(svg);defs();drawMovementPlane();drawAxes();if(state.mode==='plane')drawPlaneMode();else drawSphereMode();}
@@ -93,7 +122,7 @@
   function setPlane(name,doRender){state.plane=name;planeBar.querySelectorAll('[data-ps-plane]').forEach(function(b){b.classList.toggle('active',b.dataset.psPlane===name);});if(doRender!==false)render();}
   function resetView(){state.view={yaw:-.7,pitch:.45,scale:54,cx:320,cy:190};render();}
   function resetMission(){state.targetPlane=null;state.targetPoint=null;state.targetSphere=null;state.view={yaw:-.7,pitch:.45,scale:54,cx:320,cy:190};
-    if(state.mission==='free'){if(state.mode==='plane'){state.P=[-1,0,0];state.n=[1,1,1];setPlane('xz',false);}else{state.C=[1,-1,1];state.S=[3,-1,1];setPlane('xz',false);}}
+    if(state.mission==='free'){if(state.mode==='plane'){state.P=[-1,0,0];state.n=[1,2,1];setPlane('xz',false);}else{state.C=[1,-1,1];state.S=[3,-1,1];setPlane('xz',false);}}
     if(state.mission==='plane'){const q=targetPlanes[state.missionIndex%targetPlanes.length];state.mode='plane';state.P=q.startP.slice();state.n=q.startN.map(function(x,i){return x-q.startP[i];});state.targetPlane={P:q.P.slice(),n:q.n.slice()};setPlane(q.plane,false);}
     if(state.mission==='point'){const q=pointTargets[state.missionIndex%pointTargets.length];state.mode='plane';state.P=q.P.slice();state.n=q.n.slice();state.targetPoint=q.Q.slice();setPlane(q.plane,false);}
     if(state.mission==='sphere'){const q=sphereTargets[state.missionIndex%sphereTargets.length];state.mode='sphere';state.C=q.startC.slice();state.S=q.startS.slice();state.targetSphere={C:q.C.slice(),r:q.r};setPlane(q.plane,false);}
@@ -105,8 +134,17 @@
   function pointer(event){const r=svg.getBoundingClientRect();return{x:(event.clientX-r.left)/r.width*640,y:(event.clientY-r.top)/r.height*400};}
   function pointsNow(){return state.mode==='plane'?[['P',state.P],['N',N()]]:[['C',state.C],['S',state.S]];}
   function nearestPoint(event){const q=pointer(event),points=pointsNow().map(function(item){return[item[0],project(item[1])];});points.sort(function(a,b){return Math.hypot(q.x-a[1].x,q.y-a[1].y)-Math.hypot(q.x-b[1].x,q.y-b[1].y);});return points[0][0];}
-  function moveEndpoint(event,name){const current=name==='P'?state.P:name==='N'?N():name==='C'?state.C:state.S,ij=activePlane(),i=ij[0],j=ij[1],k=ij[2],base=[0,0,0];base[k]=current[k];const o=project(base),ui=base.slice(),uj=base.slice();ui[i]=1;uj[j]=1;const pi=project(ui),pj=project(uj),vi={x:pi.x-o.x,y:pi.y-o.y},vj={x:pj.x-o.x,y:pj.y-o.y},q=pointer(event),dx=q.x-o.x,dy=q.y-o.y,det=vi.x*vj.y-vi.y*vj.x;if(Math.abs(det)<.001)return;const ni=(dx*vj.y-dy*vj.x)/det,nj=(vi.x*dy-vi.y*dx)/det,next=current.slice();next[i]=G.clamp(Math.round(ni),-4,4);next[j]=G.clamp(Math.round(nj),-4,4);if(name==='P')state.P=next;else if(name==='N')state.n=next.map(function(x,index){return x-state.P[index];});else if(name==='C'){const radial=state.S.map(function(x,index){return x-state.C[index];});state.C=next;state.S=next.map(function(x,index){return x+radial[index];});}else state.S=next;render();}
+  // 드래그와 방향키가 같은 규칙을 쓰도록 한 곳에 모은다.
+  // N을 P 위로 겹치면 법선이 0이 되어 평면이 말없이 사라지므로 그 이동은 무시한다.
+  function applyPoint(name,next){
+    if(name==='P')state.P=next;
+    else if(name==='N'){const nn=next.map(function(x,i){return x-state.P[i];});if(norm(nn)>.001)state.n=nn;}
+    else if(name==='C'){const radial=state.S.map(function(x,i){return x-state.C[i];});
+      state.C=next;state.S=next.map(function(x,i){return x+radial[i];});}
+    else state.S=next;
+  }
+  function moveEndpoint(event,name){const current=name==='P'?state.P:name==='N'?N():name==='C'?state.C:state.S,ij=activePlane(),i=ij[0],j=ij[1],k=ij[2],base=[0,0,0];base[k]=current[k];const o=project(base),ui=base.slice(),uj=base.slice();ui[i]=1;uj[j]=1;const pi=project(ui),pj=project(uj),vi={x:pi.x-o.x,y:pi.y-o.y},vj={x:pj.x-o.x,y:pj.y-o.y},q=pointer(event),dx=q.x-o.x,dy=q.y-o.y,det=vi.x*vj.y-vi.y*vj.x;if(Math.abs(det)<.001)return;const ni=(dx*vj.y-dy*vj.x)/det,nj=(vi.x*dy-vi.y*dx)/det,next=current.slice();next[i]=G.clamp(Math.round(ni),-4,4);next[j]=G.clamp(Math.round(nj),-4,4);applyPoint(name,next);render();}
   svg.addEventListener('pointerdown',function(event){const name=event.target.dataset.psPoint;if(name){action=nearestPoint(event);svg.classList.add('is-dragging');}else{action='orbit';svg.classList.add('is-orbiting');}last=[event.clientX,event.clientY];svg.setPointerCapture(event.pointerId);});svg.addEventListener('pointermove',function(event){if(!action)return;if(action==='orbit'){state.view.yaw+=(event.clientX-last[0])*.009;state.view.pitch=G.clamp(state.view.pitch+(event.clientY-last[1])*.009,-1.1,1.1);last=[event.clientX,event.clientY];render();}else moveEndpoint(event,action);});function end(){action=null;svg.classList.remove('is-dragging','is-orbiting');}svg.addEventListener('pointerup',end);svg.addEventListener('pointercancel',end);
-  svg.addEventListener('keydown',function(event){const advertised=event.target.dataset.psPoint;if(!advertised||!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key))return;event.preventDefault();const name=advertised,current=name==='P'?state.P.slice():name==='N'?N().slice():name==='C'?state.C.slice():state.S.slice(),ij=activePlane(),i=ij[0],j=ij[1];if(event.key==='ArrowLeft')current[i]--;if(event.key==='ArrowRight')current[i]++;if(event.key==='ArrowUp')current[j]++;if(event.key==='ArrowDown')current[j]--;current[i]=G.clamp(current[i],-4,4);current[j]=G.clamp(current[j],-4,4);if(name==='P')state.P=current;else if(name==='N')state.n=current.map(function(x,index){return x-state.P[index];});else if(name==='C'){const radial=state.S.map(function(x,index){return x-state.C[index];});state.C=current;state.S=current.map(function(x,index){return x+radial[index];});}else state.S=current;render(name);});
+  svg.addEventListener('keydown',function(event){const advertised=event.target.dataset.psPoint;if(!advertised||!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key))return;event.preventDefault();const name=advertised,current=name==='P'?state.P.slice():name==='N'?N().slice():name==='C'?state.C.slice():state.S.slice(),ij=activePlane(),i=ij[0],j=ij[1];if(event.key==='ArrowLeft')current[i]--;if(event.key==='ArrowRight')current[i]++;if(event.key==='ArrowUp')current[j]++;if(event.key==='ArrowDown')current[j]--;current[i]=G.clamp(current[i],-4,4);current[j]=G.clamp(current[j],-4,4);applyPoint(name,current);render(name);});
   document.addEventListener('jp:math-ready',function(){render();},{once:true});setMission('free');
 })();
