@@ -18,6 +18,162 @@
     return location.protocol === 'file:' || /^(localhost|127\.0\.0\.1|\[::1\])$/i.test(location.hostname);
   }
 
+  // ── 시트 실시간 연결 ─────────────────────────────────────────────────
+  // 학생 원문을 공개 저장소에 올리지 않으면서 어느 기기에서나 보려면,
+  // 파일로 내보내는 대신 시트를 그때그때 읽어 오면 된다.
+  // 연결 주소에는 교사용 열쇠가 들어 있으므로 저장소가 아니라
+  // 이 브라우저에만 보관한다. 기기마다 한 번씩 붙여 넣으면 된다.
+  var FEED_KEY = 'jp-inquiry-feed-url-v1';
+  var FEED_REFRESH_MS = 20000;
+  var feedTimer = null;
+  var feedSeq = 0;
+
+  function savedFeedUrl() {
+    try { return localStorage.getItem(FEED_KEY) || ''; } catch (error) { return ''; }
+  }
+
+  function storeFeedUrl(url) {
+    try { url ? localStorage.setItem(FEED_KEY, url) : localStorage.removeItem(FEED_KEY); }
+    catch (error) { /* 저장이 막혀도 이번 세션 동안은 쓸 수 있다 */ }
+  }
+
+  // 붙여 넣은 값이 이 시트의 연결 주소가 맞는지 최소한만 확인한다
+  function validFeedUrl(url) {
+    if (url.indexOf('view=inquiries') === -1 || url.indexOf('token=') === -1) return false;
+    if (/^https:\/\/script\.google(usercontent)?\.com\//.test(url)) return true;
+    // 점검용 로컬 엔드포인트는 이 페이지 자체를 로컬로 열었을 때만 허용한다
+    return isLocalView() && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(url);
+  }
+
+  // Apps Script 웹앱은 다른 도메인이라 JSONP 로 읽는다
+  function fetchFeed(url) {
+    return new Promise(function (resolve, reject) {
+      var name = 'jpInquiryFeed' + (++feedSeq);
+      var script = document.createElement('script');
+      var timer = setTimeout(function () { cleanup(); reject(new Error('timeout')); }, 12000);
+      function cleanup() {
+        clearTimeout(timer);
+        try { delete window[name]; } catch (error) { window[name] = undefined; }
+        if (script.parentNode) script.parentNode.removeChild(script);
+      }
+      window[name] = function (payload) { cleanup(); resolve(payload); };
+      script.onerror = function () { cleanup(); reject(new Error('network')); };
+      script.src = url + (url.indexOf('?') === -1 ? '?' : '&') + 'callback=' + name + '&_=' + Date.now();
+      document.head.appendChild(script);
+    });
+  }
+
+  function stopFeedTimer() { if (feedTimer) { clearInterval(feedTimer); feedTimer = null; } }
+
+  // 자동 새로고침. 편집 중인 입력란에 커서가 있으면 그 회차는 건너뛴다.
+  function startFeedTimer(url) {
+    stopFeedTimer();
+    feedTimer = setInterval(function () {
+      var active = document.activeElement;
+      if (active && active.classList && active.classList.contains('curation-input')) return;
+      refreshFromFeed(url, true);
+    }, FEED_REFRESH_MS);
+  }
+
+  function refreshFromFeed(url, quiet) {
+    return fetchFeed(url).then(function (payload) {
+      if (!payload || !payload.ok) {
+        // 서버가 응답은 했는데 거절한 경우와 아예 못 닿은 경우를 구분한다
+        var denied = new Error(payload && payload.error ? payload.error : '연결이 거절되었습니다.');
+        denied.code = 'denied';
+        throw denied;
+      }
+      var keep = state.selectedId;
+      state.dataSource = 'live-sheet';
+      state.liveSyncedAt = payload.syncedAt || '';
+      state.livePending = payload.pending || 0;
+      state.inquiries = applyCuration(payload.inquiries || []);
+      updateConnectionStatus(state.dataSource, state.inquiries.length);
+      updateMetrics();
+      if (!state.inquiries.length) { renderSecureEmptyState(); return payload; }
+      var still = state.inquiries.some(function (item) { return item.id === keep; });
+      state.selectedId = still ? keep : state.inquiries[0].id;
+      renderList();
+      var current = state.inquiries.filter(function (item) { return item.id === state.selectedId; })[0];
+      if (current) renderCurator(current);
+      return payload;
+    }).catch(function (error) {
+      if (!quiet) throw error;
+      return null;
+    });
+  }
+
+  function renderFeedPanel() {
+    var host = document.getElementById('livePanel');
+    if (!host) return;
+    host.textContent = '';
+    var url = savedFeedUrl();
+
+    var head = element('div', 'live-panel-head');
+    head.appendChild(element('strong', '', url ? '시트에 실시간으로 연결되어 있습니다' : '시트에 실시간으로 연결하기'));
+    head.appendChild(element('small', '', url
+      ? (state.liveSyncedAt ? '마지막 확인 ' + state.liveSyncedAt : '') + ' · ' + Math.round(FEED_REFRESH_MS / 1000) + '초마다 새로고침'
+      : '구글시트 → 주제탐구 관리 → 운영실 실시간 연결 주소 에서 받은 주소를 붙여 넣으세요.'));
+    host.appendChild(head);
+
+    if (!url) {
+      var row = element('div', 'live-panel-row');
+      var input = document.createElement('input');
+      input.type = 'password';
+      input.className = 'curation-input';
+      input.placeholder = 'https://script.google.com/... 붙여 넣기';
+      input.setAttribute('aria-label', '시트 실시간 연결 주소');
+      var connect = element('button', 'live-connect', '연결');
+      connect.type = 'button';
+      var message = element('p', 'live-panel-message', '');
+      connect.addEventListener('click', function () {
+        var value = input.value.trim();
+        if (!validFeedUrl(value)) {
+          message.textContent = '주소를 다시 확인해 주세요. 시트 메뉴에서 받은 주소 전체를 붙여 넣어야 합니다.';
+          return;
+        }
+        message.textContent = '연결하는 중…';
+        refreshFromFeed(value, false).then(function () {
+          storeFeedUrl(value);
+          startFeedTimer(value);
+          renderFeedPanel();
+        }).catch(function (error) {
+          message.textContent = error && error.code === 'denied'
+            ? error.message + ' 시트 메뉴에서 주소를 다시 받아 주세요.'
+            : '연결하지 못했습니다. 주소와 인터넷 연결을 확인해 주세요.';
+        });
+      });
+      row.appendChild(input);
+      row.appendChild(connect);
+      host.appendChild(row);
+      host.appendChild(message);
+      host.appendChild(element('small', 'live-panel-warn',
+        '이 주소에는 교사용 열쇠가 들어 있습니다. 이 브라우저에만 저장되며 저장소에는 올라가지 않습니다.'));
+      return;
+    }
+
+    var actions = element('div', 'live-panel-row');
+    var now = element('button', 'live-connect', '지금 새로고침');
+    now.type = 'button';
+    now.addEventListener('click', function () {
+      now.textContent = '읽는 중…';
+      refreshFromFeed(url, false).then(function () { now.textContent = '지금 새로고침'; renderFeedPanel(); })
+        .catch(function () { now.textContent = '실패 · 다시 시도'; });
+    });
+    var off = element('button', 'live-disconnect', '연결 끊기');
+    off.type = 'button';
+    off.addEventListener('click', function () {
+      stopFeedTimer(); storeFeedUrl(''); renderFeedPanel();
+      message2.textContent = '이 브라우저에서 연결 주소를 지웠습니다. 새로고침하면 로컬 자료를 다시 읽습니다.';
+    });
+    actions.appendChild(now);
+    actions.appendChild(off);
+    host.appendChild(actions);
+    var message2 = element('p', 'live-panel-message', state.livePending
+      ? '승인 전 ' + state.livePending + '건은 목록에 넣지 않았습니다. 실시간 교사용 페이지에서 승인하면 여기에 나타납니다.' : '');
+    host.appendChild(message2);
+  }
+
   function loadInquiryData() {
     var sources = isLocalView()
       ? [{ url: PRIVATE_DATA_URL, kind: 'private-local' }, { url: PUBLIC_DATA_URL, kind: 'public-approved' }]
@@ -54,6 +210,13 @@
       return;
     }
 
+    if (source === 'live-sheet') {
+      title.textContent = '구글시트 실시간 연결됨';
+      badge.textContent = 'LIVE';
+      description.textContent = '승인된 탐구 ' + count + '개를 시트에서 바로 읽고 있습니다.';
+      note.textContent = state.liveSyncedAt ? '마지막 확인 ' + state.liveSyncedAt : '자동 새로고침 중';
+      return;
+    }
     if (source === 'private-local') {
       title.textContent = '로컬 전용 탐구 자료 연결됨';
       badge.textContent = 'LOCAL';
@@ -559,6 +722,27 @@
     list.innerHTML = '<div class="jp-skeleton-card"><span class="jp-skeleton-line short"></span><span class="jp-skeleton-line long"></span><span class="jp-skeleton-line"></span></div>' +
       '<div class="jp-skeleton-card"><span class="jp-skeleton-line short"></span><span class="jp-skeleton-line long"></span><span class="jp-skeleton-line"></span></div>' +
       '<div class="jp-skeleton-card"><span class="jp-skeleton-line short"></span><span class="jp-skeleton-line long"></span><span class="jp-skeleton-line"></span></div>';
+    var feedUrl = savedFeedUrl();
+    if (feedUrl) {
+      // 저장된 연결이 있으면 시트를 먼저 읽고, 실패하면 파일로 물러난다
+      refreshFromFeed(feedUrl, false).then(function () {
+        list.classList.remove('is-loading');
+        list.removeAttribute('aria-busy');
+        startFeedTimer(feedUrl);
+        renderFeedPanel();
+      }).catch(function () {
+        list.classList.remove('is-loading');
+        list.removeAttribute('aria-busy');
+        renderFeedPanel();
+        loadFromFiles(list);
+      });
+      return;
+    }
+    renderFeedPanel();
+    loadFromFiles(list);
+  }
+
+  function loadFromFiles(list) {
     loadInquiryData().then(function (payload) {
       list.classList.remove('is-loading');
       list.removeAttribute('aria-busy');

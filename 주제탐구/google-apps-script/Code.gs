@@ -24,6 +24,7 @@ function onOpen() {
     .addItem('현재 운영 상태', 'showInquiryStatus')
     .addSeparator()
     .addItem('실시간 교사용 페이지 열기', 'showTeacherDashboardLink')
+    .addItem('운영실 실시간 연결 주소', 'showManagerFeedLink')
     .addItem('운영실용 JSON 내보내기', 'exportManagerJson')
     .addToUi();
 }
@@ -94,6 +95,11 @@ function getInquirySystemStatus() {
 
 function doGet(event) {
   const params = event && event.parameter ? event.parameter : {};
+
+  // 운영실(수업창고/주제탐구수학/관리.html)이 시트를 직접 읽는 통로.
+  // 브라우저에서 다른 도메인으로 요청하므로 JSONP 로 돌려준다.
+  if (params.view === 'inquiries') return serveInquiryFeed_(params);
+
   if (params.view === 'teacher') {
     if (!validTeacherToken_(params.token)) {
       return HtmlService.createHtmlOutput('<meta charset="utf-8"><div style="max-width:620px;margin:80px auto;padding:30px;font:15px/1.7 sans-serif"><h2>교사용 링크를 확인해 주세요.</h2><p>Google Sheet의 <b>주제탐구 관리 → 실시간 교사용 페이지 열기</b>에서 안전한 링크로 접속할 수 있습니다.</p></div>')
@@ -283,9 +289,19 @@ function submitStudentResponse(payload) {
     const code = normalizeCode_(payload.studentCode);
     const inquiryId = cleanText_(payload.inquiryId, 120);
     const responseId = cleanText_(payload.responseId, 120);
+    const saveMode = payload.saveMode === 'draft' ? 'draft' : 'final';
     const answers = Array.isArray(payload.answers) ? payload.answers.map(function (answer) { return cleanText_(answer, 5000); }) : [];
+    const newQuestion = cleanText_(payload.newQuestion, 3000);
+    const studentNote = cleanText_(payload.studentNote, 2000);
     if (!code || !inquiryId) return failure_('학생 코드와 탐구 정보를 확인해 주세요.');
-    if (answers.length !== 3 || answers.some(function (answer) { return answer.length < 2; })) return failure_('세 발문에 대한 답변을 모두 작성해 주세요.');
+    if (answers.length !== 3) return failure_('세 발문 정보를 다시 불러와 주세요.');
+    if (saveMode === 'final' && answers.some(function (answer) { return answer.length < 2; })) return failure_('세 발문에 대한 답변을 모두 작성해 주세요.');
+    if (saveMode === 'draft' && !answers.some(Boolean) && !newQuestion && !studentNote) return failure_('임시저장할 내용을 한 글자 이상 적어 주세요.');
+
+    const student = getRosterRows_().find(function (row) {
+      return normalizeCode_(row['학생코드']) === code && row['상태'] !== '비활성';
+    });
+    if (!student || student['상태'] !== '질문정교화') return failure_('선생님이 다음 단계로 전환해 현재는 답변을 수정할 수 없습니다.');
 
     const promptRow = getPromptRows_().find(function (row) {
       return normalizeCode_(row['학생코드']) === code && row['탐구ID'] === inquiryId && row['상태'] !== '비활성';
@@ -296,6 +312,13 @@ function submitStudentResponse(payload) {
       return row['제출ID'] === responseId && normalizeCode_(row['학생코드']) === code && row['탐구ID'] === inquiryId;
     }) : null;
     if (responseId && !existing) return failure_('수정할 답변을 찾지 못했습니다. 화면을 새로 불러와 주세요.');
+    const reviewStatus = saveMode === 'draft' ? '작성 중' : (existing && existing['교사검토상태'] !== '작성 중' ? '재검토 대기' : '검토 대기');
+    const unchanged = existing &&
+      answers.every(function (answer, index) { return cleanText_(existing['답변' + (index + 1)], 5000) === answer; }) &&
+      cleanText_(existing['새로운질문'], 3000) === newQuestion &&
+      cleanText_(existing['학생메모'], 2000) === studentNote &&
+      existing['교사검토상태'] === reviewStatus;
+    if (unchanged) return { ok: true, submissionId: existing['제출ID'], updated: false, unchanged: true, draft: saveMode === 'draft', message: saveMode === 'draft' ? '임시저장된 내용과 같습니다.' : '제출된 답변과 같습니다.' };
     const now = new Date();
     const record = {
       '제출ID': existing ? existing['제출ID'] : Utilities.getUuid(),
@@ -310,9 +333,9 @@ function submitStudentResponse(payload) {
       '답변1': answers[0],
       '답변2': answers[1],
       '답변3': answers[2],
-      '새로운질문': cleanText_(payload.newQuestion, 3000),
-      '학생메모': cleanText_(payload.studentNote, 2000),
-      '교사검토상태': existing ? '재검토 대기' : '검토 대기',
+      '새로운질문': newQuestion,
+      '학생메모': studentNote,
+      '교사검토상태': reviewStatus,
       '수정시각': now,
       '수정횟수': existing ? Number(existing['수정횟수'] || 0) + 1 : 0,
       '교사피드백': existing ? existing['교사피드백'] : ''
@@ -320,7 +343,13 @@ function submitStudentResponse(payload) {
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.responses);
     if (existing) updateRecordRow_(sheet, existing._rowNumber, record);
     else appendRecord_(sheet, record);
-    return { ok: true, submissionId: record['제출ID'], updated: Boolean(existing), message: existing ? '수정한 답변이 선생님께 전달되었습니다.' : '답변이 선생님께 전달되었습니다.' };
+    return {
+      ok: true,
+      submissionId: record['제출ID'],
+      updated: Boolean(existing),
+      draft: saveMode === 'draft',
+      message: saveMode === 'draft' ? '작성 중인 답변을 임시저장했습니다.' : (existing ? '수정한 답변이 선생님께 전달되었습니다.' : '답변이 선생님께 전달되었습니다.')
+    };
   } catch (error) {
     console.error(error);
     return failure_('저장 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.');
@@ -641,4 +670,54 @@ function buildManagerJson_() {
   }, null, 2);
 
   return { text: text, count: inquiries.length, skipped: skipped };
+}
+
+
+/**
+ * 운영실 실시간 연동 응답
+ *
+ * 학생 원문을 공개 저장소에 올리지 않으면서도 어느 기기에서나 확인하려면,
+ * 파일로 내보내는 대신 이 통로로 그때그때 읽어 가면 된다.
+ * 토큰이 맞지 않으면 아무 내용도 싣지 않는다.
+ */
+function serveInquiryFeed_(params) {
+  const callback = String(params.callback || '').replace(/[^A-Za-z0-9_$.]/g, '').slice(0, 60);
+  let body;
+  if (!validTeacherToken_(params.token)) {
+    body = { ok: false, error: '교사용 열쇠가 올바르지 않습니다. 시트에서 링크를 다시 받아 주세요.' };
+  } else {
+    const built = buildManagerJson_();
+    const payload = JSON.parse(built.text);
+    payload.ok = true;
+    payload.pending = built.skipped;
+    payload.syncedAt = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss');
+    body = payload;
+  }
+  const json = JSON.stringify(body);
+  if (!callback) {
+    return ContentService.createTextOutput(json).setMimeType(ContentService.MimeType.JSON);
+  }
+  return ContentService.createTextOutput(callback + '(' + json + ');')
+    .setMimeType(ContentService.MimeType.JAVASCRIPT);
+}
+
+/** 운영실에 붙여 넣을 연결 주소를 보여 준다. */
+function showManagerFeedLink() {
+  const deploymentUrl = ScriptApp.getService().getUrl();
+  if (!deploymentUrl) {
+    SpreadsheetApp.getUi().alert('먼저 웹앱을 배포한 뒤 다시 실행해 주세요.');
+    return;
+  }
+  const url = deploymentUrl + '?view=inquiries&token=' + encodeURIComponent(ensureTeacherToken_());
+  const html = HtmlService.createHtmlOutput(
+    '<div style="font:14px/1.7 sans-serif;padding:20px">' +
+    '<h3 style="margin-top:0">운영실 실시간 연결 주소</h3>' +
+    '<p>탐구 운영실 화면에서 <b>실시간 연결</b>에 이 주소를 한 번 붙여 넣으면, 그 기기에서는 계속 시트를 바로 읽습니다.</p>' +
+    '<textarea id="u" style="width:100%;height:82px;font:12px/1.5 Consolas,monospace" readonly>' +
+    escapeHtml_(url) + '</textarea>' +
+    '<button style="margin-top:10px;padding:8px 14px;font-size:14px;cursor:pointer" ' +
+    'onclick="var t=this.parentNode.querySelector(&quot;textarea&quot;);t.select();document.execCommand(&quot;copy&quot;);this.textContent=&quot;복사했습니다&quot;">주소 복사</button>' +
+    '<p style="color:#a3402c;font-size:12px;margin-top:14px">이 주소에는 교사용 열쇠가 들어 있습니다. 학생에게 전달하거나 공개 문서에 적지 마세요.</p></div>'
+  ).setWidth(600).setHeight(320);
+  SpreadsheetApp.getUi().showModalDialog(html, '운영실 실시간 연결');
 }

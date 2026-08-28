@@ -271,3 +271,30 @@ footer { display: flex; justify-content: space-between; gap: 20px; padding: 28px
   font:700 12px "IBM Plex Mono",monospace;color:#17231d;
 }
 .live-hint small{color:#5b645f;font-size:11.5px;line-height:1.55}
+
+/* ── 시트 실시간 연결 ─────────────────────────────────────────
+   연결 주소에 교사용 열쇠가 들어 있어 이 브라우저에만 보관한다. */
+.live-panel{
+  width:min(1120px,calc(100% - 36px));margin:22px auto 0;
+  padding:16px 18px;border:1px solid #cfe0d8;border-radius:18px;background:#f4faf7;
+}
+.live-panel:empty{display:none}
+.live-panel-head strong{display:block;color:#12735d;font-size:14px;font-weight:800}
+.live-panel-head small{display:block;margin-top:3px;color:#5b645f;font-size:12px;line-height:1.6;word-break:keep-all}
+.live-panel-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}
+.live-panel-row .curation-input{flex:1 1 260px;min-width:0}
+.live-connect,.live-disconnect{
+  min-height:42px;padding:0 16px;border-radius:10px;
+  font:800 13px inherit;cursor:pointer;white-space:nowrap;
+}
+.live-connect{border:0;background:#12735d;color:#fff}
+.live-connect:hover{background:#0e5c4a}
+.live-disconnect{border:1px solid #cfd8d4;background:#fff;color:#5b645f}
+.live-disconnect:hover{border-color:#a9b4af}
+.live-panel-message{margin:9px 0 0;color:#3d4a45;font-size:12.5px;line-height:1.6;word-break:keep-all}
+.live-panel-warn{display:block;margin-top:9px;color:#8a5f10;font-size:11.5px;line-height:1.55}
+@media(max-width:560px){
+  .live-panel{width:calc(100% - 24px);padding:13px 14px}
+  .live-panel-row .curation-input{flex-basis:100%}
+  .live-connect,.live-disconnect{flex:1}
+}
