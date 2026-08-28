@@ -168,26 +168,79 @@
     return Object.values(selectedAllocation || {}).reduce((sum, value) => sum + Number(value || 0), 0);
   }
 
+  // 한 자산을 움직이면 나머지가 현재 비중에 비례해 자동으로 조정되어
+  // 합계는 항상 100%가 된다. 네 개를 따로 맞출 필요가 없다.
+  function setShare(key, next) {
+    const keys = Object.keys(assetMeta);
+    const others = keys.filter(k => k !== key);
+    next = Math.max(0, Math.min(100, Math.round(next)));
+    const remain = 100 - next;
+    const prev = others.map(k => Math.max(0, Number(selectedAllocation[k]) || 0));
+    const prevSum = prev.reduce((s, v) => s + v, 0);
+    const raw = prevSum > 0
+      ? prev.map(v => v / prevSum * remain)
+      : prev.map(() => remain / others.length);
+    const out = { [key]: next };
+    let acc = 0;
+    raw.forEach((v, i) => { const r = Math.floor(v); out[others[i]] = r; acc += r; });
+    // 내림하고 남은 몫은 소수 부분이 큰 자산부터 1%씩 돌려준다
+    const order = others
+      .map((k, i) => [k, raw[i] - Math.floor(raw[i])])
+      .sort((a, b) => b[1] - a[1]);
+    for (let left = remain - acc, i = 0; left > 0; left -= 1, i += 1) out[order[i % order.length][0]] += 1;
+    selectedAllocation = out;
+  }
+
+  // 한 번에 한 가지 전략을 고르고 거기서부터 다듬는다
+  const allocationPresets = [
+    { id: 'safe', name: '안정형', hint: '예금·채권 중심', allocation: { deposit: 45, bond: 35, stock: 10, fx: 10 } },
+    { id: 'balanced', name: '균형형', hint: '네 자산 고르게', allocation: { deposit: 25, bond: 25, stock: 25, fx: 25 } },
+    { id: 'growth', name: '공격형', hint: '주식 비중을 높게', allocation: { deposit: 10, bond: 15, stock: 55, fx: 20 } },
+    { id: 'hedge', name: '환분산형', hint: '외화로 위험 분산', allocation: { deposit: 20, bond: 25, stock: 20, fx: 35 } }
+  ];
+
   function renderAllocationControls() {
-    $('[data-allocation-controls]').innerHTML = Object.entries(assetMeta).map(([key, meta]) => `
+    $('[data-allocation-controls]').innerHTML = `
+      <div class="allocation-presets" role="group" aria-label="배분 전략 고르기">
+        <span class="allocation-presets-label">빠른 시작</span>
+        ${allocationPresets.map(p => `<button type="button" class="allocation-preset" data-allocation-preset="${p.id}"><b>${p.name}</b><small>${p.hint}</small></button>`).join('')}
+      </div>
+      ${Object.entries(assetMeta).map(([key, meta]) => `
       <article class="allocation-control" style="--asset-color:${meta.color}">
         <header><div><span>${meta.name}</span><small>${meta.hint}</small></div><output data-allocation-output="${key}">${selectedAllocation[key]}%</output></header>
         <div class="allocation-input-row">
-          <button type="button" data-allocation-step="${key}" data-step="-1" aria-label="${meta.name} 1% 줄이기">−</button>
+          <button type="button" data-allocation-step="${key}" data-step="-5" aria-label="${meta.name} 5% 줄이기">−</button>
           <input type="range" min="0" max="100" step="1" value="${selectedAllocation[key]}" data-allocation-input="${key}" aria-label="${meta.name} 배분 비율">
-          <button type="button" data-allocation-step="${key}" data-step="1" aria-label="${meta.name} 1% 늘리기">＋</button>
+          <button type="button" data-allocation-step="${key}" data-step="5" aria-label="${meta.name} 5% 늘리기">＋</button>
         </div>
-      </article>`).join('');
+      </article>`).join('')}`;
 
     document.querySelectorAll('[data-allocation-input]').forEach(input => input.addEventListener('input', () => {
-      selectedAllocation[input.dataset.allocationInput] = Number(input.value);
+      setShare(input.dataset.allocationInput, Number(input.value));
       renderAllocation();
     }));
     document.querySelectorAll('[data-allocation-step]').forEach(button => button.addEventListener('click', () => {
       const key = button.dataset.allocationStep;
-      selectedAllocation[key] = Math.max(0, Math.min(100, selectedAllocation[key] + Number(button.dataset.step)));
+      setShare(key, (Number(selectedAllocation[key]) || 0) + Number(button.dataset.step));
       renderAllocation();
     }));
+    document.querySelectorAll('[data-allocation-preset]').forEach(button => button.addEventListener('click', () => {
+      const preset = allocationPresets.find(p => p.id === button.dataset.allocationPreset);
+      if (!preset) return;
+      selectedAllocation = { ...preset.allocation };
+      renderAllocation();
+    }));
+  }
+
+  // 합계가 항상 100%이므로, 남은 %를 알려 주는 대신 지금 고른 배분이
+  // 어떤 성격인지 한 줄로 읽어 준다.
+  function allocationReading(values) {
+    const risky = (values.stock || 0) + (values.fx || 0);
+    const top = Object.entries(values).sort((a, b) => b[1] - a[1])[0];
+    const shape = risky >= 60 ? '변동이 큰 자산에 무게를 실었습니다.'
+      : risky <= 25 ? '변동을 줄이고 안정에 무게를 두었습니다.'
+      : '안정과 성장을 절반씩 잡았습니다.';
+    return `${assetMeta[top[0]].name} ${top[1]}%가 가장 큽니다 · ${shape}`;
   }
 
   function renderAllocation() {
@@ -207,12 +260,11 @@
       <div><span>${assetMeta[key].name}</span><i><span style="--w:${value}%;--bar-color:${assetMeta[key].color}"></span></i><b>${value}%</b></div>`).join('');
     $('[data-allocation-total]').textContent = `${total}%`;
     $('[data-allocation-total-label]').textContent = `합계 ${total}%`;
-    const difference = 100 - total;
     const status = $('[data-allocation-status]');
     status.className = total === 100 ? 'is-ready' : 'needs-work';
     status.textContent = total === 100
-      ? '100% 배분 완료 · 바로 결정하거나 수학 도구로 비교해 보세요.'
-      : difference > 0 ? `${difference}%가 남았습니다.` : `${Math.abs(difference)}%를 줄여야 합니다.`;
+      ? allocationReading(values)
+      : `합계가 ${total}%입니다. 전략을 다시 골라 주세요.`;
     updateLockState();
   }
 
