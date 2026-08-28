@@ -311,6 +311,22 @@
     $('[data-online-reveal]').hidden = false;
     $('[data-online-result-round]').textContent = `ROUND ${String(onlineRoom.round + 1).padStart(2, '0')} · ${game.title}`;
     $('[data-online-payoffs]').innerHTML = game.strategies.map(strategy => { const value = event.payoffs[strategy.id]; return `<div class="payoff-card"><span>${strategy.name} 100%일 때</span><strong class="${value >= 0 ? 'up' : 'down'}" data-online-payoff="${value}">${value >= 0 ? '+' : ''}${Number(value).toFixed(1)}점</strong></div>`; }).join('');
+    if (window.JPResultScene) window.JPResultScene.render($('[data-online-result-city]'), {
+      players: rankedResults(),
+      readPlayer(player) {
+        const alloc = (player.result && player.result.allocation) || {};
+        return {
+          name: player.nickname || player.name || '참가자',
+          value: (player.result && player.result.delta) || 0,
+          label: (((player.result && player.result.delta) || 0) >= 0 ? '+' : '−') +
+                 Math.abs(Number((player.result && player.result.delta) || 0)).toFixed(1) + '점',
+          items: game.strategies.map((strategy, index) => ({
+            key: strategy.id, name: strategy.name, color: strategyColor(strategy, index),
+            alloc: alloc[strategy.id] || 0, ret: Number(event.payoffs[strategy.id]) || 0
+          }))
+        };
+      }
+    });
     $('[data-online-ranking]').innerHTML = resultRows(false);
     $('[data-online-explain]').textContent = event.explain;
     $('[data-online-formula]').textContent = event.formula;

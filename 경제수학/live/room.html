@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500;600;700&amp;family=Noto+Serif+KR:wght@700;900&amp;display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../style.css?v=7">
-  <link rel="stylesheet" href="live.css?v=7">
+  <link rel="stylesheet" href="live.css?v=9">
   <link rel="stylesheet" href="games.css?v=5">
   <link rel="stylesheet" href="room.css?v=4">
   <link rel="stylesheet" href="../../jp-polish.css?v=11">
@@ -21,7 +21,8 @@
   <script src="game-motion.js?v=1" defer></script>
   <script src="firebase-config.js?v=2" defer></script>
   <script src="realtime-adapter.js?v=4" defer></script>
-  <script src="room-app.js?v=6" defer></script>
+  <script src="result-scene.js?v=3"></script>
+  <script src="room-app.js?v=7" defer></script>
   <link rel="stylesheet" href="../../jp-nav-2.css?v=4">
   <link rel="stylesheet" href="../경제수학_경험_nav.css?v=1">
   <script src="../../jp-nav-2.js?v=3" data-jp-section="경제수학 LIVE" defer></script>
@@ -77,7 +78,7 @@
         <button class="lock-choice" type="button" data-submit-live disabled>이 조합 제출하기</button>
       </section>
       <section class="online-waiting" data-online-waiting hidden><span class="waiting-pulse"></span><h2>선택을 제출했습니다.</h2><p><b data-submitted-count>0</b> / <b data-total-count>0</b>명이 선택했습니다. 모두 고르면 결과가 동시에 열립니다.</p></section>
-      <section class="reveal-room" data-online-reveal hidden><header><span data-online-result-round></span><h2>모두의 선택을 공개합니다.</h2></header><div class="strategy-payoffs" data-online-payoffs></div><div class="ranking" data-online-ranking></div><article class="math-explain"><span>왜 이런 결과가 나왔을까?</span><h3 data-online-explain></h3><code data-online-formula></code><div class="used-math" data-online-tools-used></div></article><button class="next-round" type="button" data-host-next hidden>다음 경제 사건 보기 <span>→</span></button><p data-next-wait hidden>진행자가 다음 사건을 열 때까지 기다려 주세요.</p></section>
+      <section class="reveal-room" data-online-reveal hidden><header><span data-online-result-round></span><h2>모두의 선택을 공개합니다.</h2></header><div class="strategy-payoffs" data-online-payoffs></div><div class="result-city" data-online-result-city aria-label="라운드 결과 도시"></div><p class="result-city-note">바닥 넓이는 <b>내가 배분한 비율</b>, 높이는 <b>그 전략의 이번 라운드 성과</b>입니다. 높이는 모두에게 같고 바닥만 다르므로, 건물 크기가 곧 그 전략이 내 점수에 보탠 몫입니다.</p><div class="ranking" data-online-ranking></div><article class="math-explain"><span>왜 이런 결과가 나왔을까?</span><h3 data-online-explain></h3><code data-online-formula></code><div class="used-math" data-online-tools-used></div></article><button class="next-round" type="button" data-host-next hidden>다음 경제 사건 보기 <span>→</span></button><p data-next-wait hidden>진행자가 다음 사건을 열 때까지 기다려 주세요.</p></section>
       <section class="final-room" data-online-final hidden><span data-online-final-game></span><h2><b data-online-winner></b>님의 전략이 가장 균형 잡혔습니다.</h2><p data-online-final-copy></p><div class="final-ranking" data-online-final-ranking></div><div class="final-actions"><button type="button" data-host-rematch hidden>한 판 더</button><a href="games.html">다른 게임 보기</a></div></section>
     </section>
   </main>

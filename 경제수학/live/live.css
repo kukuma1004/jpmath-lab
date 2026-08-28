@@ -66,3 +66,41 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #e07b
   .allocation-preset{flex:1 1 calc(50% - 6px);padding:7px 10px}
   .allocation-presets-label{flex-basis:100%}
 }
+
+/* ── 라운드 결과 도시 ─────────────────────────────────────────
+   바닥 넓이 = 각자의 배분, 높이 = 시장 수익률.
+   높이는 모두에게 같고 바닥만 달라, 건물 크기가 곧 기여분이 된다. */
+.result-city{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,230px));
+  justify-content:center;gap:12px;margin:18px 0 10px;
+}
+.result-city-card{
+  padding:12px 12px 10px;border:1px solid #d8d2c5;border-radius:16px;
+  background:#fffdf7;
+}
+.result-city-card header{
+  display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:2px;
+}
+.result-city-card header b{font-size:14px;font-weight:800;color:#17231d}
+.result-city-card header em{font:800 13px "IBM Plex Mono",monospace;font-style:normal}
+.result-city-card header em.up{color:#12735d}
+.result-city-card header em.down{color:#9f4320}
+.result-city-card svg{display:block;width:100%;height:auto}
+.result-city-legend{
+  display:grid;grid-template-columns:1fr 1fr;gap:2px 8px;margin-top:6px;
+  font:700 10px "IBM Plex Mono",monospace;color:#5b645f;
+}
+.result-city-legend span{display:flex;align-items:center;gap:5px;white-space:nowrap}
+.result-city-legend i{
+  width:8px;height:8px;flex:0 0 auto;border-radius:2px;background:var(--c);
+}
+.result-city-note{
+  margin:0 0 6px;color:#5b645f;font-size:12px;line-height:1.6;word-break:keep-all;
+}
+.result-city-note b{color:#17231d}
+@media(max-width:560px){
+  .result-city{grid-template-columns:minmax(0,300px);gap:10px}
+  .result-city-card{padding:9px 9px 8px;border-radius:13px}
+  .result-city-card header b{font-size:12.5px}
+  .result-city-legend{font-size:9px;gap:1px 5px}
+}

@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500;600;700&amp;family=Noto+Serif+KR:wght@700;900&amp;display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../style.css?v=7">
-  <link rel="stylesheet" href="live.css?v=7">
+  <link rel="stylesheet" href="live.css?v=9">
   <link rel="stylesheet" href="../../jp-polish.css?v=11">
   <script src="../../jp-polish.js?v=21" defer></script>
   <script src="games.js?v=3" defer></script>
@@ -17,7 +17,8 @@
   <script src="math-toolkit.js?v=2" defer></script>
   <script src="game-motion.js?v=1" defer></script>
   <script src="live-engine.js?v=3" defer></script>
-  <script src="app.js?v=6" defer></script>
+  <script src="result-scene.js?v=3"></script>
+  <script src="app.js?v=8" defer></script>
   <link rel="stylesheet" href="../../jp-nav-2.css?v=4">
   <link rel="stylesheet" href="../경제수학_경험_nav.css?v=1">
   <script src="../../jp-nav-2.js?v=3" data-jp-section="경제수학 LIVE" defer></script>
@@ -137,6 +138,8 @@
       <section class="reveal-room" data-reveal hidden>
         <header><span>ROUND <i data-reveal-round>01</i> 결과</span><h2>선택을 함께 공개합니다.</h2><p>같은 뉴스라도 자산 배분에 따라 결과가 달라졌습니다.</p></header>
         <div class="return-board" data-return-board></div>
+        <div class="result-city" data-result-city aria-label="라운드 결과 도시"></div>
+        <p class="result-city-note">바닥 넓이는 <b>내가 배분한 비율</b>, 높이는 <b>그 자산의 수익률</b>입니다. 높이는 모두에게 같고 바닥만 다르므로, 건물 크기가 곧 그 자산이 내 수익에 보탠 몫입니다.</p>
         <div class="ranking" data-ranking></div>
         <article class="math-explain">
           <span>왜 이런 결과가 나왔을까?</span>

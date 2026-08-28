@@ -318,6 +318,23 @@
     $('[data-reveal]').hidden = false;
     $('[data-reveal-round]').textContent = String(room.round + 1).padStart(2, '0');
     renderReturns();
+    // 각자의 배분(바닥)과 시장 수익률(높이)을 한 장면으로 겹쳐 보여 준다
+    if (window.JPResultScene) window.JPResultScene.render($('[data-result-city]'), {
+      players: room.players,
+      readPlayer(player) {
+        const last = player.history[player.history.length - 1] || {};
+        const alloc = last.allocation || {};
+        return {
+          name: player.name,
+          value: last.weightedReturn || 0,
+          label: signed(last.weightedReturn || 0),
+          items: Object.keys(assetMeta).map(k => ({
+            key: k, name: assetMeta[k].name, color: assetMeta[k].color,
+            alloc: alloc[k] || 0, ret: room.lastReturns[k] || 0
+          }))
+        };
+      }
+    });
     $('[data-ranking]').innerHTML = rankRows(engine.rankedPlayers(room), false);
     const event = engine.getEvent(room);
     $('[data-explain-title]').textContent = event.explainTitle;
