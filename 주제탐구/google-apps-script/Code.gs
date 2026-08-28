@@ -701,23 +701,27 @@ function serveInquiryFeed_(params) {
     .setMimeType(ContentService.MimeType.JAVASCRIPT);
 }
 
-/** 운영실에 붙여 넣을 연결 주소를 보여 준다. */
+/**
+ * 운영실에 붙여 넣을 연결 열쇠를 보여 준다.
+ *
+ * 예전에는 ScriptApp.getService().getUrl() 로 주소를 통째로 건넸다. 그런데
+ * 메뉴에서 실행하면 그 값이 배포 주소(/exec)가 아니라 개발용 주소(/dev)로 나온다.
+ * /dev 는 로그인 세션이 있어야 열려서, 다른 도메인인 운영실이 불러올 수 없다.
+ * 그래서 열쇠만 건네고, 보낼 주소는 운영실이 이미 아는 배포 주소를 쓰게 한다.
+ */
 function showManagerFeedLink() {
-  const deploymentUrl = ScriptApp.getService().getUrl();
-  if (!deploymentUrl) {
-    SpreadsheetApp.getUi().alert('먼저 웹앱을 배포한 뒤 다시 실행해 주세요.');
-    return;
-  }
-  const url = deploymentUrl + '?view=inquiries&token=' + encodeURIComponent(ensureTeacherToken_());
+  const token = ensureTeacherToken_();
   const html = HtmlService.createHtmlOutput(
     '<div style="font:14px/1.7 sans-serif;padding:20px">' +
-    '<h3 style="margin-top:0">운영실 실시간 연결 주소</h3>' +
-    '<p>탐구 운영실 화면에서 <b>실시간 연결</b>에 이 주소를 한 번 붙여 넣으면, 그 기기에서는 계속 시트를 바로 읽습니다.</p>' +
-    '<textarea id="u" style="width:100%;height:82px;font:12px/1.5 Consolas,monospace" readonly>' +
-    escapeHtml_(url) + '</textarea>' +
+    '<h3 style="margin-top:0">운영실 연결 열쇠</h3>' +
+    '<p>탐구 운영실 화면의 <b>실시간 연결</b> 칸에 이 열쇠를 한 번 붙여 넣으면, ' +
+    '그 기기에서는 계속 시트를 바로 읽습니다.</p>' +
+    '<textarea id="u" style="width:100%;height:60px;font:13px/1.5 Consolas,monospace" readonly>' +
+    escapeHtml_(token) + '</textarea>' +
     '<button style="margin-top:10px;padding:8px 14px;font-size:14px;cursor:pointer" ' +
-    'onclick="var t=this.parentNode.querySelector(&quot;textarea&quot;);t.select();document.execCommand(&quot;copy&quot;);this.textContent=&quot;복사했습니다&quot;">주소 복사</button>' +
-    '<p style="color:#a3402c;font-size:12px;margin-top:14px">이 주소에는 교사용 열쇠가 들어 있습니다. 학생에게 전달하거나 공개 문서에 적지 마세요.</p></div>'
-  ).setWidth(600).setHeight(320);
+    'onclick="var t=document.getElementById(&quot;u&quot;);t.select();document.execCommand(&quot;copy&quot;);this.textContent=&quot;복사했습니다&quot;">열쇠 복사</button>' +
+    '<p style="color:#a3402c;font-size:12px;margin-top:14px">이 열쇠로 학생 원문을 모두 읽을 수 있습니다. ' +
+    '학생에게 전달하거나 공개 문서에 적지 마세요.</p></div>'
+  ).setWidth(560).setHeight(300);
   SpreadsheetApp.getUi().showModalDialog(html, '운영실 실시간 연결');
 }
