@@ -55,6 +55,36 @@
   const skills=Object.fromEntries(skillList.map(s=>[s.id,s]));
 
 
+  // ── 다항식 도구 ──────────────────────────────────────────────────────
+  // 계수 배열 [a0,a1,a2,…] 하나에서 표시 문자열과 값을 함께 만든다.
+  // 식과 답이 따로 놀아서 생기는 오류를 원천적으로 막기 위한 것이다.
+  const P={
+    text(c){
+      let out='';
+      for(let i=c.length-1;i>=0;i--){
+        const v=c[i]; if(!v) continue;
+        const body=i===0?String(Math.abs(v)):(Math.abs(v)===1?pow('x',i):Math.abs(v)+pow('x',i));
+        out+= out? (v>0?'+':'−')+body : (v>0?body:'−'+body);
+      }
+      return out||'0';
+    },
+    at(c,x){return c.reduce((s,v,i)=>s+v*Math.pow(x,i),0)},
+    d(c){return c.length<2?[0]:c.slice(1).map((v,i)=>v*(i+1))},
+    i(c){return [0].concat(c.map((v,i)=>v/(i+1)))},
+    // 구간 [a,b] 의 정적분
+    def(c,a,b){const F=P.i(c);return P.at(F,b)-P.at(F,a)},
+    // 근이 r 인 일차식들의 곱을 계수 배열로 (선행계수 p)
+    fromRoots(p,roots){
+      let c=[p];
+      roots.forEach(r=>{
+        const n=new Array(c.length+1).fill(0);
+        c.forEach((v,i)=>{n[i+1]+=v;n[i]-=v*r});
+        c=n;
+      });
+      return c;
+    }
+  };
+
   // ── 난이도 ────────────────────────────────────────────────────────────
   // 기본은 지금까지의 문제를 그대로 둔다. 응용·심화는 "계수와 차수가 늘 같아서
   // 답이 그대로 나오는" 문제를 깨는 데 목적이 있다.
@@ -71,7 +101,7 @@
   const num=n=>String(n).replace('-','−');                       // -4 → −4
   const lin=a=>a===0?'x':a>0?`x−${a}`:`x+${Math.abs(a)}`;         // 괄호 없는 일차식
   const lead=(c,v)=>c===1?v:c===-1?`−${v}`:`${c}${v}`;            // 최고차항
-  const tail=(c,v)=>c===0?'':c===1?`+${v}`:c===-1?`−${v}`:c>0?`+${c}${v}`:`−${Math.abs(c)}${v}`;
+  const tail=(c,v)=>c===0?'':v===''?(c>0?`+${c}`:`−${Math.abs(c)}`):c===1?`+${v}`:c===-1?`−${v}`:c>0?`+${c}${v}`:`−${Math.abs(c)}${v}`;
   const sqrtShift=c=>c===0?'√x':`√(${lin(-c)})`;                  // √(x+5) / √x
   const coefText=p=>p===1?'':p===-1?'−':String(p);
   const inf='∞';
@@ -84,7 +114,7 @@
         const a=nonzero(-4,4);let b=nonzero(-4,4);while(b===a)b=nonzero(-4,4);
         const correct=p*(a-b);
         return Q('FACTOR 0/0 · 계수',`lim x→${a}  (${quadFrom(p,a,b)})/${factor(a)}`,'극한값은?',correct,[a-b,p*(b-a),p],
-          `분자는 ${coefText(p)}${factor(a)}${factor(b)}이므로 약분하면 ${coefText(p)}(x−${b})입니다. x=${a}를 대입하면 ${correct}입니다.`);
+          `분자는 ${coefText(p)}${factor(a)}${factor(b)}이므로 약분하면 ${coefText(p)}(${lin(b)})입니다. x=${num(a)}를 대입하면 ${correct}입니다.`);
       },
       deep(){
         const a=nonzero(-4,4);let b=nonzero(-4,4),c=nonzero(-4,4);
@@ -92,7 +122,7 @@
         while(c===a||c===b)c=nonzero(-4,4);
         const correct=frac(a-b,a-c);
         return Q('FACTOR 0/0 · 분모도 인수분해',`lim x→${a}  (${quadFrom(1,a,b)})/(${quadFrom(1,a,c)})`,'극한값은?',correct,[frac(a-c,a-b),String(a-b),'1'],
-          `분자와 분모 모두 ${factor(a)}를 인수로 가지므로 약분하면 (x−${b})/(x−${c})입니다. x=${a}를 대입하면 ${correct}입니다.`);
+          `분자와 분모 모두 ${factor(a)}를 인수로 가지므로 약분하면 (${lin(b)})/(${lin(c)})입니다. x=${num(a)}를 대입하면 ${correct}입니다.`);
       }
     },
     // 유리화 · 근호의 위치와 분모의 차수를 바꾼다
@@ -168,13 +198,13 @@
         const a=ri(1,6);let m=nonzero(-5,5);while(m===a)m=nonzero(-5,5);
         const correct=a-m;
         return Q('CONTINUITY · 일반 인수',`f(x)=(${quadFrom(1,a,m)})/${factor(a)} (x≠${a}),  f(${a})=k`,`x=${a}에서 연속이 되게 하는 k는?`,correct,[a+m,a*m,-correct],
-          `x≠${a}에서 f(x)=x−${m}이므로 극한값은 ${correct}입니다. 함숫값이 이 값과 같아야 연속입니다.`);
+          `x≠${a}에서 f(x)=${lin(m)}이므로 극한값은 ${correct}입니다. 함숫값이 이 값과 같아야 연속입니다.`);
       },
       deep(){
         const a=ri(1,5);let L=nonzero(-6,6);while(a-L===0)L=nonzero(-6,6);
         const b=a-L,correct=-(a+b);
         return Q('미정계수 결정',`lim x→${a}  (x²${tail(correct,'x')}${tail(a*b,'')}) / ${factor(a)} = ${num(L)}`,'일차항의 계수 p의 값은?',correct,[L,-correct,a+L],
-          `분모가 0으로 가고 극한값이 존재하므로 분자도 x=${a}에서 0이어야 합니다. 분자를 ${factor(a)}(x−${b})로 두면 극한값은 ${a}−(${b})=${L}이 되고, 일차항 계수 p는 ${correct}입니다.`);
+          `분모가 0으로 가고 극한값이 존재하므로 분자도 x=${a}에서 0이어야 합니다. 분자를 ${factor(a)}(${lin(b)})로 두면 극한값은 ${a}−(${num(b)})=${num(L)}이 되고, 일차항 계수 p는 ${num(correct)}입니다.`);
       }
     },
     // 샌드위치 · 유계 조건의 형태를 바꾼다
@@ -209,6 +239,395 @@
     }
   };
 
+  // ── 미분 ─────────────────────────────────────────────────────────────
+  levelMakers.derivative_definition={
+    applied(){
+      const c=[0,nonzero(-4,4),nonzero(-3,3),pick([1,2,-1,-2])],t=nonzero(-2,2);
+      const d=P.d(c),correct=P.at(d,t);
+      const q=Q('DEFINITION · 삼차함수',`f(x)=${P.text(c)}`,`f′(${num(t)})의 값은?`,correct,[P.at(c,t),correct+t,-correct],
+        `f′(x)=${P.text(d)}이므로 x=${num(t)}를 넣으면 ${correct}입니다.`);
+      q.check={k:'deriv',c:c,at:t};return q;
+    },
+    deep(){
+      const c=[0,nonzero(-4,4),nonzero(-3,3),pick([1,2,-1])],a=nonzero(-2,2);
+      const mode=pick(['scale','sym']),d=P.d(c),fa=P.at(d,a);
+      if(mode==='scale'){
+        const k=ri(2,4),correct=k*fa;
+        const q=Q('DEFINITION · 계수가 붙은 h',`f(x)=${P.text(c)}`,`lim h→0 (f(${num(a)}+${k}h)−f(${num(a)}))/h 의 값은?`,correct,[fa,correct+k,-correct],
+          `분자와 분모에 ${k}를 맞추면 ${k}f′(${num(a)})입니다. f′(x)=${P.text(d)}이므로 ${k}×${fa}=${correct}입니다.`);
+        q.check={k:'deriv',c:c,at:a,mul:k};return q;
+      }
+      const correct=2*fa;
+      const q=Q('DEFINITION · 양쪽에서 다가가기',`f(x)=${P.text(c)}`,`lim h→0 (f(${num(a)}+h)−f(${num(a)}−h))/h 의 값은?`,correct,[fa,0,-correct],
+        `f(${num(a)}+h)−f(${num(a)}−h)를 f(${num(a)})를 더하고 빼서 두 조각으로 나누면 2f′(${num(a)})입니다. f′(${num(a)})=${fa}이므로 ${correct}입니다.`);
+      q.check={k:'deriv',c:c,at:a,mul:2};return q;
+    }
+  };
+
+  levelMakers.differentiate_polynomial={
+    applied(){
+      const c=[nonzero(-5,5),nonzero(-4,4),nonzero(-3,3),pick([1,2,3,-1,-2])],t=nonzero(-2,2);
+      const d=P.d(c),correct=P.at(d,t);
+      const q=Q('POWER RULE · 여러 항',`f(x)=${P.text(c)}`,`f′(${num(t)})의 값은?`,correct,[P.at(c,t),correct-t,2*correct],
+        `각 항을 따로 미분하면 f′(x)=${P.text(d)}입니다. x=${num(t)}에서 ${correct}입니다.`);
+      q.check={k:'deriv',c:c,at:t};return q;
+    },
+    deep(){
+      // f′(t)=0 이 되도록 미지의 계수를 되묻는다
+      const t=nonzero(-3,3),b=nonzero(-5,5),correct=-(3*t*t+b)/(2*t);
+      if(!Number.isInteger(correct))return levelMakers.differentiate_polynomial.deep();
+      const c=[0,b,correct,1];
+      const q=Q('POWER RULE · 계수 되묻기',`f(x)=x³+ax²${tail(b,'x')}`,`f′(${num(t)})=0 이 되게 하는 상수 a는?`,correct,[-correct,b,t],
+        `f′(x)=3x²+2ax${tail(b,'')}이고 f′(${num(t)})=${3*t*t}${tail(2*t,'a')}${tail(b,'')}=0이므로 a=${correct}입니다.`);
+      q.check={k:'deriv',c:c,at:t,expect:0};return q;
+    }
+  };
+
+  levelMakers.product_rule={
+    applied(){
+      const p=pick([2,3,-2]),q0=nonzero(-4,4),r=nonzero(-4,4),t=nonzero(-2,2);
+      // f(x)=(px+q)(x²+r)
+      const c=[q0*r,p*r,q0,p];
+      const d=P.d(c),correct=P.at(d,t);
+      const q=Q('PRODUCT RULE · 계수가 있는 곱',`f(x)=(${lead(p,'x')}${tail(q0,'')})(x²${tail(r,'')})`,`f′(${num(t)})의 값은?`,correct,[P.at(c,t),correct-t,-correct],
+        `곱의 미분법으로 f′(x)=${p}(x²${tail(r,'')})+(${lead(p,'x')}${tail(q0,'')})·2x = ${P.text(d)}입니다. x=${num(t)}에서 ${correct}입니다.`);
+      q.check={k:'deriv',c:c,at:t};return q;
+    },
+    deep(){
+      const a=nonzero(-3,3);let b=nonzero(-3,3);while(b===a)b=nonzero(-3,3);
+      const c=P.fromRoots(1,[a,a,b]),d=P.d(c);
+      const t=pick([a,b]),correct=P.at(d,t);
+      const q=Q('PRODUCT RULE · 중근이 있는 곱',`f(x)=(${lin(a)})²(${lin(b)})`,`f′(${num(t)})의 값은?`,correct,[-correct,0===correct?1:0,P.at(c,t)],
+        t===a?`중근 x=${num(a)}에서는 f와 f′이 모두 0이 되므로 ${correct}입니다.`
+             :`f′(x)=2(${lin(a)})(${lin(b)})+(${lin(a)})²이고 x=${num(b)}에서 (${num(b-a)})²=${correct}입니다.`);
+      q.check={k:'deriv',c:c,at:t};return q;
+    }
+  };
+
+  levelMakers.tangent_equation={
+    applied(){
+      const c=[nonzero(-4,4),nonzero(-3,3),0,1],a=nonzero(-2,2);
+      const d=P.d(c),m=P.at(d,a),y=P.at(c,a),k=y-m*a;
+      const correct=lineEq(m,k);
+      const q=Q('TANGENT · 삼차함수',`f(x)=${P.text(c)},  x=${num(a)}`,'접선의 방정식은?',correct,[lineEq(m,y),lineEq(-m,k),lineEq(a,k)],
+        `접점은 (${num(a)}, ${y}), 기울기는 f′(${num(a)})=${m}이므로 ${correct}입니다.`);
+      q.check={k:'tangent',c:c,at:a};return q;
+    },
+    deep(){
+      // 기울기가 주어진 접선의 접점을 찾는다
+      const s=nonzero(-3,3),cc=[nonzero(-4,4),0,-3*s,1];   // f′(x)=3x²−6sx 이므로 접점은 중근
+      const d=P.d(cc),m=P.at(d,s),correct=s;
+      const q=Q('TANGENT · 기울기로 접점 찾기',`f(x)=${P.text(cc)}`,`기울기가 ${num(m)}인 접선의 접점 x좌표는?`,correct,[-s,m,0],
+        `f′(x)=${P.text(d)}이고 f′(x)=${num(m)}을 정리하면 3(${lin(s)})²=0이므로 접점은 x=${num(s)} 하나뿐입니다.`);
+      q.check={k:'derivEq',c:cc,at:s,value:m};return q;
+    }
+  };
+
+  // ── 도함수·그래프 ────────────────────────────────────────────────────
+  levelMakers.monotonic_interval={
+    applied(){
+      const a=ri(-4,-1);let b=ri(1,4);
+      const d=P.fromRoots(6,[a,b]);                 // 6으로 두면 적분해도 계수가 정수로 떨어진다
+      const c=P.i(d);
+      const correct=`(−∞,${num(a)}) ∪ (${num(b)},∞)`;
+      const q=Q('SIGN CHART · 함수에서 출발',`f(x)=${P.text(c)}`,'f가 증가하는 구간은?',correct,
+        [`(${num(a)},${num(b)})`,`(−∞,${num(b)})`,`(${num(a)},∞)`],
+        `f′(x)=${P.text(d)}=6(${lin(a)})(${lin(b)})이고, 위로 열린 이차식은 두 근의 바깥에서 양수입니다.`);
+      q.check={k:'increase',d:d,roots:[a,b]};return q;
+    },
+    deep(){
+      // f(x)=x³+ax²+bx 가 항상 증가할 조건 → 판별식
+      const a=pick([3,6,-3,-6]),correct=`b ≥ ${a*a/3}`;
+      const q=Q('SIGN CHART · 항상 증가할 조건',`f(x)=x³${tail(a,'x²')}+bx`,'모든 실수에서 f가 증가하기 위한 b의 조건은?',correct,
+        [`b > ${a*a/3}`,`b ≤ ${a*a/3}`,`b ≥ ${a}`],
+        `f′(x)=3x²${tail(2*a,'x')}+b가 항상 0 이상이어야 하므로 판별식 ${4*a*a}−12b ≤ 0, 즉 b ≥ ${a*a/3}입니다.`);
+      q.check={k:'discriminant',A:3,B:2*a,bound:a*a/3,want:'none'};return q;
+    }
+  };
+
+  levelMakers.extrema_sign={
+    applied(){
+      const p=nonzero(-3,3);let r=nonzero(-3,3);while(r===p)r=nonzero(-3,3);
+      const lo=Math.min(p,r),hi=Math.max(p,r);
+      const d=P.fromRoots(6,[lo,hi]),c=P.i(d);
+      const correct=P.at(c,lo);                     // 위로 열린 f′ → 작은 근에서 극대
+      const q=Q('SIGN CHANGE · 극댓값 구하기',`f(x)=${P.text(c)}`,'f의 극댓값은?',correct,[P.at(c,hi),lo,hi],
+        `f′(x)=${P.text(d)}=6(${lin(lo)})(${lin(hi)})이므로 x=${num(lo)}에서 극대입니다. f(${num(lo)})=${correct}입니다.`);
+      q.check={k:'polyval',c:c,at:lo};return q;
+    },
+    deep(){
+      const p=ri(1,4),correct=`k < ${3*p*p}`;
+      const q=Q('SIGN CHANGE · 극값을 가질 조건',`f(x)=x³${tail(-3*p,'x²')}+kx`,'f가 극댓값과 극솟값을 모두 갖기 위한 k의 조건은?',correct,
+        [`k > ${3*p*p}`,`k < ${p*p}`,`k ≥ ${3*p*p}`],
+        `f′(x)=3x²${tail(-6*p,'x')}+k가 서로 다른 두 실근을 가져야 합니다. 판별식 ${36*p*p}−12k > 0이므로 k < ${3*p*p}입니다.`);
+      q.check={k:'discriminant',A:3,B:-6*p,bound:3*p*p,want:'two'};return q;
+    }
+  };
+
+  levelMakers.cubic_extrema={
+    applied(){
+      const a=ri(1,4),correct=4*a*a*a;              // f=x³−3a²x 의 극댓값−극솟값 = 4a³
+      const q=Q('CUBIC EXTREMA · 극값의 차',`f(x)=x³−${3*a*a}x`,'극댓값과 극솟값의 차는?',correct,[2*a*a*a,a*a*a,2*a],
+        `f′(x)=3(x²−${a*a})이므로 x=±${a}에서 극값입니다. f(−${a})=${2*a*a*a}, f(${a})=${-2*a*a*a}이므로 차는 ${correct}입니다.`);
+      q.check={k:'extremaGap',c:[0,-3*a*a,0,1]};return q;
+    },
+    deep(){
+      const p=nonzero(-3,3),correct=-3*p*p;         // f=x³+ax²+bx 가 x=p 에서 극값 → 미지 b
+      const a=-3*p,b=3*p*p;
+      const q=Q('CUBIC EXTREMA · 계수 되묻기',`f(x)=x³${tail(-3*p,'x²')}+bx`,`f가 x=${num(p)}에서 극값을 갖게 하는 b는?`,b,[-b,p,3*p],
+        `f′(x)=3x²${tail(-6*p,'x')}+b이고 f′(${num(p)})=${3*p*p}${tail(-6*p*p,'')}+b=0이므로 b=${b}입니다.`);
+      q.check={k:'deriv',c:[0,b,a,1],at:p,expect:0};return q;
+    }
+  };
+
+  levelMakers.quartic_shape={
+    applied(){
+      // 선행계수와 근 배치에 따라 가운데 임계점이 극대도 극소도 된다
+      const up=pick([true,false]),r=pick([[-2,0,2],[-3,-1,2],[-1,1,3],[-3,0,1]]);
+      const correct=up?'극대':'극소';
+      const q=Q('QUARTIC SHAPE · 부호까지 판단',`f′(x)=${up?'4':'−4'}(${lin(r[0])})(${lin(r[1])})(${lin(r[2])})`,
+        `가운데 임계점 x=${num(r[1])}에서 f는?`,correct,[up?'극소':'극대','변곡점','판정 불가'],
+        up?`가운데 근의 왼쪽에서는 (+)(−)(−)로 양수, 오른쪽에서는 (+)(+)(−)로 음수입니다. +에서 −로 바뀌므로 극대입니다.`
+          :`선행계수가 음수라 부호가 모두 뒤집힙니다. 가운데 근에서 −에서 +로 바뀌므로 극소입니다.`);
+      q.check={k:'quartic',up:up,roots:r};return q;
+    },
+    deep(){
+      const mode=pick(['three','one']);
+      const correct=mode==='three'?'3개':'1개';
+      const q=Q('QUARTIC SHAPE · 극값의 개수',
+        mode==='three'?`f′(x)=4x(x−${ri(1,3)})(x+${ri(1,3)})`:`f′(x)=4x(x²+${ri(1,4)})`,
+        'f의 극값은 모두 몇 개인가요?',correct,[mode==='three'?'1개':'3개','2개','0개'],
+        mode==='three'?`f′의 서로 다른 실근이 3개이고 각각에서 부호가 바뀌므로 극값은 3개입니다.`
+                      :`x²+양수는 항상 0보다 크므로 f′의 실근은 x=0 하나뿐이고 극값도 1개입니다.`);
+      q.check={k:'skip'};return q;
+    }
+  };
+
+  levelMakers.real_roots={
+    applied(){
+      const p=ri(1,3),peak=2*p*p*p;                 // y=x³−3p²x 의 극댓값 2p³, 극솟값 −2p³
+      const k=pick([-peak-1,-peak,0,peak,peak+1]);
+      const correct=Math.abs(k)<peak?'3개':Math.abs(k)===peak?'2개':'1개';
+      const q=Q('REAL ROOTS · 일반 삼차',`x³−${3*p*p}x = ${num(k)}`,'서로 다른 실근의 개수는?',correct,
+        ['1개','2개','3개'].filter(x=>x!==correct).concat(['0개']),
+        `y=x³−${3*p*p}x의 극댓값은 ${peak}, 극솟값은 ${-peak}입니다. 수평선 y=${num(k)}와의 교점을 셉니다.`);
+      q.check={k:'roots',c:[-k,-3*p*p,0,1],expect:correct};return q;
+    },
+    deep(){
+      const p=ri(1,3),peak=2*p*p*p;
+      const correct=`−${peak} < k < ${peak}`;
+      const q=Q('REAL ROOTS · 조건에서 범위로',`x³−${3*p*p}x = k`,'서로 다른 실근이 3개가 되게 하는 k의 범위는?',correct,
+        [`k > ${peak}`,`−${peak} ≤ k ≤ ${peak}`,`k < −${peak}`],
+        `극댓값 ${peak}와 극솟값 ${-peak} 사이에 수평선이 있어야 교점이 3개가 됩니다. 등호면 접하여 2개가 됩니다.`);
+      q.check={k:'cubicRange',c:[0,-3*p*p,0,1],peak:peak};return q;
+    }
+  };
+
+  levelMakers.mean_value={
+    applied(){
+      const a=ri(0,2),b=a+2*ri(1,3),A=pick([1,2,3]),B=nonzero(-4,4);
+      const c=[0,B,A],correct=(a+b)/2;             // f=Ax²+Bx 는 c=(a+b)/2
+      const q=Q('MEAN VALUE · 계수가 있는 이차',`f(x)=${P.text(c)},  [${a},${b}]`,'평균값 정리를 만족하는 c는?',correct,[a+b,b-a,2*correct],
+        `평균변화율은 ${A}(${a}+${b})${tail(B,'')}이고 f′(c)=${2*A}c${tail(B,'')}이므로 c=${correct}입니다.`);
+      q.check={k:'mvt',c:c,a:a,b:b};return q;
+    },
+    deep(){
+      const a=nonzero(-3,3);let b=nonzero(-3,3);while(b===a)b=nonzero(-3,3);
+      const lo=Math.min(a,b),hi=Math.max(a,b),correct=(lo+hi)/2;
+      const c=P.fromRoots(1,[lo,hi]);
+      const q=Q('ROLLE · 양 끝 함숫값이 같을 때',`f(x)=${P.text(c)},  [${lo},${hi}]`,`f(${lo})=f(${hi})=0일 때 f′(c)=0인 c는?`,correct,[lo,hi,0],
+        `롤의 정리에 따라 구간 안에 f′(c)=0인 c가 있습니다. f′(x)=${P.text(P.d(c))}이므로 c=${correct}입니다.`);
+      q.check={k:'deriv',c:c,at:correct,expect:0};return q;
+    }
+  };
+
+  levelMakers.motion_rate={
+    applied(){
+      const A=ri(1,2),B=nonzero(-6,-2),t=ri(1,3);
+      const s=[0,0,B,A],v=P.d(s),acc=P.d(v);
+      const correct=P.at(acc,t);
+      const q=Q('VELOCITY · 가속도',`s(t)=${P.text(s)}`,`t=${t}에서 가속도는?`,correct,[P.at(v,t),correct+t,-correct],
+        `v(t)=${P.text(v)}, a(t)=${P.text(acc)}이므로 t=${t}에서 ${correct}입니다.`);
+      q.check={k:'deriv2',c:s,at:t};return q;
+    },
+    deep(){
+      const r=ri(1,4);                              // v(t)=3(t−r)(t+r) 형태를 피하고 정수 해를 보장
+      const v=P.fromRoots(3,[r,-r]),s=P.i(v).map(x=>Math.round(x*6)/6);
+      const correct=r;
+      const q=Q('VELOCITY · 운동 방향이 바뀌는 시각',`s(t)=${P.text(s)}  (t ≥ 0)`,'물체의 운동 방향이 바뀌는 시각 t는?',correct,[2*r,0,r*r],
+        `v(t)=${P.text(v)}=3(t−${r})(t+${r})이고 t ≥ 0에서 부호가 바뀌는 것은 t=${r}뿐입니다.`);
+      q.check={k:'signChange',c:v,at:r};return q;
+    }
+  };
+
+  levelMakers.horizontal_tangent={
+    applied(){
+      const c=[nonzero(-4,4),3*pick([-3,-1,1,3]),0,1];   // f′(x)=3x²+b
+      const b=c[1],correct=b<0?'2개':'0개';
+      const q=Q('HORIZONTAL TANGENT · 일반 삼차',`f(x)=${P.text(c)}`,'수평접선의 개수는?',correct,
+        ['0개','1개','2개'].filter(x=>x!==correct).concat(['3개']),
+        `f′(x)=3x²${tail(b,'')}=0의 서로 다른 실근 수가 수평접선의 개수입니다. ${b<0?`x²=${-b/3}이므로 2개`:'실근이 없으므로 0개'}입니다.`);
+      q.check={k:'hTangent',c:c};return q;
+    },
+    deep(){
+      const p=ri(1,3),correct=`k > ${3*p*p}`;
+      const q=Q('HORIZONTAL TANGENT · 조건에서 범위로',`f(x)=x³${tail(-3*p,'x²')}+kx`,'수평접선이 하나도 없게 하는 k의 조건은?',correct,
+        [`k < ${3*p*p}`,`k > ${p*p}`,`k ≥ 0`],
+        `f′(x)=3x²${tail(-6*p,'x')}+k가 실근을 갖지 않아야 합니다. 판별식 ${36*p*p}−12k < 0이므로 k > ${3*p*p}입니다.`);
+      q.check={k:'discriminant',A:3,B:-6*p,bound:3*p*p,want:'none'};return q;
+    }
+  };
+
+  // ── 적분 ─────────────────────────────────────────────────────────────
+  levelMakers.antiderivative={
+    applied(){
+      const d=[nonzero(-5,5),nonzero(-4,4)*2,3*pick([1,2,-1])];
+      const F=P.i(d),correct=P.text(F)+'+C';
+      const q=Q('ANTIDERIVATIVE · 다항식',`∫ (${P.text(d)}) dx`,'부정적분은?',correct,[P.text(d)+'+C',P.text(P.d(d))+'+C',P.text(F)],
+        `각 항의 지수를 하나 올리고 새 지수로 나누면 ${correct}입니다.`);
+      q.check={k:'antider',d:d};return q;
+    },
+    deep(){
+      const c=[nonzero(-4,4),nonzero(-3,3),pick([1,2,-1])];
+      const d=P.d(c),correct=P.text(c)+'+C';
+      const q=Q('ANTIDERIVATIVE · 미분을 거꾸로',`f′(x)=${P.text(d)}`,'f(x)로 가능한 식은?',correct,[P.text(d)+'+C',P.text(P.d(d))+'+C',P.text(P.i(d))],
+        `f′(x)를 적분하면 ${P.text(P.i(d))}+C이고, 상수항까지 포함해 ${correct} 꼴입니다.`);
+      q.check={k:'antider',d:d};return q;
+    }
+  };
+
+  levelMakers.initial_antiderivative={
+    applied(){
+      const d=[nonzero(-4,4),2*nonzero(-3,3),3*pick([1,2,-1])];
+      const F0=nonzero(-5,5),t=nonzero(-2,2);
+      const F=P.i(d);F[0]=F0;
+      const correct=P.at(F,t);
+      const q=Q('INITIAL VALUE · 이차 도함수',`F′(x)=${P.text(d)},  F(0)=${F0}`,`F(${num(t)})의 값은?`,correct,[correct-F0,F0,-correct],
+        `F(x)=${P.text(F)}이고 x=${num(t)}를 넣으면 ${correct}입니다.`);
+      q.check={k:'polyval',c:F,at:t};return q;
+    },
+    deep(){
+      // 부정적분과 미분계수: lim x→a (F(x)−F(a))/(x−a) = F′(a) = f(a)
+      const c=[nonzero(-4,4),nonzero(-3,3),pick([1,2,-1,-2])],a=nonzero(-2,2);
+      const correct=P.at(c,a);
+      // 식 자리에는 함수만 두고 조건은 발문으로 뺀다 (390px에서 넘치지 않게)
+      const q=Q('부정적분과 미분계수',`f(x)=${P.text(c)}`,
+        `F가 f의 부정적분일 때, lim x→${num(a)} (F(x)−F(${num(a)}))/(${lin(a)}) 의 값은?`,correct,[P.at(P.i(c),a),P.at(P.d(c),a),0],
+        `이 극한은 F′(${num(a)})의 정의이고 F′=f이므로 f(${num(a)})=${correct}입니다.`);
+      q.check={k:'polyval',c:c,at:a};return q;
+    }
+  };
+
+  levelMakers.definite_integral={
+    applied(){
+      const c=[nonzero(-4,4),2*nonzero(-3,3),3*pick([1,2,-1])],a=ri(0,2),b=a+ri(1,3);
+      const correct=P.def(c,a,b);
+      const q=Q('DEFINITE INTEGRAL · 이차 피적분',`∫[${a}→${b}] (${P.text(c)}) dx`,'정적분의 값은?',correct,[P.at(c,b),correct+b,-correct],
+        `원시함수 ${P.text(P.i(c))}에 ${b}와 ${a}를 대입해 빼면 ${correct}입니다.`);
+      q.check={k:'defint',c:c,a:a,b:b};return q;
+    },
+    deep(){
+      const c=[nonzero(-3,3),0,3*pick([1,-1]),4*pick([1,-1])],a=-ri(1,2),b=ri(1,2);
+      const correct=P.def(c,a,b);
+      const q=Q('DEFINITE INTEGRAL · 음수 구간 포함',`∫[${num(a)}→${b}] (${P.text(c)}) dx`,'정적분의 값은?',correct,[-correct,P.at(c,b)-P.at(c,a),0],
+        `원시함수 ${P.text(P.i(c))}에 위끝 ${b}와 아래끝 ${num(a)}를 대입해 빼면 ${correct}입니다.`);
+      q.check={k:'defint',c:c,a:a,b:b};return q;
+    }
+  };
+
+  levelMakers.integral_symmetry={
+    applied(){
+      const a=ri(1,3),even=pick([true,false]);
+      const c=even?[0,0,3*pick([1,2])]:[0,0,0,4*pick([1,2])];
+      const correct=P.def(c,-a,a);
+      const q=Q('SYMMETRY · 홀함수인지 먼저 판정',`∫[−${a}→${a}] (${P.text(c)}) dx`,'정적분의 값은?',correct,[0===correct?a:0,-correct,2*a],
+        even?`${P.text(c)}는 짝함수이므로 0이 아니라 0부터 ${a}까지의 두 배인 ${correct}입니다.`
+            :`${P.text(c)}는 홀함수이고 구간이 원점 대칭이므로 ${correct}입니다.`);
+      q.check={k:'defint',c:c,a:-a,b:a};return q;
+    },
+    deep(){
+      const a=ri(1,3);
+      const c=[0,nonzero(-3,3),3*pick([1,2]),4*pick([1,-1])];  // 홀·짝이 섞인 식
+      const correct=P.def(c,-a,a);
+      const q=Q('SYMMETRY · 홀·짝이 섞인 식',`∫[−${a}→${a}] (${P.text(c)}) dx`,'정적분의 값은?',correct,[0,-correct,2*correct],
+        `홀수 차수 항은 0이 되고 짝수 차수 항만 남습니다. 남은 부분을 계산하면 ${correct}입니다.`);
+      q.check={k:'defint',c:c,a:-a,b:a};return q;
+    }
+  };
+
+  levelMakers.area_axis={
+    applied(){
+      const a=ri(1,3),k=pick([1,2,3]);
+      const c=P.fromRoots(-k,[0,a]);               // 위로 볼록, [0,a]에서 f ≥ 0
+      const correct=frac(k*a*a*a,6);
+      const q=Q('AREA · 포물선과 x축',`y=${P.text(c)},  0≤x≤${a}`,'그래프와 x축 사이 넓이는?',correct,[frac(k*a*a*a,3),frac(k*a*a,2),String(k*a)],
+        `구간 안에서 y ≥ 0이므로 그대로 적분하면 ${correct}입니다.`);
+      q.check={k:'absint',c:c,a:0,b:a};return q;
+    },
+    deep(){
+      const a=ri(1,3),k=pick([1,2]);
+      const c=P.fromRoots(k,[0,a]);                // [0,a]에서 음수 → 정적분값과 넓이가 다르다
+      const correct=frac(k*a*a*a,6);
+      const q=Q('AREA · 정적분값과 넓이가 다를 때',`y=${P.text(c)},  0≤x≤${a}`,'그래프와 x축 사이 넓이는?',correct,
+        [frac(-k*a*a*a,6),'0',frac(k*a*a*a,3)],
+        `이 구간에서 y ≤ 0이라 정적분값은 음수 ${frac(-k*a*a*a,6)}입니다. 넓이는 절댓값이므로 ${correct}입니다.`);
+      q.check={k:'absint',c:c,a:0,b:a};return q;
+    }
+  };
+
+  levelMakers.area_between={
+    applied(){
+      const m=ri(1,4);                              // y=x² 와 y=mx 의 교점 0, m
+      const correct=frac(m*m*m,6);
+      const q=Q('BETWEEN CURVES · 교점을 먼저',`y=x²,  y=${lead(m,'x')}`,'두 곡선으로 둘러싸인 부분의 넓이는?',correct,[frac(m*m*m,3),frac(m*m,2),String(m)],
+        `교점은 x=0과 x=${m}입니다. 이 구간에서 직선이 위이므로 ∫(${lead(m,'x')}−x²)dx=${correct}입니다.`);
+      q.check={k:'areaBetween',f:[0,m],g:[0,0,1],a:0,b:m};return q;
+    },
+    deep(){
+      const d=ri(1,3);                              // y=x² 와 y=−x²+2d² 의 교점 ±d
+      const correct=frac(8*d*d*d,3);
+      const q=Q('BETWEEN CURVES · 두 포물선',`y=x²,  y=−x²+${2*d*d}`,'두 곡선으로 둘러싸인 부분의 넓이는?',correct,[frac(4*d*d*d,3),frac(2*d*d*d,3),String(2*d)],
+        `교점은 x=±${d}입니다. 위 곡선에서 아래 곡선을 빼면 ${2*d*d}−2x²이고, −${d}부터 ${d}까지 적분하면 ${correct}입니다.`);
+      q.check={k:'areaBetween',f:[2*d*d,0,-1],g:[0,0,1],a:-d,b:d};return q;
+    }
+  };
+
+  levelMakers.distance_velocity={
+    applied(){
+      const r=ri(2,4);                              // v(t)=t²−r² , 0≤t≤r+1 은 계산이 지저분해 [0,r] 로 둔다
+      const v=[-r*r,0,1],T=r;
+      const correct=frac(2*r*r*r,3);
+      const q=Q('TOTAL DISTANCE · 이차 속도',`v(t)=${P.text(v)},  0≤t≤${T}`,'이동거리는?',correct,[frac(-2*r*r*r,3),'0',frac(r*r*r,3)],
+        `구간 내내 v ≤ 0이므로 이동거리는 −∫v dt = ${correct}입니다.`);
+      q.check={k:'absint',c:v,a:0,b:T};return q;
+    },
+    deep(){
+      const k=ri(1,3),T=2*k;                        // v(t)=2t−2k : t=k 에서 부호가 바뀐다
+      const v=[-2*k,2];                             // 변위는 0, 이동거리는 2k² — 여기서는 변위를 묻는다
+      const q=Q('DISPLACEMENT vs DISTANCE',`v(t)=${P.text(v)},  0≤t≤${T}`,`위치의 변화량(변위)은?`,0,[2*k*k,k*k,-2*k*k],
+        `변위는 ∫v dt로 0입니다. 이동거리 ${2*k*k}와 다릅니다. t=${k}에서 방향이 바뀌어 되돌아왔기 때문입니다.`);
+      q.check={k:'defint',c:v,a:0,b:T};return q;
+    }
+  };
+
+  levelMakers.fundamental_theorem={
+    applied(){
+      const c=[nonzero(-3,3),nonzero(-3,3),pick([1,2,-1])],t=nonzero(-2,2);
+      const correct=P.at(c,t);
+      const q=Q('FTC · 위끝이 x인 누적함수',`F(x)=∫[0→x] (${P.text(c).replace(/x/g,'t')}) dt`,`F′(${num(t)})의 값은?`,correct,[P.at(P.i(c),t),P.at(P.d(c),t),0],
+        `미적분의 기본정리에 따라 F′(x)=${P.text(c)}이므로 ${correct}입니다.`);
+      q.check={k:'polyval',c:c,at:t};return q;
+    },
+    deep(){
+      const a=nonzero(-3,3),b=nonzero(-4,4);
+      // ∫[a→x] f(t)dt = x²+bx−(a²+ab) 가 되도록 f(t)=2t+b
+      const c=[b,2],correct=P.at(c,a);
+      const q=Q('FTC · 양변을 미분하기',`∫[${num(a)}→x] f(t) dt = x²${tail(b,'x')}${tail(-(a*a+b*a),'')}`,`f(${num(a)})의 값은?`,correct,[a*a+b*a,2*a,b],
+        `양변을 x로 미분하면 f(x)=2x${tail(b,'')}입니다. x=${num(a)}를 넣으면 ${correct}입니다.`);
+      q.check={k:'polyval',c:c,at:a};return q;
+    }
+  };
+
   const levelIds=Object.keys(levelMakers);
   const hasLevels=id=>levelIds.includes(id);
   function makeQuestion(id){
@@ -224,10 +643,10 @@
     switch(id){
       case'limit_factor':
         a=nonzero(-4,4);do{b=nonzero(-4,4)}while(b===a);correct=a-b;
-        return Q('FACTOR 0/0',`lim x→${a}  (${poly2(1,-(a+b),a*b)})/${factor(a)}`,'극한값은?',correct,[a+b,b-a,a*b],`분자는 ${factor(a)}${factor(b)}이므로 약분 후 x−${b}에 x=${a}를 대입합니다.`);
+        return Q('FACTOR 0/0',`lim x→${a}  (${poly2(1,-(a+b),a*b)})/${factor(a)}`,'극한값은?',correct,[a+b,b-a,a*b],`분자는 ${factor(a)}${factor(b)}이므로 약분 후 ${lin(b)}에 x=${num(a)}를 대입합니다.`);
       case'limit_rationalize':
         q=ri(2,5);a=ri(1,5);c=q*q-a;correct=frac(1,2*q);
-        return Q('RATIONALIZE',`lim x→${a}  (√(x${sign(c)})−${q})/(x−${a})`,'극한값은?',correct,[frac(1,q),String(2*q),frac(-1,2*q)],`켤레식을 곱하면 1/(√(x${sign(c)})+${q})가 되어 ${correct}입니다.`);
+        return Q('RATIONALIZE',`lim x→${a}  (${sqrtShift(c)}−${q})/(x−${a})`,'극한값은?',correct,[frac(1,q),String(2*q),frac(-1,2*q)],`켤레식을 곱하면 1/(${sqrtShift(c)}+${q})가 되어 ${correct}입니다.`);
       case'limit_infinity_ratio':
         A=ri(1,7);B=ri(1,6);correct=frac(A,B);
         return Q('∞/∞',`lim x→∞  (${lead(A,'x²')}${tail(nonzero(-5,5),'')})/(${lead(B,'x²')}${tail(nonzero(-5,5),'x')}+1)`,'극한값은?',correct,[frac(B,A),String(A),String(B)],`분자와 분모를 x²으로 나누면 최고차항 계수의 비 ${correct}만 남습니다.`);
@@ -248,13 +667,13 @@
         return Q('L’HÔPITAL CHECK',`lim x→${a}  (${pow('x',n)}${A>=0?`−${A}`:`+${Math.abs(A)}`})/${factor(a)}`,'로피탈 정리로 검산한 극한값은?',correct,[Math.pow(a,n-1),n*a,A],`0/0꼴이므로 분자와 분모를 각각 미분하면 ${n}${pow('x',n-1)}/1입니다. x=${a}를 대입하면 ${correct}입니다.`);
       case'derivative_definition':
         a=ri(-3,3);b=ri(-4,4);correct=2*a+b;
-        return Q('DEFINITION',`f(x)=x²${b?sign(b)+'x':''},  f′(${a})=?`,'미분계수는?',correct,[a+b,2*a-b,a*a+b],`f′(x)=2x${b?sign(b):''}이므로 f′(${a})=${correct}입니다.`);
+        return Q('DEFINITION',`f(x)=x²${tail(b,'x')},  f′(${num(a)})=?`,'미분계수는?',correct,[a+b,2*a-b,a*a+b],`f′(x)=2x${tail(b,'')}이므로 f′(${num(a)})=${num(correct)}입니다.`);
       case'differentiate_polynomial':
         A=ri(1,6);n=ri(2,5);correct=A*n;
-        return Q('POWER RULE',`f(x)=${A}${pow('x',n)}`,'f′(1)의 값은?',correct,[A+n,A*(n-1),n],`f′(x)=${A*n}${pow('x',n-1)}이므로 x=1에서 ${correct}입니다.`);
+        return Q('POWER RULE',`f(x)=${lead(A,pow('x',n))}`,'f′(1)의 값은?',correct,[A+n,A*(n-1),n],`f′(x)=${lead(A*n,pow('x',n-1))}이므로 x=1에서 ${correct}입니다.`);
       case'product_rule':
         a=nonzero(-4,4);b=nonzero(-4,4);t=ri(-2,2);correct=2*t+a+b;
-        return Q('PRODUCT RULE',`f(x)=${factor(-a)}${factor(-b)}`,'f′('+t+')의 값은?',correct,[t+a+b,2*t-a-b,a*b],`전개하거나 곱의 미분법을 쓰면 f′(x)=2x${sign(a+b)}입니다.`);
+        return Q('PRODUCT RULE',`f(x)=${factor(-a)}${factor(-b)}`,`f′(${num(t)})의 값은?`,correct,[t+a+b,2*t-a-b,a*b],`전개하거나 곱의 미분법을 쓰면 f′(x)=2x${tail(a+b,'')}입니다.`);
       case'tangent_equation':
         a=nonzero(-3,3);b=ri(-4,4);m=2*a;c=b-a*a;correct=lineEq(m,c);
         return Q('TANGENT',`f(x)=x²${b?sign(b):''},  x=${a}`,'접선의 방정식은?',correct,[lineEq(a,c),lineEq(m,b+a*a),lineEq(-m,c)],`접점은 (${a},${a*a+b}), 기울기는 ${m}이므로 ${correct}입니다.`);
@@ -280,7 +699,7 @@
         return Q('VELOCITY',`s(t)=${A}t³+${B}t²`,'t='+t+'에서 속도는?',correct,[A*t*t+B*t,6*A*t+2*B,3*A*t+2*B],`v(t)=3·${A}t²+2·${B}t이므로 ${correct}입니다.`);
       case'horizontal_tangent':
         k=ri(-2,2);correct=k>0?'2개':k===0?'1개':'0개';
-        return Q('HORIZONTAL TANGENT',`f(x)=x³−3(${k})x`,'수평접선의 개수는?',correct,['0개','1개','2개'].filter(x=>x!==correct).concat(['3개']),`f′(x)=3(x²−${k})의 서로 다른 실근 수가 수평접선의 개수입니다.`);
+        return Q('HORIZONTAL TANGENT',`f(x)=x³${tail(-3*k,'x')}`,'수평접선의 개수는?',correct,['0개','1개','2개'].filter(x=>x!==correct).concat(['3개']),`f′(x)=3(x²${tail(-k,'')})의 서로 다른 실근 수가 수평접선의 개수입니다.`);
       case'antiderivative':
         n=ri(1,4);m=ri(1,4);A=m*(n+1);correct=`${m===1?'':m}${pow('x',n+1)}+C`;
         return Q('ANTIDERIVATIVE',`∫ ${A}${pow('x',n)} dx`,'부정적분은?',correct,[`${A}${pow('x',n+1)}+C`,`${m}${pow('x',n)}+C`,`${A*n}${pow('x',Math.max(1,n-1))}+C`],`지수를 ${n+1}로 올리고 ${n+1}로 나누면 ${correct}입니다.`);
@@ -298,7 +717,7 @@
         return Q('AREA & SIGN',`y=${k}(x−${a}),  0≤x≤${2*a}`,'그래프와 x축 사이 넓이는?',correct,[2*correct,frac(correct,2),0],`x=${a}에서 나누면 합동인 두 삼각형의 넓이 합은 ${correct}입니다.`);
       case'area_between':
         A=ri(2,6);B=ri(1,A-1);c=ri(1,4);correct=frac((A-B)*c*c,2);
-        return Q('BETWEEN CURVES',`y=${A}x, y=${B}x,  0≤x≤${c}`,'두 직선 사이 넓이는?',correct,[frac((A+B)*c*c,2),(A-B)*c,frac((A-B)*c,2)],`차이는 ${(A-B)}x이므로 0부터 ${c}까지 적분하면 ${correct}입니다.`);
+        return Q('BETWEEN CURVES',`y=${lead(A,'x')}, y=${lead(B,'x')},  0≤x≤${c}`,'두 직선 사이 넓이는?',correct,[frac((A+B)*c*c,2),(A-B)*c,frac((A-B)*c,2)],`차이는 ${lead(A-B,'x')}이므로 0부터 ${c}까지 적분하면 ${correct}입니다.`);
       case'distance_velocity':
         k=ri(1,4);correct=2*k*k;
         return Q('TOTAL DISTANCE',`v(t)=2t−${2*k},  0≤t≤${2*k}`,'이동거리는?',correct,[0,4*k*k,k*k],`t=${k}에서 속도 부호가 바뀝니다. 두 삼각형 넓이의 합은 ${correct}입니다.`);
@@ -436,6 +855,8 @@
     resetModes();updateStats();newExample();
     if(window.jpMotionFeedback)window.jpMotionFeedback('success',`난이도를 ${LEVELS.find(l=>l.id===id).name}으로 바꿨습니다.`);
   }
+  // ?probe 로 열었을 때만 문제 생성기를 밖에서 호출할 수 있게 연다 (검산용)
+  if(params.has('probe'))window.JPSkillProbe={id:skill.id,make:()=>makeQuestion(skill.id),setLevel:l=>{currentLevel=l},levels:LEVELS.map(l=>l.id),hasLevels:hasLevels(skill.id)};
   $$('.skill-level-btn').forEach(b=>b.addEventListener('click',()=>setLevel(b.dataset.level)));
   updateStats();
 })();
