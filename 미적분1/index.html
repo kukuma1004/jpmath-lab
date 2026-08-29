@@ -349,6 +349,16 @@
 <link rel="stylesheet" href="../jp-nav-2.css?v=3">
 <script src="../jp-polish.js?v=21" defer></script>
 <script src="../jp-nav-2.js?v=3" data-jp-section="미적분Ⅰ" defer></script>
+
+<style>
+/* 단원 묶음 — 기하 허브와 같은 짜임새. 25개를 한 줄로 늘어놓으면 찾을 수가 없다. */
+.unit{ margin-top:34px }
+.unit:first-of-type{ margin-top:4px }
+.unit-head{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; margin:0 0 13px }
+.unit-title{ margin:0; font-size:20px; font-weight:800; letter-spacing:-.01em }
+.unit-sub{ font-family:'IBM Plex Mono','JetBrains Mono',monospace; font-size:11px; letter-spacing:.06em; color:#68736f; white-space:nowrap }
+@media(max-width:560px){ .unit-head{ align-items:flex-start; flex-direction:column; gap:3px } .unit-title{ font-size:18px } }
+</style>
 </head>
 <body>
 
@@ -412,12 +422,14 @@
   </section>
 
   <div class="view-switch" id="learningMap" aria-label="미적분 학습 방식 선택">
-    <button class="view-btn active" data-main-view="concepts">개념 학습 <span>24</span></button>
+    <button class="view-btn active" data-main-view="concepts">개념 학습 <span>25</span></button>
     <button class="view-btn" data-main-view="skills">수능·계산 스킬 <span>28</span></button>
   </div>
 
   <div class="main-panel" id="topics" data-main-panel="concepts">
-  <ul class="grid">
+    <section class="unit">
+    <div class="unit-head"><h2 class="unit-title">Ⅰ. 함수의 극한과 연속</h2><span class="unit-sub">LIMIT & CONTINUITY · 6</span></div>
+    <ul class="grid">
     <li>
       <a class="card" href="미적분1_극한.html">
         <span class="index-mark">01</span>
@@ -438,7 +450,6 @@
         </div>
       </a>
     </li>
-
     <li>
       <a class="card" href="미적분1_함수의극한값.html">
         <span class="index-mark">02</span>
@@ -459,10 +470,26 @@
         </div>
       </a>
     </li>
-
+    <li>
+      <a class="card" href="미적분1_로피탈정리.html">
+        <span class="index-mark">03</span>
+        <div class="card-top">
+          <span class="icon-tile">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M6 6v12M6 12h6" stroke="var(--accent)" stroke-width="1.7" stroke-linecap="round"/><path d="M15 8l5 8M20 8l-5 8" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round" opacity=".8"/></svg>
+          </span>
+          <span class="code-chip">L'HOPITAL</span>
+        </div>
+        <h2 class="card-title">로피탈 정리</h2>
+        <p class="card-desc">0/0 꼴에서 분자와 분모를 각각 미분해 극한을 구합니다.</p>
+        <div class="card-footer">
+          <span class="card-meta">0/0 → f′/g′</span>
+          <span class="card-arrow">입장하기 →</span>
+        </div>
+      </a>
+    </li>
     <li>
       <a class="card" href="미적분1_연속.html">
-        <span class="index-mark">03</span>
+        <span class="index-mark">04</span>
         <div class="card-top">
           <span class="icon-tile">
             <svg viewBox="0 0 24 24" fill="none">
@@ -480,97 +507,9 @@
         </div>
       </a>
     </li>
-
-    <li>
-      <a class="card" href="미적분1_미분가능성.html">
-        <span class="index-mark">04</span>
-        <div class="card-top">
-          <span class="icon-tile">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M3 18c4-10 10-14 14-10" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/>
-              <line x1="5" y1="14" x2="17" y2="6" stroke="var(--accent)" stroke-width="1.4" opacity="0.55"/>
-              <circle cx="11" cy="10" r="1.7" fill="var(--accent)"/>
-            </svg>
-          </span>
-          <span class="code-chip">DIFFERENTIABLE</span>
-        </div>
-        <h2 class="card-title">미분가능성</h2>
-        <p class="card-desc">그 점에서 접선을 하나로 그을 수 있는지 확인해요.</p>
-        <div class="card-footer">
-          <span class="card-meta">f '(a) exists</span>
-          <span class="card-arrow">입장하기 →</span>
-        </div>
-      </a>
-    </li>
-
-    <li>
-      <a class="card" href="미적분1_미분계수계산.html">
-        <span class="index-mark">05</span>
-        <div class="card-top">
-          <span class="icon-tile">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M3 18c4-10 10-14 14-10" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/>
-              <line x1="6" y1="15.5" x2="15" y2="9" stroke="var(--accent)" stroke-width="1.4" opacity="0.55"/>
-              <circle cx="6" cy="15.5" r="1.5" fill="var(--accent)"/>
-              <circle cx="15" cy="9" r="1.5" fill="var(--accent)"/>
-            </svg>
-          </span>
-          <span class="code-chip">COEFFICIENT</span>
-        </div>
-        <h2 class="card-title">미분계수계산</h2>
-        <p class="card-desc">평균변화율의 극한으로 순간변화율, 즉 미분계수를 구해봐요.</p>
-        <div class="card-footer">
-          <span class="card-meta">Δy／Δx, h → 0</span>
-          <span class="card-arrow">입장하기 →</span>
-        </div>
-      </a>
-    </li>
-
-    <li>
-      <a class="card" href="미적분1_도함수와미분법.html">
-        <span class="index-mark">06</span>
-        <div class="card-top">
-          <span class="icon-tile">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M3 9c3-6 9-6 12 0" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/>
-              <path d="M3 18c5-2 10-2 15 0" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" opacity="0.5"/>
-            </svg>
-          </span>
-          <span class="code-chip">DERIVATIVE</span>
-        </div>
-        <h2 class="card-title">도함수와 미분법</h2>
-        <p class="card-desc">정의 대신 공식으로 미분계수를 빠르게 구해요.</p>
-        <div class="card-footer">
-          <span class="card-meta">(xⁿ)' = nxⁿ⁻¹</span>
-          <span class="card-arrow">입장하기 →</span>
-        </div>
-      </a>
-    </li>
-
-    <li>
-      <a class="card" href="미적분1_접선의방정식.html">
-        <span class="index-mark">07</span>
-        <div class="card-top">
-          <span class="icon-tile">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M3 18c4-10 10-14 14-10" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/>
-              <line x1="2" y1="17" x2="20" y2="3" stroke="var(--accent)" stroke-width="1.4"/>
-              <circle cx="11" cy="10" r="1.7" fill="var(--accent)"/>
-            </svg>
-          </span>
-          <span class="code-chip">TANGENT</span>
-        </div>
-        <h2 class="card-title">접선의 방정식</h2>
-        <p class="card-desc">미분계수를 이용해 곡선 위 한 점에서의 접선의 방정식을 구해봐요.</p>
-        <div class="card-footer">
-          <span class="card-meta">y-f(a)=f '(a)(x-a)</span>
-          <span class="card-arrow">입장하기 →</span>
-        </div>
-      </a>
-    </li>
     <li>
       <a class="card" href="미적분1_최대최소정리.html">
-        <span class="index-mark">08</span>
+        <span class="index-mark">05</span>
         <div class="card-top">
           <span class="icon-tile">
             <svg viewBox="0 0 24 24" fill="none">
@@ -591,7 +530,7 @@
     </li>
     <li>
       <a class="card" href="미적분1_사잇값정리.html">
-        <span class="index-mark">09</span>
+        <span class="index-mark">06</span>
         <div class="card-top">
           <span class="icon-tile">
             <svg viewBox="0 0 24 24" fill="none">
@@ -606,6 +545,74 @@
         <p class="card-desc">끝값의 부호만 보고 방정식의 실근이 있다고 말할 수 있어요.</p>
         <div class="card-footer">
           <span class="card-meta">f(a)f(b) &lt; 0</span>
+          <span class="card-arrow">입장하기 →</span>
+        </div>
+      </a>
+    </li>
+    </ul>
+  </section>
+  <section class="unit">
+    <div class="unit-head"><h2 class="unit-title">Ⅱ. 미분</h2><span class="unit-sub">DIFFERENTIATION · 14</span></div>
+    <ul class="grid">
+    <li>
+      <a class="card" href="미적분1_미분가능성.html">
+        <span class="index-mark">07</span>
+        <div class="card-top">
+          <span class="icon-tile">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M3 18c4-10 10-14 14-10" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/>
+              <line x1="5" y1="14" x2="17" y2="6" stroke="var(--accent)" stroke-width="1.4" opacity="0.55"/>
+              <circle cx="11" cy="10" r="1.7" fill="var(--accent)"/>
+            </svg>
+          </span>
+          <span class="code-chip">DIFFERENTIABLE</span>
+        </div>
+        <h2 class="card-title">미분가능성</h2>
+        <p class="card-desc">그 점에서 접선을 하나로 그을 수 있는지 확인해요.</p>
+        <div class="card-footer">
+          <span class="card-meta">f '(a) exists</span>
+          <span class="card-arrow">입장하기 →</span>
+        </div>
+      </a>
+    </li>
+    <li>
+      <a class="card" href="미적분1_미분계수계산.html">
+        <span class="index-mark">08</span>
+        <div class="card-top">
+          <span class="icon-tile">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M3 18c4-10 10-14 14-10" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/>
+              <line x1="6" y1="15.5" x2="15" y2="9" stroke="var(--accent)" stroke-width="1.4" opacity="0.55"/>
+              <circle cx="6" cy="15.5" r="1.5" fill="var(--accent)"/>
+              <circle cx="15" cy="9" r="1.5" fill="var(--accent)"/>
+            </svg>
+          </span>
+          <span class="code-chip">COEFFICIENT</span>
+        </div>
+        <h2 class="card-title">미분계수계산</h2>
+        <p class="card-desc">평균변화율의 극한으로 순간변화율, 즉 미분계수를 구해봐요.</p>
+        <div class="card-footer">
+          <span class="card-meta">Δy／Δx, h → 0</span>
+          <span class="card-arrow">입장하기 →</span>
+        </div>
+      </a>
+    </li>
+    <li>
+      <a class="card" href="미적분1_도함수와미분법.html">
+        <span class="index-mark">09</span>
+        <div class="card-top">
+          <span class="icon-tile">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M3 9c3-6 9-6 12 0" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/>
+              <path d="M3 18c5-2 10-2 15 0" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" opacity="0.5"/>
+            </svg>
+          </span>
+          <span class="code-chip">DERIVATIVE</span>
+        </div>
+        <h2 class="card-title">도함수와 미분법</h2>
+        <p class="card-desc">정의 대신 공식으로 미분계수를 빠르게 구해요.</p>
+        <div class="card-footer">
+          <span class="card-meta">(xⁿ)' = nxⁿ⁻¹</span>
           <span class="card-arrow">입장하기 →</span>
         </div>
       </a>
@@ -632,22 +639,22 @@
       </a>
     </li>
     <li>
-      <a class="card" href="미적분1_함수의증가감소.html">
+      <a class="card" href="미적분1_접선의방정식.html">
         <span class="index-mark">11</span>
         <div class="card-top">
           <span class="icon-tile">
             <svg viewBox="0 0 24 24" fill="none">
-              <path d="M3 17c3 0 4-9 7-9s4 6 7 6" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/>
-              <path d="M4 21h16" stroke="var(--accent)" stroke-width="1.4" opacity="0.5"/>
-              <path d="M8 20l2-3 2 3" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M3 18c4-10 10-14 14-10" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/>
+              <line x1="2" y1="17" x2="20" y2="3" stroke="var(--accent)" stroke-width="1.4"/>
+              <circle cx="11" cy="10" r="1.7" fill="var(--accent)"/>
             </svg>
           </span>
-          <span class="code-chip">MONOTONIC</span>
+          <span class="code-chip">TANGENT</span>
         </div>
-        <h2 class="card-title">함수의 증가·감소</h2>
-        <p class="card-desc">도함수의 부호만 조사하면 오르막인지 내리막인지 알 수 있어요.</p>
+        <h2 class="card-title">접선의 방정식</h2>
+        <p class="card-desc">미분계수를 이용해 곡선 위 한 점에서의 접선의 방정식을 구해봐요.</p>
         <div class="card-footer">
-          <span class="card-meta">f '(x) &gt; 0 → 증가</span>
+          <span class="card-meta">y-f(a)=f '(a)(x-a)</span>
           <span class="card-arrow">입장하기 →</span>
         </div>
       </a>
@@ -675,8 +682,29 @@
       </a>
     </li>
     <li>
-      <a class="card" href="미적분1_극대극소.html">
+      <a class="card" href="미적분1_함수의증가감소.html">
         <span class="index-mark">13</span>
+        <div class="card-top">
+          <span class="icon-tile">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M3 17c3 0 4-9 7-9s4 6 7 6" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/>
+              <path d="M4 21h16" stroke="var(--accent)" stroke-width="1.4" opacity="0.5"/>
+              <path d="M8 20l2-3 2 3" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span class="code-chip">MONOTONIC</span>
+        </div>
+        <h2 class="card-title">함수의 증가·감소</h2>
+        <p class="card-desc">도함수의 부호만 조사하면 오르막인지 내리막인지 알 수 있어요.</p>
+        <div class="card-footer">
+          <span class="card-meta">f '(x) &gt; 0 → 증가</span>
+          <span class="card-arrow">입장하기 →</span>
+        </div>
+      </a>
+    </li>
+    <li>
+      <a class="card" href="미적분1_극대극소.html">
+        <span class="index-mark">14</span>
         <div class="card-top">
           <span class="icon-tile">
             <svg viewBox="0 0 24 24" fill="none">
@@ -697,7 +725,7 @@
     </li>
     <li>
       <a class="card" href="미적분1_삼차함수그래프.html">
-        <span class="index-mark">14</span>
+        <span class="index-mark">15</span>
         <div class="card-top">
           <span class="icon-tile">
             <svg viewBox="0 0 24 24" fill="none">
@@ -717,7 +745,7 @@
     </li>
     <li>
       <a class="card" href="미적분1_사차함수그래프.html">
-        <span class="index-mark">15</span>
+        <span class="index-mark">16</span>
         <div class="card-top">
           <span class="icon-tile">
             <svg viewBox="0 0 24 24" fill="none">
@@ -735,8 +763,42 @@
       </a>
     </li>
     <li>
+      <a class="card" href="미적분1_삼차이차비율관계.html">
+        <span class="index-mark">17</span>
+        <div class="card-top">
+          <span class="icon-tile">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M3 19c5 0 6-14 9-14s4 9 9 9" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/><line x1="8" y1="6" x2="8" y2="19" stroke="var(--accent)" stroke-width="1.2" stroke-dasharray="2 2"/><line x1="16" y1="10" x2="16" y2="19" stroke="var(--accent)" stroke-width="1.2" stroke-dasharray="2 2"/></svg>
+          </span>
+          <span class="code-chip">CUBIC RATIO</span>
+        </div>
+        <h2 class="card-title">삼차·이차 비율관계</h2>
+        <p class="card-desc">삼차함수의 극점과 변곡점이 만드는 일정한 비율입니다.</p>
+        <div class="card-footer">
+          <span class="card-meta">1 : 2 : 1</span>
+          <span class="card-arrow">입장하기 →</span>
+        </div>
+      </a>
+    </li>
+    <li>
+      <a class="card" href="미적분1_방정식실근개수.html">
+        <span class="index-mark">18</span>
+        <div class="card-top">
+          <span class="icon-tile">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M3 15c4 0 5-9 9-9s5 11 9 11" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/><line x1="2" y1="15" x2="22" y2="15" stroke="var(--accent)" stroke-width="1.3" opacity=".7"/><circle cx="7.5" cy="15" r="1.6" fill="var(--accent)"/><circle cx="16.5" cy="15" r="1.6" fill="var(--accent)"/></svg>
+          </span>
+          <span class="code-chip">REAL ROOTS</span>
+        </div>
+        <h2 class="card-title">방정식의 실근 개수</h2>
+        <p class="card-desc">그래프와 가로선의 교점으로 실근의 개수를 셉니다.</p>
+        <div class="card-footer">
+          <span class="card-meta">극댓값·극솟값의 부호</span>
+          <span class="card-arrow">입장하기 →</span>
+        </div>
+      </a>
+    </li>
+    <li>
       <a class="card" href="미적분1_롤러코스터.html">
-        <span class="index-mark">16</span>
+        <span class="index-mark">19</span>
         <div class="card-top">
           <span class="icon-tile">
             <svg viewBox="0 0 24 24" fill="none">
@@ -754,7 +816,115 @@
         </div>
       </a>
     </li>
-  </ul>
+    <li>
+      <a class="card" href="미적분1_속도가속도.html">
+        <span class="index-mark">20</span>
+        <div class="card-top">
+          <span class="icon-tile">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="13" r="7" fill="none" stroke="var(--accent)" stroke-width="1.7"/><path d="M12 13l4-3.5" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </span>
+          <span class="code-chip">MOTION</span>
+        </div>
+        <h2 class="card-title">속도와 가속도</h2>
+        <p class="card-desc">위치를 시간으로 미분하면 속도, 한 번 더 미분하면 가속도.</p>
+        <div class="card-footer">
+          <span class="card-meta">x(t) → v(t) → a(t)</span>
+          <span class="card-arrow">입장하기 →</span>
+        </div>
+      </a>
+    </li>
+    </ul>
+  </section>
+  <section class="unit">
+    <div class="unit-head"><h2 class="unit-title">Ⅲ. 적분</h2><span class="unit-sub">INTEGRATION · 5</span></div>
+    <ul class="grid">
+    <li>
+      <a class="card" href="미적분1_부정적분.html">
+        <span class="index-mark">21</span>
+        <div class="card-top">
+          <span class="icon-tile">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 19c0-8 4-14 8-14 3 0 4 3 4 6" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/><path d="M15 19h5" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round"/><text x="17" y="12" font-size="8" fill="var(--accent)">C</text></svg>
+          </span>
+          <span class="code-chip">ANTIDERIVATIVE</span>
+        </div>
+        <h2 class="card-title">부정적분</h2>
+        <p class="card-desc">미분해서 원래 함수가 되는 식을 거꾸로 찾습니다.</p>
+        <div class="card-footer">
+          <span class="card-meta">F′(x) = f(x)</span>
+          <span class="card-arrow">입장하기 →</span>
+        </div>
+      </a>
+    </li>
+    <li>
+      <a class="card" href="미적분1_정적분.html">
+        <span class="index-mark">22</span>
+        <div class="card-top">
+          <span class="icon-tile">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 18c3 0 5-11 9-11 3 0 4 6 7 6" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/><path d="M7 18V9M11 18v-7M15 18v-4" stroke="var(--accent)" stroke-width="1.2" opacity=".55"/></svg>
+          </span>
+          <span class="code-chip">DEFINITE</span>
+        </div>
+        <h2 class="card-title">정적분</h2>
+        <p class="card-desc">원시함수의 위끝값에서 아래끝값을 뺀 값입니다.</p>
+        <div class="card-footer">
+          <span class="card-meta">∫ f = F(b) − F(a)</span>
+          <span class="card-arrow">입장하기 →</span>
+        </div>
+      </a>
+    </li>
+    <li>
+      <a class="card" href="미적분1_정적분정의함수.html">
+        <span class="index-mark">23</span>
+        <div class="card-top">
+          <span class="icon-tile">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M3 17c4 0 5-9 9-9s5 6 9 6" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/><line x1="12" y1="4" x2="12" y2="20" stroke="var(--accent)" stroke-width="1.3" stroke-dasharray="3 3" opacity=".7"/></svg>
+          </span>
+          <span class="code-chip">INTEGRAL FUNC</span>
+        </div>
+        <h2 class="card-title">정적분으로 정의된 함수</h2>
+        <p class="card-desc">위끝이 변수인 적분을 미분하면 원래 함수로 돌아옵니다.</p>
+        <div class="card-footer">
+          <span class="card-meta">d/dx ∫ₐˣ f = f(x)</span>
+          <span class="card-arrow">입장하기 →</span>
+        </div>
+      </a>
+    </li>
+    <li>
+      <a class="card" href="미적분1_정적분넓이.html">
+        <span class="index-mark">24</span>
+        <div class="card-top">
+          <span class="icon-tile">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M3 18c4 0 6-10 10-10s5 7 8 7" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/><path d="M6 18h11V9" stroke="var(--accent)" stroke-width="1.2" opacity=".45"/><rect x="6" y="10" width="11" height="8" fill="var(--accent)" opacity=".16"/></svg>
+          </span>
+          <span class="code-chip">AREA</span>
+        </div>
+        <h2 class="card-title">정적분과 넓이</h2>
+        <p class="card-desc">곡선과 축, 두 곡선 사이의 넓이를 적분으로 잽니다.</p>
+        <div class="card-footer">
+          <span class="card-meta">∫ |f − g| dx</span>
+          <span class="card-arrow">입장하기 →</span>
+        </div>
+      </a>
+    </li>
+    <li>
+      <a class="card" href="미적분1_속도이동거리.html">
+        <span class="index-mark">25</span>
+        <div class="card-top">
+          <span class="icon-tile">
+            <svg viewBox="0 0 24 24" fill="none"><line x1="3" y1="18" x2="21" y2="18" stroke="var(--accent)" stroke-width="1.6"/><path d="M5 18V9l5 4 5-7 4 5" stroke="var(--accent)" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+          </span>
+          <span class="code-chip">DISTANCE</span>
+        </div>
+        <h2 class="card-title">속도와 이동거리</h2>
+        <p class="card-desc">속도를 적분하면 위치 변화, 속력을 적분하면 이동거리.</p>
+        <div class="card-footer">
+          <span class="card-meta">∫ v dt vs ∫ |v| dt</span>
+          <span class="card-arrow">입장하기 →</span>
+        </div>
+      </a>
+    </li>
+    </ul>
+  </section>
   </div>
 
   <div class="main-panel hidden" id="skills" data-main-panel="skills">
