@@ -14,12 +14,12 @@
   const brief=document.createElement('div');
   brief.className='sphere-mission-brief';brief.innerHTML='<div class="sphere-mission-kicker" data-sphere-kicker>FREE LAB</div><div class="sphere-mission-copy"><div><strong data-sphere-title>중심과 표면점을 직접 움직여 보세요.</strong><p data-sphere-copy>C는 선택한 평면에서 이동하고 P는 중심에서 같은 거리를 유지하며 구의 크기를 바꿉니다.</p></div><button class="sphere-next hidden" data-sphere-next>새 목표</button></div><div class="sphere-meter" data-sphere-meter></div>';
   const planeBar=document.createElement('div');
-  planeBar.className='sphere-plane-bar';planeBar.innerHTML='<div class="sphere-plane-buttons" role="group" aria-label="구의 중심 이동 평면"><button class="sphere-plane-button" data-sphere-plane="xy">xy 평면</button><button class="sphere-plane-button active" data-sphere-plane="xz">xz 평면</button><button class="sphere-plane-button" data-sphere-plane="yz">yz 평면</button></div><span class="sphere-plane-note">C와 P는 선택한 좌표평면에서 움직입니다.</span>';
+  planeBar.className='sphere-plane-bar';planeBar.innerHTML='<div class="sphere-plane-buttons" role="group" aria-label="구의 중심 이동 평면"><button class="sphere-plane-button" data-sphere-plane="xy">xy 평면</button><button class="sphere-plane-button active" data-sphere-plane="xz">xz 평면</button><button class="sphere-plane-button" data-sphere-plane="yz">yz 평면</button></div><button class="sphere-dome-button" type="button" data-sphere-dome aria-pressed="false">돔으로 보기</button><span class="sphere-plane-note">C와 P는 선택한 좌표평면에서 움직입니다.</span>';
   layout.before(tabs,brief,planeBar);
 
   const svg=oldSvg.cloneNode(false);oldSvg.replaceWith(svg);svg.classList.add('sphere-direct-stage');svg.classList.remove('orbit');svg.setAttribute('aria-label','중심 C와 표면점 P를 직접 끌어 구의 방정식을 확인하는 3차원 실험');
   visual.classList.add('sphere-stage-card');const guide=document.createElement('div');guide.className='sphere-drag-guide';guide.innerHTML='<span>●</span> C는 이동 · P는 크기 · 빈 공간은 회전';visual.prepend(guide);
-  readouts.classList.add('sphere-readout');readouts.innerHTML='<div class="readout-box"><div class="readout-label">구의 중심</div><div class="readout-value" id="sphereCenter"></div></div><div class="readout-box"><div class="readout-label">반지름과 표면점</div><div class="readout-value" id="sphereRadius"></div></div><div class="readout-box"><div class="readout-label">거리 조건</div><div class="readout-value" id="sphereDistance"></div></div><div class="readout-box"><div class="readout-label">구의 방정식</div><div class="readout-value" id="sphereEquation"></div></div>';
+  readouts.classList.add('sphere-readout');readouts.innerHTML='<div class="readout-box"><div class="readout-label">구의 중심</div><div class="readout-value" id="sphereCenter"></div></div><div class="readout-box"><div class="readout-label">반지름과 표면점</div><div class="readout-value" id="sphereRadius"></div></div><div class="readout-box"><div class="readout-label">거리 조건</div><div class="readout-value" id="sphereDistance"></div></div><div class="readout-box"><div class="readout-label">구의 방정식</div><div class="readout-value" id="sphereEquation"></div></div><div class="readout-box sphere-dome-readout" hidden><div class="readout-label">돔 밑면 반지름</div><div class="readout-value" id="sphereDome"></div></div>';
   controls.className='sphere-controls';controls.innerHTML='<div class="range-row"><div class="range-head"><span>반지름 r</span><span data-sphere-r-label>2.00</span></div><input data-sphere-r type="range" min="0.5" max="4" step="0.05" value="2" aria-label="구의 반지름"></div><div class="sphere-radius-actions"><button type="button" data-sphere-minus aria-label="반지름 0.25 줄이기">−</button><button type="button" data-sphere-plus aria-label="반지름 0.25 늘리기">+</button></div><div class="sphere-control-note">표면점 P를 직접 끌거나 −/+ 버튼으로 정밀하게 조절할 수 있습니다.</div>';
   const oldReset=layout.querySelector('[data-reset-view]'),resetView=oldReset.cloneNode(true);oldReset.replaceWith(resetView);
 
@@ -35,7 +35,7 @@
     {plane:'yz',center:[1,-1,1],point:[1,2,1],start:1.5},
     {plane:'xz',center:[-1,0,-1],point:[1,0,1],start:1}
   ];
-  const state={center:[1,-1,1],radius:2,dir:[1,0,0],plane:'xz',mission:'free',targetIndex:0,target:null,through:null,view:{yaw:-.7,pitch:.45,scale:54,cx:320,cy:190}};
+  const state={center:[1,-1,1],radius:2,dir:[1,0,0],plane:'xz',mission:'free',targetIndex:0,target:null,through:null,dome:false,view:{yaw:-.7,pitch:.45,scale:54,cx:320,cy:190}};
   const colors={center:'#c1442d',surface:'#7557a8',axisX:'#c1442d',axisY:'#2f7d58',axisZ:'#2b6ca3',gold:'#b8882e',soft:'#96a39d'};let action=null,last=null;
 
   function project(p){return G.project3(p,state.view);}
@@ -54,9 +54,33 @@
     G.solid.sphere(add,project,{center:center,r:r,color:color,scale:state.view.scale,
       gradientId:ghost?null:'sphereBody',ghost:ghost});
   }
+
+  // 돔은 구를 지면으로 자른 것이다. 지면을 y=0 으로 두면 밑면은 구와 평면의 교선이고,
+  // 그 반지름은 피타고라스로 √(r²−d²) 가 된다. d 는 중심의 높이다.
+  // 학생이 중심을 올리고 내리면 밑면이 좁아지고 넓어지는 게 그대로 보인다.
+  function domeBase(){
+    const d=state.center[1],r=state.radius;
+    const gap=Math.abs(d)-r;return gap>1e-9?null:{d:d,rho:Math.sqrt(Math.max(0,r*r-d*d)),tangent:gap>-1e-9,at:[state.center[0],0,state.center[2]]};
+  }
+  function drawDome(){
+    if(!state.dome)return null;
+    const ground=[[-4.2,0,-4.2],[4.2,0,-4.2],[4.2,0,4.2],[-4.2,0,4.2]].map(project);
+    add('polygon',{points:ground.map(function(q){return q.x+','+q.y;}).join(' '),
+      fill:'#8d9a94','fill-opacity':.16,stroke:'#8d9a94','stroke-width':1,'pointer-events':'none'});
+    const base=domeBase();
+    if(!base)return null;
+    if(base.tangent){const q=project(base.at);
+      add('circle',{cx:q.x,cy:q.y,r:5,fill:colors.gold,stroke:'#fff','stroke-width':2,'pointer-events':'none'});
+      return base;}
+    add('path',{d:circlePath(base.at,base.rho,'xz'),fill:colors.gold,'fill-opacity':.2,
+      stroke:colors.gold,'stroke-width':2.4,'pointer-events':'none'});
+    line3(base.at,[base.at[0]+base.rho,0,base.at[2]],{stroke:colors.gold,'stroke-width':2.6,'pointer-events':'none'});
+    if(Math.abs(base.d)>.02)line3(state.center,base.at,{stroke:colors.gold,'stroke-width':1.8,'stroke-dasharray':'5 4','pointer-events':'none'});
+    return base;
+  }
   function drawHandle(name,p,color,enabled){const q=project(p),locked=!enabled;add('circle',{cx:q.x,cy:q.y,r:44,fill:'transparent','data-sphere-point':name,class:'sphere-point-hit'+(locked?' sphere-locked':'')});add('circle',{cx:q.x,cy:q.y,r:17,fill:color,opacity:.2,'data-sphere-point':name,class:'sphere-point-halo'+(locked?' sphere-locked':''),filter:'url(#sphereGlow)'});add('circle',{cx:q.x,cy:q.y,r:11,fill:color,stroke:'#fff','stroke-width':3,'data-sphere-point':name,class:'sphere-point-handle'+(locked?' sphere-locked':'')});add('circle',{cx:q.x,cy:q.y,r:3,fill:'#fff','pointer-events':'none'});text3(p,name,color,name==='C'?-14:14,-13,name==='C'?'end':'start');}
   function draw(){
-    G.clear(svg);defs();drawGrid();drawAxes();
+    G.clear(svg);defs();drawGrid();drawAxes();drawDome();
     if(state.mission==='target'&&state.target)drawSphere(state.target.center,state.target.radius,'#2b6ca3',true);
     drawSphere(state.center,state.radius,colors.surface,false);const P=surface();line3(state.center,P,{stroke:colors.gold,'stroke-width':3,'stroke-linecap':'round','pointer-events':'none'});
     if(state.mission==='through'&&state.through){const q=project(state.through.point);add('circle',{cx:q.x,cy:q.y,r:8,fill:colors.gold,stroke:'#fff','stroke-width':3,'pointer-events':'none'});add('circle',{cx:q.x,cy:q.y,r:16,fill:'none',stroke:colors.gold,'stroke-width':2,'stroke-dasharray':'4 4','pointer-events':'none'});text3(state.through.point,'Q',colors.gold,13,-12);line3(state.center,state.through.point,{stroke:colors.gold,'stroke-width':2,'stroke-dasharray':'6 5','pointer-events':'none'});}
@@ -64,7 +88,10 @@
   }
   function term(v,c){if(c===0)return v+'^2';return c>0?'('+v+'-'+c+')^2':'('+v+'+'+Math.abs(c)+')^2';}
   function math(id,tex){const el=document.getElementById(id);el.innerHTML='\\('+tex+'\\)';if(window.renderMathInElement)window.renderMathInElement(el,{delimiters:[{left:'\\(',right:'\\)',display:false}],throwOnError:false});}
-  function updateReadouts(P){math('sphereCenter','C'+fmt(state.center));math('sphereRadius','r='+state.radius.toFixed(2)+'\\quad P'+fmt(P,2));math('sphereDistance','CP=r='+state.radius.toFixed(2));math('sphereEquation',term('x',state.center[0])+'+'+term('y',state.center[1])+'+'+term('z',state.center[2])+'='+(state.radius*state.radius).toFixed(2));controls.querySelector('[data-sphere-r]').value=state.radius;controls.querySelector('[data-sphere-r-label]').textContent=state.radius.toFixed(2);}
+  function updateReadouts(P){math('sphereCenter','C'+fmt(state.center));math('sphereRadius','r='+state.radius.toFixed(2)+'\\quad P'+fmt(P,2));math('sphereDistance','CP=r='+state.radius.toFixed(2));math('sphereEquation',term('x',state.center[0])+'+'+term('y',state.center[1])+'+'+term('z',state.center[2])+'='+(state.radius*state.radius).toFixed(2));controls.querySelector('[data-sphere-r]').value=state.radius;controls.querySelector('[data-sphere-r-label]').textContent=state.radius.toFixed(2);
+    const box=readouts.querySelector('.sphere-dome-readout');box.hidden=!state.dome;
+    if(state.dome){const b=domeBase();
+      math('sphereDome',!b?'\\text{지면과 만나지 않습니다}':b.tangent?'\\text{지면에 한 점에서 닿습니다}':'\\sqrt{'+(state.radius*state.radius).toFixed(2)+'-'+(state.center[1]*state.center[1]).toFixed(2)+'}='+b.rho.toFixed(2));}}
   function updateMission(){const kicker=brief.querySelector('[data-sphere-kicker]'),title=brief.querySelector('[data-sphere-title]'),copy=brief.querySelector('[data-sphere-copy]'),next=brief.querySelector('[data-sphere-next]'),meter=brief.querySelector('[data-sphere-meter]');let success=false,progress=0;next.classList.toggle('hidden',state.mission==='free');
     if(state.mission==='free'){kicker.textContent='FREE LAB';title.textContent='중심과 표면점을 직접 움직여 보세요.';copy.textContent='C는 선택한 평면에서 이동하고 P는 중심에서 같은 거리를 유지하며 구의 크기를 바꿉니다.';}
     else if(state.mission==='target'){const dc=Math.hypot.apply(null,state.center.map(function(x,i){return x-state.target.center[i];})),dr=Math.abs(state.radius-state.target.radius);success=dc<.01&&dr<.06;progress=Math.max(5,100-(dc*12+dr*18));kicker.textContent=success?'SPHERE LOCKED':'SPHERE BUILDER';title.textContent=success?'목표 구와 정확히 겹쳤습니다!':'중심 '+fmt(state.target.center)+', 반지름 '+state.target.radius+'인 구를 만드세요.';copy.textContent=success?'중심 좌표와 반지름이 방정식의 모든 숫자를 결정했습니다.':'현재 C'+fmt(state.center)+', r='+state.radius.toFixed(2)+' · C와 P를 차례로 움직여 보세요.';}
@@ -85,5 +112,6 @@
   function moveCenter(event){const p=planePoint(event,state.center);if(!p)return;const ij=activePlane();state.center[ij[0]]=G.clamp(Math.round(p[ij[0]]),-3,3);state.center[ij[1]]=G.clamp(Math.round(p[ij[1]]),-3,3);render();}
   function moveSurface(event){const p=planePoint(event,state.center);if(!p)return;const ij=activePlane(),v=[0,0,0];v[ij[0]]=p[ij[0]]-state.center[ij[0]];v[ij[1]]=p[ij[1]]-state.center[ij[1]];const n=Math.hypot(v[ij[0]],v[ij[1]]);if(n<.05)return;state.radius=G.clamp(Math.round(n*20)/20,.5,4);state.dir[ij[0]]=v[ij[0]]/n;state.dir[ij[1]]=v[ij[1]]/n;state.dir[ij[2]]=0;render();}
   tabs.querySelectorAll('[data-sphere-mission]').forEach(function(button){button.addEventListener('click',function(){setMission(button.dataset.sphereMission);});});brief.querySelector('[data-sphere-next]').addEventListener('click',function(){state.targetIndex++;resetMission();});planeBar.querySelectorAll('[data-sphere-plane]').forEach(function(button){button.addEventListener('click',function(){setPlane(button.dataset.spherePlane);});});controls.querySelector('[data-sphere-r]').addEventListener('input',function(event){state.radius=+event.target.value;render();});controls.querySelector('[data-sphere-minus]').addEventListener('click',function(){state.radius=G.clamp(Math.round((state.radius-.25)*20)/20,.5,4);render();});controls.querySelector('[data-sphere-plus]').addEventListener('click',function(){state.radius=G.clamp(Math.round((state.radius+.25)*20)/20,.5,4);render();});resetView.addEventListener('click',restoreView);
+  (function(){const b=planeBar.querySelector('[data-sphere-dome]');b.addEventListener('click',function(){state.dome=!state.dome;b.classList.toggle('active',state.dome);b.setAttribute('aria-pressed',String(state.dome));render();});})();
   svg.addEventListener('pointerdown',function(event){const name=event.target.dataset.spherePoint;if(name){const allowed=name==='P'||(name==='C'&&state.mission!=='through');if(!allowed)return;action=name;}else action='orbit';last=[event.clientX,event.clientY];svg.classList.add(action==='orbit'?'is-orbiting':'is-dragging');svg.setPointerCapture(event.pointerId);if(action==='C')moveCenter(event);if(action==='P')moveSurface(event);});svg.addEventListener('pointermove',function(event){if(!action)return;if(action==='C')moveCenter(event);else if(action==='P')moveSurface(event);else{state.view.yaw+=(event.clientX-last[0])*.009;state.view.pitch=G.clamp(state.view.pitch+(event.clientY-last[1])*.009,-1.1,1.1);last=[event.clientX,event.clientY];render();}});function end(){action=null;svg.classList.remove('is-orbiting','is-dragging');}svg.addEventListener('pointerup',end);svg.addEventListener('pointercancel',end);render();
 })();

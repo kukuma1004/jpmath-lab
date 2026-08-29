@@ -17,8 +17,23 @@ function p3(p,st){return G.project3(p,viewOf(st))}
 function base3(svg){G.clear(svg);svg.appendChild(G.s('rect',{x:0,y:0,width:640,height:400,fill:C.paper}))}
 function axes3(svg,st,range=3){[['x',[range,0,0],C.red],['y',[0,range,0],C.green],['z',[0,0,range],C.blue]].forEach(([lab,p,c])=>{const o=p3([0,0,0],st),q=p3(p,st);line(svg,o,q,c,2);text(svg,{x:q.x+5,y:q.y-5},lab,c)})}
 function poly3(svg,pts,st,color=C.blue,alpha=.13){const q=pts.map(p=>p3(p,st));svg.appendChild(G.s('polygon',{points:q.map(x=>`${x.x},${x.y}`).join(' '),fill:color,'fill-opacity':alpha,stroke:color,'stroke-width':2}));return q}
-function sphere3(svg,center,r,st,color=C.purple){for(const plane of ['xy','xz','yz']){let d='';for(let i=0;i<=80;i++){const t=i/80*Math.PI*2;let p;if(plane==='xy')p=[center[0]+r*Math.cos(t),center[1]+r*Math.sin(t),center[2]];if(plane==='xz')p=[center[0]+r*Math.cos(t),center[1],center[2]+r*Math.sin(t)];if(plane==='yz')p=[center[0],center[1]+r*Math.cos(t),center[2]+r*Math.sin(t)];const q=p3(p,st);d+=(i?'L':'M')+q.x+' '+q.y}path(svg,{d,fill:'none',stroke:color,'stroke-width':2,'stroke-opacity':plane==='xy'?1:.65})}dot(svg,p3(center,st),C.red,6)}
-
+// 큰 원 세 개를 겹쳐 놓으면 구로 보이지 않는다. 음영과 위도·경도, 앞뒤 구분이
+// 함께 있어야 구가 구로 읽힌다. 직접조작 랩과 같은 렌더러(GeoLab.solid)를 쓴다.
+function tintRamp(hex){
+  const n=parseInt(hex.slice(1),16),r0=n>>16&255,g0=n>>8&255,b0=n&255;
+  const mix=t=>{const to=t>0?255:0,f=Math.abs(t);
+    return '#'+[r0,g0,b0].map(c=>Math.round(c+(to-c)*f).toString(16).padStart(2,'0')).join('')};
+  return [mix(.88),mix(.45),mix(-.22),mix(-.55)];
+}
+function sphere3(svg,center,r,st,color=C.purple,opts={}){
+  const view=viewOf(st),gid='sph'+color.slice(1)+Math.round(r*100);
+  let defs=svg.querySelector('defs');
+  if(!defs){defs=G.s('defs');svg.appendChild(defs)}
+  if(!defs.querySelector('#'+gid))defs.appendChild(G.solid.gradient(gid,tintRamp(color)));
+  G.solid.sphere((tag,attrs)=>svg.appendChild(G.s(tag,attrs)),p=>p3(p,st),
+    {center,r,color,scale:view.scale,gradientId:gid});
+  if(opts.noCenter!==true)dot(svg,p3(center,st),C.red,6);
+}
 function drawEllipse(svg,st,detail=true){G.clear(svg);const g=G.cartesian(svg,{xmin:-6,xmax:6,ymin:-4,ymax:4});g.grid();const a=st.a,b=st.b,c=Math.sqrt(a*a-b*b);let d='';for(let i=0;i<=160;i++){const t=i/160*Math.PI*2;d+=(i?'L':'M')+g.sx(a*Math.cos(t))+' '+g.sy(b*Math.sin(t))}path(svg,{d,fill:'none',stroke:C.purple,'stroke-width':4});const t=st.t||.8,P=[a*Math.cos(t),b*Math.sin(t)],F1=[-c,0],F2=[c,0];if(detail){line(svg,{x:g.sx(P[0]),y:g.sy(P[1])},{x:g.sx(F1[0]),y:g.sy(0)},C.red,2);line(svg,{x:g.sx(P[0]),y:g.sy(P[1])},{x:g.sx(F2[0]),y:g.sy(0)},C.blue,2);dot(svg,{x:g.sx(P[0]),y:g.sy(P[1])},C.purple,8);text(svg,{x:g.sx(P[0])+10,y:g.sy(P[1])-10},'P',C.purple)}dot(svg,{x:g.sx(-c),y:g.sy(0)},C.red);dot(svg,{x:g.sx(c),y:g.sy(0)},C.blue);text(svg,{x:g.sx(-c),y:g.sy(0)+18},'F₁',C.red,'middle');text(svg,{x:g.sx(c),y:g.sy(0)+18},'F₂',C.blue,'middle')}
 function drawHyperbola(svg,st,detail=true){G.clear(svg);const g=G.cartesian(svg,{xmin:-7,xmax:7,ymin:-5,ymax:5});g.grid();const a=st.a,b=st.b,c=Math.sqrt(a*a+b*b);line(svg,{x:g.sx(-7),y:g.sy(-7*b/a)},{x:g.sx(7),y:g.sy(7*b/a)},C.soft,1.5,'6 5');line(svg,{x:g.sx(-7),y:g.sy(7*b/a)},{x:g.sx(7),y:g.sy(-7*b/a)},C.soft,1.5,'6 5');for(const sign of [-1,1]){let d='';for(let i=0;i<=100;i++){const u=-1.55+i/100*3.1,x=sign*a*Math.cosh(u),y=b*Math.sinh(u);d+=(i?'L':'M')+g.sx(x)+' '+g.sy(y)}path(svg,{d,fill:'none',stroke:C.purple,'stroke-width':4})}const u=st.u||.8,P=[a*Math.cosh(u),b*Math.sinh(u)],F1=[-c,0],F2=[c,0];if(detail){line(svg,{x:g.sx(P[0]),y:g.sy(P[1])},{x:g.sx(F1[0]),y:g.sy(0)},C.red,2);line(svg,{x:g.sx(P[0]),y:g.sy(P[1])},{x:g.sx(F2[0]),y:g.sy(0)},C.blue,2);dot(svg,{x:g.sx(P[0]),y:g.sy(P[1])},C.purple,8)}dot(svg,{x:g.sx(-c),y:g.sy(0)},C.red);dot(svg,{x:g.sx(c),y:g.sy(0)},C.blue)}
 function conicDisc(st){const m=st.m,n=st.n;if(st.mode==='parabola')return{A:m*m,B:2*m*n-4,C:n*n,D:(2*m*n-4)**2-4*m*m*n*n};if(st.mode==='hyperbola'){const a=3,b=2,A=1/(a*a)-m*m/(b*b),B=-2*m*n/(b*b),cc=-n*n/(b*b)-1;return{A,B,C:cc,D:B*B-4*A*cc}}const a=4,b=2,A=1/(a*a)+m*m/(b*b),B=2*m*n/(b*b),cc=n*n/(b*b)-1;return{A,B,C:cc,D:B*B-4*A*cc}}
