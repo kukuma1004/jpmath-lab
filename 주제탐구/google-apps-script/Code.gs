@@ -686,12 +686,7 @@ function serveInquiryFeed_(params) {
   if (!validTeacherToken_(params.token)) {
     body = { ok: false, error: '교사용 열쇠가 올바르지 않습니다. 시트에서 링크를 다시 받아 주세요.' };
   } else {
-    const built = buildManagerJson_();
-    const payload = JSON.parse(built.text);
-    payload.ok = true;
-    payload.pending = built.skipped;
-    payload.syncedAt = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss');
-    body = payload;
+    body = buildManagerLiveFeed_();
   }
   const json = JSON.stringify(body);
   if (!callback) {
@@ -699,6 +694,115 @@ function serveInquiryFeed_(params) {
   }
   return ContentService.createTextOutput(callback + '(' + json + ');')
     .setMimeType(ContentService.MimeType.JAVASCRIPT);
+}
+
+/**
+ * 교사용 운영실 전용 실시간 자료.
+ *
+ * 공개 전시용 JSON과 달리 승인 전 기초응답, 학생에게 발행한 발문,
+ * 작성 중인 임시저장 답안까지 모두 돌려준다. 교사용 토큰을 통과한
+ * serveInquiryFeed_ 안에서만 호출하며 저장소에는 어떤 학생 자료도 남기지 않는다.
+ */
+function buildManagerLiveFeed_() {
+  const roster = getRosterRows_().filter(function (row) { return row['상태'] !== '비활성'; });
+  const intakes = getIntakeRows_();
+  const prompts = getPromptRows_().filter(function (row) { return row['상태'] !== '비활성'; });
+  const responses = getResponseRows_();
+  const rosterByCode = {};
+  roster.forEach(function (row) { rosterByCode[normalizeCode_(row['학생코드'])] = row; });
+
+  const latestResponse = {};
+  responses.forEach(function (row) {
+    const key = [normalizeCode_(row['학생코드']), row['탐구ID'], row['발문버전']].join('|');
+    latestResponse[key] = row;
+  });
+
+  const items = intakes.map(function (row) {
+    const code = normalizeCode_(row['학생코드']);
+    const rosterRow = rosterByCode[code] || {};
+    const concern = subjectConcern_(row);
+    const promptRow = prompts.filter(function (prompt) {
+      return normalizeCode_(prompt['학생코드']) === code && prompt['과목'] === row['과목'];
+    }).pop() || null;
+    const responseRow = promptRow ? latestResponse[[code, promptRow['탐구ID'], promptRow['발문버전']].join('|')] || null : null;
+    const subjectKey = EXPORT_SUBJECT_KEYS[row['과목']] || 'subject-review';
+    const title = (promptRow && promptRow['주제']) || row['교사확정주제'] || row['관심개념'] || row['궁금한점'];
+    const question = (promptRow && promptRow['현재질문']) || row['교사확정질문'] || row['궁금한점'];
+    const responseStatus = responseRow ? (responseRow['교사검토상태'] || '검토 대기') : '';
+    return {
+      id: row['제출ID'],
+      studentId: row['학생ID'],
+      studentCode: code,
+      displayName: row['이름'],
+      subject: subjectKey,
+      subjectName: row['과목'],
+      title: title,
+      question: question,
+      explorationPlan: row['탐구방법'],
+      studentConcept: row['관심개념'],
+      studentCuriosity: row['궁금한점'],
+      studentReason: row['선정이유'],
+      studentMethod: row['탐구방법'],
+      studentApp: row['웹앱아이디어'] || null,
+      studentNote: row['학생메모'],
+      teacherTopic: row['교사확정주제'] || (promptRow ? promptRow['주제'] : ''),
+      teacherQuestion: row['교사확정질문'] || (promptRow ? promptRow['현재질문'] : ''),
+      processingMemo: row['가공메모'],
+      teacherFeedback: row['교사피드백'],
+      processStatus: row['처리상태'] || '가공 대기',
+      reviewStatus: row['교사검토상태'] || '검토 대기',
+      rosterStatus: rosterRow['상태'] || '',
+      revisionCount: Number(row['수정횟수'] || 0),
+      updatedAt: row['수정일시'] || row['제출일시'],
+      submittedAt: row['제출일시'],
+      needsSubjectReview: concern.needsReview,
+      subjectReason: concern.reason,
+      curriculumStandards: [],
+      concepts: promptRow ? String(promptRow['핵심개념'] || '').split(/[,\n]/).map(function (value) { return value.trim(); }).filter(Boolean) : [],
+      curriculumMapping: 'draft',
+      status: responseRow && responseStatus !== '작성 중' ? 'response-submitted' : (responseRow ? 'response-draft' : (promptRow ? 'prompt-published' : 'topic-submitted')),
+      visibility: 'private',
+      prompt: promptRow ? {
+        inquiryId: promptRow['탐구ID'],
+        title: promptRow['주제'],
+        question: promptRow['현재질문'],
+        concepts: promptRow['핵심개념'],
+        prompts: [promptRow['발문1'], promptRow['발문2'], promptRow['발문3']],
+        version: promptRow['발문버전'],
+        status: promptRow['상태'],
+        updatedAt: promptRow['수정일']
+      } : null,
+      response: responseRow ? {
+        submissionId: responseRow['제출ID'],
+        answers: [responseRow['답변1'], responseRow['답변2'], responseRow['답변3']],
+        newQuestion: responseRow['새로운질문'],
+        studentNote: responseRow['학생메모'],
+        reviewStatus: responseStatus,
+        teacherFeedback: responseRow['교사피드백'],
+        revisionCount: Number(responseRow['수정횟수'] || 0),
+        submittedAt: responseRow['제출시각'],
+        updatedAt: responseRow['수정시각'] || responseRow['제출시각']
+      } : null
+    };
+  });
+
+  const responseItems = items.filter(function (item) { return item.response; });
+  return {
+    ok: true,
+    syncedAt: Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss'),
+    inquiries: items,
+    stats: {
+      students: roster.length,
+      completedStudents: roster.filter(function (student) {
+        const code = normalizeCode_(student['학생코드']);
+        return intakes.filter(function (row) { return normalizeCode_(row['학생코드']) === code; }).length >= TARGET_INTAKE_COUNT;
+      }).length,
+      intakes: intakes.length,
+      prompts: items.filter(function (item) { return item.prompt; }).length,
+      responseDrafts: responseItems.filter(function (item) { return item.response.reviewStatus === '작성 중'; }).length,
+      responseSubmitted: responseItems.filter(function (item) { return item.response.reviewStatus !== '작성 중'; }).length
+    }
+  };
 }
 
 /**
@@ -714,8 +818,8 @@ function showManagerFeedLink() {
   const html = HtmlService.createHtmlOutput(
     '<div style="font:14px/1.7 sans-serif;padding:20px">' +
     '<h3 style="margin-top:0">운영실 연결 열쇠</h3>' +
-    '<p>탐구 운영실 화면의 <b>실시간 연결</b> 칸에 이 열쇠를 한 번 붙여 넣으면, ' +
-    '그 기기에서는 계속 시트를 바로 읽습니다.</p>' +
+    '<p>탐구 운영실 화면의 <b>실시간 연결</b> 칸에 이 열쇠를 붙여 넣으면, ' +
+    '현재 브라우저 탭을 닫기 전까지 시트를 바로 읽습니다.</p>' +
     '<textarea id="u" style="width:100%;height:60px;font:13px/1.5 Consolas,monospace" readonly>' +
     escapeHtml_(token) + '</textarea>' +
     '<button style="margin-top:10px;padding:8px 14px;font-size:14px;cursor:pointer" ' +

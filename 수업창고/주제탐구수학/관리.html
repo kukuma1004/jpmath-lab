@@ -10,10 +10,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=Noto+Serif+KR:wght@700;900&amp;display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../jp-math-typography.css?v=3">
-  <link rel="stylesheet" href="manager.css?v=9">
+  <link rel="stylesheet" href="manager.css?v=11">
   <link rel="stylesheet" href="../../jp-polish.css?v=11">
   <link rel="stylesheet" href="../../jp-nav-2.css?v=4">
-  <script src="manager.js?v=11" defer></script>
+  <script src="manager.js?v=13" defer></script>
   <script src="../../jp-polish.js?v=21" defer></script>
   <script src="../../jp-nav-2.js?v=3" data-jp-section="수업창고 / 탐구 운영실" defer></script>
 </head>
@@ -46,11 +46,11 @@
     </section>
 
     <section class="overview" aria-label="프로젝트 현황">
-      <article class="overview-card primary"><span>등록 학생</span><strong>25</strong><small>명단 등록 완료</small></article>
-      <article class="overview-card"><span>예상 기초응답</span><strong>50</strong><small>25명 × 2과목</small></article>
-      <article class="overview-card"><span>현재 전시 초안 학생</span><strong id="metricDraftStudents">—</strong><small>기존 자료 보존</small></article>
-      <article class="overview-card"><span>현재 탐구 초안</span><strong id="metricInquiries">—</strong><small>미적분Ⅰ · 기하 · 경제수학</small></article>
-      <article class="overview-card accent"><span>전시 승인</span><strong id="metricPublished">—</strong><small>교사 승인 후 공개</small></article>
+      <article class="overview-card primary"><span>등록 학생</span><strong id="metricStudents">25</strong><small id="metricCompletedStudents">명단 등록 완료</small></article>
+      <article class="overview-card"><span>기초응답</span><strong id="metricInquiries">—</strong><small>학생 원문 전체</small></article>
+      <article class="overview-card"><span>발문 공개</span><strong id="metricPrompts">—</strong><small>학생 화면에 전달됨</small></article>
+      <article class="overview-card"><span>작성 중</span><strong id="metricDraftResponses">—</strong><small>임시저장 답안</small></article>
+      <article class="overview-card accent"><span>최종 제출</span><strong id="metricSubmittedResponses">—</strong><small>발문 답안 제출 완료</small></article>
     </section>
 
     <section class="process-board" aria-labelledby="processTitle">
@@ -61,7 +61,7 @@
       <ol class="process-track">
         <li class="is-live"><span>01</span><strong>주제선정</strong><p>관심 개념·궁금증·이유</p><small>학생 질문함</small></li>
         <li><span>02</span><strong>가공 대기</strong><p>학생 원문 보존</p><small>Google Sheet</small></li>
-        <li><span>03</span><strong>교사 검토</strong><p>주제·핵심 질문·성취기준</p><small>큐레이터</small></li>
+        <li><span>03</span><strong>교사 검토</strong><p>주제·핵심 질문·개념</p><small>큐레이터</small></li>
         <li><span>04</span><strong>질문 정교화</strong><p>개인별 맞춤 발문</p><small>학생 질문함</small></li>
         <li><span>05</span><strong>탐구·제작</strong><p>실험·실패·수정·웹앱</p><small>과정 기록</small></li>
         <li><span>06</span><strong>전시 승인</strong><p>공개 블록과 슬라이드</p><small>교사 승인</small></li>
@@ -70,8 +70,8 @@
 
     <section class="workspace" aria-labelledby="workspaceTitle">
       <div class="workspace-heading">
-        <div><p class="eyebrow">큐레이션 작업대</p><h2 id="workspaceTitle">학생별 탐구 초안</h2></div>
-        <div class="data-scope"><span></span><p><strong>현재 표시:</strong> 기존 승인 전 전시 초안</p></div>
+        <div><p class="eyebrow">실시간 작업대</p><h2 id="workspaceTitle">학생별 응답과 진행 과정</h2></div>
+        <div class="data-scope"><span></span><p><strong>현재 표시:</strong> 비공개 연결 전 안전 모드</p></div>
       </div>
 
       <div class="curator-layout">
@@ -85,8 +85,9 @@
               <button type="button" data-subject="economics">경제수학</button>
               <button type="button" class="subject-review-tab" data-subject="subject-review">과목 확인</button>
             </div>
+            <label class="stage-filter" for="stageFilter"><span>진행 상태</span><select id="stageFilter"><option value="all">모든 단계</option><option value="intake">기초응답·가공 대기</option><option value="review">교사 검토·발문 대기</option><option value="prompt">발문 공개·답안 대기</option><option value="draft">답안 작성 중</option><option value="submitted">최종 제출</option></select></label>
           </div>
-          <div class="browser-caption"><span id="resultCount" aria-live="polite">0개 탐구</span><small>검토할 탐구를 선택하세요</small></div>
+          <div class="browser-caption"><span id="resultCount" aria-live="polite">0개 탐구</span><small>학생의 탐구를 선택하세요</small></div>
           <div class="inquiry-list" id="inquiryList" aria-label="학생별 탐구 목록" aria-live="polite"></div>
         </aside>
 
@@ -99,17 +100,25 @@
     <section class="live-panel" id="livePanel" aria-label="시트 실시간 연결"></section>
 
     <section class="next-action" aria-labelledby="nextTitle">
-      <div><p class="eyebrow">학생 제출 후</p><h2 id="nextTitle">선생님이 할 일은<br>한 문장입니다.</h2></div>
-      <div class="request-card">
-        <div class="request-status"><span>CODEX REQUEST</span><small>가공 대기 자료 일괄 처리</small></div>
-        <pre id="handoffText">Google Sheet의 `기초응답`에서 처리상태가 `가공 대기`인 학생들을 처리해 줘.
-학생 원문은 보존하고, 과목별 주제 초안·핵심 질문·성취기준 후보·맞춤 발문 3개를 만들어 교사 검토 상태로 저장해 줘.</pre>
-        <button id="copyHandoff" type="button">요청 문장 복사</button>
-      </div>
-      <div class="request-card">
-        <div class="request-status"><span>EXPORT</span><small>큐레이션을 마친 뒤</small></div>
-        <p class="request-help">시트 메뉴의 <b>주제탐구 관리 → 운영실용 JSON 내보내기</b>로 받은 파일을 <code>주제탐구/data-private/inquiries.local.json</code> 에 넣으면 이 목록이 채워집니다. 여기서 제목·성취기준·핵심 개념을 정한 뒤 아래 버튼으로 완성본을 받아 같은 파일에 덮어써 주세요. 편집 중인 내용은 이 브라우저에 남아 있습니다.</p>
-        <button id="downloadCurated" type="button">완성 JSON 내려받기</button>
+      <div><p class="eyebrow">반 전체 운영</p><h2 id="nextTitle">학생마다 달라도<br>한 번에 정리합니다.</h2><p class="next-description">두 기초응답을 모두 쓴 학생만 다음 단계로 보내고, 덜 쓴 학생과 작성 중인 답안은 그대로 보존합니다.</p></div>
+      <div class="workflow-stack">
+        <div class="workflow-rules" aria-label="단계별 자동 처리 원칙">
+          <article><span id="queueIntake">—</span><strong>기초응답·가공 대기</strong><small>2개 미만은 그대로 대기</small></article>
+          <article><span id="queueReview">—</span><strong>교사 검토·발문 대기</strong><small>두 탐구가 준비된 학생만 발행</small></article>
+          <article><span id="queuePrompt">—</span><strong>발문 공개·답안 대기</strong><small>학생이 답변을 시작하기 전</small></article>
+          <article><span id="queueDraft">—</span><strong>답안 작성 중</strong><small>임시저장과 수정 가능 상태 유지</small></article>
+          <article><span id="queueSubmitted">—</span><strong>최종 제출</strong><small>완료 답안은 보존</small></article>
+        </div>
+        <div class="request-card">
+          <div class="request-status"><span>CODEX · WHOLE CLASS</span><small>학생별 상태 자동 판별 후 일괄 처리</small></div>
+          <pre id="handoffText">Google Sheet의 `학생명단`·`기초응답`·`학생발문`·`학생답변` 전체를 점검해서 학생별로 가능한 다음 단계까지 일괄 처리해 줘.
+- 기초응답이 2개 미만이면 상태와 원문을 그대로 유지해 줘.
+- 2개를 모두 썼고 처리상태가 `가공 대기` 또는 `수정됨 · 가공 대기`인 경우, 원문을 보존하고 과목별 주제 초안·핵심 질문·맞춤 발문 3개를 만들고 2022 개정 교육과정 원문과 대조한 성취기준 후보를 함께 기록해 `교사 검토`로 저장해 줘.
+- 두 탐구 모두 `교사 검토`이고 아직 발문이 없는 학생만 중복 없이 `학생발문`에 발행하고 `질문정교화`로 전환해 줘.
+- 발문 답안이 `작성 중`이면 수정 가능 상태를 유지하고, 최종 제출된 답안은 건드리지 말아 줘.
+처리한 학생·대기 학생·답안 작성 중·최종 제출 현황을 마지막에 요약해 줘.</pre>
+          <button id="copyHandoff" type="button">반 전체 운영 요청 복사</button>
+        </div>
       </div>
     </section>
   </main>

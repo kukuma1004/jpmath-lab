@@ -4,7 +4,7 @@
   var PUBLIC_DATA_URL = '../../주제탐구/data/inquiries.json';
   var PRIVATE_DATA_URL = '../../주제탐구/data-private/inquiries.local.json';
   var SHEET_URL = 'https://docs.google.com/spreadsheets/d/1shQ8CxS3nEO9wM6OT6-9DLgPilNtIaH0vsYPE21hscg/edit';
-  var state = { inquiries: [], selectedId: null, promptMode: 'balanced', subject: 'all', query: '', dataSource: '' };
+  var state = { inquiries: [], selectedId: null, promptMode: 'balanced', subject: 'all', stage: 'all', query: '', dataSource: '', liveStats: null };
   var subjectLabels = { 'calculus-1': '미적분Ⅰ', geometry: '기하', economics: '경제수학', 'economic-math': '경제수학', 'subject-review': '과목 확인 필요', 'mathematical-inquiry': '통합·이론' };
 
   function element(tag, className, text) {
@@ -29,10 +29,11 @@
   //     (/dev 는 로그인 세션이 필요해 다른 도메인에서는 열리지 않는다)
   var FEED_KEY = 'jp-inquiry-token-v1';
   var FEED_KEY_LEGACY = 'jp-inquiry-feed-url-v1';  // 예전엔 주소 전체를 저장했다
-  var FEED_REFRESH_MS = 20000;
+  var FEED_REFRESH_MS = 8000;
   var FEED_TIMEOUT_MS = 25000;                     // Apps Script 첫 호출은 느릴 수 있다
   var feedTimer = null;
   var feedSeq = 0;
+  var volatileFeedToken = '';
 
   function feedError(code, detail) {
     var error = new Error(code);
@@ -61,19 +62,23 @@
 
   function savedToken() {
     try {
-      var token = localStorage.getItem(FEED_KEY);
+      var token = sessionStorage.getItem(FEED_KEY);
       if (token) return token;
-      // 예전에 주소를 통째로 저장해 둔 브라우저는 열쇠만 남기고 옮겨 준다
-      var moved = readToken(localStorage.getItem(FEED_KEY_LEGACY) || '');
+      // 예전 버전에서 영구 저장한 열쇠는 이번 탭으로만 옮기고 즉시 지운다.
+      var moved = readToken(localStorage.getItem(FEED_KEY) || localStorage.getItem(FEED_KEY_LEGACY) || '');
+      localStorage.removeItem(FEED_KEY);
+      localStorage.removeItem(FEED_KEY_LEGACY);
       if (moved) { storeToken(moved); return moved; }
-      return '';
-    } catch (error) { return ''; }
+      return volatileFeedToken;
+    } catch (error) { return volatileFeedToken; }
   }
 
   function storeToken(token) {
+    volatileFeedToken = token || '';
     try {
-      if (token) localStorage.setItem(FEED_KEY, token);
-      else localStorage.removeItem(FEED_KEY);
+      if (token) sessionStorage.setItem(FEED_KEY, token);
+      else sessionStorage.removeItem(FEED_KEY);
+      localStorage.removeItem(FEED_KEY);
       localStorage.removeItem(FEED_KEY_LEGACY);
     } catch (error) { /* 저장이 막혀도 이번 세션 동안은 쓸 수 있다 */ }
   }
@@ -126,10 +131,10 @@
     var keep = state.selectedId;
     state.dataSource = 'live-sheet';
     state.liveSyncedAt = payload.syncedAt || '';
-    state.livePending = payload.pending || 0;
-    state.inquiries = applyCuration(payload.inquiries || []);
+    state.liveStats = payload.stats || null;
+    state.inquiries = payload.inquiries || [];
     updateConnectionStatus(state.dataSource, state.inquiries.length);
-    updateMetrics();
+    updateMetrics(state.liveStats);
     if (!state.inquiries.length) { renderSecureEmptyState(); return; }
     var still = state.inquiries.some(function (item) { return item.id === keep; });
     state.selectedId = still ? keep : state.inquiries[0].id;
@@ -160,9 +165,9 @@
     var token = savedToken();
 
     var head = element('div', 'live-panel-head');
-    head.appendChild(element('strong', '', token ? '시트에 실시간으로 연결되어 있습니다' : '시트에 실시간으로 연결하기'));
+    head.appendChild(element('strong', '', token ? '시트의 전체 진행상황에 실시간으로 연결되었습니다' : '학생 진행상황을 이 화면에 연결하기'));
     head.appendChild(element('small', '', token
-      ? (state.liveSyncedAt ? '마지막 확인 ' + state.liveSyncedAt : '') + ' · ' + Math.round(FEED_REFRESH_MS / 1000) + '초마다 새로고침'
+      ? (state.liveSyncedAt ? '마지막 확인 ' + state.liveSyncedAt : '') + ' · 기초응답·발문·임시저장 답안을 ' + Math.round(FEED_REFRESH_MS / 1000) + '초마다 새로고침'
       : '구글시트 → 주제탐구 관리 → 운영실 실시간 연결 주소 에서 받은 열쇠를 붙여 넣으세요.'));
     host.appendChild(head);
 
@@ -198,7 +203,7 @@
       host.appendChild(row);
       host.appendChild(message);
       host.appendChild(element('small', 'live-panel-warn',
-        '이 열쇠는 이 브라우저에만 저장되며 저장소에는 올라가지 않습니다. 학생에게 주지 마세요.'));
+        '이 열쇠는 현재 브라우저 탭에만 보관되며 저장소에는 올라가지 않습니다. 학생에게 주지 마세요.'));
       return;
     }
 
@@ -210,8 +215,7 @@
     actions.appendChild(now);
     actions.appendChild(off);
     host.appendChild(actions);
-    var note = element('p', 'live-panel-message', state.livePending
-      ? '승인 전 ' + state.livePending + '건은 목록에 넣지 않았습니다. 실시간 교사용 페이지에서 승인하면 여기에 나타납니다.' : '');
+    var note = element('p', 'live-panel-message', '승인 전 자료와 작성 중인 답안까지 교사용으로만 표시하고 있습니다.');
     host.appendChild(note);
 
     now.addEventListener('click', function () {
@@ -263,8 +267,10 @@
     if (source === 'live-sheet') {
       title.textContent = '구글시트 실시간 연결됨';
       badge.textContent = 'LIVE';
-      description.textContent = '승인된 탐구 ' + count + '개를 시트에서 바로 읽고 있습니다.';
+      description.textContent = '승인 전 내용을 포함한 탐구 ' + count + '개와 학생 답안을 시트에서 바로 읽고 있습니다.';
       note.textContent = state.liveSyncedAt ? '마지막 확인 ' + state.liveSyncedAt : '자동 새로고침 중';
+      var scope = document.querySelector('.data-scope p');
+      if (scope) scope.innerHTML = '<strong>현재 표시:</strong> 교사용 비공개 실시간 전체 자료';
       return;
     }
     if (source === 'private-local') {
@@ -360,16 +366,52 @@
     return [conceptPrompts[0], verificationPrompts[0]].concat(topicPrompts, verificationPrompts[2], extensionPrompts[2]).slice(0, 6);
   }
 
-  function updateMetrics() {
+  function updateMetrics(stats) {
+    if (stats) {
+      document.getElementById('metricStudents').textContent = stats.students;
+      document.getElementById('metricCompletedStudents').textContent = '기초응답 2개 완료 ' + stats.completedStudents + '명';
+      document.getElementById('metricInquiries').textContent = stats.intakes;
+      document.getElementById('metricPrompts').textContent = stats.prompts;
+      document.getElementById('metricDraftResponses').textContent = stats.responseDrafts;
+      document.getElementById('metricSubmittedResponses').textContent = stats.responseSubmitted;
+      updateWorkflowSummary();
+      return;
+    }
     var students = {};
-    var published = 0;
     state.inquiries.forEach(function (item) {
       students[item.studentId] = true;
-      if (item.visibility === 'public' || item.visibility === 'published') published += 1;
     });
-    document.getElementById('metricDraftStudents').textContent = Object.keys(students).length;
+    document.getElementById('metricStudents').textContent = Object.keys(students).length || 25;
+    document.getElementById('metricCompletedStudents').textContent = '공개 자료 기준';
     document.getElementById('metricInquiries').textContent = state.inquiries.length;
-    document.getElementById('metricPublished').textContent = published;
+    document.getElementById('metricPrompts').textContent = '—';
+    document.getElementById('metricDraftResponses').textContent = '—';
+    document.getElementById('metricSubmittedResponses').textContent = '—';
+    updateWorkflowSummary();
+  }
+
+  function progressLabel(item) {
+    if (item.response) return item.response.reviewStatus === '작성 중' ? '답안 작성 중 · 임시저장' : '발문 답안 제출 · ' + item.response.reviewStatus;
+    if (item.prompt) return '발문 공개 · 답안 대기';
+    if (/교사 검토|교사 승인/.test(item.processStatus || '') || item.reviewStatus === '승인') return '교사 검토 완료 · 발문 대기';
+    if (/수정됨/.test(item.processStatus || '')) return '기초응답 수정 · 재검토 대기';
+    return (item.processStatus || '가공 대기') + ' · ' + (item.reviewStatus || '검토 대기');
+  }
+
+  function stageKey(item) {
+    if (item.response) return item.response.reviewStatus === '작성 중' ? 'draft' : 'submitted';
+    if (item.prompt) return 'prompt';
+    if (/교사 검토|교사 승인/.test(item.processStatus || '') || item.reviewStatus === '승인') return 'review';
+    return 'intake';
+  }
+
+  function updateWorkflowSummary() {
+    var counts = { intake: 0, review: 0, prompt: 0, draft: 0, submitted: 0 };
+    state.inquiries.forEach(function (item) { counts[stageKey(item)] += 1; });
+    ['Intake', 'Review', 'Prompt', 'Draft', 'Submitted'].forEach(function (name) {
+      var node = document.getElementById('queue' + name);
+      if (node) node.textContent = state.dataSource === 'live-sheet' ? counts[name.toLowerCase()] + '건' : '—';
+    });
   }
 
   function filteredInquiries() {
@@ -377,6 +419,7 @@
     return state.inquiries.filter(function (item) {
       if (state.subject === 'subject-review' && !needsSubjectReview(item)) return false;
       if (state.subject !== 'all' && state.subject !== 'subject-review' && item.subject !== state.subject) return false;
+      if (state.stage !== 'all' && stageKey(item) !== state.stage) return false;
       if (!query) return true;
       return [item.displayName, item.title, item.question, (item.concepts || []).join(' ')].join(' ').toLowerCase().indexOf(query) !== -1;
     });
@@ -403,8 +446,8 @@
       button.appendChild(element('span', 'student-avatar', number));
       var copy = element('span', 'inquiry-copy');
       copy.appendChild(element('span', '', subjectLabel(item) + ' · ' + item.displayName));
-      copy.appendChild(element('strong', '', item.title));
-      copy.appendChild(element('small', '', needsSubjectReview(item) ? '과목 확인 필요 · 먼저 검토' : (item.curriculumMapping === 'complete' ? '성취기준 확정' : '교사 검토용 초안')));
+      copy.appendChild(element('strong', '', item.title || item.question || '주제 검토 전'));
+      copy.appendChild(element('small', '', needsSubjectReview(item) ? '과목 확인 필요 · 먼저 검토' : progressLabel(item)));
       button.appendChild(copy);
       button.appendChild(element('span', 'inquiry-arrow', '›'));
       button.addEventListener('click', function () {
@@ -477,8 +520,8 @@
   }
 
   // ── 교사 큐레이션 ────────────────────────────────────────────────────
-  // 시트에서 내보낸 JSON은 제목·성취기준·핵심개념이 비어 있다.
-  // 학생이 쓰지 않는 값이라 교사가 읽고 정해야 하고, 그 자리가 여기다.
+  // 시트에서 내보낸 JSON은 제목·핵심개념이 비어 있다.
+  // 성취기준은 별도의 2022 개정 교육과정 대조 작업에서 채운다.
   // 정적 페이지라 파일에 바로 쓸 수 없으므로 편집분은 브라우저에 보관했다가
   // "완성 JSON 내려받기"로 한 번에 파일로 만든다.
   var CURATION_KEY = 'jp-inquiry-curation-v1';
@@ -548,8 +591,6 @@
 
     curationRow(section, '탐구 제목', '예: 합성함수의 극값 탐구', item.title,
       function (v) { recordCuration(item, 'title', v.trim()); renderList(); renderCurator(item); });
-    curationRow(section, '성취기준', '쉼표로 구분 · 예: 12미적Ⅰ02-07', (item.curriculumStandards || []).join(', '),
-      function (v) { recordCuration(item, 'curriculumStandards', splitTags(v)); renderCurator(item); });
     curationRow(section, '핵심 개념', '쉼표로 구분 · 예: 합성함수, 극대·극소', (item.concepts || []).join(', '),
       function (v) { recordCuration(item, 'concepts', splitTags(v)); renderCurator(item); });
 
@@ -582,7 +623,7 @@
       project: {
         title: '2026 수학 주제탐구 프로젝트',
         updatedAt: new Date().toISOString().slice(0, 10),
-        notice: '운영실에서 제목·성취기준·핵심개념을 채운 실명 초안입니다. 공개 저장소에 올리지 않습니다.'
+        notice: '운영실에서 제목·핵심개념을 정리한 실명 초안입니다. 성취기준은 2022 개정 교육과정 대조 후 채우며 공개 저장소에 올리지 않습니다.'
       },
       inquiries: state.inquiries
     };
@@ -599,12 +640,142 @@
 
   function curationProgress() {
     var done = state.inquiries.filter(function (item) {
-      return item.title && (item.curriculumStandards || []).length;
+      return item.title && (item.concepts || []).length;
     }).length;
     return { done: done, total: state.inquiries.length };
   }
 
+  function addLiveAnswer(parent, title, value, className) {
+    var card = element('article', 'live-answer' + (className ? ' ' + className : ''));
+    card.appendChild(element('strong', '', title));
+    card.appendChild(element('p', '', value || '아직 작성하지 않았습니다.'));
+    parent.appendChild(card);
+  }
+
+  function renderLiveProgress(panel, item) {
+    var hasPrompt = Boolean(item.prompt);
+    var hasResponse = Boolean(item.response);
+    var isFinal = hasResponse && item.response.reviewStatus !== '작성 중';
+    var reviewed = hasPrompt || /교사 검토|교사 승인/.test(item.processStatus || '') || item.reviewStatus === '승인';
+    var stages = [
+      { label: '기초응답', detail: '원문 저장', ready: true, current: !reviewed },
+      { label: '교사 검토', detail: item.reviewStatus || '검토 대기', ready: reviewed, current: reviewed && !hasPrompt },
+      { label: '발문 공개', detail: hasPrompt ? '학생 화면 노출' : '발행 대기', ready: hasPrompt, current: hasPrompt && !hasResponse },
+      { label: '학생 작성', detail: hasResponse ? (isFinal ? '답안 작성 완료' : '임시저장 있음') : '답안 대기', ready: hasResponse, current: hasResponse && !isFinal },
+      { label: '최종 제출', detail: isFinal ? item.response.reviewStatus : '제출 전', ready: isFinal, current: isFinal }
+    ];
+    var section = element('section', 'curator-section live-progress-section');
+    var heading = element('div', 'section-label');
+    heading.appendChild(element('h3', '', '현재 진행 과정'));
+    heading.appendChild(element('small', '', progressLabel(item)));
+    section.appendChild(heading);
+    var track = element('div', 'live-progress-track');
+    stages.forEach(function (stage, index) {
+      var node = element('div', 'live-progress-step' + (stage.ready ? ' is-ready' : '') + (stage.current ? ' is-current' : ''));
+      node.appendChild(element('span', '', String(index + 1).padStart(2, '0')));
+      node.appendChild(element('strong', '', stage.label));
+      node.appendChild(element('small', '', stage.detail));
+      track.appendChild(node);
+    });
+    section.appendChild(track);
+    panel.appendChild(section);
+  }
+
+  function renderLiveCurator(item) {
+    var panel = document.getElementById('curatorPanel');
+    panel.textContent = '';
+    var top = element('div', 'curator-topline');
+    top.appendChild(element('span', 'status-badge live-private-badge', '비공개 실시간'));
+    top.appendChild(element('span', 'detail-tag', subjectLabel(item)));
+    top.appendChild(element('span', 'detail-tag', item.displayName));
+    top.appendChild(element('span', 'status-badge', item.processStatus || '가공 대기'));
+    if (needsSubjectReview(item)) top.appendChild(element('span', 'status-badge subject-alert', '과목 확인 필요'));
+    top.appendChild(element('span', 'curator-updated', '최근 반영 ' + (item.updatedAt || '—')));
+    panel.appendChild(top);
+    panel.appendChild(element('h2', 'curator-title', item.title || item.studentConcept || '제목 검토 전'));
+    panel.appendChild(element('p', 'curator-question', '“' + (item.question || item.studentCuriosity || '질문 검토 전') + '”'));
+    renderLiveProgress(panel, item);
+
+    var intake = element('section', 'curator-section');
+    var intakeLabel = element('div', 'section-label');
+    intakeLabel.appendChild(element('h3', '', '학생의 기초응답 원문'));
+    intakeLabel.appendChild(element('small', '', '수정 ' + (item.revisionCount || 0) + '회 · ' + (item.reviewStatus || '검토 대기')));
+    intake.appendChild(intakeLabel);
+    var intakeGrid = element('div', 'live-answer-grid');
+    addLiveAnswer(intakeGrid, '처음 궁금했던 질문', item.studentCuriosity, 'wide');
+    addLiveAnswer(intakeGrid, '관심 개념', item.studentConcept);
+    addLiveAnswer(intakeGrid, '선정 이유', item.studentReason);
+    addLiveAnswer(intakeGrid, '탐구 방법', item.studentMethod || item.explorationPlan);
+    addLiveAnswer(intakeGrid, '웹앱 아이디어', item.studentApp);
+    if (item.studentNote) addLiveAnswer(intakeGrid, '학생 메모', item.studentNote, 'wide');
+    intake.appendChild(intakeGrid);
+    panel.appendChild(intake);
+
+    var teacher = element('section', 'curator-section');
+    var teacherLabel = element('div', 'section-label');
+    teacherLabel.appendChild(element('h3', '', '교사 가공·검토 내용'));
+    teacherLabel.appendChild(element('small', '', item.reviewStatus || '검토 대기'));
+    teacher.appendChild(teacherLabel);
+    var teacherGrid = element('div', 'live-answer-grid');
+    addLiveAnswer(teacherGrid, '과목별 주제 초안', item.teacherTopic || '아직 가공 전입니다.');
+    addLiveAnswer(teacherGrid, '핵심 질문', item.teacherQuestion || '아직 가공 전입니다.');
+    addLiveAnswer(teacherGrid, '핵심 개념', item.prompt && item.prompt.concepts ? item.prompt.concepts : ((item.concepts || []).join(', ') || '아직 가공 전입니다.'));
+    addLiveAnswer(teacherGrid, '가공 메모', item.processingMemo || '아직 기록이 없습니다.');
+    if (item.teacherFeedback) addLiveAnswer(teacherGrid, '학생에게 보낸 피드백', item.teacherFeedback, 'wide');
+    teacher.appendChild(teacherGrid);
+    panel.appendChild(teacher);
+
+    var promptSection = element('section', 'curator-section');
+    var promptLabel = element('div', 'section-label');
+    promptLabel.appendChild(element('h3', '', '맞춤 발문과 학생 답안'));
+    promptLabel.appendChild(element('small', '', item.prompt ? ('발문 ' + item.prompt.version + ' · ' + (item.response ? item.response.reviewStatus : '답안 대기')) : '아직 학생에게 발행되지 않음'));
+    promptSection.appendChild(promptLabel);
+    if (!item.prompt) {
+      var waiting = element('div', 'live-waiting');
+      waiting.appendChild(element('strong', '', '발문 발행 전입니다.'));
+      waiting.appendChild(element('p', '', '기초응답과 교사 가공 내용은 위에서 바로 확인할 수 있습니다. 학생발문 시트에 발행되면 이 자리에 세 발문과 답안이 나타납니다.'));
+      promptSection.appendChild(waiting);
+    } else {
+      var promptMeta = element('div', 'prompt-meta');
+      addLiveAnswer(promptMeta, '학생 화면의 주제', item.prompt.title);
+      addLiveAnswer(promptMeta, '학생 화면의 핵심 질문', item.prompt.question);
+      promptSection.appendChild(promptMeta);
+      var pairList = element('div', 'prompt-response-list');
+      item.prompt.prompts.forEach(function (prompt, index) {
+        var pair = element('article', 'prompt-response-pair');
+        var promptHead = element('div', 'prompt-response-head');
+        promptHead.appendChild(element('span', '', '발문 ' + (index + 1)));
+        promptHead.appendChild(element('small', '', item.response && item.response.answers[index] ? '답변 있음' : '작성 전'));
+        pair.appendChild(promptHead);
+        pair.appendChild(element('strong', 'prompt-question', prompt || '발문이 비어 있습니다.'));
+        pair.appendChild(element('p', 'prompt-answer' + (item.response && item.response.answers[index] ? '' : ' is-empty'), item.response && item.response.answers[index] ? item.response.answers[index] : '아직 답변하지 않았습니다.'));
+        pairList.appendChild(pair);
+      });
+      promptSection.appendChild(pairList);
+      if (item.response) {
+        var responseExtra = element('div', 'live-answer-grid response-extra');
+        addLiveAnswer(responseExtra, '답하면서 새로 생긴 질문', item.response.newQuestion);
+        addLiveAnswer(responseExtra, '학생 메모', item.response.studentNote);
+        promptSection.appendChild(responseExtra);
+        var responseNote = element('p', 'response-sync-note', '답안 수정 ' + (item.response.revisionCount || 0) + '회 · 최근 저장 ' + (item.response.updatedAt || '—'));
+        promptSection.appendChild(responseNote);
+      }
+    }
+    panel.appendChild(promptSection);
+
+    var actions = element('div', 'curator-actions');
+    var sheetButton = element('button', 'action-review', 'Google Sheet에서 원문 열기 ↗');
+    sheetButton.type = 'button';
+    sheetButton.addEventListener('click', function () { window.open(SHEET_URL, '_blank', 'noopener'); });
+    actions.appendChild(sheetButton);
+    panel.appendChild(actions);
+  }
+
   function renderCurator(item) {
+    if (state.dataSource === 'live-sheet') {
+      renderLiveCurator(item);
+      return;
+    }
     var panel = document.getElementById('curatorPanel');
     panel.textContent = '';
 
@@ -635,8 +806,8 @@
 
     var mapping = element('section', 'curator-section');
     var mappingLabel = element('div', 'section-label');
-    mappingLabel.appendChild(element('h3', '', '성취기준과 핵심 개념'));
-    mappingLabel.appendChild(element('small', '', item.curriculumMapping === 'complete' ? '확정' : '원문 대조 필요'));
+    mappingLabel.appendChild(element('h3', '', '교육과정 대조 결과와 핵심 개념'));
+    mappingLabel.appendChild(element('small', '', item.curriculumMapping === 'complete' ? '2022 개정 교육과정 대조 완료' : 'Codex 대조 작업 대기'));
     mapping.appendChild(mappingLabel);
     var mappingBox = element('div', 'mapping-box');
     (item.curriculumStandards || []).forEach(function (standard) { mappingBox.appendChild(element('span', '', standard)); });
@@ -750,6 +921,17 @@
         renderList();
       });
     });
+    var stageFilter = document.getElementById('stageFilter');
+    if (stageFilter) stageFilter.addEventListener('change', function () {
+      state.stage = this.value;
+      renderList();
+      var items = filteredInquiries();
+      if (items.length && !items.some(function (item) { return item.id === state.selectedId; })) {
+        state.selectedId = items[0].id;
+        renderList();
+        renderCurator(items[0]);
+      }
+    });
     document.getElementById('copyHandoff').addEventListener('click', function () {
       copyText(document.getElementById('handoffText').textContent, this, '복사됨');
     });
@@ -758,7 +940,7 @@
       if (!state.inquiries.length) return;
       downloadCurated();
       var progress = curationProgress();
-      this.textContent = progress.total + '건 내려받음 · 성취기준까지 정리된 것 ' + progress.done + '건';
+      this.textContent = progress.total + '건 내려받음 · 제목·개념 정리 ' + progress.done + '건';
       var button = this;
       setTimeout(function () { button.textContent = '완성 JSON 내려받기'; }, 2600);
     });

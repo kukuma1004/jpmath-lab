@@ -108,6 +108,9 @@ button { cursor: pointer; }
 .subject-tabs button.is-active { color: white; background: var(--night); }
 .subject-tabs .subject-review-tab { color: #a43731; background: #fff0ef; }
 .subject-tabs .subject-review-tab.is-active { color: white; background: #ad332e; }
+.stage-filter{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:10px;margin-top:9px;color:var(--muted);font-size:11.5px;font-weight:700}
+.stage-filter select{min-width:0;min-height:40px;padding:0 11px;border:1px solid var(--line);border-radius:9px;color:var(--ink);background:#fff;font-size:12px;outline:0}
+.stage-filter select:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(23,107,91,.11)}
 .subject-tabs button:focus-visible, .prompt-modes button:focus-visible, .inquiry-button:focus-visible, .curator-actions button:focus-visible, .copy-prompts:focus-visible, .request-card button:focus-visible { outline: 3px solid rgba(45,154,126,.34); outline-offset: 2px; }
 .browser-caption { display: flex; align-items: center; justify-content: space-between; padding: 13px 17px; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 12px; }
 .browser-caption span { color: var(--ink); font-weight: 700; }
@@ -188,6 +191,13 @@ button { cursor: pointer; }
 .action-publish { color: #919b98; background: #e6e9e5; cursor: not-allowed; }
 
 .next-action { display: grid; grid-template-columns: .72fr 1.28fr; gap: 60px; align-items: start; }
+.next-description{max-width:360px;margin:18px 0 0;color:var(--muted);font-size:13px;line-height:1.75}
+.workflow-stack{display:grid;gap:13px}
+.workflow-rules{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.workflow-rules article{min-height:128px;padding:16px;border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.74)}
+.workflow-rules span{display:block;color:var(--orange);font:700 20px var(--mono)}
+.workflow-rules strong{display:block;margin-top:15px;font-size:12.5px}
+.workflow-rules small{display:block;margin-top:6px;color:var(--muted);font-size:10.5px;line-height:1.5}
 .request-card { overflow: hidden; border-radius: 22px; color: white; background: var(--night); box-shadow: 0 24px 60px rgba(13,41,37,.14); }
 .request-status { display: flex; justify-content: space-between; gap: 20px; padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,.1); }
 .request-status span { color: #82d6bf; font: 700 9px var(--mono); letter-spacing: .12em; }
@@ -206,6 +216,7 @@ footer { display: flex; justify-content: space-between; gap: 20px; padding: 28px
   .process-track li:nth-child(-n+3) { border-bottom: 1px solid var(--line); }
   .curator-layout { grid-template-columns: minmax(270px, .75fr) minmax(0, 1.25fr); }
   .slide-track { grid-template-columns: repeat(4, 1fr); }
+  .workflow-rules{grid-template-columns:1fr 1fr}
 }
 
 @media (max-width: 760px) {
@@ -238,7 +249,7 @@ footer { display: flex; justify-content: space-between; gap: 20px; padding: 28px
 }
 
 /* ── 교사 큐레이션 입력 ───────────────────────────────────────
-   학생이 쓰지 않는 값(제목·성취기준·핵심개념)을 여기서 정한다. */
+   교사는 제목·핵심개념을 정하고 성취기준은 교육과정 대조 작업에서 채운다. */
 .curation-block{border-top:1px dashed #cfd8d4;padding-top:14px}
 .curation-row{display:grid;gap:5px;margin-bottom:11px}
 .curation-label{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
@@ -293,8 +304,39 @@ footer { display: flex; justify-content: space-between; gap: 20px; padding: 28px
 .live-disconnect:hover{border-color:#a9b4af}
 .live-panel-message{margin:9px 0 0;color:#3d4a45;font-size:12.5px;line-height:1.6;word-break:keep-all}
 .live-panel-warn{display:block;margin-top:9px;color:#8a5f10;font-size:11.5px;line-height:1.55}
+.live-private-badge{color:#fff;background:var(--green)}
+.live-progress-section{margin-top:22px;padding-top:0;border-top:0}
+.live-progress-track{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.live-progress-step{position:relative;min-height:100px;padding:13px 11px;border:1px dashed #ced6d1;border-radius:13px;color:#8a9692;background:#f4f6f2}
+.live-progress-step::after{position:absolute;top:50%;right:-8px;z-index:2;color:#a9b3af;content:'›';transform:translateY(-50%)}
+.live-progress-step:last-child::after{display:none}
+.live-progress-step.is-ready{color:var(--ink);border-style:solid;border-color:#b9d5ca;background:var(--green-soft)}
+.live-progress-step.is-current{border-color:var(--orange);box-shadow:0 0 0 3px rgba(211,102,59,.11)}
+.live-progress-step span{display:block;color:var(--orange);font:700 9px var(--mono)}
+.live-progress-step strong{display:block;margin-top:17px;font-size:12px}
+.live-progress-step small{display:block;margin-top:5px;color:inherit;font-size:10.5px;line-height:1.45}
+.live-answer-grid,.prompt-meta{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.live-answer{min-width:0;padding:16px;border:1px solid var(--line);border-radius:14px;background:#f5f6f1}
+.live-answer.wide{grid-column:1/-1}
+.live-answer strong{display:block;color:var(--green);font-size:11.5px}
+.live-answer p{margin:8px 0 0;white-space:pre-wrap;color:#475752;font-size:13px;line-height:1.72;word-break:break-word}
+.live-waiting{padding:21px;border:1px dashed #c8d2cd;border-radius:15px;background:#f5f6f2;text-align:center}
+.live-waiting strong{font-size:14px}.live-waiting p{max-width:600px;margin:7px auto 0;color:var(--muted);font-size:12.5px;line-height:1.7}
+.prompt-meta{margin-bottom:10px}.prompt-response-list{display:grid;gap:10px}.prompt-response-pair{overflow:hidden;border:1px solid var(--line);border-radius:15px;background:#fff}
+.prompt-response-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;color:var(--green);background:var(--green-soft)}
+.prompt-response-head span{font:700 10px var(--mono);letter-spacing:.05em}.prompt-response-head small{font-size:10.5px}
+.prompt-question{display:block;padding:15px 16px 12px;font-size:13.5px;line-height:1.7}
+.prompt-answer{margin:0;padding:15px 16px;border-top:1px solid #e5e9e5;white-space:pre-wrap;color:#344640;background:#f8faf7;font-size:13px;line-height:1.75}
+.prompt-answer::before{display:block;margin-bottom:6px;color:var(--orange);font:700 9px var(--mono);content:'STUDENT ANSWER'}
+.prompt-answer.is-empty{color:#8a9692}.response-extra{margin-top:10px}.response-sync-note{margin:10px 2px 0;color:var(--muted);font-size:11.5px;text-align:right}
 @media(max-width:560px){
   .live-panel{width:calc(100% - 24px);padding:13px 14px}
   .live-panel-row .curation-input{flex-basis:100%}
   .live-connect,.live-disconnect{flex:1}
+  .live-progress-track{grid-template-columns:1fr}
+  .live-progress-step{min-height:0}
+  .live-progress-step::after{display:none}
+  .live-answer-grid,.prompt-meta{grid-template-columns:1fr}
+  .live-answer.wide{grid-column:auto}
+  .workflow-rules{grid-template-columns:1fr}
 }
