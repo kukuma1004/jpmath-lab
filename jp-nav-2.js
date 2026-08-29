@@ -48,7 +48,7 @@
             <div class="menu-group-links">
               <a href="${siteHref('미적분1/오늘의_미적분.html')}"><strong>오늘의 도전</strong><small>오늘의 함수를 깊게 보기</small></a>
               <a href="${siteHref('미적분1/#arcade')}"><strong>수학 아케이드</strong><small>개념을 게임으로 확인하기</small></a>
-              <a href="${siteHref('경제수학/live/')}"><strong>친구방 LIVE</strong><small>함께 결정하고 비교하기</small></a>
+              <a href="${siteHref('경제수학/live/games.html')}"><strong>친구방 LIVE</strong><small>게임 고르고 함께 하기</small></a>
             </div>
           </section>
           <section class="menu-group" style="--group-index:2">
