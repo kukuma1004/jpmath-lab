@@ -18,6 +18,18 @@
   brief.innerHTML='<div><span data-projection-kicker>FREE LAB</span><strong data-projection-title>선분의 끝을 자유롭게 움직여 보세요.</strong><p data-projection-copy>선분이 눕거나 일어설 때 그림자가 어떻게 달라지는지 관찰합니다.</p></div><button class="btn projection-next hidden" type="button" data-projection-next>새 목표</button><div class="projection-meter" aria-hidden="true"><i data-projection-meter></i></div>';
   lab.insertBefore(tabs,modeChips);
   lab.insertBefore(brief,modeChips);
+  const roofBar=document.createElement('div');
+  roofBar.className='projection-roof-bar';
+  roofBar.innerHTML='<button class="projection-roof-button" type="button" data-projection-roof aria-pressed="false">지붕으로 보기</button><span class="projection-roof-note">건축 도면은 위에서 내려다본 그림이라 경사 지붕이 cos&#920; 배로 줄어 그려집니다.</span>';
+  modeChips.parentNode.insertBefore(roofBar,modeChips.nextSibling);
+  const roofButton=roofBar.querySelector('[data-projection-roof]');
+  // 지붕은 면이 있어야 넓이 이야기가 된다. 선분 모드로 가면 함께 꺼야
+  // 지붕면도 없는데 지붕 넓이만 남는 일이 없다.
+  function setRoof(on){
+    state.roof=on;
+    roofButton.classList.toggle('active',on);
+    roofButton.setAttribute('aria-pressed',String(on));
+  }
   const visualCard=lab.querySelector('.visual-card');
   visualCard.classList.add('projection-direct-stage-card');
   const guide=document.createElement('div');
@@ -34,7 +46,7 @@
   const controls=lab.querySelector('[data-controls]');
   const controlInputs=[...controls.querySelectorAll('input[type="range"]')];
   const resetView=lab.querySelector('[data-reset-view]');
-  const state={theta:45,length:4,mode:'segment',mission:'free',targetShadow:3,targetAngle:30,targetIndex:0,view:{yaw:-.7,pitch:.48,scale:84,cx:320,cy:220}};
+  const state={theta:45,length:4,mode:'segment',roof:false,mission:'free',targetShadow:3,targetAngle:30,targetIndex:0,view:{yaw:-.7,pitch:.48,scale:46,cx:320,cy:286}};
   const shadowTargets=[3,4,2.5,3.5],angleTargets=[30,45,60];
   let action=null,last=[0,0];
 
@@ -64,16 +76,21 @@
   function scene(){
     G.clear(svg);defs();
     svg.appendChild(G.s('rect',{x:0,y:0,width:640,height:400,fill:'#F8FBFB'}));
-    const plane=[[-3,-2,0],[3,-2,0],[3,2,0],[-3,2,0]];
+    const plane=[[-3,0,-2],[3,0,-2],[3,0,2],[-3,0,2]];
     polygon(plane,'url(#projectionPlane)','#77A9B9',1);
-    for(let x=-3;x<=3;x++)line(p([x,-2,0]),p([x,2,0]),'#9EC1CB',1,null,.35);
-    for(let y=-2;y<=2;y++)line(p([-3,y,0]),p([3,y,0]),'#9EC1CB',1,null,.35);
-    const rad=state.theta*Math.PI/180,L=state.length,A=[-2,0,0],B=[-2+L*Math.cos(rad),0,L*Math.sin(rad)],H=[B[0],0,0];
+    for(let x=-3;x<=3;x++)line(p([x,0,-2]),p([x,0,2]),'#9EC1CB',1,null,.35);
+    for(let z=-2;z<=2;z++)line(p([-3,0,z]),p([3,0,z]),'#9EC1CB',1,null,.35);
+    const rad=state.theta*Math.PI/180,L=state.length,A=[-2,0,0],B=[-2+L*Math.cos(rad),L*Math.sin(rad),0],H=[B[0],0,0];
     if(state.mode==='triangle'){
-      const topA=[-2,1.7,0],topB=[B[0],1.7,B[2]],topH=[H[0],1.7,0];
+      const topA=[-2,0,1.7],topB=[B[0],B[1],1.7],topH=[H[0],0,1.7];
       polygon([A,B,topB,topA],'#EFAF9F','#C1442D',.24);
       polygon([A,H,topH,topA],'#A8CFDA','#2B6CA3',.28);
       line(p(topB),p(topH),'#F0A937',2,'5 5',.85);
+      // 햇빛은 바로 위에서 내려온다. 지붕 위의 점이 도면 위 어디에 찍히는지 보여 준다.
+      if(state.roof)for(let i=0;i<=3;i++){
+        const t=i/3,top=[A[0]+(B[0]-A[0])*t,A[1]+(B[1]-A[1])*t,1.7];
+        line(p(top),p([top[0],0,1.7]),'#E0A93B',1.6,'4 4',.9);
+      }
     }
     if(state.mission==='shadow'){
       const T=[-2+state.targetShadow,0,0];
@@ -81,18 +98,18 @@
       text({x:p(T).x+7,y:p(T).y+18},'목표 '+state.targetShadow.toFixed(1),'#7557A8');
     }
     if(state.mission==='angle'){
-      const tr=state.targetAngle*Math.PI/180,T=[-2+L*Math.cos(tr),0,L*Math.sin(tr)];
+      const tr=state.targetAngle*Math.PI/180,T=[-2+L*Math.cos(tr),L*Math.sin(tr),0];
       line(p(A),p(T),'#7557A8',3,'9 7',.72);
       text({x:p(T).x+7,y:p(T).y-8},'목표 '+state.targetAngle+'°','#7557A8');
     }
     line(p(A),p(B),'#C1442D',6,null,1);
     line(p(A),p(H),'#2B6CA3',7,null,1);
     line(p(B),p(H),'#F0A937',3,'6 5',.95);
-    line(p([B[0],-.12,0]),p([B[0],.35,0]),'#2B6CA3',2,null,.8);
-    const arcPoints=[];for(let i=0;i<=24;i++){const t=rad*i/24;arcPoints.push([-2+.72*Math.cos(t),0,.72*Math.sin(t)]);}
+    line(p([B[0],0,-.12]),p([B[0],0,.35]),'#2B6CA3',2,null,.8);
+    const arcPoints=[];for(let i=0;i<=24;i++){const t=rad*i/24;arcPoints.push([-2+.72*Math.cos(t),.72*Math.sin(t),0]);}
     let arc='';arcPoints.map(p).forEach(function(q,i){arc+=(i?'L':'M')+q.x+' '+q.y;});
     svg.appendChild(G.s('path',{d:arc,fill:'none',stroke:'#7557A8','stroke-width':2.5}));
-    const mid=p([-2+.92*Math.cos(rad/2),0,.92*Math.sin(rad/2)]);text({x:mid.x,y:mid.y},state.theta.toFixed(0)+'°','#7557A8','middle');
+    const mid=p([-2+.92*Math.cos(rad/2),.92*Math.sin(rad/2),0]);text({x:mid.x,y:mid.y},state.theta.toFixed(0)+'°','#7557A8','middle');
     const bp=p(B);
     svg.appendChild(G.s('circle',{cx:bp.x,cy:bp.y,r:44,fill:'transparent','data-projection-handle':'true',class:'projection-end-hit'}));
     svg.appendChild(G.s('circle',{cx:bp.x,cy:bp.y,r:17,fill:'#C1442D',opacity:.2,'data-projection-handle':'true',class:'projection-end-halo',filter:'url(#projectionGlow)'}));
@@ -106,11 +123,13 @@
     if(window.renderMathInElement)window.renderMathInElement(el,{delimiters:[{left:'\\(',right:'\\)',display:false}],throwOnError:false});
   }
   function setReadouts(values){
-    readout.innerHTML='<div class="readout-box"><div class="readout-label">원래 선분</div><div class="readout-value" id="projectionLength"></div></div><div class="readout-box"><div class="readout-label">평면과의 각</div><div class="readout-value" id="projectionAngle"></div></div><div class="readout-box"><div class="readout-label">정사영 길이</div><div class="readout-value" id="projectionShadow"></div></div><div class="readout-box"><div class="readout-label">축소 비율</div><div class="readout-value" id="projectionRatio"></div></div>';
+    readout.innerHTML='<div class="readout-box"><div class="readout-label">원래 선분</div><div class="readout-value" id="projectionLength"></div></div><div class="readout-box"><div class="readout-label">평면과의 각</div><div class="readout-value" id="projectionAngle"></div></div><div class="readout-box"><div class="readout-label">정사영 길이</div><div class="readout-value" id="projectionShadow"></div></div><div class="readout-box"><div class="readout-label">축소 비율</div><div class="readout-value" id="projectionRatio"></div></div>'+(state.roof?'<div class="readout-box"><div class="readout-label">지붕 넓이와 도면 넓이</div><div class="readout-value" id="projectionRoof"></div></div>':'');
     math('projectionLength','\\(L='+state.length.toFixed(1)+'\\)');
     math('projectionAngle','\\(\\theta='+state.theta.toFixed(0)+'^\\circ\\)');
     math('projectionShadow','\\(L\\cos\\theta='+values.shadow.toFixed(2)+'\\)');
     math('projectionRatio','\\(\\cos\\theta='+values.ratio.toFixed(3)+'\\)');
+    if(state.roof){const S=state.length*1.7;
+      math('projectionRoof','\\(S='+S.toFixed(1)+'\\; S\\cos\\theta='+(S*values.ratio).toFixed(1)+'\\; \\text{모자라는 양 }'+(S-S*values.ratio).toFixed(1)+'\\)');}
   }
   function missionStatus(values){
     const kicker=brief.querySelector('[data-projection-kicker]'),title=brief.querySelector('[data-projection-title]'),copy=brief.querySelector('[data-projection-copy]'),meter=brief.querySelector('[data-projection-meter]'),next=brief.querySelector('[data-projection-next]');
@@ -135,24 +154,31 @@
     controls.classList.toggle('projection-controls-locked',state.mission!=='free');
   }
   function render(){const values=scene();setReadouts(values);missionStatus(values);syncControls();}
-  function resetState(){state.theta=45;state.length=state.mission==='free'?4:5;state.view={yaw:-.7,pitch:.48,scale:84,cx:320,cy:220};}
+  function resetState(){state.theta=45;state.length=state.mission==='free'?4:5;state.view={yaw:-.7,pitch:.48,scale:46,cx:320,cy:286};}
   function setMission(name){
     state.mission=name;resetState();
     if(name==='shadow')state.targetShadow=shadowTargets[state.targetIndex%shadowTargets.length];
     if(name==='angle')state.targetAngle=angleTargets[state.targetIndex%angleTargets.length];
     state.mode=name==='free'&&modeChips.querySelectorAll('.chip')[1].classList.contains('active')?'triangle':'segment';
-    if(name!=='free'){state.mode='segment';modeChips.querySelectorAll('.chip').forEach(function(b,i){b.classList.toggle('active',i===0);});}
+    if(name!=='free'){state.mode='segment';setRoof(false);modeChips.querySelectorAll('.chip').forEach(function(b,i){b.classList.toggle('active',i===0);});}
     modeChips.classList.toggle('projection-mode-locked',name!=='free');
     tabs.querySelectorAll('[data-projection-mission]').forEach(function(b){b.classList.toggle('active',b.dataset.projectionMission===name);});
     render();
   }
   tabs.querySelectorAll('[data-projection-mission]').forEach(function(button){button.addEventListener('click',function(){setMission(button.dataset.projectionMission);});});
   brief.querySelector('[data-projection-next]').addEventListener('click',function(){state.targetIndex++;resetState();if(state.mission==='shadow')state.targetShadow=shadowTargets[state.targetIndex%shadowTargets.length];if(state.mission==='angle')state.targetAngle=angleTargets[state.targetIndex%angleTargets.length];render();});
-  modeChips.querySelectorAll('.chip').forEach(function(button,index){button.addEventListener('click',function(){if(state.mission!=='free')return;state.mode=index===0?'segment':'triangle';render();});});
+  modeChips.querySelectorAll('.chip').forEach(function(button,index){button.addEventListener('click',function(){if(state.mission!=='free')return;state.mode=index===0?'segment':'triangle';if(index===0)setRoof(false);render();});});
   controlInputs.forEach(function(input,index){input.addEventListener('input',function(){if(index===0)state.theta=+input.value;else if(state.mission==='free')state.length=+input.value;render();});});
-  resetView.addEventListener('click',function(){state.view={yaw:-.7,pitch:.48,scale:84,cx:320,cy:220};render();});
+  roofButton.addEventListener('click',function(){
+    setRoof(!state.roof);
+    // 켜면 넓이 모드로 함께 옮긴다
+    if(state.roof&&state.mission==='free'){state.mode='triangle';
+      modeChips.querySelectorAll('.chip').forEach(function(b,i){b.classList.toggle('active',i===1);});}
+    render();
+  });
+  resetView.addEventListener('click',function(){state.view={yaw:-.7,pitch:.48,scale:46,cx:320,cy:286};render();});
   function endpointFromPointer(event){
-    const rect=svg.getBoundingClientRect(),screen={x:(event.clientX-rect.left)/rect.width*640,y:(event.clientY-rect.top)/rect.height*400},A=[-2,0,0],pa=p(A),px=p([-1,0,0]),pz=p([-2,0,1]);
+    const rect=svg.getBoundingClientRect(),screen={x:(event.clientX-rect.left)/rect.width*640,y:(event.clientY-rect.top)/rect.height*400},A=[-2,0,0],pa=p(A),px=p([-1,0,0]),pz=p([-2,1,0]);
     const ux={x:px.x-pa.x,y:px.y-pa.y},uz={x:pz.x-pa.x,y:pz.y-pa.y},v={x:screen.x-pa.x,y:screen.y-pa.y},det=ux.x*uz.y-ux.y*uz.x;
     if(Math.abs(det)<.001)return;
     let dx=(v.x*uz.y-v.y*uz.x)/det,dz=(ux.x*v.y-ux.y*v.x)/det;

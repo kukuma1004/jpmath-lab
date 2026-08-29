@@ -5,3 +5,13 @@
 @media(max-width:620px){.projection-mission-tabs{position:sticky;top:58px;z-index:8;gap:4px;padding:4px}.projection-mission-tab{min-height:42px;padding:6px 4px;font-size:11px}.projection-mission-brief{grid-template-columns:1fr;gap:10px;padding:16px 16px 20px}.projection-mission-brief strong{font-size:15px}.projection-next{width:100%}.projection-drag-guide{top:8px;right:8px;font-size:8.5px}.projection-readout{grid-template-columns:1fr 1fr}.projection-readout .readout-box:first-child{grid-column:1/-1}}
 @media(max-width:380px){.projection-mission-tab{font-size:10px}.projection-readout{grid-template-columns:1fr}.projection-readout .readout-box:first-child{grid-column:auto}}
 @media(prefers-reduced-motion:reduce){.projection-end-halo,.projection-direct-stage.mission-success{animation:none!important}.projection-meter i,.projection-end-handle{transition:none!important}}
+
+/* 지붕 토글 — 경사 지붕과 도면 넓이를 비교하는 실물 보기 */
+.projection-roof-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:-4px 0 14px}
+.projection-roof-button{
+  padding:7px 14px;border:1px solid #C8B489;border-radius:999px;background:#FBF6E9;
+  color:#5C4A16;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;
+}
+.projection-roof-button:hover{background:#F5ECD6}
+.projection-roof-button.active{background:#B8882E;border-color:#B8882E;color:#fff}
+.projection-roof-note{font-size:12px;color:#5B645F;line-height:1.6;word-break:keep-all}
