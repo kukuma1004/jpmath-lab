@@ -234,6 +234,34 @@
     }).join('');
   }
 
+  // 라운드마다 사건 코드가 정해져 있으므로 지난 라운드의 성과도 그대로 다시 계산된다.
+  // 그래서 배분만 기록해 두면 누적 화면을 언제든 복원할 수 있다.
+  function eventsByRound() {
+    return room.eventOrder.map((code, index) => runtime.resolveEvent(game, code, index));
+  }
+
+  function cityItems(allocation, event) {
+    return game.strategies.map((strategy, index) => ({
+      key: strategy.id, name: strategy.name, color: strategyColor(strategy, index),
+      alloc: Number((allocation || {})[strategy.id]) || 0,
+      ret: Number(event.payoffs[strategy.id]) || 0
+    }));
+  }
+
+  // 한 층 = 그 라운드에 그 전략이 벌어준 점수. 바닥 = 그 전략에 건 평균 비율.
+  function skylineItems(player, events) {
+    const rounds = player.history.length || 1;
+    const perRound = player.history.map(entry => {
+      const event = events[entry.round - 1];
+      return event ? runtime.contributions(event, entry.allocation || {}) : {};
+    });
+    return game.strategies.map((strategy, index) => {
+      const layers = perRound.map(share => Number(share[strategy.id]) || 0);
+      const share = player.history.reduce((sum, entry) => sum + (Number((entry.allocation || {})[strategy.id]) || 0), 0) / rounds;
+      return { key: strategy.id, name: strategy.name, color: strategyColor(strategy, index), share, layers };
+    });
+  }
+
   function renderReveal() {
     hidePanels();
     room.phase = 'reveal';
@@ -245,6 +273,18 @@
       const value = event.payoffs[strategy.id];
       return `<div class="payoff-card"><span>${strategy.name} 100%일 때</span><strong class="${value >= 0 ? 'up' : 'down'}" data-payoff-value="${value}">${value >= 0 ? '+' : ''}${Number(value).toFixed(1)}점</strong></div>`;
     }).join('');
+    if (window.JPResultScene) window.JPResultScene.render($('[data-result-city]'), {
+      players: ranked(),
+      readPlayer(player) {
+        const last = player.history[player.history.length - 1] || { allocation: {}, delta: 0 };
+        const delta = Number(last.delta) || 0;
+        return {
+          name: escapeHtml(player.name), value: delta,
+          label: (delta >= 0 ? '+' : '−') + Math.abs(delta).toFixed(1) + '점',
+          items: cityItems(last.allocation, event)
+        };
+      }
+    });
     $('[data-ranking]').innerHTML = rankRows(ranked(), false);
     $('[data-explain]').textContent = event.explain;
     $('[data-formula]').textContent = event.formula;
@@ -274,6 +314,18 @@
     $('[data-final-game]').textContent = `${game.title} · 8라운드 최종 결과`;
     $('[data-winner]').textContent = players[0].name;
     $('[data-final-copy]').textContent = `승리 조건은 ‘${game.victory}’입니다. 같은 대응도 사건의 수치와 조합 비율에 따라 결과가 달라졌습니다.`;
+    const events = eventsByRound();
+    if (window.JPResultScene) window.JPResultScene.renderSkyline($('[data-final-city]'), {
+      players,
+      readPlayer(player) {
+        const gained = Number(player.score) - 100;
+        return {
+          name: escapeHtml(player.name), value: gained,
+          label: (gained >= 0 ? '+' : '−') + Math.abs(gained).toFixed(1) + '점',
+          items: skylineItems(player, events)
+        };
+      }
+    });
     $('[data-final-ranking]').innerHTML = rankRows(players, true);
     saveRoom();
   }

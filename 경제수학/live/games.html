@@ -9,15 +9,16 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500;600;700&amp;family=Noto+Serif+KR:wght@700;900&amp;display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../style.css?v=7">
-  <link rel="stylesheet" href="live.css?v=9">
+  <link rel="stylesheet" href="live.css?v=10">
   <link rel="stylesheet" href="games.css?v=5">
   <link rel="stylesheet" href="../../jp-polish.css?v=11">
   <script src="../../jp-polish.js?v=21" defer></script>
   <script src="games-catalog.js?v=2" defer></script>
-  <script src="game-runtime.js?v=2" defer></script>
+  <script src="game-runtime.js?v=3" defer></script>
   <script src="math-toolkit.js?v=2" defer></script>
   <script src="game-motion.js?v=1" defer></script>
-  <script src="games-app.js?v=6" defer></script>
+  <script src="result-scene.js?v=4"></script>
+  <script src="games-app.js?v=7" defer></script>
   <link rel="stylesheet" href="../../jp-nav-2.css?v=4">
   <link rel="stylesheet" href="../경제수학_경험_nav.css?v=1">
   <script src="../../jp-nav-2.js?v=3" data-jp-section="경제수학 LIVE" defer></script>
@@ -98,13 +99,18 @@
       <section class="reveal-room" data-reveal hidden>
         <header><span data-result-round></span><h2>선택을 함께 공개합니다.</h2><p>한 전략이 모든 상황에서 항상 유리하지는 않습니다.</p></header>
         <div class="strategy-payoffs" data-payoffs></div>
+        <div class="result-city" data-result-city aria-label="라운드 결과 도시"></div>
+        <p class="result-city-note">바닥 넓이는 <b>내가 배분한 비율</b>, 높이는 <b>그 전략의 이번 라운드 성과</b>입니다. 높이는 모두에게 같고 바닥만 다르므로, 건물 크기가 곧 그 전략이 내 점수에 보탠 몫입니다.</p>
         <div class="ranking" data-ranking></div>
         <article class="math-explain"><span>왜 이런 결과가 나왔을까?</span><h3 data-explain></h3><code data-formula></code><div class="used-math" data-tools-used></div></article>
         <button class="next-round" type="button" data-next>다음 경제 사건 보기 <span>→</span></button>
       </section>
 
       <section class="final-room" data-final hidden>
-        <span data-final-game></span><h2><b data-winner></b>님의 전략이 가장 균형 잡혔습니다.</h2><p data-final-copy></p><div class="final-ranking" data-final-ranking></div>
+        <span data-final-game></span><h2><b data-winner></b>님의 전략이 가장 균형 잡혔습니다.</h2><p data-final-copy></p>
+        <div class="result-city is-skyline" data-final-city aria-label="8라운드 누적 스카이라인"></div>
+        <p class="result-city-note">한 층이 <b>한 라운드</b>입니다. 층 두께는 그 라운드에 그 전략이 벌어준 점수(<b>배분 × 성과</b>), 바닥 넓이는 <b>8라운드 평균 배분</b>입니다. 그래서 탑을 모두 더하면 실제 점수 증감과 같아집니다. 손해 본 라운드는 층이 아래로 내려갑니다.</p>
+        <div class="final-ranking" data-final-ranking></div>
         <div class="final-actions"><button type="button" data-rematch>한 판 더</button><button class="outline-action" type="button" data-pick-another>다른 게임 선택</button></div>
       </section>
     </section>

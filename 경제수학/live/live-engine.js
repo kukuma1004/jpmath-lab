@@ -2,6 +2,10 @@
   const assets = ['deposit', 'bond', 'stock', 'fx'];
   const runtime = window.JPEconomyGameRuntime;
 
+  // 시장은 이 값에서 출발해 사건 순서대로만 움직인다. createRoom 과 replayReturns 가
+  // 같은 출발점을 봐야 되짚은 수익률이 실제와 어긋나지 않는다.
+  const START_MARKET = { rate: 3.5, inflation: 2.1, growth: 2.8, exchange: 1320 };
+
   function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
 
   function seededOrder(items, seedText) {
@@ -24,7 +28,7 @@
       round: 0,
       phase: 'turn',
       currentPlayer: 0,
-      market: { rate: 3.5, inflation: 2.1, growth: 2.8, exchange: 1320 },
+      market: { ...START_MARKET },
       players: names.map((name, index) => ({ id: index + 1, name, money: game.startingMoney, history: [], choice: null })),
       events: runtime.createScenario(game, roomCode)
     };
@@ -83,7 +87,20 @@
     return room;
   }
 
+  // 지난 라운드의 수익률을 되짚는다. 사건 순서가 방에 고정돼 있고 시장은 그 순서대로만
+  // 움직이므로, 처음부터 다시 돌리면 같은 값이 그대로 나온다. 누적 스카이라인용이다.
+  function replayReturns(room) {
+    const game = window.JPEconomyGames.investmentKing;
+    let market = { ...START_MARKET };
+    return (room.events || []).map((code, round) => {
+      const event = runtime.resolveEvent(game, code, round);
+      const previous = { ...market };
+      market = previewMarket(market, event);
+      return getReturns(market, previous, event);
+    });
+  }
+
   function rankedPlayers(room) { return room.players.slice().sort((a, b) => b.money - a.money); }
 
-  window.JPEconomyLiveEngine = { createRoom, getEvent, previewMarket, settleRound, rankedPlayers };
+  window.JPEconomyLiveEngine = { createRoom, getEvent, previewMarket, settleRound, replayReturns, rankedPlayers };
 }());

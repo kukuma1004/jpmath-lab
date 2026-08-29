@@ -282,6 +282,10 @@
       const focus = runtime.dominant(game, allocation);
       results[player.uid] = { strategyId: 'mix', allocation, question: choice.question || '', tools: Array.isArray(choice.tools) ? choice.tools.slice(0, 5) : [], dominantId: focus.id, delta, score };
       patch[`players/${player.uid}/score`] = score;
+      // results 는 다음 라운드에 지워진다. 최종 스카이라인을 그리려면 라운드별
+      // 배분이 남아 있어야 하므로 log 에 따로 쌓는다. 성과는 eventOrder 로
+      // 언제든 다시 계산되니 배분만 저장하면 된다.
+      patch[`log/${onlineRoom.round}/${player.uid}`] = allocation;
     });
     patch.results = results;
     await realtime.hostUpdate(roomCode, patch);
@@ -343,6 +347,30 @@
     }
   }
 
+  // 라운드마다 사건 코드가 정해져 있어 지난 성과도 그대로 다시 계산된다.
+  function eventsByRound() {
+    return (onlineRoom.eventOrder || []).map((code, index) => runtime.resolveEvent(game, code, index));
+  }
+
+  // 한 층 = 그 라운드에 그 전략이 벌어준 점수. 바닥 = 그 전략에 건 평균 비율.
+  function skylineItems(uid, events) {
+    const log = onlineRoom.log || {};
+    const rounds = Object.keys(log).map(Number).sort((a, b) => a - b);
+    const allocationAt = round => (log[round] || {})[uid] || {};
+    const perRound = rounds.map(round => {
+      const event = events[round];
+      return event ? runtime.contributions(event, allocationAt(round)) : {};
+    });
+    return game.strategies.map((strategy, index) => {
+      const layers = perRound.map(share => Number(share[strategy.id]) || 0);
+      const total = rounds.reduce((sum, round) => sum + (Number(allocationAt(round)[strategy.id]) || 0), 0);
+      return {
+        key: strategy.id, name: strategy.name, color: strategyColor(strategy, index),
+        share: rounds.length ? total / rounds.length : 0, layers
+      };
+    });
+  }
+
   function renderFinal() {
     $('[data-online-lobby]').hidden = true;
     $('[data-online-game]').hidden = false;
@@ -353,6 +381,18 @@
     $('[data-online-final-game]').textContent = `${game.title} · 8라운드 최종 결과`;
     $('[data-online-winner]').textContent = ranked[0].nickname;
     $('[data-online-final-copy]').textContent = `승리 조건은 ‘${game.victory}’입니다. 사건의 강도와 직접 만든 조합에 따라 결과가 달라졌습니다.`;
+    const events = eventsByRound();
+    if (window.JPResultScene) window.JPResultScene.renderSkyline($('[data-online-final-city]'), {
+      players: ranked,
+      readPlayer(player) {
+        const gained = Number(player.result.score) - 100;
+        return {
+          name: escapeHtml(player.nickname || '참가자'), value: gained,
+          label: (gained >= 0 ? '+' : '−') + Math.abs(gained).toFixed(1) + '점',
+          items: skylineItems(player.uid, events)
+        };
+      }
+    });
     $('[data-online-final-ranking]').innerHTML = resultRows(true);
     $('[data-host-rematch]').hidden = !isHost;
   }
@@ -366,7 +406,7 @@
 
   async function hostStart() {
     if (!isHost || playersArray().length < 2) return;
-    const patch = { status: 'turn', round: 0, submittedCount: 0, results: null, eventOrder: runtime.createScenario(game, roomCode) };
+    const patch = { status: 'turn', round: 0, submittedCount: 0, results: null, log: null, eventOrder: runtime.createScenario(game, roomCode) };
     playersArray().forEach(player => { patch[`players/${player.uid}/score`] = 100; });
     submittedRound = null; editingRound = null; selectedAllocation = null; lastAllocation = null; selectedTools = new Set(); announcedRound = null; lastNewsKey = null; lastRevealKey = null;
     await realtime.hostUpdate(roomCode, patch);
@@ -384,7 +424,7 @@
     if (!isHost) return;
     await realtime.clearRoundChoices(roomCode, onlineRoom.round);
     submittedRound = null; editingRound = null; selectedAllocation = null; lastAllocation = null; selectedTools = new Set(); announcedRound = null; lastNewsKey = null; lastRevealKey = null;
-    const patch = { status: 'turn', round: 0, results: null, submittedCount: 0, eventOrder: runtime.createScenario(game, `${roomCode}-${Date.now()}`) };
+    const patch = { status: 'turn', round: 0, results: null, log: null, submittedCount: 0, eventOrder: runtime.createScenario(game, `${roomCode}-${Date.now()}`) };
     playersArray().forEach(player => { patch[`players/${player.uid}/score`] = 100; });
     await realtime.hostUpdate(roomCode, patch);
   }

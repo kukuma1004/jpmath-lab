@@ -98,9 +98,21 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #e07b
   margin:0 0 6px;color:#5b645f;font-size:12px;line-height:1.6;word-break:keep-all;
 }
 .result-city-note b{color:#17231d}
+
+/* 8라운드 누적 스카이라인. 한 칸에 라운드가 층으로 쌓여 카드가 조금 더 높고,
+   범례는 전략마다 "총 기여 점수 + 평균 배분"을 함께 읽어야 해서 한 줄씩 준다. */
+.result-city.is-skyline{grid-template-columns:repeat(auto-fit,minmax(212px,264px))}
+.result-city-card.is-skyline{background:#fffcf4}
+.result-city-legend.is-skyline{grid-template-columns:1fr;gap:3px;font-size:10.5px}
+.result-city-legend.is-skyline span{gap:6px}
+.result-city-legend.is-skyline b{margin-left:auto;color:#17231d;font-weight:800}
+.result-city-legend.is-skyline small{width:58px;text-align:right;color:#6b746f;font-weight:700}
 @media(max-width:560px){
   .result-city{grid-template-columns:minmax(0,300px);gap:10px}
   .result-city-card{padding:9px 9px 8px;border-radius:13px}
   .result-city-card header b{font-size:12.5px}
   .result-city-legend{font-size:9px;gap:1px 5px}
+  .result-city.is-skyline{grid-template-columns:minmax(0,320px)}
+  .result-city-legend.is-skyline{font-size:9.5px;gap:2px}
+  .result-city-legend.is-skyline small{width:52px}
 }

@@ -24,6 +24,14 @@
         },
         "eventOrder": { ".write": "auth != null && (data.parent().child('hostId').val() == auth.uid || newData.parent().child('hostId').val() == auth.uid)" },
         "results": { ".write": "auth != null && data.parent().child('hostId').val() == auth.uid" },
+        "log": {
+          ".write": "auth != null && data.parent().child('hostId').val() == auth.uid",
+          "$round": {
+            "$uid": {
+              "$strategy": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100" }
+            }
+          }
+        },
         "submittedCount": { ".write": "auth != null && data.parent().child('hostId').val() == auth.uid", ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 6" },
         "updatedAt": { ".write": "auth != null && (data.parent().child('hostId').val() == auth.uid || newData.parent().child('hostId').val() == auth.uid)" },
         "createdAt": { ".write": "auth != null && !data.exists()" },

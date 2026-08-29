@@ -9,16 +9,16 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500;600;700&amp;family=Noto+Serif+KR:wght@700;900&amp;display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../style.css?v=7">
-  <link rel="stylesheet" href="live.css?v=9">
+  <link rel="stylesheet" href="live.css?v=10">
   <link rel="stylesheet" href="../../jp-polish.css?v=11">
   <script src="../../jp-polish.js?v=21" defer></script>
   <script src="games.js?v=3" defer></script>
-  <script src="game-runtime.js?v=2" defer></script>
+  <script src="game-runtime.js?v=3" defer></script>
   <script src="math-toolkit.js?v=2" defer></script>
   <script src="game-motion.js?v=1" defer></script>
-  <script src="live-engine.js?v=3" defer></script>
-  <script src="result-scene.js?v=3"></script>
-  <script src="app.js?v=8" defer></script>
+  <script src="live-engine.js?v=4" defer></script>
+  <script src="result-scene.js?v=4"></script>
+  <script src="app.js?v=9" defer></script>
   <link rel="stylesheet" href="../../jp-nav-2.css?v=4">
   <link rel="stylesheet" href="../경제수학_경험_nav.css?v=1">
   <script src="../../jp-nav-2.js?v=3" data-jp-section="경제수학 LIVE" defer></script>
@@ -155,6 +155,8 @@
         <span>JP 투자왕 · 최종 결과</span>
         <h2><b data-winner></b>님이 투자왕이 되었습니다.</h2>
         <p>높은 수익만 쫓기보다 뉴스가 어떤 지표를 움직이는지 읽고 자산을 배분한 전략이 중요했습니다.</p>
+        <div class="result-city is-skyline" data-final-city aria-label="8라운드 누적 스카이라인"></div>
+        <p class="result-city-note">한 층이 <b>한 라운드</b>입니다. 층 두께는 그 라운드에 그 자산이 벌어준 금액(<b>직전 자산 × 배분 × 수익률</b>), 바닥 넓이는 <b>8라운드 평균 배분</b>입니다. 그래서 탑을 모두 더하면 실제로 늘어난 돈과 같아집니다. 손해 본 라운드는 층이 아래로 내려갑니다.</p>
         <div class="final-ranking" data-final-ranking></div>
         <div class="final-actions"><button type="button" data-rematch>한 판 더</button><a href="../경제수학_학습.html?id=compound">복리 개념 다시 보기</a></div>
       </section>

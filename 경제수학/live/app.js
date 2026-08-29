@@ -364,6 +364,28 @@
     $('[data-news-card]').scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
+  // 한 층 = 그 라운드에 그 자산이 벌어준 돈 = 직전 자산 x 배분 x 수익률.
+  // 돈으로 재면 라운드마다 더해지므로, 여덟 층을 더하면 실제로 늘어난 돈이 된다.
+  // (수익률 %로 재면 복리라 더할 수 없다. 그래서 금액으로 쌓는다.)
+  function skylineItems(player, returns) {
+    const keys = Object.keys(assetMeta);
+    const rounds = player.history.length || 1;
+    const perRound = player.history.map(entry => {
+      const rate = returns[entry.round - 1] || {};
+      const raw = keys.map(key => entry.before * ((entry.allocation || {})[key] || 0) / 100 * (rate[key] || 0) / 100);
+      const rawSum = raw.reduce((sum, value) => sum + value, 0);
+      // 자산은 원 단위로 반올림되므로, 쪼갠 값의 합을 실제 증감에 맞춰 준다
+      const actual = entry.after - entry.before;
+      const fix = Math.abs(rawSum) > 1e-9 ? actual / rawSum : 0;
+      return raw.map(value => value * fix);
+    });
+    return keys.map((key, index) => ({
+      key, name: assetMeta[key].name, color: assetMeta[key].color,
+      share: player.history.reduce((sum, entry) => sum + ((entry.allocation || {})[key] || 0), 0) / rounds,
+      layers: perRound.map(values => values[index])
+    }));
+  }
+
   function renderFinal() {
     hidePlayPanels();
     room.phase = 'final';
@@ -371,6 +393,21 @@
     $('[data-final]').hidden = false;
     const ranked = engine.rankedPlayers(room);
     $('[data-winner]').textContent = ranked[0].name;
+    const returns = engine.replayReturns(room);
+    const start = (window.JPEconomyGames.investmentKing || {}).startingMoney || 10000000;
+    if (window.JPResultScene) window.JPResultScene.renderSkyline($('[data-final-city]'), {
+      players: ranked,
+      step: 1,
+      formatValue: value => `${value >= 0 ? '+' : '−'}${money(Math.abs(value))}`,
+      readPlayer(player) {
+        const gained = player.money - start;
+        return {
+          name: player.name, value: gained,
+          label: `${gained >= 0 ? '+' : '−'}${money(Math.abs(gained))}`,
+          items: skylineItems(player, returns)
+        };
+      }
+    });
     $('[data-final-ranking]').innerHTML = rankRows(ranked, true);
     updateFlow(4);
     saveRoom();

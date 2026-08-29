@@ -117,6 +117,25 @@
     return Math.round(value * 10) / 10;
   }
 
+  // 점수를 전략별 몫으로 쪼갠다. weightedScore 가 곱의 합이라 분해가 정확하지만,
+  // 그쪽은 소수 첫째 자리로 반올림하므로 쪼갠 값의 합을 그 반올림값에 맞춰 준다.
+  // 누적 화면에서 "탑을 더하면 점수가 된다"가 눈으로도 맞아야 하기 때문이다.
+  function contributions(event, allocation) {
+    const share = {};
+    let raw = 0;
+    Object.keys(allocation || {}).forEach(key => {
+      const value = Number(allocation[key]) / 100 * Number((event.payoffs || {})[key] || 0);
+      share[key] = Number.isFinite(value) ? value : 0;
+      raw += share[key];
+    });
+    const total = weightedScore(event, allocation);
+    if (Math.abs(raw) > 1e-9) {
+      const fix = total / raw;
+      Object.keys(share).forEach(key => { share[key] *= fix; });
+    }
+    return share;
+  }
+
   function dominant(game, allocation) {
     const entry = Object.entries(allocation || {}).sort((a, b) => b[1] - a[1])[0] || [game.strategies[0].id, 0];
     const strategy = game.strategies.find(item => item.id === entry[0]) || game.strategies[0];
@@ -129,6 +148,7 @@
     equalAllocation,
     allocationTotal,
     weightedScore,
+    contributions,
     dominant,
     seededOrder
   };
