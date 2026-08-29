@@ -35,49 +35,57 @@
   }
   function noGlow(ctx) { ctx.shadowBlur = 0; ctx.shadowColor = 'transparent'; }
 
-  // ── 미적분 — 곡선 위를 미끄러지는 접선, 그 아래 채워지는 넓이 ──────────
+  // ── 미적분 — 곡선·접선·넓이에 좌표축과 도함수까지 함께 ─────────────
   function calculus(canvas, t, accent) {
     const s = fit(canvas); if (!s) return;
     const { ctx, w, h } = s;
-    const pad = 14, base = h - 12;
+    const padL = 18, padR = 12, base = h - 16, top = 14;
     const f = x => Math.sin(x * 2.1) * 0.62 + Math.sin(x * 0.9 + 1.1) * 0.3;
-    const X = u => pad + u * (w - pad * 2);
-    const Y = v => base - (v + 1) * (base - 16) * 0.46;
+    const df = x => (f(x + 0.008) - f(x - 0.008)) / 0.016;
+    const X = u => padL + u * (w - padL - padR);
+    const Y = v => base - (v + 1.15) * (base - top) * 0.42;
+
+    // 눈금 — 얇게, 그러나 있어야 그래프로 읽힌다
+    ctx.strokeStyle = 'rgba(255,255,255,.07)'; ctx.lineWidth = 1;
+    for (let i = 1; i <= 4; i++) { const x = X(i / 5); ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, base); ctx.stroke(); }
+    ctx.beginPath(); ctx.moveTo(padL, Y(0)); ctx.lineTo(w - padR, Y(0));
+    ctx.strokeStyle = 'rgba(255,255,255,.20)'; ctx.stroke();
+
+    const curve = (fn, from, to) => { ctx.beginPath();
+      for (let i = 0; i <= 130; i++) { const u = i / 130; const p = [X(u), Y(fn(u * 3.4))]; i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]); } };
 
     // 넓이 — 적분
-    ctx.beginPath();
-    ctx.moveTo(X(0), base);
-    for (let i = 0; i <= 90; i++) { const u = i / 90; ctx.lineTo(X(u), Y(f(u * 3.4))); }
-    ctx.lineTo(X(1), base); ctx.closePath();
-    const fill = ctx.createLinearGradient(0, 16, 0, base);
-    fill.addColorStop(0, accent + '3a'); fill.addColorStop(1, accent + '05');
+    ctx.beginPath(); ctx.moveTo(X(0), Y(0));
+    for (let i = 0; i <= 100; i++) { const u = i / 100; ctx.lineTo(X(u), Y(f(u * 3.4))); }
+    ctx.lineTo(X(1), Y(0)); ctx.closePath();
+    const fill = ctx.createLinearGradient(0, top, 0, base);
+    fill.addColorStop(0, accent + '44'); fill.addColorStop(1, accent + '08');
     ctx.fillStyle = fill; ctx.fill();
 
-    // 곡선
-    ctx.beginPath();
-    for (let i = 0; i <= 120; i++) { const u = i / 120; const p = [X(u), Y(f(u * 3.4))]; i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]); }
-    const line = ctx.createLinearGradient(pad, 0, w - pad, 0);
-    line.addColorStop(0, accent + '66'); line.addColorStop(.5, accent); line.addColorStop(1, accent + '66');
-    ctx.strokeStyle = line; ctx.lineWidth = 2.4; ctx.lineCap = 'round';
-    glow(ctx, accent, 10); ctx.stroke(); noGlow(ctx);
+    // 도함수 — 뒤에 흐리게 깔아 두면 화면이 비어 보이지 않는다
+    curve(x => df(x) * 0.42, 0, 1);
+    ctx.strokeStyle = 'rgba(255,255,255,.22)'; ctx.lineWidth = 1.6;
+    ctx.setLineDash([5, 5]); ctx.stroke(); ctx.setLineDash([]);
+
+    // 원함수
+    curve(f, 0, 1);
+    const line = ctx.createLinearGradient(padL, 0, w - padR, 0);
+    line.addColorStop(0, accent + '77'); line.addColorStop(.5, '#ffd9c9'); line.addColorStop(1, accent + '77');
+    ctx.strokeStyle = line; ctx.lineWidth = 3.2; ctx.lineCap = 'round';
+    glow(ctx, accent, 14); ctx.stroke(); noGlow(ctx);
 
     // 접선 — 미분
-    const u = reduce ? .42 : (Math.sin(t * .00042) * .5 + .5) * .84 + .08;
-    const x = u * 3.4;
-    const y = f(x);
-    const d = (f(x + 0.012) - f(x - 0.012)) / 0.024;
+    const u = reduce ? .42 : (Math.sin(t * .00042) * .5 + .5) * .8 + .1;
+    const x = u * 3.4, y = f(x), d = df(x);
     const px = X(u), py = Y(y);
-    const dxPix = (w - pad * 2) / 3.4;
-    const dyPix = -(base - 16) * 0.46;
-    const slope = d * dyPix / dxPix;
-    const span = Math.min(46, w * .22);
-    ctx.beginPath();
-    ctx.moveTo(px - span, py - slope * span);
-    ctx.lineTo(px + span, py + slope * span);
-    ctx.strokeStyle = 'rgba(255,255,255,.72)'; ctx.lineWidth = 1.4; ctx.stroke();
-
-    ctx.beginPath(); ctx.arc(px, py, 4.2, 0, Math.PI * 2);
-    ctx.fillStyle = '#fff'; glow(ctx, accent, 12); ctx.fill(); noGlow(ctx);
+    const slope = d * (-(base - top) * 0.42) / ((w - padL - padR) / 3.4);
+    const span = Math.min(54, w * .24);
+    ctx.beginPath(); ctx.moveTo(px - span, py - slope * span); ctx.lineTo(px + span, py + slope * span);
+    ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.lineWidth = 1.8; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px, Y(0));
+    ctx.strokeStyle = accent + '77'; ctx.lineWidth = 1.2; ctx.setLineDash([3, 4]); ctx.stroke(); ctx.setLineDash([]);
+    ctx.beginPath(); ctx.arc(px, py, 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#fff'; glow(ctx, accent, 16); ctx.fill(); noGlow(ctx);
   }
 
   // ── 기하 — 도는 구. 앞쪽은 진하게, 뒤쪽은 흐리게 ──────────────────────
@@ -118,57 +126,66 @@
         prev = p;
       });
     };
-    // 은은한 안쪽 빛
-    const g = ctx.createRadialGradient(cx - R * .3, cy - R * .35, R * .1, cx, cy, R);
-    g.addColorStop(0, accent + '2e'); g.addColorStop(1, accent + '00');
-    ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.fillStyle = g; ctx.fill();
+    // 속이 찬 구 — 선만 있으면 얇아 보인다
+    const body = ctx.createRadialGradient(cx - R * .34, cy - R * .38, R * .08, cx, cy, R * 1.02);
+    body.addColorStop(0, accent + 'aa'); body.addColorStop(.55, accent + '46'); body.addColorStop(1, accent + '12');
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.fillStyle = body; ctx.fill();
 
     [-1.0, -.5, 0, .5, 1.0].forEach(b => draw(ring(b, 'lat')));
     [0, Math.PI / 3, Math.PI * 2 / 3].forEach(a => draw(ring(a, 'lon')));
 
+    // 지면으로 자른 자리 — 돔 실험실과 같은 이야기
+    ctx.save();
+    ctx.beginPath(); ctx.ellipse(cx, cy + R * .42, R * .92, R * .3, 0, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,.10)'; ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.4; ctx.globalAlpha = .55; ctx.stroke();
+    ctx.restore();
+
     ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2);
-    ctx.strokeStyle = accent; ctx.lineWidth = 1.6;
-    glow(ctx, accent, 10); ctx.stroke(); noGlow(ctx);
+    ctx.strokeStyle = '#dfe6ff'; ctx.lineWidth = 1.8;
+    glow(ctx, accent, 14); ctx.stroke(); noGlow(ctx);
   }
 
-  // ── 경제수학 — 배분한 만큼 오르내리는 아이소메트릭 블록 ────────────────
+  // ── 경제수학 — 정면에서 본 스카이라인 ──────────────────────────────
+  // 아이소메트릭은 넓고 낮은 카드에서 세로로 넘쳐 잘린다. 정면으로 세우면
+  // 폭을 가득 채우고, 창문 불빛까지 넣으면 도시로 읽힌다.
+  // 건물 높이는 결과 화면과 같은 뜻이다 — 배분한 만큼 자란다.
   function economy(canvas, t, accent) {
     const s = fit(canvas); if (!s) return;
     const { ctx, w, h } = s;
-    const S = Math.min(h * .34, w * .13);
-    const ox = w / 2, oy = h * .74;
-    const iso = (x, y, z) => ({ x: ox + (x - z) * S * .87, y: oy + (x + z) * S * .5 - y * S });
-    const cells = [[0, 0], [1, 0], [0, 1], [1, 1]];
-    const heights = cells.map((c, i) => {
-      const base = [.95, .55, .34, .72][i];
-      return reduce ? base : base * (.72 + .28 * Math.sin(t * .0011 + i * 1.5));
+    const ground = h - 10, top = 12;
+    const seeds = [.42, .78, .30, .95, .58, .86, .36, .68, .50, .88, .34, .62];
+    const n = seeds.length, gap = 3;
+    const bw = (w - 16 - gap * (n - 1)) / n;
+
+    ctx.strokeStyle = 'rgba(255,255,255,.14)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(8, ground + .5); ctx.lineTo(w - 8, ground + .5); ctx.stroke();
+
+    seeds.forEach((base, i) => {
+      const wave = reduce ? 1 : (.86 + .14 * Math.sin(t * .0013 + i * .8));
+      const bh = (ground - top) * base * wave;
+      const x = 8 + i * (bw + gap), y = ground - bh;
+
+      const g = ctx.createLinearGradient(0, y, 0, ground);
+      g.addColorStop(0, accent + 'd9'); g.addColorStop(1, accent + '3a');
+      ctx.fillStyle = g; ctx.fillRect(x, y, bw, bh);
+      ctx.fillStyle = 'rgba(255,255,255,.30)'; ctx.fillRect(x, y, bw, 1.6);   // 옥상 빛
+
+      // 창문
+      ctx.fillStyle = 'rgba(255,255,255,.42)';
+      const cols = Math.max(1, Math.floor(bw / 5));
+      for (let r = 0; r * 7 + 6 < bh; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (((i * 13 + r * 7 + c * 3) % 5) > 2) continue;
+          ctx.fillRect(x + 2 + c * (bw - 3) / cols, y + 4 + r * 7, 1.8, 2.6);
+        }
+      }
     });
 
-    // 바닥
-    const g0 = [[0, 0], [2, 0], [2, 2], [0, 2]].map(p => iso(p[0], 0, p[1]));
-    ctx.beginPath(); g0.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.closePath();
-    ctx.fillStyle = accent + '16'; ctx.fill();
-    ctx.strokeStyle = accent + '3c'; ctx.lineWidth = 1; ctx.stroke();
-
-    cells.map((c, i) => ({ c: c, hgt: heights[i] }))
-      .sort((a, b) => (a.c[0] + a.c[1]) - (b.c[0] + b.c[1]))
-      .forEach(item => {
-        const [gx, gz] = item.c, hh = item.hgt, m = .09;
-        const x0 = gx + m, x1 = gx + 1 - m, z0 = gz + m, z1 = gz + 1 - m;
-        const faces = [
-          [[x0, hh, z1], [x1, hh, z1], [x1, hh, z0], [x0, hh, z0]],
-          [[x0, 0, z1], [x0, hh, z1], [x1, hh, z1], [x1, 0, z1]],
-          [[x1, 0, z1], [x1, hh, z1], [x1, hh, z0], [x1, 0, z0]]
-        ];
-        const tone = ['cc', '8e', '60'];
-        faces.forEach((f, k) => {
-          ctx.beginPath();
-          f.map(p => iso(p[0], p[1], p[2])).forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
-          ctx.closePath();
-          ctx.fillStyle = accent + tone[k]; ctx.fill();
-          ctx.strokeStyle = accent; ctx.lineWidth = .8; ctx.stroke();
-        });
-      });
+    // 바닥 반사
+    const ref = ctx.createLinearGradient(0, ground, 0, h);
+    ref.addColorStop(0, accent + '30'); ref.addColorStop(1, accent + '00');
+    ctx.fillStyle = ref; ctx.fillRect(8, ground, w - 16, h - ground);
   }
 
   const jobs = [

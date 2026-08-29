@@ -463,7 +463,7 @@
   align-items:center;
 }
 .scene-intro.is-compact .intro-object{ width:min(29vw,330px); }
-.scene-intro.is-compact h1{ font-size:clamp(28px,3.5vw,43px); }
+.scene-intro.is-compact h1{ font-size:clamp(30px,4.6vw,60px); line-height:1.16; }
 
 /* 무대는 히어로에서 카드까지 끊기지 않고 이어진다 */
 .home-rooms{
@@ -515,7 +515,7 @@
 /* 카드 그림 — 어두운 무대 위에 빛으로 그린다. 밝은 판을 깔지 않는다 */
 .room-art{ display:block; margin-top:6px; }
 .room-art canvas{
-  display:block; width:100%; height:clamp(78px,10vh,104px);
+  display:block; width:100%; height:clamp(84px,12vh,124px);
   pointer-events:none;   /* 카드 전체가 링크다. 그림은 눈으로만 */
 }
 .room-go{
@@ -567,9 +567,9 @@
 }
 @media(max-height:780px){
   .scene-intro.is-compact{ padding-top:clamp(56px,7vh,68px); padding-bottom:8px; }
-  .scene-intro.is-compact h1{ font-size:clamp(26px,2.9vw,36px); }
+  .scene-intro.is-compact h1{ font-size:clamp(26px,3.6vw,44px); }
   .scene-intro.is-compact .intro-object{ width:min(25vw,272px); }
-  .room-art canvas{ height:72px; }
+  .room-art canvas{ height:76px; }
   .rooms-title{ font-size:12.5px; }
   .jp-home .home-footer{ min-height:70px; }
 }
