@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>롤러코스터 설계 · 석산고 미적분Ⅰ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700;900&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- KaTeX (자체 호스팅) — 동기 로드: 하단 인라인 스크립트가 katex 전역을 즉시 쓰기 때문 -->
+<link rel="stylesheet" href="../vendor/katex/katex.min.css">
+<script src="../vendor/katex/katex.min.js"></script>
+<script src="../vendor/katex/contrib/auto-render.min.js"></script>
+<style>
+
+:root{
+  --paper:#EFF3EE; --panel:#FFFFFF; --grid:#D8E2D3; --dot:#E2E9DE;
+  --ink:#223027; --inkSoft:#5C6B60;
+  --left:#C1442D; --right:#2B6CA3; --gold:#C99A2E; --success:#3F7D4C; --border:#D3DAD0;
+  --font-display:'Noto Serif KR', serif;
+  --font-body:'IBM Plex Sans KR','Pretendard',sans-serif;
+  --font-mono:'IBM Plex Mono','Menlo',monospace;
+}
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); }
+.page-bg{ background-image:radial-gradient(var(--dot) 1px, transparent 1px); background-size:20px 20px; min-height:100vh; }
+.wrap{ max-width:600px; margin:0 auto; padding:14px 14px 40px; }
+.hidden{ display:none !important; }
+.card{ background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:18px; }
+.btn-primary{ width:100%; padding:14px; border-radius:14px; border:none; background:var(--ink); color:var(--paper); font-weight:700; font-size:15px; cursor:pointer; }
+.btn-secondary{ width:100%; padding:14px; border-radius:14px; border:1.5px solid var(--border); background:#fff; color:var(--ink); font-weight:600; font-size:14px; cursor:pointer; margin-bottom:10px; }
+.btn-danger{ width:100%; padding:14px; border-radius:14px; border:none; background:var(--left); color:#fff; font-weight:800; font-size:15px; cursor:pointer; }
+
+.tabbar{ position:sticky; top:0; z-index:20; background:var(--paper); padding:10px 14px 8px; border-bottom:1px solid var(--border); }
+.tabbar-inner{ max-width:600px; margin:0 auto; display:flex; gap:8px; }
+.tab-btn{ flex:1; font-family:var(--font-body); font-size:12.5px; font-weight:700; padding:10px 6px; border-radius:12px; border:1.5px solid var(--border); background:var(--panel); color:var(--inkSoft); cursor:pointer; text-align:center; }
+.tab-btn.active{ border-color:var(--ink); background:var(--ink); color:var(--paper); }
+.tab-back{ flex:0 0 38px; display:flex; align-items:center; justify-content:center; border-radius:12px; border:1.5px solid var(--border); background:var(--panel); color:var(--inkSoft); text-decoration:none; font-size:16px; font-weight:700; }
+.tab-back:hover{ border-color:var(--ink); color:var(--ink); }
+
+.eyebrow{ font-family:var(--font-mono); font-size:11.5px; letter-spacing:1.5px; color:var(--inkSoft); text-transform:uppercase; margin-bottom:6px; }
+.title{ font-family:var(--font-display); font-weight:900; font-size:22px; margin:0 0 5px; line-height:1.28; }
+.desc{ color:var(--inkSoft); font-size:13px; line-height:1.55; margin:0 0 14px; }
+
+.theory-section{ margin-bottom:18px; }
+.theory-h2{ font-family:var(--font-display); font-weight:900; font-size:18px; margin:0 0 8px; }
+.theory-p{ font-size:13.5px; line-height:1.7; margin:0 0 10px; }
+.theorem-box{ background:#FBF3E0; border:1.5px solid var(--gold); border-radius:14px; padding:14px 16px; margin-bottom:10px; }
+.theorem-eyebrow{ font-family:var(--font-mono); font-size:10.5px; letter-spacing:1px; color:var(--gold); text-transform:uppercase; margin-bottom:6px; font-weight:700; }
+.theorem-formula{ font-family:var(--font-mono); font-size:13.5px; font-weight:600; line-height:2; }
+.misconception{ background:#F7E9E5; border:1.5px solid var(--left); border-radius:14px; padding:12px 14px; margin-bottom:10px; }
+.misconception-title{ font-weight:700; font-size:13px; color:var(--left); margin-bottom:4px; }
+.misconception-body{ font-size:12.5px; line-height:1.6; }
+.cta-row{ display:flex; gap:10px; margin-top:16px; }
+.prereq-note{ background:var(--panel); border:1px dashed var(--border); border-radius:12px; padding:10px 12px; font-size:12px; color:var(--inkSoft); margin-bottom:16px; line-height:1.6; }
+.form-card{ background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:13px 15px; margin-bottom:10px; }
+.form-card-tag{ display:inline-block; font-family:var(--font-mono); font-size:15px; font-weight:800; color:var(--gold); margin-bottom:5px; }
+.form-card-body{ font-size:12.5px; line-height:1.65; color:var(--ink); }
+
+.chips{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+.chip{ font-size:12.5px; font-weight:600; padding:9px 12px; border-radius:999px; border:1.5px solid var(--border); background:var(--panel); color:var(--ink); cursor:pointer; }
+.chip.active{ border-color:var(--ink); background:var(--ink); color:var(--paper); }
+
+.svg-wrap{ background:#fff; border:1px solid var(--border); border-radius:16px; padding:6px; margin-bottom:12px; }
+.svg-wrap svg{ width:100%; height:auto; display:block; }
+.svg-caption{ font-size:11.5px; color:var(--inkSoft); text-align:center; margin:2px 0 10px; }
+.fn-tex{ text-align:center; font-size:14px; margin:0 0 10px; }
+
+/* 증감표 */
+.table-card{ background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:12px 10px; margin-bottom:12px; overflow-x:auto; }
+.table-title{ font-size:11.5px; color:var(--inkSoft); margin:0 4px 8px; }
+.mono-table{ border-collapse:collapse; width:100%; min-width:340px; font-family:var(--font-mono); }
+.mono-table th{ font-size:12.5px; font-weight:800; color:var(--ink); background:#F3F6F2; border:1px solid var(--border); padding:7px 6px; white-space:nowrap; }
+.mono-table td{ border:1px solid var(--border); padding:7px 4px; text-align:center; font-size:13px; font-weight:700; }
+.mono-table td.plus{ color:var(--success); } .mono-table td.minus{ color:var(--left); }
+.mono-table td.zero{ color:var(--gold); background:#FBF3E0; }
+.mono-table td.crit{ background:#FBF3E0; font-size:11.5px; line-height:1.35; }
+.mono-table td.crit b{ display:block; font-size:12.5px; }
+.mono-table td.here{ outline:2.5px solid var(--right); outline-offset:-2px; }
+.mono-table td .arrow{ font-size:16px; }
+
+.slider-card{ background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:12px 14px; margin-bottom:12px; }
+.slider-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px; }
+.slider-head .sl{ font-size:11.5px; color:var(--inkSoft); }
+.slider-head .sv{ font-family:var(--font-mono); font-size:15px; font-weight:800; color:var(--right); }
+input[type=range]{ width:100%; accent-color:var(--right); }
+.slider-note{ font-size:11.5px; color:var(--gold); font-weight:600; margin-top:5px; min-height:16px; line-height:1.5; }
+
+.back-link{ font-size:12.5px; color:var(--inkSoft); text-decoration:underline; cursor:pointer; background:none; border:none; padding:0; margin-bottom:10px; display:inline-block; }
+.mode-btn{ width:100%; padding:16px; border-radius:14px; border:1.5px solid var(--border); background:#fff; color:var(--ink); font-weight:700; font-size:15px; cursor:pointer; margin-bottom:10px; text-align:left; }
+.mode-btn-desc{ font-size:12px; font-weight:400; color:var(--inkSoft); margin-top:3px; }
+
+/* ===== 아레나 (기하 시리즈 방식) ===== */
+.game-shell{ position:relative; }
+.arena-hero{ text-align:center; }
+.arena-kicker{ font-family:var(--font-mono); font-size:11px; letter-spacing:1.5px; color:var(--left); font-weight:800; }
+.arena-title{ font-family:var(--font-display); font-size:24px; font-weight:900; margin:6px 0 4px; }
+.arena-desc{ font-size:12.5px; color:var(--inkSoft); line-height:1.6; margin:0 0 14px; }
+.name-grid{ display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-bottom:10px; }
+.name-field{ text-align:left; }
+.name-field label{ display:block; font-family:var(--font-mono); font-size:10px; color:var(--inkSoft); font-weight:700; margin-bottom:3px; }
+.name-field input{ width:100%; padding:9px 10px; border-radius:11px; border:1.5px solid var(--border); background:#fff; font-family:var(--font-body); font-size:13.5px; font-weight:600; color:var(--ink); }
+.sound-row{ display:flex; align-items:center; justify-content:center; gap:7px; font-size:12px; color:var(--inkSoft); margin-bottom:12px; }
+.mode-grid{ display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+.mode-card{ padding:13px 8px; border-radius:14px; border:1.5px solid var(--border); background:#fff; cursor:pointer; text-align:center; font-family:var(--font-body); color:var(--ink); }
+.mode-card strong{ display:block; font-size:14px; font-weight:800; margin-bottom:3px; }
+.mode-card small{ font-size:11px; color:var(--inkSoft); line-height:1.4; display:block; }
+.mode-card.duel{ background:var(--left); border-color:var(--left); color:#fff; }
+.mode-card.duel small{ color:#F7E0DA; }
+.leaderboard{ margin-top:16px; text-align:left; }
+.leaderboard h3{ font-size:13px; margin:0 0 7px; }
+.leader-row{ display:grid; grid-template-columns:26px 1fr auto; gap:8px; padding:7px 2px; border-bottom:1px solid var(--border); font-size:12px; align-items:center; }
+.leader-row b{ font-family:var(--font-mono); }
+.hud{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:8px; }
+.hud-item{ text-align:center; background:var(--panel); border:1px solid var(--border); border-radius:11px; padding:7px 3px; }
+.hud-item span{ display:block; font-size:9.5px; color:var(--inkSoft); font-weight:700; }
+.hud-item b{ font-family:var(--font-mono); font-size:15px; }
+.hud-item.combo b{ color:var(--gold); }
+.timer-track{ height:11px; background:var(--grid); border-radius:999px; overflow:hidden; margin-bottom:12px; }
+.timer-fill{ height:100%; width:100%; background:var(--success); transition:background .15s; }
+.timer-fill.danger{ background:var(--left); animation:timerPulse .42s infinite alternate; }
+@keyframes timerPulse{ to{ filter:brightness(1.35); } }
+.question-card{ background:var(--panel); border:1.5px solid var(--ink); border-radius:15px; padding:14px 14px; margin:0 0 12px; }
+.question-kicker{ font-family:var(--font-mono); font-size:10px; color:var(--inkSoft); margin-bottom:5px; letter-spacing:1px; }
+.question-text{ font-size:15.5px; font-weight:800; line-height:1.7; overflow-x:auto; }
+.choice-grid{ display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+.choice{ min-height:52px; padding:11px 10px; border-radius:13px; border:1.5px solid var(--border); background:#fff; color:var(--ink); font-family:var(--font-body); font-size:13.5px; font-weight:700; cursor:pointer; text-align:left; line-height:1.5; }
+.choice:hover{ border-color:var(--ink); }
+.choice.correct{ border-color:var(--success); background:#EAF3EA; color:var(--success); }
+.choice.wrong{ border-color:var(--left); background:#F7E9E5; color:var(--left); }
+.choice:disabled{ cursor:default; }
+.feedback{ position:absolute; inset:60px 8px auto; background:rgba(255,255,255,.97); border:2px solid var(--border); border-radius:18px; padding:20px 18px; text-align:center; z-index:5; box-shadow:0 18px 50px rgba(34,48,39,.18); }
+.feedback.good{ border-color:var(--success); } .feedback.bad{ border-color:var(--left); }
+.feedback-icon{ font-size:32px; font-weight:900; }
+.feedback-title{ font-size:18px; font-weight:900; margin:3px 0 5px; }
+.feedback-sub{ font-size:12.5px; color:var(--inkSoft); line-height:1.6; }
+.feedback-points{ font-family:var(--font-mono); font-size:18px; font-weight:800; margin-top:7px; }
+.shake{ animation:shake .25s linear 2; }
+@keyframes shake{ 25%{ transform:translateX(-5px);} 75%{ transform:translateX(5px);} }
+.handoff{ text-align:center; padding:34px 8px; }
+.handoff-icon{ font-size:42px; }
+.handoff h2, .end-screen h2{ font-family:var(--font-display); font-size:24px; font-weight:900; margin:6px 0; }
+.handoff p, .end-screen p{ font-size:13px; color:var(--inkSoft); line-height:1.6; }
+.end-screen{ text-align:center; }
+.final-score{ font-family:var(--font-mono); font-size:44px; font-weight:800; color:var(--success); }
+.duel-board{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0; }
+.duel-player{ background:var(--panel); border:1px solid var(--border); border-radius:15px; padding:13px; }
+.duel-player.winner{ border:2px solid var(--gold); background:#FBF3E0; }
+.duel-player b{ display:block; font-size:13px; }
+.duel-player strong{ font-family:var(--font-mono); font-size:25px; }
+.winner-line{ font-weight:900; color:#8a6a1a; margin:8px 0 14px; }
+
+/* ---------- KaTeX 통합 ---------- */
+.katex{ font-size:1.05em; }
+.katex .base{ white-space:nowrap; }
+.theorem-formula .katex, .fb-box .katex, .form-card-body .katex, .misconception-body .katex,
+.theory-p .katex, .form-card-tag .katex, .question-text .katex, .choice .katex,
+.feedback-sub .katex, .fn-tex .katex, .mono-table .katex, .slider-head .sv .katex,
+.mode-btn-desc .katex, .svg-caption .katex{ font-size:1em; }
+.theorem-formula, .fn-tex, .question-text{ overflow-x:auto; overflow-y:hidden; padding:2px 0; }
+
+@media(max-width:410px){
+  .choice-grid, .mode-grid, .name-grid{ grid-template-columns:1fr; }
+  .hud-item b{ font-size:13px; } .hud-item span{ font-size:8.5px; }
+}
+@media (prefers-reduced-motion: reduce){ *{ animation:none !important; } }
+
+
+/* ── 롤러코스터 설계실 ─────────────────────────────────────────── */
+.coaster-stage{ position:relative; background:#F4F7F3; border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+.coaster-stage svg{ display:block; width:100%; height:auto; }
+.coaster-verdict{
+  display:flex; align-items:center; gap:9px; margin:10px 0 0;
+  padding:11px 13px; border-radius:12px; font-size:13.5px; font-weight:700; line-height:1.55;
+  border:1px solid var(--border); background:var(--panel); color:var(--inkSoft); word-break:keep-all;
+}
+.coaster-verdict .mark{ flex:0 0 auto; font-size:16px; }
+.coaster-verdict.is-break{ background:#FBEDEA; border-color:#E3B5AC; color:#8E3322; }
+.coaster-verdict.is-kink{ background:#FBF3E3; border-color:#DFC894; color:#7A5B12; }
+.coaster-verdict.is-smooth{ background:#EAF4EC; border-color:#A9CBB2; color:#2E6139; }
+.coaster-gauges{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+.gauge{ padding:10px 11px; border:1px solid var(--border); border-radius:12px; background:var(--panel); }
+.gauge .gauge-label{ font-size:11px; font-weight:700; color:var(--inkSoft); letter-spacing:.02em; }
+.gauge .gauge-value{ margin-top:3px; font-family:var(--font-mono); font-size:17px; font-weight:600; }
+.gauge .gauge-note{ margin-top:3px; font-size:11px; color:var(--inkSoft); line-height:1.5; word-break:keep-all; }
+.gauge.is-track{ border-left:3px solid var(--right); }
+.gauge.is-cart{ border-left:3px solid var(--left); }
+.coaster-two-derivs{
+  margin-top:10px; padding:11px 13px; border:1px dashed #C3CFC4; border-radius:12px;
+  background:#F7FAF6; font-size:12.5px; line-height:1.7; color:var(--inkSoft); word-break:keep-all;
+}
+.coaster-two-derivs b{ color:var(--ink); }
+.coaster-controls{ margin-top:12px; display:grid; gap:11px; }
+.crow{ display:grid; gap:5px; }
+.crow-head{ display:flex; justify-content:space-between; align-items:baseline; font-size:12.5px; font-weight:700; }
+.crow-head .target{ font-family:var(--font-mono); font-size:11px; font-weight:600; color:var(--inkSoft); }
+.crow-head .val{ font-family:var(--font-mono); font-size:13px; font-weight:600; }
+.crow input[type=range]{ width:100%; }
+.coaster-actions{ display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+.coaster-actions button{
+  flex:1 1 130px; padding:12px 14px; border-radius:12px; border:1.5px solid var(--ink);
+  background:var(--ink); color:#fff; font-family:var(--font-body); font-size:14px; font-weight:700; cursor:pointer;
+}
+.coaster-actions button.ghost{ background:var(--panel); color:var(--ink); }
+.coaster-actions button:disabled{ opacity:.45; cursor:default; }
+@media(max-width:420px){ .coaster-gauges{ grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="page-bg">
+
+<div class="tabbar">
+  <div class="tabbar-inner">
+    <a href="index.html" class="tab-back" aria-label="목록으로 돌아가기" title="미적분Ⅰ 목록으로">←</a>
+    <button class="tab-btn active" data-tab="theory">① 원리</button>
+    <button class="tab-btn" data-tab="lab">② 실험실</button>
+    <button class="tab-btn" data-tab="game">③ 스릴 아레나</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- THEORY -->
+<div id="page-theory">
+  <div class="eyebrow">석산고 미적분Ⅰ · 롤러코스터 설계</div>
+  <h1 class="title">레일이 이어져만 있으면 될까요</h1>
+  <p class="desc">끊기지 않았는데도 사고가 나는 자리가 있어요. <b>이어짐(연속)</b>과 <b>매끄러움(미분가능)</b>은 다른 이야기거든요.</p>
+
+  <div class="prereq-note">🔗 이전 단원: 미분가능성에서 \(\lim\limits_{h\to 0}\dfrac{f(a+h)-f(a)}{h}\) 가 존재하는지를 따졌죠. 이번엔 그 조건이 <b>탈 수 있는 레일인지</b>를 정합니다.</div>
+
+  <div class="theory-section">
+    <div class="theory-h2">1. 레일에 필요한 두 가지</div>
+    <div class="theorem-box">
+      <div class="theorem-eyebrow">Condition</div>
+      <div class="theorem-formula">
+        이음새 \(x=a\) 에서<br>
+        \(\lim\limits_{x\to a^-}f(x)=\lim\limits_{x\to a^+}f(x)=f(a)\) → <b>이어짐(연속)</b><br>
+        \(f'(a^-)=f'(a^+)\) → <b>매끄러움(미분가능)</b>
+      </div>
+    </div>
+    <p class="theory-p">높이가 어긋나면 레일이 <b>끊깁니다</b>. 카트는 허공으로 나갑니다. 그건 누구나 압니다.</p>
+    <p class="theory-p">그런데 높이는 맞는데 <b>기울기가 다르면</b> 어떨까요. 레일은 분명히 이어져 있습니다. 손으로 만져 보면 끊긴 데가 없어요. 하지만 그 지점에서 카트의 진행 방향이 <b>순식간에 꺾입니다</b>. 속도는 그대로인데 방향만 확 바뀌니, 그 충격이 전부 승객에게 갑니다.</p>
+    <div class="misconception">
+      <div class="misconception-title">✕ 연속이면 미분가능한 것 아닌가요?</div>
+      <div class="misconception-body">반대입니다. <b>미분가능하면 연속</b>이지만, 연속이라고 미분가능한 건 아닙니다. \(y=|x|\) 가 대표적이죠. 원점에서 끊기지 않았지만 <b>뾰족합니다</b>. 롤러코스터로 치면 이어져 있는데 꺾인 레일이에요.</div>
+    </div>
+  </div>
+
+  <div class="theory-section">
+    <div class="theory-h2">2. 두 개의 도함수를 구별하기</div>
+    <p class="theory-p">이 단원에서 학생들이 가장 많이 헷갈리는 지점입니다. 롤러코스터에는 도함수가 <b>두 개</b> 나오는데, 서로 다른 것입니다.</p>
+    <div class="theorem-box">
+      <div class="theorem-eyebrow">Careful</div>
+      <div class="theorem-formula">
+        \(f'(x)\) : <b>레일의 기울기</b> — 위치 \(x\) 에서 트랙이 얼마나 가파른가<br>
+        \(\dfrac{ds}{dt}\) : <b>카트의 속도</b> — 시간이 흐를 때 얼마나 빨리 가는가
+      </div>
+    </div>
+    <p class="theory-p">앞의 것은 <b>모양</b>에 대한 이야기이고, 뒤의 것은 <b>운동</b>에 대한 이야기입니다. 미분하는 변수가 \(x\) 냐 \(t\) 냐가 다릅니다. 실험실 계기판에서 두 값을 따로 색을 나눠 보여 주니, 같은 순간에 둘이 어떻게 다른지 확인해 보세요.</p>
+    <p class="theory-p">가파른 내리막(\(f'\) 가 크게 음수)에서는 속도가 <b>빨라지고</b>, 오르막에서는 <b>느려집니다</b>. 하지만 평평한 곳(\(f'=0\))에서도 카트는 계속 달립니다. 기울기가 0이라고 속도가 0인 게 아니에요.</p>
+  </div>
+
+  <div class="theory-section">
+    <div class="theory-h2">3. 속도는 높이가 정한다</div>
+    <p class="theory-p">마찰이 없다면 카트의 속도는 <b>지금 높이</b>만으로 정해집니다. 출발 높이 \(H\) 에서 가만히 놓으면</p>
+    <div class="theorem-box">
+      <div class="theorem-eyebrow">Energy</div>
+      <div class="theorem-formula">\(v = \sqrt{2g\left(H - y\right)}\)</div>
+    </div>
+    <p class="theory-p">낮게 내려갈수록 빨라지고, 출발 높이까지 올라가면 속도가 0이 됩니다. <b>출발보다 높은 언덕은 절대 넘지 못합니다.</b> 실험실에서 이음새를 너무 높이 올려 보면 카트가 도중에 멈추는 걸 볼 수 있어요.</p>
+  </div>
+
+  <div class="cta-row">
+    <button class="btn btn-primary" id="ctaToLab">🎢 실험실에서 설계하기</button>
+    <button class="btn btn-danger" id="ctaToGame" style="margin-bottom:0;">⚡ 아레나에서 실전 연습</button>
+  </div>
+</div>
+
+<!-- LAB -->
+<div id="page-lab" class="hidden">
+  <div class="eyebrow">석산고 미적분Ⅰ · COASTER DESIGNER</div>
+  <h1 class="title">이음새를 맞춰 카트를 완주시키세요</h1>
+  <p class="desc">왼쪽 레일은 \(f_1(x)=7-0.16x^2\) 로 고정입니다. 오른쪽 레일의 <b>이음새 높이</b>와 <b>이음새 기울기</b>를 맞춰야 매끄럽게 이어집니다.</p>
+
+  <div class="card">
+    <div class="coaster-stage">
+      <svg id="coasterSvg" viewBox="0 0 640 330" role="img" aria-label="롤러코스터 트랙 설계 화면"></svg>
+    </div>
+
+    <div class="coaster-verdict" id="coasterVerdict"><span class="mark">•</span><span id="coasterVerdictText">이음새를 맞춰 보세요.</span></div>
+
+    <div class="coaster-gauges">
+      <div class="gauge is-track">
+        <div class="gauge-label">레일 기울기 \(f'(x)\)</div>
+        <div class="gauge-value" id="gaugeSlope">—</div>
+        <div class="gauge-note">모양 이야기 · \(x\) 로 미분</div>
+      </div>
+      <div class="gauge is-cart">
+        <div class="gauge-label">카트 속도 \(ds/dt\)</div>
+        <div class="gauge-value" id="gaugeSpeed">—</div>
+        <div class="gauge-note">운동 이야기 · \(t\) 로 미분</div>
+      </div>
+      <div class="gauge">
+        <div class="gauge-label">트랙 길이 \(\int_0^{10}\sqrt{1+f'^2}\,dx\)</div>
+        <div class="gauge-value" id="gaugeLength">—</div>
+        <div class="gauge-note">정적분으로 잰 실제 레일 길이</div>
+      </div>
+      <div class="gauge">
+        <div class="gauge-label">이음새에서 꺾인 각</div>
+        <div class="gauge-value" id="gaugeKink">—</div>
+        <div class="gauge-note">0°여야 미분가능합니다</div>
+      </div>
+    </div>
+
+    <div class="coaster-two-derivs">
+      계기판 두 개가 <b>같은 순간에 다른 값</b>을 가리키는 걸 보세요. 왼쪽은 <b>레일이 얼마나 가파른가</b>, 오른쪽은 <b>카트가 얼마나 빠른가</b>입니다. 가장 가파른 곳과 가장 빠른 곳은 <b>같지 않습니다</b>.
+    </div>
+
+    <div class="coaster-controls" id="coasterControls"></div>
+
+    <div class="coaster-actions">
+      <button id="btnRun">🎢 카트 출발</button>
+      <button id="btnSnap" class="ghost">이음새 자동 정렬</button>
+      <button id="btnReset" class="ghost">처음으로</button>
+    </div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="page-game" class="hidden">
+  <div id="gameHeader">
+    <div class="eyebrow">석산고 미적분Ⅰ · THRILL ARENA</div>
+    <h1 class="title">레일 검사 아레나</h1>
+    <p class="desc">8문제 · 라이프 3개 · 3연속 정답부터 콤보 배수가 붙어요. 친구와 <b>같은 문제로 1:1 대결</b>도 할 수 있어요.</p>
+  </div>
+
+  <div id="modeSelect" class="card">
+    <button class="mode-btn" id="btnModeJoint">🔧 이음새 검사<div class="mode-btn-desc">두 조각이 매끄럽게 이어지려면 계수가 얼마여야 하는지 구하기. <b>연속만으로는 부족</b>합니다.</div></button>
+    <button class="mode-btn" id="btnModeSlope" style="margin-bottom:0;">📐 탈선 판정<div class="mode-btn-desc">레일 \(f(x)\) 의 주어진 지점에서 기울기를 구해 안전 한계를 넘는지 판정하기.</div></button>
+  </div>
+
+  <div id="jointArena" class="game-shell hidden"></div>
+  <div id="slopeArena" class="game-shell hidden"></div>
+
+  <p class="desc" id="gameFooter" style="margin-top:16px; text-align:center;">헷갈리면 <a href="#" id="toTheory" style="color:var(--ink); font-weight:600;">① 원리 탭</a>에서 복습하세요.</p>
+</div>
+
+</div>
+</div>
+
+<script>
+const COLORS = { ink:'#223027', inkSoft:'#5C6B60', left:'#C1442D', right:'#2B6CA3', gold:'#C99A2E', success:'#3F7D4C', paper:'#EFF3EE' };
+
+function rand(a,b){ return a + Math.random()*(b-a); }
+function randInt(a,b){ return Math.floor(rand(a,b+1)); }
+function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+function fmt(v){ const r=Math.round(v*100)/100; return String(r); }
+// 시드 난수 — 1:1 대결에서 두 사람에게 똑같은 문제를 주기 위해 (기하 시리즈와 동일 방식)
+function seeded(seed){ let t=seed>>>0; return function(){ t+=0x6D2B79F5; let r=Math.imul(t^(t>>>15),1|t); r^=r+Math.imul(r^(r>>>7),61|r); return ((r^(r>>>14))>>>0)/4294967296; }; }
+function shuffleR(arr, rng){ rng=rng||Math.random; const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(rng()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function riInt(rng,a,b){ return a + Math.floor(rng()*(b-a+1)); }
+function rPick(rng,a){ return a[Math.floor(rng()*a.length)]; }
+
+// ============================================================
+// KaTeX 헬퍼
+// ============================================================
+function KX(tex, display){
+  try { return katex.renderToString(String(tex), { throwOnError:false, displayMode:!!display, strict:false }); }
+  catch(e){ return String(tex); }
+}
+function renderStaticMath(root){
+  if (typeof renderMathInElement !== 'function' || !root) return;
+  try {
+    renderMathInElement(root, {
+      delimiters: [ { left:'\\[', right:'\\]', display:true }, { left:'\\(', right:'\\)', display:false } ],
+      throwOnError: false,
+      ignoredTags: ['script','noscript','style','textarea','pre','code','option'],
+      ignoredClasses: ['katex'],
+    });
+  } catch(e){}
+}
+
+function showTab(name){
+  ['theory','lab','game'].forEach(n=>{
+    document.getElementById('page-'+n).classList.toggle('hidden', n!==name);
+    document.querySelector(`.tab-btn[data-tab="${n}"]`).classList.toggle('active', n===name);
+  });
+  if(name!=='game') window.dispatchEvent(new CustomEvent('jp:leavegame'));
+  window.scrollTo(0,0);
+}
+document.querySelectorAll('.tab-btn').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+
+// ============================================================
+// 다항식 유틸
+// ============================================================
+function pTrim(p){ const q=p.slice(); while(q.length>1 && Math.abs(q[q.length-1])<1e-12) q.pop(); return q; }
+function pDer(p){ const q=[]; for(let i=1;i<p.length;i++) q.push(i*p[i]); return pTrim(q.length?q:[0]); }
+function pEval(p,x){ let s=0; for(let i=p.length-1;i>=0;i--) s=s*x+p[i]; return s; }
+function pTerms(p){ return pTrim(p).filter(c=>Math.abs(c)>1e-12).length; }
+function pTex(p){
+  const q=pTrim(p); const parts=[];
+  for(let i=q.length-1;i>=0;i--){
+    const c=q[i]; if(Math.abs(c)<1e-12) continue;
+    const ac=Math.abs(c); let t='';
+    if(i===0) t=String(ac);
+    else { if(Math.abs(ac-1)>1e-12) t=String(ac); t += (i===1?'x':`x^{${i}}`); }
+    parts.push({ sign:c<0?'-':'+', t });
+  }
+  if(!parts.length) return '0';
+  let out=(parts[0].sign==='-'?'-':'')+parts[0].t;
+  for(let i=1;i<parts.length;i++) out += ` ${parts[i].sign} ${parts[i].t}`;
+  return out;
+}
+
+// ============================================================
+// 위 f / 아래 f' 두 칸 그래프
+// ============================================================
+const GV = { w:640, h:520, pl:48, pr:20, aT:20, aB:270, bT:320, bB:492 };
+
+
+function Arena(root, cfg){
+  const self=this;
+  this.cfg=cfg; this.root=root; this.mode='solo'; this.rounds=[]; this.session=0; this.results=[];
+  this.raf=0; this.locked=false; this.sound=true; this.lastTick=-1;
+
+  root.innerHTML = `
+    <div data-screen="start">
+      <button class="back-link" data-quit-top>← 모드 선택으로</button>
+      <div class="card arena-hero">
+        <div class="arena-kicker">⚡ ${cfg.kicker}</div>
+        <h2 class="arena-title">${cfg.title}</h2>
+        <p class="arena-desc">${cfg.desc}</p>
+        <div class="name-grid">
+          <div class="name-field"><label>PLAYER 1</label><input data-p1 value="나" maxlength="8"></div>
+          <div class="name-field"><label>PLAYER 2</label><input data-p2 value="친구" maxlength="8"></div>
+        </div>
+        <label class="sound-row"><input type="checkbox" data-sound checked> 긴장감 효과음 켜기</label>
+        <div class="mode-grid">
+          <button class="mode-card" data-mode="solo"><strong>혼자 기록전</strong><small>내 최고 점수와 랭킹에 도전</small></button>
+          <button class="mode-card duel" data-mode="duel"><strong>친구와 1:1</strong><small>같은 기기에서 같은 8문제</small></button>
+        </div>
+        <div class="leaderboard"><h3>🏆 이 기기 TOP 5</h3><div data-leaders></div></div>
+      </div>
+    </div>
+    <div data-screen="play" class="hidden">
+      <div class="hud">
+        <div class="hud-item"><span>PLAYER</span><b data-hud-player>—</b></div>
+        <div class="hud-item"><span>ROUND</span><b data-hud-round>1/8</b></div>
+        <div class="hud-item"><span>SCORE</span><b data-hud-score>0</b></div>
+        <div class="hud-item combo"><span>COMBO · LIFE</span><b><i data-hud-combo style="font-style:normal">×1.0</i> <i data-hud-lives style="font-style:normal;color:#C1442D"></i></b></div>
+      </div>
+      <div class="timer-track"><div class="timer-fill" data-timer></div></div>
+      <div class="question-card">
+        <div class="question-kicker">QUICK DECISION</div>
+        <div class="question-text" data-question></div>
+      </div>
+      <div class="choice-grid" data-choices></div>
+      <button class="btn-secondary" style="margin-top:12px;" data-quit>게임 나가기</button>
+      <div class="feedback hidden" data-feedback>
+        <div class="feedback-icon" data-fb-icon></div>
+        <div class="feedback-title" data-fb-title></div>
+        <div class="feedback-sub" data-fb-sub></div>
+        <div class="feedback-points" data-fb-points></div>
+      </div>
+    </div>
+    <div data-screen="handoff" class="hidden">
+      <div class="card handoff">
+        <div class="handoff-icon">⚔️</div>
+        <h2><span data-handoff-name></span> 차례!</h2>
+        <p data-handoff-score></p>
+        <p>문제 순서까지 <b>완전히 같습니다.</b> 화면을 넘겨주세요.</p>
+        <button class="btn-danger" data-next-player>두 번째 선수 시작</button>
+      </div>
+    </div>
+    <div data-screen="end" class="hidden">
+      <div class="card end-screen">
+        <h2>경기 종료</h2>
+        <div data-solo-result>
+          <div class="final-score" data-final-score>0</div>
+          <p data-final-summary></p>
+        </div>
+        <div class="hidden" data-duel-result>
+          <div class="duel-board">
+            <div class="duel-player" data-duel1><b data-duel1-name></b><strong data-duel1-score></strong></div>
+            <div class="duel-player" data-duel2><b data-duel2-name></b><strong data-duel2-score></strong></div>
+          </div>
+          <div class="winner-line" data-winner></div>
+        </div>
+        <button class="btn-primary" data-replay>다시 도전</button>
+      </div>
+    </div>`;
+
+  this.q = sel => root.querySelector(sel);
+  this.show = name => root.querySelectorAll('[data-screen]').forEach(n=>n.classList.toggle('hidden', n.dataset.screen!==name));
+
+  this.beep = function(kind){
+    if(!self.sound) return;
+    try{
+      const A=self.audio||(self.audio=new (window.AudioContext||window.webkitAudioContext)());
+      const o=A.createOscillator(), g=A.createGain();
+      o.connect(g); g.connect(A.destination);
+      o.frequency.value = kind==='good'?880 : kind==='bad'?170 : 560;
+      o.type = kind==='bad'?'sawtooth':'sine';
+      g.gain.setValueAtTime(0.05, A.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, A.currentTime+(kind==='tick'?0.09:0.2));
+      o.start(); o.stop(A.currentTime+0.22);
+    }catch(e){}
+  };
+  this.lbKey = 'jp_calc_arena_'+cfg.id;
+  this.loadLeaders = function(){ try{ const v=localStorage.getItem(self.lbKey); return v?JSON.parse(v):[]; }catch(e){ return []; } };
+  this.saveLeader = function(name, score){
+    try{
+      const list=self.loadLeaders();
+      list.push({name:name||'익명', score});
+      list.sort((a,b)=>b.score-a.score);
+      localStorage.setItem(self.lbKey, JSON.stringify(list.slice(0,5)));
+    }catch(e){}
+  };
+  this.renderLeaders = function(){
+    const box=self.q('[data-leaders]'), list=self.loadLeaders();
+    box.innerHTML='';
+    if(!list.length){ box.innerHTML='<div class="leader-row"><span>—</span><span>첫 기록에 도전하세요</span><b>0</b></div>'; return; }
+    list.forEach((r,i)=>{
+      const row=document.createElement('div');
+      row.className='leader-row';
+      row.innerHTML=`<span>${['🥇','🥈','🥉','4','5'][i]||i+1}</span><span></span><b>${r.score}</b>`;
+      row.children[1].textContent=r.name;
+      box.appendChild(row);
+    });
+  };
+  this.playerName = function(){
+    return (self.mode==='duel' && self.session===1) ? (self.q('[data-p2]').value||'친구') : (self.q('[data-p1]').value||'나');
+  };
+  this.stopTimer = function(){ cancelAnimationFrame(self.raf); };
+  this.start = function(mode){
+    self.mode=mode;
+    self.sound=self.q('[data-sound]').checked;
+    self.seed = (Date.now() ^ Math.floor(Math.random()*1e9)) >>> 0;
+    self.rounds = cfg.createRounds(seeded(self.seed), cfg.count||8);
+    self.results=[];
+    self.startSession(0);
+  };
+  this.startSession = function(i){
+    self.session=i;
+    self.state={ round:0, score:0, streak:0, lives:3, correct:0 };
+    self.show('play'); self.beginRound();
+  };
+  this.mult = function(){ return 1+Math.min(2, Math.floor(self.state.streak/3)*0.5); };
+  this.updateHud = function(){
+    self.q('[data-hud-player]').textContent=self.playerName();
+    self.q('[data-hud-round]').textContent=`${Math.min(self.state.round+1, self.rounds.length)}/${self.rounds.length}`;
+    self.q('[data-hud-score]').textContent=self.state.score;
+    self.q('[data-hud-combo]').textContent='×'+self.mult().toFixed(1);
+    self.q('[data-hud-lives]').textContent='♥'.repeat(self.state.lives)+'♡'.repeat(3-self.state.lives);
+  };
+  this.beginRound = function(){
+    if(self.state.round>=self.rounds.length || self.state.lives<=0){ self.finishSession(); return; }
+    self.locked=false; self.lastTick=-1; self.updateHud();
+    const r=self.rounds[self.state.round];
+    self.q('[data-question]').innerHTML=r.q;
+    renderStaticMath(self.q('[data-question]'));
+    const grid=self.q('[data-choices]'); grid.innerHTML='';
+    r.choices.forEach((html,i)=>{
+      const b=document.createElement('button');
+      b.type='button'; b.className='choice'; b.innerHTML=html;
+      b.addEventListener('click',()=>self.answer(i));
+      grid.appendChild(b);
+    });
+    renderStaticMath(grid);
+    self.startTimer();
+  };
+  this.startTimer = function(){
+    const total=cfg.roundMs||9000, t0=performance.now();
+    self.stopTimer();
+    const fill=self.q('[data-timer]');
+    (function tick(now){
+      const remain=Math.max(0, total-((now||performance.now())-t0)), ratio=remain/total;
+      fill.style.width=(ratio*100)+'%';
+      fill.classList.toggle('danger', ratio<0.32);
+      const sec=Math.ceil(remain/1000);
+      if(sec<=3 && sec!==self.lastTick){ self.lastTick=sec; self.beep('tick'); }
+      if(remain<=0){ self.answer(-1, true); return; }
+      self.ratio=ratio;
+      self.raf=requestAnimationFrame(tick);
+    })(performance.now());
+  };
+  this.answer = function(index, timeout){
+    if(self.locked) return; self.locked=true;
+    const ratio=self.ratio||0;
+    self.stopTimer();
+    const r=self.rounds[self.state.round], ok=(index===r.correct);
+    root.querySelectorAll('[data-choices] .choice').forEach((b,i)=>{
+      b.disabled=true;
+      if(i===r.correct) b.classList.add('correct');
+      else if(i===index) b.classList.add('wrong');
+    });
+    let points=0;
+    if(ok){
+      self.state.streak++; self.state.correct++;
+      points=Math.round((100+ratio*100)*self.mult());
+      self.state.score+=points; self.beep('good');
+    } else {
+      self.state.streak=0; self.state.lives--; self.beep('bad');
+      const play=self.q('[data-screen="play"]');
+      play.classList.add('shake'); setTimeout(()=>play.classList.remove('shake'),500);
+    }
+    self.updateHud();
+    const fb=self.q('[data-feedback]');
+    fb.className='feedback '+(ok?'good':'bad');
+    self.q('[data-fb-icon]').textContent = ok?'✓':(timeout?'⌛':'✕');
+    self.q('[data-fb-title]').textContent = ok?(self.state.streak>=3?'콤보 폭발!':'정답!'):(timeout?'시간 초과!':'라이프 −1');
+    self.q('[data-fb-sub]').innerHTML = r.why;
+    renderStaticMath(self.q('[data-fb-sub]'));
+    self.q('[data-fb-points]').textContent = ok?`+${points}점`:'+0점';
+    fb.classList.remove('hidden');
+    setTimeout(()=>{ fb.classList.add('hidden'); self.state.round++; self.beginRound(); }, ok?1200:2000);
+  };
+  this.finishSession = function(){
+    self.stopTimer();
+    self.results.push({ name:self.playerName(), score:self.state.score, correct:self.state.correct });
+    if(self.mode==='duel' && self.session===0){
+      self.q('[data-handoff-name]').textContent=(self.q('[data-p2]').value||'친구');
+      self.q('[data-handoff-score]').textContent=`${self.results[0].name} 선수 ${self.results[0].score}점 · ${self.results[0].correct}개 정답`;
+      self.show('handoff'); return;
+    }
+    self.renderEnd();
+  };
+  this.renderEnd = function(){
+    self.show('end');
+    const solo=self.q('[data-solo-result]'), duel=self.q('[data-duel-result]');
+    if(self.mode==='solo'){
+      solo.classList.remove('hidden'); duel.classList.add('hidden');
+      const r=self.results[0];
+      self.q('[data-final-score]').textContent=r.score;
+      const best=self.loadLeaders()[0];
+      self.q('[data-final-summary]').textContent =
+        `${r.correct}개 정답` + ((!best || r.score>best.score) ? ' · 🎉 이 기기 최고 기록!' : ` · 최고 기록은 ${best.score}점`);
+      self.saveLeader(r.name, r.score);
+    } else {
+      solo.classList.add('hidden'); duel.classList.remove('hidden');
+      const [a,b]=self.results;
+      self.q('[data-duel1-name]').textContent=a.name; self.q('[data-duel1-score]').textContent=a.score;
+      self.q('[data-duel2-name]').textContent=b.name; self.q('[data-duel2-score]').textContent=b.score;
+      self.q('[data-duel1]').classList.toggle('winner', a.score>b.score);
+      self.q('[data-duel2]').classList.toggle('winner', b.score>a.score);
+      self.q('[data-winner]').textContent = a.score===b.score ? '무승부! 다시 한 판?' : `🏆 ${(a.score>b.score?a:b).name} 승리!`;
+      self.saveLeader(a.name, a.score); self.saveLeader(b.name, b.score);
+    }
+    self.renderLeaders();
+  };
+
+  root.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>self.start(b.dataset.mode)));
+  this.q('[data-next-player]').addEventListener('click',()=>self.startSession(1));
+  this.q('[data-replay]').addEventListener('click',()=>{ self.renderLeaders(); self.show('start'); });
+  this.q('[data-quit]').addEventListener('click',()=>{ self.stopTimer(); self.renderLeaders(); self.show('start'); });
+  this.q('[data-quit-top]').addEventListener('click',()=>{ self.stopTimer(); showGameMode('select'); });
+  window.addEventListener('jp:leavegame',()=>{ self.stopTimer(); self.show('start'); });
+  this.renderLeaders();
+  this.show('start');
+}
+
+// ============================================================
+// 게임 모드 전환
+// ============================================================
+
+// ============================================================
+// 실험실 — 롤러코스터 설계실
+//
+// 왼쪽 레일은 f1(x) = 7 - 0.16x^2 로 고정. 이음새는 x = 5 이고
+//   f1(5) = 3,  f1'(5) = -1.6
+// 오른쪽 레일 f2(x) = q + s(x-5) + 0.36(x-5)^2 의 q, s 를 학생이 정한다.
+//   q 가 3 이 아니면  -> 레일이 끊긴다 (불연속)
+//   q 는 맞고 s 가 -1.6 이 아니면 -> 이어져 있지만 꺾인다 (연속·미분불가능)
+// "연속이면 됐지" 가 왜 부족한지를 카트가 대신 말해 준다.
+// ============================================================
+const JX = 5, JY = 3, JS = -1.6, RB = 0.36, X0 = 0, X1 = 10, GRAV = 9.8;
+const START_H = 7.4;   // 출발 언덕. 트랙 최고점(7.0)보다 조금 높아야 카트가 굴러간다.
+const lab = { q:4.2, s:-0.4, running:false, t:0, cartX:0, v:0, crashed:null, maxV:0, timer:0 };
+
+function f1(x){ return 7 - 0.16*x*x; }
+function d1(x){ return -0.32*x; }
+function f2(x){ const u = x - JX; return lab.q + lab.s*u + RB*u*u; }
+function d2(x){ return lab.s + 2*RB*(x - JX); }
+function trackY(x){ return x <= JX ? f1(x) : f2(x); }
+function trackD(x){ return x <= JX ? d1(x) : d2(x); }
+
+function isConnected(){ return Math.abs(lab.q - JY) < 0.05; }
+function isSmooth(){ return isConnected() && Math.abs(lab.s - JS) < 0.05; }
+// 꺾인 각 = 두 접선이 이루는 각. 미분가능하면 0 이 된다.
+function kinkDeg(){ return Math.abs(Math.atan(lab.s) - Math.atan(JS)) * 180 / Math.PI; }
+
+// 정적분으로 트랙 길이를 잰다 (심프슨 근사)
+function trackLength(){
+  const N = 400, h = (X1 - X0) / N;
+  let sum = 0;
+  for (let i = 0; i <= N; i++){
+    const x = X0 + i*h, w = (i===0 || i===N) ? 1 : (i%2 ? 4 : 2);
+    sum += w * Math.sqrt(1 + trackD(x)*trackD(x));
+  }
+  return sum * h / 3;
+}
+
+// ── 3차원처럼 보이게 하는 비스듬한 투영 ──────────────────────────
+// z 는 레일 두 줄의 간격. 왼쪽 위로 밀어 입체감을 만든다.
+const VIEW = { s:34, ox:130, oy:285, zx:-26, zy:-15 };
+function proj(x, y, z){
+  return { X: VIEW.ox + x*VIEW.s + z*VIEW.zx, Y: VIEW.oy - y*VIEW.s + z*VIEW.zy };
+}
+function svgEl(tag, attrs){
+  const n = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  Object.keys(attrs||{}).forEach(k => n.setAttribute(k, attrs[k]));
+  return n;
+}
+function railPath(z, from, to){
+  const N = 90; let d = '';
+  for (let i = 0; i <= N; i++){
+    const x = from + (to - from) * i / N, p = proj(x, trackY(x), z);
+    d += (i ? 'L' : 'M') + p.X.toFixed(1) + ' ' + p.Y.toFixed(1);
+  }
+  return d;
+}
+
+function drawLab(){
+  const svg = document.getElementById('coasterSvg');
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+  const add = (tag, attrs) => { const n = svgEl(tag, attrs); svg.appendChild(n); return n; };
+
+  add('rect', { x:0, y:0, width:640, height:330, fill:'#F4F7F3' });
+
+  // 지면과 기둥
+  const g0 = proj(X0, 0, 0), g1 = proj(X1, 0, 0), gz0 = proj(X0, 0, 1), gz1 = proj(X1, 0, 1);
+  add('polygon', { points:[g0,g1,gz1,gz0].map(p=>p.X.toFixed(1)+','+p.Y.toFixed(1)).join(' '),
+    fill:'#DCE5DB', stroke:'#C6D2C4', 'stroke-width':1 });
+  for (let x = X0; x <= X1; x += 1){
+    const top = proj(x, trackY(x), 0.5), bot = proj(x, 0, 0.5);
+    add('line', { x1:top.X, y1:top.Y, x2:bot.X, y2:bot.Y, stroke:'#C3D0C2', 'stroke-width':1.4 });
+  }
+
+  // 침목
+  for (let x = X0; x <= X1; x += 0.4){
+    if (x > JX && !isConnected()) continue;
+    const a = proj(x, trackY(x), 0), b = proj(x, trackY(x), 1);
+    add('line', { x1:a.X, y1:a.Y, x2:b.X, y2:b.Y, stroke:'#9AA79A', 'stroke-width':1.6, opacity:.75 });
+  }
+
+  // 레일 두 줄 — 왼쪽 조각과 오른쪽 조각을 따로 그린다.
+  // 끊긴 경우 두 조각 사이가 실제로 벌어져 보여야 한다.
+  [0, 1].forEach(z => {
+    add('path', { d:railPath(z, X0, JX), fill:'none', stroke:COLORS.ink, 'stroke-width':z ? 3 : 3.6, 'stroke-linecap':'round' });
+    add('path', { d:railPath(z, JX, X1), fill:'none', stroke:isConnected() ? COLORS.ink : COLORS.left,
+      'stroke-width':z ? 3 : 3.6, 'stroke-linecap':'round', 'stroke-dasharray':isConnected() ? '' : '9 6' });
+  });
+
+  // 이음새 표시
+  const jl = proj(JX, JY, 0.5), jr = proj(JX, lab.q, 0.5);
+  if (!isConnected()){
+    add('line', { x1:jl.X, y1:jl.Y, x2:jr.X, y2:jr.Y, stroke:COLORS.left, 'stroke-width':2.4, 'stroke-dasharray':'4 4' });
+    const mid = { X:(jl.X+jr.X)/2, Y:(jl.Y+jr.Y)/2 };
+    add('text', { x:mid.X + 9, y:mid.Y, fill:COLORS.left, 'font-size':12, 'font-weight':700 })
+      .textContent = '높이 차 ' + (lab.q - JY).toFixed(2);
+  }
+  add('circle', { cx:jl.X, cy:jl.Y, r:5, fill:'#fff', stroke:COLORS.ink, 'stroke-width':2.4 });
+  if (!isConnected()) add('circle', { cx:jr.X, cy:jr.Y, r:5, fill:'#fff', stroke:COLORS.left, 'stroke-width':2.4 });
+
+  // 출발 높이 기준선 — 이보다 높은 언덕은 넘지 못한다
+  const hL = proj(X0, START_H, 0.5), hR = proj(X1, START_H, 0.5);
+  add('line', { x1:hL.X, y1:hL.Y, x2:hR.X, y2:hR.Y, stroke:COLORS.gold, 'stroke-width':1.4, 'stroke-dasharray':'6 5', opacity:.85 });
+  add('text', { x:hR.X - 4, y:hL.Y - 7, fill:COLORS.gold, 'font-size':11, 'font-weight':700, 'text-anchor':'end' })
+    .textContent = '출발 높이 ' + START_H.toFixed(1);
+
+  // 카트
+  const cx = lab.cartX, cy = trackY(cx) + (lab.crashed === 'fall' ? -lab.t*lab.t*2.2 : 0);
+  const c0 = proj(cx, cy, 0.12), c1 = proj(cx, cy, 0.88);
+  const up = 0.36;
+  const c2 = proj(cx, cy + up, 0.88), c3 = proj(cx, cy + up, 0.12);
+  add('polygon', { points:[c0,c1,c2,c3].map(p=>p.X.toFixed(1)+','+p.Y.toFixed(1)).join(' '),
+    fill:lab.crashed ? COLORS.left : COLORS.right, stroke:'#fff', 'stroke-width':1.6 });
+}
+
+function speedAt(y){
+  const drop = START_H - y;
+  return drop <= 0 ? 0 : Math.sqrt(2 * GRAV * drop);
+}
+
+function updateReadouts(){
+  const x = lab.cartX;
+  document.getElementById('gaugeSlope').textContent = trackD(x).toFixed(2);
+  document.getElementById('gaugeSpeed').textContent = lab.v.toFixed(2) + ' m/s';
+  document.getElementById('gaugeLength').textContent = isConnected() ? trackLength().toFixed(2) : '레일 끊김';
+  document.getElementById('gaugeKink').textContent = isConnected() ? kinkDeg().toFixed(1) + '°' : '—';
+
+  const box = document.getElementById('coasterVerdict');
+  const txt = document.getElementById('coasterVerdictText');
+  box.className = 'coaster-verdict';
+  if (!isConnected()){
+    box.classList.add('is-break');
+    box.querySelector('.mark').textContent = '✕';
+    txt.textContent = '레일이 끊겼습니다. 이음새 높이가 ' + (lab.q - JY).toFixed(2) + ' 만큼 어긋나 있어요. 먼저 연속부터 맞추세요.';
+  } else if (!isSmooth()){
+    box.classList.add('is-kink');
+    box.querySelector('.mark').textContent = '⚠';
+    txt.textContent = '이어져 있지만 ' + kinkDeg().toFixed(1) + '° 꺾였습니다. 연속이지만 미분가능하지 않아요. 이 자리에서 카트가 충격을 받습니다.';
+  } else {
+    box.classList.add('is-smooth');
+    box.querySelector('.mark').textContent = '✓';
+    txt.textContent = '매끄럽게 이어졌습니다. 좌우 기울기가 같아 미분가능해요. 카트가 충격 없이 지나갑니다.';
+  }
+}
+
+function buildControls(){
+  const host = document.getElementById('coasterControls');
+  const rows = [
+    ['q', '이음새 높이', 0.5, 5.5, 0.05, JY, '연속 조건'],
+    ['s', '이음새 기울기', -4, 0.5, 0.05, JS, '미분가능 조건']
+  ];
+  host.innerHTML = rows.map(r => `
+    <div class="crow">
+      <div class="crow-head">
+        <span>${r[1]} <span class="target">목표 ${r[5].toFixed(2)} · ${r[6]}</span></span>
+        <span class="val" data-out="${r[0]}"></span>
+      </div>
+      <input type="range" min="${r[2]}" max="${r[3]}" step="${r[4]}" data-in="${r[0]}" aria-label="${r[1]}">
+    </div>`).join('');
+  host.querySelectorAll('input[data-in]').forEach(input => {
+    input.value = lab[input.dataset.in];
+    input.addEventListener('input', () => {
+      lab[input.dataset.in] = +input.value;
+      stopRun();
+      syncControls(); drawLab(); updateReadouts();
+    });
+  });
+  syncControls();
+}
+function syncControls(){
+  document.querySelectorAll('#coasterControls [data-out]').forEach(el => {
+    el.textContent = (+lab[el.dataset.out]).toFixed(2);
+  });
+  document.querySelectorAll('#coasterControls input[data-in]').forEach(el => { el.value = lab[el.dataset.in]; });
+}
+
+function stopRun(){
+  if (lab.timer) clearInterval(lab.timer);
+  lab.timer = 0; lab.running = false; lab.crashed = null; lab.t = 0;
+  lab.cartX = X0; lab.v = 0; lab.maxV = 0;
+}
+
+function say(text){ document.getElementById('coasterVerdictText').textContent = text; }
+
+function tick(dt){
+  if (!lab.running) return;
+  if (lab.crashed){
+    lab.t += dt; drawLab();
+    if (lab.t > 1.2){ lab.running = false; clearInterval(lab.timer); lab.timer = 0; }
+    return;
+  }
+  const y = trackY(lab.cartX);
+  lab.v = speedAt(y);
+  lab.maxV = Math.max(lab.maxV, lab.v);
+  const slope = trackD(lab.cartX);
+  const nextX = Math.min(X1, lab.cartX + lab.v / Math.sqrt(1 + slope*slope) * dt);
+
+  // 출발 언덕보다 높은 곳은 넘지 못한다. 속도가 0 에 가까워지며 기어가면
+  // 학생 눈에는 그냥 느린 것처럼 보이므로, 한 걸음 앞을 보고 미리 멈춰 준다.
+  if (trackY(nextX) >= START_H - 0.02){
+    lab.crashed = 'stall'; lab.t = 0; lab.v = 0;
+    say('출발 높이 ' + START_H.toFixed(1) + ' 보다 높은 언덕이라 카트가 멈췄습니다. 에너지로는 여기까지가 한계예요.');
+    drawLab(); return;
+  }
+
+  // 이음새를 지나는 순간의 판정
+  if (nextX >= JX && lab.cartX < JX){
+    if (!isConnected()){
+      lab.crashed = 'fall'; lab.t = 0;
+      say('레일이 끊긴 자리에서 카트가 떨어졌습니다. 높이 차 ' + (lab.q - JY).toFixed(2) + ' 를 먼저 없애세요.');
+      drawLab(); return;
+    }
+    if (!isSmooth()){
+      say(kinkDeg().toFixed(1) + '° 꺾인 자리를 ' + lab.v.toFixed(1) + ' m/s 로 지났습니다. 승객이 충격을 받았어요.');
+    }
+  }
+
+  lab.cartX = nextX;
+  drawLab();
+  document.getElementById('gaugeSlope').textContent = trackD(lab.cartX).toFixed(2);
+  document.getElementById('gaugeSpeed').textContent = lab.v.toFixed(2) + ' m/s';
+
+  if (lab.cartX >= X1){
+    lab.running = false; clearInterval(lab.timer); lab.timer = 0;
+    if (isSmooth()) say('완주했습니다. 최고 속도 ' + lab.maxV.toFixed(1) + ' m/s · 도착 속도 ' + lab.v.toFixed(1) + ' m/s.');
+  }
+}
+
+function runCart(){
+  stopRun();
+  lab.running = true;
+  let last = performance.now();
+  // 타이머로 돌린다. requestAnimationFrame 은 탭이 화면에 보이지 않으면
+  // 멈춰 버려서, 출발을 눌렀는데 카트가 영영 그대로인 일이 생긴다.
+  lab.timer = setInterval(() => {
+    const now = performance.now();
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    tick(dt);
+  }, 16);
+}
+
+document.getElementById('btnRun').addEventListener('click', runCart);
+document.getElementById('btnSnap').addEventListener('click', () => {
+  lab.q = JY; lab.s = JS; stopRun(); syncControls(); drawLab(); updateReadouts();
+});
+document.getElementById('btnReset').addEventListener('click', () => {
+  lab.q = 4.2; lab.s = -0.4; stopRun(); syncControls(); drawLab(); updateReadouts();
+});
+window.addEventListener('jp:leavegame', stopRun);
+
+// ============================================================
+// 아레나 ① 이음새 검사 — 매끄럽게 이으려면 계수가 얼마여야 하는가
+// ============================================================
+function makeJointRounds(rng, count){
+  const rounds = [];
+  let guard = 0;
+  while (rounds.length < count && guard++ < 3000){
+    const t = riInt(rng, -2, 3);                 // 이음새 x = t
+    const a = rPick(rng, [1, 2, -1, -2]);        // 왼쪽 f1 = a x^2 + b x + c
+    const b = riInt(rng, -4, 4);
+    const c = riInt(rng, -3, 5);
+    const askSlope = rng() < 0.5;
+    const fv = a*t*t + b*t + c;                  // f1(t)
+    const fd = 2*a*t + b;                        // f1'(t)
+    const ans = askSlope ? fd : fv;
+    const cands = [askSlope ? fv : fd, ans + riInt(rng,1,4), ans - riInt(rng,1,4), a*t*t, 2*a*t, b + c];
+    const wrongs = [];
+    shuffleR(cands, rng).forEach(v => {
+      if (wrongs.length >= 3) return;
+      if (Math.abs(v - ans) < 1e-9) return;
+      if (wrongs.some(w => Math.abs(w - v) < 1e-9)) return;
+      wrongs.push(v);
+    });
+    if (wrongs.length < 3) continue;
+    const opts = shuffleR(wrongs.map(v => ({ v, ok:false })).concat([{ v:ans, ok:true }]), rng);
+    const f1tex = pTex([c, b, a]);
+    rounds.push({
+      q: KX(`f(x)=\\begin{cases} ${f1tex} & (x \\le ${t}) \\\\ m(x-${t})+n & (x > ${t}) \\end{cases}`) +
+         `<br><span style="font-size:14px">이 레일이 <b>매끄럽게 이어지려면</b> ` +
+         KX(askSlope ? 'm' : 'n') + ` 은?</span>`,
+      choices: opts.map(o => KX(String(o.v))),
+      correct: opts.findIndex(o => o.ok),
+      why: (askSlope
+              ? `기울기가 같아야 미분가능합니다. ` + KX(`f'(x)=${pTex(pDer([c,b,a]))}`) + ` 이므로 ` + KX(`m=f'(${t})=${fd}`)
+              : `높이가 같아야 연속입니다. ` + KX(`n=f(${t})=${fv}`)) +
+           `<br><span style="font-size:13px">연속만으로는 부족합니다. 높이가 맞아도 기울기가 다르면 그 자리에서 꺾입니다.</span>`
+    });
+  }
+  return rounds;
+}
+
+// ============================================================
+// 아레나 ② 탈선 판정 — 그 지점의 레일 기울기
+// ============================================================
+function makeSlopeRounds(rng, count){
+  const rounds = [];
+  let guard = 0;
+  while (rounds.length < count && guard++ < 3000){
+    const k = rPick(rng, [1, -1, 2, -2]);
+    const b = riInt(rng, -5, 5);
+    const c = riInt(rng, -4, 4);
+    const d = riInt(rng, -3, 6);
+    const f = [d, c, b, k];                       // f = k x^3 + b x^2 + c x + d
+    const x = riInt(rng, -2, 3);
+    const fd = pDer(f);
+    const ans = pEval(fd, x);
+    if (Math.abs(ans) > 60) continue;
+    const cands = [pEval(f, x), ans + riInt(rng,1,5), ans - riInt(rng,1,5), 3*k*x*x, 2*b*x + c];
+    const wrongs = [];
+    shuffleR(cands, rng).forEach(v => {
+      if (wrongs.length >= 3) return;
+      if (Math.abs(v - ans) < 1e-9) return;
+      if (wrongs.some(w => Math.abs(w - v) < 1e-9)) return;
+      wrongs.push(v);
+    });
+    if (wrongs.length < 3) continue;
+    const opts = shuffleR(wrongs.map(v => ({ v, ok:false })).concat([{ v:ans, ok:true }]), rng);
+    rounds.push({
+      q: KX(`f(x) = ${pTex(f)}`) +
+         `<br><span style="font-size:14px">이 레일의 ` + KX(`x = ${x}`) + ` 지점 <b>기울기</b>는?</span>`,
+      choices: opts.map(o => KX(String(o.v))),
+      correct: opts.findIndex(o => o.ok),
+      why: KX(`f'(x) = ${pTex(fd)}`) + `<br>` + KX(`f'(${x}) = ${ans}`) +
+           `<br><span style="font-size:13px">기울기의 절댓값이 1을 넘으면 45°보다 가파릅니다.</span>`
+    });
+  }
+  return rounds;
+}
+
+const arenaJoint = new Arena(document.getElementById('jointArena'), {
+  id:'joint', kicker:'JOINT CHECK', title:'이음새 검사',
+  desc:'8문제 · 문제당 9초 · 라이프 3개. 연속과 미분가능을 헷갈리지 마세요.',
+  roundMs:9000, count:8, createRounds:makeJointRounds
+});
+const arenaSlope = new Arena(document.getElementById('slopeArena'), {
+  id:'slope', kicker:'DERAIL CHECK', title:'탈선 판정',
+  desc:'8문제 · 문제당 8초 · 라이프 3개. 도함수를 정확히 세우고 대입하세요.',
+  roundMs:8000, count:8, createRounds:makeSlopeRounds
+});
+
+function showGameMode(mode){
+  document.getElementById('modeSelect').classList.toggle('hidden', mode !== 'select');
+  document.getElementById('gameHeader').classList.toggle('hidden', mode !== 'select');
+  document.getElementById('gameFooter').classList.toggle('hidden', mode !== 'select');
+  document.getElementById('jointArena').classList.toggle('hidden', mode !== 'joint');
+  document.getElementById('slopeArena').classList.toggle('hidden', mode !== 'slope');
+}
+
+document.getElementById('btnModeJoint').addEventListener('click', () => showGameMode('joint'));
+document.getElementById('btnModeSlope').addEventListener('click', () => showGameMode('slope'));
+document.getElementById('ctaToLab').addEventListener('click', () => showTab('lab'));
+document.getElementById('ctaToGame').addEventListener('click', () => showTab('game'));
+document.getElementById('toTheory').addEventListener('click', e => { e.preventDefault(); showTab('theory'); });
+
+buildControls();
+stopRun();
+drawLab();
+updateReadouts();
+renderStaticMath(document.getElementById('page-theory'));
+renderStaticMath(document.getElementById('page-lab'));
+renderStaticMath(document.getElementById('modeSelect'));
+showGameMode('select');
+showTab('theory');
+</script>
+</body>
+</html>
