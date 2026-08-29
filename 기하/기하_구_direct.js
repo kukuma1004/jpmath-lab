@@ -62,28 +62,34 @@
     const d=state.center[1],r=state.radius;
     const gap=Math.abs(d)-r;return gap>1e-9?null:{d:d,rho:Math.sqrt(Math.max(0,r*r-d*d)),tangent:gap>-1e-9,at:[state.center[0],0,state.center[2]]};
   }
-  function drawDome(){
-    if(!state.dome)return null;
+  // 지면은 구 뒤에, 밑면은 구 앞에 그린다. 한꺼번에 그리면 구가 밑면을 덮어
+  // 정작 보여 주려던 잘린 자리가 안 보인다.
+  function drawDomeGround(){
+    if(!state.dome)return;
     const ground=[[-4.2,0,-4.2],[4.2,0,-4.2],[4.2,0,4.2],[-4.2,0,4.2]].map(project);
     add('polygon',{points:ground.map(function(q){return q.x+','+q.y;}).join(' '),
-      fill:'#8d9a94','fill-opacity':.16,stroke:'#8d9a94','stroke-width':1,'pointer-events':'none'});
+      fill:'#8d9a94','fill-opacity':.18,stroke:'#7f8c86','stroke-width':1.2,'pointer-events':'none'});
+  }
+  function drawDomeBase(){
+    if(!state.dome)return;
     const base=domeBase();
-    if(!base)return null;
+    if(!base)return;
     if(base.tangent){const q=project(base.at);
-      add('circle',{cx:q.x,cy:q.y,r:5,fill:colors.gold,stroke:'#fff','stroke-width':2,'pointer-events':'none'});
-      return base;}
-    add('path',{d:circlePath(base.at,base.rho,'xz'),fill:colors.gold,'fill-opacity':.2,
-      stroke:colors.gold,'stroke-width':2.4,'pointer-events':'none'});
+      add('circle',{cx:q.x,cy:q.y,r:6,fill:colors.gold,stroke:'#fff','stroke-width':2.4,'pointer-events':'none'});
+      return;}
+    add('path',{d:circlePath(base.at,base.rho,'xz'),fill:colors.gold,'fill-opacity':.34,
+      stroke:colors.gold,'stroke-width':3,'pointer-events':'none'});
     line3(base.at,[base.at[0]+base.rho,0,base.at[2]],{stroke:colors.gold,'stroke-width':2.6,'pointer-events':'none'});
     if(Math.abs(base.d)>.02)line3(state.center,base.at,{stroke:colors.gold,'stroke-width':1.8,'stroke-dasharray':'5 4','pointer-events':'none'});
-    return base;
+    text3([base.at[0]+base.rho/2,0,base.at[2]],base.rho.toFixed(2),colors.gold,0,-9,'middle');
   }
   function drawHandle(name,p,color,enabled){const q=project(p),locked=!enabled;add('circle',{cx:q.x,cy:q.y,r:44,fill:'transparent','data-sphere-point':name,class:'sphere-point-hit'+(locked?' sphere-locked':'')});add('circle',{cx:q.x,cy:q.y,r:17,fill:color,opacity:.2,'data-sphere-point':name,class:'sphere-point-halo'+(locked?' sphere-locked':''),filter:'url(#sphereGlow)'});add('circle',{cx:q.x,cy:q.y,r:11,fill:color,stroke:'#fff','stroke-width':3,'data-sphere-point':name,class:'sphere-point-handle'+(locked?' sphere-locked':'')});add('circle',{cx:q.x,cy:q.y,r:3,fill:'#fff','pointer-events':'none'});text3(p,name,color,name==='C'?-14:14,-13,name==='C'?'end':'start');}
   function draw(){
-    G.clear(svg);defs();drawGrid();drawAxes();drawDome();
+    G.clear(svg);defs();drawGrid();drawAxes();drawDomeGround();
     if(state.mission==='target'&&state.target)drawSphere(state.target.center,state.target.radius,'#2b6ca3',true);
     drawSphere(state.center,state.radius,colors.surface,false);const P=surface();line3(state.center,P,{stroke:colors.gold,'stroke-width':3,'stroke-linecap':'round','pointer-events':'none'});
     if(state.mission==='through'&&state.through){const q=project(state.through.point);add('circle',{cx:q.x,cy:q.y,r:8,fill:colors.gold,stroke:'#fff','stroke-width':3,'pointer-events':'none'});add('circle',{cx:q.x,cy:q.y,r:16,fill:'none',stroke:colors.gold,'stroke-width':2,'stroke-dasharray':'4 4','pointer-events':'none'});text3(state.through.point,'Q',colors.gold,13,-12);line3(state.center,state.through.point,{stroke:colors.gold,'stroke-width':2,'stroke-dasharray':'6 5','pointer-events':'none'});}
+    drawDomeBase();
     const free=state.mission==='free',allowCenter=free||state.mission==='target';drawHandle('C',state.center,colors.center,allowCenter);drawHandle('P',P,colors.surface,true);return P;
   }
   function term(v,c){if(c===0)return v+'^2';return c>0?'('+v+'-'+c+')^2':'('+v+'+'+Math.abs(c)+')^2';}
@@ -91,7 +97,7 @@
   function updateReadouts(P){math('sphereCenter','C'+fmt(state.center));math('sphereRadius','r='+state.radius.toFixed(2)+'\\quad P'+fmt(P,2));math('sphereDistance','CP=r='+state.radius.toFixed(2));math('sphereEquation',term('x',state.center[0])+'+'+term('y',state.center[1])+'+'+term('z',state.center[2])+'='+(state.radius*state.radius).toFixed(2));controls.querySelector('[data-sphere-r]').value=state.radius;controls.querySelector('[data-sphere-r-label]').textContent=state.radius.toFixed(2);
     const box=readouts.querySelector('.sphere-dome-readout');box.hidden=!state.dome;
     if(state.dome){const b=domeBase();
-      math('sphereDome',!b?'\\text{지면과 만나지 않습니다}':b.tangent?'\\text{지면에 한 점에서 닿습니다}':'\\sqrt{'+(state.radius*state.radius).toFixed(2)+'-'+(state.center[1]*state.center[1]).toFixed(2)+'}='+b.rho.toFixed(2));}}
+      math('sphereDome',!b?'\\text{지면과 만나지 않습니다}':b.tangent?'\\text{지면에 한 점에서 닿습니다}':'\\sqrt{'+(state.radius*state.radius).toFixed(2)+'-'+(state.center[1]*state.center[1]).toFixed(2)+'}='+b.rho.toFixed(2)+'\\quad \\text{높이 }'+(state.radius+state.center[1]).toFixed(2));}}
   function updateMission(){const kicker=brief.querySelector('[data-sphere-kicker]'),title=brief.querySelector('[data-sphere-title]'),copy=brief.querySelector('[data-sphere-copy]'),next=brief.querySelector('[data-sphere-next]'),meter=brief.querySelector('[data-sphere-meter]');let success=false,progress=0;next.classList.toggle('hidden',state.mission==='free');
     if(state.mission==='free'){kicker.textContent='FREE LAB';title.textContent='중심과 표면점을 직접 움직여 보세요.';copy.textContent='C는 선택한 평면에서 이동하고 P는 중심에서 같은 거리를 유지하며 구의 크기를 바꿉니다.';}
     else if(state.mission==='target'){const dc=Math.hypot.apply(null,state.center.map(function(x,i){return x-state.target.center[i];})),dr=Math.abs(state.radius-state.target.radius);success=dc<.01&&dr<.06;progress=Math.max(5,100-(dc*12+dr*18));kicker.textContent=success?'SPHERE LOCKED':'SPHERE BUILDER';title.textContent=success?'목표 구와 정확히 겹쳤습니다!':'중심 '+fmt(state.target.center)+', 반지름 '+state.target.radius+'인 구를 만드세요.';copy.textContent=success?'중심 좌표와 반지름이 방정식의 모든 숫자를 결정했습니다.':'현재 C'+fmt(state.center)+', r='+state.radius.toFixed(2)+' · C와 P를 차례로 움직여 보세요.';}
