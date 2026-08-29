@@ -6,12 +6,22 @@
   var SHEET_URL = 'https://docs.google.com/spreadsheets/d/1shQ8CxS3nEO9wM6OT6-9DLgPilNtIaH0vsYPE21hscg/edit';
   var state = { inquiries: [], selectedId: null, promptMode: 'balanced', subject: 'all', stage: 'all', query: '', dataSource: '', liveStats: null };
   var subjectLabels = { 'calculus-1': '미적분Ⅰ', geometry: '기하', economics: '경제수학', 'economic-math': '경제수학', 'subject-review': '과목 확인 필요', 'mathematical-inquiry': '통합·이론' };
+  var visualSamples = {
+    '9a5b0a20-56cf-4b57-b393-135cf10b6fa7': 'conic',
+    '468c46d0-1d43-4af2-bce1-ad1ae84ccf25': 'integral',
+    '5e6baa5b-a680-4fbf-9a02-e190f354191c': 'vector'
+  };
 
   function element(tag, className, text) {
     var node = document.createElement(tag);
     if (className) node.className = className;
     if (typeof text === 'string') node.textContent = text;
     return node;
+  }
+
+  function visualSampleFor(item) {
+    var inquiryId = item && item.prompt && item.prompt.inquiryId;
+    return inquiryId && visualSamples[inquiryId] ? 'curator-samples.html#' + visualSamples[inquiryId] : '';
   }
 
   function isLocalView() {
@@ -864,6 +874,25 @@
     panel.appendChild(exhibitSection);
 
     var actions = element('div', 'curator-actions');
+    var visualSample = visualSampleFor(item);
+    if (visualSample) {
+      var visualButton = element('a', 'action-visual', '학생별 시각 시안 열기 ↗');
+      visualButton.href = visualSample;
+      visualButton.addEventListener('click', function () {
+        var answers = item.response && item.response.answers ? item.response.answers.filter(Boolean) : [];
+        var context = {
+          scene: visualSample.split('#')[1] || '',
+          studentName: item.displayName || '',
+          subject: item.subject || '',
+          question: item.teacherQuestion || (item.prompt && item.prompt.question) || item.studentCuriosity || '',
+          answerExcerpt: answers.length ? answers[answers.length - 1].slice(0, 360) : '',
+          createdAt: Date.now()
+        };
+        try { sessionStorage.setItem('jp-curator-sample-context-v1', JSON.stringify(context)); }
+        catch (error) { /* 저장이 막혀도 공통 시안은 그대로 열린다 */ }
+      });
+      actions.appendChild(visualButton);
+    }
     var sheetButton = element('button', 'action-review', 'Google Sheet에서 원문 열기 ↗');
     sheetButton.type = 'button';
     sheetButton.addEventListener('click', function () { window.open(SHEET_URL, '_blank', 'noopener'); });
