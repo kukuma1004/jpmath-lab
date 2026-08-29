@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="jp-nav-2.css?v=3">
-  <link rel="stylesheet" href="jp-home-2.css?v=1">
+  <link rel="stylesheet" href="jp-home-2.css?v=2">
   <script src="jp-nav-2.js?v=3" defer></script>
   <script src="jp-home-2.js?v=1" defer></script>
 </head>
@@ -75,7 +75,7 @@
   </div>
 
   <main id="main">
-    <section class="home-scene scene-intro is-visible" id="intro" data-scene="intro" data-header-theme="dark" aria-labelledby="introTitle">
+    <section class="home-scene scene-intro is-visible is-compact" id="intro" data-scene="intro" data-header-theme="dark" aria-labelledby="introTitle">
       <div class="scene-copy intro-copy">
         <p class="scene-index"><span>JP MATH LAB</span><i aria-hidden="true"></i> 수학 실험실</p>
         <h1 id="introTitle">수학을 보고, 움직이고,<br><em>직접 발견하는 공간.</em></h1>
@@ -87,90 +87,38 @@
         <div class="intro-orbit orbit-b"></div>
         <span class="intro-symbol symbol-x">x</span>
         <span class="intro-symbol symbol-v">v</span>
-        <span class="intro-symbol symbol-d">Δ</span>
-      </div>
-      <a class="scroll-cue" href="#today" aria-label="오늘의 미적분 장면으로 이동">
-        <span>아래로 탐색</span><i aria-hidden="true"></i>
-      </a>
-    </section>
-
-    <section class="home-scene scene-today" id="today" data-scene="today" data-header-theme="light" aria-labelledby="todayTitle">
-      <div class="scene-copy">
-        <p class="scene-index"><span>01</span><i aria-hidden="true"></i> 오늘의 미적분</p>
-        <h2 id="todayTitle">하나의 함수를<br><em>여러 관점으로 읽어보세요.</em></h2>
-        <p class="scene-description" id="dailyFunctionText">점을 움직이면 함수값과 순간변화율이 함께 바뀝니다.</p>
-        <a class="scene-cta" href="미적분1/오늘의_미적분.html"><span>오늘의 도전 시작하기</span><i aria-hidden="true">→</i></a>
-      </div>
-      <div class="scene-object math-panel calculus-panel">
-        <div class="object-head" aria-hidden="true"><span>오늘의 함수</span><strong id="dailyFormula">f(x)</strong></div>
-        <canvas id="calculusCanvas" tabindex="0" role="img" aria-label="점을 좌우로 움직여 함수값과 접선 기울기를 확인하는 그래프. 방향키로도 조작할 수 있습니다."></canvas>
-        <div class="object-readout" aria-live="polite">
-          <span><small>위치</small><strong id="calcX">x = 0.00</strong></span>
-          <span><small>함수값</small><strong id="calcY">f(x) = 0.00</strong></span>
-          <span><small>순간변화율</small><strong id="calcSlope">f′(x) = 0.00</strong></span>
-        </div>
-        <p class="object-hint">그래프 위를 누르거나 좌우 방향키로 움직여 보세요.</p>
+        <span class="intro-symbol symbol-d">&#916;</span>
       </div>
     </section>
 
-    <section class="home-scene scene-space" id="space" data-scene="space" data-header-theme="dark" aria-labelledby="spaceTitle">
-      <div class="scene-copy">
-        <p class="scene-index"><span>02</span><i aria-hidden="true"></i> 공간과 기하</p>
-        <h2 id="spaceTitle">공간을<br><em>직접 만져보세요.</em></h2>
-        <p class="scene-description">벡터의 끝점을 잡아 움직이면 좌표와 크기, 방향이 동시에 달라집니다.</p>
-        <a class="scene-cta" href="기하/"><span>기하 실험실 들어가기</span><i aria-hidden="true">→</i></a>
+    <section class="home-rooms" data-scene="rooms" data-header-theme="light" aria-labelledby="roomsTitle">
+      <h2 class="rooms-title" id="roomsTitle">어디부터 볼까요</h2>
+      <div class="rooms-grid">
+        <a class="room-card room-calculus" href="미적분1/">
+          <span class="room-name">미적분Ⅰ</span>
+          <span class="room-line">변화를 움직여 보기</span>
+          <canvas id="calculusCanvas" aria-hidden="true"></canvas>
+          <span class="room-go">들어가기 <i aria-hidden="true">&#8594;</i></span>
+        </a>
+        <a class="room-card room-space" href="기하/">
+          <span class="room-name">기하</span>
+          <span class="room-line">공간을 직접 만지기</span>
+          <canvas id="spaceCanvas" aria-hidden="true"></canvas>
+          <span class="room-go">들어가기 <i aria-hidden="true">&#8594;</i></span>
+        </a>
+        <a class="room-card room-economy" href="경제수학/">
+          <span class="room-name">경제수학</span>
+          <span class="room-line">계산하고 선택하기</span>
+          <canvas id="economyCanvas" aria-hidden="true"></canvas>
+          <span class="room-go">들어가기 <i aria-hidden="true">&#8594;</i></span>
+        </a>
       </div>
-      <div class="scene-object math-panel space-panel">
-        <div class="object-head"><span>공간 벡터</span><strong id="vectorFormula">v = (2.0, 1.0, 1.5)</strong></div>
-        <canvas id="spaceCanvas" tabindex="0" role="img" aria-label="끝점을 끌어 공간 벡터를 바꾸는 실험. 방향키로도 조작할 수 있습니다."></canvas>
-        <div class="object-readout space-readout" aria-live="polite">
-          <span><small>크기</small><strong id="vectorLength">3.04</strong></span>
-          <span><small>xy 평면과의 각</small><strong id="vectorAngle">29.5°</strong></span>
-        </div>
-        <p class="object-hint">빛나는 끝점을 잡아 움직여 보세요.</p>
-      </div>
-    </section>
 
-    <section class="home-scene scene-economy" id="economy" data-scene="economy" data-header-theme="light" aria-labelledby="economyTitle">
-      <div class="scene-copy">
-        <p class="scene-index"><span>03</span><i aria-hidden="true"></i> 선택과 경제</p>
-        <h2 id="economyTitle">계산하고, 선택하고,<br><em>결과를 확인하세요.</em></h2>
-        <p class="scene-description">가격을 바꾸면 수요와 매출이 즉시 달라집니다. 가장 좋은 선택은 어디에 있을까요?</p>
-        <a class="scene-cta" href="경제수학/"><span>경제수학 시작하기</span><i aria-hidden="true">→</i></a>
-      </div>
-      <div class="scene-object math-panel economy-panel">
-        <div class="object-head"><span>가격 결정 실험</span><strong>R = 가격 × 수요</strong></div>
-        <canvas id="economyCanvas" role="img" aria-label="가격에 따라 수요와 매출이 달라지는 그래프"></canvas>
-        <label class="price-control" for="priceRange">
-          <span>판매 가격</span>
-          <input id="priceRange" type="range" min="4" max="18" value="10" step="0.5">
-          <strong id="priceValue">10.0</strong>
-        </label>
-        <div class="object-readout economy-readout" aria-live="polite">
-          <span><small>예상 수요</small><strong id="demandValue">60개</strong></span>
-          <span><small>예상 매출</small><strong id="revenueValue">600</strong></span>
-          <span><small>현재 판단</small><strong id="economyFeedback">균형을 살펴보세요</strong></span>
-        </div>
-      </div>
-    </section>
-
-    <section class="home-scene scene-questions" id="questions" data-scene="questions" data-header-theme="dark" aria-labelledby="questionsTitle">
-      <div class="question-field" aria-hidden="true">
-        <span style="--x:8%;--y:18%;--delay:.1s">무한히 나누면 정말 0이 될까?</span>
-        <span style="--x:58%;--y:13%;--delay:.4s">빛은 왜 포물선에서 한곳으로 모일까?</span>
-        <span style="--x:69%;--y:69%;--delay:.7s">가장 공정한 선택은 어떻게 계산할까?</span>
-        <span style="--x:13%;--y:76%;--delay:1s">움직임을 그래프로 모두 설명할 수 있을까?</span>
-        <span style="--x:44%;--y:43%;--delay:1.3s">정의가 달라지면 답도 달라질까?</span>
-      </div>
-      <div class="scene-copy question-copy">
-        <p class="scene-index"><span>04</span><i aria-hidden="true"></i> 학생의 질문</p>
-        <h2 id="questionsTitle">서로 다른 질문에서<br><em>수학이 시작됩니다.</em></h2>
-        <p class="scene-description">교육과정에서 출발한 호기심이 탐구와 발견을 거쳐 새로운 질문으로 이어집니다.</p>
-        <a class="scene-cta" href="주제탐구/orientation.html"><span>주제탐구 오리엔테이션 보기</span><i aria-hidden="true">→</i></a>
-      </div>
-      <p class="inquiry-flow" aria-label="교육과정에서 새로운 질문까지의 탐구 흐름">
-        <span>교육과정</span><i>→</i><span>호기심</span><i>→</i><span>탐구</span><i>→</i><span>발견</span><i>→</i><span>연결</span><i>→</i><span>새로운 질문</span>
-      </p>
+      <nav class="home-quick" aria-label="바로 가기">
+        <a href="미적분1/오늘의_미적분.html"><b>오늘의 도전</b><small>오늘의 함수를 깊게 보기</small></a>
+        <a href="수능문제/"><b>수능 문제 탐구</b><small>조건을 질문으로 바꾸기</small></a>
+        <a href="주제탐구/"><b>주제탐구</b><small>호기심을 탐구로 연결하기</small></a>
+      </nav>
     </section>
   </main>
 
