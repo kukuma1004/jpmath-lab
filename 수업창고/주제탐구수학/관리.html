@@ -10,10 +10,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=Noto+Serif+KR:wght@700;900&amp;display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../jp-math-typography.css?v=3">
-  <link rel="stylesheet" href="manager.css?v=11">
+  <link rel="stylesheet" href="manager.css?v=12">
   <link rel="stylesheet" href="../../jp-polish.css?v=11">
   <link rel="stylesheet" href="../../jp-nav-2.css?v=4">
-  <script src="manager.js?v=13" defer></script>
+  <script src="manager.js?v=14" defer></script>
   <script src="../../jp-polish.js?v=21" defer></script>
   <script src="../../jp-nav-2.js?v=3" data-jp-section="수업창고 / 탐구 운영실" defer></script>
 </head>
@@ -59,12 +59,14 @@
         <p>공개 전시는 학생 제출 즉시 바뀌지 않습니다. 원문 보존과 교사 승인을 거친 내용만 슬라이드에 반영합니다.</p>
       </div>
       <ol class="process-track">
-        <li class="is-live"><span>01</span><strong>주제선정</strong><p>관심 개념·궁금증·이유</p><small>학생 질문함</small></li>
-        <li><span>02</span><strong>가공 대기</strong><p>학생 원문 보존</p><small>Google Sheet</small></li>
-        <li><span>03</span><strong>교사 검토</strong><p>주제·핵심 질문·개념</p><small>큐레이터</small></li>
-        <li><span>04</span><strong>질문 정교화</strong><p>개인별 맞춤 발문</p><small>학생 질문함</small></li>
-        <li><span>05</span><strong>탐구·제작</strong><p>실험·실패·수정·웹앱</p><small>과정 기록</small></li>
-        <li><span>06</span><strong>전시 승인</strong><p>공개 블록과 슬라이드</p><small>교사 승인</small></li>
+        <li class="is-live"><span>01</span><strong>기초응답</strong><p>관심 개념·궁금증·선정 이유</p><small>학생 질문함</small></li>
+        <li><span>02</span><strong>가공·교사 검토</strong><p>주제·핵심 질문·교육과정 대조</p><small>교사 운영실</small></li>
+        <li><span>03</span><strong>질문 정교화</strong><p>맞춤 발문 3개와 학생 답변</p><small>학생 질문함</small></li>
+        <li><span>04</span><strong>탐구 설계</strong><p>가설·변인·자료·검증 방법</p><small>계획서</small></li>
+        <li><span>05</span><strong>탐구 수행</strong><p>계산·실험·자료 수집·근거</p><small>과정 기록</small></li>
+        <li><span>06</span><strong>제작·수정</strong><p>시각화·웹앱·실패·개선</p><small>결과물</small></li>
+        <li><span>07</span><strong>결과·전시 검토</strong><p>결론·한계·성찰·새 질문</p><small>전시 초안</small></li>
+        <li><span>08</span><strong>전시 승인</strong><p>교사가 승인한 내용만 공개</p><small>최종 공개</small></li>
       </ol>
     </section>
 
@@ -85,7 +87,7 @@
               <button type="button" data-subject="economics">경제수학</button>
               <button type="button" class="subject-review-tab" data-subject="subject-review">과목 확인</button>
             </div>
-            <label class="stage-filter" for="stageFilter"><span>진행 상태</span><select id="stageFilter"><option value="all">모든 단계</option><option value="intake">기초응답·가공 대기</option><option value="review">교사 검토·발문 대기</option><option value="prompt">발문 공개·답안 대기</option><option value="draft">답안 작성 중</option><option value="submitted">최종 제출</option></select></label>
+            <label class="stage-filter" for="stageFilter"><span>진행 상태</span><select id="stageFilter"><option value="all">모든 단계</option><option value="intake">기초응답·가공 대기</option><option value="review">교사 검토·발문 대기</option><option value="prompt">발문 공개·답안 대기</option><option value="draft">답안 작성 중</option><option value="submitted">발문 최종 제출</option><option value="design">탐구 설계</option><option value="making">탐구 수행·제작</option><option value="exhibit">전시 검토</option><option value="published">전시 승인</option></select></label>
           </div>
           <div class="browser-caption"><span id="resultCount" aria-live="polite">0개 탐구</span><small>학생의 탐구를 선택하세요</small></div>
           <div class="inquiry-list" id="inquiryList" aria-label="학생별 탐구 목록" aria-live="polite"></div>
@@ -108,15 +110,22 @@
           <article><span id="queuePrompt">—</span><strong>발문 공개·답안 대기</strong><small>학생이 답변을 시작하기 전</small></article>
           <article><span id="queueDraft">—</span><strong>답안 작성 중</strong><small>임시저장과 수정 가능 상태 유지</small></article>
           <article><span id="queueSubmitted">—</span><strong>최종 제출</strong><small>완료 답안은 보존</small></article>
+          <article><span>NEXT</span><strong>탐구 설계</strong><small>가설·변인·검증 방법 작성</small></article>
+          <article><span>WORK</span><strong>탐구·제작</strong><small>실제 근거와 실패·수정 기록</small></article>
+          <article><span>GATE</span><strong>전시 검토</strong><small>교사 승인 전에는 공개 금지</small></article>
         </div>
         <div class="request-card">
           <div class="request-status"><span>CODEX · WHOLE CLASS</span><small>학생별 상태 자동 판별 후 일괄 처리</small></div>
-          <pre id="handoffText">Google Sheet의 `학생명단`·`기초응답`·`학생발문`·`학생답변` 전체를 점검해서 학생별로 가능한 다음 단계까지 일괄 처리해 줘.
+          <pre id="handoffText">Google Sheet의 `학생명단`·`기초응답`·`학생발문`·`학생답변`과 후속 `탐구과정`·`전시자료`를 점검해서 학생별·탐구별로 가능한 다음 단계까지 일괄 처리해 줘. 후속 시트나 학생 입력 화면이 아직 없다면 기존 자료를 보존한 채 먼저 필요한 구조를 만들어 줘.
 - 기초응답이 2개 미만이면 상태와 원문을 그대로 유지해 줘.
 - 2개를 모두 썼고 처리상태가 `가공 대기` 또는 `수정됨 · 가공 대기`인 경우, 원문을 보존하고 과목별 주제 초안·핵심 질문·맞춤 발문 3개를 만들고 2022 개정 교육과정 원문과 대조한 성취기준 후보를 함께 기록해 `교사 검토`로 저장해 줘.
 - 두 탐구 모두 `교사 검토`이고 아직 발문이 없는 학생만 중복 없이 `학생발문`에 발행하고 `질문정교화`로 전환해 줘.
-- 발문 답안이 `작성 중`이면 수정 가능 상태를 유지하고, 최종 제출된 답안은 건드리지 말아 줘.
-처리한 학생·대기 학생·답안 작성 중·최종 제출 현황을 마지막에 요약해 줘.</pre>
+- 발문 답안이 `작성 중`이면 수정 가능 상태를 유지해 줘. 발문 3개에 대한 답변이 최종 제출된 탐구는 답변 원문을 근거로 가설·예상, 탐구 방법, 변인·자료, 검증 방법, 제작 계획을 포함한 `탐구 설계` 초안을 만들되 실제 결과는 만들지 말아 줘.
+- 학생이 탐구 설계를 확인한 뒤 실제 계산·실험·자료 수집·시각화·웹앱 제작 과정과 실패·수정을 기록할 수 있게 하고, 작성 중에는 임시저장과 수정이 가능해야 해.
+- 실제 수행 기록이 최종 제출된 탐구만 결론·수학적 근거·한계·성찰·새 질문을 정리한 `전시 초안`으로 전환해 줘. 학생이 쓰지 않은 실험 결과나 근거를 추측해서 만들지 말아 줘.
+- `전시 초안`은 `전시 검토`로만 저장하고 공개하지 말아 줘. 교사가 명시적으로 `전시 승인`한 탐구만 중복 없이 공개 자료에 반영해 줘.
+- 단계는 학생 전체가 아니라 두 탐구 각각의 완료 여부로 판정하고, 학생 원문·임시저장·최종 제출·교사 피드백은 모두 보존해 줘.
+처리한 학생과 탐구를 `기초응답 대기`·`교사 검토`·`질문 정교화`·`탐구 설계`·`탐구 수행/제작`·`전시 검토`·`전시 승인`으로 나눠 마지막에 요약해 줘.</pre>
           <button id="copyHandoff" type="button">반 전체 운영 요청 복사</button>
         </div>
       </div>

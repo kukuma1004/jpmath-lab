@@ -399,6 +399,11 @@
   }
 
   function stageKey(item) {
+    var laterStage = String(item.inquiryStage || item.stageName || '');
+    if (/전시 승인/.test(laterStage)) return 'published';
+    if (/전시 검토|전시 초안/.test(laterStage)) return 'exhibit';
+    if (/탐구 수행|제작|결과 정리/.test(laterStage)) return 'making';
+    if (/탐구 설계/.test(laterStage)) return 'design';
     if (item.response) return item.response.reviewStatus === '작성 중' ? 'draft' : 'submitted';
     if (item.prompt) return 'prompt';
     if (/교사 검토|교사 승인/.test(item.processStatus || '') || item.reviewStatus === '승인') return 'review';
