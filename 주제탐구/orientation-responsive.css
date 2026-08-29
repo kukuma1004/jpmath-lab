@@ -1,0 +1,354 @@
+/* JP Math Lab · 주제탐구 오리엔테이션 반응형 보정
+   공개 학생용과 수업창고 교사용이 함께 사용한다. */
+
+html,
+body {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+.deck {
+  height: 100vh;
+  height: 100dvh;
+}
+
+.mobile-deck-nav { display: none; }
+
+/* 태블릿: 주제 목록과 선택 결과를 나란히 두어 복사 버튼을 놓치지 않게 한다. */
+@media (min-width: 701px) and (max-width: 1200px) {
+  .slide {
+    padding: 48px 38px 70px;
+  }
+
+  .slide[data-title="주제 브라우저"] {
+    padding-top: 34px;
+  }
+
+  .slide[data-title="주제 브라우저"] .tb {
+    display: grid;
+    grid-template-columns: minmax(0, 1.18fr) minmax(260px, .82fr) !important;
+    gap: 16px;
+    max-height: calc(100dvh - 150px);
+    min-height: 0;
+  }
+
+  .slide[data-title="주제 브라우저"] .topic-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .slide[data-title="주제 브라우저"] .topic-scroll,
+  .slide[data-title="주제 브라우저"] .tb-left,
+  .slide[data-title="주제 브라우저"] .tb-right {
+    min-height: 0;
+  }
+
+  .slide[data-title="주제 브라우저"] .basket {
+    position: sticky;
+    top: 0;
+    min-height: 0;
+    padding: 18px;
+  }
+
+  .slide[data-title="주제 브라우저"] .basket-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  #copyBasket {
+    min-height: 52px;
+    font-weight: 800;
+  }
+}
+
+/* 휴대폰·작은 태블릿 공통 슬라이드 이동 버튼 */
+@media (max-width: 900px) {
+  .mobile-deck-nav {
+    position: fixed;
+    z-index: 10020;
+    top: max(10px, env(safe-area-inset-top));
+    right: 10px;
+    display: grid;
+    grid-template-columns: 38px auto 38px;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    border: 1px solid rgba(47, 107, 92, .18);
+    border-radius: 999px;
+    background: rgba(255, 253, 248, .92);
+    box-shadow: 0 8px 24px rgba(23, 42, 36, .11);
+    backdrop-filter: blur(14px);
+  }
+
+  .mobile-deck-nav button {
+    display: grid;
+    width: 38px;
+    min-width: 38px;
+    min-height: 36px;
+    padding: 0;
+    place-items: center;
+    border: 0;
+    border-radius: 999px !important;
+    color: #2f6b5c;
+    background: transparent;
+    font-size: 20px;
+    cursor: pointer;
+  }
+
+  .mobile-deck-nav button:active { background: rgba(47, 107, 92, .1); }
+  .mobile-deck-nav button:disabled { opacity: .28; }
+
+  .mobile-deck-count {
+    min-width: 46px;
+    color: #51645d;
+    font: 800 11px/1 'JetBrains Mono', 'D2Coding', monospace;
+    text-align: center;
+  }
+}
+
+/* 휴대폰: 한 화면의 정보량을 줄이고, 긴 활동 슬라이드는 읽기 좋은 세로 문서로 바꾼다. */
+@media (max-width: 700px) {
+  .orientation-home {
+    top: max(10px, env(safe-area-inset-top)) !important;
+    left: 10px !important;
+    min-height: 42px !important;
+    padding: 0 12px !important;
+    font-size: 11px !important;
+  }
+
+  .deck { min-height: 100dvh; }
+
+  .slide {
+    justify-content: flex-start;
+    padding:
+      max(68px, calc(env(safe-area-inset-top) + 58px))
+      20px
+      max(76px, calc(env(safe-area-inset-bottom) + 64px));
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .slide:first-of-type.center,
+  .slide.section-break.center {
+    justify-content: center;
+  }
+
+  .slide.center:not(:first-of-type):not(.section-break) {
+    align-items: stretch;
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .h1,
+  h1.title {
+    margin-bottom: 14px;
+    font-size: clamp(30px, 9vw, 38px) !important;
+    line-height: 1.12 !important;
+    letter-spacing: -.055em !important;
+    word-break: keep-all;
+  }
+
+  .h2,
+  h2.title {
+    margin-bottom: 12px;
+    font-size: clamp(25px, 7.5vw, 32px) !important;
+    line-height: 1.2 !important;
+    word-break: keep-all;
+  }
+
+  .h3,
+  h3 { font-size: 22px !important; }
+
+  .h4,
+  h4 { font-size: 17px !important; }
+
+  .kicker {
+    font-size: 11px !important;
+    letter-spacing: .06em;
+  }
+
+  .lede {
+    max-width: none;
+    font-size: 15px !important;
+    line-height: 1.68 !important;
+    font-weight: 400;
+    word-break: keep-all;
+  }
+
+  .lede br { display: none; }
+  .mt-l { margin-top: 20px; }
+  .mt-m { margin-top: 13px; }
+
+  .deck-footer { display: none; }
+
+  .progress-bar {
+    top: 0;
+    bottom: auto;
+    height: 3px;
+  }
+
+  .flowchips {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 18px;
+    counter-reset: orientation-step;
+  }
+
+  .flowchips .farrow { display: none; }
+
+  .flowchips .fchip {
+    min-width: 0;
+    padding: 11px 9px;
+    border-radius: 14px;
+    font-size: 12px;
+    line-height: 1.25;
+    text-align: left;
+    counter-increment: orientation-step;
+  }
+
+  .flowchips .fchip::before {
+    margin-right: 4px;
+    content: counter(orientation-step, decimal-leading-zero) ' ·';
+    color: var(--text-3);
+    font: 700 9px var(--font-mono);
+  }
+
+  .grid.g2,
+  .grid.g3,
+  .grid.g4,
+  .claim-grid,
+  .game-grid,
+  .rule2,
+  .mission,
+  .demo-wrap {
+    grid-template-columns: 1fr !important;
+  }
+
+  .check-grid,
+  .steps8,
+  .lv-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .card,
+  .claim,
+  .gcard,
+  .chk,
+  .st8,
+  .lv,
+  .mcard,
+  .rule-col {
+    min-height: 0;
+    padding: 15px 16px;
+  }
+
+  .card p,
+  .claim .say,
+  .gcard p,
+  .chk p,
+  .st8 p,
+  .lv p,
+  .mcard p {
+    font-size: 13px !important;
+    line-height: 1.55;
+  }
+
+  .sec-no { font-size: 76px !important; }
+  .fx-bg { opacity: .16; }
+
+  .canvas-box { height: 240px; }
+  .prompt-box { min-height: 220px; }
+
+  .slide[data-title="주제 브라우저"] {
+    padding-top: max(64px, calc(env(safe-area-inset-top) + 54px));
+  }
+
+  .slide[data-title="주제 브라우저"] .tb {
+    display: flex;
+    flex: 0 0 auto;
+    max-height: none;
+    overflow: visible;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .slide[data-title="주제 브라우저"] .tb-right { order: -1; }
+
+  .slide[data-title="주제 브라우저"] .tb-left,
+  .slide[data-title="주제 브라우저"] .tb-right,
+  .slide[data-title="주제 브라우저"] .tb-filters,
+  .slide[data-title="주제 브라우저"] .topic-scroll {
+    flex: 0 0 auto;
+  }
+
+  .slide[data-title="주제 브라우저"] .basket {
+    min-height: 0;
+    padding: 15px;
+    border-style: solid;
+    box-shadow: 0 12px 30px rgba(23, 42, 36, .09) !important;
+  }
+
+  .slide[data-title="주제 브라우저"] .basket-list {
+    max-height: 150px;
+    overflow-y: auto;
+  }
+
+  .slide[data-title="주제 브라우저"] .basket .empty {
+    margin: 4px 0;
+    padding: 8px;
+  }
+
+  .slide[data-title="주제 브라우저"] .basket-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 7px;
+  }
+
+  .slide[data-title="주제 브라우저"] .basket-actions .btn {
+    min-height: 50px;
+    padding: 8px 13px;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .slide[data-title="주제 브라우저"] .tb-filters {
+    display: flex;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    gap: 6px;
+    padding: 2px 0 8px;
+    scrollbar-width: none;
+  }
+
+  .slide[data-title="주제 브라우저"] .tb-filters::-webkit-scrollbar { display: none; }
+  .slide[data-title="주제 브라우저"] .fbtn { flex: 0 0 auto; }
+
+  .slide[data-title="주제 브라우저"] .topic-scroll {
+    max-height: 52dvh;
+    min-height: 300px;
+    padding-right: 4px;
+  }
+
+  .slide[data-title="주제 브라우저"] .topic-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .slide[data-title="주제 브라우저"] .tcard {
+    min-height: 0;
+    padding: 13px 14px;
+  }
+
+  .copy-basket-status {
+    min-height: 20px;
+    margin: 8px 0 0;
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.5;
+  }
+}
+
+@media print {
+  .mobile-deck-nav { display: none !important; }
+}
