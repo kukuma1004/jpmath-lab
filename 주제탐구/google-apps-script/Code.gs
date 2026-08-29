@@ -3,6 +3,8 @@ const SHEET_NAMES = Object.freeze({
   intake: '기초응답',
   prompts: '학생발문',
   responses: '학생답변',
+  projects: '탐구과정',
+  exhibitions: '전시자료',
   settings: '설정'
 });
 
@@ -14,6 +16,8 @@ const SHEET_SCHEMAS = Object.freeze({
   '기초응답': ['제출ID', '제출일시', '학생코드', '학생ID', '이름', '과목', '관심개념', '궁금한점', '선정이유', '탐구방법', '웹앱아이디어', '학생메모', '처리상태', '교사확정주제', '교사확정질문', '가공메모', '수정일시', '수정횟수', '교사검토상태', '교사피드백', '과목확인'],
   '학생발문': ['학생코드', '학생ID', '탐구ID', '이름', '과목', '주제', '현재질문', '핵심개념', '발문1', '발문2', '발문3', '발문버전', '상태', '수정일'],
   '학생답변': ['제출ID', '제출시각', '학생코드', '학생ID', '탐구ID', '이름', '과목', '주제', '발문버전', '답변1', '답변2', '답변3', '새로운질문', '학생메모', '교사검토상태', '수정시각', '수정횟수', '교사피드백'],
+  '탐구과정': ['제출ID', '제출시각', '학생코드', '학생ID', '탐구ID', '이름', '과목', '주제', '단계', '예상가설', '탐구계획', '변인자료', '수행기록', '결과근거', '제작물링크', '실패수정', '수학적해석', '결론', '한계', '새질문', '학생메모', '제출상태', '수정시각', '수정횟수', '교사검토상태', '교사피드백'],
+  '전시자료': ['학생코드', '학생ID', '탐구ID', '이름', '과목', '전시제목', '출발질문', '핵심개념', '예상계획', '과정기록', '실패수정', '발견연결', '성찰새질문', '제작물링크', '상태', '승인일', '수정일'],
   '설정': ['설정키', '값', '설명']
 });
 
@@ -50,6 +54,9 @@ function showInquiryStatus() {
       '과목 확인 필요: ' + status.subjectReviewCount + '건',
       '발문 공개: ' + status.promptRows + '건',
       '학생답변: ' + status.responseRows + '건',
+      '탐구과정: ' + status.projectRows + '건',
+      '전시 검토: ' + status.exhibitionReviewRows + '건',
+      '전시 승인: ' + status.exhibitionApprovedRows + '건',
       '제출·수정 상태: ' + (status.submissionOpen ? '열림' : '닫힘')
     ].join('\n'),
     SpreadsheetApp.getUi().ButtonSet.OK
@@ -89,6 +96,9 @@ function getInquirySystemStatus() {
     subjectReviewCount: intakes.filter(function (row) { return subjectConcern_(row).needsReview; }).length,
     promptRows: getPromptRows_().filter(function (row) { return row['상태'] !== '비활성'; }).length,
     responseRows: getResponseRows_().length,
+    projectRows: getProjectRows_().length,
+    exhibitionReviewRows: getExhibitionRows_().filter(function (row) { return row['상태'] === '전시 검토'; }).length,
+    exhibitionApprovedRows: getExhibitionRows_().filter(function (row) { return row['상태'] === '전시 승인'; }).length,
     submissionOpen: String(getSetting_('SUBMISSION_OPEN')).toUpperCase() === 'TRUE'
   };
 }
@@ -134,17 +144,20 @@ function getStudentWorkspace(studentCode) {
     intakes: intakeRows.map(studentIntake_)
   };
 
-  if (student['상태'] === '질문정교화') {
+  if (['질문정교화', '탐구설계', '탐구진행', '전시검토'].indexOf(student['상태']) !== -1) {
     const rows = getPromptRows_().filter(function (row) {
       return normalizeCode_(row['학생코드']) === code && row['상태'] !== '비활성';
     });
     if (rows.length) {
       const responses = getResponseRows_().filter(function (row) { return normalizeCode_(row['학생코드']) === code; });
-      base.mode = 'prompts';
+      const projects = getProjectRows_().filter(function (row) { return normalizeCode_(row['학생코드']) === code; });
+      const exhibitions = getExhibitionRows_().filter(function (row) { return normalizeCode_(row['학생코드']) === code; });
       base.inquiries = rows.map(function (row) {
         const previous = responses.filter(function (response) {
           return response['탐구ID'] === row['탐구ID'] && response['발문버전'] === row['발문버전'];
         }).pop();
+        const project = projects.filter(function (record) { return record['탐구ID'] === row['탐구ID']; }).pop();
+        const exhibition = exhibitions.filter(function (record) { return record['탐구ID'] === row['탐구ID']; }).pop();
         return {
           id: row['탐구ID'],
           subject: row['과목'],
@@ -161,9 +174,15 @@ function getStudentWorkspace(studentCode) {
             reviewStatus: previous['교사검토상태'] || '검토 대기',
             teacherFeedback: previous['교사피드백'] || '',
             updatedAt: previous['수정시각'] || previous['제출시각']
-          } : null
+          } : null,
+          project: project ? studentProject_(project) : null,
+          exhibition: exhibition ? studentExhibition_(exhibition) : null
         };
       });
+      const allResponsesFinal = base.inquiries.length >= TARGET_INTAKE_COUNT && base.inquiries.every(function (item) {
+        return item.response && item.response.reviewStatus !== '작성 중';
+      });
+      base.mode = allResponsesFinal ? 'projects' : 'prompts';
       return base;
     }
   }
@@ -301,7 +320,7 @@ function submitStudentResponse(payload) {
     const student = getRosterRows_().find(function (row) {
       return normalizeCode_(row['학생코드']) === code && row['상태'] !== '비활성';
     });
-    if (!student || student['상태'] !== '질문정교화') return failure_('선생님이 다음 단계로 전환해 현재는 답변을 수정할 수 없습니다.');
+    if (!student || ['질문정교화', '탐구설계'].indexOf(student['상태']) === -1) return failure_('탐구 수행 단계가 시작되어 현재는 발문 답변을 수정할 수 없습니다.');
 
     const promptRow = getPromptRows_().find(function (row) {
       return normalizeCode_(row['학생코드']) === code && row['탐구ID'] === inquiryId && row['상태'] !== '비활성';
@@ -343,6 +362,19 @@ function submitStudentResponse(payload) {
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.responses);
     if (existing) updateRecordRow_(sheet, existing._rowNumber, record);
     else appendRecord_(sheet, record);
+    if (saveMode === 'final') {
+      const activePrompts = getPromptRows_().filter(function (row) {
+        return normalizeCode_(row['학생코드']) === code && row['상태'] !== '비활성';
+      });
+      const currentResponses = getResponseRows_().filter(function (row) { return normalizeCode_(row['학생코드']) === code; });
+      const allFinal = activePrompts.length >= TARGET_INTAKE_COUNT && activePrompts.every(function (prompt) {
+        const response = currentResponses.filter(function (row) {
+          return row['탐구ID'] === prompt['탐구ID'] && row['발문버전'] === prompt['발문버전'];
+        }).pop();
+        return response && response['교사검토상태'] !== '작성 중';
+      });
+      if (allFinal) updateRosterStatus_(student['학생ID'], '탐구설계');
+    }
     return {
       ok: true,
       submissionId: record['제출ID'],
@@ -356,6 +388,170 @@ function submitStudentResponse(payload) {
   } finally {
     lock.releaseLock();
   }
+}
+
+function submitProjectRecord(payload) {
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(10000)) return failure_('저장이 몰리고 있습니다. 잠시 후 다시 시도해 주세요.');
+  try {
+    if (String(getSetting_('SUBMISSION_OPEN')).toUpperCase() !== 'TRUE') return failure_('현재는 탐구 기록 제출·수정 기간이 아닙니다.');
+    payload = payload || {};
+    const code = normalizeCode_(payload.studentCode);
+    const inquiryId = cleanText_(payload.inquiryId, 120);
+    const submissionId = cleanText_(payload.submissionId, 120);
+    const saveMode = payload.saveMode === 'draft' ? 'draft' : 'final';
+    const fields = {
+      hypothesis: cleanText_(payload.hypothesis, 5000),
+      plan: cleanText_(payload.plan, 7000),
+      variablesData: cleanText_(payload.variablesData, 5000),
+      processRecord: cleanText_(payload.processRecord, 10000),
+      evidence: cleanText_(payload.evidence, 10000),
+      artifactLink: cleanText_(payload.artifactLink, 1000),
+      failureRevision: cleanText_(payload.failureRevision, 7000),
+      mathInterpretation: cleanText_(payload.mathInterpretation, 10000),
+      conclusion: cleanText_(payload.conclusion, 7000),
+      limitations: cleanText_(payload.limitations, 5000),
+      nextQuestion: cleanText_(payload.nextQuestion, 5000),
+      studentNote: cleanText_(payload.studentNote, 3000)
+    };
+    if (!code || !inquiryId) return failure_('학생 코드와 탐구 정보를 확인해 주세요.');
+    const substantive = [fields.hypothesis, fields.plan, fields.variablesData, fields.processRecord, fields.evidence,
+      fields.failureRevision, fields.mathInterpretation, fields.conclusion, fields.limitations, fields.nextQuestion];
+    if (saveMode === 'draft' && !substantive.some(Boolean) && !fields.artifactLink && !fields.studentNote) {
+      return failure_('임시저장할 탐구 내용을 한 글자 이상 적어 주세요.');
+    }
+    if (saveMode === 'final' && substantive.some(function (value) { return value.length < 2; })) {
+      return failure_('가설·계획·수행 기록·근거·해석·결론·한계·다음 질문을 모두 작성해 주세요.');
+    }
+
+    const student = getRosterRows_().find(function (row) {
+      return normalizeCode_(row['학생코드']) === code && row['상태'] !== '비활성';
+    });
+    if (!student || ['질문정교화', '탐구설계', '탐구진행', '전시검토'].indexOf(student['상태']) === -1) {
+      return failure_('아직 탐구·제작 단계를 시작할 수 없습니다. 발문 답변 두 건을 먼저 최종 제출해 주세요.');
+    }
+    const activePromptsForStudent = getPromptRows_().filter(function (row) {
+      return normalizeCode_(row['학생코드']) === code && row['상태'] !== '비활성';
+    });
+    const allResponseRows = getResponseRows_().filter(function (row) { return normalizeCode_(row['학생코드']) === code; });
+    const allResponsesFinal = activePromptsForStudent.length >= TARGET_INTAKE_COUNT && activePromptsForStudent.every(function (prompt) {
+      const finalResponse = allResponseRows.filter(function (row) {
+        return row['탐구ID'] === prompt['탐구ID'] && row['발문버전'] === prompt['발문버전'];
+      }).pop();
+      return finalResponse && finalResponse['교사검토상태'] !== '작성 중';
+    });
+    if (!allResponsesFinal) return failure_('두 탐구의 발문 답변을 모두 최종 제출한 뒤 시작할 수 있습니다.');
+    const promptRow = getPromptRows_().find(function (row) {
+      return normalizeCode_(row['학생코드']) === code && row['탐구ID'] === inquiryId && row['상태'] !== '비활성';
+    });
+    if (!promptRow) return failure_('탐구 정보를 찾지 못했습니다. 화면을 새로 불러와 주세요.');
+    const responses = getResponseRows_().filter(function (row) {
+      return normalizeCode_(row['학생코드']) === code && row['탐구ID'] === inquiryId && row['발문버전'] === promptRow['발문버전'];
+    });
+    const response = responses.pop();
+    if (!response || response['교사검토상태'] === '작성 중') return failure_('이 탐구의 발문 답변을 먼저 최종 제출해 주세요.');
+
+    const existing = getProjectRows_().find(function (row) {
+      return normalizeCode_(row['학생코드']) === code && row['탐구ID'] === inquiryId && (!submissionId || row['제출ID'] === submissionId);
+    });
+    if (submissionId && !existing) return failure_('수정할 탐구 기록을 찾지 못했습니다. 화면을 새로 불러와 주세요.');
+    const exhibition = getExhibitionRows_().find(function (row) {
+      return normalizeCode_(row['학생코드']) === code && row['탐구ID'] === inquiryId;
+    });
+    if (exhibition && exhibition['상태'] === '전시 승인') return failure_('전시 승인된 자료입니다. 수정이 필요하면 선생님께 먼저 승인 해제를 요청해 주세요.');
+
+    const now = new Date();
+    const hasExecution = Boolean(fields.processRecord || fields.evidence || fields.artifactLink);
+    const stage = saveMode === 'final' ? '전시 검토' : (hasExecution ? '탐구 수행·제작' : '탐구 설계');
+    const record = {
+      '제출ID': existing ? existing['제출ID'] : Utilities.getUuid(),
+      '제출시각': existing ? existing['제출시각'] : now,
+      '학생코드': code,
+      '학생ID': promptRow['학생ID'],
+      '탐구ID': inquiryId,
+      '이름': promptRow['이름'],
+      '과목': promptRow['과목'],
+      '주제': promptRow['주제'],
+      '단계': stage,
+      '예상가설': fields.hypothesis,
+      '탐구계획': fields.plan,
+      '변인자료': fields.variablesData,
+      '수행기록': fields.processRecord,
+      '결과근거': fields.evidence,
+      '제작물링크': fields.artifactLink,
+      '실패수정': fields.failureRevision,
+      '수학적해석': fields.mathInterpretation,
+      '결론': fields.conclusion,
+      '한계': fields.limitations,
+      '새질문': fields.nextQuestion,
+      '학생메모': fields.studentNote,
+      '제출상태': saveMode === 'draft' ? '작성 중' : '최종 제출',
+      '수정시각': now,
+      '수정횟수': existing ? Number(existing['수정횟수'] || 0) + 1 : 0,
+      '교사검토상태': saveMode === 'draft' ? '작성 중' : '전시 검토',
+      '교사피드백': existing ? existing['교사피드백'] : ''
+    };
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.projects);
+    if (existing) updateRecordRow_(sheet, existing._rowNumber, record);
+    else appendRecord_(sheet, record);
+    if (saveMode === 'final') {
+      upsertExhibitionDraft_(promptRow, response, record);
+      const activeInquiryIds = getPromptRows_().filter(function (row) {
+        return normalizeCode_(row['학생코드']) === code && row['상태'] !== '비활성';
+      }).map(function (row) { return row['탐구ID']; });
+      const currentProjects = getProjectRows_().filter(function (row) {
+        return normalizeCode_(row['학생코드']) === code && activeInquiryIds.indexOf(row['탐구ID']) !== -1;
+      });
+      const allProjectsFinal = activeInquiryIds.length >= TARGET_INTAKE_COUNT && activeInquiryIds.every(function (id) {
+        const project = currentProjects.filter(function (row) { return row['탐구ID'] === id; }).pop();
+        return project && project['제출상태'] === '최종 제출';
+      });
+      updateRosterStatus_(student['학생ID'], allProjectsFinal ? '전시검토' : '탐구진행');
+    } else if (student['상태'] !== '전시검토') {
+      updateRosterStatus_(student['학생ID'], hasExecution ? '탐구진행' : '탐구설계');
+    }
+    return {
+      ok: true,
+      submissionId: record['제출ID'],
+      draft: saveMode === 'draft',
+      stage: stage,
+      message: saveMode === 'draft' ? '탐구·제작 기록을 임시저장했습니다.' : '탐구 결과를 제출했습니다. 선생님의 전시 검토를 기다려 주세요.'
+    };
+  } catch (error) {
+    console.error(error);
+    return failure_('탐구 기록 저장 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function upsertExhibitionDraft_(promptRow, responseRow, projectRow) {
+  const existing = getExhibitionRows_().find(function (row) {
+    return normalizeCode_(row['학생코드']) === normalizeCode_(projectRow['학생코드']) && row['탐구ID'] === projectRow['탐구ID'];
+  });
+  const now = new Date();
+  const record = {
+    '학생코드': projectRow['학생코드'],
+    '학생ID': projectRow['학생ID'],
+    '탐구ID': projectRow['탐구ID'],
+    '이름': projectRow['이름'],
+    '과목': projectRow['과목'],
+    '전시제목': projectRow['주제'],
+    '출발질문': promptRow['현재질문'],
+    '핵심개념': promptRow['핵심개념'],
+    '예상계획': projectRow['탐구계획'],
+    '과정기록': projectRow['수행기록'] + (projectRow['결과근거'] ? '\n\n[결과와 근거]\n' + projectRow['결과근거'] : ''),
+    '실패수정': projectRow['실패수정'],
+    '발견연결': projectRow['수학적해석'] + (projectRow['결론'] ? '\n\n[결론]\n' + projectRow['결론'] : ''),
+    '성찰새질문': projectRow['한계'] + (projectRow['새질문'] ? '\n\n[다음 질문]\n' + projectRow['새질문'] : ''),
+    '제작물링크': projectRow['제작물링크'],
+    '상태': '전시 검토',
+    '승인일': existing ? existing['승인일'] : '',
+    '수정일': now
+  };
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.exhibitions);
+  if (existing) updateRecordRow_(sheet, existing._rowNumber, record);
+  else appendRecord_(sheet, record);
 }
 
 function getTeacherDashboard(token) {
@@ -452,6 +648,46 @@ function studentIntake_(row) {
   };
 }
 
+function studentProject_(row) {
+  return {
+    submissionId: row['제출ID'],
+    stage: row['단계'] || '탐구 설계',
+    hypothesis: row['예상가설'],
+    plan: row['탐구계획'],
+    variablesData: row['변인자료'],
+    processRecord: row['수행기록'],
+    evidence: row['결과근거'],
+    artifactLink: row['제작물링크'],
+    failureRevision: row['실패수정'],
+    mathInterpretation: row['수학적해석'],
+    conclusion: row['결론'],
+    limitations: row['한계'],
+    nextQuestion: row['새질문'],
+    studentNote: row['학생메모'],
+    submissionStatus: row['제출상태'] || '작성 중',
+    reviewStatus: row['교사검토상태'] || '작성 중',
+    teacherFeedback: row['교사피드백'] || '',
+    updatedAt: row['수정시각'] || row['제출시각']
+  };
+}
+
+function studentExhibition_(row) {
+  return {
+    title: row['전시제목'],
+    openingQuestion: row['출발질문'],
+    concepts: row['핵심개념'],
+    plan: row['예상계획'],
+    process: row['과정기록'],
+    revision: row['실패수정'],
+    findings: row['발견연결'],
+    reflection: row['성찰새질문'],
+    artifactLink: row['제작물링크'],
+    status: row['상태'] || '전시 검토',
+    approvedAt: row['승인일'],
+    updatedAt: row['수정일']
+  };
+}
+
 function subjectConcern_(row) {
   if (row['과목확인'] === '확인 완료') return { needsReview: false, reason: '' };
   const subject = row['과목'];
@@ -479,6 +715,8 @@ function getRosterRows_() { return getRows_(SHEET_NAMES.roster); }
 function getIntakeRows_() { return getRows_(SHEET_NAMES.intake); }
 function getPromptRows_() { return getRows_(SHEET_NAMES.prompts); }
 function getResponseRows_() { return getRows_(SHEET_NAMES.responses); }
+function getProjectRows_() { return getRows_(SHEET_NAMES.projects); }
+function getExhibitionRows_() { return getRows_(SHEET_NAMES.exhibitions); }
 
 function getRows_(sheetName) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
@@ -686,7 +924,16 @@ function serveInquiryFeed_(params) {
   if (!validTeacherToken_(params.token)) {
     body = { ok: false, error: '교사용 열쇠가 올바르지 않습니다. 시트에서 링크를 다시 받아 주세요.' };
   } else {
-    body = buildManagerLiveFeed_();
+    if (params.action === 'setExhibitionStatus') {
+      const changed = setExhibitionStatus_(params);
+      if (!changed.ok) body = changed;
+      else {
+        body = buildManagerLiveFeed_();
+        body.message = changed.message;
+      }
+    } else {
+      body = buildManagerLiveFeed_();
+    }
   }
   const json = JSON.stringify(body);
   if (!callback) {
@@ -694,6 +941,53 @@ function serveInquiryFeed_(params) {
   }
   return ContentService.createTextOutput(callback + '(' + json + ');')
     .setMimeType(ContentService.MimeType.JAVASCRIPT);
+}
+
+function setExhibitionStatus_(params) {
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(10000)) return failure_('다른 저장 작업이 진행 중입니다. 잠시 후 다시 시도해 주세요.');
+  try {
+    const code = normalizeCode_(params.studentCode);
+    const inquiryId = cleanText_(params.inquiryId, 120);
+    const nextStatus = params.status === '전시 승인' ? '전시 승인' : (params.status === '전시 검토' ? '전시 검토' : '');
+    if (!code || !inquiryId || !nextStatus) return failure_('전시 검토 정보를 확인해 주세요.');
+    const row = getExhibitionRows_().find(function (item) {
+      return normalizeCode_(item['학생코드']) === code && item['탐구ID'] === inquiryId;
+    });
+    if (!row) return failure_('전시 자료를 찾지 못했습니다. 학생의 탐구 기록 최종 제출 여부를 확인해 주세요.');
+    const now = new Date();
+    updateRecordRow_(SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.exhibitions), row._rowNumber, {
+      '상태': nextStatus,
+      '승인일': nextStatus === '전시 승인' ? now : '',
+      '수정일': now
+    });
+    const project = getProjectRows_().find(function (item) {
+      return normalizeCode_(item['학생코드']) === code && item['탐구ID'] === inquiryId;
+    });
+    if (project) updateRecordRow_(SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.projects), project._rowNumber, {
+      '교사검토상태': nextStatus
+    });
+    const student = getRosterRows_().find(function (item) { return normalizeCode_(item['학생코드']) === code; });
+    if (student) {
+      const activeInquiryIds = getPromptRows_().filter(function (item) {
+        return normalizeCode_(item['학생코드']) === code && item['상태'] !== '비활성';
+      }).map(function (item) { return item['탐구ID']; });
+      const currentExhibitions = getExhibitionRows_().filter(function (item) {
+        return normalizeCode_(item['학생코드']) === code && activeInquiryIds.indexOf(item['탐구ID']) !== -1;
+      });
+      const allApproved = activeInquiryIds.length >= TARGET_INTAKE_COUNT && activeInquiryIds.every(function (id) {
+        const exhibition = currentExhibitions.filter(function (item) { return item['탐구ID'] === id; }).pop();
+        return exhibition && exhibition['상태'] === '전시 승인';
+      });
+      updateRosterStatus_(student['학생ID'], allApproved ? '전시승인' : '전시검토');
+    }
+    return { ok: true, message: row['이름'] + ' 학생의 전시 자료를 `' + nextStatus + '` 상태로 저장했습니다.' };
+  } catch (error) {
+    console.error(error);
+    return failure_('전시 상태를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.');
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 /**
@@ -708,6 +1002,8 @@ function buildManagerLiveFeed_() {
   const intakes = getIntakeRows_();
   const prompts = getPromptRows_().filter(function (row) { return row['상태'] !== '비활성'; });
   const responses = getResponseRows_();
+  const projects = getProjectRows_();
+  const exhibitions = getExhibitionRows_();
   const rosterByCode = {};
   roster.forEach(function (row) { rosterByCode[normalizeCode_(row['학생코드'])] = row; });
 
@@ -725,6 +1021,12 @@ function buildManagerLiveFeed_() {
       return normalizeCode_(prompt['학생코드']) === code && prompt['과목'] === row['과목'];
     }).pop() || null;
     const responseRow = promptRow ? latestResponse[[code, promptRow['탐구ID'], promptRow['발문버전']].join('|')] || null : null;
+    const projectRow = promptRow ? projects.filter(function (project) {
+      return normalizeCode_(project['학생코드']) === code && project['탐구ID'] === promptRow['탐구ID'];
+    }).pop() || null : null;
+    const exhibitionRow = promptRow ? exhibitions.filter(function (exhibition) {
+      return normalizeCode_(exhibition['학생코드']) === code && exhibition['탐구ID'] === promptRow['탐구ID'];
+    }).pop() || null : null;
     const subjectKey = EXPORT_SUBJECT_KEYS[row['과목']] || 'subject-review';
     const title = (promptRow && promptRow['주제']) || row['교사확정주제'] || row['관심개념'] || row['궁금한점'];
     const question = (promptRow && promptRow['현재질문']) || row['교사확정질문'] || row['궁금한점'];
@@ -760,7 +1062,17 @@ function buildManagerLiveFeed_() {
       curriculumStandards: [],
       concepts: promptRow ? String(promptRow['핵심개념'] || '').split(/[,\n]/).map(function (value) { return value.trim(); }).filter(Boolean) : [],
       curriculumMapping: 'draft',
-      status: responseRow && responseStatus !== '작성 중' ? 'response-submitted' : (responseRow ? 'response-draft' : (promptRow ? 'prompt-published' : 'topic-submitted')),
+      status: (function () {
+        if (exhibitionRow && exhibitionRow['상태'] === '전시 승인') return 'exhibition-approved';
+        if (exhibitionRow) return 'exhibition-review';
+        if (projectRow && projectRow['제출상태'] === '최종 제출') return 'project-submitted';
+        if (projectRow) return 'project-draft';
+        if (responseRow && responseStatus !== '작성 중') return 'response-submitted';
+        if (responseRow) return 'response-draft';
+        return promptRow ? 'prompt-published' : 'topic-submitted';
+      }()),
+      inquiryStage: exhibitionRow ? exhibitionRow['상태'] : (projectRow ? projectRow['단계'] :
+        (responseRow && responseStatus !== '작성 중' ? '탐구 설계' : (responseRow ? '발문 답변 작성' : (promptRow ? '질문 정교화' : '기초응답')))),
       visibility: 'private',
       prompt: promptRow ? {
         inquiryId: promptRow['탐구ID'],
@@ -782,11 +1094,15 @@ function buildManagerLiveFeed_() {
         revisionCount: Number(responseRow['수정횟수'] || 0),
         submittedAt: responseRow['제출시각'],
         updatedAt: responseRow['수정시각'] || responseRow['제출시각']
-      } : null
+      } : null,
+      project: projectRow ? studentProject_(projectRow) : null,
+      exhibition: exhibitionRow ? studentExhibition_(exhibitionRow) : null
     };
   });
 
   const responseItems = items.filter(function (item) { return item.response; });
+  const projectItems = items.filter(function (item) { return item.project; });
+  const exhibitionItems = items.filter(function (item) { return item.exhibition; });
   return {
     ok: true,
     syncedAt: Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss'),
@@ -800,7 +1116,11 @@ function buildManagerLiveFeed_() {
       intakes: intakes.length,
       prompts: items.filter(function (item) { return item.prompt; }).length,
       responseDrafts: responseItems.filter(function (item) { return item.response.reviewStatus === '작성 중'; }).length,
-      responseSubmitted: responseItems.filter(function (item) { return item.response.reviewStatus !== '작성 중'; }).length
+      responseSubmitted: responseItems.filter(function (item) { return item.response.reviewStatus !== '작성 중'; }).length,
+      projectDrafts: projectItems.filter(function (item) { return item.project.submissionStatus === '작성 중'; }).length,
+      projectSubmitted: projectItems.filter(function (item) { return item.project.submissionStatus === '최종 제출'; }).length,
+      exhibitionReview: exhibitionItems.filter(function (item) { return item.exhibition.status === '전시 검토'; }).length,
+      exhibitionApproved: exhibitionItems.filter(function (item) { return item.exhibition.status === '전시 승인'; }).length
     }
   };
 }

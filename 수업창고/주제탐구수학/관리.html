@@ -51,6 +51,8 @@
       <article class="overview-card"><span>발문 공개</span><strong id="metricPrompts">—</strong><small>학생 화면에 전달됨</small></article>
       <article class="overview-card"><span>작성 중</span><strong id="metricDraftResponses">—</strong><small>임시저장 답안</small></article>
       <article class="overview-card accent"><span>최종 제출</span><strong id="metricSubmittedResponses">—</strong><small>발문 답안 제출 완료</small></article>
+      <article class="overview-card"><span>탐구·제작</span><strong id="metricProjects">—</strong><small>작성 중 / 최종 제출</small></article>
+      <article class="overview-card accent"><span>전시</span><strong id="metricExhibitions">—</strong><small>검토 중 / 승인</small></article>
     </section>
 
     <section class="process-board" aria-labelledby="processTitle">
@@ -110,9 +112,10 @@
           <article><span id="queuePrompt">—</span><strong>발문 공개·답안 대기</strong><small>학생이 답변을 시작하기 전</small></article>
           <article><span id="queueDraft">—</span><strong>답안 작성 중</strong><small>임시저장과 수정 가능 상태 유지</small></article>
           <article><span id="queueSubmitted">—</span><strong>최종 제출</strong><small>완료 답안은 보존</small></article>
-          <article><span>NEXT</span><strong>탐구 설계</strong><small>가설·변인·검증 방법 작성</small></article>
-          <article><span>WORK</span><strong>탐구·제작</strong><small>실제 근거와 실패·수정 기록</small></article>
-          <article><span>GATE</span><strong>전시 검토</strong><small>교사 승인 전에는 공개 금지</small></article>
+          <article><span id="queueDesign">—</span><strong>탐구 설계</strong><small>가설·변인·검증 방법 작성</small></article>
+          <article><span id="queueMaking">—</span><strong>탐구·제작</strong><small>실제 근거와 실패·수정 기록</small></article>
+          <article><span id="queueExhibit">—</span><strong>전시 검토</strong><small>교사 승인 전에는 공개 금지</small></article>
+          <article><span id="queuePublished">—</span><strong>전시 승인</strong><small>승인한 내용만 공개 전시</small></article>
         </div>
         <div class="request-card">
           <div class="request-status"><span>CODEX · WHOLE CLASS</span><small>학생별 상태 자동 판별 후 일괄 처리</small></div>

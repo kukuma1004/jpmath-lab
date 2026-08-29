@@ -85,7 +85,7 @@
 
   // Apps Script 웹앱은 다른 도메인이라 JSONP 로 읽는다.
   // 실패 사유를 뭉뚱그리면 어디를 고쳐야 할지 알 수 없으니 나눠서 돌려준다.
-  function fetchFeed(token) {
+  function fetchFeed(token, parameters) {
     return new Promise(function (resolve, reject) {
       var base = feedBase();
       if (!base) { reject(feedError('nobase')); return; }
@@ -99,7 +99,11 @@
       }
       window[name] = function (payload) { cleanup(); resolve(payload); };
       script.onerror = function () { cleanup(); reject(feedError('unreachable')); };
-      script.src = base + '?view=inquiries&token=' + encodeURIComponent(token) +
+      var query = '';
+      Object.keys(parameters || {}).forEach(function (key) {
+        query += '&' + encodeURIComponent(key) + '=' + encodeURIComponent(parameters[key]);
+      });
+      script.src = base + '?view=inquiries&token=' + encodeURIComponent(token) + query +
         '&callback=' + name + '&_=' + Date.now();
       document.head.appendChild(script);
     });
@@ -156,6 +160,26 @@
       if (quiet) return null;
       throw error;
     });
+  }
+
+  function setExhibitionStatus(item, status, button) {
+    var token = savedToken();
+    if (!token || !item.exhibition) return;
+    var wording = status === '전시 승인' ? '이 탐구를 전시 승인할까요? 승인된 내용만 공개 자료로 사용할 수 있습니다.' : '전시 승인을 해제하고 다시 검토 상태로 돌릴까요?';
+    if (!window.confirm(wording)) return;
+    button.disabled = true;
+    button.textContent = '저장 중…';
+    fetchFeed(token, { action: 'setExhibitionStatus', studentCode: item.studentCode, inquiryId: item.prompt.inquiryId, status: status })
+      .then(function (payload) {
+        if (!payload || !payload.ok) throw feedError('denied', payload && (payload.error || payload.message));
+        paintFeed(payload);
+        renderFeedPanel();
+      })
+      .catch(function (error) {
+        button.disabled = false;
+        button.textContent = status === '전시 승인' ? '전시 승인' : '승인 해제·재검토';
+        window.alert(feedMessage(error));
+      });
   }
 
   function renderFeedPanel() {
@@ -374,6 +398,8 @@
       document.getElementById('metricPrompts').textContent = stats.prompts;
       document.getElementById('metricDraftResponses').textContent = stats.responseDrafts;
       document.getElementById('metricSubmittedResponses').textContent = stats.responseSubmitted;
+      document.getElementById('metricProjects').textContent = (stats.projectDrafts || 0) + ' / ' + (stats.projectSubmitted || 0);
+      document.getElementById('metricExhibitions').textContent = (stats.exhibitionReview || 0) + ' / ' + (stats.exhibitionApproved || 0);
       updateWorkflowSummary();
       return;
     }
@@ -387,10 +413,14 @@
     document.getElementById('metricPrompts').textContent = '—';
     document.getElementById('metricDraftResponses').textContent = '—';
     document.getElementById('metricSubmittedResponses').textContent = '—';
+    document.getElementById('metricProjects').textContent = '—';
+    document.getElementById('metricExhibitions').textContent = '—';
     updateWorkflowSummary();
   }
 
   function progressLabel(item) {
+    if (item.exhibition) return item.exhibition.status + (item.exhibition.status === '전시 승인' ? ' · 공개 가능' : ' · 승인 전 비공개');
+    if (item.project) return item.project.submissionStatus === '최종 제출' ? '탐구 결과 제출 · 전시 검토' : item.project.stage + ' · 임시저장';
     if (item.response) return item.response.reviewStatus === '작성 중' ? '답안 작성 중 · 임시저장' : '발문 답안 제출 · ' + item.response.reviewStatus;
     if (item.prompt) return '발문 공개 · 답안 대기';
     if (/교사 검토|교사 승인/.test(item.processStatus || '') || item.reviewStatus === '승인') return '교사 검토 완료 · 발문 대기';
@@ -411,9 +441,9 @@
   }
 
   function updateWorkflowSummary() {
-    var counts = { intake: 0, review: 0, prompt: 0, draft: 0, submitted: 0 };
+    var counts = { intake: 0, review: 0, prompt: 0, draft: 0, submitted: 0, design: 0, making: 0, exhibit: 0, published: 0 };
     state.inquiries.forEach(function (item) { counts[stageKey(item)] += 1; });
-    ['Intake', 'Review', 'Prompt', 'Draft', 'Submitted'].forEach(function (name) {
+    ['Intake', 'Review', 'Prompt', 'Draft', 'Submitted', 'Design', 'Making', 'Exhibit', 'Published'].forEach(function (name) {
       var node = document.getElementById('queue' + name);
       if (node) node.textContent = state.dataSource === 'live-sheet' ? counts[name.toLowerCase()] + '건' : '—';
     });
@@ -661,13 +691,20 @@
     var hasPrompt = Boolean(item.prompt);
     var hasResponse = Boolean(item.response);
     var isFinal = hasResponse && item.response.reviewStatus !== '작성 중';
+    var hasProject = Boolean(item.project);
+    var projectFinal = hasProject && item.project.submissionStatus === '최종 제출';
+    var hasExhibition = Boolean(item.exhibition);
+    var exhibitionApproved = hasExhibition && item.exhibition.status === '전시 승인';
     var reviewed = hasPrompt || /교사 검토|교사 승인/.test(item.processStatus || '') || item.reviewStatus === '승인';
     var stages = [
       { label: '기초응답', detail: '원문 저장', ready: true, current: !reviewed },
       { label: '교사 검토', detail: item.reviewStatus || '검토 대기', ready: reviewed, current: reviewed && !hasPrompt },
       { label: '발문 공개', detail: hasPrompt ? '학생 화면 노출' : '발행 대기', ready: hasPrompt, current: hasPrompt && !hasResponse },
-      { label: '학생 작성', detail: hasResponse ? (isFinal ? '답안 작성 완료' : '임시저장 있음') : '답안 대기', ready: hasResponse, current: hasResponse && !isFinal },
-      { label: '최종 제출', detail: isFinal ? item.response.reviewStatus : '제출 전', ready: isFinal, current: isFinal }
+      { label: '발문 답변', detail: hasResponse ? (isFinal ? '최종 제출' : '임시저장') : '답안 대기', ready: hasResponse, current: hasResponse && !isFinal },
+      { label: '탐구 설계', detail: hasProject ? (item.project.stage || '작성 중') : (isFinal ? '시작 가능' : '답변 완료 전'), ready: isFinal, current: isFinal && !hasProject },
+      { label: '수행·제작', detail: hasProject ? item.project.submissionStatus : '기록 전', ready: hasProject, current: hasProject && !projectFinal },
+      { label: '전시 검토', detail: hasExhibition ? item.exhibition.status : '제출 전', ready: projectFinal, current: projectFinal && !exhibitionApproved },
+      { label: '전시 승인', detail: exhibitionApproved ? '공개 가능' : '승인 전 비공개', ready: exhibitionApproved, current: exhibitionApproved }
     ];
     var section = element('section', 'curator-section live-progress-section');
     var heading = element('div', 'section-label');
@@ -767,6 +804,64 @@
       }
     }
     panel.appendChild(promptSection);
+
+    var projectSection = element('section', 'curator-section');
+    var projectLabel = element('div', 'section-label');
+    projectLabel.appendChild(element('h3', '', '탐구·제작 기록'));
+    projectLabel.appendChild(element('small', '', item.project ? ((item.project.stage || '탐구 설계') + ' · ' + (item.project.submissionStatus || '작성 중')) : '발문 답안 최종 제출 후 시작'));
+    projectSection.appendChild(projectLabel);
+    if (!item.project) {
+      var projectWaiting = element('div', 'live-waiting');
+      projectWaiting.appendChild(element('strong', '', '아직 탐구·제작 기록이 없습니다.'));
+      projectWaiting.appendChild(element('p', '', '두 탐구의 발문 답변을 모두 최종 제출하면 학생 화면에 설계·수행·해석 기록란이 열립니다.'));
+      projectSection.appendChild(projectWaiting);
+    } else {
+      var projectGrid = element('div', 'live-answer-grid');
+      addLiveAnswer(projectGrid, '예상 또는 가설', item.project.hypothesis, 'wide');
+      addLiveAnswer(projectGrid, '탐구 계획', item.project.plan);
+      addLiveAnswer(projectGrid, '변인·자료', item.project.variablesData);
+      addLiveAnswer(projectGrid, '수행 과정', item.project.processRecord, 'wide');
+      addLiveAnswer(projectGrid, '결과와 근거', item.project.evidence, 'wide');
+      addLiveAnswer(projectGrid, '실패와 수정', item.project.failureRevision, 'wide');
+      addLiveAnswer(projectGrid, '수학적 해석', item.project.mathInterpretation, 'wide');
+      addLiveAnswer(projectGrid, '결론', item.project.conclusion);
+      addLiveAnswer(projectGrid, '한계', item.project.limitations);
+      addLiveAnswer(projectGrid, '다음 질문', item.project.nextQuestion, 'wide');
+      if (item.project.artifactLink) addLiveAnswer(projectGrid, '제작물 링크', item.project.artifactLink, 'wide');
+      if (item.project.studentNote) addLiveAnswer(projectGrid, '학생 메모', item.project.studentNote, 'wide');
+      projectSection.appendChild(projectGrid);
+    }
+    panel.appendChild(projectSection);
+
+    var exhibitSection = element('section', 'curator-section');
+    var exhibitLabel = element('div', 'section-label');
+    exhibitLabel.appendChild(element('h3', '', '전시 자료'));
+    exhibitLabel.appendChild(element('small', '', item.exhibition ? item.exhibition.status : '전시 초안 없음'));
+    exhibitSection.appendChild(exhibitLabel);
+    if (!item.exhibition) {
+      var exhibitWaiting = element('div', 'live-waiting');
+      exhibitWaiting.appendChild(element('strong', '', '전시 검토 전입니다.'));
+      exhibitWaiting.appendChild(element('p', '', '학생이 실제 수행 기록을 최종 제출하면 학생 원문만으로 전시 초안이 만들어집니다.'));
+      exhibitSection.appendChild(exhibitWaiting);
+    } else {
+      var exhibitGrid = element('div', 'live-answer-grid');
+      addLiveAnswer(exhibitGrid, '전시 제목', item.exhibition.title);
+      addLiveAnswer(exhibitGrid, '출발 질문', item.exhibition.openingQuestion);
+      addLiveAnswer(exhibitGrid, '과정 기록', item.exhibition.process, 'wide');
+      addLiveAnswer(exhibitGrid, '발견과 연결', item.exhibition.findings, 'wide');
+      addLiveAnswer(exhibitGrid, '성찰과 새 질문', item.exhibition.reflection, 'wide');
+      exhibitSection.appendChild(exhibitGrid);
+      if (item.exhibition.status !== '전시 승인') exhibitSection.appendChild(element('p', 'response-sync-note', '교사 승인 전이므로 공개 전시에는 표시되지 않습니다.'));
+      var exhibitActions = element('div', 'curator-actions');
+      var exhibitButton = element('button', item.exhibition.status === '전시 승인' ? 'action-secondary' : 'action-review', item.exhibition.status === '전시 승인' ? '승인 해제·재검토' : '전시 승인');
+      exhibitButton.type = 'button';
+      exhibitButton.addEventListener('click', function () {
+        setExhibitionStatus(item, item.exhibition.status === '전시 승인' ? '전시 검토' : '전시 승인', exhibitButton);
+      });
+      exhibitActions.appendChild(exhibitButton);
+      exhibitSection.appendChild(exhibitActions);
+    }
+    panel.appendChild(exhibitSection);
 
     var actions = element('div', 'curator-actions');
     var sheetButton = element('button', 'action-review', 'Google Sheet에서 원문 열기 ↗');

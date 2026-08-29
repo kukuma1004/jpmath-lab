@@ -65,7 +65,7 @@ button { cursor: pointer; }
 .connection-note { display: flex; gap: 10px; margin-top: 17px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.1); color: #b8cac5; font-size: 12px; line-height: 1.6; }
 .connection-note strong { flex: 0 0 auto; color: var(--yellow); }
 
-.overview { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 14px 0 90px; }
+.overview { display: grid; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); gap: 10px; margin: 14px 0 90px; }
 .overview-card { min-height: 140px; padding: 20px; border: 1px solid var(--line); border-radius: 18px; background: rgba(251,252,247,.85); }
 .overview-card.primary { color: white; border-color: var(--green); background: var(--green); }
 .overview-card.accent { background: var(--orange-soft); }
@@ -188,6 +188,7 @@ button { cursor: pointer; }
 .curator-actions button { min-height: 40px; padding: 0 13px; border: 0; border-radius: 9px; font-size: 12px; font-weight: 700; }
 .action-copy { color: white; background: var(--green); }
 .action-review { color: #98502f; background: var(--orange-soft); }
+.action-secondary { color: var(--green); background: var(--green-soft); }
 .action-publish { color: #919b98; background: #e6e9e5; cursor: not-allowed; }
 
 .next-action { display: grid; grid-template-columns: .72fr 1.28fr; gap: 60px; align-items: start; }
@@ -306,7 +307,7 @@ footer { display: flex; justify-content: space-between; gap: 20px; padding: 28px
 .live-panel-warn{display:block;margin-top:9px;color:#8a5f10;font-size:11.5px;line-height:1.55}
 .live-private-badge{color:#fff;background:var(--green)}
 .live-progress-section{margin-top:22px;padding-top:0;border-top:0}
-.live-progress-track{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.live-progress-track{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:7px}
 .live-progress-step{position:relative;min-height:100px;padding:13px 11px;border:1px dashed #ced6d1;border-radius:13px;color:#8a9692;background:#f4f6f2}
 .live-progress-step::after{position:absolute;top:50%;right:-8px;z-index:2;color:#a9b3af;content:'›';transform:translateY(-50%)}
 .live-progress-step:last-child::after{display:none}
