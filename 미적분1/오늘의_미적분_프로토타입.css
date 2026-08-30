@@ -143,6 +143,11 @@ body.player-gate-open {
   white-space: nowrap;
 }
 
+.player-chip:disabled {
+  cursor: default;
+  opacity: .58;
+}
+
 .player-hello {
   display: flex;
   align-items: center;

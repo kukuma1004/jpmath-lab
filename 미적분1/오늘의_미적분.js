@@ -231,7 +231,11 @@
     const todayRecord = store.plays[key]; $('[data-saved-score]').textContent = todayRecord ? `${todayRecord.score}점` : '아직 없음'; $('[data-saved-streak]').textContent = `${store.streak || 0}일`;
     requestAnimationFrame(() => drawGraph($('[data-intro-canvas]'), daily)); window.addEventListener('resize', () => { if (!$('[data-screen="intro"]').hidden) drawGraph($('[data-intro-canvas]'), daily); else if (!$('[data-screen="play"]').hidden) drawGraph($('[data-mission-canvas]'), daily, daily.missions[index], answer); }, { passive: true });
 
-    function show(name) { document.querySelectorAll('[data-screen]').forEach(screen => { screen.hidden = screen.dataset.screen !== name; }); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    function show(name) {
+      document.querySelectorAll('[data-screen]').forEach(screen => { screen.hidden = screen.dataset.screen !== name; });
+      $('[data-player-switch]').disabled = name === 'play';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
     function tick() { if ($('[data-screen="play"]').hidden) return; $('[data-time]').textContent = `${((performance.now() - startedAt) / 1000).toFixed(1)}초`; timer = requestAnimationFrame(tick); }
     function start() {
       if (!profile) { openPlayerGate(); return; }

@@ -7,6 +7,7 @@
   const SDK_VERSION = '12.16.0';
   let firebaseServices = null;
   let firebasePromise = null;
+  const syncChains = new Map();
 
   function nowIso() {
     return new Date().toISOString();
@@ -161,6 +162,19 @@
     }
   }
 
+  function queueSync(record) {
+    if (!record || !record.playId) return Promise.resolve(false);
+    const previous = syncChains.get(record.playId) || Promise.resolve();
+    const next = previous
+      .catch(() => false)
+      .then(() => syncPlay(record));
+    syncChains.set(record.playId, next);
+    next.finally(() => {
+      if (syncChains.get(record.playId) === next) syncChains.delete(record.playId);
+    });
+    return next;
+  }
+
   function startPlay(input) {
     const profile = getProfile() || saveProfile('PLAYER');
     const record = {
@@ -183,7 +197,7 @@
     const store = readStore();
     store.plays.push(record);
     writeStore(store);
-    syncPlay(record);
+    queueSync(record);
     return record;
   }
 
@@ -200,13 +214,13 @@
       syncState: 'pending'
     };
     const record = updateLocal(playId, patch);
-    syncPlay(record);
+    queueSync(record);
     return record;
   }
 
   async function flush() {
     const pending = readStore().plays.filter(item => item.syncState !== 'synced');
-    const results = await Promise.all(pending.map(syncPlay));
+    const results = await Promise.all(pending.map(queueSync));
     return results.filter(Boolean).length;
   }
 
