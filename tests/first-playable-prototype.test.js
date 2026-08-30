@@ -57,8 +57,24 @@ telemetry.finishPlay(second.playId, {
   personalBest: false
 });
 
+// 이 실험이 재려는 것은 점수가 아니라 다음 행동으로 이어지는가이다.
+// 첫 판은 조작만 하고 끝내고, 두 번째 판은 다음 경험과 탐구까지 연다.
+telemetry.mark(first.playId, 'lab_interaction');
+telemetry.mark(first.playId, 'lab_interaction');
+telemetry.mark(second.playId, 'lab_interaction');
+telemetry.mark(second.playId, 'next_experience_click');
+telemetry.mark(second.playId, 'research_open');
+assert.equal(telemetry.mark('없는-playId', 'lab_interaction'), null, '없는 판은 조용히 무시한다.');
+assert.equal(telemetry.mark(first.playId, '엉뚱한이벤트'), null, '모르는 이벤트는 기록하지 않는다.');
+
 const plays = telemetry.readLocalPlays();
 assert.equal(plays.length, 2);
+assert.equal(plays[0].labInteractions, 2);
+assert.equal(plays[0].nextExperienceClick, false);
+assert.equal(plays[0].researchOpen, false);
+assert.equal(plays[1].labInteractions, 1);
+assert.equal(plays[1].nextExperienceClick, true);
+assert.equal(plays[1].researchOpen, true);
 assert.equal(plays[0].userId, profile.userId);
 assert.equal(plays[0].completed, true);
 assert.equal(plays[1].retry, true);
@@ -73,6 +89,10 @@ assert.deepEqual(summary, {
   averagePlaysPerStudent: 2,
   averagePlaysPerSession: 2,
   personalBestRate: 50,
+  labInteractionRate: 100,
+  averageLabInteractions: 1.5,
+  nextExperienceRate: 50,
+  researchOpenRate: 50,
   returningUsers: 0
 });
 

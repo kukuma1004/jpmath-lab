@@ -190,6 +190,36 @@
     let playStartedAt = 0;
     let index = 0, score = 0, combo = 0, bestCombo = 0, accuracySum = 0, answer = null, startedAt = 0, timer = 0, attempts = [];
 
+    // 그래프를 실제로 만졌는지 기록한다. 슬라이더는 한 번 끌면 input 이 수십 번
+    // 오므로, 짧은 간격은 한 번으로 묶는다. 재고 싶은 것은 횟수가 아니라
+    // "만졌는가"와 "몇 번 시도했는가"이다.
+    let lastMark = 0;
+    function markLab() {
+      if (!telemetry || !activePlay || !telemetry.mark) return;
+      const now = Date.now();
+      if (now - lastMark < 400) return;
+      lastMark = now;
+      telemetry.mark(activePlay.playId, 'lab_interaction');
+    }
+
+    function wireOutboundLinks() {
+      const next = $('[data-recommend-link]');
+      if (next && !next.dataset.marked) {
+        next.dataset.marked = '1';
+        next.addEventListener('click', () => {
+          if (telemetry && activePlay && telemetry.mark) telemetry.mark(activePlay.playId, 'next_experience_click');
+        });
+      }
+      const seed = $('[data-research-seed]');
+      if (seed && !seed.dataset.marked) {
+        seed.dataset.marked = '1';
+        seed.addEventListener('toggle', () => {
+          if (!seed.open) return;
+          if (telemetry && activePlay && telemetry.mark) telemetry.mark(activePlay.playId, 'research_open');
+        });
+      }
+    }
+
     function updatePlayerUi() {
       const name = profile ? profile.displayName : 'PLAYER';
       $('[data-player-name]').textContent = name;
@@ -261,8 +291,8 @@
       });
       $('[data-mission-kicker]').textContent = mission.kicker; $('[data-mission-title]').textContent = mission.title; $('[data-mission-prompt]').textContent = mission.prompt; $('[data-mission-goal]').textContent = mission.goal; renderMath($('[data-mission-formula]'), mission.tex, mission.formula); $('[data-graph-note]').textContent = index === 1 ? '슬라이더를 움직이면 접선이 회전합니다' : index === 4 ? '노란 영역은 부호를 가진 누적 변화입니다' : '그래프의 모양과 수치를 함께 보세요';
       const controls = $('[data-controls]'); controls.innerHTML = ''; const submit = $('[data-submit]'); submit.hidden = false; submit.disabled = mission.kind !== 'slider'; $('[data-next]').hidden = true; $('[data-feedback]').hidden = true;
-      if (mission.kind === 'choice') { const grid = document.createElement('div'); grid.className = 'choice-grid'; mission.choices.forEach(value => { const button = document.createElement('button'); button.type = 'button'; button.className = 'choice-button'; button.textContent = typeof value === 'number' ? String(rounded(value)) : value; button.addEventListener('click', () => { answer = value; grid.querySelectorAll('button').forEach(item => item.classList.toggle('selected', item === button)); submit.disabled = false; }); grid.appendChild(button); }); controls.appendChild(grid); }
-      else { controls.innerHTML = `<div class="slider-control"><input type="range" min="${mission.range[0]}" max="${mission.range[1]}" step="0.1" value="${answer}" aria-label="${mission.title} 값 조절"><div class="slider-value"><span>나의 예측</span><strong>${rounded(answer)}</strong></div></div>`; const input = controls.querySelector('input'); input.addEventListener('input', () => { answer = Number(input.value); controls.querySelector('strong').textContent = rounded(answer); drawGraph($('[data-mission-canvas]'), daily, mission, answer); }); }
+      if (mission.kind === 'choice') { const grid = document.createElement('div'); grid.className = 'choice-grid'; mission.choices.forEach(value => { const button = document.createElement('button'); button.type = 'button'; button.className = 'choice-button'; button.textContent = typeof value === 'number' ? String(rounded(value)) : value; button.addEventListener('click', () => { markLab(); answer = value; grid.querySelectorAll('button').forEach(item => item.classList.toggle('selected', item === button)); submit.disabled = false; }); grid.appendChild(button); }); controls.appendChild(grid); }
+      else { controls.innerHTML = `<div class="slider-control"><input type="range" min="${mission.range[0]}" max="${mission.range[1]}" step="0.1" value="${answer}" aria-label="${mission.title} 값 조절"><div class="slider-value"><span>나의 예측</span><strong>${rounded(answer)}</strong></div></div>`; const input = controls.querySelector('input'); input.addEventListener('input', () => { markLab(); answer = Number(input.value); controls.querySelector('strong').textContent = rounded(answer); drawGraph($('[data-mission-canvas]'), daily, mission, answer); }); }
       requestAnimationFrame(() => drawGraph($('[data-mission-canvas]'), daily, mission, answer)); timer = requestAnimationFrame(tick);
     }
     function submitMission() {
@@ -304,6 +334,7 @@
         sessionPlayIndex,
         personalBest
       });
+      wireOutboundLinks();
       $('[data-result-score]').textContent = score;
       $('[data-result-accuracy]').textContent = `${accuracy}%`;
       $('[data-result-combo]').textContent = `×${bestCombo}`;

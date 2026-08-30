@@ -191,6 +191,9 @@
       sessionPlayIndex: Math.max(1, Number(input.sessionPlayIndex || 1)),
       personalBest: false,
       completed: false,
+      labInteractions: 0,      // 그래프·슬라이더를 실제로 만진 횟수
+      nextExperienceClick: false,
+      researchOpen: false,
       dateKey: String(input.dateKey || '').slice(0, 10),
       syncState: 'pending'
     };
@@ -214,6 +217,24 @@
       syncState: 'pending'
     };
     const record = updateLocal(playId, patch);
+    queueSync(record);
+    return record;
+  }
+
+  // 한 판 안에서 일어난 행동을 표시한다.
+  // 이 실험이 검증하려는 것은 점수가 아니라 "다음 행동으로 이어지는가" 이므로,
+  // 조작했는지 · 다음 경험을 눌렀는지 · 탐구를 열었는지를 판 기록에 함께 남긴다.
+  function mark(playId, event) {
+    if (!playId) return null;
+    const store = readStore();
+    const record = store.plays.filter(item => item.playId === playId)[0];
+    if (!record) return null;
+    if (event === 'lab_interaction') record.labInteractions = Number(record.labInteractions || 0) + 1;
+    else if (event === 'next_experience_click') record.nextExperienceClick = true;
+    else if (event === 'research_open') record.researchOpen = true;
+    else return null;
+    record.syncState = 'pending';
+    writeStore(store);
     queueSync(record);
     return record;
   }
@@ -246,6 +267,11 @@
       averagePlaysPerStudent: userIds.length ? Math.round(starts / userIds.length * 100) / 100 : 0,
       averagePlaysPerSession: sessionIds.length ? Math.round(starts / sessionIds.length * 100) / 100 : 0,
       personalBestRate: completed.length ? Math.round(completed.filter(play => play.personalBest).length / completed.length * 1000) / 10 : 0,
+      // 이 실험의 핵심 질문 — 조작했는가, 다음으로 넘어갔는가
+      labInteractionRate: starts ? Math.round(plays.filter(play => Number(play.labInteractions || 0) > 0).length / starts * 1000) / 10 : 0,
+      averageLabInteractions: starts ? Math.round(plays.reduce((sum, play) => sum + Number(play.labInteractions || 0), 0) / starts * 100) / 100 : 0,
+      nextExperienceRate: completed.length ? Math.round(completed.filter(play => play.nextExperienceClick).length / completed.length * 1000) / 10 : 0,
+      researchOpenRate: completed.length ? Math.round(completed.filter(play => play.researchOpen).length / completed.length * 1000) / 10 : 0,
       returningUsers
     };
   }
@@ -256,6 +282,7 @@
     clearProfile,
     startPlay,
     finishPlay,
+    mark,
     flush,
     summarize,
     readLocalPlays: function () { return readStore().plays.slice(); },
