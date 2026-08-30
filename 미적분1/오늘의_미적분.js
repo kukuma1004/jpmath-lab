@@ -2,6 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'jp-calculus-daily-v1';
+  const GAME_ID = 'calculus-daily-function';
   const $ = selector => document.querySelector(selector);
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
   const rounded = value => Math.round(value * 10) / 10;
@@ -180,7 +181,49 @@
   }
 
   function init() {
-    const key = dateKey(); const daily = buildDaily(key); const store = readStore(); let index = 0, score = 0, combo = 0, bestCombo = 0, accuracySum = 0, answer = null, startedAt = 0, timer = 0, attempts = [];
+    const telemetry = window.JPGameTelemetry;
+    const key = dateKey(); const daily = buildDaily(key); const store = readStore();
+    const sessionId = telemetry ? telemetry.makeSessionId() : `session-${Date.now()}`;
+    let profile = telemetry ? telemetry.getProfile() : null;
+    let sessionPlayIndex = 0;
+    let activePlay = null;
+    let playStartedAt = 0;
+    let index = 0, score = 0, combo = 0, bestCombo = 0, accuracySum = 0, answer = null, startedAt = 0, timer = 0, attempts = [];
+
+    function updatePlayerUi() {
+      const name = profile ? profile.displayName : 'PLAYER';
+      $('[data-player-name]').textContent = name;
+      $('[data-player-greeting]').textContent = profile ? `${name}의 오늘 도전` : '오늘의 플레이어';
+      $('[data-result-player]').textContent = name;
+    }
+
+    function openPlayerGate() {
+      const gate = $('[data-player-gate]');
+      gate.hidden = false;
+      document.body.classList.add('player-gate-open');
+      const input = $('[data-player-input]');
+      input.value = profile ? profile.displayName : '';
+      window.setTimeout(() => input.focus(), 60);
+    }
+
+    function closePlayerGate() {
+      $('[data-player-gate]').hidden = true;
+      document.body.classList.remove('player-gate-open');
+      updatePlayerUi();
+    }
+
+    $('[data-player-form]').addEventListener('submit', event => {
+      event.preventDefault();
+      const value = $('[data-player-input]').value;
+      profile = telemetry ? telemetry.saveProfile(value) : { userId: 'local-player', displayName: String(value).trim().slice(0, 12) };
+      if (!profile || !profile.displayName) return;
+      closePlayerGate();
+    });
+
+    $('[data-player-switch]').addEventListener('click', () => openPlayerGate());
+    updatePlayerUi();
+    if (!profile) openPlayerGate();
+    if (telemetry) telemetry.flush();
     $('[data-today-label]').textContent = `${key.replaceAll('-', '.')} · CALCULUS DAILY`;
     renderMath($('[data-function-formula]'), daily.tex, daily.formula);
     renderMath($('[data-play-function]'), daily.tex, daily.formula);
@@ -190,7 +233,20 @@
 
     function show(name) { document.querySelectorAll('[data-screen]').forEach(screen => { screen.hidden = screen.dataset.screen !== name; }); window.scrollTo({ top: 0, behavior: 'smooth' }); }
     function tick() { if ($('[data-screen="play"]').hidden) return; $('[data-time]').textContent = `${((performance.now() - startedAt) / 1000).toFixed(1)}초`; timer = requestAnimationFrame(tick); }
-    function start() { index = 0; score = 0; combo = 0; bestCombo = 0; accuracySum = 0; attempts = []; show('play'); renderMission(); }
+    function start() {
+      if (!profile) { openPlayerGate(); return; }
+      sessionPlayIndex += 1;
+      playStartedAt = Date.now();
+      activePlay = telemetry ? telemetry.startPlay({
+        gameId: GAME_ID,
+        sessionId,
+        dateKey: key,
+        retry: sessionPlayIndex > 1,
+        sessionPlayIndex
+      }) : null;
+      index = 0; score = 0; combo = 0; bestCombo = 0; accuracySum = 0; attempts = [];
+      show('play'); renderMission();
+    }
     function renderMission() {
       cancelAnimationFrame(timer); const mission = daily.missions[index]; answer = mission.kind === 'slider' ? clamp(0, mission.range[0], mission.range[1]) : null; startedAt = performance.now();
       $('[data-round-label]').textContent = `MISSION ${index + 1} / ${daily.missions.length}`; $('[data-progress]').style.width = `${(index + 1) / daily.missions.length * 100}%`; $('[data-score]').textContent = score; $('[data-combo]').textContent = `×${combo}`;
@@ -230,20 +286,45 @@
     function finish() {
       const accuracy = Math.round(accuracySum / daily.missions.length * 100);
       const abilitySummary = attempts.map(item => ({ id: item.id, accuracy: Math.round(item.accuracy * 100), points: item.points }));
+      const previousRecord = readStore().plays[key];
+      const personalBest = !previousRecord || score > previousRecord.score;
       const saved = saveResult(key, { score, accuracy, combo: bestCombo, abilities: abilitySummary });
       const record = saved.plays[key];
-      $('[data-result-score]').textContent = score; $('[data-result-accuracy]').textContent = `${accuracy}%`; $('[data-result-combo]').textContent = `×${bestCombo}`; $('[data-result-streak]').textContent = `${saved.streak}일`; $('[data-result-best]').textContent = record.score;
-      $('[data-result-message]').textContent = accuracy >= 90 ? '그래프와 식을 거의 동시에 읽었습니다. 내일은 새로운 함수 구조가 기다립니다.' : accuracy >= 65 ? '변화의 방향은 잘 잡았습니다. 아래 읽기 지도에서 한 번 더 연결할 감각을 확인해 보세요.' : '오늘은 함수의 지도를 만든 날입니다. 약한 관점 하나를 연습한 뒤 같은 함수로 다시 도전해 보세요.';
-      const profile = buildResultProfile(daily.missions, attempts);
-      $('[data-result-missions]').innerHTML = profile.rows.map(row => {
+      const playTime = Math.max(1, Math.round((Date.now() - playStartedAt) / 1000));
+      if (telemetry && activePlay) telemetry.finishPlay(activePlay.playId, {
+        endedAt: new Date().toISOString(),
+        score,
+        accuracy,
+        playTime,
+        retry: sessionPlayIndex > 1,
+        sessionPlayIndex,
+        personalBest
+      });
+      $('[data-result-score]').textContent = score;
+      $('[data-result-accuracy]').textContent = `${accuracy}%`;
+      $('[data-result-combo]').textContent = `×${bestCombo}`;
+      $('[data-result-streak]').textContent = `${saved.streak}일`;
+      $('[data-result-best]').textContent = record.score;
+      $('[data-result-session-play]').textContent = `${sessionPlayIndex}번째`;
+      $('[data-result-pb]').hidden = !personalBest;
+      $('[data-result-headline]').textContent = personalBest ? '개인 최고 기록입니다.' : '한 판 더 오를 수 있습니다.';
+      $('[data-result-message]').textContent = personalBest
+        ? `${score}점으로 오늘 최고 기록을 새로 썼습니다. 같은 함수를 더 빠르고 정확하게 읽어 보세요.`
+        : accuracy >= 90
+          ? `정확도 ${accuracy}%. 오늘 최고 ${record.score}점까지 한 번 더 도전해 보세요.`
+          : accuracy >= 65
+            ? '변화의 방향은 잘 잡았습니다. 바로 다시하면 방금 놓친 신호가 더 선명하게 보입니다.'
+            : '오늘은 함수의 지도를 만든 첫 판입니다. 같은 함수를 한 번 더 읽으면 점수가 크게 오를 수 있습니다.';
+      const resultProfile = buildResultProfile(daily.missions, attempts);
+      $('[data-result-missions]').innerHTML = resultProfile.rows.map(row => {
         const percent = Math.round(row.accuracy * 100);
         return `<article class="reading-item" style="--item-color:${MISSION_COLORS[row.index]}"><span>${String(row.index + 1).padStart(2, '0')} · ${row.mission.sense}</span><strong>${row.points}점</strong><small>정확도 ${percent}% · ${row.seconds}초</small><div class="reading-meter"><i style="width:${percent}%"></i></div></article>`;
       }).join('');
-      const weak = profile.weakest;
+      const weak = resultProfile.weakest;
       $('[data-recommend-title]').textContent = `${weak.mission.sense} 감각을 계산으로 굳혀 보세요.`;
       $('[data-recommend-text]').textContent = `${weak.mission.title}에서 확인한 연결을 ‘${weak.mission.skillTitle}’ 5문제로 짧게 반복하면, 다음 DAILY에서 그래프를 더 빠르게 읽을 수 있습니다.`;
       const recommendLink = $('[data-recommend-link]'); recommendLink.href = `미적분1_계산스킬.html?id=${weak.mission.skillId}`; recommendLink.textContent = `${weak.mission.skillTitle} 연습 시작 →`;
-      if (window.jpMotionFeedback) window.jpMotionFeedback('success', `오늘의 함수 읽기를 ${score}점으로 저장했습니다.`);
+      if (window.jpMotionFeedback) window.jpMotionFeedback('success', personalBest ? `개인 최고 ${score}점!` : `이번 기록 ${score}점을 저장했습니다.`);
       show('result');
     }
     $('[data-start]').addEventListener('click', start); $('[data-submit]').addEventListener('click', submitMission); $('[data-next]').addEventListener('click', next); $('[data-replay]').addEventListener('click', start);

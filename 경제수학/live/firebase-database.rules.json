@@ -57,6 +57,34 @@
           }
         }
       }
+    },
+    "gameTelemetry": {
+      "$uid": {
+        ".read": false,
+        ".write": "auth != null && auth.uid == $uid",
+        "plays": {
+          "$playId": {
+            ".validate": "newData.hasChildren(['userId', 'gameId', 'sessionId', 'playId', 'startedAt', 'endedAt', 'score', 'accuracy', 'playTime', 'retry', 'sessionPlayIndex', 'personalBest', 'completed', 'dateKey', 'appVersion']) && newData.child('userId').val() == auth.uid && newData.child('playId').val() == $playId",
+            "userId": { ".validate": "newData.isString() && newData.val() == auth.uid" },
+            "gameId": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 50" },
+            "sessionId": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 80" },
+            "playId": { ".validate": "newData.isString() && newData.val() == $playId && newData.val().length <= 80" },
+            "startedAt": { ".validate": "newData.isString() && newData.val().length <= 30" },
+            "endedAt": { ".validate": "newData.isString() && newData.val().length <= 30" },
+            "score": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000" },
+            "accuracy": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100" },
+            "playTime": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 3600" },
+            "retry": { ".validate": "newData.isBoolean()" },
+            "sessionPlayIndex": { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 100" },
+            "personalBest": { ".validate": "newData.isBoolean()" },
+            "completed": { ".validate": "newData.isBoolean()" },
+            "dateKey": { ".validate": "newData.isString() && newData.val().length <= 10" },
+            "appVersion": { ".validate": "newData.isString() && newData.val().length <= 30" },
+            "$other": { ".validate": false }
+          }
+        },
+        "$other": { ".validate": false }
+      }
     }
   }
 }
