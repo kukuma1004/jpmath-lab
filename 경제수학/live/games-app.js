@@ -102,6 +102,23 @@
     $('.arena-news').hidden = false;
   }
 
+  // 화면이 바뀌면 그 화면의 처음으로 데려간다.
+  // 결정 화면은 길어서, 아래쪽 잠금 버튼을 누르면 문서가 2000px 가까이
+  // 짧아진다. 브라우저는 스크롤을 그대로 두므로 다음 차례 안내가 화면 위로
+  // 밀려나고, 학생은 빈 곳을 보다가 다시 올려야 했다.
+  function focusArena(target){
+    const el = target || $('[data-room]');
+    if (!el || el.hidden) return;
+    const box = document.scrollingElement || document.documentElement;
+    const top = Math.max(0, window.scrollY + el.getBoundingClientRect().top - 72);
+    // 2000px 넘게 이동하므로 부드럽게 굴리면 오히려 느리고 어지럽다. 바로 옮긴다.
+    // scrollTo 의 객체 형식은 일부 환경에서 무시되므로 scrollTop 을 직접 쓴다.
+    const keep = box.style.scrollBehavior;
+    box.style.scrollBehavior = 'auto';
+    box.scrollTop = top;
+    box.style.scrollBehavior = keep;
+  }
+
   function renderRound() {
     const event = currentEvent();
     $('[data-round]').textContent = room.round + 1;
@@ -130,6 +147,7 @@
       motion.announceRound(room.round, game.title, room.round === game.rounds - 1 ? 'FINAL ROUND' : 'BREAKING NEWS');
     }
     saveRoom();
+    focusArena();
   }
 
   function openDecision() {
@@ -154,6 +172,7 @@
     });
     renderAllocationControls();
     renderAllocation();
+    focusArena($('[data-decision]'));
   }
 
   function renderAllocationControls() {
@@ -295,6 +314,7 @@
     const revealKey = `${game.id}-${room.round}-${event.id}`;
     if (lastRevealKey !== revealKey) { lastRevealKey = revealKey; motion.enter($('[data-reveal]')); }
     saveRoom();
+    focusArena();
   }
 
   function nextRound() {
@@ -302,7 +322,6 @@
     room.round += 1;
     room.currentPlayer = 0;
     renderTurn();
-    $('.arena-news').scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   function renderFinal() {
@@ -328,6 +347,7 @@
     });
     $('[data-final-ranking]').innerHTML = rankRows(players, true);
     saveRoom();
+    focusArena($('[data-final]'));
   }
 
   function rematch() {

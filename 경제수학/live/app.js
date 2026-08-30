@@ -84,6 +84,21 @@
     $('[data-game-room]').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  // 화면이 바뀌면 그 화면의 처음으로 데려간다.
+  // 선택 화면은 길어서, 아래쪽 버튼을 누르면 문서가 크게 짧아진다. 브라우저는
+  // 스크롤을 그대로 두므로 다음 안내가 화면 위로 밀려나고, 학생은 빈 곳을
+  // 보다가 다시 올려야 했다. 이동 거리가 커서 부드럽게 굴리면 오히려 느리다.
+  function focusStage(target){
+    const el = target || $('[data-game-room]');
+    if (!el || el.hidden) return;
+    const box = document.scrollingElement || document.documentElement;
+    const top = Math.max(0, window.scrollY + el.getBoundingClientRect().top - 72);
+    const keep = box.style.scrollBehavior;
+    box.style.scrollBehavior = 'auto';
+    box.scrollTop = top;
+    box.style.scrollBehavior = keep;
+  }
+
   function renderMarket(market) {
     $('[data-rate]').textContent = `${market.rate.toFixed(1)}%`;
     $('[data-inflation]').textContent = `${market.inflation.toFixed(1)}%`;
@@ -130,6 +145,7 @@
       motion.announceRound(room.round, game.title, room.round === game.rounds - 1 ? 'FINAL ROUND' : 'MARKET OPEN');
     }
     saveRoom();
+      focusStage();
   }
 
   function openDecision() {
@@ -347,6 +363,7 @@
     const revealKey = `${room.round}-${event.id}`;
     if (lastRevealKey !== revealKey) { lastRevealKey = revealKey; motion.enter($('[data-reveal]')); }
     saveRoom();
+      focusStage();
   }
 
   function nextRound() {
@@ -411,6 +428,7 @@
     $('[data-final-ranking]').innerHTML = rankRows(ranked, true);
     updateFlow(4);
     saveRoom();
+      focusStage();
   }
 
   function rematch() {

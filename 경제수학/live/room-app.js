@@ -142,6 +142,21 @@
     });
   }
 
+  // 화면이 바뀌면 그 화면의 처음으로 데려간다.
+  // 선택 화면은 길어서, 아래쪽 버튼을 누르면 문서가 크게 짧아진다. 브라우저는
+  // 스크롤을 그대로 두므로 다음 안내가 화면 위로 밀려나고, 학생은 빈 곳을
+  // 보다가 다시 올려야 했다. 이동 거리가 커서 부드럽게 굴리면 오히려 느리다.
+  function focusStage(target){
+    const el = target || $('[data-online-game]');
+    if (!el || el.hidden) return;
+    const box = document.scrollingElement || document.documentElement;
+    const top = Math.max(0, window.scrollY + el.getBoundingClientRect().top - 72);
+    const keep = box.style.scrollBehavior;
+    box.style.scrollBehavior = 'auto';
+    box.scrollTop = top;
+    box.style.scrollBehavior = keep;
+  }
+
   function renderLobby() {
     $('[data-online-game]').hidden = true;
     $('[data-online-lobby]').hidden = false;
@@ -211,6 +226,7 @@
     $('[data-live-allocation-label]').textContent = `내가 만든 ${game.controlLabel}`;
     $('[data-live-question]').textContent = selectedQuestion;
     renderChoiceAllocation();
+      focusStage();
   }
 
   function renderChoiceControls() {
@@ -345,6 +361,7 @@
       document.querySelectorAll('[data-online-payoff]').forEach(element => motion.count(element, Number(element.dataset.onlinePayoff), value => `${value >= 0 ? '+' : ''}${Number(value).toFixed(1)}점`, 650));
       motion.enter($('[data-online-reveal]'));
     }
+      focusStage();
   }
 
   // 라운드마다 사건 코드가 정해져 있어 지난 성과도 그대로 다시 계산된다.
@@ -395,6 +412,7 @@
     });
     $('[data-online-final-ranking]').innerHTML = resultRows(true);
     $('[data-host-rematch]').hidden = !isHost;
+      focusStage();
   }
 
   function renderOnlineState() {
