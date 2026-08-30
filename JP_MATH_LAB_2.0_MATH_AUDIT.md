@@ -1,3 +1,8 @@
+<!-- 문서-권한 -->
+> **기록 문서**  현재 기준은 [`JP_MATH_LAB_2.0_MASTER_SPEC.md`](JP_MATH_LAB_2.0_MASTER_SPEC.md) 하나다.
+> 수식·수학 판정 점검 기록이다.
+> _(2026-08-31 문서 권한 정리)_
+
 # JP Math Lab 2.0 · Math Rendering Audit
 
 > 점검일: 2026-08-25

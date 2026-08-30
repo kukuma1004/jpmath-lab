@@ -1,3 +1,8 @@
+<!-- 문서-권한 -->
+> **하위 기준 · 디자인**  현재 기준은 [`JP_MATH_LAB_2.0_MASTER_SPEC.md`](JP_MATH_LAB_2.0_MASTER_SPEC.md) 하나다.
+> 색·타이포·간격은 이 문서를 따른다. 구조와 정보 배치는 MASTER_SPEC 이 우선한다.
+> _(2026-08-31 문서 권한 정리)_
+
 # JP Math Lab 2.0 · Design, Motion, Math & 3D System
 
 ## 1. 디자인 원칙

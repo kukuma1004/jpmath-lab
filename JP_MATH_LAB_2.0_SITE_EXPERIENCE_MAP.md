@@ -1,3 +1,8 @@
+<!-- 문서-권한 -->
+> **기록 문서**  현재 기준은 [`JP_MATH_LAB_2.0_MASTER_SPEC.md`](JP_MATH_LAB_2.0_MASTER_SPEC.md) 하나다.
+> 2026-08-25 당시의 사이트 지도다. HOME 구조는 그 뒤 바뀌었다.
+> _(2026-08-31 문서 권한 정리)_
+
 # JP Math Lab 2.0 · Site Map & Experience Map
 
 > 최신 HOME과 글로벌 메뉴 구조는 `JP_MATH_LAB_2.0_MASTER_SPEC.md`를 우선한다.
