@@ -47,9 +47,8 @@
             <p class="menu-group-label"><span>02</span> 도전하기</p>
             <div class="menu-group-links">
               <a href="${siteHref('미적분1/오늘의_미적분.html')}"><strong>오늘의 도전</strong><small>미적분Ⅰ · 오늘의 함수 하나</small></a>
-              <a href="${siteHref('미적분1/#arcade')}"><strong>미적분 아케이드</strong><small>그래프 개형을 게임으로</small></a>
-              <a href="${siteHref('기하/기하_공간에서의위치관계.html#game')}"><strong>기하 아레나</strong><small>8초 공간 판별전</small></a>
               <a href="${siteHref('경제수학/live/room.html')}"><strong>친구방 LIVE</strong><small>경제수학 · 각자 휴대폰으로</small></a>
+              <a href="${siteHref('보스전/')}"><strong>보스전</strong><small>수학 실력을 데미지로 바꾸기</small></a>
             </div>
           </section>
           <section class="menu-group" style="--group-index:2">

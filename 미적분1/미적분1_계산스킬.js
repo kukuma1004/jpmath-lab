@@ -740,6 +740,9 @@
   const group=groups[skill.group];
   const bossNames={limit:'극한의 파수꾼',differentiate:'미분의 철갑수',graph:'그래프의 심연왕',integral:'적분의 수문장'};
   const bossName=bossNames[skill.group];
+  const bossV2=skill.id==='differentiate_polynomial';
+  const bossIntro=bossV2?'45초 동안 정답을 데미지로 바꾸세요. 연속 정답은 콤보가 되고, 체력이 절반 아래로 내려가면 철갑 방어가 활성화됩니다.':'세 번 공격해 보스의 체력을 모두 깎으세요. 클리어마다 문제 제한시간이 0.5초씩 줄어듭니다.';
+  const bossStartCopy=bossV2?'<strong>HP 1800 · 제한시간 45초</strong><p>정답은 데미지, 연속 정답은 콤보가 됩니다. 오답은 콤보 초기화와 시간 −2초입니다.</p>':'<strong>보스 체력 3칸</strong><p>정답은 한 칸 공격, 오답이나 시간 초과는 보스 체력을 전부 회복시킵니다.</p>';
   const levelBar=hasLevels(skill.id)?`<div class="skill-level-bar">
       <span class="skill-level-label">난이도</span>
       <div class="skill-level-seg" role="group" aria-label="난이도 선택">${LEVELS.map(l=>`<button type="button" class="skill-level-btn${l.id===currentLevel?' active':''}" data-level="${l.id}" aria-pressed="${l.id===currentLevel}"><b>${l.name}</b><small>${l.tag}</small></button>`).join('')}</div>
@@ -759,7 +762,7 @@
       </section>
       <section class="hidden" data-panel="drill"><header class="mode-header"><div><p class="skill-kicker">ACCURACY DRILL</p><h1>${skill.title} 5문제</h1><p>천천히 계산하고, 틀린 이유까지 확인하세요.</p></div><div class="mode-stat"><span>BEST</span><strong data-drill-best>0 / 5</strong></div></header><div class="question-shell"><div data-drill-start-copy><div class="boss-start-copy"><strong>준비됐나요?</strong><p>보기 중 정답을 고르면 바로 해설이 나옵니다.</p></div><button class="primary-action" data-drill-start>5문제 시작</button></div><div class="hidden" data-drill-play><div class="question-topline"><span data-drill-type>TYPE</span><span data-drill-progress>1 / 5</span></div><div class="question-equation" data-drill-equation></div><div class="question-prompt" data-drill-prompt></div><div class="answer-grid" data-drill-answers></div><div class="answer-feedback hidden" data-drill-feedback></div></div><div class="result-card hidden" data-drill-result></div></div></section>
       <section class="hidden" data-panel="rush"><header class="mode-header"><div><p class="skill-kicker">60 SECOND RUSH</p><h1>${skill.title} 러시</h1><p>빠른 판단과 정확한 계산을 함께 훈련합니다.</p></div><div class="mode-stat"><span>HIGH SCORE</span><strong data-rush-best>0</strong></div></header><div class="rush-stage"><div class="rush-hud"><div><span>TIME</span><strong data-rush-time>60.0</strong></div><div><span>SCORE</span><strong data-rush-score>0</strong></div><div><span>COMBO</span><strong data-rush-combo>×1.0</strong></div></div><div class="rush-track"><div data-rush-bar></div></div><div class="rush-question" data-rush-question><div class="rush-ready">⚡</div><h2>60초 러시</h2><p>오답은 2초가 줄어듭니다.</p></div><div class="answer-grid" data-rush-answers></div><button class="primary-action" data-rush-start>러시 시작</button><div class="result-card hidden" data-rush-result></div><div class="rush-flash" data-rush-flash></div></div></section>
-      <section class="hidden" data-panel="boss"><header class="mode-header"><div><p class="skill-kicker">TIMED BOSS BATTLE</p><h1>${skill.title} 보스전</h1><p>세 번 공격해 보스의 체력을 모두 깎으세요. 클리어마다 문제 제한시간이 0.5초씩 줄어듭니다.</p></div><div class="mode-stat"><span>CLEARS</span><strong data-boss-clears>0</strong></div></header><div class="boss-stage" data-boss-stage><div class="boss-arena"><div class="boss-monster" data-boss-monster aria-label="${bossName}"><div class="boss-aura"></div><svg class="boss-creature" viewBox="0 0 240 190" role="img" aria-hidden="true"><path class="boss-wing" d="M73 73C36 44 16 62 27 91c8 22 29 30 52 27M167 73c37-29 57-11 46 18-8 22-29 30-52 27"/><path class="boss-horn" d="M86 50 63 16l42 23M154 50l23-34-42 23"/><path class="boss-body-shape" d="M120 34c-45 0-70 31-64 75 5 39 27 64 64 64s59-25 64-64c6-44-19-75-64-75Z"/><path class="boss-mask" d="M76 78c29-17 59-17 88 0l-11 47c-22 17-44 17-66 0Z"/><path class="boss-eye" d="m88 87 23 8-25 7Zm64 0-23 8 25 7Z"/><path class="boss-core" d="m120 117 13 18-13 15-13-15Z"/></svg><strong>${bossName}</strong><span data-boss-mood>도전자를 기다리는 중</span></div><div class="boss-dashboard"><div class="boss-hp-label"><span>BOSS HP</span><strong data-boss-hp-text>3 / 3</strong></div><div class="boss-hp-track"><div data-boss-hp></div></div><div class="boss-clock"><span>남은 시간</span><strong data-boss-time>12.0</strong><em>SEC</em></div><div class="boss-timer-track"><div data-boss-timer></div></div><small class="boss-limit-copy">현재 문제당 <b data-boss-limit>12.0초</b> · 최소 7초</small></div></div><div class="boss-progress"><i class="boss-node"></i><i class="boss-node"></i><i class="boss-node"></i></div><div data-boss-body><div class="boss-start-copy"><strong>보스 체력 3칸</strong><p>정답은 한 칸 공격, 오답이나 시간 초과는 보스 체력을 전부 회복시킵니다.</p></div></div><div class="boss-status hidden" data-boss-status></div><button class="primary-action boss-action" data-boss-start>⚔ 보스전 시작</button></div></section>
+      <section class="hidden" data-panel="boss"><header class="mode-header"><div><p class="skill-kicker">${bossV2?'BOSS BATTLE 2.0':'TIMED BOSS BATTLE'}</p><h1>${skill.title} 보스전</h1><p>${bossIntro}</p></div><div class="mode-stat"><span>CLEARS</span><strong data-boss-clears>0</strong></div></header><div class="boss-stage${bossV2?' boss-v2':''}" data-boss-stage><div class="boss-arena"><div class="boss-monster" data-boss-monster aria-label="${bossName}"><div class="boss-aura"></div><svg class="boss-creature" viewBox="0 0 240 190" role="img" aria-hidden="true"><path class="boss-wing" d="M73 73C36 44 16 62 27 91c8 22 29 30 52 27M167 73c37-29 57-11 46 18-8 22-29 30-52 27"/><path class="boss-horn" d="M86 50 63 16l42 23M154 50l23-34-42 23"/><path class="boss-body-shape" d="M120 34c-45 0-70 31-64 75 5 39 27 64 64 64s59-25 64-64c6-44-19-75-64-75Z"/><path class="boss-mask" d="M76 78c29-17 59-17 88 0l-11 47c-22 17-44 17-66 0Z"/><path class="boss-eye" d="m88 87 23 8-25 7Zm64 0-23 8 25 7Z"/><path class="boss-core" d="m120 117 13 18-13 15-13-15Z"/></svg><strong>${bossName}</strong><span data-boss-mood>도전자를 기다리는 중</span></div><div class="boss-dashboard"><div class="boss-hp-label"><span>BOSS HP</span><strong data-boss-hp-text>${bossV2?'1800 / 1800':'3 / 3'}</strong></div><div class="boss-hp-track"><div data-boss-hp></div></div><div class="boss-clock"><span>남은 시간</span><strong data-boss-time>${bossV2?'45.0':'12.0'}</strong><em>SEC</em></div><div class="boss-timer-track"><div data-boss-timer></div></div>${bossV2?'<div class="boss-combat-stats"><div><span>DAMAGE</span><b data-boss-damage>0</b></div><div><span>COMBO</span><b data-boss-combo>×1.0</b></div><div><span>PHASE</span><b data-boss-phase>1</b></div></div><small class="boss-limit-copy">철갑 방어: PHASE 2에서 <b>난이도별 데미지 보정</b></small>':'<small class="boss-limit-copy">현재 문제당 <b data-boss-limit>12.0초</b> · 최소 7초</small>'}</div></div><div class="boss-progress"><i class="boss-node"></i><i class="boss-node"></i><i class="boss-node"></i></div><div data-boss-body><div class="boss-start-copy">${bossStartCopy}</div></div><div class="boss-status hidden" data-boss-status></div><button class="primary-action boss-action" data-boss-start>⚔ ${bossV2?'45초 전투 시작':'보스전 시작'}</button></div></section>
     </main></div>`;
 
   const storageKey=`jp-calc-skill-${skill.id}`;
@@ -773,13 +776,16 @@
   currentLevel=LEVELS.some(l=>l.id===saved.level)?saved.level:'basic';
   const rec=()=>(saved.byLevel[currentLevel]||(saved.byLevel[currentLevel]={drillBest:0,rushBest:0,bossClears:0}));
   const currentBossLimit=()=>Math.max(7,12-rec().bossClears*.5);
+  const telemetry=window.JPGameTelemetry||null;
+  const bossSessionId=telemetry?telemetry.makeSessionId():'';
+  let bossSessionPlayIndex=0,bossActivePlay=null;
   function save(){try{localStorage.setItem(storageKey,JSON.stringify(saved))}catch(e){}}
   function updateStats(){
     const r=rec();
     $('[data-drill-best]').textContent=`${r.drillBest} / 5`;
     $('[data-rush-best]').textContent=r.rushBest;
     $('[data-boss-clears]').textContent=r.bossClears;
-    $('[data-boss-limit]').textContent=`${currentBossLimit().toFixed(1)}초`;
+    const limitNode=$('[data-boss-limit]');if(limitNode)limitNode.textContent=`${currentBossLimit().toFixed(1)}초`;
     const stars=(r.drillBest===5?1:0)+(r.rushBest>=800?1:0)+(r.bossClears>0?1:0);
     $('[data-stars]').textContent='★'.repeat(stars)+'☆'.repeat(3-stars);
   }
@@ -817,15 +823,50 @@
   function finishRush(){if(!rush.running)return;rush.running=false;cancelAnimationFrame(rush.raf);rec().rushBest=Math.max(rec().rushBest,rush.score);save();updateStats();$('[data-rush-answers]').innerHTML='';$('[data-rush-question]').innerHTML='<div class="rush-ready">🏁</div><h2>러시 종료!</h2>';const b=$('[data-rush-result]');b.innerHTML=`<strong>${rush.score}점</strong><p>${rush.correct}문제 성공 · 최고 기록 ${rec().rushBest}점</p><button data-retry>다시 도전</button>`;b.classList.remove('hidden');if(window.jpMotionFeedback)window.jpMotionFeedback('success',`60초 러시 종료 · ${rush.score}점`);$('[data-retry]',b).addEventListener('click',startRush)}
   $('[data-rush-start]').addEventListener('click',startRush);
 
+  const BOSS_V2_HP=1800,BOSS_V2_TIME=45;
   let boss={running:false,raf:0,index:0,questions:[],time:12,limit:12,last:0};
   function stopBossTimer(){boss.running=false;cancelAnimationFrame(boss.raf)}
-  function renderBossHud(){const hp=Math.max(0,3-boss.index);$('[data-boss-hp]').style.width=`${hp/3*100}%`;$('[data-boss-hp-text]').textContent=`${hp} / 3`;$('[data-boss-time]').textContent=boss.time.toFixed(1);$('[data-boss-timer]').style.width=`${boss.limit?boss.time/boss.limit*100:0}%`;document.querySelector('[data-boss-stage]').classList.toggle('boss-danger',boss.time<=Math.min(4,boss.limit*.34)&&boss.running)}
-  function startBoss(){stopBossTimer();const limit=currentBossLimit();boss={running:false,raf:0,index:0,questions:Array.from({length:3},()=>makeQuestion(skill.id)),time:limit,limit,last:0};$('[data-boss-limit]').textContent=`${limit.toFixed(1)}초`;const monster=$('[data-boss-monster]');monster.classList.remove('boss-hit','boss-attack','boss-defeated');$('[data-boss-mood]').textContent='체력을 모두 깎아 보세요';$('[data-boss-start]').classList.add('hidden');$('[data-boss-status]').className='boss-status hidden';renderBoss()}
+  function renderBossHud(){
+    const stage=$('[data-boss-stage]');
+    if(bossV2){
+      const hp=Math.max(0,boss.hp);$('[data-boss-hp]').style.width=`${hp/boss.maxHp*100}%`;$('[data-boss-hp-text]').textContent=`${hp} / ${boss.maxHp}`;$('[data-boss-time]').textContent=boss.time.toFixed(1);$('[data-boss-timer]').style.width=`${boss.time/boss.limit*100}%`;
+      $('[data-boss-damage]').textContent=boss.damage;$('[data-boss-combo]').textContent=`×${bossMultiplier().toFixed(2)}`;$('[data-boss-phase]').textContent=boss.phase;
+      stage.classList.toggle('boss-danger',boss.time<=10&&boss.running);stage.classList.toggle('boss-phase-two',boss.phase===2);
+      const clearedRatio=1-hp/boss.maxHp;$$('.boss-node').forEach((node,index)=>node.className='boss-node '+(clearedRatio>=(index+1)/3?'done':clearedRatio>=index/3?'active':''));
+      return;
+    }
+    const hp=Math.max(0,3-boss.index);$('[data-boss-hp]').style.width=`${hp/3*100}%`;$('[data-boss-hp-text]').textContent=`${hp} / 3`;$('[data-boss-time]').textContent=boss.time.toFixed(1);$('[data-boss-timer]').style.width=`${boss.limit?boss.time/boss.limit*100:0}%`;stage.classList.toggle('boss-danger',boss.time<=Math.min(4,boss.limit*.34)&&boss.running)
+  }
+  function bossMultiplier(){return 1+Math.min(1.5,Math.floor(Math.max(0,boss.combo-1)/3)*.25)}
+  function bossLevelDamage(){return currentLevel==='deep'?1.6:currentLevel==='applied'?1.25:1}
+  function bossArmorDamage(){if(boss.phase===1)return 1;return currentLevel==='deep'?1.6:currentLevel==='applied'?1.1:.7}
+  function startBoss(){
+    if(bossV2){startBossV2();return}
+    stopBossTimer();const limit=currentBossLimit();boss={running:false,raf:0,index:0,questions:Array.from({length:3},()=>makeQuestion(skill.id)),time:limit,limit,last:0};$('[data-boss-limit]').textContent=`${limit.toFixed(1)}초`;const monster=$('[data-boss-monster]');monster.classList.remove('boss-hit','boss-attack','boss-defeated');$('[data-boss-mood]').textContent='체력을 모두 깎아 보세요';$('[data-boss-start]').classList.add('hidden');$('[data-boss-status]').className='boss-status hidden';renderBoss()
+  }
+  function startBossV2(){
+    stopBossTimer();bossSessionPlayIndex++;boss={running:true,raf:0,time:BOSS_V2_TIME,limit:BOSS_V2_TIME,last:performance.now(),hp:BOSS_V2_HP,maxHp:BOSS_V2_HP,damage:0,combo:0,correct:0,attempts:0,phase:1,q:null,locked:false};
+    rec().bossAttempts=(rec().bossAttempts||0)+1;save();
+    bossActivePlay=telemetry?telemetry.startPlay({gameId:'calculus-skill-boss-differentiate-polynomial',sessionId:bossSessionId,retry:bossSessionPlayIndex>1,sessionPlayIndex:bossSessionPlayIndex,dateKey:new Date().toISOString().slice(0,10)}):null;
+    const monster=$('[data-boss-monster]');monster.classList.remove('boss-hit','boss-attack','boss-defeated');$('[data-boss-mood]').textContent='철갑 방어 · PHASE 1';$('[data-boss-start]').classList.add('hidden');$('[data-boss-status]').className='boss-status hidden';renderBossV2();renderBossHud();boss.raf=requestAnimationFrame(tickBoss)
+  }
   function startBossTimer(){stopBossTimer();boss.running=true;boss.last=performance.now();boss.raf=requestAnimationFrame(tickBoss)}
-  function tickBoss(now){if(!boss.running)return;boss.time=Math.max(0,boss.time-(now-boss.last)/1000);boss.last=now;renderBossHud();if(boss.time<=0){resolveBoss(null,null,true);return}boss.raf=requestAnimationFrame(tickBoss)}
+  function tickBoss(now){if(!boss.running)return;boss.time=Math.max(0,boss.time-(now-boss.last)/1000);boss.last=now;renderBossHud();if(boss.time<=0){if(bossV2)finishBossV2(false);else resolveBoss(null,null,true);return}boss.raf=requestAnimationFrame(tickBoss)}
   function renderBoss(){const q=boss.questions[boss.index];boss.time=boss.limit;$$('.boss-node').forEach((x,i)=>x.className='boss-node '+(i<boss.index?'done':i===boss.index?'active':''));const body=$('[data-boss-body]');body.innerHTML='<div class="question-equation"></div><div class="question-prompt"></div><div class="answer-grid"></div>';setMath($('div.question-equation',body),q.equation);$('div.question-prompt',body).textContent=q.prompt;const box=$('.answer-grid',body);fillAnswers(box,q,(v,b)=>resolveBoss(v,b,false));$('[data-boss-mood]').textContent=`${boss.index+1}번째 공격을 막는 중`;renderBossHud();startBossTimer()}
+  function renderBossV2(){
+    if(!boss.running)return;boss.locked=false;boss.q=makeQuestion(skill.id);const body=$('[data-boss-body]');body.innerHTML='<div class="question-topline"><span>연속 정답이 데미지를 키웁니다</span><span data-live-combo></span></div><div class="question-equation"></div><div class="question-prompt"></div><div class="answer-grid"></div>';
+    setMath($('div.question-equation',body),boss.q.equation);$('div.question-prompt',body).textContent=boss.q.prompt;$('[data-live-combo]').textContent=`COMBO ${boss.combo}`;const box=$('.answer-grid',body);fillAnswers(box,boss.q,(v,b)=>resolveBossV2(v,b));
+  }
   function resolveBoss(value,button,timedOut){if(!boss.running)return;stopBossTimer();const q=boss.questions[boss.index],box=$('.answer-grid',$('[data-boss-body]')),ok=!timedOut&&String(value)===q.correct;markAnswers(box,q,value,button);const st=$('[data-boss-status]'),monster=$('[data-boss-monster]');if(ok){boss.index++;monster.classList.remove('boss-attack');monster.classList.add('boss-hit');$('[data-boss-mood]').textContent='공격 적중!';st.textContent=`보스 체력 −1! ${q.explanation}`;st.className='boss-status good';renderBossHud();setTimeout(()=>{monster.classList.remove('boss-hit');if(boss.index>=3)clearBoss();else{st.className='boss-status hidden';renderBoss()}},850)}else{monster.classList.remove('boss-hit');monster.classList.add('boss-attack');$('[data-boss-mood]').textContent=timedOut?'시간을 빼앗았습니다':'반격 성공';st.textContent=`${timedOut?'시간 초과!':'오답!'} 보스의 체력이 회복됩니다. ${q.explanation}`;st.className='boss-status bad';boss.index=0;renderBossHud();$$('.boss-node').forEach(x=>x.className='boss-node');const start=$('[data-boss-start]');start.textContent='↻ 처음부터 재도전';start.classList.remove('hidden')}}
-  function clearBoss(){stopBossTimer();rec().bossClears++;save();updateStats();$$('.boss-node').forEach(x=>x.className='boss-node done');const monster=$('[data-boss-monster]');monster.classList.remove('boss-hit','boss-attack');monster.classList.add('boss-defeated');$('[data-boss-mood]').textContent='체력 소진 · 승리';boss.index=3;boss.time=0;renderBossHud();const next=currentBossLimit();$('[data-boss-body]').innerHTML=`<div class="boss-start-copy"><strong>보스 클리어!</strong><p>다음 보스는 문제당 <b>${next.toFixed(1)}초</b>입니다. 최소 제한시간은 7초입니다.</p></div>`;$('[data-boss-status]').className='boss-status hidden';$('[data-boss-start]').textContent='새 보스 소환';$('[data-boss-start]').classList.remove('hidden');if(window.jpMotionFeedback)window.jpMotionFeedback('success','보스 클리어 · 기록을 저장했습니다.')}
+  function resolveBossV2(value,button){
+    if(!boss.running||boss.locked)return;boss.locked=true;boss.attempts++;const q=boss.q,box=$('.answer-grid',$('[data-boss-body]')),ok=String(value)===q.correct;markAnswers(box,q,value,button);const st=$('[data-boss-status]'),monster=$('[data-boss-monster]');
+    if(ok){boss.combo++;boss.correct++;const hit=Math.max(1,Math.round(140*bossLevelDamage()*bossMultiplier()*bossArmorDamage()));boss.hp=Math.max(0,boss.hp-hit);boss.damage+=hit;monster.classList.remove('boss-attack');monster.classList.add('boss-hit');st.textContent=`${hit} DAMAGE · ${q.explanation}`;st.className='boss-status good';if(boss.phase===1&&boss.hp<=boss.maxHp/2){boss.phase=2;$('[data-boss-mood]').textContent='철갑 방어 활성 · PHASE 2'}else $('[data-boss-mood]').textContent=`${boss.combo} COMBO · 공격 적중`;if(boss.hp<=0)cancelAnimationFrame(boss.raf);renderBossHud();setTimeout(()=>{monster.classList.remove('boss-hit');if(!boss.running)return;if(boss.hp<=0)finishBossV2(true);else{st.className='boss-status hidden';renderBossV2()}},520)}
+    else{boss.combo=0;boss.time=Math.max(0,boss.time-2);monster.classList.remove('boss-hit');monster.classList.add('boss-attack');$('[data-boss-mood]').textContent='철갑 반격 · COMBO RESET';st.textContent=`오답 · 시간 −2초 · ${q.explanation}`;st.className='boss-status bad';renderBossHud();setTimeout(()=>{monster.classList.remove('boss-attack');if(!boss.running)return;st.className='boss-status hidden';renderBossV2()},680)}
+  }
+  function finishBossV2(cleared){
+    if(!boss.running)return;stopBossTimer();const r=rec(),previousBest=r.bossBestDamage||0,personalBest=boss.damage>previousBest;r.bossBestDamage=Math.max(previousBest,boss.damage);if(cleared)r.bossClears++;save();updateStats();if(telemetry&&bossActivePlay){telemetry.finishPlay(bossActivePlay.playId,{score:boss.damage,accuracy:boss.attempts?Math.round(boss.correct/boss.attempts*100):0,playTime:Math.round((BOSS_V2_TIME-boss.time)*10)/10,retry:bossSessionPlayIndex>1,sessionPlayIndex:bossSessionPlayIndex,personalBest});bossActivePlay=null}const monster=$('[data-boss-monster]');monster.classList.remove('boss-hit','boss-attack');if(cleared)monster.classList.add('boss-defeated');$('[data-boss-mood]').textContent=cleared?'철갑 파괴 · 승리':'시간 종료 · 전투 기록 저장';if(cleared)$$('.boss-node').forEach(x=>x.className='boss-node done');renderBossHud();$('[data-boss-body]').innerHTML=`<div class="boss-result-v2"><span>${cleared?'BOSS CLEAR':'TIME OVER'}</span><strong>${boss.damage} DAMAGE</strong><p>${boss.correct}문제 정답 · 최고 데미지 ${r.bossBestDamage}</p><small>${cleared?'철갑을 완전히 파괴했습니다.':'남은 HP '+Math.max(0,boss.hp)+' · 콤보를 유지하면 더 큰 데미지를 줄 수 있습니다.'}</small></div>`;$('[data-boss-status]').className='boss-status hidden';const start=$('[data-boss-start]');start.textContent=cleared?'새 보스 소환':'바로 다시 도전';start.classList.remove('hidden');if(window.jpMotionFeedback)window.jpMotionFeedback(cleared?'success':'info',cleared?'보스 클리어!':`${boss.damage} 데미지 · 다시 도전하세요.`)
+  }
+  function clearBoss(){if(bossV2){finishBossV2(true);return}stopBossTimer();rec().bossClears++;save();updateStats();$$('.boss-node').forEach(x=>x.className='boss-node done');const monster=$('[data-boss-monster]');monster.classList.remove('boss-hit','boss-attack');monster.classList.add('boss-defeated');$('[data-boss-mood]').textContent='체력 소진 · 승리';boss.index=3;boss.time=0;renderBossHud();const next=currentBossLimit();$('[data-boss-body]').innerHTML=`<div class="boss-start-copy"><strong>보스 클리어!</strong><p>다음 보스는 문제당 <b>${next.toFixed(1)}초</b>입니다. 최소 제한시간은 7초입니다.</p></div>`;$('[data-boss-status]').className='boss-status hidden';$('[data-boss-start]').textContent='새 보스 소환';$('[data-boss-start]').classList.remove('hidden');if(window.jpMotionFeedback)window.jpMotionFeedback('success','보스 클리어 · 기록을 저장했습니다.')}
   $('[data-boss-start]').addEventListener('click',startBoss);
 
   function resetModes(){
@@ -838,13 +879,13 @@
     $('[data-rush-result]').classList.add('hidden');
     $('[data-rush-start]').classList.remove('hidden');
     $('[data-rush-question]').innerHTML='<div class="rush-ready">⚡</div><h2>60초 러시</h2><p>오답은 2초가 줄어듭니다.</p>';
-    $('[data-boss-body]').innerHTML='<div class="boss-start-copy"><strong>보스 체력 3칸</strong><p>정답은 한 칸 공격, 오답이나 시간 초과는 보스 체력을 전부 회복시킵니다.</p></div>';
+    $('[data-boss-body]').innerHTML=`<div class="boss-start-copy">${bossStartCopy}</div>`;
     $('[data-boss-status]').className='boss-status hidden';
-    const st=$('[data-boss-start]');st.textContent='⚔ 보스전 시작';st.classList.remove('hidden');
+    const st=$('[data-boss-start]');st.textContent=`⚔ ${bossV2?'45초 전투 시작':'보스전 시작'}`;st.classList.remove('hidden');
     $$('.boss-node').forEach(x=>x.className='boss-node');
     const monster=$('[data-boss-monster]');monster.classList.remove('boss-hit','boss-attack','boss-defeated');
     $('[data-boss-mood]').textContent='도전자를 기다리는 중';
-    boss.index=0;boss.limit=currentBossLimit();boss.time=boss.limit;renderBossHud();
+    if(bossV2)boss={running:false,raf:0,time:BOSS_V2_TIME,limit:BOSS_V2_TIME,hp:BOSS_V2_HP,maxHp:BOSS_V2_HP,damage:0,combo:0,correct:0,phase:1};else{boss.index=0;boss.limit=currentBossLimit();boss.time=boss.limit}renderBossHud();
   }
   // 난이도를 바꾸면 진행 중이던 훈련을 접고, 기록도 난이도별로 따로 본다
   function setLevel(id){
@@ -859,4 +900,5 @@
   if(params.has('probe'))window.JPSkillProbe={id:skill.id,make:()=>makeQuestion(skill.id),setLevel:l=>{currentLevel=l},levels:LEVELS.map(l=>l.id),hasLevels:hasLevels(skill.id)};
   $$('.skill-level-btn').forEach(b=>b.addEventListener('click',()=>setLevel(b.dataset.level)));
   updateStats();
+  if(params.get('mode')==='boss')showPanel('boss');
 })();
