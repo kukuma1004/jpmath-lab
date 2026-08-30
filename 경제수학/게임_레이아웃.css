@@ -378,3 +378,35 @@
     box-shadow:0 6px 14px rgba(23,35,29,.10);
   }
 }
+
+/* The high-specificity desktop split rules above used to override style.css on phones. */
+@media(max-width:1000px){
+  .game-page .sim-layout,
+  .game-page .matrix-layout,
+  .game-page .case-layout,
+  .game-page .new-game-layout{
+    grid-template-columns:minmax(0,1fr);
+  }
+  .game-page .decision-card,
+  .game-page .matrix-board,
+  .game-page .case-file{
+    border-right:0;
+    border-bottom:1px solid var(--ink);
+  }
+}
+
+@media(max-width:620px){
+  .game-page .decision-card,
+  .game-page .result-board,
+  .game-page .answer-desk,
+  .game-page .case-file,
+  .game-page .matrix-board,
+  .game-page .matrix-result{
+    min-width:0;
+    padding:22px 18px;
+  }
+  .game-page .org-options,
+  .game-page .kpi-grid{
+    grid-template-columns:minmax(0,1fr);
+  }
+}

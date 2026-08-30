@@ -1,0 +1,41 @@
+/* JP COURSE FINISH · 과목 허브의 마지막 질감과 모바일 탐색 */
+.geo-hub-page,.econ-hub-page{
+  background-image:
+    radial-gradient(circle at 8% 3%,color-mix(in srgb,var(--jp-subject,#596bd8) 10%,transparent),transparent 22rem),
+    radial-gradient(circle at 93% 28%,rgba(237,200,95,.11),transparent 24rem);
+  background-attachment:fixed;
+}
+.geo-hub-page .hero,.econ-hub-page .econ-hero{
+  position:relative;
+  border-color:color-mix(in srgb,var(--jp-subject,#596bd8) 20%,#dfe5e2);
+  box-shadow:0 24px 70px rgba(37,54,48,.09),inset 0 1px rgba(255,255,255,.8);
+}
+.geo-hub-page .hero::after,.econ-hub-page .econ-hero::after{
+  content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(125deg,rgba(255,255,255,.20),transparent 38%,color-mix(in srgb,var(--jp-subject,#596bd8) 5%,transparent));
+}
+.geo-hub-page .experience-space,.econ-hub-page .decision-lab{
+  box-shadow:0 26px 70px rgba(33,52,45,.12);
+}
+.geo-hub-page .experience-card,.geo-hub-page .card,.geo-hub-page .skill-mini,
+.econ-hub-page .route-card,.econ-hub-page .decision-news,.econ-hub-page .allocation-panel{
+  box-shadow:0 12px 34px rgba(36,53,47,.065);
+}
+.geo-hub-page .experience-card:hover,.geo-hub-page .card:hover,.geo-hub-page .skill-mini:hover,
+.econ-hub-page .route-card:hover{
+  box-shadow:0 20px 46px rgba(36,53,47,.13);
+}
+@media(max-width:620px){
+  .geo-hub-page>.jp-subject-nav,.econ-hub-page>.jp-subject-nav{
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;
+    width:calc(100% - 24px);padding:7px;overflow:visible;
+  }
+  .geo-hub-page>.jp-subject-nav strong,.econ-hub-page>.jp-subject-nav strong{
+    grid-column:1/-1;min-width:0;margin:0;padding:8px 10px 5px;white-space:normal;
+  }
+  .geo-hub-page>.jp-subject-nav a,.econ-hub-page>.jp-subject-nav a{
+    justify-content:center;min-width:0;min-height:42px;padding-inline:7px;white-space:normal;text-align:center;
+  }
+  .geo-hub-page .hero,.econ-hub-page .econ-hero{box-shadow:0 16px 42px rgba(37,54,48,.08)}
+}
+@media(prefers-reduced-motion:reduce){.geo-hub-page .experience-card,.geo-hub-page .card,.geo-hub-page .skill-mini,.econ-hub-page .route-card{transition:none!important}}

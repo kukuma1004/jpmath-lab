@@ -27,7 +27,29 @@
   margin-top:0;
 }
 @media(max-width:620px){
-  .economy-experience-page > .jp-subject-nav{width:calc(100% - 24px);margin-top:18px}
+  .economy-experience-page > .jp-subject-nav{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    gap:4px;
+    width:calc(100% - 24px);
+    margin-top:18px;
+    padding:7px;
+    overflow:visible;
+  }
+  .economy-experience-page > .jp-subject-nav strong{
+    grid-column:1 / -1;
+    min-width:0;
+    margin:0;
+    padding:8px 10px 5px;
+    white-space:normal;
+  }
   .economy-experience-page > .jp-subject-nav a,
-  .economy-experience-page > .jp-subject-nav button{min-height:44px}
+  .economy-experience-page > .jp-subject-nav button{
+    justify-content:center;
+    min-width:0;
+    min-height:44px;
+    padding-inline:8px;
+    white-space:normal;
+    text-align:center;
+  }
 }

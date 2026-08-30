@@ -17,7 +17,7 @@
     vector:[['종점−시점 순서 반대','AB벡터는 반드시 B의 좌표에서 A의 좌표를 뺍니다.'],['성분별 계산 누락','x, y, z 성분을 같은 자리끼리 계산하세요.'],['방향과 위치 혼동','기준점과 방향벡터는 서로 다른 역할을 합니다.']]
   };
 
-  function makeQuestion(id){
+  function makeBaseQuestion(id){
     let a,b,c,p,t,k,s,axis,A,B,P,v,w,ans,type,n,m,d,r,angle,L;
     switch(id){
       case'parabola_form':
@@ -111,6 +111,30 @@
     }
   }
 
+  const LEVELS=[
+    {id:'basic',name:'기본',tag:'CORE',desc:'핵심 공식을 바로 적용하는 계산부터 시작합니다.',samples:1},
+    {id:'applied',name:'응용',tag:'APPLY',desc:'음수·축 방향·공간 좌표처럼 조건을 한 번 더 해석합니다.',samples:4},
+    {id:'deep',name:'심화',tag:'DEEP',desc:'여러 조건과 부호가 겹친 문제를 골라 실전 판단력을 높입니다.',samples:9}
+  ];
+  let currentLevel='basic';
+  function questionComplexity(q){
+    const text=[q.type,q.equation,q.prompt,q.correct].join(' ');
+    const nums=(text.match(/-?\d+(?:\.\d+)?/g)||[]).map(Number);
+    const magnitude=nums.length?Math.max(...nums.map(Math.abs)):0;
+    return text.length/35+(text.match(/[−-]/g)||[]).length*2.2+(text.match(/[±√²³]/g)||[]).length*1.8+(text.match(/,/g)||[]).length*.9+Math.min(5,magnitude/5);
+  }
+  function makeQuestion(id,level=currentLevel){
+    const spec=LEVELS.find(x=>x.id===level)||LEVELS[0];
+    let best=makeBaseQuestion(id),bestScore=questionComplexity(best);
+    for(let i=1;i<spec.samples;i++){
+      const candidate=makeBaseQuestion(id),score=questionComplexity(candidate);
+      if(score>bestScore){best=candidate;bestScore=score}
+    }
+    best.level=spec.id;
+    best.type=`${spec.name} · ${best.type}`;
+    return best;
+  }
+
   const defs=[
     ['parabola_form','conic','S01','포물선 표준형과 방향','식의 모양과 부호만 보고 열리는 축과 방향을 즉시 판별합니다.','y²=4px 또는 x²=4py','parabola',['제곱된 변수 확인','제곱되지 않은 축 찾기','4p의 부호로 방향 결정'],'기하_포물선.html'],
     ['parabola_focus','conic','S02','포물선 초점·준선 역산','4p를 읽어 초점과 준선의 위치를 서로 반대 방향으로 찾습니다.','초점 (p,0) · 준선 x=−p','parabola',['4p에서 p 계산','열리는 축 확인','초점과 준선을 반대쪽에 배치'],'기하_포물선.html'],
@@ -158,16 +182,21 @@
   const groupName=skill.group==='conic'?'이차곡선':skill.group==='space'?'공간도형·좌표':'벡터';
   const color=skill.group==='conic'?'#7557A8':skill.group==='space'?'#2B6CA3':'#176B5B';
   root.style.setProperty('--skill',color);
-  root.innerHTML=`<div class="skill-page"><nav class="skill-nav"><div class="skill-nav-inner"><a class="skill-back" href="index.html" aria-label="기하 목록으로 돌아가기">←</a><button class="skill-tab active" data-skill-tab="concept"><span>01</span> 원리</button><button class="skill-tab" data-skill-tab="drill"><span>02</span> 5문제</button><button class="skill-tab rush-tab" data-skill-tab="rush"><span>03</span> 60초</button><button class="skill-tab boss-tab" data-skill-tab="boss"><span>04</span> 보스</button></div></nav><main class="skill-wrap">
+  const levelBar=`<div class="skill-level-bar"><span class="skill-level-label">난이도</span><div class="skill-level-seg" role="group" aria-label="난이도 선택">${LEVELS.map(l=>`<button type="button" class="skill-level-btn${l.id===currentLevel?' active':''}" data-level="${l.id}" aria-pressed="${l.id===currentLevel}"><b>${l.name}</b><small>${l.tag}</small></button>`).join('')}</div><p class="skill-level-desc" data-level-desc>${LEVELS[0].desc}</p></div>`;
+  root.innerHTML=`<div class="skill-page"><nav class="skill-nav"><div class="skill-nav-inner"><a class="skill-back" href="index.html" aria-label="기하 목록으로 돌아가기">←</a><button class="skill-tab active" data-skill-tab="concept"><span>01</span> 원리</button><button class="skill-tab" data-skill-tab="drill"><span>02</span> 5문제</button><button class="skill-tab rush-tab" data-skill-tab="rush"><span>03</span> 60초</button><button class="skill-tab boss-tab" data-skill-tab="boss"><span>04</span> 보스</button></div></nav>${levelBar}<main class="skill-wrap">
   <section class="skill-panel" data-skill-panel="concept"><header class="skill-hero"><div><p class="skill-kicker">SCHOOL SKILL ${String(skill.index).padStart(2,'0')} · ${groupName}</p><h1>${skill.title}</h1><p>${skill.desc}</p><div class="skill-code-row"><span>${skill.code}</span><span>내신 연산</span><span>60초 배틀</span></div></div><div class="mastery-card"><span>MASTERY</span><strong data-mastery-stars>☆☆☆☆☆</strong><small data-mastery-note>첫 도전을 기다리는 중</small></div></header><div class="rule-strip"><span class="rule-label">핵심 공식</span><strong>${skill.formula}</strong><span>${groupName} 내신에서 반복되는 계산 루틴</span></div><div class="concept-layout"><div class="skill-visual-card"><svg id="ellipseSkillSvg" class="generic-visual" viewBox="0 0 680 430" role="img" aria-label="${skill.title} 개념 그림"></svg><div class="visual-legend"><span><i class="legend-a"></i>조건</span><span><i class="legend-b"></i>계산</span><span><i class="legend-c"></i>결론</span></div></div><aside class="control-card"><div class="control-head"><span>3단계 계산 루틴</span><b>${skill.code}</b></div><div class="routine-list">${skill.steps.map((x,i)=>`<div class="routine-step"><span>${i+1}</span><div><b>${x}</b><small>${i===0?'문제의 핵심 조건을 먼저 표시합니다.':i===1?'공식에 값을 넣고 성분별로 계산합니다.':'부호·축·단위를 마지막으로 검산합니다.'}</small></div></div>`).join('')}</div><div class="example-box"><div class="example-label">RANDOM EXAMPLE</div><div class="example-equation" data-example-equation></div><div class="example-prompt" data-example-prompt></div><div class="example-answer hidden" data-example-answer></div><div class="example-actions"><button data-new-example>새 예시</button><button data-reveal-example>정답 확인</button></div></div></aside></div><div class="mistake-grid">${groupTraps[skill.group].map((x,i)=>`<article><span>실수 0${i+1}</span><b>${x[0]}</b><p>${x[1]}</p></article>`).join('')}</div><div class="launch-row"><button class="launch-card" data-launch="drill"><span>STEP 02</span><b>5문제 정확도 훈련</b><small>시간제한 없이 계산 루틴 만들기</small></button><button class="launch-card hot" data-launch="rush"><span>STEP 03</span><b>60초 러시</b><small>콤보를 쌓고 오답 시 2초 차감</small></button><button class="launch-card boss" data-launch="boss"><span>STEP 04</span><b>3연속 내신 보스</b><small>한 번 틀리면 처음부터 다시</small></button></div><div class="skill-links"><a href="${skill.lesson}">관련 개념 실험실</a><span>·</span><a href="index.html">36개 스킬 지도</a></div></section>
   <section class="skill-panel hidden" data-skill-panel="drill"><header class="mode-header"><div><p class="skill-kicker">ACCURACY DRILL · ${skill.code}</p><h1>${skill.title}</h1><p>시간제한 없이 다섯 문제를 풀며 계산 순서를 고정하세요.</p></div><div class="mode-stat"><span>진행</span><strong data-drill-progress>0 / 5</strong></div></header><div class="question-shell"><div class="question-topline"><span data-drill-type>READY</span><b data-drill-score>정답 0</b></div><div class="question-equation" data-drill-equation>준비되면 시작하세요.</div><h2 class="question-prompt" data-drill-prompt>다섯 문제로 계산 습관을 점검합니다.</h2><div class="answer-grid" data-drill-answers></div><div class="answer-feedback hidden" data-drill-feedback></div><button class="primary-action" data-drill-start>훈련 시작</button></div><div class="result-card hidden" data-drill-result></div></section>
   <section class="skill-panel hidden" data-skill-panel="rush"><header class="mode-header rush-heading"><div><p class="skill-kicker">60 SECOND RUSH · ${skill.code}</p><h1>멈추면 점수를 빼앗긴다</h1><p>정답은 콤보 보너스, 오답은 2초 차감. 가능한 많이 해결하세요.</p></div><div class="best-card"><span>BEST</span><strong data-rush-best>0</strong></div></header><div class="rush-stage"><div class="rush-hud"><div><span>TIME</span><strong data-rush-time>60.0</strong></div><div><span>SCORE</span><strong data-rush-score>0</strong></div><div><span>COMBO</span><strong data-rush-combo>×1</strong></div></div><div class="rush-track"><div data-rush-bar></div></div><div class="rush-question" data-rush-question><span class="rush-ready-icon">⚡</span><h2>60초 동안 몇 문제까지 갈 수 있을까요?</h2><p>틀리면 시간이 줄어듭니다. 정확도와 속도를 함께 잡으세요.</p></div><div class="answer-grid rush-answers" data-rush-answers></div><button class="danger-action" data-rush-start>60초 러시 시작</button><div class="rush-flash" data-rush-flash aria-live="polite"></div></div><div class="result-card hidden" data-rush-result></div></section>
   <section class="skill-panel hidden" data-skill-panel="boss"><header class="mode-header boss-heading"><div><p class="skill-kicker">THREE STREAK BOSS · ${skill.code}</p><h1>세 문제를 연속으로 돌파하라</h1><p>한 문제라도 틀리면 보스의 체력이 회복됩니다.</p></div><div class="boss-clears"><span>CLEAR</span><strong data-boss-clears>0</strong></div></header><div class="boss-stage"><div class="boss-warning"><span>FINAL BOSS</span><b>3연속 정답만 클리어로 인정</b></div><div class="boss-progress"><i class="boss-node"></i><i class="boss-node"></i><i class="boss-node"></i></div><div data-boss-body><div class="boss-start-copy"><strong>${skill.title}</strong><p>계산 루틴을 세 번 연속 유지하면 이 스킬을 정복합니다.</p></div></div><button class="boss-action" data-boss-start>보스전 시작</button><div class="boss-status hidden" data-boss-status></div></div></section>
   </main></div>`;
 
-  const KEY=`jp_geo_skill_${skill.id}_v1`;let saved={bestRush:0,bossClears:0,drillBest:0};try{saved={...saved,...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch(e){}const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(saved))}catch(e){}};
+  const KEY=`jp_geo_skill_${skill.id}_v1`;let saved={bestRush:0,bossClears:0,drillBest:0,level:'basic',byLevel:null};try{saved={...saved,...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch(e){}
+  if(!saved.byLevel||typeof saved.byLevel!=='object')saved.byLevel={basic:{bestRush:saved.bestRush||0,bossClears:saved.bossClears||0,drillBest:saved.drillBest||0}};
+  currentLevel=LEVELS.some(l=>l.id===saved.level)?saved.level:'basic';
+  const rec=()=>(saved.byLevel[currentLevel]||(saved.byLevel[currentLevel]={bestRush:0,bossClears:0,drillBest:0}));
+  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(saved))}catch(e){}};
   let rush={running:false,time:60,score:0,combo:0,correct:0,q:null,last:0,raf:0};
-  function updateMastery(){const lv=(saved.drillBest>=3?1:0)+(saved.drillBest===5?1:0)+(saved.bestRush>=600?1:0)+(saved.bestRush>=1200?1:0)+(saved.bossClears>0?1:0);$('[data-mastery-stars]').textContent='★'.repeat(lv)+'☆'.repeat(5-lv);$('[data-mastery-note]').textContent=lv===0?'첫 도전을 기다리는 중':lv===5?'완전 정복! 다음 스킬로 이동하세요.':`5단계 중 ${lv}단계 달성`;$('[data-rush-best]').textContent=saved.bestRush;$('[data-boss-clears]').textContent=saved.bossClears}
+  function updateMastery(){const r=rec(),lv=(r.drillBest>=3?1:0)+(r.drillBest===5?1:0)+(r.bestRush>=600?1:0)+(r.bestRush>=1200?1:0)+(r.bossClears>0?1:0);$('[data-mastery-stars]').textContent='★'.repeat(lv)+'☆'.repeat(5-lv);$('[data-mastery-note]').textContent=lv===0?'첫 도전을 기다리는 중':lv===5?'완전 정복! 다음 스킬로 이동하세요.':`5단계 중 ${lv}단계 달성`;$('[data-rush-best]').textContent=r.bestRush;$('[data-boss-clears]').textContent=r.bossClears}
   function showPanel(x){if(rush.running&&x!=='rush')finishRush();$$('[data-skill-panel]').forEach(p=>p.classList.toggle('hidden',p.dataset.skillPanel!==x));$$('[data-skill-tab]').forEach(b=>b.classList.toggle('active',b.dataset.skillTab===x));window.scrollTo({top:0,behavior:'smooth'})}
   $$('[data-skill-tab]').forEach(b=>b.addEventListener('click',()=>showPanel(b.dataset.skillTab)));$$('[data-launch]').forEach(b=>b.addEventListener('click',()=>showPanel(b.dataset.launch)));
 
@@ -197,7 +226,7 @@
   let drill={index:0,correct:0,q:null};
   function startDrill(){drill={index:0,correct:0,q:null};$('[data-drill-start]').classList.add('hidden');$('[data-drill-result]').classList.add('hidden');nextDrill()}
   function nextDrill(){if(drill.index>=5){finishDrill();return}drill.q=makeQuestion(skill.id);$('[data-drill-progress]').textContent=`${drill.index+1} / 5`;$('[data-drill-score]').textContent=`정답 ${drill.correct}`;$('[data-drill-type]').textContent=drill.q.type;$('[data-drill-equation]').textContent=drill.q.equation;$('[data-drill-prompt]').textContent=drill.q.prompt;$('[data-drill-feedback]').className='answer-feedback hidden';const box=$('[data-drill-answers]');fillAnswers(box,drill.q,(v,b)=>{const ok=String(v)===drill.q.correct;markAnswers(box,drill.q,v,b);if(ok)drill.correct++;const f=$('[data-drill-feedback]');f.textContent=(ok?'정답! ':'다시 기억하기: ')+drill.q.explanation;f.className=`answer-feedback ${ok?'good':'bad'}`;drill.index++;setTimeout(nextDrill,700)})}
-  function finishDrill(){saved.drillBest=Math.max(saved.drillBest,drill.correct);save();updateMastery();$('[data-drill-answers]').innerHTML='';const b=$('[data-drill-result]');b.innerHTML=`<strong>${drill.correct} / 5</strong><p>${drill.correct===5?'계산 루틴 완성! 이제 60초 압박에 도전하세요.':drill.correct>=3?'좋습니다. 한 번 더 풀어 완벽하게 고정해보세요.':'원리 탭에서 계산 순서를 다시 확인하세요.'}</p><button data-retry>다시 훈련</button>`;b.classList.remove('hidden');if(window.jpMotionFeedback)window.jpMotionFeedback('success',`5문제 훈련 완료 · ${drill.correct}문제 정답`);$('[data-retry]',b).addEventListener('click',startDrill)}
+  function finishDrill(){rec().drillBest=Math.max(rec().drillBest,drill.correct);save();updateMastery();$('[data-drill-answers]').innerHTML='';const b=$('[data-drill-result]');b.innerHTML=`<strong>${drill.correct} / 5</strong><p>${drill.correct===5?'계산 루틴 완성! 이제 60초 압박에 도전하세요.':drill.correct>=3?'좋습니다. 한 번 더 풀어 완벽하게 고정해보세요.':'원리 탭에서 계산 순서를 다시 확인하세요.'}</p><button data-retry>다시 훈련</button>`;b.classList.remove('hidden');if(window.jpMotionFeedback)window.jpMotionFeedback('success',`5문제 훈련 완료 · ${drill.correct}문제 정답`);$('[data-retry]',b).addEventListener('click',startDrill)}
   $('[data-drill-start]').addEventListener('click',startDrill);
 
   function startRush(){rush={running:true,time:60,score:0,combo:0,correct:0,q:null,last:performance.now(),raf:0};$('[data-rush-start]').classList.add('hidden');$('[data-rush-result]').classList.add('hidden');nextRush();rush.raf=requestAnimationFrame(tickRush)}
@@ -205,13 +234,28 @@
   function renderRush(){$('[data-rush-time]').textContent=rush.time.toFixed(1);$('[data-rush-score]').textContent=rush.score;$('[data-rush-combo]').textContent=`×${1+Math.floor(rush.combo/3)*.5}`;$('[data-rush-bar]').style.width=`${rush.time/60*100}%`}
   function nextRush(){if(!rush.running)return;rush.q=makeQuestion(skill.id);$('[data-rush-question]').innerHTML=`<div class="rush-eq">${rush.q.equation}</div><div class="rush-prompt">${rush.q.prompt}</div>`;fillAnswers($('[data-rush-answers]'),rush.q,v=>{if(!rush.running)return;const ok=String(v)===rush.q.correct;if(ok){rush.combo++;rush.correct++;rush.score+=100+Math.min(300,rush.combo*20)}else{rush.combo=0;rush.time=Math.max(0,rush.time-2)}flashRush(ok);renderRush();nextRush()})}
   function flashRush(ok){const f=$('[data-rush-flash]');f.textContent=ok?'+ SCORE':'− 2 SEC';f.className=`rush-flash show ${ok?'good':'bad'}`;setTimeout(()=>f.className='rush-flash',330)}
-  function finishRush(){if(!rush.running)return;rush.running=false;cancelAnimationFrame(rush.raf);saved.bestRush=Math.max(saved.bestRush,rush.score);save();updateMastery();$('[data-rush-answers]').innerHTML='';$('[data-rush-question]').innerHTML='<span class="rush-ready-icon">🏁</span><h2>러시 종료!</h2>';const b=$('[data-rush-result]');b.innerHTML=`<strong>${rush.score}점</strong><p>${rush.correct}문제 성공 · 최고 기록 ${saved.bestRush}점</p><button data-retry>다시 도전</button>`;b.classList.remove('hidden');if(window.jpMotionFeedback)window.jpMotionFeedback('success',`60초 러시 종료 · ${rush.score}점`);$('[data-retry]',b).addEventListener('click',startRush)}
+  function finishRush(){if(!rush.running)return;rush.running=false;cancelAnimationFrame(rush.raf);rec().bestRush=Math.max(rec().bestRush,rush.score);save();updateMastery();$('[data-rush-answers]').innerHTML='';$('[data-rush-question]').innerHTML='<span class="rush-ready-icon">🏁</span><h2>러시 종료!</h2>';const b=$('[data-rush-result]');b.innerHTML=`<strong>${rush.score}점</strong><p>${rush.correct}문제 성공 · 최고 기록 ${rec().bestRush}점</p><button data-retry>다시 도전</button>`;b.classList.remove('hidden');if(window.jpMotionFeedback)window.jpMotionFeedback('success',`60초 러시 종료 · ${rush.score}점`);$('[data-retry]',b).addEventListener('click',startRush)}
   $('[data-rush-start]').addEventListener('click',startRush);
 
   let boss={index:0,questions:[],active:false};
   function startBoss(){boss={index:0,questions:Array.from({length:3},()=>makeQuestion(skill.id)),active:true};$('[data-boss-start]').classList.add('hidden');$('[data-boss-status]').className='boss-status hidden';renderBoss()}
   function renderBoss(){const q=boss.questions[boss.index];$$('.boss-node').forEach((x,i)=>x.className='boss-node '+(i<boss.index?'done':i===boss.index?'active':''));const body=$('[data-boss-body]');body.innerHTML=`<div class="boss-question-card"><div class="boss-eq"></div><h2></h2></div><div class="boss-answer-grid"></div>`;setMath($('.boss-eq',body),q.equation);$('h2',body).textContent=q.prompt;const box=$('.boss-answer-grid',body);fillAnswers(box,q,(v,b)=>{const ok=String(v)===q.correct;markAnswers(box,q,v,b);const st=$('[data-boss-status]');if(ok){st.textContent=`${boss.index+1}단계 통과! ${q.explanation}`;st.className='boss-status good';boss.index++;if(boss.index>=3){setTimeout(clearBoss,650)}else setTimeout(()=>{st.className='boss-status hidden';renderBoss()},650)}else{boss.active=false;st.textContent=`보스가 회복했습니다. ${q.explanation}`;st.className='boss-status bad';$('[data-boss-start]').textContent='처음부터 다시 도전';$('[data-boss-start]').classList.remove('hidden')}})}
-  function clearBoss(){saved.bossClears++;save();updateMastery();$$('.boss-node').forEach(x=>x.className='boss-node done');$('[data-boss-body]').innerHTML='<div class="boss-start-copy"><strong>보스 클리어!</strong><p>세 문제를 연속으로 해결했습니다. 이 계산 루틴은 실전에서 사용할 준비가 됐습니다.</p></div>';$('[data-boss-status]').className='boss-status hidden';$('[data-boss-start]').textContent='새 보스 소환';$('[data-boss-start]').classList.remove('hidden');if(window.jpMotionFeedback)window.jpMotionFeedback('success','보스 클리어 · 계산 루틴을 저장했습니다.')}
+  function clearBoss(){rec().bossClears++;save();updateMastery();$$('.boss-node').forEach(x=>x.className='boss-node done');$('[data-boss-body]').innerHTML='<div class="boss-start-copy"><strong>보스 클리어!</strong><p>세 문제를 연속으로 해결했습니다. 이 계산 루틴은 실전에서 사용할 준비가 됐습니다.</p></div>';$('[data-boss-status]').className='boss-status hidden';$('[data-boss-start]').textContent='새 보스 소환';$('[data-boss-start]').classList.remove('hidden');if(window.jpMotionFeedback)window.jpMotionFeedback('success','보스 클리어 · 계산 루틴을 저장했습니다.')}
   $('[data-boss-start]').addEventListener('click',startBoss);
+  function setLevel(id){
+    if(id===currentLevel||!LEVELS.some(l=>l.id===id))return;
+    if(rush.running)finishRush();
+    currentLevel=id;saved.level=id;save();boss.active=false;
+    $$('.skill-level-btn').forEach(b=>{const on=b.dataset.level===id;b.classList.toggle('active',on);b.setAttribute('aria-pressed',String(on))});
+    $('[data-level-desc]').textContent=LEVELS.find(l=>l.id===id).desc;
+    $('[data-drill-result]').classList.add('hidden');$('[data-drill-start]').classList.remove('hidden');$('[data-drill-answers]').innerHTML='';
+    $('[data-boss-body]').innerHTML=`<div class="boss-start-copy"><strong>${skill.title}</strong><p>${LEVELS.find(l=>l.id===id).name} 난이도로 세 문제를 연속 해결하세요.</p></div>`;
+    $('[data-boss-start]').textContent='보스전 시작';$('[data-boss-start]').classList.remove('hidden');
+    newExample();updateMastery();
+  }
+  $$('.skill-level-btn').forEach(b=>b.addEventListener('click',()=>setLevel(b.dataset.level)));
+  $$('.skill-level-btn').forEach(b=>{const on=b.dataset.level===currentLevel;b.classList.toggle('active',on);b.setAttribute('aria-pressed',String(on))});
+  $('[data-level-desc]').textContent=LEVELS.find(l=>l.id===currentLevel).desc;
+  if(params.has('probe'))window.JPGeoSkillProbe={id:skill.id,make:()=>makeQuestion(skill.id),setLevel:l=>{currentLevel=l},levels:LEVELS.map(l=>l.id)};
   updateMastery();
 })();

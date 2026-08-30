@@ -934,7 +934,9 @@
 
   <script>
   (function () {
-    const sourceGrid = document.querySelector('[data-main-panel="concepts"] > .grid');
+    const sourcePanel = document.querySelector('[data-main-panel="concepts"]');
+    const sourceGrids = [...sourcePanel.querySelectorAll('.unit .grid')];
+    const cards = sourceGrids.flatMap(grid => [...grid.children]);
     const additionalConcepts = [
       ['16','REAL ROOTS','방정식의 실근 개수','삼차·사차함수와 수평선의 교점으로 실근 수를 판정','미적분1_방정식실근개수.html','교점 수 = 실근 수','M10'],
       ['17','MOTION','속도와 가속도','위치·속도·가속도를 미분으로 연결하고 부호를 해석','미적분1_속도가속도.html',"v=s′, a=v′",'M11'],
@@ -949,9 +951,8 @@
     additionalConcepts.forEach(item => {
       const li = document.createElement('li');
       li.innerHTML = `<a class="card" href="${item[4]}"><span class="index-mark">${item[0]}</span><div class="card-top"><span class="icon-tile"><svg viewBox="0 0 24 24" fill="none"><path d="M3 18c3-1 4-10 7-10s4 8 7 7 2-6 4-8" stroke="var(--accent)" stroke-width="1.7" stroke-linecap="round"/><path d="M3 12h18" stroke="var(--accent)" stroke-width="1.1" opacity=".45"/></svg></span><span class="code-chip">${item[1]}</span></div><h2 class="card-title">${item[2]}</h2><p class="card-desc">${item[3]}</p><div class="card-footer"><span class="card-meta">${item[5]}</span><span class="card-arrow">입장하기 →</span></div></a>`;
-      sourceGrid.appendChild(li);
+      cards.push(li);
     });
-    const cards = [...sourceGrid.children];
     const groups = [
       { key: 'limits', mark: 'lim', name: '극한과 연속', summary: '극한 · 극한값 · 연속 · 최대최소 · 사잇값', indexes: [0, 1, 2, 7, 8] },
       { key: 'derivative', mark: "f'", name: '미분', summary: '미분계수 · 도함수 · 접선 · 그래프 · 실근 · 변화율 · 로피탈 검산', indexes: [3, 4, 5, 6, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18] },
@@ -966,7 +967,7 @@
     empty.innerHTML = '<strong>먼저 공부할 단원을 선택하세요</strong><span>선택한 단원의 학습 카드만 펼쳐집니다.</span>';
     const stage = document.createElement('div');
     stage.className = 'calc-category-stage';
-    sourceGrid.replaceWith(nav, empty, stage);
+    sourcePanel.replaceChildren(nav, empty, stage);
 
     groups.forEach((group, groupIndex) => {
       const button = document.createElement('button');

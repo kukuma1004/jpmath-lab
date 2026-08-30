@@ -81,9 +81,9 @@
     const centerY = height * (.5 + (introPointer.y - .5) * .08);
     const amplitude = height * (.17 + introPointer.x * .06);
     const gradient = ctx.createLinearGradient(0, 0, width, 0);
-    gradient.addColorStop(0, 'rgba(237,200,95,.15)');
-    gradient.addColorStop(.45, 'rgba(237,200,95,.95)');
-    gradient.addColorStop(1, 'rgba(111,199,170,.7)');
+    gradient.addColorStop(0, 'rgba(204,104,69,.12)');
+    gradient.addColorStop(.45, 'rgba(204,104,69,.92)');
+    gradient.addColorStop(1, 'rgba(89,107,216,.72)');
     ctx.lineWidth = 3;
     ctx.strokeStyle = gradient;
     ctx.beginPath();
@@ -103,7 +103,7 @@
       const x = width * .55 + Math.cos(a) * rx;
       const y = height * .5 + Math.sin(a) * ry;
       ctx.beginPath(); ctx.arc(x, y, i % 5 === 0 ? 3 : 1.5, 0, Math.PI * 2);
-      ctx.fillStyle = i % 5 === 0 ? 'rgba(237,200,95,.8)' : 'rgba(246,242,232,.28)'; ctx.fill();
+      ctx.fillStyle = i % 5 === 0 ? 'rgba(204,104,69,.72)' : 'rgba(25,49,45,.20)'; ctx.fill();
     }
   }
 

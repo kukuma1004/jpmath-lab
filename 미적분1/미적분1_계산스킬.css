@@ -44,3 +44,27 @@
   .skill-level-desc{flex-basis:100%;font-size:11.5px}
 }
 @media(max-width:430px){.boss-combat-stats{gap:5px}.boss-combat-stats div{padding:8px 4px}.boss-combat-stats b{font-size:14px}.boss-v2 .question-topline{gap:8px;font-size:8px}}
+
+/* BOSS 2.1 · 고유 캐릭터와 수식 공격 피드백 */
+.boss-v2 .boss-monster{width:100%;isolation:isolate}
+.boss-art-frame{position:relative;z-index:1;width:min(310px,100%);aspect-ratio:3/2;overflow:hidden;border:1px solid rgba(112,220,190,.24);border-radius:24px;background:#111b19;box-shadow:0 18px 38px rgba(0,0,0,.34),inset 0 0 0 1px rgba(255,255,255,.04)}
+.boss-art-frame::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 42% 52%,transparent 38%,rgba(8,17,14,.22) 72%,rgba(8,17,14,.52));pointer-events:none}
+.boss-art{display:block;width:100%;height:100%;object-fit:cover;object-position:center;transition:filter .3s ease,transform .45s ease}
+.boss-v2 .boss-aura{z-index:0;width:230px;height:230px}.boss-v2 .boss-monster>strong,.boss-v2 .boss-monster>span{position:relative;z-index:2}
+.boss-fx-layer{position:absolute;inset:0;z-index:8;overflow:hidden;pointer-events:none}
+.boss-projectile,.boss-impact{position:absolute;display:grid;place-items:center;margin:0;font-family:var(--font-mono);font-style:normal;font-weight:900;pointer-events:none}
+.boss-projectile{left:75%;top:78%;width:58px;height:58px;border-radius:50%;color:#10251e;background:radial-gradient(circle,#fff 0 20%,#7fffd0 42%,#2dc28a 65%,transparent 68%);filter:drop-shadow(0 0 13px #62efbc);animation:mathStrike .62s cubic-bezier(.18,.82,.3,1) forwards}
+.boss-projectile.boss-counter{left:28%;top:43%;color:#fff;background:radial-gradient(circle,#fff 0 18%,#ff845e 40%,#d2362b 64%,transparent 68%);filter:drop-shadow(0 0 14px #ff4f3b);animation:bossCounter .7s cubic-bezier(.18,.72,.25,1) forwards}
+.boss-impact{left:24%;top:42%;z-index:2;min-width:92px;padding:8px 12px;border:1px solid rgba(255,255,255,.45);border-radius:999px;color:#fff;background:#1e9e71;box-shadow:0 0 28px rgba(85,242,183,.55);font-size:18px;animation:impactPop .8s ease forwards}
+.boss-impact.counter-impact{left:66%;top:72%;background:#b83d31;box-shadow:0 0 28px rgba(255,82,61,.45)}
+.boss-v2.boss-phase-three .boss-arena{background:radial-gradient(circle at 22% 35%,rgba(114,73,188,.34),transparent 38%),linear-gradient(145deg,#151224,#332752 62%,#1a132b)}
+.boss-v2.boss-phase-three .boss-aura{border-color:rgba(198,155,255,.55);box-shadow:0 0 62px rgba(155,105,234,.34),inset 0 0 34px rgba(155,105,234,.18)}
+.boss-v2.boss-phase-three .boss-art{filter:saturate(1.15) contrast(1.05)}
+.boss-v2 .boss-monster.boss-hit .boss-art{filter:brightness(1.65) saturate(.7);transform:translateX(-8px) scale(.985)}
+.boss-v2 .boss-monster.boss-attack .boss-art{filter:contrast(1.12) saturate(1.25);transform:translateX(8px) scale(1.025)}
+.boss-v2 .boss-monster.boss-defeated .boss-art{filter:grayscale(.75) brightness(.58);transform:translateY(10px) rotate(-2deg)}
+@keyframes mathStrike{0%{opacity:0;transform:translate(0,0) scale(.35)}20%{opacity:1}80%{opacity:1;transform:translate(-330%,-230%) scale(.78)}100%{opacity:0;transform:translate(-380%,-260%) scale(1.65)}}
+@keyframes bossCounter{0%{opacity:0;transform:translate(0,0) scale(.4)}18%{opacity:1}78%{opacity:1;transform:translate(300%,230%) scale(.82)}100%{opacity:0;transform:translate(340%,260%) scale(1.5)}}
+@keyframes impactPop{0%{opacity:0;transform:translateY(12px) scale(.5)}35%{opacity:1;transform:translateY(-5px) scale(1.08)}100%{opacity:0;transform:translateY(-32px) scale(.92)}}
+@media(max-width:700px){.boss-art-frame{width:min(300px,96%)}.boss-v2 .boss-aura{width:205px;height:205px}.boss-impact{left:31%;top:35%}.boss-impact.counter-impact{left:54%;top:70%}}
+@media(prefers-reduced-motion:reduce){.boss-art,.boss-projectile,.boss-impact{animation:none!important;transition:none!important}.boss-projectile,.boss-impact{display:none}}
