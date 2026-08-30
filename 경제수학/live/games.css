@@ -3,6 +3,8 @@
 @media(max-width:1000px){.catalog-grid{grid-template-columns:1fr 1fr}.realtime-preview{grid-template-columns:1fr}.connection-state{position:static;grid-column:1/-1}.strategy-payoffs{grid-template-columns:1fr 1fr}}
 @media(max-width:720px){.catalog-hero{padding-top:58px}.catalog-heading{align-items:flex-start;flex-direction:column}.catalog-grid{grid-template-columns:1fr}.catalog-card{min-height:190px}.arena-lobby,.arena-room{width:calc(100% - 22px);margin:38px auto}.arena-title{padding:24px;align-items:flex-start;flex-direction:column}.arena-room .room-bar{grid-template-columns:1fr auto}.strategy-payoffs{grid-template-columns:1fr 1fr}.realtime-preview{padding-top:62px;padding-bottom:62px}}
 .connection-state{font-weight:700;text-underline-offset:4px}
+.final-loop-summary{margin:22px 0;padding:20px;border:1px solid #cbd0cc;background:#f4f7f4}.personal-best-badge{display:inline-flex;align-items:center;padding:7px 11px;border:1px solid #b78a25;border-radius:999px;background:#fbf3df;color:#74550d;font:700 10.5px "IBM Plex Mono",monospace;letter-spacing:.7px}.final-loop-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:13px 0}.final-loop-stats article{padding:13px;border:1px solid #d5ddd8;background:#fff}.final-loop-stats span{display:block;margin-bottom:5px;color:#657168;font-size:11px}.final-loop-stats strong{font:700 20px "IBM Plex Mono",monospace}.final-loop-summary>p{margin:0;color:#45544b;line-height:1.6;font-weight:600}
+@media(max-width:720px){.final-loop-stats{grid-template-columns:1fr}.final-loop-summary{padding:15px}}
 
 /* 내용이 두 줄 이상이어도 하단 정보와 겹치지 않는 유연한 카드 구조 */
 .catalog-card{display:flex;min-height:245px;flex-direction:column;align-items:flex-start}

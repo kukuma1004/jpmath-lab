@@ -105,6 +105,9 @@ input[type=range]{ width:100%; accent-color:var(--right); margin-bottom:7px; }
 .name-field{ text-align:left; }
 .name-field label{ display:block; font-family:var(--font-mono); font-size:10px; color:var(--inkSoft); font-weight:700; margin-bottom:3px; }
 .name-field input{ width:100%; padding:9px 10px; border-radius:11px; border:1.5px solid var(--border); background:#fff; font-family:var(--font-body); font-size:13.5px; font-weight:600; color:var(--ink); }
+.name-field input:focus{ outline:3px solid rgba(43,108,163,.18); border-color:var(--right); }
+.name-error{ display:block; min-height:18px; margin:5px 0 0; color:var(--left); font-size:11.5px; font-weight:700; text-align:left; }
+.player-memory{ margin:0 0 10px; color:var(--inkSoft); font-size:11.5px; line-height:1.5; }
 .sound-row{ display:flex; align-items:center; justify-content:center; gap:7px; font-size:12px; color:var(--inkSoft); margin-bottom:12px; }
 .mode-grid{ display:grid; grid-template-columns:1fr 1fr; gap:9px; }
 .mode-card{ padding:13px 8px; border-radius:14px; border:1.5px solid var(--border); background:#fff; cursor:pointer; text-align:center; font-family:var(--font-body); color:var(--ink); }
@@ -150,6 +153,14 @@ input[type=range]{ width:100%; accent-color:var(--right); margin-bottom:7px; }
 .handoff p, .end-screen p{ font-size:13px; color:var(--inkSoft); line-height:1.6; }
 .end-screen{ text-align:center; }
 .final-score{ font-family:var(--font-mono); font-size:44px; font-weight:800; color:var(--success); }
+.result-badge{ display:inline-flex; align-items:center; gap:6px; margin:4px auto 8px; padding:7px 11px; border-radius:999px; background:#FBF3E0; border:1px solid var(--gold); color:#74550D; font-family:var(--font-mono); font-size:10.5px; font-weight:800; letter-spacing:.7px; }
+.result-stats{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:14px 0; }
+.result-stats article{ min-width:0; padding:11px 6px; border:1px solid var(--border); border-radius:13px; background:#F7F9F6; }
+.result-stats span{ display:block; margin-bottom:4px; color:var(--inkSoft); font-size:9.5px; font-weight:700; }
+.result-stats strong{ display:block; overflow:hidden; color:var(--ink); font-family:var(--font-mono); font-size:17px; text-overflow:ellipsis; }
+.result-feedback{ min-height:42px; margin:10px 0 16px !important; padding:11px 12px; border-radius:12px; background:#EFF5F0; color:var(--ink) !important; font-weight:600; }
+.result-actions{ display:grid; gap:8px; }
+.result-actions .btn-secondary{ margin:0; }
 .duel-board{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0; }
 .duel-player{ background:var(--panel); border:1px solid var(--border); border-radius:15px; padding:13px; }
 .duel-player.winner{ border:2px solid var(--gold); background:#FBF3E0; }
@@ -169,6 +180,7 @@ input[type=range]{ width:100%; accent-color:var(--right); margin-bottom:7px; }
 @media(max-width:410px){
   .mode-grid, .name-grid{ grid-template-columns:1fr; }
   .hud-item b{ font-size:13px; } .hud-item span{ font-size:8.5px; }
+  .result-stats strong{ font-size:15px; }
 }
 @media (prefers-reduced-motion: reduce){ *{ animation:none !important; } }
 </style>
@@ -323,6 +335,8 @@ input[type=range]{ width:100%; accent-color:var(--right); margin-bottom:7px; }
 </div>
 </div>
 
+<script src="../경제수학/live/firebase-config.js"></script>
+<script src="../jp-game-telemetry.js?v=2"></script>
 <script>
 const COLORS = { ink:'#223027', inkSoft:'#5C6B60', left:'#C1442D', right:'#2B6CA3', gold:'#C99A2E', success:'#3F7D4C', paper:'#EFF3EE' };
 function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
@@ -574,6 +588,9 @@ function Arena(root, cfg){
   const self=this;
   this.cfg=cfg; this.root=root; this.mode='solo'; this.rounds=[]; this.session=0; this.results=[];
   this.raf=0; this.locked=false; this.sound=true; this.lastTick=-1;
+  this.telemetry=window.JPGameTelemetry||null;
+  this.telemetrySessionId=this.telemetry?this.telemetry.makeSessionId():`session-${Date.now()}-${cfg.id}`;
+  this.sessionPlayIndex=0; this.activePlay=null; this.playStartedAt=0;
   root.innerHTML = `
     <div data-screen="start">
       <button class="back-link" data-quit-top>← 모드 선택으로</button>
@@ -582,9 +599,10 @@ function Arena(root, cfg){
         <h2 class="arena-title">${cfg.title}</h2>
         <p class="arena-desc">${cfg.desc}</p>
         <div class="name-grid">
-          <div class="name-field"><label>PLAYER 1</label><input data-p1 value="나" maxlength="8"></div>
-          <div class="name-field"><label>PLAYER 2</label><input data-p2 value="친구" maxlength="8"></div>
+          <div class="name-field"><label>나의 이름</label><input data-p1 value="" maxlength="12" placeholder="이름 입력" autocomplete="nickname"><small class="name-error" data-name-error aria-live="polite"></small></div>
+          <div class="name-field"><label>1:1 상대 이름</label><input data-p2 value="친구" maxlength="12" placeholder="친구 이름"></div>
         </div>
+        <p class="player-memory">한 번 입력하면 다른 JP Math Lab 게임에서도 같은 이름을 사용합니다.</p>
         <label class="sound-row"><input type="checkbox" data-sound checked> 긴장감 효과음 켜기</label>
         <div class="mode-grid">
           <button class="mode-card" data-mode="solo"><strong>혼자 기록전</strong><small>내 최고 점수와 랭킹에 도전</small></button>
@@ -627,8 +645,15 @@ function Arena(root, cfg){
       <div class="card end-screen">
         <h2>경기 종료</h2>
         <div data-solo-result>
+          <div class="result-badge hidden" data-pb-badge>★ PERSONAL BEST</div>
           <div class="final-score" data-final-score>0</div>
           <p data-final-summary></p>
+          <div class="result-stats">
+            <article><span>정확도</span><strong data-final-accuracy>0%</strong></article>
+            <article><span>개인 최고</span><strong data-final-best>0</strong></article>
+            <article><span>이번 세션</span><strong data-final-play-index>1번째</strong></article>
+          </div>
+          <p class="result-feedback" data-final-feedback></p>
         </div>
         <div class="hidden" data-duel-result>
           <div class="duel-board">
@@ -637,11 +662,28 @@ function Arena(root, cfg){
           </div>
           <div class="winner-line" data-winner></div>
         </div>
-        <button class="btn-primary" data-replay>다시 도전</button>
+        <div class="result-actions">
+          <button class="btn-primary" data-replay>바로 다시하기</button>
+          <button class="btn-secondary" data-change-mode>선수·모드 바꾸기</button>
+        </div>
       </div>
     </div>`;
   this.q = sel => root.querySelector(sel);
-  this.show = name => root.querySelectorAll('[data-screen]').forEach(n=>n.classList.toggle('hidden', n.dataset.screen!==name));
+  this.show = name => {
+    root.querySelectorAll('[data-screen]').forEach(n=>n.classList.toggle('hidden', n.dataset.screen!==name));
+    if(name==='play'||name==='end'||name==='handoff') requestAnimationFrame(()=>window.scrollTo(0,0));
+  };
+  this.profile=this.telemetry?this.telemetry.getProfile():null;
+  if(this.profile) this.q('[data-p1]').value=this.profile.displayName;
+  this.q('[data-p1]').addEventListener('input',()=>{ self.q('[data-name-error]').textContent=''; });
+  this.ensureProfile=function(){
+    const input=self.q('[data-p1]'), current=self.telemetry?self.telemetry.getProfile():null;
+    if(!input.value.trim()&&current) input.value=current.displayName;
+    const name=String(input.value||'').trim();
+    if(!name){ self.q('[data-name-error]').textContent='기록을 남길 이름을 먼저 입력해 주세요.'; input.focus(); return false; }
+    self.profile=self.telemetry?self.telemetry.saveProfile(name):{userId:`local-${name}`,displayName:name};
+    input.value=self.profile.displayName; self.q('[data-name-error]').textContent=''; return true;
+  };
   this.beep=function(kind){
     if(!self.sound) return;
     try{
@@ -671,12 +713,23 @@ function Arena(root, cfg){
       row.children[1].textContent=r.name; box.appendChild(row);
     });
   };
+  this.personalBestKey=function(){
+    const userId=(self.profile&&self.profile.userId)||self.playerName();
+    return `jp_calc_personal_best_${cfg.id}_${String(userId).replace(/[^a-zA-Z0-9가-힣_-]/g,'_')}`;
+  };
+  this.loadPersonalBest=function(){ try{ const v=JSON.parse(localStorage.getItem(self.personalBestKey())); return v&&Number.isFinite(Number(v.score))?v:null; }catch(e){ return null; } };
+  this.savePersonalBest=function(result){ try{ localStorage.setItem(self.personalBestKey(),JSON.stringify({score:result.score,accuracy:result.accuracy,savedAt:new Date().toISOString()})); }catch(e){} };
   this.playerName=function(){
     return (self.mode==='duel' && self.session===1) ? (self.q('[data-p2]').value||'친구') : (self.q('[data-p1]').value||'나');
   };
   this.stopTimer=function(){ cancelAnimationFrame(self.raf); };
   this.start=function(mode){
+    if(!self.ensureProfile()) return;
     self.mode=mode; self.sound=self.q('[data-sound]').checked;
+    if(mode==='solo'){
+      self.sessionPlayIndex++; self.playStartedAt=Date.now();
+      self.activePlay=self.telemetry?self.telemetry.startPlay({gameId:`calculus-${cfg.id}`,sessionId:self.telemetrySessionId,retry:self.sessionPlayIndex>1,sessionPlayIndex:self.sessionPlayIndex}):null;
+    } else self.activePlay=null;
     self.seed=(Date.now() ^ Math.floor(Math.random()*1e9))>>>0;
     self.rounds=cfg.createRounds(seeded(self.seed), cfg.count||8);
     self.results=[]; self.startSession(0);
@@ -756,7 +809,7 @@ function Arena(root, cfg){
   };
   this.finishSession=function(){
     self.stopTimer();
-    self.results.push({ name:self.playerName(), score:self.state.score, correct:self.state.correct });
+    self.results.push({ name:self.playerName(), score:self.state.score, correct:self.state.correct, answered:Math.min(self.state.round,self.rounds.length) });
     if(self.mode==='duel' && self.session===0){
       self.q('[data-handoff-name]').textContent=(self.q('[data-p2]').value||'친구');
       self.q('[data-handoff-score]').textContent=`${self.results[0].name} 선수 ${self.results[0].score}점 · ${self.results[0].correct}개 정답`;
@@ -770,11 +823,23 @@ function Arena(root, cfg){
     if(self.mode==='solo'){
       solo.classList.remove('hidden'); duel.classList.add('hidden');
       const r=self.results[0];
+      r.accuracy=Math.round(r.correct/Math.max(1,r.answered)*100);
+      const oldPersonalBest=self.loadPersonalBest();
+      const personalBest=!oldPersonalBest||r.score>Number(oldPersonalBest.score||0);
+      if(personalBest) self.savePersonalBest(r);
+      const bestResult=personalBest?r:self.loadPersonalBest();
       self.q('[data-final-score]').textContent=r.score;
-      const best=self.loadLeaders()[0];
-      self.q('[data-final-summary]').textContent =
-        `${r.correct}개 정답` + ((!best||r.score>best.score)?' · 🎉 이 기기 최고 기록!':` · 최고 기록은 ${best.score}점`);
+      self.q('[data-final-summary]').textContent=`${r.answered}문제 중 ${r.correct}개 정답`;
+      self.q('[data-final-accuracy]').textContent=`${r.accuracy}%`;
+      self.q('[data-final-best]').textContent=bestResult.score;
+      self.q('[data-final-play-index]').textContent=`${self.sessionPlayIndex}번째`;
+      self.q('[data-pb-badge]').classList.toggle('hidden',!personalBest);
+      self.q('[data-final-feedback]').textContent=personalBest
+        ? oldPersonalBest?`${r.score}점으로 개인 최고 기록을 세웠습니다. 바로 한 판 더 올라가 보세요.`:`${r.score}점으로 첫 기록을 남겼습니다. 도함수와 원함수의 연결을 기억하고 다시 도전해 보세요.`
+        : r.accuracy>=75?`정확도 ${r.accuracy}%. 속도를 조금만 높이면 개인 최고 ${bestResult.score}점을 넘을 수 있어요.`:'도함수의 근과 원함수의 극값 구조를 기억한 채 바로 다시 도전해 보세요.';
+      if(self.telemetry&&self.activePlay) self.telemetry.finishPlay(self.activePlay.playId,{endedAt:new Date().toISOString(),score:r.score,accuracy:r.accuracy,playTime:Math.max(1,Math.round((Date.now()-self.playStartedAt)/1000)),retry:self.sessionPlayIndex>1,sessionPlayIndex:self.sessionPlayIndex,personalBest});
       self.saveLeader(r.name, r.score);
+      if(window.jpMotionFeedback) window.jpMotionFeedback('success',personalBest?`개인 최고 ${r.score}점!`:`이번 기록 ${r.score}점`);
     } else {
       solo.classList.add('hidden'); duel.classList.remove('hidden');
       const [a,b]=self.results;
@@ -785,15 +850,17 @@ function Arena(root, cfg){
       self.q('[data-winner]').textContent = a.score===b.score?'무승부! 다시 한 판?':`🏆 ${(a.score>b.score?a:b).name} 승리!`;
       self.saveLeader(a.name,a.score); self.saveLeader(b.name,b.score);
     }
+    self.q('[data-replay]').textContent=self.mode==='duel'?'바로 다시 대결':'바로 다시하기';
     self.renderLeaders();
   };
   root.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>self.start(b.dataset.mode)));
   this.q('[data-next-player]').addEventListener('click',()=>self.startSession(1));
-  this.q('[data-replay]').addEventListener('click',()=>{ self.renderLeaders(); self.show('start'); });
+  this.q('[data-replay]').addEventListener('click',()=>self.start(self.mode));
+  this.q('[data-change-mode]').addEventListener('click',()=>{ self.renderLeaders(); self.show('start'); });
   this.q('[data-quit]').addEventListener('click',()=>{ self.stopTimer(); self.renderLeaders(); self.show('start'); });
   this.q('[data-quit-top]').addEventListener('click',()=>{ self.stopTimer(); showGameMode('select'); });
   window.addEventListener('jp:leavegame',()=>{ self.stopTimer(); self.show('start'); });
-  this.renderLeaders(); this.show('start');
+  this.renderLeaders(); if(this.telemetry) this.telemetry.flush(); this.show('start');
 }
 
 function showGameMode(mode){

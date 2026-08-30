@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500;600;700&amp;family=Noto+Serif+KR:wght@700;900&amp;display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../style.css?v=7">
   <link rel="stylesheet" href="live.css?v=10">
-  <link rel="stylesheet" href="games.css?v=5">
+  <link rel="stylesheet" href="games.css?v=6">
   <link rel="stylesheet" href="../../jp-polish.css?v=11">
   <script src="../../jp-polish.js?v=21" defer></script>
   <script src="games-catalog.js?v=2" defer></script>
@@ -18,7 +18,9 @@
   <script src="math-toolkit.js?v=2" defer></script>
   <script src="game-motion.js?v=1" defer></script>
   <script src="result-scene.js?v=4"></script>
-  <script src="games-app.js?v=9" defer></script>
+  <script src="firebase-config.js" defer></script>
+  <script src="../../jp-game-telemetry.js?v=2" defer></script>
+  <script src="games-app.js?v=10" defer></script>
   <link rel="stylesheet" href="../../jp-nav-2.css?v=4">
   <link rel="stylesheet" href="../경제수학_경험_nav.css?v=1">
   <script src="../../jp-nav-2.js?v=5" data-jp-section="경제수학 LIVE" defer></script>
@@ -111,6 +113,15 @@
         <div class="result-city is-skyline" data-final-city aria-label="8라운드 누적 스카이라인"></div>
         <p class="result-city-note">한 층이 <b>한 라운드</b>입니다. 층 두께는 그 라운드에 그 전략이 벌어준 점수(<b>배분 × 성과</b>), 바닥 넓이는 <b>8라운드 평균 배분</b>입니다. 그래서 탑을 모두 더하면 실제 점수 증감과 같아집니다. 손해 본 라운드는 층이 아래로 내려갑니다.</p>
         <div class="final-ranking" data-final-ranking></div>
+        <section class="final-loop-summary" aria-label="첫 참가자 개인 기록">
+          <div class="personal-best-badge" data-personal-best hidden>★ PERSONAL BEST</div>
+          <div class="final-loop-stats">
+            <article><span>첫 참가자 최종 지수</span><strong data-own-score>0.0</strong></article>
+            <article><span>개인 최고</span><strong data-own-best>0.0</strong></article>
+            <article><span>이번 세션</span><strong data-session-play>1번째</strong></article>
+          </div>
+          <p data-loop-feedback></p>
+        </section>
         <div class="final-actions"><button type="button" data-rematch>한 판 더</button><button class="outline-action" type="button" data-pick-another>다른 게임 선택</button></div>
       </section>
     </section>

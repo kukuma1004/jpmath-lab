@@ -3,6 +3,7 @@
   const engine = window.JPEconomyLiveEngine;
   const toolkit = window.JPEconomyMathToolkit;
   const motion = window.JPEconomyMotion;
+  const telemetry = window.JPGameTelemetry;
   const $ = selector => document.querySelector(selector);
   const money = value => `${Math.round(value).toLocaleString('ko-KR')}원`;
   const signed = value => `${value >= 0 ? '+' : ''}${value.toFixed(1)}%`;
@@ -21,6 +22,56 @@
   let announcedRound = null;
   let lastNewsKey = null;
   let lastRevealKey = null;
+  let profile = telemetry ? telemetry.getProfile() : null;
+  let telemetrySessionId = telemetry ? telemetry.makeSessionId() : `session-${Date.now()}-investment`;
+  let telemetrySessionIndex = 0;
+  let activePlay = null;
+
+  function personalBestKey() {
+    const userId = profile && profile.userId ? profile.userId : 'local-player';
+    return `jp_economy_personal_best_investment_king_${String(userId).replace(/[^a-zA-Z0-9가-힣_-]/g, '_')}`;
+  }
+  function loadPersonalBest() {
+    try { const value = JSON.parse(localStorage.getItem(personalBestKey())); return value && Number.isFinite(Number(value.score)) ? value : null; }
+    catch (_) { return null; }
+  }
+  function savePersonalBest(score) {
+    try { localStorage.setItem(personalBestKey(), JSON.stringify({ score, savedAt: new Date().toISOString() })); } catch (_) {}
+  }
+  function beginTelemetry(retry, previousMeta) {
+    if (!room || !room.players.length) return;
+    profile = telemetry ? telemetry.saveProfile(room.players[0].name) : { userId: `local-${room.players[0].name}`, displayName: room.players[0].name };
+    if (previousMeta && previousMeta.sessionId) telemetrySessionId = previousMeta.sessionId;
+    telemetrySessionIndex = Math.max(telemetrySessionIndex, Number(previousMeta && previousMeta.sessionPlayIndex || 0)) + 1;
+    const startedAt = new Date().toISOString();
+    activePlay = telemetry ? telemetry.startPlay({ gameId: 'economy-investment-king', sessionId: telemetrySessionId, retry: Boolean(retry), sessionPlayIndex: telemetrySessionIndex }) : null;
+    room.telemetry = { playId: activePlay && activePlay.playId, sessionId: telemetrySessionId, sessionPlayIndex: telemetrySessionIndex, retry: Boolean(retry), startedAt, finished: false };
+    saveRoom();
+  }
+  function finishTelemetry() {
+    const meta = room.telemetry || {};
+    const own = room.players.find(player => profile && player.name === profile.displayName) || room.players[0];
+    if (!own) return;
+    let result = meta.result;
+    if (!result) {
+      const oldBest = loadPersonalBest();
+      const personalBest = !oldBest || Number(own.money) > Number(oldBest.score || 0);
+      result = { score: Number(own.money), best: personalBest ? Number(own.money) : Number(oldBest.score), personalBest, sessionPlayIndex: Number(meta.sessionPlayIndex || 1) };
+      if (personalBest) savePersonalBest(result.score);
+      if (telemetry && meta.playId && !meta.finished) telemetry.finishPlay(meta.playId, {
+        endedAt: new Date().toISOString(), score: result.score, accuracy: 0,
+        playTime: Math.max(1, Math.round((Date.now() - (Date.parse(meta.startedAt) || Date.now())) / 1000)),
+        retry: Boolean(meta.retry), sessionPlayIndex: result.sessionPlayIndex, personalBest
+      });
+      room.telemetry = { ...meta, finished: true, result };
+      saveRoom();
+    }
+    $('[data-personal-result]').hidden = false;
+    $('[data-own-score]').textContent = money(result.score);
+    $('[data-own-best]').textContent = `${result.personalBest ? '새 개인 최고' : '개인 최고'} ${money(result.best)}`;
+    $('[data-session-play]').textContent = result.sessionPlayIndex > 1 ? `${result.sessionPlayIndex}번째 플레이` : '첫 번째 플레이';
+    $('[data-loop-feedback]').textContent = result.personalBest ? `${own.name}님의 최고 기록입니다. 다음 판은 뉴스와 수치가 새롭게 조합됩니다.` : `${own.name}님의 최고 기록에 바로 다시 도전해 보세요.`;
+  }
 
   function saveRoom() {
     if (room) localStorage.setItem(storageKey, JSON.stringify(room));
@@ -70,6 +121,7 @@
     }
     error.hidden = true;
     room = engine.createRoom(names, makeRoomCode());
+    beginTelemetry(false);
     saveRoom();
     openRoom();
   }
@@ -426,18 +478,21 @@
       }
     });
     $('[data-final-ranking]').innerHTML = rankRows(ranked, true);
+    finishTelemetry();
     updateFlow(4);
     saveRoom();
       focusStage();
   }
 
   function rematch() {
+    const previousMeta = room.telemetry;
     const names = room.players.map(player => player.name);
     room = engine.createRoom(names, makeRoomCode());
     announcedRound = null;
     lastNewsKey = null;
     lastRevealKey = null;
     $('[data-room-code]').textContent = room.roomCode;
+    beginTelemetry(true, previousMeta);
     saveRoom();
     renderTurn();
     $('[data-game-room]').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -460,6 +515,12 @@
         return;
       }
       room = saved;
+      if (telemetry && room.players[0]) profile = telemetry.saveProfile(room.players[0].name);
+      if (room.telemetry) {
+        telemetrySessionId = room.telemetry.sessionId || telemetrySessionId;
+        telemetrySessionIndex = Number(room.telemetry.sessionPlayIndex || 0);
+        activePlay = room.telemetry.playId ? { playId: room.telemetry.playId } : null;
+      }
       openRoom();
     } catch (error) {
       localStorage.removeItem(storageKey);
@@ -473,5 +534,7 @@
   $('[data-next-round]').addEventListener('click', nextRound);
   $('[data-rematch]').addEventListener('click', rematch);
   $('[data-leave]').addEventListener('click', leaveRoom);
+  if (profile) $('[data-player-inputs] input').value = profile.displayName;
+  if (telemetry) telemetry.flush();
   restoreRoom();
 }());

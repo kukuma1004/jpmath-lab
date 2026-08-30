@@ -26,6 +26,14 @@
   let announcedRound = null;
   let lastNewsKey = null;
   let lastRevealKey = null;
+  let telemetry = null;
+  let telemetrySessionId = '';
+  let telemetrySessionIndex = 0;
+  let activePlay = null;
+  let activeScenarioKey = '';
+  let playStartedAt = 0;
+  let finalScenarioKey = '';
+  let lastRoomStatus = '';
 
   function escapeHtml(value) {
     return String(value).replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
@@ -33,6 +41,55 @@
   function strategyColor(strategy, index) { return strategy.color || fallbackColors[index % fallbackColors.length]; }
   function currentEvent() { return runtime.resolveEvent(game, (onlineRoom.eventOrder || [])[onlineRoom.round], onlineRoom.round); }
   function playersArray() { return Object.entries((onlineRoom && onlineRoom.players) || {}).map(([uid, player]) => ({ uid, ...player })).sort((a, b) => (b.score || 0) - (a.score || 0)); }
+
+  function telemetryGameId() { return `economy-live-${game.id}`; }
+  function scenarioKey() { return `${game.id}:${(onlineRoom && onlineRoom.eventOrder || []).join('|')}`; }
+  function prepareTelemetry(nickname) {
+    telemetry = window.JPGameTelemetry || null;
+    if (!telemetry) return;
+    if (nickname) telemetry.saveProfile(nickname);
+    if (!telemetrySessionId) telemetrySessionId = telemetry.makeSessionId();
+    telemetry.flush();
+  }
+  function beginTrackedPlay() {
+    prepareTelemetry(onlineRoom && onlineRoom.players && onlineRoom.players[myUid] && onlineRoom.players[myUid].nickname);
+    const key = scenarioKey();
+    if (!telemetry || !key || key === activeScenarioKey) return;
+    telemetrySessionIndex += 1;
+    activeScenarioKey = key;
+    finalScenarioKey = '';
+    playStartedAt = Date.now();
+    activePlay = telemetry.startPlay({
+      gameId: telemetryGameId(),
+      sessionId: telemetrySessionId,
+      retry: telemetrySessionIndex > 1,
+      sessionPlayIndex: telemetrySessionIndex
+    });
+  }
+  function completedRoundCount() {
+    return Object.values((onlineRoom && onlineRoom.log) || {}).filter(round => round && round[myUid]).length;
+  }
+  function finishTrackedPlay() {
+    const key = scenarioKey();
+    if (!telemetry || !activePlay || !key || finalScenarioKey === key) return null;
+    const me = onlineRoom.players && onlineRoom.players[myUid];
+    if (!me) return null;
+    const previous = telemetry.readLocalPlays().filter(play => play.gameId === telemetryGameId() && play.completed && play.playId !== activePlay.playId);
+    const score = Number(me.score || 100);
+    const previousBest = previous.length ? Math.max(...previous.map(play => Number(play.score || 0))) : -Infinity;
+    const personalBest = score > previousBest;
+    telemetry.finishPlay(activePlay.playId, {
+      score,
+      accuracy: Math.round(completedRoundCount() / game.rounds * 100),
+      playTime: Math.max(1, Math.round((Date.now() - playStartedAt) / 1000)),
+      retry: telemetrySessionIndex > 1,
+      sessionPlayIndex: telemetrySessionIndex,
+      personalBest
+    });
+    finalScenarioKey = key;
+    activePlay = null;
+    return { score, best: Math.max(score, previousBest === -Infinity ? score : previousBest), personalBest };
+  }
 
   function showError(message) {
     const box = $('[data-room-error]');
@@ -98,6 +155,7 @@
       const created = await realtime.createRoom(gameId, nickname);
       roomCode = created.code; myUid = created.uid; isHost = true;
       game = catalog.find(item => item.id === gameId) || catalog[0];
+      prepareTelemetry(nickname);
       await realtime.hostUpdate(roomCode, { eventOrder: runtime.createScenario(game, roomCode) });
       if (window.jpMotionBusy) window.jpMotionBusy($('[data-create-room]'), false);
       await enterRoom();
@@ -118,6 +176,7 @@
       const joined = await realtime.joinRoom(code, nickname);
       roomCode = joined.code; myUid = joined.uid; isHost = joined.isHost;
       game = catalog.find(item => item.id === joined.room.gameId) || catalog[0];
+      prepareTelemetry(nickname);
       if (window.jpMotionBusy) window.jpMotionBusy($('[data-join-room]'), false);
       await enterRoom();
     } catch (error) {
@@ -192,6 +251,7 @@
   }
 
   function renderTurn() {
+    beginTrackedPlay();
     $('[data-online-lobby]').hidden = true;
     $('[data-online-game]').hidden = false;
     hideOnlinePanels();
@@ -398,6 +458,15 @@
     $('[data-online-final-game]').textContent = `${game.title} · 8라운드 최종 결과`;
     $('[data-online-winner]').textContent = ranked[0].nickname;
     $('[data-online-final-copy]').textContent = `승리 조건은 ‘${game.victory}’입니다. 사건의 강도와 직접 만든 조합에 따라 결과가 달라졌습니다.`;
+    const personal = finishTrackedPlay();
+    const me = onlineRoom.players && onlineRoom.players[myUid];
+    if (me) {
+      const summary = personal || { score: Number(me.score || 100), best: Number(me.score || 100), personalBest: false };
+      $('[data-live-personal-result]').hidden = false;
+      $('[data-live-personal-score]').textContent = `${summary.score.toFixed(1)}점`;
+      $('[data-live-personal-best]').textContent = `${summary.personalBest ? '새 최고 기록 · ' : '최고 기록 · '}${summary.best.toFixed(1)}점`;
+      $('[data-live-personal-session]').textContent = telemetrySessionIndex > 1 ? `${telemetrySessionIndex}번째 플레이` : '첫 번째 플레이';
+    }
     const events = eventsByRound();
     if (window.JPResultScene) window.JPResultScene.renderSkyline($('[data-online-final-city]'), {
       players: ranked,
@@ -412,10 +481,16 @@
     });
     $('[data-online-final-ranking]').innerHTML = resultRows(true);
     $('[data-host-rematch]').hidden = !isHost;
+    $('[data-guest-rematch-wait]').hidden = isHost;
       focusStage();
   }
 
   function renderOnlineState() {
+    if (lastRoomStatus === 'final' && onlineRoom.status === 'turn') {
+      activeScenarioKey = '';
+      activePlay = null;
+    }
+    lastRoomStatus = onlineRoom.status;
     if (onlineRoom.status === 'lobby') renderLobby();
     else if (onlineRoom.status === 'turn') renderTurn();
     else if (onlineRoom.status === 'reveal') renderReveal();
@@ -455,6 +530,12 @@
   }
 
   async function init() {
+    prepareTelemetry();
+    const profile = telemetry && telemetry.getProfile();
+    if (profile) {
+      $('[data-host-name]').value = profile.displayName;
+      $('[data-join-name]').value = profile.displayName;
+    }
     $('[data-game-select]').innerHTML = catalog.map(item => `<option value="${item.id}">${item.number} · ${item.title} · 8라운드</option>`).join('');
     document.querySelectorAll('[data-entry-tab]').forEach(button => button.addEventListener('click', () => switchTab(button.dataset.entryTab)));
     $('[data-create-room]').addEventListener('click', createRoom);

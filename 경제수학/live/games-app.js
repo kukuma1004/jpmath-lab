@@ -3,6 +3,7 @@
   const runtime = window.JPEconomyGameRuntime;
   const toolkit = window.JPEconomyMathToolkit;
   const motion = window.JPEconomyMotion;
+  const telemetry = window.JPGameTelemetry;
   const $ = selector => document.querySelector(selector);
   const storageKey = 'jp-economy-seven-games-v3';
   const fallbackColors = ['#1f6b50', '#315f78', '#d96f32', '#8c6aa5'];
@@ -15,6 +16,11 @@
   let announcedRound = null;
   let lastNewsKey = null;
   let lastRevealKey = null;
+  let profile = telemetry ? telemetry.getProfile() : null;
+  let telemetrySessionId = telemetry ? telemetry.makeSessionId() : `session-${Date.now()}-economy`;
+  let activePlay = null;
+  let playStartedAt = 0;
+  const sessionPlayCounts = new Map();
 
   function makeCode() {
     const buffer = new Uint32Array(1);
@@ -32,6 +38,83 @@
   function currentEvent() { return runtime.resolveEvent(game, room.eventOrder[room.round], room.round); }
   function formatScore(value) { return `${Number(value).toFixed(1)}점`; }
   function strategyColor(strategy, index) { return strategy.color || fallbackColors[index % fallbackColors.length]; }
+
+  function personalBestKey() {
+    const userId = profile && profile.userId ? profile.userId : 'local-player';
+    return `jp_economy_personal_best_${game.id}_${String(userId).replace(/[^a-zA-Z0-9가-힣_-]/g, '_')}`;
+  }
+
+  function loadPersonalBest() {
+    try {
+      const value = JSON.parse(localStorage.getItem(personalBestKey()));
+      return value && Number.isFinite(Number(value.score)) ? value : null;
+    } catch (_) { return null; }
+  }
+
+  function savePersonalBest(result) {
+    try { localStorage.setItem(personalBestKey(), JSON.stringify(result)); } catch (_) {}
+  }
+
+  function beginTelemetry(retry, previousMeta) {
+    if (!room || !room.players.length) return;
+    profile = telemetry ? telemetry.saveProfile(room.players[0].name) : { userId: `local-${room.players[0].name}`, displayName: room.players[0].name };
+    if (previousMeta && previousMeta.sessionId) telemetrySessionId = previousMeta.sessionId;
+    const previousIndex = previousMeta ? Number(previousMeta.sessionPlayIndex || 0) : Number(sessionPlayCounts.get(game.id) || 0);
+    const sessionPlayIndex = previousIndex + 1;
+    sessionPlayCounts.set(game.id, sessionPlayIndex);
+    playStartedAt = Date.now();
+    activePlay = telemetry ? telemetry.startPlay({
+      gameId: `economy-${game.id}`,
+      sessionId: telemetrySessionId,
+      retry: Boolean(retry),
+      sessionPlayIndex
+    }) : null;
+    room.telemetry = {
+      playId: activePlay && activePlay.playId,
+      sessionId: telemetrySessionId,
+      sessionPlayIndex,
+      retry: Boolean(retry),
+      startedAt: new Date(playStartedAt).toISOString(),
+      finished: false
+    };
+    saveRoom();
+  }
+
+  function finishTelemetry(players) {
+    const meta = room.telemetry || {};
+    const own = room.players.find(player => profile && player.name === profile.displayName) || room.players[0];
+    if (!own) return;
+    let result = meta.result;
+    if (!result) {
+      const oldBest = loadPersonalBest();
+      const personalBest = !oldBest || Number(own.score) > Number(oldBest.score || 0);
+      result = {
+        score: Number(own.score),
+        best: personalBest ? Number(own.score) : Number(oldBest.score),
+        personalBest,
+        sessionPlayIndex: Number(meta.sessionPlayIndex || 1)
+      };
+      if (personalBest) savePersonalBest({ score: result.score, savedAt: new Date().toISOString() });
+      if (telemetry && meta.playId && !meta.finished) telemetry.finishPlay(meta.playId, {
+        endedAt: new Date().toISOString(),
+        score: result.score,
+        accuracy: 0,
+        playTime: Math.max(1, Math.round((Date.now() - (Date.parse(meta.startedAt) || playStartedAt || Date.now())) / 1000)),
+        retry: Boolean(meta.retry),
+        sessionPlayIndex: result.sessionPlayIndex,
+        personalBest
+      });
+      room.telemetry = { ...meta, finished: true, result };
+      saveRoom();
+    }
+    $('[data-personal-best]').hidden = !result.personalBest;
+    $('[data-own-score]').textContent = Number(result.score).toFixed(1);
+    $('[data-own-best]').textContent = Number(result.best).toFixed(1);
+    $('[data-session-play]').textContent = `${result.sessionPlayIndex}번째`;
+    $('[data-loop-feedback]').textContent = result.personalBest
+      ? `${own.name}님의 개인 최고 기록입니다. 같은 참가자와 바로 다시 하면 사건과 수치가 새롭게 조합됩니다.`
+      : `${own.name}님의 개인 최고 ${Number(result.best).toFixed(1)}점까지 다시 도전해 보세요. 다음 판은 사건 순서와 수치가 달라집니다.`;
+  }
 
   function renderCatalog() {
     $('[data-game-catalog]').innerHTML = catalog.map(item => `
@@ -79,6 +162,7 @@
     if (new Set(names).size !== names.length) { error.textContent = '서로 다른 닉네임을 사용해 주세요.'; error.hidden = false; return; }
     error.hidden = true;
     room = createLocalRoom(names);
+    beginTelemetry(false, null);
     saveRoom();
     openRoom();
   }
@@ -346,16 +430,19 @@
       }
     });
     $('[data-final-ranking]').innerHTML = rankRows(players, true);
+    finishTelemetry(players);
     saveRoom();
     focusArena($('[data-final]'));
   }
 
   function rematch() {
+    const previousMeta = room.telemetry;
     const names = room.players.map(player => player.name);
     room = createLocalRoom(names);
     announcedRound = null;
     lastNewsKey = null;
     lastRevealKey = null;
+    beginTelemetry(true, previousMeta);
     saveRoom();
     renderTurn();
   }
@@ -379,6 +466,13 @@
       if (!saved || saved.version !== 3 || !savedGame || !Array.isArray(saved.players)) { localStorage.removeItem(storageKey); return; }
       game = savedGame;
       room = saved;
+      if (telemetry && room.players[0]) profile = telemetry.saveProfile(room.players[0].name);
+      if (room.telemetry) {
+        activePlay = room.telemetry.playId ? { playId: room.telemetry.playId } : null;
+        telemetrySessionId = room.telemetry.sessionId || telemetrySessionId;
+        playStartedAt = Date.parse(room.telemetry.startedAt) || Date.now();
+        sessionPlayCounts.set(game.id, Number(room.telemetry.sessionPlayIndex || 0));
+      }
       selectGame(game.id, false);
       openRoom();
     } catch (error) { localStorage.removeItem(storageKey); }
@@ -386,6 +480,8 @@
 
   renderCatalog();
   selectGame(game.id, false);
+  if (profile) $('[data-player-inputs] input').value = profile.displayName;
+  if (telemetry) telemetry.flush();
   $('[data-add-player]').addEventListener('click', addPlayer);
   $('[data-start]').addEventListener('click', startGame);
   $('[data-change-game]').addEventListener('click', () => $('.catalog-section').scrollIntoView({ behavior: 'smooth' }));
