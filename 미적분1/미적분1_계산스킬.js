@@ -13,7 +13,7 @@
   const poly2=(A,B,C)=>{let out=A===1?'x²':A===-1?'−x²':`${A}x²`;if(B)out+=B>0?`+${B===1?'':B}x`:`−${Math.abs(B)===1?'':Math.abs(B)}x`;if(C)out+=sign(C);return out};
   const lineEq=(m,c)=>`y=${m===1?'':m===-1?'−':m}x${c?sign(c):''}`;
   const choices=(correct,wrong)=>{const out=[];[correct,...wrong].forEach(v=>{v=String(v);if(!out.includes(v))out.push(v)});let n=1;while(out.length<4){const raw=Number(correct);const v=Number.isFinite(raw)?String(raw+n):`다른 값 ${n}`;if(!out.includes(v))out.push(v);n++}return shuffle(out.slice(0,4))};
-  const Q=(type,equation,prompt,correct,wrong,explanation)=>({type,equation,prompt,correct:String(correct),choices:choices(correct,wrong),explanation});
+  const Q=(type,equation,prompt,correct,wrong,explanation,meta={})=>({type,equation,prompt,correct:String(correct),choices:choices(correct,wrong),explanation,...meta});
 
   const groups={
     limit:{name:'극한·연속 계산',color:'#C1442D',dark:'#71301F'},
@@ -181,15 +181,15 @@
     },
     // 좌·우극한 · 기준점과 분자의 차수를 바꾼다
     limit_one_sided:{
-      applied(){
-        const a=nonzero(-4,4),side=pick(['+','−']),correct=side==='+'?1:-1;
+      applied(forcedSide){
+        const a=nonzero(-4,4),side=forcedSide?(forcedSide==='right'?'+':'−'):pick(['+','−']),correct=side==='+'?1:-1;
         return Q('ONE-SIDED · 기준점 이동',`lim x→${num(a)}${side}  |${lin(a)}|/(${lin(a)})`,'극한값은?',correct,[-correct,0,'존재하지 않음'],
-          `x→${num(a)}${side}에서 ${lin(a)}는 ${side==='+'?'양수':'음수'}이므로 |${lin(a)}|=${side==='+'?lin(a):`−(${lin(a)})`}입니다. 따라서 ${correct}입니다.`);
+          `x→${num(a)}${side}에서 ${lin(a)}는 ${side==='+'?'양수':'음수'}이므로 |${lin(a)}|=${side==='+'?lin(a):`−(${lin(a)})`}입니다. 따라서 ${correct}입니다.`,{side:side==='+'?'right':'left'});
       },
-      deep(){
-        const a=ri(1,5),side=pick(['+','−']),correct=side==='+'?2*a:-2*a;
+      deep(forcedSide){
+        const a=ri(1,5),side=forcedSide?(forcedSide==='right'?'+':'−'):pick(['+','−']),correct=side==='+'?2*a:-2*a;
         return Q('ONE-SIDED · 이차식과 절댓값',`lim x→${a}${side}  (x²−${a*a})/|x−${a}|`,'극한값은?',correct,[-correct,0,'존재하지 않음'],
-          `분자는 ${factor(a)}(x+${a})이고 |x−${a}|=${side==='+'?`x−${a}`:`−(x−${a})`}이므로 ${side==='+'?'':'−'}(x+${a})가 남습니다. x=${a}에서 ${correct}입니다.`);
+          `분자는 ${factor(a)}(x+${a})이고 |x−${a}|=${side==='+'?`x−${a}`:`−(x−${a})`}이므로 ${side==='+'?'':'−'}(x+${a})가 남습니다. x=${a}에서 ${correct}입니다.`,{side:side==='+'?'right':'left'});
       }
     },
     // 연속 조건 · 유형서의 "미정계수의 결정"을 거꾸로 묻는다
@@ -630,19 +630,19 @@
 
   const levelIds=Object.keys(levelMakers);
   const hasLevels=id=>levelIds.includes(id);
-  function makeQuestion(id,level=currentLevel){
+  function makeQuestion(id,level=currentLevel,forcedSide=null){
     const targetLevel=LEVELS.some(x=>x.id===level)?level:'basic';
     let question;
     if(targetLevel!=='basic'){
       const set=levelMakers[id];
-      if(set&&set[targetLevel])question=set[targetLevel]();
+      if(set&&set[targetLevel])question=set[targetLevel](forcedSide);
     }
-    if(!question)question=baseQuestion(id);
+    if(!question)question=baseQuestion(id,forcedSide);
     question.level=targetLevel;
     return question;
   }
 
-  function baseQuestion(id){
+  function baseQuestion(id,forcedSide=null){
     let a,b,c,n,k,q,t,A,B,roots,mode,correct,m,p;
     switch(id){
       case'limit_factor':
@@ -658,8 +658,8 @@
         k=2*ri(1,5);correct=k/2;
         return Q('∞−∞',`lim x→∞  {√(x²+${k}x)−x}`,'극한값은?',correct,[k,0,-correct],`켤레식으로 유리화하면 ${k}x/(√(x²+${k}x)+x)이므로 ${correct}입니다.`);
       case'limit_one_sided':
-        mode=pick(['0−','0+']);correct=mode==='0−'?-1:1;
-        return Q('ONE-SIDED',`lim x→${mode}  |x|/x`,'극한값은?',correct,[-correct,0,'존재하지 않음'],`${mode==='0−'?'x<0에서 |x|=−x':'x>0에서 |x|=x'}이므로 ${correct}입니다.`);
+        mode=forcedSide?(forcedSide==='right'?'0+':'0−'):pick(['0−','0+']);correct=mode==='0−'?-1:1;
+        return Q('ONE-SIDED',`lim x→${mode}  |x|/x`,'극한값은?',correct,[-correct,0,'존재하지 않음'],`${mode==='0−'?'x<0에서 |x|=−x':'x>0에서 |x|=x'}이므로 ${correct}입니다.`,{side:mode==='0−'?'left':'right'});
       case'continuity_parameter':
         a=ri(1,6);correct=2*a;
         return Q('CONTINUITY',`f(x)=(x²−${a*a})/${factor(a)} (x≠${a}),  f(${a})=k`,'x='+a+'에서 연속이 되게 하는 k는?',correct,[a,a*a,-correct],`x≠${a}에서 f(x)=x+${a}이므로 극한값은 ${correct}입니다.`);
@@ -747,6 +747,7 @@
     limit_rationalize:{name:'켤레의 연금술사',theme:'conjugate',art:'../assets/bosses/conjugate-alchemist.jpg',alt:'은빛과 금빛 켤레 수정을 든 네 팔의 켤레의 연금술사',hp:2300,baseTime:40,minTime:26,baseDamage:185,mechanic:'conjugate-reflect',gameId:'calculus-skill-boss-limit-rationalize',intro:'정답으로 은빛·금빛 거울을 차례로 충전하세요. 두 거울이 모두 켜지면 켤레 반사가 발동해 큰 피해가 들어가고, 오답이면 충전이 사라지며 시간 3초를 빼앗깁니다.',start:'첫 정답은 거울을 충전하고 두 번째 연속 정답은 켤레 반사 공격이 됩니다. 두 문제씩 정확하게 연결하는 것이 핵심입니다.'},
     limit_infinity_ratio:{name:'무한비의 거신',theme:'ratio',art:'../assets/bosses/infinite-ratio-colossus.jpg',alt:'끝없이 높아지는 탑 왕관과 비율 코어를 지닌 무한비의 거신',hp:1900,baseTime:45,minTime:29,baseDamage:210,mechanic:'degree-grade',gameId:'calculus-skill-boss-limit-infinity-ratio',intro:'기본 문제는 거신의 하위 차수 갑옷에 막혀 피해가 줄어듭니다. 페이즈가 올라가 응용·심화 문제를 해결하면 B·A등급 최고차항 관통 공격이 들어갑니다.',start:'C등급 공격은 55%, B등급은 100%, A등급은 180% 피해입니다. 강해지는 문제를 정확히 해결해 공격 등급을 올리세요.'},
     limit_infinity_diff:{name:'미정형의 혼돈수',theme:'chaos',art:'../assets/bosses/indeterminate-chaos-beast.jpg',alt:'붉은 무한과 푸른 무한으로 갈라지는 미정형의 혼돈수',hp:2200,baseTime:42,minTime:27,baseDamage:178,mechanic:'chaos-split',gameId:'calculus-skill-boss-limit-infinity-diff',intro:'문제를 오래 붙잡으면 혼돈수가 분열하며 남은 시간을 빼앗습니다. 빠르게 정리해 맞히면 분신을 다시 합치고 시간을 되찾을 수 있습니다.',start:'한 몸으로 시작합니다. 페이즈별 예고 시간 안에 맞히면 융합 공격과 시간 +1초, 늦거나 틀리면 최대 네 몸까지 분열하며 더 많은 시간을 빼앗습니다.'},
+    limit_one_sided:{name:'양면의 경계자',theme:'boundary',art:'../assets/bosses/two-faced-boundary-warden.jpg',alt:'인디고 좌측 가면과 금빛 우측 가면을 지닌 양면의 경계자',hp:2250,baseTime:41,minTime:27,baseDamage:165,mechanic:'side-switch',gameId:'calculus-skill-boss-limit-one-sided',intro:'문제의 접근 방향에 따라 경계자가 왼쪽 또는 오른쪽 가면을 내밉니다. 좌극한과 우극한을 번갈아 정확히 읽으면 경계 관통 공격이 발동합니다.',start:'첫 가면은 왼쪽입니다. 화면의 ← 좌극한과 우극한 → 표시를 확인하세요. 오답이면 같은 가면이 다시 봉인되고 시간 3초를 빼앗깁니다.'},
     differentiate_polynomial:{name:'미분의 철갑수',theme:'iron',art:'../assets/bosses/derivative-iron-beast.webp',alt:'곡선 갑옷과 빛나는 미분 코어를 지닌 미분의 철갑수',hp:2600,baseTime:38,minTime:24,baseDamage:170,mechanic:'iron-armor',gameId:'calculus-skill-boss-differentiate-polynomial',intro:'기본 → 응용 → 심화로 문제가 강해집니다. 클리어할수록 문제는 더 어려워지는 대신 다음 전투의 시간만 2초씩 줄어듭니다.',start:'정답은 수식 공격으로 바뀝니다. 3단계까지 문제 난도가 올라가며 오답은 콤보 초기화와 시간 −2초입니다.'}
   };
   const fallbackBossNames={limit:'극한의 파수꾼',differentiate:'미분의 철갑수',graph:'그래프의 심연왕',integral:'적분의 수문장'};
@@ -756,8 +757,8 @@
   const BOSS_V2_HP=bossConfig?.hp||2600,BOSS_V2_BASE_TIME=bossConfig?.baseTime||38,BOSS_V2_MIN_TIME=bossConfig?.minTime||24;
   const bossIntro=bossV2?bossConfig.intro:'세 번 공격해 보스의 체력을 모두 깎으세요. 클리어마다 문제 제한시간이 0.5초씩 줄어듭니다.';
   const bossStartCopy=bossV2?`<strong>HP ${BOSS_V2_HP} · 첫 제한시간 ${BOSS_V2_BASE_TIME}초</strong><p>${bossConfig.start}</p>`:'<strong>보스 체력 3칸</strong><p>정답은 한 칸 공격, 오답이나 시간 초과는 보스 체력을 전부 회복시킵니다.</p>';
-  const initialBossStateLabel=bossConfig?.mechanic==='factor-shield'?'SHIELD':bossConfig?.mechanic==='conjugate-reflect'?'MIRROR':bossConfig?.mechanic==='degree-grade'?'GRADE':bossConfig?.mechanic==='chaos-split'?'BODIES':'PHASE';
-  const initialBossStateValue=bossConfig?.mechanic==='factor-shield'?3:bossConfig?.mechanic==='conjugate-reflect'?'0/2':bossConfig?.mechanic==='degree-grade'?'C':1;
+  const initialBossStateLabel=bossConfig?.mechanic==='factor-shield'?'SHIELD':bossConfig?.mechanic==='conjugate-reflect'?'MIRROR':bossConfig?.mechanic==='degree-grade'?'GRADE':bossConfig?.mechanic==='chaos-split'?'BODIES':bossConfig?.mechanic==='side-switch'?'방향':'PHASE';
+  const initialBossStateValue=bossConfig?.mechanic==='factor-shield'?3:bossConfig?.mechanic==='conjugate-reflect'?'0/2':bossConfig?.mechanic==='degree-grade'?'C':bossConfig?.mechanic==='side-switch'?'← 좌':1;
   const bossVisual=bossV2?`<div class="boss-art-frame"><img class="boss-art" src="${bossConfig.art}" alt="${bossConfig.alt}"></div>`:'<svg class="boss-creature" viewBox="0 0 240 190" role="img" aria-hidden="true"><path class="boss-wing" d="M73 73C36 44 16 62 27 91c8 22 29 30 52 27M167 73c37-29 57-11 46 18-8 22-29 30-52 27"/><path class="boss-horn" d="M86 50 63 16l42 23M154 50l23-34-42 23"/><path class="boss-body-shape" d="M120 34c-45 0-70 31-64 75 5 39 27 64 64 64s59-25 64-64c6-44-19-75-64-75Z"/><path class="boss-mask" d="M76 78c29-17 59-17 88 0l-11 47c-22 17-44 17-66 0Z"/><path class="boss-eye" d="m88 87 23 8-25 7Zm64 0-23 8 25 7Z"/><path class="boss-core" d="m120 117 13 18-13 15-13-15Z"/></svg>';
   const levelBar=hasLevels(skill.id)?`<div class="skill-level-bar">
       <span class="skill-level-label">난이도</span>
@@ -847,9 +848,10 @@
     if(bossV2){
       const hp=Math.max(0,boss.hp);$('[data-boss-hp]').style.width=`${hp/boss.maxHp*100}%`;$('[data-boss-hp-text]').textContent=`${hp} / ${boss.maxHp}`;$('[data-boss-time]').textContent=boss.time.toFixed(1);$('[data-boss-timer]').style.width=`${boss.time/boss.limit*100}%`;
       $('[data-boss-damage]').textContent=boss.damage;$('[data-boss-combo]').textContent=`×${bossMultiplier().toFixed(2)}`;
-      const shieldBattle=bossConfig.mechanic==='factor-shield',reflectBattle=bossConfig.mechanic==='conjugate-reflect',gradeBattle=bossConfig.mechanic==='degree-grade',chaosBattle=bossConfig.mechanic==='chaos-split';$('[data-boss-state-label]').textContent=shieldBattle?'SHIELD':reflectBattle?'MIRROR':gradeBattle?'GRADE':chaosBattle?'BODIES':'PHASE';$('[data-boss-phase]').textContent=shieldBattle?boss.shield:reflectBattle?`${boss.reflectCharge}/2`:gradeBattle?boss.attackGrade:chaosBattle?boss.splitCount:boss.phase;
+      const shieldBattle=bossConfig.mechanic==='factor-shield',reflectBattle=bossConfig.mechanic==='conjugate-reflect',gradeBattle=bossConfig.mechanic==='degree-grade',chaosBattle=bossConfig.mechanic==='chaos-split',sideBattle=bossConfig.mechanic==='side-switch';$('[data-boss-state-label]').textContent=shieldBattle?'SHIELD':reflectBattle?'MIRROR':gradeBattle?'GRADE':chaosBattle?'BODIES':sideBattle?'방향':'PHASE';$('[data-boss-phase]').textContent=shieldBattle?boss.shield:reflectBattle?`${boss.reflectCharge}/2`:gradeBattle?boss.attackGrade:chaosBattle?boss.splitCount:sideBattle?(boss.targetSide==='right'?'우 →':'← 좌'):boss.phase;
       stage.classList.toggle('boss-reflect-ready',reflectBattle&&boss.reflectCharge===1);
       stage.classList.toggle('boss-chaos-split',chaosBattle&&boss.splitCount>1);if(chaosBattle)stage.dataset.bodies=String(boss.splitCount);else delete stage.dataset.bodies;
+      stage.classList.toggle('boss-side-left',sideBattle&&boss.targetSide!=='right');stage.classList.toggle('boss-side-right',sideBattle&&boss.targetSide==='right');
       stage.classList.toggle('boss-danger',boss.time<=8&&boss.running);stage.classList.toggle('boss-phase-two',boss.phase===2);stage.classList.toggle('boss-phase-three',boss.phase===3);
       const clearedRatio=1-hp/boss.maxHp;$$('.boss-node').forEach((node,index)=>node.className='boss-node '+(clearedRatio>=(index+1)/3?'done':clearedRatio>=index/3?'active':''));
       return;
@@ -863,23 +865,23 @@
     stopBossTimer();const limit=currentBossLimit();boss={running:false,raf:0,index:0,questions:Array.from({length:3},()=>makeQuestion(skill.id)),time:limit,limit,last:0};$('[data-boss-limit]').textContent=`${limit.toFixed(1)}초`;const monster=$('[data-boss-monster]');monster.classList.remove('boss-hit','boss-attack','boss-defeated');$('[data-boss-mood]').textContent='체력을 모두 깎아 보세요';$('[data-boss-start]').classList.add('hidden');$('[data-boss-status]').className='boss-status hidden';renderBoss()
   }
   function startBossV2(){
-    stopBossTimer();bossSessionPlayIndex++;const limit=currentBossV2Limit();boss={running:true,raf:0,time:limit,limit,last:performance.now(),hp:BOSS_V2_HP,maxHp:BOSS_V2_HP,damage:0,combo:0,correct:0,attempts:0,phase:1,shield:bossConfig.mechanic==='factor-shield'?3:0,reflectCharge:0,attackGrade:'C',splitCount:1,questionStartedAt:0,q:null,locked:false};
+    stopBossTimer();bossSessionPlayIndex++;const limit=currentBossV2Limit();boss={running:true,raf:0,time:limit,limit,last:performance.now(),hp:BOSS_V2_HP,maxHp:BOSS_V2_HP,damage:0,combo:0,correct:0,attempts:0,phase:1,shield:bossConfig.mechanic==='factor-shield'?3:0,reflectCharge:0,attackGrade:'C',splitCount:1,nextSide:'left',targetSide:'left',lastSide:null,boundaryStreak:0,questionStartedAt:0,q:null,locked:false};
     rec().bossAttempts=(rec().bossAttempts||0)+1;save();
     bossActivePlay=telemetry?telemetry.startPlay({gameId:bossConfig.gameId,sessionId:bossSessionId,retry:bossSessionPlayIndex>1,sessionPlayIndex:bossSessionPlayIndex,dateKey:new Date().toISOString().slice(0,10)}):null;
-    const monster=$('[data-boss-monster]');monster.classList.remove('boss-hit','boss-attack','boss-defeated');$('[data-boss-mood]').textContent=bossConfig.mechanic==='factor-shield'?'석문 보호막 3칸':bossConfig.mechanic==='conjugate-reflect'?'거울 충전 0 / 2':bossConfig.mechanic==='degree-grade'?'하위 차수 장갑 · C GRADE':bossConfig.mechanic==='chaos-split'?'혼돈 코어 안정 · 1 BODY':'기본 방어 · PHASE 1';$('[data-boss-start]').classList.add('hidden');$('[data-boss-status]').className='boss-status hidden';renderBossV2();renderBossHud();boss.raf=requestAnimationFrame(tickBoss)
+    const monster=$('[data-boss-monster]');monster.classList.remove('boss-hit','boss-attack','boss-defeated');$('[data-boss-mood]').textContent=bossConfig.mechanic==='factor-shield'?'석문 보호막 3칸':bossConfig.mechanic==='conjugate-reflect'?'거울 충전 0 / 2':bossConfig.mechanic==='degree-grade'?'하위 차수 장갑 · C GRADE':bossConfig.mechanic==='chaos-split'?'혼돈 코어 안정 · 1 BODY':bossConfig.mechanic==='side-switch'?'왼쪽 가면 봉인 · ← 좌극한':'기본 방어 · PHASE 1';$('[data-boss-start]').classList.add('hidden');$('[data-boss-status]').className='boss-status hidden';renderBossV2();renderBossHud();boss.raf=requestAnimationFrame(tickBoss)
   }
   function startBossTimer(){stopBossTimer();boss.running=true;boss.last=performance.now();boss.raf=requestAnimationFrame(tickBoss)}
   function tickBoss(now){if(!boss.running)return;boss.time=Math.max(0,boss.time-(now-boss.last)/1000);boss.last=now;renderBossHud();if(boss.time<=0){if(bossV2)finishBossV2(false);else resolveBoss(null,null,true);return}boss.raf=requestAnimationFrame(tickBoss)}
   function renderBoss(){const q=boss.questions[boss.index];boss.time=boss.limit;$$('.boss-node').forEach((x,i)=>x.className='boss-node '+(i<boss.index?'done':i===boss.index?'active':''));const body=$('[data-boss-body]');body.innerHTML='<div class="question-equation"></div><div class="question-prompt"></div><div class="answer-grid"></div>';setMath($('div.question-equation',body),q.equation);$('div.question-prompt',body).textContent=q.prompt;const box=$('.answer-grid',body);fillAnswers(box,q,(v,b)=>resolveBoss(v,b,false));$('[data-boss-mood]').textContent=`${boss.index+1}번째 공격을 막는 중`;renderBossHud();startBossTimer()}
   function renderBossV2(){
-    if(!boss.running)return;boss.locked=false;const level=bossQuestionLevel();boss.q=makeQuestion(skill.id,level);boss.attackGrade=level==='deep'?'A':level==='applied'?'B':'C';boss.questionStartedAt=performance.now();const levelName=LEVELS.find(l=>l.id===level).name;const body=$('[data-boss-body]');body.innerHTML=`<div class="question-topline"><span>PHASE ${boss.phase} · ${levelName} 문제</span><span data-live-combo></span></div><div class="question-equation"></div><div class="question-prompt"></div><div class="answer-grid"></div>`;
+    if(!boss.running)return;boss.locked=false;const level=bossQuestionLevel(),sideBattle=bossConfig.mechanic==='side-switch';boss.q=makeQuestion(skill.id,level,sideBattle?boss.nextSide:null);if(sideBattle)boss.targetSide=boss.q.side||boss.nextSide;boss.attackGrade=level==='deep'?'A':level==='applied'?'B':'C';boss.questionStartedAt=performance.now();const levelName=LEVELS.find(l=>l.id===level).name,directionCue=sideBattle?` · ${boss.targetSide==='left'?'← 좌극한':'우극한 →'}`:'';const body=$('[data-boss-body]');body.innerHTML=`<div class="question-topline"><span>PHASE ${boss.phase} · ${levelName} 문제${directionCue}</span><span data-live-combo></span></div><div class="question-equation"></div><div class="question-prompt"></div><div class="answer-grid"></div>`;
     setMath($('div.question-equation',body),boss.q.equation);$('div.question-prompt',body).textContent=boss.q.prompt;$('[data-live-combo]').textContent=`COMBO ${boss.combo}`;const box=$('.answer-grid',body);fillAnswers(box,boss.q,(v,b)=>resolveBossV2(v,b));renderBossHud();
   }
   function resolveBoss(value,button,timedOut){if(!boss.running)return;stopBossTimer();const q=boss.questions[boss.index],box=$('.answer-grid',$('[data-boss-body]')),ok=!timedOut&&String(value)===q.correct;markAnswers(box,q,value,button);const st=$('[data-boss-status]'),monster=$('[data-boss-monster]');if(ok){boss.index++;monster.classList.remove('boss-attack');monster.classList.add('boss-hit');$('[data-boss-mood]').textContent='공격 적중!';st.textContent=`보스 체력 −1! ${q.explanation}`;st.className='boss-status good';renderBossHud();setTimeout(()=>{monster.classList.remove('boss-hit');if(boss.index>=3)clearBoss();else{st.className='boss-status hidden';renderBoss()}},850)}else{monster.classList.remove('boss-hit');monster.classList.add('boss-attack');$('[data-boss-mood]').textContent=timedOut?'시간을 빼앗았습니다':'반격 성공';st.textContent=`${timedOut?'시간 초과!':'오답!'} 보스의 체력이 회복됩니다. ${q.explanation}`;st.className='boss-status bad';boss.index=0;renderBossHud();$$('.boss-node').forEach(x=>x.className='boss-node');const start=$('[data-boss-start]');start.textContent='↻ 처음부터 재도전';start.classList.remove('hidden')}}
   function launchBossFx(ok,damage,penalty=2){
     const layer=$('[data-boss-fx]');if(!layer)return;
     const shot=document.createElement('i'),impact=document.createElement('b');
-    shot.className=`boss-projectile ${ok?'player-strike':'boss-counter'}`;shot.textContent=ok?(bossConfig?.mechanic==='factor-shield'?'(x−a)':bossConfig?.mechanic==='conjugate-reflect'?'√±':bossConfig?.mechanic==='degree-grade'?'∞/∞':bossConfig?.mechanic==='chaos-split'?'∞−∞':pick(['f′','Δx','dy','∫'])):'×';
+    shot.className=`boss-projectile ${ok?'player-strike':'boss-counter'}`;shot.textContent=ok?(bossConfig?.mechanic==='factor-shield'?'(x−a)':bossConfig?.mechanic==='conjugate-reflect'?'√±':bossConfig?.mechanic==='degree-grade'?'∞/∞':bossConfig?.mechanic==='chaos-split'?'∞−∞':bossConfig?.mechanic==='side-switch'?(boss.q?.side==='left'?'←':'→'):pick(['f′','Δx','dy','∫'])):'×';
     impact.className=`boss-impact ${ok?'player-impact':'counter-impact'}`;impact.textContent=ok?`−${damage}`:`−${penalty}초`;
     layer.append(shot,impact);setTimeout(()=>{shot.remove();impact.remove()},900);
   }
@@ -887,29 +889,31 @@
     if(!boss.running||boss.locked)return;boss.locked=true;boss.attempts++;const q=boss.q,box=$('.answer-grid',$('[data-boss-body]')),ok=String(value)===q.correct,answerSeconds=(performance.now()-boss.questionStartedAt)/1000;markAnswers(box,q,value,button);const st=$('[data-boss-status]'),monster=$('[data-boss-monster]');
     if(ok){
       boss.combo++;boss.correct++;
-      const shieldBattle=bossConfig.mechanic==='factor-shield',reflectBattle=bossConfig.mechanic==='conjugate-reflect',gradeBattle=bossConfig.mechanic==='degree-grade',chaosBattle=bossConfig.mechanic==='chaos-split',breakingShield=shieldBattle&&boss.shield>0,reflecting=reflectBattle&&boss.reflectCharge===1,chaosLimit=boss.phase===3?3.5:boss.phase===2?4.1:4.8,fastFusion=chaosBattle&&answerSeconds<=chaosLimit;
+      const shieldBattle=bossConfig.mechanic==='factor-shield',reflectBattle=bossConfig.mechanic==='conjugate-reflect',gradeBattle=bossConfig.mechanic==='degree-grade',chaosBattle=bossConfig.mechanic==='chaos-split',sideBattle=bossConfig.mechanic==='side-switch',breakingShield=shieldBattle&&boss.shield>0,reflecting=reflectBattle&&boss.reflectCharge===1,chaosLimit=boss.phase===3?3.5:boss.phase===2?4.1:4.8,fastFusion=chaosBattle&&answerSeconds<=chaosLimit,boundaryCrossing=sideBattle&&boss.lastSide&&boss.lastSide!==q.side;
       if(breakingShield)boss.shield--;if(reflectBattle)boss.reflectCharge=reflecting?0:1;
       let chaosPenalty=0;if(chaosBattle){if(fastFusion){boss.splitCount=Math.max(1,boss.splitCount-1);boss.time=Math.min(boss.limit,boss.time+1)}else{boss.splitCount=Math.min(4,boss.splitCount+1);chaosPenalty=boss.splitCount;boss.time=Math.max(0,boss.time-chaosPenalty)}}
+      if(sideBattle){boss.boundaryStreak++;boss.lastSide=q.side;boss.nextSide=q.side==='left'?'right':'left'}
       const gradeMultiplier=gradeBattle?(q.level==='deep'?1.8:q.level==='applied'?1:.55):1;
-      const hit=Math.max(1,Math.round((breakingShield?70:reflectBattle?(reflecting?bossConfig.baseDamage*2.15:85):chaosBattle?bossConfig.baseDamage*(fastFusion?1.35:.72):bossConfig.baseDamage*gradeMultiplier)*bossMultiplier()));
-      boss.hp=Math.max(0,boss.hp-hit);boss.damage+=hit;launchBossFx(true,hit);monster.classList.remove('boss-attack');monster.classList.add('boss-hit');
-      st.textContent=breakingShield?`보호막 파괴 · ${boss.shield}칸 남음 · ${q.explanation}`:reflectBattle?(reflecting?`켤레 반사! ${hit} DAMAGE · ${q.explanation}`:`첫 거울 충전 · 다음 정답이 반사 공격이 됩니다. · ${q.explanation}`):gradeBattle?`${boss.attackGrade}등급 ${boss.attackGrade==='A'?'최고차항 관통':boss.attackGrade==='B'?'정규 공격':'감쇠 공격'} · ${hit} DAMAGE · ${q.explanation}`:chaosBattle?(fastFusion?`빠른 융합! ${answerSeconds.toFixed(1)}초 · ${hit} DAMAGE · 시간 +1초 · ${boss.splitCount} ${boss.splitCount===1?'BODY':'BODIES'}`:`분열 발생 · ${answerSeconds.toFixed(1)}초 · ${hit} DAMAGE · 시간 −${chaosPenalty}초 · ${boss.splitCount} BODIES`):`${hit} DAMAGE · ${q.explanation}`;if(chaosBattle)st.textContent+=` · ${q.explanation}`;st.className=chaosBattle&&!fastFusion?'boss-status bad':'boss-status good';
+      const hit=Math.max(1,Math.round((breakingShield?70:reflectBattle?(reflecting?bossConfig.baseDamage*2.15:85):chaosBattle?bossConfig.baseDamage*(fastFusion?1.35:.72):sideBattle?bossConfig.baseDamage*(boundaryCrossing?1.7:.8):bossConfig.baseDamage*gradeMultiplier)*bossMultiplier()));
+      boss.hp=Math.max(0,boss.hp-hit);boss.damage+=hit;launchBossFx(true,hit);monster.classList.remove('boss-attack');monster.classList.add('boss-hit');if(sideBattle)$('[data-boss-stage]').classList.toggle('boss-boundary-cross',!!boundaryCrossing);
+      st.textContent=breakingShield?`보호막 파괴 · ${boss.shield}칸 남음 · ${q.explanation}`:reflectBattle?(reflecting?`켤레 반사! ${hit} DAMAGE · ${q.explanation}`:`첫 거울 충전 · 다음 정답이 반사 공격이 됩니다. · ${q.explanation}`):gradeBattle?`${boss.attackGrade}등급 ${boss.attackGrade==='A'?'최고차항 관통':boss.attackGrade==='B'?'정규 공격':'감쇠 공격'} · ${hit} DAMAGE · ${q.explanation}`:chaosBattle?(fastFusion?`빠른 융합! ${answerSeconds.toFixed(1)}초 · ${hit} DAMAGE · 시간 +1초 · ${boss.splitCount} ${boss.splitCount===1?'BODY':'BODIES'}`:`분열 발생 · ${answerSeconds.toFixed(1)}초 · ${hit} DAMAGE · 시간 −${chaosPenalty}초 · ${boss.splitCount} BODIES`):sideBattle?(boundaryCrossing?`경계 관통! ${q.side==='left'?'우→좌':'좌→우'} · ${hit} DAMAGE · ${q.explanation}`:`${q.side==='left'?'왼쪽':'오른쪽'} 가면 파괴 · ${hit} DAMAGE · ${q.explanation}`):`${hit} DAMAGE · ${q.explanation}`;if(chaosBattle)st.textContent+=` · ${q.explanation}`;st.className=chaosBattle&&!fastFusion?'boss-status bad':'boss-status good';
       const ratio=boss.hp/boss.maxHp,nextPhase=ratio<=.34?3:ratio<=.67?2:1;
-      if(nextPhase!==boss.phase){boss.phase=nextPhase;if(shieldBattle){boss.shield=nextPhase===2?2:1;$('[data-boss-mood]').textContent=`석문 재결합 · 보호막 ${boss.shield}칸`}else if(reflectBattle){boss.reflectCharge=0;$('[data-boss-mood]').textContent=`거울 재정렬 · PHASE ${nextPhase}`}else if(gradeBattle)$('[data-boss-mood]').textContent=`${nextPhase===2?'중간 차수 장갑 균열':'최고차항 코어 노출'} · PHASE ${nextPhase}`;else if(chaosBattle)$('[data-boss-mood]').textContent=`예고 단축 · ${nextPhase===2?'4.1':'3.5'}초 · PHASE ${nextPhase}`;else $('[data-boss-mood]').textContent=`${nextPhase===2?'응용 장갑 전개':'심화 코어 폭주'} · PHASE ${nextPhase}`}
+      if(nextPhase!==boss.phase){boss.phase=nextPhase;if(shieldBattle){boss.shield=nextPhase===2?2:1;$('[data-boss-mood]').textContent=`석문 재결합 · 보호막 ${boss.shield}칸`}else if(reflectBattle){boss.reflectCharge=0;$('[data-boss-mood]').textContent=`거울 재정렬 · PHASE ${nextPhase}`}else if(gradeBattle)$('[data-boss-mood]').textContent=`${nextPhase===2?'중간 차수 장갑 균열':'최고차항 코어 노출'} · PHASE ${nextPhase}`;else if(chaosBattle)$('[data-boss-mood]').textContent=`예고 단축 · ${nextPhase===2?'4.1':'3.5'}초 · PHASE ${nextPhase}`;else if(sideBattle)$('[data-boss-mood]').textContent=`가면 격상 · ${boss.nextSide==='left'?'← 좌극한':'우극한 →'} · PHASE ${nextPhase}`;else $('[data-boss-mood]').textContent=`${nextPhase===2?'응용 장갑 전개':'심화 코어 폭주'} · PHASE ${nextPhase}`}
       else if(shieldBattle)$('[data-boss-mood]').textContent=boss.shield?`공통인수 봉인 · ${boss.shield}칸`:`코어 노출 · ${boss.combo} COMBO`;
       else if(reflectBattle)$('[data-boss-mood]').textContent=reflecting?`켤레 반사 성공 · ${boss.combo} COMBO`:'은빛 거울 충전 · 다음 공격 반사';
       else if(gradeBattle)$('[data-boss-mood]').textContent=`${boss.attackGrade} GRADE · ${hit} DAMAGE`;
       else if(chaosBattle)$('[data-boss-mood]').textContent=fastFusion?`혼돈 융합 · ${boss.splitCount} ${boss.splitCount===1?'BODY':'BODIES'}`:`미정형 분열 · ${boss.splitCount} BODIES`;
+      else if(sideBattle)$('[data-boss-mood]').textContent=`다음 가면 · ${boss.nextSide==='left'?'← 좌극한':'우극한 →'}${boundaryCrossing?' · 경계 관통':''}`;
       else $('[data-boss-mood]').textContent=`${boss.combo} COMBO · 공격 적중`;
-      if(boss.hp<=0)cancelAnimationFrame(boss.raf);renderBossHud();setTimeout(()=>{monster.classList.remove('boss-hit');if(!boss.running)return;if(boss.hp<=0)finishBossV2(true);else{st.className='boss-status hidden';renderBossV2()}},620)
+      if(boss.hp<=0)cancelAnimationFrame(boss.raf);renderBossHud();setTimeout(()=>{monster.classList.remove('boss-hit');$('[data-boss-stage]').classList.remove('boss-boundary-cross');if(!boss.running)return;if(boss.hp<=0)finishBossV2(true);else{st.className='boss-status hidden';renderBossV2()}},620)
     }else{
-      boss.combo=0;const reflectBattle=bossConfig.mechanic==='conjugate-reflect',chaosBattle=bossConfig.mechanic==='chaos-split';if(chaosBattle)boss.splitCount=Math.min(4,boss.splitCount+1);const penalty=reflectBattle?3:chaosBattle?2+boss.splitCount:2;boss.time=Math.max(0,boss.time-penalty);if(bossConfig.mechanic==='factor-shield')boss.shield=Math.min(3,boss.shield+1);if(reflectBattle)boss.reflectCharge=0;launchBossFx(false,0,penalty);monster.classList.remove('boss-hit');monster.classList.add('boss-attack');
-      $('[data-boss-mood]').textContent=bossConfig.mechanic==='factor-shield'?`봉인 복구 · 보호막 ${boss.shield}칸`:reflectBattle?'반사 역류 · 거울 충전 소멸':chaosBattle?`오답 분열 · ${boss.splitCount} BODIES`:'철갑 반격 · COMBO RESET';
-      st.textContent=`오답 · 시간 −${penalty}초${bossConfig.mechanic==='factor-shield'?' · 보호막 +1':reflectBattle?' · 거울 충전 초기화':chaosBattle?` · ${boss.splitCount}개로 분열`:''} · ${q.explanation}`;st.className='boss-status bad';renderBossHud();setTimeout(()=>{monster.classList.remove('boss-attack');if(!boss.running)return;st.className='boss-status hidden';renderBossV2()},760)
+      boss.combo=0;const reflectBattle=bossConfig.mechanic==='conjugate-reflect',chaosBattle=bossConfig.mechanic==='chaos-split',sideBattle=bossConfig.mechanic==='side-switch';if(chaosBattle)boss.splitCount=Math.min(4,boss.splitCount+1);if(sideBattle){boss.boundaryStreak=0;boss.lastSide=null;boss.nextSide=q.side;boss.targetSide=q.side}const penalty=reflectBattle?3:chaosBattle?2+boss.splitCount:sideBattle?3:2;boss.time=Math.max(0,boss.time-penalty);if(bossConfig.mechanic==='factor-shield')boss.shield=Math.min(3,boss.shield+1);if(reflectBattle)boss.reflectCharge=0;launchBossFx(false,0,penalty);monster.classList.remove('boss-hit');monster.classList.add('boss-attack');
+      $('[data-boss-mood]').textContent=bossConfig.mechanic==='factor-shield'?`봉인 복구 · 보호막 ${boss.shield}칸`:reflectBattle?'반사 역류 · 거울 충전 소멸':chaosBattle?`오답 분열 · ${boss.splitCount} BODIES`:sideBattle?`${q.side==='left'?'왼쪽':'오른쪽'} 가면 재봉인`:'철갑 반격 · COMBO RESET';
+      st.textContent=`오답 · 시간 −${penalty}초${bossConfig.mechanic==='factor-shield'?' · 보호막 +1':reflectBattle?' · 거울 충전 초기화':chaosBattle?` · ${boss.splitCount}개로 분열`:sideBattle?' · 같은 방향을 다시 공격':''} · ${q.explanation}`;st.className='boss-status bad';renderBossHud();setTimeout(()=>{monster.classList.remove('boss-attack');if(!boss.running)return;st.className='boss-status hidden';renderBossV2()},760)
     }
   }
   function finishBossV2(cleared){
-    if(!boss.running)return;stopBossTimer();const r=rec(),previousBest=r.bossBestDamage||0,personalBest=boss.damage>previousBest;r.bossBestDamage=Math.max(previousBest,boss.damage);if(cleared)r.bossClears++;save();updateStats();if(telemetry&&bossActivePlay){telemetry.finishPlay(bossActivePlay.playId,{score:boss.damage,accuracy:boss.attempts?Math.round(boss.correct/boss.attempts*100):0,playTime:Math.round((boss.limit-boss.time)*10)/10,retry:bossSessionPlayIndex>1,sessionPlayIndex:bossSessionPlayIndex,personalBest});bossActivePlay=null}const monster=$('[data-boss-monster]');monster.classList.remove('boss-hit','boss-attack');if(cleared)monster.classList.add('boss-defeated');const defeatText=bossConfig.mechanic==='factor-shield'?'석문 붕괴':bossConfig.mechanic==='conjugate-reflect'?'거울 연성 해제':bossConfig.mechanic==='degree-grade'?'최고차항 코어 붕괴':bossConfig.mechanic==='chaos-split'?'혼돈 코어 융합':'철갑 파괴';$('[data-boss-mood]').textContent=cleared?`${defeatText} · 승리`:'시간 종료 · 전투 기록 저장';if(cleared)$$('.boss-node').forEach(x=>x.className='boss-node done');renderBossHud();const nextLimit=currentBossV2Limit();$('[data-boss-body]').innerHTML=`<div class="boss-result-v2"><span>${cleared?'BOSS CLEAR':'TIME OVER'}</span><strong>${boss.damage} DAMAGE</strong><p>${boss.correct}문제 정답 · 최고 데미지 ${r.bossBestDamage}</p><small>${cleared?`다음 전투 제한시간은 ${nextLimit.toFixed(0)}초입니다. 문제 단계는 다시 기본부터 시작합니다.`:'남은 HP '+Math.max(0,boss.hp)+' · 콤보를 유지하면 더 큰 데미지를 줄 수 있습니다.'}</small></div>`;$('[data-boss-status]').className='boss-status hidden';const start=$('[data-boss-start]');start.textContent=cleared?'더 빠른 보스 도전':'바로 다시 도전';start.classList.remove('hidden');if(window.jpMotionFeedback)window.jpMotionFeedback(cleared?'success':'info',cleared?'보스 클리어!':`${boss.damage} 데미지 · 다시 도전하세요.`)
+    if(!boss.running)return;stopBossTimer();const r=rec(),previousBest=r.bossBestDamage||0,personalBest=boss.damage>previousBest;r.bossBestDamage=Math.max(previousBest,boss.damage);if(cleared)r.bossClears++;save();updateStats();if(telemetry&&bossActivePlay){telemetry.finishPlay(bossActivePlay.playId,{score:boss.damage,accuracy:boss.attempts?Math.round(boss.correct/boss.attempts*100):0,playTime:Math.round((boss.limit-boss.time)*10)/10,retry:bossSessionPlayIndex>1,sessionPlayIndex:bossSessionPlayIndex,personalBest});bossActivePlay=null}const monster=$('[data-boss-monster]');monster.classList.remove('boss-hit','boss-attack');if(cleared)monster.classList.add('boss-defeated');const defeatText=bossConfig.mechanic==='factor-shield'?'석문 붕괴':bossConfig.mechanic==='conjugate-reflect'?'거울 연성 해제':bossConfig.mechanic==='degree-grade'?'최고차항 코어 붕괴':bossConfig.mechanic==='chaos-split'?'혼돈 코어 융합':bossConfig.mechanic==='side-switch'?'경계선 절단':'철갑 파괴';$('[data-boss-mood]').textContent=cleared?`${defeatText} · 승리`:'시간 종료 · 전투 기록 저장';if(cleared)$$('.boss-node').forEach(x=>x.className='boss-node done');renderBossHud();const nextLimit=currentBossV2Limit();$('[data-boss-body]').innerHTML=`<div class="boss-result-v2"><span>${cleared?'BOSS CLEAR':'TIME OVER'}</span><strong>${boss.damage} DAMAGE</strong><p>${boss.correct}문제 정답 · 최고 데미지 ${r.bossBestDamage}</p><small>${cleared?`다음 전투 제한시간은 ${nextLimit.toFixed(0)}초입니다. 문제 단계는 다시 기본부터 시작합니다.`:'남은 HP '+Math.max(0,boss.hp)+' · 콤보를 유지하면 더 큰 데미지를 줄 수 있습니다.'}</small></div>`;$('[data-boss-status]').className='boss-status hidden';const start=$('[data-boss-start]');start.textContent=cleared?'더 빠른 보스 도전':'바로 다시 도전';start.classList.remove('hidden');if(window.jpMotionFeedback)window.jpMotionFeedback(cleared?'success':'info',cleared?'보스 클리어!':`${boss.damage} 데미지 · 다시 도전하세요.`)
   }
   function clearBoss(){if(bossV2){finishBossV2(true);return}stopBossTimer();rec().bossClears++;save();updateStats();$$('.boss-node').forEach(x=>x.className='boss-node done');const monster=$('[data-boss-monster]');monster.classList.remove('boss-hit','boss-attack');monster.classList.add('boss-defeated');$('[data-boss-mood]').textContent='체력 소진 · 승리';boss.index=3;boss.time=0;renderBossHud();const next=currentBossLimit();$('[data-boss-body]').innerHTML=`<div class="boss-start-copy"><strong>보스 클리어!</strong><p>다음 보스는 문제당 <b>${next.toFixed(1)}초</b>입니다. 최소 제한시간은 7초입니다.</p></div>`;$('[data-boss-status]').className='boss-status hidden';$('[data-boss-start]').textContent='새 보스 소환';$('[data-boss-start]').classList.remove('hidden');if(window.jpMotionFeedback)window.jpMotionFeedback('success','보스 클리어 · 기록을 저장했습니다.')}
   $('[data-boss-start]').addEventListener('click',startBoss);
@@ -930,7 +934,7 @@
     $$('.boss-node').forEach(x=>x.className='boss-node');
     const monster=$('[data-boss-monster]');monster.classList.remove('boss-hit','boss-attack','boss-defeated');
     $('[data-boss-mood]').textContent='도전자를 기다리는 중';
-    if(bossV2){const limit=currentBossV2Limit();boss={running:false,raf:0,time:limit,limit,hp:BOSS_V2_HP,maxHp:BOSS_V2_HP,damage:0,combo:0,correct:0,phase:1,shield:bossConfig.mechanic==='factor-shield'?3:0,reflectCharge:0,attackGrade:'C',splitCount:1,questionStartedAt:0}}else{boss.index=0;boss.limit=currentBossLimit();boss.time=boss.limit}renderBossHud();
+    if(bossV2){const limit=currentBossV2Limit();boss={running:false,raf:0,time:limit,limit,hp:BOSS_V2_HP,maxHp:BOSS_V2_HP,damage:0,combo:0,correct:0,phase:1,shield:bossConfig.mechanic==='factor-shield'?3:0,reflectCharge:0,attackGrade:'C',splitCount:1,nextSide:'left',targetSide:'left',lastSide:null,boundaryStreak:0,questionStartedAt:0}}else{boss.index=0;boss.limit=currentBossLimit();boss.time=boss.limit}renderBossHud();
   }
   // 난이도를 바꾸면 진행 중이던 훈련을 접고, 기록도 난이도별로 따로 본다
   function setLevel(id){

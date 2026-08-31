@@ -78,7 +78,7 @@
       subject,
       order:index+1,
       skillId,code,skillTitle,name,mechanic,visual,palette,
-      status:['differentiate_polynomial','limit_factor','limit_rationalize','limit_infinity_ratio','limit_infinity_diff'].includes(skillId)?'playable':'planned',
+      status:['differentiate_polynomial','limit_factor','limit_rationalize','limit_infinity_ratio','limit_infinity_diff','limit_one_sided'].includes(skillId)?'playable':'planned',
       href:`../${subject==='calculus'?'미적분1/미적분1_계산스킬':'기하/기하_내신스킬'}.html?id=${skillId}&mode=boss`
     };
   }
