@@ -1,0 +1,88 @@
+{
+  "version": "2026.08.31",
+  "total": 2000,
+  "curated": 108,
+  "generated": 1892,
+  "baseTopics": 200,
+  "lenses": [
+    {
+      "id": "WHY",
+      "label": "왜 그런가"
+    },
+    {
+      "id": "CONDITION",
+      "label": "조건 해부"
+    },
+    {
+      "id": "CONVERSE",
+      "label": "거꾸로 묻기"
+    },
+    {
+      "id": "COUNTER",
+      "label": "반례 찾기"
+    },
+    {
+      "id": "PARAMETER",
+      "label": "움직여 보기"
+    },
+    {
+      "id": "CLASSIFY",
+      "label": "경우 분류"
+    },
+    {
+      "id": "REPRESENT",
+      "label": "표현 번역"
+    },
+    {
+      "id": "EXPERIMENT",
+      "label": "수치 실험"
+    },
+    {
+      "id": "GENERALIZE",
+      "label": "한 단계 확장"
+    },
+    {
+      "id": "DESIGN",
+      "label": "직접 설계"
+    }
+  ],
+  "counts": {
+    "subject": {
+      "calc": 500,
+      "geo": 424,
+      "econ": 162,
+      "algebra": 266,
+      "prob": 280,
+      "common": 87,
+      "ai": 203,
+      "culture": 78
+    },
+    "origin": {
+      "curated": 108,
+      "internal": 1477,
+      "connected": 415
+    },
+    "grade": {
+      "상위 후보": 6,
+      "후보": 6,
+      "S++": 32,
+      "S+": 64,
+      "B": 1892
+    },
+    "stage": {
+      "high": 1769,
+      "middle": 231
+    },
+    "track": {
+      "internal": 1678,
+      "connected": 322
+    }
+  },
+  "sources": [
+    "JP Math Lab 기존 마이닝 씨앗 12개",
+    "JP Math Lab 아이디어뱅크 S++/S+ 96개",
+    "2022 개정 교육과정의 수학 개념 구조",
+    "랑데뷰 세미나의 248개 심화 주제 유형(질문은 새로 재구성)"
+  ],
+  "note": "candidate는 학생 제안용이다. 공개·수업 확정 전 수학 검증과 교사 검토가 필요하다."
+}
