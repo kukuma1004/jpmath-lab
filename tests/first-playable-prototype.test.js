@@ -204,4 +204,43 @@ const orientHtml = fs.readFileSync('주제탐구/orientation.html', 'utf8');
 assert.doesNotMatch(orientHtml, /var TOPICS = \[/, '오리엔테이션이 주제 목록을 따로 갖고 있으면 안 된다.');
 assert.match(orientHtml, /var TOPICS = \(window\.JPTopics/, '오리엔테이션은 공유 목록을 써야 한다.');
 
+
+// ── 아이디어 뱅크에서 옮긴 씨앗 96개 ──
+const bankCtx = { document: { addEventListener() {} } };
+bankCtx.window = bankCtx;
+vm.createContext(bankCtx);
+vm.runInContext(fs.readFileSync('주제탐구/seeds-bank.js', 'utf8'), bankCtx);
+vm.runInContext(fs.readFileSync('주제탐구/seeds.js', 'utf8'), bankCtx);
+
+const bank = bankCtx.JPSeedsBank;
+assert.equal(bank.length, 96, '뱅크에서 옮긴 씨앗은 96개다.');
+assert.equal(bank.filter((s) => s.grade === 'S++').length, 32, '수학이 필요한 순간은 32개.');
+assert.equal(bank.filter((s) => s.grade === 'S+').length, 64, 'S+ 후보는 64개.');
+
+const merged = bankCtx.JPSeeds.all();
+assert.equal(merged.length, 108, '마이닝 12 + 뱅크 96 = 108.');
+
+for (const s of merged) {
+  assert.ok(bankCtx.JPSeeds.SUBJECT[s.subject], `${s.id} 의 교과가 정의 밖이다.`);
+  assert.ok(bankCtx.JPSeeds.GRADE[s.grade], `${s.id} 의 급이 정의 밖이다.`);
+  // 씨앗은 붙잡을 문장이 하나는 있어야 한다.
+  assert.ok(s.question || s.title, `${s.id} 에 질문도 제목도 없다.`);
+}
+
+// id 가 겹치면 화면에서 같은 씨앗이 두 번 나온다.
+const ids = merged.map((s) => s.id);
+assert.equal(new Set(ids).size, ids.length, '씨앗 id 가 겹친다.');
+
+// 뱅크 파일은 손으로 고치지 않는다. 다시 뽑을 수 있어야 한다.
+assert.ok(
+  fs.existsSync('주제탐구/tools/seeds-from-bank.py'),
+  '뱅크 씨앗을 다시 뽑는 도구가 저장소에 있어야 한다.'
+);
+assert.match(
+  fs.readFileSync('주제탐구/seeds-bank.js', 'utf8'),
+  /손으로 고치지 않는다/,
+  '뱅크 파일에 손대지 말라는 표시가 있어야 한다.'
+);
+assert.match(inquiryHtml, /seeds-bank\.js/, '주제탐구가 뱅크 씨앗을 불러와야 한다.');
+
 console.log('first playable prototype tests: ok');

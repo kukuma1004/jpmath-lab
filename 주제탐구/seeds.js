@@ -27,10 +27,30 @@
     undergraduate:         { label: '대학',      rank: 4 }
   };
 
+  // 과목 색은 흰 글자를 얹으므로 모두 4.5:1 을 넘긴다.
   var SUBJECT = {
-    calc: { label: '미적분Ⅰ', short: '미적분' },
-    geo:  { label: '기하',     short: '기하' },
-    econ: { label: '경제수학', short: '경제' }
+    calc:    { label: '미적분Ⅰ',      color: '#176b5b' },
+    geo:     { label: '기하',          color: '#b04a1c' },
+    econ:    { label: '경제수학',      color: '#315e8c' },
+    algebra: { label: '대수',          color: '#6b4780' },
+    prob:    { label: '확률과 통계',   color: '#7a4a63' },
+    common:  { label: '공통수학',      color: '#4a5a2e' },
+    ai:      { label: '인공지능·이산', color: '#2f5f6b' },
+    culture: { label: '수학과 문화',   color: '#8a5a12' }
+  };
+
+  // 급. 문서마다 다른 말을 쓰므로 각 씨앗의 출처를 함께 보인다.
+  var GRADE = {
+    'S++':      { rank: 1, desc: '학생이 수학을 발명할 수밖에 없는 상황 (아이디어 뱅크)' },
+    'S+':       { rank: 2, desc: '다시 비틀어 만든 핵심 주제 (아이디어 뱅크)' },
+    '상위 후보': { rank: 3, desc: '마이닝 1차의 상위 제작 후보 6개' },
+    '후보':     { rank: 4, desc: '마이닝 1차 후보' }
+  };
+
+  var SOURCE = {
+    mining: '주제 마이닝 1차',
+    moment: '아이디어 뱅크 · 수학이 필요한 순간',
+    splus:  '아이디어 뱅크 · S+ 후보 64'
   };
 
   // 마이닝 문서 §2 의 7축. H 첫 질문의 힘 · V 시각화 · M 수학이 핵심인가 ·
@@ -248,12 +268,22 @@
     }
   ];
 
+  // 마이닝 씨앗의 급은 문서가 상위 6개를 따로 뽑아 둔 것을 그대로 쓴다.
+  SEEDS.forEach(function (s) {
+    s.src = 'mining';
+    s.grade = s.score ? '상위 후보' : '후보';
+  });
+
   window.JPSeeds = {
     seeds: SEEDS,
     RELATION: RELATION,
     LEVEL: LEVEL,
     SUBJECT: SUBJECT,
+    GRADE: GRADE,
+    SOURCE: SOURCE,
     AXES: AXES,
+    // 뱅크에서 뽑은 96개는 seeds-bank.js 가 따로 싣는다. 없으면 마이닝 것만 쓴다.
+    all: function () { return SEEDS.concat(window.JPSeedsBank || []); },
     source: 'JP_MATH_LAB_수학_주제_마이닝_1차.md'
   };
 }());

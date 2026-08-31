@@ -1,4 +1,6 @@
-/* 씨앗밭 — exhibition.css 의 토큰을 그대로 쓴다. */
+/* 씨앗밭 — exhibition.css 의 토큰을 그대로 쓴다.
+   과목 색은 카드마다 --sd-accent 로 들어온다. 색 값은 seeds.js 에 있고,
+   모두 흰 글자 기준 4.5:1 을 넘긴다. */
 
 .seed-field {
   margin-top: clamp(28px, 5vw, 52px);
@@ -91,15 +93,19 @@
 .sd-chip.on { color: #fffdf8; background: var(--green); border-color: var(--green); }
 .sd-chip.on i { color: rgba(255, 253, 248, .8); }
 
-.sd-select {
-  padding: 7px 11px;
-  font: 600 13px/1.2 var(--sans);
+.sd-search {
+  flex: 1 1 240px;
+  min-width: 0;
+  padding: 8px 12px;
+  font: 500 13.5px/1.3 var(--sans);
   color: var(--ink);
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 9px;
-  cursor: pointer;
 }
+
+.sd-search::placeholder { color: var(--muted); }
+.sd-search:focus-visible { outline: 2px solid var(--green); outline-offset: 1px; }
 
 .sd-count {
   margin: 15px 0 11px;
@@ -114,13 +120,10 @@
 .sd-seed {
   background: var(--paper);
   border: 1px solid var(--line);
-  border-left: 3px solid var(--green);
+  border-left: 3px solid var(--sd-accent, var(--green));
   border-radius: 13px;
   overflow: hidden;
 }
-
-.sd-seed.sd-geo { border-left-color: var(--orange); }
-.sd-seed.sd-econ { border-left-color: var(--blue); }
 
 .sd-seed > summary {
   display: grid;
@@ -132,15 +135,16 @@
 
 .sd-seed > summary::-webkit-details-marker { display: none; }
 .sd-seed > summary:hover { background: #efece4; }
-.sd-seed > summary:focus-visible { outline: 2px solid var(--green); outline-offset: -3px; }
+.sd-seed > summary:focus-visible { outline: 2px solid var(--ink); outline-offset: -3px; }
 .sd-seed[open] > summary { border-bottom: 1px solid var(--line); }
 
 .sd-line { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 
 .sd-subject,
+.sd-gradechip,
 .sd-rel,
-.sd-grade,
-.sd-rank {
+.sd-level,
+.sd-cat {
   padding: 3px 8px;
   font: 600 11px/1.35 var(--mono);
   letter-spacing: .03em;
@@ -148,13 +152,12 @@
   white-space: nowrap;
 }
 
-.sd-subject { color: #fffdf8; background: var(--green); }
-/* 주황 원색 위 흰 글자는 4.17:1 로 AA 에 못 미친다. 글자를 얹는 면만 한 단 진하게. */
-.sd-geo .sd-subject { background: #b04a1c; }
-.sd-econ .sd-subject { background: var(--blue); }
-.sd-rel { color: #4a5350; background: var(--surface); border: 1px solid var(--line); }
-.sd-grade { color: #4a5350; background: var(--surface); border: 1px solid var(--line); }
-.sd-rank { color: #6d4409; background: #f6e7cf; }
+.sd-subject { color: #fffdf8; background: var(--sd-accent, var(--green)); }
+.sd-gradechip { color: #6d4409; background: #f6e7cf; }
+.sd-rel,
+.sd-level,
+.sd-cat { color: #4a5350; background: var(--surface); border: 1px solid var(--line); }
+.sd-cat { color: #5c6360; }
 
 .sd-question {
   font: 700 clamp(16px, 1.9vw, 18px)/1.45 var(--sans);
@@ -186,6 +189,8 @@
   font-size: 13.5px;
   align-items: baseline;
 }
+
+.sd-meta:empty { display: none; }
 
 .sd-meta dt {
   font: 600 12px/1.5 var(--mono);
@@ -254,18 +259,11 @@
   overflow: hidden;
 }
 
-.sd-bar-fill { display: block; height: 100%; background: var(--green); border-radius: 999px; }
-.sd-geo .sd-bar-fill { background: var(--orange); }
-.sd-econ .sd-bar-fill { background: var(--blue); }
-
-.sd-unscored {
-  margin: 0;
-  padding: 10px 12px;
-  font-size: 13px;
-  color: var(--muted);
-  background: var(--surface);
-  border: 1px dashed var(--line);
-  border-radius: 10px;
+.sd-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--sd-accent, var(--green));
+  border-radius: 999px;
 }
 
 /* ── 바닥 ── */
@@ -281,15 +279,23 @@
   padding: 9px 15px;
   font: 700 13.5px/1.3 var(--sans);
   color: #fffdf8;
-  background: var(--green);
+  background: var(--sd-accent, var(--green));
   border-radius: 999px;
   text-decoration: none;
 }
 
-.sd-geo .sd-go { background: #b04a1c; }
-.sd-econ .sd-go { background: var(--blue); }
 .sd-go:hover { filter: brightness(1.1); }
 .sd-go:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+/* 씨앗은 아직 만들지 않은 것이 대부분이다. 없는 것을 있는 척하지 않는다. */
+.sd-nolab {
+  padding: 8px 13px;
+  font: 600 12.5px/1.3 var(--mono);
+  color: #4a5350;
+  background: var(--surface);
+  border: 1px dashed var(--line);
+  border-radius: 999px;
+}
 
 .sd-id { font: 500 11px/1 var(--mono); color: var(--muted); }
 

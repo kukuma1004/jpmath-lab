@@ -1,5 +1,9 @@
-/* 씨앗밭 — 탐구 씨앗을 교과·급·분야로 걸러 본다.
-   데이터는 seeds.js 한 곳에만 있다. 이 파일은 그리기만 한다. */
+/* 씨앗밭 — 탐구 씨앗을 교과·급으로 거르고 말로 찾는다.
+   데이터는 seeds.js 와 seeds-bank.js 에만 있다. 이 파일은 그리기만 한다.
+
+   씨앗은 출처마다 가진 항목이 다르다. 마이닝 씨앗은 교육과정 관계와
+   입구/천장 급을 갖고, 뱅크 씨앗은 상황·화면·Lab 을 갖는다.
+   없는 항목은 그리지 않는다. 비어 있으면 문서에 없는 것이다. */
 (function () {
   'use strict';
 
@@ -13,69 +17,77 @@
     var DB = window.JPSeeds;
     if (!root || !DB) return null;
 
-    var seeds = DB.seeds;
-    var state = { subject: 'all', ceiling: 'all', domain: 'all' };
+    var seeds = DB.all();
+    var state = { subject: 'all', grade: 'all', q: '' };
 
-    function countBy(pick, value) {
-      return seeds.filter(function (s) { return pick(s) === value; }).length;
-    }
-
-    // 급은 입구가 모두 고교라서 천장으로 나눈다. 낮은 천장부터.
-    var ceilings = Object.keys(DB.LEVEL)
-      .filter(function (k) { return seeds.some(function (s) { return s.ceiling === k; }); })
-      .sort(function (a, b) { return DB.LEVEL[a].rank - DB.LEVEL[b].rank; });
-
-    var domains = [];
-    seeds.forEach(function (s) {
-      s.domain.forEach(function (d) { if (domains.indexOf(d) < 0) domains.push(d); });
+    // 급이 높은 것부터, 같으면 과목 차례대로.
+    var subjectOrder = Object.keys(DB.SUBJECT);
+    seeds = seeds.slice().sort(function (a, b) {
+      var ga = DB.GRADE[a.grade].rank, gb = DB.GRADE[b.grade].rank;
+      if (ga !== gb) return ga - gb;
+      return subjectOrder.indexOf(a.subject) - subjectOrder.indexOf(b.subject);
     });
-    domains.sort(function (a, b) { return a.localeCompare(b, 'ko'); });
 
-    function chip(group, value, label, n, on) {
+    var grades = Object.keys(DB.GRADE)
+      .filter(function (g) { return seeds.some(function (s) { return s.grade === g; }); })
+      .sort(function (a, b) { return DB.GRADE[a].rank - DB.GRADE[b].rank; });
+
+    var subjects = subjectOrder
+      .filter(function (k) { return seeds.some(function (s) { return s.subject === k; }); });
+
+    function chip(group, value, label, n, on, title) {
       return '<button type="button" class="sd-chip' + (on ? ' on' : '') + '"' +
              ' data-group="' + group + '" data-value="' + esc(value) + '"' +
+             (title ? ' title="' + esc(title) + '"' : '') +
              ' aria-pressed="' + (on ? 'true' : 'false') + '">' +
-             esc(label) + (n === null ? '' : '<i>' + n + '</i>') + '</button>';
+             esc(label) + '<i>' + n + '</i></button>';
+    }
+
+    function count(pick, value) {
+      return seeds.filter(function (s) { return pick(s) === value; }).length;
     }
 
     root.innerHTML =
       '<div class="sd-controls">' +
         '<div class="sd-row"><span class="sd-row-label">교과</span><div class="sd-chips">' +
           chip('subject', 'all', '전체', seeds.length, true) +
-          ['calc', 'geo', 'econ'].map(function (k) {
+          subjects.map(function (k) {
             return chip('subject', k, DB.SUBJECT[k].label,
-              countBy(function (s) { return s.subject; }, k), false);
+              count(function (s) { return s.subject; }, k), false);
           }).join('') +
         '</div></div>' +
         '<div class="sd-row"><span class="sd-row-label">급</span><div class="sd-chips">' +
-          chip('ceiling', 'all', '전체', null, true) +
-          ceilings.map(function (k) {
-            return chip('ceiling', k, '고교 → ' + DB.LEVEL[k].label,
-              countBy(function (s) { return s.ceiling; }, k), false);
+          chip('grade', 'all', '전체', seeds.length, true) +
+          grades.map(function (g) {
+            return chip('grade', g, g, count(function (s) { return s.grade; }, g),
+              false, DB.GRADE[g].desc);
           }).join('') +
         '</div></div>' +
-        '<div class="sd-row"><span class="sd-row-label">분야</span>' +
-          '<select class="sd-select" aria-label="분야로 거르기">' +
-            '<option value="all">전체 분야</option>' +
-            domains.map(function (d) {
-              var n = seeds.filter(function (s) { return s.domain.indexOf(d) > -1; }).length;
-              return '<option value="' + esc(d) + '">' + esc(d) + ' (' + n + ')</option>';
-            }).join('') +
-          '</select>' +
+        '<div class="sd-row"><span class="sd-row-label">찾기</span>' +
+          '<input type="search" class="sd-search" placeholder="질문·개념·상황으로 찾기" ' +
+            'aria-label="씨앗 찾기">' +
         '</div>' +
       '</div>' +
       '<p class="sd-count" aria-live="polite"></p>' +
       '<div class="sd-list"></div>' +
-      '<p class="sd-note">모든 씨앗은 <b>검증 전</b>이다. 수학·사실 검증과 선생님 검토를 지나야 확정된다. ' +
-        '출처 · <code>' + esc(DB.source) + '</code></p>';
+      '<p class="sd-note">씨앗 108개는 모두 <b>검증 전</b>이다. 수학·사실 검증과 선생님 검토를 지나야 확정된다. ' +
+        '출처 · <code>주제 마이닝 1차</code> 12 · <code>아이디어 뱅크</code> 96</p>';
 
     var list = root.querySelector('.sd-list');
     var countEl = root.querySelector('.sd-count');
 
+    function tags(arr, cls) {
+      return '<span class="sd-tags">' + arr.map(function (x) {
+        return '<span class="' + cls + '">' + esc(x) + '</span>';
+      }).join('') + '</span>';
+    }
+
+    function row(term, value) {
+      return value ? '<dt>' + esc(term) + '</dt><dd>' + value + '</dd>' : '';
+    }
+
     function scoreBars(s) {
-      if (!s.score) {
-        return '<p class="sd-unscored">아직 평가 점수가 매겨지지 않았다.</p>';
-      }
+      if (!s.score) return '';
       return '<div class="sd-score">' +
         '<div class="sd-score-head"><b>제작 ' + s.score.rank + '순위</b>' +
           '<span>' + s.score.total + ' / 35</span></div>' +
@@ -84,55 +96,90 @@
             var v = s.score[a.key];
             return '<div class="sd-bar" title="' + esc(a.label) + ' ' + v + '점">' +
               '<span class="sd-bar-key">' + a.key + '</span>' +
-              '<span class="sd-bar-track"><span class="sd-bar-fill" style="width:' + (v / 5 * 100) + '%"></span></span>' +
+              '<span class="sd-bar-track"><span class="sd-bar-fill" style="width:' +
+                (v / 5 * 100) + '%"></span></span>' +
               '<span class="sd-bar-val">' + v + '</span></div>';
           }).join('') +
         '</div></div>';
     }
 
-    function row(term, value) {
-      return '<dt>' + esc(term) + '</dt><dd>' + value + '</dd>';
+    function badges(s) {
+      var out = '<span class="sd-subject">' + esc(DB.SUBJECT[s.subject].label) + '</span>' +
+                '<span class="sd-gradechip" title="' + esc(DB.GRADE[s.grade].desc) + '">' +
+                  esc(s.grade) + '</span>';
+      if (s.relation) {
+        out += '<span class="sd-rel" title="' + esc(DB.RELATION[s.relation].desc) + '">' +
+               esc(DB.RELATION[s.relation].label) + '</span>';
+      }
+      if (s.ceiling) {
+        out += '<span class="sd-level">' + esc(DB.LEVEL[s.entry].label) + ' → ' +
+               esc(DB.LEVEL[s.ceiling].label) + '</span>';
+      }
+      if (s.category) out += '<span class="sd-cat">' + esc(s.category) + '</span>';
+      if (s.format) out += '<span class="sd-cat">' + esc(s.format) + '</span>';
+      return out;
     }
 
     function card(s) {
-      var rel = DB.RELATION[s.relation];
-      var tags = function (arr, cls) {
-        return arr.map(function (x) { return '<span class="' + cls + '">' + esc(x) + '</span>'; }).join('');
-      };
-      return '<details class="sd-seed sd-' + s.subject + '">' +
+      var head = s.question || s.title;
+      var sub = s.question ? s.title : '';
+      var lead = s.phenomenon || s.situation || '';
+      var body =
+        (lead ? '<p class="sd-phenom">' + esc(lead) + '</p>' : '') +
+        '<dl class="sd-meta">' +
+          row('화면', s.scene ? esc(s.scene) : '') +
+          row('해보는 것', s.act || s.lab ? esc(s.act || s.lab) : '') +
+          row('학생 예측', s.predict ? esc(s.predict) : '') +
+          row('충돌', s.conflict ? esc(s.conflict) : '') +
+          row('반전', s.twist ? esc(s.twist) : '') +
+          row('발견 문장', s.discovery ? esc(s.discovery) : '') +
+          row('흔한 착각', s.misstep ? esc(s.misstep) : '') +
+          row('필요한 수학', s.math ? esc(s.math) : '') +
+          row('수학 개념', s.concepts ? tags(s.concepts, 'sd-tag') : '') +
+          row('분야', s.domain ? tags(s.domain, 'sd-tag sd-tag-domain') : '') +
+          row('다음 질문', s.next ? esc(s.next) : '') +
+          row('메모', s.notes && s.notes.length
+            ? s.notes.map(function (n) { return esc(n); }).join('<br>') : '') +
+          row('확인 필요', s.caution ? '<b class="sd-caution">' + esc(s.caution) + '</b>' : '') +
+        '</dl>' +
+        scoreBars(s) +
+        (window.JPDeepDiveUI ? window.JPDeepDiveUI.cardCta(s) : '') +
+        '<div class="sd-foot">' +
+          (s.asset
+            ? '<a class="sd-go" href="' + esc(s.asset.href) + '">' +
+                esc(s.asset.label) + '에서 해보기 →</a>'
+            : '<span class="sd-nolab">아직 만들지 않았다</span>') +
+          '<code class="sd-id" title="' + esc(DB.SOURCE[s.src] || '') + '">' +
+            esc(s.id) + '</code>' +
+        '</div>';
+
+      return '<details class="sd-seed" style="--sd-accent:' + DB.SUBJECT[s.subject].color + '">' +
         '<summary>' +
-          '<span class="sd-line">' +
-            '<span class="sd-subject">' + esc(DB.SUBJECT[s.subject].label) + '</span>' +
-            '<span class="sd-rel" title="' + esc(rel.desc) + '">' + esc(rel.label) + '</span>' +
-            '<span class="sd-grade">고교 → ' + esc(DB.LEVEL[s.ceiling].label) + '</span>' +
-            (s.score ? '<span class="sd-rank">제작 ' + s.score.rank + '순위</span>' : '') +
-          '</span>' +
-          '<span class="sd-question">' + esc(s.question) + '</span>' +
-          '<span class="sd-title">' + esc(s.title) + '</span>' +
+          '<span class="sd-line">' + badges(s) + '</span>' +
+          '<span class="sd-question">' + esc(head) + '</span>' +
+          (sub ? '<span class="sd-title">' + esc(sub) + '</span>' : '') +
         '</summary>' +
-        '<div class="sd-body">' +
-          '<p class="sd-phenom">' + esc(s.phenomenon) + '</p>' +
-          '<dl class="sd-meta">' +
-            row('해보는 것', esc(s.act)) +
-            (s.misstep ? row('흔한 착각', esc(s.misstep)) : '') +
-            row('다음 질문', esc(s.next)) +
-            row('수학 개념', '<span class="sd-tags">' + tags(s.concepts, 'sd-tag') + '</span>') +
-            row('분야', '<span class="sd-tags">' + tags(s.domain, 'sd-tag sd-tag-domain') + '</span>') +
-            (s.caution ? row('확인 필요', '<b class="sd-caution">' + esc(s.caution) + '</b>') : '') +
-          '</dl>' +
-          scoreBars(s) +
-          '<div class="sd-foot">' +
-            '<a class="sd-go" href="' + esc(s.asset.href) + '">' + esc(s.asset.label) + '에서 해보기 →</a>' +
-            '<code class="sd-id">' + esc(s.id) + '</code>' +
-          '</div>' +
-        '</div>' +
+        '<div class="sd-body">' + body + '</div>' +
       '</details>';
+    }
+
+    // 찾기는 씨앗의 글자 전부를 훑는다. 개념 이름으로도, 상황의 낱말로도 걸린다.
+    function haystack(s) {
+      if (s._hay) return s._hay;
+      var parts = [s.id, s.title, s.question, s.phenomenon, s.situation, s.scene,
+                   s.lab, s.act, s.math, s.next, s.discovery, s.conflict,
+                   s.predict, s.twist, s.category, s.format];
+      if (s.concepts) parts = parts.concat(s.concepts);
+      if (s.domain) parts = parts.concat(s.domain);
+      if (s.notes) parts = parts.concat(s.notes);
+      s._hay = parts.filter(Boolean).join(' ').toLowerCase();
+      return s._hay;
     }
 
     function matches(s) {
       if (state.subject !== 'all' && s.subject !== state.subject) return false;
-      if (state.ceiling !== 'all' && s.ceiling !== state.ceiling) return false;
-      if (state.domain !== 'all' && s.domain.indexOf(state.domain) < 0) return false;
+      if (state.grade !== 'all' && s.grade !== state.grade) return false;
+      if (state.q && haystack(s).indexOf(state.q) < 0) return false;
       return true;
     }
 
@@ -140,7 +187,7 @@
       var shown = seeds.filter(matches);
       countEl.textContent = shown.length
         ? '씨앗 ' + shown.length + '개'
-        : '조건에 맞는 씨앗이 없다. 거르개를 하나 풀어 보자.';
+        : '조건에 맞는 씨앗이 없다. 거르개를 풀거나 다른 말로 찾아 보자.';
       list.innerHTML = shown.map(card).join('');
     }
 
@@ -157,13 +204,13 @@
       });
     });
 
-    root.querySelector('.sd-select').addEventListener('change', function (e) {
-      state.domain = e.target.value;
+    root.querySelector('.sd-search').addEventListener('input', function (e) {
+      state.q = e.target.value.trim().toLowerCase();
       render();
     });
 
     render();
-    return { render: render };
+    return { render: render, seeds: seeds };
   }
 
   window.JPSeedField = { mount: mount };
