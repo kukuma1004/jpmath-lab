@@ -128,8 +128,9 @@ assert.doesNotMatch(resultHtml, /<details class="research-seed"/, '씨앗 내용
 // 씨앗밭은 주제탐구 첫 화면, 현재 탐구자 위에 있어야 한다.
 const inquiryHtml = fs.readFileSync('주제탐구/index.html', 'utf8');
 assert.match(inquiryHtml, /id="탐구씨앗"/, '주제탐구에 씨앗밭이 있어야 한다.');
-assert.match(inquiryHtml, /data-topic-browser/, '씨앗밭에 주제 브라우저가 붙어야 한다.');
-assert.match(inquiryHtml, /topic-browser\.js/, '주제 브라우저 스크립트를 불러와야 한다.');
+assert.match(inquiryHtml, /data-seed-field/, '씨앗밭에 씨앗 목록이 붙어야 한다.');
+assert.match(inquiryHtml, /seeds\.js/, '씨앗 데이터를 불러와야 한다.');
+assert.match(inquiryHtml, /seed-field\.js/, '씨앗밭 화면을 불러와야 한다.');
 assert.ok(
   inquiryHtml.indexOf('id="탐구씨앗"') < inquiryHtml.indexOf('현재 탐구자'),
   '씨앗밭은 현재 탐구자 위에 있어야 한다.'
@@ -139,14 +140,65 @@ assert.ok(
 const lockCss = fs.readFileSync('주제탐구/exhibition.css', 'utf8');
 assert.match(lockCss, /\.exhibition-locked main > :not\(\.seed-field\)/, '잠금이 씨앗밭만 통과시켜야 한다.');
 
-// 주제 목록은 한 곳에만 둔다. 두 곳에 두면 반드시 어긋난다.
-const browserCtx = { document: { addEventListener() {} } };
-browserCtx.window = browserCtx;
-vm.createContext(browserCtx);
-vm.runInContext(fs.readFileSync('주제탐구/topic-browser.js', 'utf8'), browserCtx);
-assert.equal(browserCtx.JPTopics.length, 24, '탐구 주제는 24개여야 한다.');
-assert.equal(browserCtx.JPTopicBrowser.limit, 3);
-assert.equal(browserCtx.JPTopicBrowser.storageKey, 'jp-orient-basket-v1', '오리엔테이션과 같은 바구니를 써야 한다.');
+// ── 씨앗 자체 ──
+// 아이디어 뱅크 v13 §7 의 구조를 갖췄는지, 마이닝 문서와 어긋나지 않는지 본다.
+const seedCtx = { document: { addEventListener() {} } };
+seedCtx.window = seedCtx;
+vm.createContext(seedCtx);
+vm.runInContext(fs.readFileSync('주제탐구/seeds.js', 'utf8'), seedCtx);
+const DB = seedCtx.JPSeeds;
+
+assert.equal(DB.seeds.length, 12, '마이닝 1차의 씨앗은 12개다.');
+for (const key of ['calc', 'geo', 'econ']) {
+  assert.equal(
+    DB.seeds.filter((s) => s.subject === key).length, 4,
+    `${DB.SUBJECT[key].label} 씨앗이 4개여야 한다.`
+  );
+}
+
+for (const s of DB.seeds) {
+  for (const field of ['id', 'title', 'question', 'phenomenon', 'concepts', 'domain', 'act', 'next']) {
+    assert.ok(s[field], `${s.id} 의 ${field} 가 비어 있다.`);
+  }
+  assert.ok(DB.RELATION[s.relation], `${s.id} 의 교육과정 관계가 정의 밖이다.`);
+  assert.ok(DB.LEVEL[s.entry] && DB.LEVEL[s.ceiling], `${s.id} 의 급이 정의 밖이다.`);
+  // 입구는 낮고 천장은 높다. 뒤집히면 씨앗의 뜻이 사라진다.
+  assert.ok(
+    DB.LEVEL[s.ceiling].rank >= DB.LEVEL[s.entry].rank,
+    `${s.id} 의 천장이 입구보다 낮다.`
+  );
+  // 아이디어 뱅크 §8 — 검증을 지나기 전에는 verified 로 올리지 않는다.
+  assert.equal(s.status, 'candidate', `${s.id} 는 아직 검증 전이어야 한다.`);
+  // 씨앗은 반드시 해볼 곳이 있어야 한다. 질문만 남으면 탐구가 시작되지 않는다.
+  const target = s.asset.href.split('?')[0];
+  assert.ok(
+    fs.existsSync(require('node:path').join('주제탐구', target)),
+    `${s.id} 가 가리키는 ${s.asset.href} 가 없다.`
+  );
+}
+
+// 점수는 마이닝 문서가 매긴 상위 6개만 있다. 없는 점수를 지어내면 표가 쓸모없어진다.
+const scored = DB.seeds.filter((s) => s.score);
+assert.equal(scored.length, 6, '점수가 있는 씨앗은 상위 6개뿐이다.');
+assert.deepEqual(
+  // seeds.js 는 vm 안에서 돌아 배열의 프로토타입이 다르다. 호스트 배열로 옮겨 비교한다.
+  Array.from(scored, (s) => s.score.rank).sort((a, b) => a - b),
+  [1, 2, 3, 4, 5, 6],
+  '제작 순위는 1위부터 6위까지 하나씩이어야 한다.'
+);
+for (const s of scored) {
+  const sum = DB.AXES.reduce((acc, a) => acc + s.score[a.key], 0);
+  assert.equal(s.score.total, sum, `${s.id} 의 합계가 7축의 합과 다르다.`);
+}
+
+// 차시별 제작 주제 24개는 씨앗이 아니다. 오리엔테이션 전용 데이터로만 남긴다.
+const topicCtx = { document: { addEventListener() {} } };
+topicCtx.window = topicCtx;
+vm.createContext(topicCtx);
+vm.runInContext(fs.readFileSync('주제탐구/topic-browser.js', 'utf8'), topicCtx);
+assert.equal(topicCtx.JPTopics.length, 24, '차시별 제작 주제는 24개다.');
+assert.equal(topicCtx.JPTopicBrowser, undefined, '주제 브라우저 UI 는 씨앗밭으로 대체됐다.');
+assert.doesNotMatch(inquiryHtml, /topic-browser/, '주제탐구 첫 화면은 씨앗밭만 쓴다.');
 
 const orientHtml = fs.readFileSync('주제탐구/orientation.html', 'utf8');
 assert.doesNotMatch(orientHtml, /var TOPICS = \[/, '오리엔테이션이 주제 목록을 따로 갖고 있으면 안 된다.');
