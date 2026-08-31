@@ -84,9 +84,21 @@
 .boss-v2.boss-ratio .boss-combat-stats div:last-child b{color:#ffe19a;text-shadow:0 0 14px rgba(255,211,111,.42)}
 .boss-v2.boss-ratio.boss-phase-two .boss-arena{background:radial-gradient(circle at 23% 35%,rgba(126,147,210,.27),transparent 36%),linear-gradient(145deg,#141821,#2c3240 62%,#171b24)}
 .boss-v2.boss-ratio.boss-phase-three .boss-arena{background:radial-gradient(circle at 23% 35%,rgba(255,220,125,.38),transparent 39%),linear-gradient(145deg,#1b1710,#44371e 62%,#211b11)}
+.boss-v2.boss-chaos .boss-arena{background:radial-gradient(circle at 12% 38%,rgba(231,64,74,.31),transparent 35%),radial-gradient(circle at 37% 31%,rgba(118,218,229,.2),transparent 33%),linear-gradient(145deg,#190d14,#39131e 60%,#111d22)}
+.boss-v2.boss-chaos .boss-aura{border-color:rgba(255,122,137,.47);box-shadow:-22px 0 58px rgba(224,48,65,.3),22px 0 58px rgba(104,211,226,.2),inset 0 0 34px rgba(255,159,169,.15)}
+.boss-v2.boss-chaos .boss-hp-track div{background:linear-gradient(90deg,#692636,#d64b58 54%,#97e4e9)}
+.boss-v2.boss-chaos .boss-art-frame{border-color:rgba(255,137,153,.32)}
+.boss-v2.boss-chaos .boss-combat-stats div:last-child b{color:#ff9aa6;text-shadow:0 0 14px rgba(255,86,105,.42)}
+.boss-v2.boss-chaos.boss-chaos-split .boss-art{animation:chaosSplitPulse .78s ease-in-out infinite alternate}
+.boss-v2.boss-chaos[data-bodies="2"] .boss-art{filter:drop-shadow(-9px 0 rgba(238,57,76,.55)) drop-shadow(9px 0 rgba(111,218,231,.42))}
+.boss-v2.boss-chaos[data-bodies="3"] .boss-art{filter:drop-shadow(-15px 0 rgba(238,57,76,.58)) drop-shadow(15px 0 rgba(111,218,231,.48)) saturate(1.12)}
+.boss-v2.boss-chaos[data-bodies="4"] .boss-art{filter:drop-shadow(-22px 0 rgba(238,57,76,.64)) drop-shadow(22px 0 rgba(111,218,231,.54)) saturate(1.2)}
+.boss-v2.boss-chaos.boss-phase-two .boss-arena{background:radial-gradient(circle at 11% 38%,rgba(241,68,78,.37),transparent 37%),radial-gradient(circle at 39% 32%,rgba(103,215,232,.26),transparent 35%),linear-gradient(145deg,#1c0d15,#451520 60%,#102329)}
+.boss-v2.boss-chaos.boss-phase-three .boss-arena{background:radial-gradient(circle at 12% 38%,rgba(255,64,80,.46),transparent 40%),radial-gradient(circle at 40% 32%,rgba(102,229,242,.33),transparent 38%),linear-gradient(145deg,#200b13,#511321 58%,#0e2930)}
 @keyframes mathStrike{0%{opacity:0;transform:translate(0,0) scale(.35)}20%{opacity:1}80%{opacity:1;transform:translate(-330%,-230%) scale(.78)}100%{opacity:0;transform:translate(-380%,-260%) scale(1.65)}}
 @keyframes bossCounter{0%{opacity:0;transform:translate(0,0) scale(.4)}18%{opacity:1}78%{opacity:1;transform:translate(300%,230%) scale(.82)}100%{opacity:0;transform:translate(340%,260%) scale(1.5)}}
 @keyframes impactPop{0%{opacity:0;transform:translateY(12px) scale(.5)}35%{opacity:1;transform:translateY(-5px) scale(1.08)}100%{opacity:0;transform:translateY(-32px) scale(.92)}}
+@keyframes chaosSplitPulse{from{transform:translateX(-3px) scale(.995)}to{transform:translateX(3px) scale(1.018)}}
 @media(max-width:700px){.boss-art-frame{width:min(300px,96%)}.boss-v2 .boss-aura{width:205px;height:205px}.boss-impact{left:31%;top:35%}.boss-impact.counter-impact{left:54%;top:70%}}
 @media(prefers-reduced-motion:reduce){.boss-art,.boss-projectile,.boss-impact{animation:none!important;transition:none!important}.boss-projectile,.boss-impact{display:none}}
 
