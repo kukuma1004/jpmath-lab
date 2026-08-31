@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>정사영과 최단거리 · 탐구 큐레이션 시안</title>
-<!-- 학생 이름과 질문은 이 파일에 적지 않는다. auth.js 가드는 화면만 가릴 뿐
-     소스는 누구나 볼 수 있고, 이 파일은 공개 저장소에 올라간다.
+<!-- 학생 이름도 발문도 이 파일에 적지 않는다. auth.js 가드는 화면만 가릴 뿐
+     소스는 누구나 볼 수 있고 이 저장소는 공개다.
      실제 값은 선생님 컴퓨터에만 있는 data-private 에서 읽어 채운다.
-     그 파일이 없으면(=공개 사이트) 아래 기본 문구가 그대로 남는다. -->
+     그 파일이 없으면(=공개 사이트) 아래 자리표시 문구가 그대로 남는다. -->
 <style id="classroomGuard">html{display:none!important}</style>
 <script src="../auth.js?v=2" data-classroom-protected></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,27 +15,35 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=Noto+Serif+KR:wght@700;900&amp;display=swap" rel="stylesheet">
 <style>
 /* ─────────────────────────────────────────────────────────────
-   정사영 큐레이션 시안
+   정사영 큐레이션 시안 · 밝은 판
+
+   토큰은 curator-samples.css 와 같은 것을 쓴다. 같은 운영실 안의
+   화면이라 종이색·잉크·초록·금을 그대로 가져왔다.
+
+   판이 하나다. 평면이 화면 전체에 깔리고 제목이 그 위에 얹힌다.
+   글 상자와 그림 상자를 따로 두지 않는다. 그래서 평면을 뒤쪽으로
+   여덟 칸 더 그렸다 — 무한히 뻗은 평면이니 더 그려도 거짓이 아니고,
+   그만큼이 있어야 글자 밑으로 흘러 들어간다.
 
    색이 뜻을 갖는다.
-     따뜻한 햇빛색  = 공간에 있는 실물, 그리고 그 높이(수선)
-     차가운 청록색  = 평면에 눌린 것, 곧 정사영
-   이 슬라이드의 주장이 "둘은 같은 이야기"이므로,
-   두 색이 한 점 H 에서 만나는 것을 화면의 중심에 둔다.
+     따뜻한 색 = 공간에 있는 것과 그 높이(수선)
+     초록      = 평면에 눌린 것, 곧 정사영
+   이 화면의 주장이 "둘은 같은 이야기"라서 두 색이 H 에서 만난다.
 
-   대비는 모두 4.5:1 을 넘긴다. 본문 15.9 · 보조 8.1 ·
-   따뜻 8.8 · 차가움 9.5 · 라벨 5.8.
+   글자 대비는 모두 4.5:1 을 넘긴다.
+   잉크 12.0 · 보조 5.0 · 초록 5.7 · 따뜻 4.8.
+   금(#e6b64f)은 종이 위 1.7 이라 빛과 칠에만 쓰고 글자로는 쓰지 않는다.
    ───────────────────────────────────────────────────────────── */
 :root {
-  --ink: #0c1a24;
-  --panel: #12242f;
-  --panel-2: #17303d;
-  --line: rgba(158, 190, 200, .18);
-  --text: #eef4f2;
-  --muted: #9fb3ba;
-  --label: #7f97a0;
-  --warm: #f0a848;      /* 공간의 실물 · 높이 */
-  --cool: #4fd1c5;      /* 평면의 정사영 */
+  --ink: #16332e;
+  --muted: #5b6b64;
+  --paper: #f4f1e9;
+  --surface: #fffdf8;
+  --line: #d9ded6;
+  --green: #176b5b;      /* 평면 · 정사영 */
+  --warm: #b04a1c;       /* 공간 · 높이. 글자로 쓸 수 있는 진한 주황 */
+  --warm-soft: #d96c43;  /* 같은 계열. 칠과 선에만 */
+  --gold: #e6b64f;       /* 빛. 글자로 쓰지 않는다 */
   --mono: 'IBM Plex Mono', ui-monospace, monospace;
   --sans: 'IBM Plex Sans KR', system-ui, sans-serif;
   --serif: 'Noto Serif KR', serif;
@@ -43,17 +51,18 @@
 
 * { box-sizing: border-box; }
 
-html { background: var(--ink); }
+html { background: var(--paper); }
 
 body {
   margin: 0;
   min-width: 320px;
-  color: var(--text);
+  color: var(--ink);
   font-family: var(--sans);
+  /* 빛은 위에서 내려온다. 이 화면의 주제가 빛과 그림자다. */
   background:
-    radial-gradient(ellipse 70% 50% at 78% 8%, rgba(240, 168, 72, .13), transparent 70%),
-    radial-gradient(ellipse 60% 60% at 12% 88%, rgba(79, 209, 197, .09), transparent 70%),
-    var(--ink);
+    radial-gradient(ellipse 68% 42% at 72% -4%, rgba(230, 182, 79, .32), transparent 68%),
+    radial-gradient(ellipse 52% 50% at 4% 92%, rgba(23, 107, 91, .12), transparent 70%),
+    var(--paper);
   background-attachment: fixed;
 }
 
@@ -68,337 +77,308 @@ button, input { font: inherit; }
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px 20px;
-  padding: 14px clamp(18px, 4vw, 56px);
-  border-bottom: 1px solid var(--line);
-  background: rgba(12, 26, 36, .82);
+  gap: 10px 20px;
+  padding: 13px clamp(18px, 4vw, 60px);
+  border-bottom: 1px solid rgba(22, 51, 46, .09);
+  background: rgba(244, 241, 233, .86);
   backdrop-filter: blur(16px);
 }
 
-.top a {
-  color: var(--muted);
-  font: 700 12.5px/1 var(--sans);
-  text-decoration: none;
-}
-
-.top a:hover { color: var(--text); }
-
+.top a.back { color: var(--muted); font: 700 12.5px/1 var(--sans); text-decoration: none; }
+.top a.back:hover { color: var(--ink); }
 .top-mid { display: flex; align-items: baseline; gap: 10px; }
 .top-mid strong { font: 800 14px/1 var(--sans); letter-spacing: -.02em; }
-.top-mid span { color: var(--label); font: 600 10px/1 var(--mono); letter-spacing: .12em; }
+.top-mid span { color: var(--muted); font: 600 10px/1 var(--mono); letter-spacing: .12em; }
 
 .badge {
   padding: 6px 11px;
-  border: 1px solid rgba(240, 168, 72, .34);
+  border: 1px solid rgba(176, 74, 28, .28);
   border-radius: 999px;
   color: var(--warm);
+  background: #fff7f2;
   font: 700 10px/1 var(--mono);
   letter-spacing: .08em;
 }
 
-/* ── 무대 ── */
-.stage {
-  display: grid;
-  grid-template-columns: minmax(320px, 0.86fr) minmax(440px, 1.14fr);
-  align-items: start;
-  gap: clamp(30px, 4.5vw, 72px);
-  max-width: 1520px;
+/* ── 한 장의 판 ─────────────────────────────────────────────── */
+.canvas {
+  position: relative;
+  max-width: 1440px;
   margin: 0 auto;
-  padding: clamp(34px, 5vw, 76px) clamp(18px, 4vw, 56px) clamp(48px, 6vw, 96px);
+  padding: clamp(30px, 4vw, 64px) clamp(20px, 4vw, 60px) clamp(20px, 2.4vw, 34px);
 }
 
-/* ── 왼쪽 글 ── */
+/* 그림은 판 전체에 깔린다. 글보다 뒤다. */
+.stage-svg {
+  position: absolute;
+  z-index: 0;
+  top: clamp(48px, 5vw, 92px);
+  left: 0;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+}
+
+.layer {
+  position: relative;
+  z-index: 1;
+  max-width: min(46%, 620px);
+}
+
+/* ── 글 ── */
 .kicker {
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  margin: 0 0 22px;
-  padding: 7px 13px 7px 9px;
-  border: 1px solid var(--line);
+  margin: 0 0 20px;
+  padding: 7px 14px 7px 8px;
   border-radius: 999px;
   color: var(--muted);
+  background: rgba(255, 253, 248, .8);
+  border: 1px solid var(--line);
   font: 700 10.5px/1 var(--mono);
   letter-spacing: .1em;
 }
 
 .kicker b {
-  padding: 3px 7px;
+  padding: 3px 8px;
   border-radius: 999px;
-  color: var(--ink);
-  background: var(--cool);
+  color: var(--surface);
+  background: var(--green);
   font: 700 10px/1 var(--mono);
 }
 
 h1 {
   margin: 0;
-  font: 900 clamp(38px, 4.6vw, 68px)/1.14 var(--serif);
-  letter-spacing: -.055em;
+  font: 900 clamp(37px, 4.5vw, 67px)/1.12 var(--serif);
+  letter-spacing: -.06em;
   word-break: keep-all;
   text-wrap: balance;
 }
 
 h1 .warm { color: var(--warm); }
-h1 .cool { color: var(--cool); }
+h1 .green { color: var(--green); }
 
 .lede {
-  max-width: 40ch;
-  margin: 22px 0 0;
+  max-width: 33ch;
+  margin: 24px 0 0;
   color: var(--muted);
-  font-size: clamp(15.5px, 1.2vw, 18px);
-  line-height: 1.78;
+  font-size: clamp(15px, 1.1vw, 17px);
+  line-height: 1.8;
   word-break: keep-all;
 }
 
-/* 학생의 질문 — 이 화면의 출처다. 눈에 띄되 장식하지 않는다. */
-.from-student {
-  display: grid;
-  gap: 10px;
-  max-width: 46ch;
-  margin: 30px 0 0;
-  padding: 20px 22px;
+/* 수식 한 줄 — 이 화면의 답 */
+.claim {
+  display: inline-block;
+  margin: 26px 0 0;
+  padding: 18px 24px;
+  border-radius: 16px;
   border: 1px solid var(--line);
-  border-left: 3px solid var(--warm);
-  border-radius: 0 16px 16px 0;
-  background: linear-gradient(100deg, rgba(240, 168, 72, .09), rgba(18, 36, 47, .5));
+  background: rgba(255, 253, 248, .93);
+  box-shadow: 0 18px 44px rgba(36, 62, 55, .1);
 }
 
-.from-student > span {
-  color: var(--warm);
-  font: 700 10px/1 var(--mono);
-  letter-spacing: .12em;
-}
-
-.from-student blockquote {
+.claim .eq {
   margin: 0;
-  font: 700 clamp(17px, 1.5vw, 21px)/1.6 var(--sans);
-  word-break: keep-all;
+  font: 600 clamp(19px, 1.8vw, 26px)/1.4 var(--mono);
+  letter-spacing: -.01em;
 }
 
-.from-student p {
-  margin: 0;
+.claim .eq i { font-style: normal; color: var(--warm); }
+.claim .eq u { text-decoration: none; color: var(--green); }
+
+.claim p {
+  max-width: 33ch;
+  margin: 12px 0 0;
   color: var(--muted);
   font-size: 13.5px;
   line-height: 1.72;
   word-break: keep-all;
 }
 
-.meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-  margin-top: 22px;
-}
+.claim b { color: var(--ink); }
 
-.meta span {
-  padding: 6px 11px;
+/* ── 측정 카드 : 판의 오른쪽 아래, 평면 위에 얹힌다 ── */
+.meter {
+  position: relative;
+  z-index: 1;
+  width: min(432px, 100%);
+  margin: clamp(-96px, -5.6vw, -24px) 0 0 auto;
+  padding: clamp(18px, 1.8vw, 24px);
   border: 1px solid var(--line);
-  border-radius: 8px;
-  color: var(--muted);
-  font: 600 11.5px/1.3 var(--mono);
+  border-radius: 22px;
+  background: rgba(255, 253, 248, .95);
+  box-shadow: 0 26px 64px rgba(36, 62, 55, .17);
+  backdrop-filter: blur(10px);
 }
 
-.meta span.std { color: var(--cool); border-color: rgba(79, 209, 197, .3); }
-
-/* 답의 한 줄 */
-.answer {
-  margin: 30px 0 0;
-  padding: 22px 24px;
-  border-radius: 18px;
-  background: var(--panel);
-  border: 1px solid var(--line);
-}
-
-.answer > span {
-  display: block;
-  margin-bottom: 12px;
-  color: var(--label);
-  font: 700 10px/1 var(--mono);
-  letter-spacing: .12em;
-}
-
-.answer .eq {
-  margin: 0;
-  color: var(--text);
-  font: 600 clamp(17px, 1.6vw, 22px)/1.5 var(--mono);
-  letter-spacing: -.01em;
-}
-
-.answer .eq i { font-style: normal; color: var(--warm); }
-.answer .eq u { text-decoration: none; color: var(--cool); }
-
-.answer p {
-  margin: 14px 0 0;
-  color: var(--muted);
-  font-size: 13.5px;
-  line-height: 1.75;
-  word-break: keep-all;
-}
-
-/* ── 오른쪽 실험 ── */
-.lab {
-  position: sticky;
-  top: 88px;
-  padding: clamp(18px, 2vw, 28px);
-  border: 1px solid var(--line);
-  border-radius: 24px;
-  background: linear-gradient(160deg, var(--panel-2), var(--panel));
-  box-shadow: 0 30px 80px rgba(0, 0, 0, .45);
-}
-
-.lab-head {
+.meter-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 14px;
+  gap: 12px;
   margin-bottom: 14px;
 }
 
-.lab-head span { color: var(--label); font: 700 10px/1 var(--mono); letter-spacing: .13em; }
-.lab-head strong { font: 800 15px/1 var(--sans); letter-spacing: -.02em; }
+.meter-head span { color: var(--green); font: 700 10px/1 var(--mono); letter-spacing: .13em; }
+.meter-head strong { font: 800 14px/1 var(--sans); letter-spacing: -.02em; }
 
-.scene {
-  display: block;
-  width: 100%;
-  height: auto;
-  border-radius: 16px;
-  background: radial-gradient(ellipse 60% 70% at 50% 20%, rgba(240,168,72,.08), transparent 70%), #0a1620;
-}
-
-/* 무대 안의 색 규칙 */
-.grid-line { stroke: rgba(158, 190, 200, .16); stroke-width: 1; }
-.plane-edge { stroke: rgba(79, 209, 197, .55); stroke-width: 2; fill: rgba(79, 209, 197, .06); }
-.drop { stroke: var(--warm); stroke-width: 3.5; stroke-linecap: round; }
-.reach { stroke: var(--cool); stroke-width: 3; stroke-linecap: round; }
-.flat { stroke: rgba(79, 209, 197, .75); stroke-width: 2; stroke-dasharray: 5 5; }
-.pt-p { fill: var(--warm); }
-.pt-h { fill: var(--cool); }
-.pt-q { fill: var(--text); }
-.tick { stroke: var(--text); stroke-width: 2; fill: none; }
-.lbl { font: 700 13px var(--mono); fill: var(--text); }
-.lbl-w { fill: var(--warm); }
-.lbl-c { fill: var(--cool); }
-.lbl-s { font: 600 11px var(--mono); fill: var(--label); }
-
-.slider-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-top: 18px;
-}
-
+.slider-row { display: flex; align-items: center; gap: 12px; }
 .slider-row label { color: var(--muted); font: 600 12px/1 var(--sans); white-space: nowrap; }
-.slider-row input { flex: 1; min-width: 0; accent-color: var(--cool); cursor: pointer; }
-.slider-row output { min-width: 76px; color: var(--cool); font: 700 14px/1 var(--mono); text-align: right; }
+.slider-row input { flex: 1; min-width: 0; accent-color: var(--green); cursor: pointer; }
+.slider-row output { min-width: 46px; color: var(--green); font: 700 14px/1 var(--mono); text-align: right; }
 
 .readout {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 9px;
-  margin-top: 16px;
+  gap: 8px;
+  margin-top: 15px;
 }
 
 .readout div {
-  padding: 13px 14px;
+  padding: 12px 12px 13px;
   border: 1px solid var(--line);
-  border-radius: 13px;
-  background: rgba(10, 22, 32, .55);
+  border-radius: 12px;
+  background: #f6f8f4;
 }
 
-.readout small { display: block; color: var(--label); font: 600 10px/1.4 var(--mono); }
+.readout small { display: block; color: var(--muted); font: 600 9.5px/1.4 var(--mono); }
 .readout strong {
   display: block;
-  margin-top: 7px;
-  font: 700 clamp(16px, 1.6vw, 21px)/1 var(--mono);
+  margin-top: 6px;
+  font: 700 clamp(15px, 1.5vw, 19px)/1 var(--mono);
   font-variant-numeric: tabular-nums;
 }
 
 .readout .w strong { color: var(--warm); }
-.readout .c strong { color: var(--cool); }
-.readout .n strong { color: var(--text); }
-
-/* 최솟값에 닿으면 알린다 */
-.readout div.is-min {
-  border-color: rgba(240, 168, 72, .55);
-  background: rgba(240, 168, 72, .1);
-}
+.readout .g strong { color: var(--green); }
+.readout .n strong { color: var(--ink); }
+.readout div.is-min { border-color: rgba(176, 74, 28, .45); background: #fdf3ec; }
 
 .verdict {
-  margin: 16px 0 0;
-  padding: 14px 16px;
-  border-radius: 13px;
+  margin: 14px 0 0;
+  padding: 13px 15px;
+  border-radius: 12px;
   border: 1px dashed var(--line);
   color: var(--muted);
-  font-size: 13px;
+  font-size: 12.5px;
   line-height: 1.7;
   word-break: keep-all;
 }
 
-.verdict b { color: var(--text); }
-.verdict.is-min { border-color: rgba(240,168,72,.5); color: var(--text); background: rgba(240,168,72,.08); }
+.verdict b { color: var(--ink); }
+.verdict.is-min { border-color: rgba(176, 74, 28, .4); background: #fdf3ec; color: var(--ink); }
 
-/* 현실 연결 */
-.real {
+/* ── 아래 띠 : 학생의 질문과 현실 연결 ── */
+.strip {
+  position: relative;
+  z-index: 1;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 12px;
-  margin-top: 16px;
+  grid-template-columns: minmax(280px, 1.05fr) repeat(auto-fit, minmax(208px, 1fr));
+  gap: 14px;
+  max-width: 1440px;
+  margin: clamp(20px, 2.6vw, 40px) auto 0;
+  padding: 0 clamp(20px, 4vw, 60px);
 }
 
-.real article {
-  padding: 15px 16px;
+.card {
+  padding: 20px 22px;
   border: 1px solid var(--line);
-  border-radius: 14px;
-  background: rgba(10, 22, 32, .45);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: 0 14px 34px rgba(36, 62, 55, .07);
 }
 
-.real span { color: var(--cool); font: 700 10px/1 var(--mono); letter-spacing: .1em; }
-.real h3 { margin: 9px 0 6px; font: 700 14px/1.4 var(--sans); }
-.real p { margin: 0; color: var(--muted); font-size: 12.5px; line-height: 1.65; word-break: keep-all; }
-.real code { color: var(--warm); font: 600 12px var(--mono); }
+.card.from-student { border-left: 3px solid var(--warm-soft); border-radius: 0 18px 18px 0; }
+.card > span { color: var(--green); font: 700 10px/1 var(--mono); letter-spacing: .11em; }
+.card.from-student > span { color: var(--warm); }
 
-.next-step {
+.card blockquote {
+  margin: 12px 0 0;
+  font: 700 clamp(16.5px, 1.4vw, 20px)/1.6 var(--sans);
+  word-break: keep-all;
+}
+
+.card h3 { margin: 11px 0 7px; font: 700 14px/1.45 var(--sans); }
+.card p { margin: 0; color: var(--muted); font-size: 12.5px; line-height: 1.7; word-break: keep-all; }
+.card.from-student p { margin-top: 10px; font-size: 13px; }
+.card code { color: var(--warm); font: 600 12px var(--mono); }
+
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+.tags span {
+  padding: 5px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  font: 600 11px/1.3 var(--mono);
+}
+.tags span.std { color: var(--green); border-color: rgba(23, 107, 91, .3); }
+
+.foot {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px 14px;
-  margin-top: 18px;
-  padding-top: 16px;
-  border-top: 1px solid var(--line);
+  justify-content: space-between;
+  gap: 12px 18px;
+  max-width: 1440px;
+  margin: clamp(20px, 2.6vw, 38px) auto 0;
+  padding: 18px clamp(20px, 4vw, 60px) clamp(34px, 4vw, 56px);
 }
 
-.next-step p { margin: 0; flex: 1 1 240px; color: var(--muted); font-size: 12.5px; line-height: 1.65; }
+.foot p { margin: 0; flex: 1 1 320px; color: var(--muted); font: 600 10.5px/1.8 var(--mono); letter-spacing: .03em; }
 
-.next-step a {
-  padding: 11px 18px;
+.foot a {
+  padding: 12px 20px;
   border-radius: 999px;
-  color: var(--ink);
-  background: var(--cool);
+  color: var(--surface);
+  background: var(--green);
   font: 700 13px/1 var(--sans);
   text-decoration: none;
   white-space: nowrap;
 }
 
-.next-step a:hover { filter: brightness(1.08); }
-.next-step a:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+.foot a:hover { filter: brightness(1.1); }
+.foot a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
-.foot {
-  max-width: 1520px;
-  margin: 0 auto;
-  padding: 0 clamp(18px, 4vw, 56px) clamp(30px, 4vw, 56px);
-  color: var(--label);
-  font: 600 10.5px/1.7 var(--mono);
-  letter-spacing: .04em;
+/* ── 무대 안의 색 규칙 ── */
+.plane-face { fill: rgba(23, 107, 91, .07); stroke: rgba(23, 107, 91, .34); stroke-width: 2; }
+.grid-line { stroke: rgba(22, 51, 46, .12); stroke-width: 1.5; }
+.sun-ray { stroke: url(#rayFade); stroke-width: 3.5; stroke-linecap: round; }
+.sun-spot { fill: var(--gold); opacity: .3; }
+.shade { fill: rgba(22, 51, 46, .08); }
+.drop { stroke: var(--warm-soft); stroke-width: 6.5; stroke-linecap: round; }
+.reach { stroke: var(--green); stroke-width: 5; stroke-linecap: round; }
+.flat { stroke: var(--green); stroke-width: 3.5; stroke-dasharray: 9 8; opacity: .82; }
+.pt-p { fill: var(--warm-soft); stroke: var(--surface); stroke-width: 3; }
+.pt-h { fill: var(--green); stroke: var(--surface); stroke-width: 3; }
+.pt-q { fill: var(--ink); stroke: var(--surface); stroke-width: 3; }
+.tick { stroke: var(--ink); stroke-width: 2.5; fill: none; opacity: .75; }
+.lbl { font: 700 23px var(--mono); fill: var(--ink); }
+.lbl-w { fill: var(--warm); }
+.lbl-g { fill: var(--green); }
+.lbl-s { font: 600 17px var(--mono); fill: var(--muted); }
+
+@media (max-width: 1080px) {
+  /* 넓은 판에서는 평면을 뒤로 여덟 칸 더 그려 제목 밑에 깔았다.
+     좁은 화면에서는 깔 글자가 없으니 그 여백이 그림만 납작하게 만든다.
+     아래 스크립트가 P·H·Q 둘레만 남기고 잘라 낸다. */
+  .stage-svg { position: static; width: 100%; margin: 24px 0 0; }
+  .layer { max-width: none; }
+  .meter { margin: 18px 0 0; width: 100%; }
+  .lede, .claim p { max-width: none; }
 }
 
-@media (max-width: 1040px) {
-  .stage { grid-template-columns: 1fr; }
-  .lab { position: static; }
+/* 카드 세 장이 나란히 설 수 없는 폭에서는 한 줄에 하나씩.
+   auto-fit 의 208px 최소 폭이 375px 화면을 넘겨 버린다. */
+@media (max-width: 860px) {
+  .strip { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 560px) {
   .readout { grid-template-columns: 1fr; }
   .slider-row { flex-wrap: wrap; }
-  .slider-row output { min-width: 0; text-align: left; }
+  .slider-row output { text-align: left; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -409,17 +389,17 @@ h1 .cool { color: var(--cool); }
 <body data-inquiry="student-003-geometry">
 
 <header class="top">
-  <a href="curator-samples.html">← 큐레이션 시안</a>
+  <a class="back" href="curator-samples.html">← 큐레이션 시안</a>
   <div class="top-mid"><strong>정사영과 최단거리</strong><span data-fill="who">기하 · 학생 미지정</span></div>
   <span class="badge">승인 전 비공개</span>
 </header>
 
-<main class="stage">
+<main class="canvas">
 
-  <section class="copy">
+  <div class="layer">
     <p class="kicker"><b>기하</b> 탐구 큐레이션 · 시안</p>
 
-    <h1>평면 위에서 가장 가까운 점은<br><span class="cool">이미 그림자가</span> <span class="warm">서 있던 자리</span>다.</h1>
+    <h1>평면 위에서 가장 가까운 점은 <span class="green">이미 그림자가</span> <span class="warm">서 있던 자리</span>다.</h1>
 
     <p class="lede">
       정사영은 “눌러 담는 일”이고 최단거리는 “가장 가까운 곳을 찾는 일”이다.
@@ -427,70 +407,84 @@ h1 .cool { color: var(--cool); }
       <span data-fill="lede">이 학급의 한 학생이 낸 질문</span>은 그 둘이 왜 하나인지를 묻는다.
     </p>
 
-    <div class="from-student">
-      <span>학생이 낸 질문</span>
-      <blockquote data-fill="question">“정사영과 최단거리는 왜 같은 이야기인가?”</blockquote>
-      <p>탐색 계획 — <span data-fill="plan">투영 방향을 바꾸며 도형의 모습과 점·평면 사이 거리의 관계를 확인한다.</span></p>
-    </div>
-
-    <div class="meta">
-      <span>정사영</span><span>최단거리</span><span>공간도형</span>
-      <span class="std">12기하02-03</span>
-    </div>
-
-    <div class="answer">
-      <span>한 줄로 줄이면</span>
+    <div class="claim">
       <p class="eq">|PQ|<sup>2</sup> = <i>|PH|</i><sup>2</sup> + <u>|HQ|</u><sup>2</sup></p>
       <p>
         평면 위 어느 점 Q 를 잡아도 삼각형 PHQ 는 H 에서 직각이다.
         그래서 <b>|HQ| 가 0 일 때만</b> |PQ| 가 가장 작아지고, 그 자리가 바로 정사영 H 다.
-        “가장 가까운 점을 찾아라”와 “수선의 발을 내려라”가 같은 명령이 되는 이유다.
       </p>
     </div>
-  </section>
+  </div>
 
-  <section class="lab" aria-labelledby="labTitle">
-    <div class="lab-head">
+  <!-- 평면 위의 점은 모두 H + a·u + b·v 로 잡았다. u=(62,19) 가 한 칸이고
+       세로 한 칸도 같은 64.85px 라서, 3·4·5 일 때 화면에서도 3·4·5 로 보인다.
+       좌표는 손으로 적지 않고 그 식으로 뽑았다 — scripts 밖에 있는 숫자는
+       고칠 때 반드시 어긋난다. -->
+  <svg class="stage-svg" viewBox="88 241 1362 528" role="img"
+       aria-label="공간의 점 P 에서 평면으로 내린 수선의 발 H 와, 평면 위를 움직이는 점 Q 까지의 거리를 비교하는 모형">
+
+    <polygon class="plane-face" points="324,281 1440,623 1212,761 96,419"></polygon>
+
+    <line class="grid-line" x1="301.2" y1="294.8" x2="1417.2" y2="636.8"></line>
+    <line class="grid-line" x1="255.6" y1="322.4" x2="1371.6" y2="664.4"></line>
+    <line class="grid-line" x1="164.4" y1="377.6" x2="1280.4" y2="719.6"></line>
+    <line class="grid-line" x1="118.8" y1="405.2" x2="1234.8" y2="747.2"></line>
+    <line class="grid-line" x1="448" y1="319" x2="220" y2="457"></line>
+    <line class="grid-line" x1="634" y1="376" x2="406" y2="514"></line>
+    <line class="grid-line" x1="820" y1="433" x2="592" y2="571"></line>
+    <line class="grid-line" x1="1006" y1="490" x2="778" y2="628"></line>
+    <line class="grid-line" x1="1192" y1="547" x2="964" y2="685"></line>
+    <line class="grid-line" x1="1378" y1="604" x2="1150" y2="742"></line>
+
+    <!-- 빛은 평면에 수직으로 내리꽂힌다. 정사영이 곧 이 방향이다.
+         위로 갈수록 흐려지게 해서 막대가 아니라 빛으로 보이게 하고,
+         닿는 자리에 자국을 남긴다. 자국은 평면과 같은 각도로 눕는다. -->
+    <defs>
+      <linearGradient id="rayFade" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#e6b64f" stop-opacity="0"></stop>
+        <stop offset="1" stop-color="#e6b64f" stop-opacity=".62"></stop>
+      </linearGradient>
+    </defs>
+    <g class="sun-ray">
+      <line x1="987" y1="311.5" x2="987" y2="501.5"></line>
+      <line x1="1173" y1="368.5" x2="1173" y2="558.5"></line>
+      <line x1="1359" y1="425.5" x2="1359" y2="615.5"></line>
+    </g>
+    <g class="sun-spot">
+      <ellipse cx="987" cy="501.5" rx="17" ry="7" transform="rotate(17.04 987 501.5)"></ellipse>
+      <ellipse cx="1173" cy="558.5" rx="17" ry="7" transform="rotate(17.04 1173 558.5)"></ellipse>
+      <ellipse cx="1359" cy="615.5" rx="17" ry="7" transform="rotate(17.04 1359 615.5)"></ellipse>
+    </g>
+
+    <text class="lbl-s" x="924.8" y="652.2" text-anchor="middle">평면 α</text>
+
+    <!-- 삼각형이 평면에 떨어뜨리는 옅은 그늘 -->
+    <polygon id="shade" class="shade" points="830,540 830,540 830,540"></polygon>
+
+    <line id="segHQ" class="flat" x1="830" y1="540" x2="830" y2="540"></line>
+    <line id="segPQ" class="reach" x1="830" y1="281" x2="830" y2="540"></line>
+    <line class="drop" x1="830" y1="281" x2="830" y2="540"></line>
+
+    <path class="tick" d="M830 518 L848.6 523.7 L848.6 545.7"></path>
+
+    <circle class="pt-p" cx="830" cy="281" r="11"></circle>
+    <circle class="pt-h" cx="830" cy="540" r="9"></circle>
+    <circle id="ptQ" class="pt-q" cx="830" cy="540" r="9"></circle>
+
+    <text class="lbl lbl-w" x="852" y="272">P</text>
+    <!-- |PH| 값은 기둥 왼쪽에 둔다. 오른쪽은 Q 가 멀어질수록
+         PQ 선이 쓸고 지나가는 자리라 글자와 겹친다. -->
+    <text class="lbl lbl-w" x="808" y="352" text-anchor="end">4.00</text>
+    <text class="lbl lbl-g" x="830" y="600" text-anchor="middle">H</text>
+    <text id="lblQ" class="lbl" x="854" y="582">Q</text>
+    <text id="txtPQ" class="lbl lbl-g" x="890" y="400" opacity="0">4.00</text>
+  </svg>
+
+  <section class="meter" aria-labelledby="meterTitle">
+    <div class="meter-head">
       <span>LIVE</span>
-      <strong id="labTitle">Q 를 평면 위에서 움직여 본다</strong>
+      <strong id="meterTitle">Q 를 평면 위에서 움직여 본다</strong>
     </div>
-
-    <!-- 평면의 기저를 u=(33,10), v=(-20,12) 로 두고 H 를 (215,250) 에 놓았다.
-         세로 한 칸도 40px 가까이 되도록 맞춰서, 3·4·5 일 때 화면에서도
-         3·4·5 로 보이게 했다. 눈금이 어긋나면 학생이 손으로 검산할 수 없다. -->
-    <svg class="scene" viewBox="34 78 592 322" role="img"
-         aria-label="공간의 점 P 에서 평면으로 내린 수선의 발 H 와, 평면 위를 움직이는 점 Q 까지의 거리를 비교하는 모형">
-      <g class="grid">
-        <polygon class="plane-edge" points="209,194 605,314 485,386 89,266"></polygon>
-        <line class="grid-line" x1="169" y1="218" x2="565" y2="338"></line>
-        <line class="grid-line" x1="129" y1="242" x2="525" y2="362"></line>
-        <line class="grid-line" x1="308" y1="224" x2="188" y2="296"></line>
-        <line class="grid-line" x1="407" y1="254" x2="287" y2="326"></line>
-        <line class="grid-line" x1="506" y1="284" x2="386" y2="356"></line>
-      </g>
-      <text class="lbl-s" x="96" y="290">평면 α</text>
-
-      <!-- HQ : 평면 위의 이동 -->
-      <line id="segHQ" class="flat" x1="215" y1="250" x2="215" y2="250"></line>
-      <!-- PQ : 재는 거리 -->
-      <line id="segPQ" class="reach" x1="215" y1="112" x2="215" y2="250"></line>
-      <!-- PH : 수선, 곧 최단거리 -->
-      <line class="drop" x1="215" y1="112" x2="215" y2="250"></line>
-
-      <!-- H 에서의 직각 -->
-      <path class="tick" d="M215 236 L228.4 240.1 L228.4 254.1"></path>
-
-      <circle class="pt-p" cx="215" cy="112" r="7"></circle>
-      <circle class="pt-h" cx="215" cy="250" r="6"></circle>
-      <circle id="ptQ" class="pt-q" cx="215" cy="250" r="6"></circle>
-
-      <text class="lbl lbl-w" x="197" y="100">P</text>
-      <text class="lbl lbl-c" x="193" y="272">H</text>
-      <text id="lblQ" class="lbl" x="229" y="272">Q</text>
-
-      <text class="lbl lbl-w" x="203" y="190" text-anchor="end">4.00</text>
-      <text id="txtPQ" class="lbl lbl-c" x="250" y="178">4.00</text>
-    </svg>
 
     <div class="slider-row">
       <label for="dist">H 에서 Q 까지</label>
@@ -500,53 +494,59 @@ h1 .cool { color: var(--cool); }
 
     <div class="readout">
       <div class="w"><small>높이 |PH| — 고정</small><strong>4.000</strong></div>
-      <div class="c"><small>평면 위 이동 |HQ|</small><strong id="outHQ">0.000</strong></div>
+      <div class="g"><small>평면 위 이동 |HQ|</small><strong id="outHQ">0.000</strong></div>
       <div class="n is-min" id="cellPQ"><small>재는 거리 |PQ|</small><strong id="outPQ">4.000</strong></div>
     </div>
 
     <p class="verdict is-min" id="verdict">
       <b>지금이 최소다.</b> Q 가 H 위에 있다. 여기서 한 걸음이라도 옮기면 |PQ| 는 반드시 커진다.
     </p>
-
-    <div class="real">
-      <article>
-        <span>REAL 01 · 지붕 도면</span>
-        <h3>도면 넓이는 실제보다 늘 작다</h3>
-        <p>경사 45° 지붕의 도면 넓이가 14.14 m²라면 실제는 20 m²다. <code>S′ = S cos θ</code> 로 눌린 값이라 도면만 보고 자재를 사면 모자란다.</p>
-      </article>
-      <article>
-        <span>REAL 02 · 태양광 패널</span>
-        <h3>받는 에너지도 같은 코사인</h3>
-        <p>패널이 해를 마주 본 정도가 <code>n̂ · ŝ = cos α</code> 다. 태양에서 본 패널의 그림자 넓이가 곧 실효 넓이다.</p>
-      </article>
-    </div>
-
-    <div class="next-step">
-      <p>다음 시간에 학생이 직접 조작할 곳 — 투영 방향을 바꾸며 그림자 길이와 넓이를 기록한다.</p>
-      <a href="../../기하/기하_정사영.html">정사영 실험실 열기 →</a>
-    </div>
   </section>
-
 </main>
 
-<p class="foot">
-  탐구 운영실 · 교사 전용 시안 &nbsp;·&nbsp; 학생 제출 자료를 바탕으로 구성했고 공개 전 검토가 필요하다 &nbsp;·&nbsp;
-  화면의 수치는 |PQ| = √(|PH|² + |HQ|²) 로 그때그때 계산한다
-</p>
+<section class="strip">
+  <article class="card from-student">
+    <span>학생이 낸 질문</span>
+    <blockquote data-fill="question">여기에 학생이 적은 발문이 들어온다.</blockquote>
+    <p>탐색 계획 — <span data-fill="plan">여기에 학생이 적은 탐색 계획이 들어온다.</span></p>
+    <div class="tags">
+      <span>학생이 고른 개념이 이 자리에</span>
+    </div>
+  </article>
+
+  <article class="card">
+    <span>REAL 01 · 지붕 도면</span>
+    <h3>도면 넓이는 실제보다 늘 작다</h3>
+    <p>경사 45° 지붕의 도면 넓이가 14.14 m²라면 실제는 20 m²다. <code>S′ = S cos θ</code> 로 눌린 값이라 도면만 보고 자재를 사면 모자란다.</p>
+  </article>
+
+  <article class="card">
+    <span>REAL 02 · 태양광 패널</span>
+    <h3>받는 에너지도 같은 코사인</h3>
+    <p>패널이 해를 마주 본 정도가 <code>n̂ · ŝ = cos α</code> 다. 태양에서 본 패널의 그림자 넓이가 곧 실효 넓이다.</p>
+  </article>
+</section>
+
+<footer class="foot">
+  <p>교사 전용 시안 · 학생 제출 자료로 구성했고 공개 전 검토가 필요하다 · 화면의 수치는 |PQ| = √(|PH|² + |HQ|²) 로 그때그때 계산한다</p>
+  <a href="../../기하/기하_정사영.html">정사영 실험실 열기 →</a>
+</footer>
 
 <script>
 (function () {
   'use strict';
 
-  // 모형의 좌표. 화면 픽셀과 수학 단위를 여기서 한 번만 이어 둔다.
-  var PX = { hx: 215, hy: 250, py: 112 };   // H 와 P 의 화면 위치
-  var UX = 33, UY = 10;                     // 평면 위 한 칸의 화면 벡터
-  var H = 4;                                // |PH| = 4 (고정). 화면에서 138px = 4 × |u|
+  // 화면 픽셀과 수학 단위를 여기서 한 번만 잇는다.
+  var PX = { hx: 830, hy: 540, py: 281 };   // H 와 P 의 자리
+  var UX = 62, UY = 19;                     // 평면 위 한 칸 (|u| = 64.85px)
+  var VX = -38, VY = 23;                    // 평면의 깊이 방향 — 그늘을 이쪽으로 눕힌다
+  var H = 4;                                // |PH| = 4. 화면에서 259px = 4 × |u|
 
   var range = document.getElementById('dist');
   var out = document.getElementById('distOut');
   var segPQ = document.getElementById('segPQ');
   var segHQ = document.getElementById('segHQ');
+  var shade = document.getElementById('shade');
   var ptQ = document.getElementById('ptQ');
   var lblQ = document.getElementById('lblQ');
   var txtPQ = document.getElementById('txtPQ');
@@ -566,14 +566,19 @@ h1 .cool { color: var(--cool); }
     segPQ.setAttribute('y2', qy);
     ptQ.setAttribute('cx', qx);
     ptQ.setAttribute('cy', qy);
-    lblQ.setAttribute('x', qx + 13);
-    lblQ.setAttribute('y', qy + 23);
+    lblQ.setAttribute('x', qx + 24);
+    lblQ.setAttribute('y', qy + 42);
+
+    // 삼각형이 평면에 남기는 옅은 그늘. 평면의 깊이 방향으로 눕는다.
+    shade.setAttribute('points',
+      PX.hx + ',' + PX.hy + ' ' + qx + ',' + qy + ' ' +
+      (qx + 0.74 * VX) + ',' + (qy + 0.74 * VY));
 
     var pq = Math.sqrt(H * H + d * d);
     // d 가 0 이면 PQ 와 PH 가 겹친다. 같은 값을 두 번 적지 않는다.
     txtPQ.setAttribute('opacity', d < 0.25 ? '0' : '1');
-    txtPQ.setAttribute('x', (PX.hx + qx) / 2 + 16);
-    txtPQ.setAttribute('y', (PX.py + qy) / 2 - 4);
+    txtPQ.setAttribute('x', (PX.hx + qx) / 2 + 22);
+    txtPQ.setAttribute('y', (PX.py + qy) / 2 - 8);
     txtPQ.textContent = pq.toFixed(2);
 
     out.textContent = d.toFixed(1);
@@ -588,7 +593,7 @@ h1 .cool { color: var(--cool); }
       verdict.innerHTML = '<b>지금이 최소다.</b> Q 가 H 위에 있다. ' +
         '여기서 한 걸음이라도 옮기면 |PQ| 는 반드시 커진다.';
     } else {
-      // 3-4-5 삼각형은 학생이 손으로 검산하기 좋은 자리다. 지나칠 때 짚어 준다.
+      // 3-4-5 는 학생이 손으로 검산하기 좋은 자리다. 지나칠 때 짚어 준다.
       var extra = Math.abs(d - 3) < 0.05
         ? ' 지금은 3·4·5 직각삼각형이라 손으로도 확인된다.'
         : '';
@@ -601,11 +606,24 @@ h1 .cool { color: var(--cool); }
   range.addEventListener('input', draw);
   draw();
 
+  /* 넓은 판에서는 평면이 왼쪽으로 길게 뻗어 제목 밑을 지난다.
+     화면이 좁아지면 그 뻗은 자리는 쓸모가 없고 그림만 납작해진다.
+     그때는 P·H·Q 둘레만 남기고 잘라 낸다. */
+  var stage = document.querySelector('.stage-svg');
+  var WIDE = '88 241 1362 528';
+  var TIGHT = '722 245 690 524';
+  var narrow = window.matchMedia('(max-width: 1080px)');
+
+  function fitStage() {
+    stage.setAttribute('viewBox', narrow.matches ? TIGHT : WIDE);
+  }
+  if (narrow.addEventListener) narrow.addEventListener('change', fitStage);
+  else narrow.addListener(fitStage);
+  fitStage();
+
   /* ── 학생 정보 채우기 ──────────────────────────────────────────
-     선생님 컴퓨터에만 있는 data-private 를 읽어 이름과 질문을 넣는다.
-     공개 사이트에는 그 파일이 없으므로 조용히 실패하고 기본 문구가 남는다.
-     학생 이름을 이 파일에 적지 않는 이유는, 저장소가 공개이고
-     auth.js 는 화면만 가릴 뿐 소스를 가리지 못하기 때문이다. */
+     선생님 컴퓨터에만 있는 data-private 를 읽어 이름과 발문을 넣는다.
+     공개 사이트에는 그 파일이 없으므로 조용히 실패하고 자리표시가 남는다. */
   var SEED_ID = document.body.getAttribute('data-inquiry') || '';
   if (!SEED_ID) return;
 
@@ -628,22 +646,20 @@ h1 .cool { color: var(--cool); }
       if (it.question) put('question', '“' + it.question + '”');
       put('plan', it.explorationPlan);
 
-      var meta = document.querySelector('.meta');
-      if (meta && Array.isArray(it.concepts) && it.concepts.length) {
-        var std = meta.querySelector('.std');
-        meta.innerHTML = '';
+      var tags = document.querySelector('.tags');
+      if (tags && Array.isArray(it.concepts) && it.concepts.length) {
+        tags.innerHTML = '';
         it.concepts.forEach(function (c) {
           var el = document.createElement('span');
           el.textContent = c;
-          meta.appendChild(el);
+          tags.appendChild(el);
         });
         (it.curriculumStandards || []).forEach(function (c) {
           var el = document.createElement('span');
           el.className = 'std';
           el.textContent = c;
-          meta.appendChild(el);
+          tags.appendChild(el);
         });
-        void std;
       }
     })
     .catch(function () { /* 공개 사이트에는 없는 파일이다. 그대로 둔다. */ });
