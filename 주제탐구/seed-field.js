@@ -1,4 +1,4 @@
-/* 씨앗밭 — 탐구 씨앗을 교과·급으로 거르고 말로 찾는다.
+/* 씨앗밭 — 탐구 씨앗을 교과로 거르고 말로 찾는다.
    데이터는 seeds.js 와 seeds-bank.js 에만 있다. 이 파일은 그리기만 한다.
 
    씨앗은 출처마다 가진 항목이 다르다. 마이닝 씨앗은 교육과정 관계와
@@ -18,7 +18,7 @@
     if (!root || !DB) return null;
 
     var seeds = DB.all();
-    var state = { subject: 'all', grade: 'all', q: '' };
+    var state = { subject: 'all', q: '' };
 
     // 급이 높은 것부터, 같으면 과목 차례대로.
     var subjectOrder = Object.keys(DB.SUBJECT);
@@ -27,10 +27,6 @@
       if (ga !== gb) return ga - gb;
       return subjectOrder.indexOf(a.subject) - subjectOrder.indexOf(b.subject);
     });
-
-    var grades = Object.keys(DB.GRADE)
-      .filter(function (g) { return seeds.some(function (s) { return s.grade === g; }); })
-      .sort(function (a, b) { return DB.GRADE[a].rank - DB.GRADE[b].rank; });
 
     var subjects = subjectOrder
       .filter(function (k) { return seeds.some(function (s) { return s.subject === k; }); });
@@ -56,13 +52,6 @@
               count(function (s) { return s.subject; }, k), false);
           }).join('') +
         '</div></div>' +
-        '<div class="sd-row"><span class="sd-row-label">급</span><div class="sd-chips">' +
-          chip('grade', 'all', '전체', seeds.length, true) +
-          grades.map(function (g) {
-            return chip('grade', g, g, count(function (s) { return s.grade; }, g),
-              false, DB.GRADE[g].desc);
-          }).join('') +
-        '</div></div>' +
         '<div class="sd-row"><span class="sd-row-label">찾기</span>' +
           '<input type="search" class="sd-search" placeholder="질문·개념·상황으로 찾기" ' +
             'aria-label="씨앗 찾기">' +
@@ -86,8 +75,9 @@
       return value ? '<dt>' + esc(term) + '</dt><dd>' + value + '</dd>' : '';
     }
 
+    // 제작 순위와 7축 점수도 급과 같은 내부 우선순위다. 같은 규칙으로 가린다.
     function scoreBars(s) {
-      if (!s.score) return '';
+      if (!s.score || !showGrade(s)) return '';
       return '<div class="sd-score">' +
         '<div class="sd-score-head"><b>제작 ' + s.score.rank + '순위</b>' +
           '<span>' + s.score.total + ' / 35</span></div>' +
@@ -103,10 +93,25 @@
         '</div></div>';
     }
 
+    // 급은 제작 우선순위지 학생이 고를 기준이 아니다. 학생에게는 감춘다.
+    // 그 씨앗의 Deep Dive 가 열렸을 때, 또는 교사 화면일 때만 보인다.
+    function teacherMode() {
+      try { return sessionStorage.getItem('jp-classroom-access-v1') === 'granted'; }
+      catch (e) { return false; }
+    }
+
+    function showGrade(s) {
+      if (teacherMode()) return true;
+      return !!(window.JPDeepDiveUI && window.JPDeepDiveUI.isOpen
+        && window.JPDeepDiveUI.isOpen(s.id));
+    }
+
     function badges(s) {
-      var out = '<span class="sd-subject">' + esc(DB.SUBJECT[s.subject].label) + '</span>' +
-                '<span class="sd-gradechip" title="' + esc(DB.GRADE[s.grade].desc) + '">' +
-                  esc(s.grade) + '</span>';
+      var out = '<span class="sd-subject">' + esc(DB.SUBJECT[s.subject].label) + '</span>';
+      if (showGrade(s)) {
+        out += '<span class="sd-gradechip" title="' + esc(DB.GRADE[s.grade].desc) + '">' +
+               esc(s.grade) + '</span>';
+      }
       if (s.relation) {
         out += '<span class="sd-rel" title="' + esc(DB.RELATION[s.relation].desc) + '">' +
                esc(DB.RELATION[s.relation].label) + '</span>';
@@ -178,7 +183,6 @@
 
     function matches(s) {
       if (state.subject !== 'all' && s.subject !== state.subject) return false;
-      if (state.grade !== 'all' && s.grade !== state.grade) return false;
       if (state.q && haystack(s).indexOf(state.q) < 0) return false;
       return true;
     }
@@ -208,6 +212,9 @@
       state.q = e.target.value.trim().toLowerCase();
       render();
     });
+
+    // Deep Dive 가 열리면 그 씨앗의 급이 드러나야 하므로 다시 그린다.
+    document.addEventListener('jp-deep-dive-unlocked', function () { render(); });
 
     render();
     return { render: render, seeds: seeds };

@@ -243,4 +243,31 @@ assert.match(
 );
 assert.match(inquiryHtml, /seeds-bank\.js/, '주제탐구가 뱅크 씨앗을 불러와야 한다.');
 
+
+// 급은 제작 우선순위지 학생이 주제를 고르는 기준이 아니다.
+// 학생에게는 감추고, 그 씨앗의 Deep Dive 가 열렸거나 교사 화면일 때만 보인다.
+const fieldJs = fs.readFileSync('주제탐구/seed-field.js', 'utf8');
+assert.match(fieldJs, /function showGrade\(/, '급을 언제 보일지 정하는 규칙이 있어야 한다.');
+assert.match(
+  fieldJs,
+  /if \(showGrade\(s\)\)\s*\{[\s\S]{0,200}sd-gradechip/,
+  '급 표시는 showGrade 를 통과할 때만 그려야 한다.'
+);
+assert.match(
+  fieldJs,
+  /if \(!s\.score \|\| !showGrade\(s\)\) return ''/,
+  '제작 순위와 점수도 급과 같은 규칙으로 가려야 한다.'
+);
+assert.doesNotMatch(fieldJs, /data-value="S\+/, '급 거르개를 학생 화면에 두지 않는다.');
+assert.match(fieldJs, /jp-classroom-access-v1/, '교사 화면에서는 급이 보여야 한다.');
+
+const deepDiveJs = fs.readFileSync('주제탐구/deep-dive.js', 'utf8');
+assert.match(deepDiveJs, /isOpen: isOpen/, 'Deep Dive 가 해금 여부를 알려 주어야 한다.');
+assert.match(
+  deepDiveJs,
+  /jp-deep-dive-unlocked/,
+  '해금되면 씨앗밭이 다시 그릴 수 있게 알려야 한다.'
+);
+assert.match(fieldJs, /jp-deep-dive-unlocked/, '씨앗밭이 해금 알림을 들어야 한다.');
+
 console.log('first playable prototype tests: ok');
