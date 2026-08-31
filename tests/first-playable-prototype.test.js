@@ -241,7 +241,9 @@ assert.match(
   /손으로 고치지 않는다/,
   '뱅크 파일에 손대지 말라는 표시가 있어야 한다.'
 );
-assert.match(inquiryHtml, /seeds-bank\.js/, '주제탐구가 뱅크 씨앗을 불러와야 한다.');
+// 뱅크 씨앗 96개는 이제 카탈로그 안에 들어 있다. 같은 것을 두 번 보내지 않는다.
+assert.doesNotMatch(inquiryHtml, /seeds-bank\.js/, '뱅크 파일을 따로 더 보내지 않는다.');
+assert.match(inquiryHtml, /seeds-catalog-2000\.js/, '씨앗은 카탈로그로 받는다.');
 
 
 // 급과 제작 순위는 학생 화면에 없다. 감추는 것이 아니라 아예 그리지 않는다.
