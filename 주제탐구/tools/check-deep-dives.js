@@ -306,18 +306,18 @@ console.log('깊이 탐구 표 검산');
   });
 }
 
-/* ── 기하 ── */
-
-// 시야 판정: h·e = cos θ, 시야각 90° 경계는 cos45°
-{
-  const id = 'GEO-VEC-DOT-FOV-001';
-  const bound = Math.cos(Math.PI / 4);
-  [0, 30, 45, 60, 120].forEach((deg, r) => {
-    const dot = Math.cos(deg * Math.PI / 180);
-    expect(id, r, 0, deg, 1e-9, 'θ');
-    expect(id, r, 1, dot, 5e-4, 'h·e');
-    same(id, r, 2, dot >= bound - 1e-9 ? '감지' : '미감지', '판정');
-  });
+/* ── 과목별 검산 파일 ── */
+// tools/checks-*.js 를 모두 불러 쓴다. 과목이 늘어도 이 줄은 그대로다.
+const api = {
+  items,
+  cell,
+  fail,
+  expect,
+  same,
+  bump: function (n) { checked += (n || 1); }
+};
+for (const file of fs.readdirSync(__dirname).filter((f) => /^checks-.+\.js$/.test(f)).sort()) {
+  require(path.join(__dirname, file))(api);
 }
 
 /* ── 결과 ── */

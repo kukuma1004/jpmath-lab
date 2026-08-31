@@ -139,3 +139,14 @@ body.dd-open { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) {
   .sd-deep-entry button, .dd-enemy { transition: none; }
 }
+
+/* 실험실 페이지가 아직 없는 주제. 없는 것을 있는 척하지 않는다. */
+.dd-noasset {
+  display: inline-block;
+  padding: 10px 16px;
+  font: 600 13px/1.4 "IBM Plex Mono", monospace;
+  color: #5e625d;
+  background: #f3f1ea;
+  border: 1px dashed #cfd3c9;
+  border-radius: 999px;
+}

@@ -120,8 +120,12 @@
         var no = (i + 1 < 10 ? '0' : '') + (i + 1);
         return section(no + ' · ' + x[0], x[1], x[2], x[3]);
       }).join('') +
+      // 아직 실험실 페이지가 없는 과목도 있다. 없으면 없다고 적는다.
       '<footer class="dd-footer"><p>이제 설명을 읽는 데서 멈추지 말고 값을 움직여 확인하세요.</p>' +
-        '<a href="' + esc(item.asset.href) + '">' + esc(item.asset.label) + ' →</a></footer>';
+        (item.asset
+          ? '<a href="' + esc(item.asset.href) + '">' + esc(item.asset.label) + ' →</a>'
+          : '<span class="dd-noasset">이 주제의 실험실은 아직 없다. 직접 만들어 볼 차례다.</span>') +
+      '</footer>';
   }
 
   function experimentTemplate() {
