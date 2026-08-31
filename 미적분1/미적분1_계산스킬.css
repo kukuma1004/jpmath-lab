@@ -108,13 +108,29 @@
 .boss-v2.boss-boundary.boss-boundary-cross .boss-art-frame{animation:boundarySeam .62s cubic-bezier(.2,.8,.25,1)}
 .boss-v2.boss-boundary.boss-phase-two .boss-arena{background:radial-gradient(circle at 12% 36%,rgba(103,83,239,.34),transparent 37%),radial-gradient(circle at 38% 36%,rgba(241,176,54,.3),transparent 37%),linear-gradient(90deg,#11152d 0 29%,#291b2c 50%,#392711 72%,#19160e)}
 .boss-v2.boss-boundary.boss-phase-three .boss-arena{background:radial-gradient(circle at 12% 36%,rgba(121,88,255,.4),transparent 39%),radial-gradient(circle at 39% 36%,rgba(255,186,48,.38),transparent 39%),linear-gradient(90deg,#12142f 0 28%,#321b31 50%,#442b0d 73%,#1d180b)}
+.boss-v2.boss-stitch .boss-arena{background:radial-gradient(circle at 17% 34%,rgba(52,191,154,.3),transparent 37%),radial-gradient(circle at 40% 33%,rgba(233,183,74,.2),transparent 35%),linear-gradient(145deg,#081b18,#12372f 60%,#211d12)}
+.boss-v2.boss-stitch .boss-aura{border-color:rgba(115,235,199,.5);box-shadow:0 0 58px rgba(47,194,151,.3),inset 0 0 34px rgba(232,197,100,.18)}
+.boss-v2.boss-stitch .boss-hp-track div{background:linear-gradient(90deg,#2b765f,#3bbd91 58%,#f2ce70)}
+.boss-v2.boss-stitch .boss-art-frame{border-color:rgba(105,226,191,.34);box-shadow:0 18px 38px rgba(0,0,0,.32),0 0 0 1px rgba(231,196,101,.08)}
+.boss-v2.boss-stitch .boss-art-frame::before{content:'';position:absolute;inset:0;z-index:2;background:linear-gradient(115deg,transparent 0 43%,rgba(255,219,111,.12) 47%,transparent 51% 100%);background-size:240% 100%;pointer-events:none}
+.boss-v2.boss-stitch .boss-combat-stats div:last-child b{color:#f7d777;text-shadow:0 0 13px rgba(241,198,79,.42)}
+.boss-v2.boss-stitch.boss-regenerating .boss-aura{animation:auraPulse 1.05s ease-in-out infinite;box-shadow:0 0 68px rgba(47,218,164,.43),inset 0 0 40px rgba(243,203,101,.2)}
+.boss-v2.boss-stitch.boss-stitch-sealed .boss-aura{border-color:rgba(250,218,119,.72);box-shadow:0 0 70px rgba(244,203,83,.42),inset 0 0 42px rgba(66,224,177,.2)}
+.boss-v2.boss-stitch.boss-stitch-sealed .boss-art-frame{border-color:rgba(255,219,111,.7);box-shadow:0 0 34px rgba(238,199,84,.38),0 18px 38px rgba(0,0,0,.32)}
+.boss-v2.boss-stitch.boss-stitch-complete .boss-art-frame{animation:stitchSeal .62s cubic-bezier(.2,.82,.24,1)}
+.boss-v2.boss-stitch.boss-heal-pulse .boss-art-frame{animation:stitchHeal .82s ease}
+.boss-v2.boss-stitch.boss-phase-two .boss-arena{background:radial-gradient(circle at 17% 34%,rgba(45,208,165,.36),transparent 39%),radial-gradient(circle at 41% 33%,rgba(243,177,62,.25),transparent 37%),linear-gradient(145deg,#071d19,#154337 60%,#2a2110)}
+.boss-v2.boss-stitch.boss-phase-three .boss-arena{background:radial-gradient(circle at 18% 34%,rgba(40,235,179,.43),transparent 41%),radial-gradient(circle at 42% 33%,rgba(255,178,45,.33),transparent 39%),linear-gradient(145deg,#061e19,#174e3d 58%,#34250c)}
+.boss-heal-impact{left:22%;top:30%;color:#092a20;background:#71e6b7;border-color:rgba(219,255,241,.72);box-shadow:0 0 32px rgba(87,239,180,.62)}
 @keyframes mathStrike{0%{opacity:0;transform:translate(0,0) scale(.35)}20%{opacity:1}80%{opacity:1;transform:translate(-330%,-230%) scale(.78)}100%{opacity:0;transform:translate(-380%,-260%) scale(1.65)}}
 @keyframes bossCounter{0%{opacity:0;transform:translate(0,0) scale(.4)}18%{opacity:1}78%{opacity:1;transform:translate(300%,230%) scale(.82)}100%{opacity:0;transform:translate(340%,260%) scale(1.5)}}
 @keyframes impactPop{0%{opacity:0;transform:translateY(12px) scale(.5)}35%{opacity:1;transform:translateY(-5px) scale(1.08)}100%{opacity:0;transform:translateY(-32px) scale(.92)}}
 @keyframes chaosSplitPulse{from{transform:translateX(-3px) scale(.995)}to{transform:translateX(3px) scale(1.018)}}
 @keyframes boundarySeam{0%{filter:brightness(1);transform:scale(1)}35%{filter:brightness(1.5);transform:scale(1.035);box-shadow:-25px 0 48px rgba(107,90,255,.48),25px 0 48px rgba(255,191,61,.46)}100%{filter:brightness(1);transform:scale(1)}}
+@keyframes stitchHeal{0%{filter:brightness(1);transform:scale(1)}35%{filter:brightness(1.25) saturate(1.2);transform:scale(1.025);box-shadow:0 0 38px rgba(80,235,177,.48)}100%{filter:brightness(1);transform:scale(1)}}
+@keyframes stitchSeal{0%{filter:brightness(1);transform:scale(1)}38%{filter:brightness(1.5) saturate(1.25);transform:scale(1.04);box-shadow:0 0 46px rgba(252,210,91,.62)}100%{filter:brightness(1);transform:scale(1)}}
 @media(max-width:700px){.boss-art-frame{width:min(300px,96%)}.boss-v2 .boss-aura{width:205px;height:205px}.boss-impact{left:31%;top:35%}.boss-impact.counter-impact{left:54%;top:70%}}
-@media(prefers-reduced-motion:reduce){.boss-art,.boss-projectile,.boss-impact,.boss-boundary-cross .boss-art-frame{animation:none!important;transition:none!important}.boss-projectile,.boss-impact{display:none}}
+@media(prefers-reduced-motion:reduce){.boss-art,.boss-projectile,.boss-impact,.boss-boundary-cross .boss-art-frame,.boss-stitch-complete .boss-art-frame,.boss-heal-pulse .boss-art-frame{animation:none!important;transition:none!important}.boss-projectile,.boss-impact{display:none}}
 
 /* 모바일 전투 조종석: 문제를 풀면서도 보스·HP·시간이 항상 보인다. */
 @media(max-width:700px){
@@ -141,7 +157,8 @@
   .boss-v2 .boss-progress{gap:5px;margin:0 3px 11px}
   .boss-v2 .boss-node{height:5px}
   .boss-v2 .question-topline{font-size:8px}
-  .boss-v2 .question-equation{margin:15px 0 8px;padding:14px 7px}
+  .boss-v2 .question-equation{margin:15px 0 8px;padding:14px 7px;font-size:clamp(15px,4.2vw,18px)}
+  .boss-v2 .question-equation .katex{font-size:1.12em}
   .boss-v2 .question-prompt{margin:12px 0 14px;font-size:17px}
   .boss-v2 .answer-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
   .boss-v2 .answer-btn{min-height:56px;padding:7px;font-size:15px}

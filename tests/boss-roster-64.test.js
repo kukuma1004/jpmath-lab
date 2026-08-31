@@ -21,13 +21,13 @@ for(const boss of catalog.bosses){
 }
 
 const playable=catalog.bosses.filter(x=>x.status==='playable');
-assert.equal(playable.length,6,'현재 실제 플레이 가능한 보스는 여섯 종이어야 한다.');
-assert.deepEqual([...playable.map(x=>x.name)].sort(),['미분의 철갑수','인수분해의 문지기','켤레의 연금술사','무한비의 거신','미정형의 혼돈수','양면의 경계자'].sort());
+assert.equal(playable.length,7,'현재 실제 플레이 가능한 보스는 일곱 종이어야 한다.');
+assert.deepEqual([...playable.map(x=>x.name)].sort(),['미분의 철갑수','인수분해의 문지기','켤레의 연금술사','무한비의 거신','미정형의 혼돈수','양면의 경계자','연속의 봉합사'].sort());
 
 const hall=fs.readFileSync('보스전/index.html','utf8');
 const hallCss=fs.readFileSync('보스전/boss-hall.css','utf8');
 const calcCss=fs.readFileSync('미적분1/미적분1_계산스킬.css','utf8');
-assert.match(hall,/boss-catalog\.js\?v=6/);
+assert.match(hall,/boss-catalog\.js\?v=7/);
 assert.match(hall,/boss-hall\.js\?v=1/);
 assert.match(hall,/derivative-iron-beast\.webp/,'보스전 홀도 실제 철갑수 이미지를 사용해야 한다.');
 assert.match(hallCss,/boss-archive-grid/);
@@ -38,5 +38,6 @@ assert.ok(fs.existsSync('assets/bosses/conjugate-alchemist.jpg'),'켤레의 연�
 assert.ok(fs.existsSync('assets/bosses/infinite-ratio-colossus.jpg'),'무한비의 거신 캐릭터 이미지가 있어야 한다.');
 assert.ok(fs.existsSync('assets/bosses/indeterminate-chaos-beast.jpg'),'미정형의 혼돈수 캐릭터 이미지가 있어야 한다.');
 assert.ok(fs.existsSync('assets/bosses/two-faced-boundary-warden.jpg'),'양면의 경계자 캐릭터 이미지가 있어야 한다.');
+assert.ok(fs.existsSync('assets/bosses/continuity-stitcher.jpg'),'연속의 봉합사 캐릭터 이미지가 있어야 한다.');
 
 console.log('64 boss roster and mobile cockpit tests: ok');
