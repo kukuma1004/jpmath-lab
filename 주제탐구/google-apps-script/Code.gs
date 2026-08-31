@@ -462,7 +462,8 @@ function submitProjectRecord(payload) {
 
     const now = new Date();
     const hasExecution = Boolean(fields.processRecord || fields.evidence || fields.artifactLink);
-    const stage = saveMode === 'final' ? '전시 검토' : (hasExecution ? '탐구 수행·제작' : '탐구 설계');
+    const hasAnalysis = Boolean(fields.mathInterpretation || fields.conclusion || fields.limitations || fields.nextQuestion);
+    const stage = saveMode === 'final' ? '전시 검토' : (hasAnalysis ? '수학적 해석·결론' : (hasExecution ? '탐구 수행·제작' : '탐구 설계'));
     const record = {
       '제출ID': existing ? existing['제출ID'] : Utilities.getUuid(),
       '제출시각': existing ? existing['제출시각'] : now,
@@ -1103,6 +1104,14 @@ function buildManagerLiveFeed_() {
   const responseItems = items.filter(function (item) { return item.response; });
   const projectItems = items.filter(function (item) { return item.project; });
   const exhibitionItems = items.filter(function (item) { return item.exhibition; });
+  const responseCompletedStudents = roster.filter(function (student) {
+    const code = normalizeCode_(student['학생코드']);
+    const studentPrompts = prompts.filter(function (prompt) { return normalizeCode_(prompt['학생코드']) === code; });
+    return studentPrompts.length >= TARGET_INTAKE_COUNT && studentPrompts.every(function (prompt) {
+      const response = latestResponse[[code, prompt['탐구ID'], prompt['발문버전']].join('|')];
+      return response && (response['교사검토상태'] || '검토 대기') !== '작성 중';
+    });
+  }).length;
   return {
     ok: true,
     syncedAt: Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss'),
@@ -1117,6 +1126,7 @@ function buildManagerLiveFeed_() {
       prompts: items.filter(function (item) { return item.prompt; }).length,
       responseDrafts: responseItems.filter(function (item) { return item.response.reviewStatus === '작성 중'; }).length,
       responseSubmitted: responseItems.filter(function (item) { return item.response.reviewStatus !== '작성 중'; }).length,
+      responseCompletedStudents: responseCompletedStudents,
       projectDrafts: projectItems.filter(function (item) { return item.project.submissionStatus === '작성 중'; }).length,
       projectSubmitted: projectItems.filter(function (item) { return item.project.submissionStatus === '최종 제출'; }).length,
       exhibitionReview: exhibitionItems.filter(function (item) { return item.exhibition.status === '전시 검토'; }).length,

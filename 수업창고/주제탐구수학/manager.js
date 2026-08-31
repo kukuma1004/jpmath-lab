@@ -407,7 +407,18 @@
       document.getElementById('metricInquiries').textContent = stats.intakes;
       document.getElementById('metricPrompts').textContent = stats.prompts;
       document.getElementById('metricDraftResponses').textContent = stats.responseDrafts;
-      document.getElementById('metricSubmittedResponses').textContent = stats.responseSubmitted;
+      var completedResponseStudents = {};
+      state.inquiries.forEach(function (item) {
+        var key = item.studentCode || item.studentId;
+        if (!key) return;
+        if (!completedResponseStudents[key]) completedResponseStudents[key] = { total: 0, submitted: 0 };
+        completedResponseStudents[key].total += 1;
+        if (item.response && item.response.reviewStatus !== '작성 중') completedResponseStudents[key].submitted += 1;
+      });
+      var completedStudentCount = Object.keys(completedResponseStudents).filter(function (key) {
+        return completedResponseStudents[key].total >= 2 && completedResponseStudents[key].submitted === completedResponseStudents[key].total;
+      }).length;
+      document.getElementById('metricSubmittedResponses').textContent = stats.responseCompletedStudents == null ? completedStudentCount : stats.responseCompletedStudents;
       document.getElementById('metricProjects').textContent = (stats.projectDrafts || 0) + ' / ' + (stats.projectSubmitted || 0);
       document.getElementById('metricExhibitions').textContent = (stats.exhibitionReview || 0) + ' / ' + (stats.exhibitionApproved || 0);
       updateWorkflowSummary();

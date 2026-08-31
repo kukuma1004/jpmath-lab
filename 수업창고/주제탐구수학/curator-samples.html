@@ -9,8 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=Noto+Serif+KR:wght@700;900&amp;display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="curator-samples.css?v=1">
-  <script src="curator-samples.js?v=3" defer></script>
+  <link rel="stylesheet" href="curator-samples.css?v=2">
+  <script src="curator-samples.js?v=4" defer></script>
 </head>
 <body>
   <header class="sample-header">
@@ -27,14 +27,14 @@
 
   <main>
     <section class="sample-scene is-active" id="scene-conic" data-scene="conic" aria-labelledby="conicTitle">
-      <img class="scene-photo" src="assets/curator-samples/lee-conic-lab.png" alt="투명한 이중 원뿔 모형을 빛의 평면이 비스듬히 자르는 실제 실험 장면">
-      <div class="scene-shade"></div>
       <article class="scene-copy">
         <p class="scene-kicker">기하 · 탐구 설계 시각화 01</p>
         <h1 id="conicTitle">평면을 기울이면<br><em>곡선의 정체가 바뀐다.</em></h1>
         <p class="scene-question">“절단평면의 각도를 바꾸면 원뿔의 단면은 어떻게 달라질까?”</p>
         <div class="answer-anchor"><strong>발문 답변에서 잡은 핵심</strong><span>운영실에서 학생을 선택하면 이 자리에 해당 학생의 실제 질문과 답변 근거가 표시됩니다.</span></div>
       </article>
+      <div class="scene-visual">
+        <figure class="photo-frame"><img class="scene-photo" src="assets/curator-samples/lee-conic-lab.png" alt="투명한 이중 원뿔 모형을 빛의 평면이 비스듬히 자르는 실제 실험 장면"><figcaption><span>REAL CONTEXT 01</span> 빛과 투명 모형으로 확인하는 원뿔 절단</figcaption></figure>
       <aside class="lab-panel" aria-label="원뿔 절단각 조작 실험">
         <div class="lab-head"><span>LIVE CUT</span><strong id="conicType">타원</strong></div>
         <svg class="conic-model" viewBox="0 0 520 260" role="img" aria-label="절단각에 따라 변하는 원뿔 단면 모형">
@@ -49,18 +49,18 @@
         <input id="cutAngle" type="range" min="10" max="70" value="52">
         <div class="lab-metrics"><div><small>모선각 a</small><strong>35°</strong></div><div><small>경계값 b-a</small><strong id="angleGap">+17°</strong></div><div><small>판정</small><strong id="conicRule">b &gt; a</strong></div></div>
         <p class="student-task">학생 작업: 경계 전·후의 값을 직접 대입하고, 화면 판정과 단면 방정식의 계수 부호가 일치하는지 기록한다.</p>
-      </aside>
+      </aside></div>
     </section>
 
     <section class="sample-scene" id="scene-integral" data-scene="integral" aria-labelledby="integralTitle" hidden>
-      <img class="scene-photo" src="assets/curator-samples/kim-integral-track.png" alt="학교 운동장 트랙을 달리며 방향을 바꾸는 실제 주자 장면">
-      <div class="scene-shade"></div>
       <article class="scene-copy">
         <p class="scene-kicker">미적분Ⅰ · 탐구 설계 시각화 02</p>
         <h1 id="integralTitle">되돌아온 거리도<br><em>없어진 것은 아니다.</em></h1>
         <p class="scene-question">“속도의 부호를 고려한 누적과 전체 이동량의 누적은 무엇이 다를까?”</p>
         <div class="answer-anchor"><strong>발문 답변에서 잡은 핵심</strong><span>운영실에서 학생을 선택하면 이 자리에 해당 학생의 실제 질문과 답변 근거가 표시됩니다.</span></div>
       </article>
+      <div class="scene-visual">
+        <figure class="photo-frame"><img class="scene-photo" src="assets/curator-samples/kim-integral-track.png" alt="학교 운동장 트랙을 달리며 방향을 바꾸는 실제 주자 장면"><figcaption><span>REAL CONTEXT 02</span> 실제 달리기 장면에서 읽는 방향과 누적량</figcaption></figure>
       <aside class="lab-panel" aria-label="변위와 이동거리 누적 실험">
         <div class="lab-head"><span>MOTION LAB</span><button id="motionToggle" type="button">▶ 움직이기</button></div>
         <div class="track-line" aria-hidden="true"><i class="track-start"></i><span id="runnerDot" class="runner-dot">●</span><i class="track-turn"></i></div>
@@ -75,18 +75,18 @@
         <input id="motionTime" type="range" min="0" max="100" value="0">
         <div class="lab-metrics"><div><small>현재 속도</small><strong id="currentVelocity">+4.0</strong></div><div><small>변위 ∫vdt</small><strong id="displacement">0.0 m</strong></div><div><small>이동거리 ∫|v|dt</small><strong id="distance">0.0 m</strong></div></div>
         <p class="student-task">학생 작업: 방향이 바뀌는 시점을 바꿔 보고, 두 누적값이 언제 같고 언제 달라지는지 설명한다.</p>
-      </aside>
+      </aside></div>
     </section>
 
     <section class="sample-scene" id="scene-vector" data-scene="vector" aria-labelledby="vectorTitle" hidden>
-      <img class="scene-photo" src="assets/curator-samples/park-vector-atrium.png" alt="유리 벽면 옆을 드론이 이동하는 실제 건축 공간 장면">
-      <div class="scene-shade"></div>
       <article class="scene-copy">
         <p class="scene-kicker">기하 · 탐구 설계 시각화 03</p>
         <h1 id="vectorTitle">드론의 길과 벽면은<br><em>만날까, 스쳐 갈까?</em></h1>
         <p class="scene-question">“방향벡터와 법선벡터로 직선과 평면의 위치 관계를 어떻게 판정할까?”</p>
         <div class="answer-anchor"><strong>발문 답변에서 잡은 핵심</strong><span>운영실에서 학생을 선택하면 이 자리에 해당 학생의 실제 질문과 답변 근거가 표시됩니다.</span></div>
       </article>
+      <div class="scene-visual">
+        <figure class="photo-frame"><img class="scene-photo" src="assets/curator-samples/park-vector-atrium.png" alt="유리 벽면 옆을 드론이 이동하는 실제 건축 공간 장면"><figcaption><span>REAL CONTEXT 03</span> 건축 공간과 드론 경로로 보는 직선·평면</figcaption></figure>
       <aside class="lab-panel" aria-label="드론 경로와 벽면 관계 조작 실험">
         <div class="lab-head"><span>SPACE TEST</span><strong id="vectorRelation">평면과 비스듬히 만남</strong></div>
         <div class="space-model" aria-hidden="true">
@@ -100,7 +100,7 @@
         <input id="pathSpeed" type="range" min="0" max="100" value="50">
         <div class="lab-metrics"><div><small>방향벡터 d</small><strong id="directionVector">(1, .45, 0)</strong></div><div><small>d·n</small><strong id="dotProduct">0.45</strong></div><div><small>판정</small><strong id="relationRule">교차</strong></div></div>
         <p class="student-task">학생 작업: 평행·수직·비스듬한 교차 값을 각각 저장하고, 직접 계산한 내적과 화면 판정이 일치하는지 검증한다.</p>
-      </aside>
+      </aside></div>
     </section>
   </main>
 
