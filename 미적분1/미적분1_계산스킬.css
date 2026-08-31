@@ -77,6 +77,13 @@
 .boss-v2.boss-conjugate.boss-reflect-ready .boss-aura{animation:auraPulse .7s ease-in-out infinite;box-shadow:-22px 0 62px rgba(82,154,255,.42),22px 0 62px rgba(255,166,58,.4),inset 0 0 38px rgba(255,255,255,.22)}
 .boss-v2.boss-conjugate.boss-phase-two .boss-arena{background:radial-gradient(circle at 15% 38%,rgba(94,102,232,.32),transparent 36%),radial-gradient(circle at 38% 38%,rgba(235,123,57,.29),transparent 36%),linear-gradient(145deg,#141426,#302443 62%,#1d162b)}
 .boss-v2.boss-conjugate.boss-phase-three .boss-arena{background:radial-gradient(circle at 14% 38%,rgba(104,87,255,.36),transparent 38%),radial-gradient(circle at 38% 38%,rgba(255,96,52,.34),transparent 38%),linear-gradient(145deg,#171127,#3a2043 62%,#22142d)}
+.boss-v2.boss-ratio .boss-arena{background:radial-gradient(circle at 23% 35%,rgba(236,202,116,.25),transparent 35%),linear-gradient(145deg,#131516,#302d27 62%,#191917)}
+.boss-v2.boss-ratio .boss-aura{border-color:rgba(246,220,151,.48);box-shadow:0 0 64px rgba(221,181,84,.3),inset 0 0 36px rgba(255,235,176,.16)}
+.boss-v2.boss-ratio .boss-hp-track div{background:linear-gradient(90deg,#706b5d,#c39c49 58%,#ffe6a1)}
+.boss-v2.boss-ratio .boss-art-frame{border-color:rgba(244,218,146,.3)}
+.boss-v2.boss-ratio .boss-combat-stats div:last-child b{color:#ffe19a;text-shadow:0 0 14px rgba(255,211,111,.42)}
+.boss-v2.boss-ratio.boss-phase-two .boss-arena{background:radial-gradient(circle at 23% 35%,rgba(126,147,210,.27),transparent 36%),linear-gradient(145deg,#141821,#2c3240 62%,#171b24)}
+.boss-v2.boss-ratio.boss-phase-three .boss-arena{background:radial-gradient(circle at 23% 35%,rgba(255,220,125,.38),transparent 39%),linear-gradient(145deg,#1b1710,#44371e 62%,#211b11)}
 @keyframes mathStrike{0%{opacity:0;transform:translate(0,0) scale(.35)}20%{opacity:1}80%{opacity:1;transform:translate(-330%,-230%) scale(.78)}100%{opacity:0;transform:translate(-380%,-260%) scale(1.65)}}
 @keyframes bossCounter{0%{opacity:0;transform:translate(0,0) scale(.4)}18%{opacity:1}78%{opacity:1;transform:translate(300%,230%) scale(.82)}100%{opacity:0;transform:translate(340%,260%) scale(1.5)}}
 @keyframes impactPop{0%{opacity:0;transform:translateY(12px) scale(.5)}35%{opacity:1;transform:translateY(-5px) scale(1.08)}100%{opacity:0;transform:translateY(-32px) scale(.92)}}
