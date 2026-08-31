@@ -63,6 +63,12 @@
 .boss-v2 .boss-monster.boss-hit .boss-art{filter:brightness(1.65) saturate(.7);transform:translateX(-8px) scale(.985)}
 .boss-v2 .boss-monster.boss-attack .boss-art{filter:contrast(1.12) saturate(1.25);transform:translateX(8px) scale(1.025)}
 .boss-v2 .boss-monster.boss-defeated .boss-art{filter:grayscale(.75) brightness(.58);transform:translateY(10px) rotate(-2deg)}
+.boss-v2.boss-factor .boss-arena{background:radial-gradient(circle at 22% 35%,rgba(232,157,55,.28),transparent 36%),linear-gradient(145deg,#1d1813,#3a2b20 62%,#211810)}
+.boss-v2.boss-factor .boss-aura{border-color:rgba(255,194,93,.48);box-shadow:0 0 58px rgba(230,144,42,.28),inset 0 0 32px rgba(255,184,72,.16)}
+.boss-v2.boss-factor .boss-hp-track div{background:linear-gradient(90deg,#8d3f2b,#d47a32 58%,#ffd06a)}
+.boss-v2.boss-factor .boss-art-frame{border-color:rgba(255,190,85,.28)}
+.boss-v2.boss-factor.boss-phase-two .boss-arena{background:radial-gradient(circle at 22% 35%,rgba(48,168,147,.24),transparent 36%),linear-gradient(145deg,#151c1a,#283c35 62%,#17221e)}
+.boss-v2.boss-factor.boss-phase-three .boss-arena{background:radial-gradient(circle at 22% 35%,rgba(239,91,51,.32),transparent 38%),linear-gradient(145deg,#221410,#44241a 62%,#271510)}
 @keyframes mathStrike{0%{opacity:0;transform:translate(0,0) scale(.35)}20%{opacity:1}80%{opacity:1;transform:translate(-330%,-230%) scale(.78)}100%{opacity:0;transform:translate(-380%,-260%) scale(1.65)}}
 @keyframes bossCounter{0%{opacity:0;transform:translate(0,0) scale(.4)}18%{opacity:1}78%{opacity:1;transform:translate(300%,230%) scale(.82)}100%{opacity:0;transform:translate(340%,260%) scale(1.5)}}
 @keyframes impactPop{0%{opacity:0;transform:translateY(12px) scale(.5)}35%{opacity:1;transform:translateY(-5px) scale(1.08)}100%{opacity:0;transform:translateY(-32px) scale(.92)}}
