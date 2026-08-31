@@ -285,9 +285,10 @@ for (const id of Object.keys(dives)) {
 }
 
 // 깊이 탐구는 화면이 그리는 항목을 모두 갖춰야 한다.
+// asset 은 선택 항목이다. 실험실 페이지가 아직 없는 과목이 있다.
 const NEEDED = ['badge', 'title', 'subtitle', 'refinedQuestion', 'why', 'questionLadder',
   'coreMath', 'plan', 'variables', 'dataColumns', 'dataRows', 'graphIdeas',
-  'checks', 'mistakes', 'extensions', 'report', 'levels', 'asset'];
+  'checks', 'mistakes', 'extensions', 'report', 'levels'];
 for (const [id, item] of Object.entries(dives)) {
   for (const field of NEEDED) {
     assert.ok(item[field], `${id} 의 ${field} 가 비어 있다.`);
@@ -301,10 +302,12 @@ for (const [id, item] of Object.entries(dives)) {
     assert.equal(row.length, item.dataColumns.length,
       `${id} 의 ${i}행 칸 수가 열 수와 다르다.`);
   }
-  // 연결한 페이지가 실제로 있어야 한다.
-  const target = item.asset.href.split('?')[0];
-  assert.ok(fs.existsSync(require('node:path').join('주제탐구', target)),
-    `${id} 가 가리키는 ${item.asset.href} 가 없다.`);
+  // 연결한 페이지를 적었다면 그 페이지가 실제로 있어야 한다.
+  if (item.asset) {
+    const target = item.asset.href.split('?')[0];
+    assert.ok(fs.existsSync(require('node:path').join('주제탐구', target)),
+      `${id} 가 가리키는 ${item.asset.href} 가 없다.`);
+  }
 }
 
 // 표의 수는 tools/check-deep-dives.js 가 다시 계산해 맞춰 본다.
