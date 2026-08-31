@@ -1,6 +1,6 @@
-/* 학생용 Deep Dive 화면과 잠금 어댑터.
-   현재는 공개 표본 1개만 싣는다. 광고 연결 시 requestUnlock()만 교체하고,
-   보호된 본문은 서버에서 받은 뒤 registerProtectedItem()으로 등록한다. */
+/* 학생용 Deep Dive 화면.
+   잠금도 광고도 없다. 먼저 107개를 다 만들고, 잠금은 나중에 정한다.
+   내용은 deep-dives/*.js 가 실어 준다. 아직 안 쓴 씨앗은 구조만 보여 준다. */
 (function () {
   'use strict';
 
@@ -43,20 +43,20 @@
     return layer;
   }
 
-  function lockedTemplate(seedId, title) {
+  // 광고도 잠금도 없다. 아직 안 만든 것은 안 만들었다고 적는다.
+  function pendingTemplate(seedId, title) {
     return '<div class="dd-locked-view">' +
       '<p class="dd-kicker">STUDENT DEEP DIVE</p>' +
-      '<div class="dd-lock-symbol" aria-hidden="true">↗</div>' +
+      '<div class="dd-lock-symbol" aria-hidden="true">✎</div>' +
       '<h2 id="ddTitle">' + esc(title || '깊이 탐구') + '</h2>' +
-      '<p class="dd-lead">씨앗을 실제 탐구로 발전시키는 확장 자료입니다. 광고 연결 전이라 지금은 구조만 준비되어 있습니다.</p>' +
+      '<p class="dd-lead">이 씨앗의 깊이 탐구는 아직 쓰지 않았다. 아래 구조로 채워 넣는 중이다.</p>' +
       '<div class="dd-locked-grid">' +
         ['질문 정교화', '핵심 수학', '직접 실험', '데이터·그래프', '검증·반례', '보고서 구조'].map(function (x) {
           return '<span>' + x + '</span>';
         }).join('') +
       '</div>' +
-      '<p class="dd-status"><b>다음 연결</b> 광고 1회 시청 → ' + esc(seedId) + ' 영구 해금</p>' +
-      '<button type="button" class="dd-disabled" disabled>보상형 광고 준비 중</button>' +
-      '<p class="dd-fine">기본 주제 탐색은 계속 무료입니다. 광고가 준비되기 전에는 학습 내용을 광고로 막지 않습니다.</p>' +
+      '<p class="dd-status"><b>씨앗 번호</b> ' + esc(seedId) + '</p>' +
+      '<p class="dd-fine">주제 탐색과 깊이 탐구는 모두 무료다.</p>' +
     '</div>';
   }
 
@@ -73,36 +73,53 @@
       return '<tr>' + row.map(function (x) { return '<td>' + esc(x) + '</td>'; }).join('') + '</tr>';
     }).join('') + '</tbody></table></div>';
 
+    // 섹션은 있는 것만 그리고 번호는 그때 매긴다.
+    // 실험 위젯은 그 씨앗을 위해 만든 것이 있을 때만 넣는다.
+    // 없는데 넣으면 엉뚱한 씨앗에 남의 실험이 붙는다.
+    var parts = [];
+    parts.push(['QUESTION', '질문을 좁히고 다시 연다',
+      '<p class="dd-copy">' + esc(item.why) + '</p><div class="dd-question-ladder">' +
+      item.questionLadder.map(function (q) {
+        return '<div><span>' + esc(q.label) + '</span><p>' + esc(q.text) + '</p></div>';
+      }).join('') + '</div>', '']);
+    parts.push(['CORE MATH', '눈으로 하던 판단을 수식으로',
+      '<div class="dd-formula"><strong>' + esc(item.coreMath.formula) + '</strong>' +
+        '<span>' + esc(item.coreMath.normalized) + '</span><b>' + esc(item.coreMath.rule) + '</b></div>' +
+      '<p class="dd-copy">' + esc(item.coreMath.note) + '</p>', 'dd-dark']);
+    if (item.experiment === 'fov') {
+      parts.push(['LIVE EXPERIMENT', '각도와 거리를 움직여 판정을 깨뜨려 보자',
+        experimentTemplate(), '']);
+    }
+    parts.push(['PLAN', '탐구 순서', list(item.plan, 'dd-steps'), '']);
+    parts.push(['VARIABLES', '무엇을 바꾸고 무엇을 기록할까', chips(item.variables), '']);
+    parts.push(['DATA', '데이터와 그래프 계획',
+      table + '<div class="dd-two-col"><div><h4>그래프로 볼 것</h4>' + list(item.graphIdeas) +
+      '</div><div><h4>반드시 시험할 반례</h4>' + list(item.checks) + '</div></div>', '']);
+    parts.push(['FAILURE', '이 탐구에서 자주 생기는 오류',
+      '<div class="dd-warning">' + item.mistakes.map(function (x, i) {
+        return '<div><b>0' + (i + 1) + '</b><p>' + esc(x) + '</p></div>';
+      }).join('') + '</div>', '']);
+    parts.push(['EXTENSION', '새로운 질문으로',
+      '<div class="dd-extension">' + item.extensions.map(function (x) {
+        return '<p>' + esc(x) + '</p>';
+      }).join('') + '</div>', 'dd-warm']);
+    parts.push(['OUTPUT', '보고서가 아니라 탐구의 증거를 남긴다',
+      '<div class="dd-two-col"><div><h4>보고서 구조</h4>' + list(item.report) +
+      '</div><div><h4>난이도 조절</h4><div class="dd-levels">' + item.levels.map(function (x) {
+        return '<div><b>' + esc(x.label) + '</b><p>' + esc(x.text) + '</p></div>';
+      }).join('') + '</div></div></div>', '']);
+
     return '<header class="dd-hero">' +
         '<p class="dd-kicker">' + esc(item.badge) + '</p>' +
         '<h2 id="ddTitle">' + esc(item.title) + '</h2>' +
         '<p>' + esc(item.subtitle) + '</p>' +
-        '<div class="dd-refined"><span>정교화된 질문</span><strong>' + esc(item.refinedQuestion) + '</strong></div>' +
+        '<div class="dd-refined"><span>정교화된 질문</span><strong>' +
+          esc(item.refinedQuestion) + '</strong></div>' +
       '</header>' +
-      section('01 · QUESTION', '질문을 좁히고 다시 연다',
-        '<p class="dd-copy">' + esc(item.why) + '</p><div class="dd-question-ladder">' + item.questionLadder.map(function (q) {
-          return '<div><span>' + esc(q.label) + '</span><p>' + esc(q.text) + '</p></div>';
-        }).join('') + '</div>') +
-      section('02 · CORE MATH', '눈으로 하던 판단을 수식으로',
-        '<div class="dd-formula"><strong>' + esc(item.coreMath.formula) + '</strong>' +
-          '<span>' + esc(item.coreMath.normalized) + '</span><b>' + esc(item.coreMath.rule) + '</b></div>' +
-        '<p class="dd-copy">' + esc(item.coreMath.note) + '</p>', 'dd-dark') +
-      section('03 · LIVE EXPERIMENT', '각도와 거리를 움직여 판정을 깨뜨려 보자', experimentTemplate()) +
-      section('04 · PLAN', '탐구 순서', list(item.plan, 'dd-steps')) +
-      section('05 · VARIABLES', '무엇을 바꾸고 무엇을 기록할까', chips(item.variables)) +
-      section('06 · DATA', '데이터와 그래프 계획', table + '<div class="dd-two-col"><div><h4>그래프로 볼 것</h4>' +
-        list(item.graphIdeas) + '</div><div><h4>반드시 시험할 반례</h4>' + list(item.checks) + '</div></div>') +
-      section('07 · FAILURE', '이 탐구에서 자주 생기는 오류',
-        '<div class="dd-warning">' + item.mistakes.map(function (x, i) {
-          return '<div><b>0' + (i + 1) + '</b><p>' + esc(x) + '</p></div>';
-        }).join('') + '</div>') +
-      section('08 · EXTENSION', '새로운 질문으로',
-        '<div class="dd-extension">' + item.extensions.map(function (x) { return '<p>' + esc(x) + '</p>'; }).join('') + '</div>', 'dd-warm') +
-      section('09 · OUTPUT', '보고서가 아니라 탐구의 증거를 남긴다',
-        '<div class="dd-two-col"><div><h4>보고서 구조</h4>' + list(item.report) + '</div><div><h4>난이도 조절</h4>' +
-          '<div class="dd-levels">' + item.levels.map(function (x) {
-            return '<div><b>' + esc(x.label) + '</b><p>' + esc(x.text) + '</p></div>';
-          }).join('') + '</div></div></div>') +
+      parts.map(function (x, i) {
+        var no = (i + 1 < 10 ? '0' : '') + (i + 1);
+        return section(no + ' · ' + x[0], x[1], x[2], x[3]);
+      }).join('') +
       '<footer class="dd-footer"><p>이제 설명을 읽는 데서 멈추지 말고 값을 움직여 확인하세요.</p>' +
         '<a href="' + esc(item.asset.href) + '">' + esc(item.asset.label) + ' →</a></footer>';
   }
@@ -192,7 +209,7 @@
     lastFocus = document.activeElement;
     var item = catalog.items[seedId];
     var content = layer.querySelector('.dd-content');
-    content.innerHTML = item ? sampleTemplate(item) : lockedTemplate(seedId, title);
+    content.innerHTML = item ? sampleTemplate(item) : pendingTemplate(seedId, title);
     layer.hidden = false;
     document.body.classList.add('dd-open');
     setupExperiment(content);
@@ -207,12 +224,14 @@
   }
 
   function cardCta(seed) {
-    var sample = !!catalog.items[seed.id];
-    return '<div class="sd-deep-entry' + (sample ? ' is-sample' : '') + '">' +
-      '<div><span>' + (sample ? '표본 공개' : 'DEEP DIVE · 잠금') + '</span>' +
-      '<p>' + (sample ? '질문을 실험과 보고서까지 발전시키는 전체 과정을 확인하세요.' : '실험·데이터·반례·보고서 구조가 잠금 해제 뒤 열립니다.') + '</p></div>' +
+    var ready = !!catalog.items[seed.id];
+    return '<div class="sd-deep-entry' + (ready ? ' is-sample' : '') + '">' +
+      '<div><span>DEEP DIVE</span>' +
+      '<p>' + (ready
+        ? '질문을 실험과 보고서까지 발전시키는 전체 과정이다.'
+        : '아직 쓰지 않았다. 구조만 볼 수 있다.') + '</p></div>' +
       '<button type="button" data-deep-dive-open="' + esc(seed.id) + '" data-seed-title="' + esc(seed.title) + '">' +
-        (sample ? '깊이 탐구 열어보기 →' : '잠금 내용 미리보기 ↗') + '</button></div>';
+        (ready ? '깊이 탐구 열어보기 →' : '준비 중인 구조 보기 ↗') + '</button></div>';
   }
 
   function registerProtectedItem(item) {
@@ -229,11 +248,6 @@
     return !!catalog.items[seedId];
   }
 
-  // 광고 어댑터가 나중에 교체할 자리. 지금은 어떤 콘텐츠도 가짜로 해금하지 않는다.
-  function requestUnlock() {
-    return Promise.resolve({ ok: false, reason: 'rewarded-ad-not-connected' });
-  }
-
   document.addEventListener('click', function (event) {
     var button = event.target.closest('[data-deep-dive-open]');
     if (button) open(button.dataset.deepDiveOpen, button.dataset.seedTitle);
@@ -247,7 +261,6 @@
     close: close,
     isOpen: isOpen,
     cardCta: cardCta,
-    requestUnlock: requestUnlock,
     registerProtectedItem: registerProtectedItem
   };
 }());

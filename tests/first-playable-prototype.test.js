@@ -244,30 +244,71 @@ assert.match(
 assert.match(inquiryHtml, /seeds-bank\.js/, '주제탐구가 뱅크 씨앗을 불러와야 한다.');
 
 
-// 급은 제작 우선순위지 학생이 주제를 고르는 기준이 아니다.
-// 학생에게는 감추고, 그 씨앗의 Deep Dive 가 열렸거나 교사 화면일 때만 보인다.
+// 급과 제작 순위는 학생 화면에 없다. 감추는 것이 아니라 아예 그리지 않는다.
 const fieldJs = fs.readFileSync('주제탐구/seed-field.js', 'utf8');
-assert.match(fieldJs, /function showGrade\(/, '급을 언제 보일지 정하는 규칙이 있어야 한다.');
-assert.match(
-  fieldJs,
-  /if \(showGrade\(s\)\)\s*\{[\s\S]{0,200}sd-gradechip/,
-  '급 표시는 showGrade 를 통과할 때만 그려야 한다.'
-);
-assert.match(
-  fieldJs,
-  /if \(!s\.score \|\| !showGrade\(s\)\) return ''/,
-  '제작 순위와 점수도 급과 같은 규칙으로 가려야 한다.'
-);
-assert.doesNotMatch(fieldJs, /data-value="S\+/, '급 거르개를 학생 화면에 두지 않는다.');
-assert.match(fieldJs, /jp-classroom-access-v1/, '교사 화면에서는 급이 보여야 한다.');
+assert.doesNotMatch(fieldJs, /sd-gradechip/, '급 표시를 그리지 않는다.');
+assert.doesNotMatch(fieldJs, /scoreBars/, '제작 순위와 7축 점수를 그리지 않는다.');
+assert.doesNotMatch(fieldJs, /data-group="grade"/, '급 거르개를 두지 않는다.');
+assert.doesNotMatch(fieldJs, /DB\.GRADE/, '급으로 줄 세우지도 않는다.');
+// 급 자체는 데이터에 남는다. 어느 문서에서 왔는지가 사라지면 안 된다.
+assert.ok(merged.every((s) => s.grade), '급은 데이터에는 남아 있어야 한다.');
 
 const deepDiveJs = fs.readFileSync('주제탐구/deep-dive.js', 'utf8');
-assert.match(deepDiveJs, /isOpen: isOpen/, 'Deep Dive 가 해금 여부를 알려 주어야 한다.');
-assert.match(
-  deepDiveJs,
-  /jp-deep-dive-unlocked/,
-  '해금되면 씨앗밭이 다시 그릴 수 있게 알려야 한다.'
-);
-assert.match(fieldJs, /jp-deep-dive-unlocked/, '씨앗밭이 해금 알림을 들어야 한다.');
+assert.match(fieldJs, /jp-deep-dive-unlocked/, '깊이 탐구가 실리면 씨앗밭이 다시 그려야 한다.');
+assert.match(deepDiveJs, /jp-deep-dive-unlocked/, '깊이 탐구가 실리면 알려야 한다.');
 
+
+// ── 깊이 탐구 ──
+// 잠금도 광고도 없다. 107개를 다 만드는 것이 먼저다.
+const ddJs = fs.readFileSync('주제탐구/deep-dive.js', 'utf8');
+assert.doesNotMatch(ddJs, /보상형|광고 1회|영구 해금|dd-disabled/, '광고·잠금 화면이 남아 있으면 안 된다.');
+assert.doesNotMatch(ddJs, /requestUnlock/, '광고 해금 어댑터를 들어냈다.');
+assert.match(ddJs, /pendingTemplate/, '아직 안 쓴 씨앗은 준비 중이라고 알려야 한다.');
+// 실험 위젯은 그 씨앗을 위해 만든 것이 있을 때만 붙어야 한다.
+assert.match(ddJs, /item\.experiment === 'fov'/, '실험 위젯은 씨앗이 요청할 때만 붙인다.');
+
+const diveDir = '주제탐구/deep-dives';
+const diveCtx = { console: { warn() {} }, document: { addEventListener() {} } };
+diveCtx.window = diveCtx;
+vm.createContext(diveCtx);
+vm.runInContext(fs.readFileSync(`${diveDir}/index.js`, 'utf8'), diveCtx);
+for (const file of fs.readdirSync(diveDir).sort()) {
+  if (file === 'index.js' || !file.endsWith('.js')) continue;
+  vm.runInContext(fs.readFileSync(`${diveDir}/${file}`, 'utf8'), diveCtx);
+}
+const dives = diveCtx.JPDeepDives.items;
+
+// 씨앗에 없는 깊이 탐구가 있으면 화면에 나타날 길이 없다.
+const seedIds = new Set(merged.map((s) => s.id));
+for (const id of Object.keys(dives)) {
+  assert.ok(seedIds.has(id), `${id} 에 해당하는 씨앗이 없다.`);
+}
+
+// 깊이 탐구는 화면이 그리는 항목을 모두 갖춰야 한다.
+const NEEDED = ['badge', 'title', 'subtitle', 'refinedQuestion', 'why', 'questionLadder',
+  'coreMath', 'plan', 'variables', 'dataColumns', 'dataRows', 'graphIdeas',
+  'checks', 'mistakes', 'extensions', 'report', 'levels', 'asset'];
+for (const [id, item] of Object.entries(dives)) {
+  for (const field of NEEDED) {
+    assert.ok(item[field], `${id} 의 ${field} 가 비어 있다.`);
+  }
+  for (const key of ['formula', 'normalized', 'rule', 'note']) {
+    assert.ok(item.coreMath[key], `${id} 의 coreMath.${key} 가 비어 있다.`);
+  }
+  assert.equal(item.questionLadder.length, 4, `${id} 의 질문 사다리는 4단이다.`);
+  // 표는 모든 행의 칸 수가 열 수와 같아야 한다.
+  for (const [i, row] of item.dataRows.entries()) {
+    assert.equal(row.length, item.dataColumns.length,
+      `${id} 의 ${i}행 칸 수가 열 수와 다르다.`);
+  }
+  // 연결한 페이지가 실제로 있어야 한다.
+  const target = item.asset.href.split('?')[0];
+  assert.ok(fs.existsSync(require('node:path').join('주제탐구', target)),
+    `${id} 가 가리키는 ${item.asset.href} 가 없다.`);
+}
+
+// 표의 수는 tools/check-deep-dives.js 가 다시 계산해 맞춰 본다.
+assert.ok(fs.existsSync('주제탐구/tools/check-deep-dives.js'), '표를 검산하는 도구가 있어야 한다.');
+
+console.log(`깊이 탐구 ${Object.keys(dives).length} / ${merged.length}`);
 console.log('first playable prototype tests: ok');

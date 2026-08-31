@@ -20,12 +20,11 @@
     var seeds = DB.all();
     var state = { subject: 'all', q: '' };
 
-    // 급이 높은 것부터, 같으면 과목 차례대로.
+    // 교과 차례로 줄 세운다. 급으로 줄 세우지 않는다 — 급은 학생 화면에 없다.
     var subjectOrder = Object.keys(DB.SUBJECT);
     seeds = seeds.slice().sort(function (a, b) {
-      var ga = DB.GRADE[a.grade].rank, gb = DB.GRADE[b.grade].rank;
-      if (ga !== gb) return ga - gb;
-      return subjectOrder.indexOf(a.subject) - subjectOrder.indexOf(b.subject);
+      var d = subjectOrder.indexOf(a.subject) - subjectOrder.indexOf(b.subject);
+      return d || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
     });
 
     var subjects = subjectOrder
@@ -75,43 +74,8 @@
       return value ? '<dt>' + esc(term) + '</dt><dd>' + value + '</dd>' : '';
     }
 
-    // 제작 순위와 7축 점수도 급과 같은 내부 우선순위다. 같은 규칙으로 가린다.
-    function scoreBars(s) {
-      if (!s.score || !showGrade(s)) return '';
-      return '<div class="sd-score">' +
-        '<div class="sd-score-head"><b>제작 ' + s.score.rank + '순위</b>' +
-          '<span>' + s.score.total + ' / 35</span></div>' +
-        '<div class="sd-bars">' +
-          DB.AXES.map(function (a) {
-            var v = s.score[a.key];
-            return '<div class="sd-bar" title="' + esc(a.label) + ' ' + v + '점">' +
-              '<span class="sd-bar-key">' + a.key + '</span>' +
-              '<span class="sd-bar-track"><span class="sd-bar-fill" style="width:' +
-                (v / 5 * 100) + '%"></span></span>' +
-              '<span class="sd-bar-val">' + v + '</span></div>';
-          }).join('') +
-        '</div></div>';
-    }
-
-    // 급은 제작 우선순위지 학생이 고를 기준이 아니다. 학생에게는 감춘다.
-    // 그 씨앗의 Deep Dive 가 열렸을 때, 또는 교사 화면일 때만 보인다.
-    function teacherMode() {
-      try { return sessionStorage.getItem('jp-classroom-access-v1') === 'granted'; }
-      catch (e) { return false; }
-    }
-
-    function showGrade(s) {
-      if (teacherMode()) return true;
-      return !!(window.JPDeepDiveUI && window.JPDeepDiveUI.isOpen
-        && window.JPDeepDiveUI.isOpen(s.id));
-    }
-
     function badges(s) {
       var out = '<span class="sd-subject">' + esc(DB.SUBJECT[s.subject].label) + '</span>';
-      if (showGrade(s)) {
-        out += '<span class="sd-gradechip" title="' + esc(DB.GRADE[s.grade].desc) + '">' +
-               esc(s.grade) + '</span>';
-      }
       if (s.relation) {
         out += '<span class="sd-rel" title="' + esc(DB.RELATION[s.relation].desc) + '">' +
                esc(DB.RELATION[s.relation].label) + '</span>';
@@ -147,7 +111,6 @@
             ? s.notes.map(function (n) { return esc(n); }).join('<br>') : '') +
           row('확인 필요', s.caution ? '<b class="sd-caution">' + esc(s.caution) + '</b>' : '') +
         '</dl>' +
-        scoreBars(s) +
         (window.JPDeepDiveUI ? window.JPDeepDiveUI.cardCta(s) : '') +
         '<div class="sd-foot">' +
           (s.asset
@@ -213,7 +176,7 @@
       render();
     });
 
-    // Deep Dive 가 열리면 그 씨앗의 급이 드러나야 하므로 다시 그린다.
+    // 깊이 탐구가 새로 실리면 카드의 안내가 달라지므로 다시 그린다.
     document.addEventListener('jp-deep-dive-unlocked', function () { render(); });
 
     render();
