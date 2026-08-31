@@ -37,12 +37,33 @@
   }
   function formatAnswer(value) { return typeof value === 'number' ? String(rounded(value)) : String(value); }
 
+  function shiftDateKey(key, days) {
+    const parts = String(key).split('-').map(Number);
+    const base = new Date(parts[0], (parts[1] || 1) - 1, parts[2] || 1);
+    base.setDate(base.getDate() + days);
+    return dateKey(base);
+  }
+  // 오늘의 함수 모양. c 는 그래프를 세로로만 옮기므로 모양에 세지 않는다.
+  function shapeFrom(rng) {
+    return { s: rng() < .5 ? -1 : 1, h: ri(rng, -1, 1), d: ri(rng, 1, 3), c: ri(rng, -2, 2) };
+  }
+  function shapeOf(key) { return shapeFrom(seeded(`jp-calculus-${key}`)); }
+
   function buildDaily(key) {
     const rng = seeded(`jp-calculus-${key}`);
-    const s = rng() < .5 ? -1 : 1;
-    const h = ri(rng, -1, 1);
-    const d = ri(rng, 1, 2);
-    const c = ri(rng, -2, 2);
+    const shape = shapeFrom(rng);
+    // 어제와 부호·중심·폭이 모두 같으면 상수만 달라진다. 그러면 그래프가
+    // 세로로 한 칸 움직일 뿐이라 학생 눈에는 "안 바뀐" 것이다.
+    // 폭을 먼저 바꾸고, 그래도 같으면 방향을 뒤집는다.
+    const prev = shapeOf(shiftDateKey(key, -1));
+    if (shape.s === prev.s && shape.h === prev.h && shape.d === prev.d) {
+      shape.d = shape.d % 3 + 1;
+      if (shape.d === prev.d) shape.s = -shape.s;
+    }
+    const s = shape.s;
+    const h = shape.h;
+    const d = shape.d;
+    const c = shape.c;
     const f = x => s * (x - h) ** 3 - 3 * s * d ** 2 * (x - h) + c;
     const fp = x => 3 * s * ((x - h) ** 2 - d ** 2);
     const base = shiftedX(h);
@@ -213,8 +234,8 @@
       const seed = $('[data-research-seed]');
       if (seed && !seed.dataset.marked) {
         seed.dataset.marked = '1';
-        seed.addEventListener('toggle', () => {
-          if (!seed.open) return;
+        // 씨앗 내용은 주제탐구 씨앗밭으로 옮겼다. 여기서 여는 행동은 클릭이다.
+        seed.addEventListener('click', () => {
           if (telemetry && activePlay && telemetry.mark) telemetry.mark(activePlay.playId, 'research_open');
         });
       }

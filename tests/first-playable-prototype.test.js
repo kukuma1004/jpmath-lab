@@ -102,4 +102,54 @@ assert.equal(daily.formula, dailyApi.buildDaily('2026-08-30').formula, '같은 �
 assert.notEqual(daily.formula, dailyApi.buildDaily('2026-08-31').formula, '다른 날짜에는 함수가 바뀔 수 있어야 한다.');
 assert.equal(dailyApi.scoreAttempt({ correct: 3, kind: 'choice' }, 3, 5).success, true);
 
+
+// 매일 눈에 띄게 달라져야 한다. 상수항만 바뀌면 그래프가 세로로 한 칸 움직일 뿐이라
+// 학생에게는 "안 바뀐" 것이다. 부호·중심·폭 중 하나는 반드시 달라야 한다.
+function shapeKey(key) {
+  const d = dailyApi.buildDaily(key);
+  return [d.formula.startsWith('f(x) = −'), d.h, d.d].join('|');
+}
+for (let i = 0; i < 40; i += 1) {
+  const day = new Date(2026, 0, 1 + i);
+  const next = new Date(2026, 0, 2 + i);
+  const k = (x) => `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`;
+  assert.notEqual(shapeKey(k(day)), shapeKey(k(next)), `${k(day)} 와 ${k(next)} 의 그래프 모양이 같다.`);
+}
+
+// 탐구 씨앗은 주제탐구 씨앗밭으로 옮겼다. 게임 결과 화면에는 그리로 가는 문만 남는다.
+const resultHtml = fs.readFileSync('미적분1/오늘의_미적분.html', 'utf8');
+assert.match(
+  resultHtml,
+  /<a class="research-seed" data-research-seed href="\.\.\/주제탐구\/#탐구씨앗">/,
+  '결과 화면의 탐구 씨앗은 주제탐구 씨앗밭으로 이어져야 한다.'
+);
+assert.doesNotMatch(resultHtml, /<details class="research-seed"/, '씨앗 내용이 결과 화면에 남아 있으면 안 된다.');
+
+// 씨앗밭은 주제탐구 첫 화면, 현재 탐구자 위에 있어야 한다.
+const inquiryHtml = fs.readFileSync('주제탐구/index.html', 'utf8');
+assert.match(inquiryHtml, /id="탐구씨앗"/, '주제탐구에 씨앗밭이 있어야 한다.');
+assert.match(inquiryHtml, /data-topic-browser/, '씨앗밭에 주제 브라우저가 붙어야 한다.');
+assert.match(inquiryHtml, /topic-browser\.js/, '주제 브라우저 스크립트를 불러와야 한다.');
+assert.ok(
+  inquiryHtml.indexOf('id="탐구씨앗"') < inquiryHtml.indexOf('현재 탐구자'),
+  '씨앗밭은 현재 탐구자 위에 있어야 한다.'
+);
+
+// 전시 잠금은 학생 작품만 가린다. 씨앗밭은 통과해야 학생이 주제를 고를 수 있다.
+const lockCss = fs.readFileSync('주제탐구/exhibition.css', 'utf8');
+assert.match(lockCss, /\.exhibition-locked main > :not\(\.seed-field\)/, '잠금이 씨앗밭만 통과시켜야 한다.');
+
+// 주제 목록은 한 곳에만 둔다. 두 곳에 두면 반드시 어긋난다.
+const browserCtx = { document: { addEventListener() {} } };
+browserCtx.window = browserCtx;
+vm.createContext(browserCtx);
+vm.runInContext(fs.readFileSync('주제탐구/topic-browser.js', 'utf8'), browserCtx);
+assert.equal(browserCtx.JPTopics.length, 24, '탐구 주제는 24개여야 한다.');
+assert.equal(browserCtx.JPTopicBrowser.limit, 3);
+assert.equal(browserCtx.JPTopicBrowser.storageKey, 'jp-orient-basket-v1', '오리엔테이션과 같은 바구니를 써야 한다.');
+
+const orientHtml = fs.readFileSync('주제탐구/orientation.html', 'utf8');
+assert.doesNotMatch(orientHtml, /var TOPICS = \[/, '오리엔테이션이 주제 목록을 따로 갖고 있으면 안 된다.');
+assert.match(orientHtml, /var TOPICS = \(window\.JPTopics/, '오리엔테이션은 공유 목록을 써야 한다.');
+
 console.log('first playable prototype tests: ok');

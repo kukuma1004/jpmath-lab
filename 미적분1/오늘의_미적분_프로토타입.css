@@ -367,40 +367,25 @@ body.player-gate-open {
     animation: none;
   }
 }
-
-/* 탐구 씨앗 — 결과 화면에서 "더 알아보기"로 이어지는 자리.
-   이 실험이 재려는 것 중 하나가 여기를 여는 비율이다.
-   결과 화면은 흰 바탕이므로 어두운 글자로 쓴다. 흰 바탕 대비는
-   본문 8.1:1 · 라벨 4.7:1 · 링크 7.4:1 로 모두 AA 를 넘긴다. */
+/* 탐구 씨앗 — 결과 화면에서 주제탐구로 이어지는 한 줄.
+   씨앗 내용 자체는 주제탐구 페이지의 씨앗밭으로 옮겼다. 여기는 문만 남긴다.
+   이 실험이 재려는 것 중 하나가 이 문을 여는 비율(research_open)이다.
+   결과 화면은 흰 바탕이므로 어두운 글자로 쓴다. */
 .research-seed{
-  margin:18px 0 0; border:1px solid #D9E0DB; border-radius:14px;
-  background:#F7F9F7; overflow:hidden;
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  margin:18px 0 0; padding:15px 17px;
+  border:1px solid #D9E0DB; border-radius:14px; background:#F7F9F7;
+  text-decoration:none; color:#111816;
 }
-.research-seed > summary{
-  display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; cursor:pointer;
-  padding:14px 16px; font-size:15px; font-weight:700; color:#111816; list-style:none;
-}
-.research-seed > summary::-webkit-details-marker{ display:none }
-.research-seed > summary:hover{ background:#F1F5F1 }
-.research-seed > summary:focus-visible{ outline:2px solid #17614F; outline-offset:-3px }
-.research-seed > summary span{
+.research-seed:hover,.research-seed:focus-visible{ background:#F1F5F1; border-color:#17614F }
+.research-seed:focus-visible{ outline:2px solid #17614F; outline-offset:2px }
+.seed-kicker{
   font:600 11px/1 "IBM Plex Mono",monospace; letter-spacing:.08em; color:#8A5A12;
+  white-space:nowrap;
 }
-.research-seed[open] > summary{ border-bottom:1px solid #E3E9E4 }
-.seed-body{ padding:14px 16px 16px; display:grid; gap:12px }
-.seed-question{ margin:0; font-size:17px; font-weight:700; line-height:1.5; color:#111816; word-break:keep-all }
-.seed-phenomenon{ margin:0; font-size:14px; line-height:1.75; color:#46534D; word-break:keep-all }
-.seed-meta{ margin:0; display:grid; grid-template-columns:auto 1fr; gap:5px 14px; font-size:12.5px; align-items:baseline }
-.seed-meta dt{ color:#6B7770; white-space:nowrap }
-.seed-meta dd{ margin:0; color:#2A3531; word-break:keep-all }
-.seed-links{ display:flex; gap:8px; flex-wrap:wrap; margin-top:2px }
-.seed-links a{
-  padding:8px 13px; border-radius:999px; text-decoration:none; font-size:13px; font-weight:700;
-  border:1px solid #B7CFC5; color:#17614F; background:#fff;
-}
-.seed-links a:hover,.seed-links a:focus-visible{ background:#EAF3EF; border-color:#17614F }
-.seed-links a:focus-visible{ outline:2px solid #17614F; outline-offset:2px }
+.seed-line{ flex:1 1 220px; font-size:15px; font-weight:700; line-height:1.5; word-break:keep-all }
+.seed-go{ font-size:17px; font-weight:700; color:#17614F }
 @media(max-width:520px){
-  .seed-meta{ grid-template-columns:1fr; gap:2px }
-  .seed-meta dt{ margin-top:6px }
+  .research-seed{ gap:6px 10px }
+  .seed-line{ flex-basis:100% }
 }
