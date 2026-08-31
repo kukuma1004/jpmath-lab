@@ -10,6 +10,7 @@ const SHEET_NAMES = Object.freeze({
 
 const AVAILABLE_SUBJECTS = Object.freeze(['미적분Ⅰ', '기하', '경제수학', '과목 확인 필요']);
 const TARGET_INTAKE_COUNT = 2;
+const TEACHER_PROJECT_DRAFT_MARKER = '발문 최종 제출 원문을 근거로 만든 교사용 탐구 설계 초안';
 
 const SHEET_SCHEMAS = Object.freeze({
   '학생명단': ['학생ID', '학생코드', '이름', '상태', '등록일', '비고'],
@@ -96,7 +97,7 @@ function getInquirySystemStatus() {
     subjectReviewCount: intakes.filter(function (row) { return subjectConcern_(row).needsReview; }).length,
     promptRows: getPromptRows_().filter(function (row) { return row['상태'] !== '비활성'; }).length,
     responseRows: getResponseRows_().length,
-    projectRows: getProjectRows_().length,
+    projectRows: getProjectRows_().filter(function (row) { return !isTeacherProjectDraft_(row); }).length,
     exhibitionReviewRows: getExhibitionRows_().filter(function (row) { return row['상태'] === '전시 검토'; }).length,
     exhibitionApprovedRows: getExhibitionRows_().filter(function (row) { return row['상태'] === '전시 승인'; }).length,
     submissionOpen: String(getSetting_('SUBMISSION_OPEN')).toUpperCase() === 'TRUE'
@@ -119,7 +120,7 @@ function doGet(event) {
       .setTitle('주제탐구 실시간 교사용 페이지')
       .addMetaTag('viewport', 'width=device-width, initial-scale=1');
   }
-  return HtmlService.createHtmlOutputFromFile('Index')
+  return HtmlService.createHtmlOutputFromFile('StudentApp')
     .setTitle('2026 수학 주제탐구 학생 질문함')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
@@ -150,7 +151,9 @@ function getStudentWorkspace(studentCode) {
     });
     if (rows.length) {
       const responses = getResponseRows_().filter(function (row) { return normalizeCode_(row['학생코드']) === code; });
-      const projects = getProjectRows_().filter(function (row) { return normalizeCode_(row['학생코드']) === code; });
+      const projects = getProjectRows_().filter(function (row) {
+        return normalizeCode_(row['학생코드']) === code && !isTeacherProjectDraft_(row);
+      });
       const exhibitions = getExhibitionRows_().filter(function (row) { return normalizeCode_(row['학생코드']) === code; });
       base.inquiries = rows.map(function (row) {
         const previous = responses.filter(function (response) {
@@ -452,7 +455,8 @@ function submitProjectRecord(payload) {
     if (!response || response['교사검토상태'] === '작성 중') return failure_('이 탐구의 발문 답변을 먼저 최종 제출해 주세요.');
 
     const existing = getProjectRows_().find(function (row) {
-      return normalizeCode_(row['학생코드']) === code && row['탐구ID'] === inquiryId && (!submissionId || row['제출ID'] === submissionId);
+      return normalizeCode_(row['학생코드']) === code && row['탐구ID'] === inquiryId &&
+        !isTeacherProjectDraft_(row) && (!submissionId || row['제출ID'] === submissionId);
     });
     if (submissionId && !existing) return failure_('수정할 탐구 기록을 찾지 못했습니다. 화면을 새로 불러와 주세요.');
     const exhibition = getExhibitionRows_().find(function (row) {
@@ -719,6 +723,13 @@ function getResponseRows_() { return getRows_(SHEET_NAMES.responses); }
 function getProjectRows_() { return getRows_(SHEET_NAMES.projects); }
 function getExhibitionRows_() { return getRows_(SHEET_NAMES.exhibitions); }
 
+function isTeacherProjectDraft_(row) {
+  return Boolean(row) &&
+    row['제출상태'] === '작성 중' &&
+    Number(row['수정횟수'] || 0) === 0 &&
+    String(row['학생메모'] || '').indexOf(TEACHER_PROJECT_DRAFT_MARKER) !== -1;
+}
+
 function getRows_(sheetName) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
   if (!sheet) throw new Error(sheetName + ' 시트를 찾을 수 없습니다.');
@@ -963,7 +974,7 @@ function setExhibitionStatus_(params) {
       '수정일': now
     });
     const project = getProjectRows_().find(function (item) {
-      return normalizeCode_(item['학생코드']) === code && item['탐구ID'] === inquiryId;
+      return normalizeCode_(item['학생코드']) === code && item['탐구ID'] === inquiryId && !isTeacherProjectDraft_(item);
     });
     if (project) updateRecordRow_(SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.projects), project._rowNumber, {
       '교사검토상태': nextStatus
@@ -1003,7 +1014,7 @@ function buildManagerLiveFeed_() {
   const intakes = getIntakeRows_();
   const prompts = getPromptRows_().filter(function (row) { return row['상태'] !== '비활성'; });
   const responses = getResponseRows_();
-  const projects = getProjectRows_();
+  const projects = getProjectRows_().filter(function (row) { return !isTeacherProjectDraft_(row); });
   const exhibitions = getExhibitionRows_();
   const rosterByCode = {};
   roster.forEach(function (row) { rosterByCode[normalizeCode_(row['학생코드'])] = row; });
