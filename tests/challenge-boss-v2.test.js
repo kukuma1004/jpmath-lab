@@ -28,10 +28,11 @@ assert.match(bossHall, /38초/);
 assert.match(bossHall, /HP 2600/);
 
 assert.match(skillHtml, /jp-game-telemetry\.js\?v=2/);
-assert.match(skillHtml, /미적분1_계산스킬\.js\?v=10/);
-assert.match(skillHtml, /미적분1_계산스킬\.css\?v=8/);
+assert.match(skillHtml, /미적분1_계산스킬\.js\?v=11/);
+assert.match(skillHtml, /미적분1_계산스킬\.css\?v=9/);
 assert.match(skillJs, /differentiate_polynomial:\{name:'미분의 철갑수'/);
 assert.match(skillJs, /limit_factor:\{name:'인수분해의 문지기'/);
+assert.match(skillJs, /limit_rationalize:\{name:'켤레의 연금술사'/);
 assert.match(skillJs, /const bossV2=!!bossConfig/);
 assert.match(skillJs, /bossMultiplier\(\)/);
 assert.match(skillJs, /bossQuestionLevel/);
@@ -39,10 +40,13 @@ assert.match(skillJs, /launchBossFx/);
 assert.match(skillJs, /derivative-iron-beast\.webp/);
 assert.match(skillJs, /factor-gate-guardian\.jpg/);
 assert.match(skillJs, /factor-shield/);
+assert.match(skillJs, /conjugate-alchemist\.jpg/);
+assert.match(skillJs, /conjugate-reflect/);
+assert.match(skillJs, /켤레 반사!/);
 assert.match(skillJs, /currentBossV2Limit/);
 assert.match(skillJs, /바로 다시 도전/);
 assert.match(skillJs, /params\.get\('mode'\)==='boss'/);
 assert.match(skillJs, /calculus-skill-boss-differentiate-polynomial/);
 assert.match(skillJs, /telemetry\.finishPlay/);
 
-console.log('challenge and boss battle 2.1 tests: ok');
+console.log('challenge and boss battle 2.2 tests: ok');

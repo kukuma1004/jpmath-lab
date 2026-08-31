@@ -69,6 +69,14 @@
 .boss-v2.boss-factor .boss-art-frame{border-color:rgba(255,190,85,.28)}
 .boss-v2.boss-factor.boss-phase-two .boss-arena{background:radial-gradient(circle at 22% 35%,rgba(48,168,147,.24),transparent 36%),linear-gradient(145deg,#151c1a,#283c35 62%,#17221e)}
 .boss-v2.boss-factor.boss-phase-three .boss-arena{background:radial-gradient(circle at 22% 35%,rgba(239,91,51,.32),transparent 38%),linear-gradient(145deg,#221410,#44241a 62%,#271510)}
+.boss-v2.boss-conjugate .boss-arena{background:radial-gradient(circle at 13% 38%,rgba(95,158,255,.27),transparent 34%),radial-gradient(circle at 37% 38%,rgba(255,172,65,.24),transparent 34%),linear-gradient(145deg,#101726,#25223a 62%,#171426)}
+.boss-v2.boss-conjugate .boss-aura{border-color:rgba(186,209,255,.52);box-shadow:-18px 0 50px rgba(85,154,255,.24),18px 0 50px rgba(255,171,70,.22),inset 0 0 34px rgba(232,224,255,.15)}
+.boss-v2.boss-conjugate .boss-hp-track div{background:linear-gradient(90deg,#5d8ee8,#d8dff1 48%,#f0a641)}
+.boss-v2.boss-conjugate .boss-art-frame{border-color:rgba(197,211,255,.3)}
+.boss-v2.boss-conjugate.boss-reflect-ready .boss-art{filter:brightness(1.12) saturate(1.18);transform:scale(1.025)}
+.boss-v2.boss-conjugate.boss-reflect-ready .boss-aura{animation:auraPulse .7s ease-in-out infinite;box-shadow:-22px 0 62px rgba(82,154,255,.42),22px 0 62px rgba(255,166,58,.4),inset 0 0 38px rgba(255,255,255,.22)}
+.boss-v2.boss-conjugate.boss-phase-two .boss-arena{background:radial-gradient(circle at 15% 38%,rgba(94,102,232,.32),transparent 36%),radial-gradient(circle at 38% 38%,rgba(235,123,57,.29),transparent 36%),linear-gradient(145deg,#141426,#302443 62%,#1d162b)}
+.boss-v2.boss-conjugate.boss-phase-three .boss-arena{background:radial-gradient(circle at 14% 38%,rgba(104,87,255,.36),transparent 38%),radial-gradient(circle at 38% 38%,rgba(255,96,52,.34),transparent 38%),linear-gradient(145deg,#171127,#3a2043 62%,#22142d)}
 @keyframes mathStrike{0%{opacity:0;transform:translate(0,0) scale(.35)}20%{opacity:1}80%{opacity:1;transform:translate(-330%,-230%) scale(.78)}100%{opacity:0;transform:translate(-380%,-260%) scale(1.65)}}
 @keyframes bossCounter{0%{opacity:0;transform:translate(0,0) scale(.4)}18%{opacity:1}78%{opacity:1;transform:translate(300%,230%) scale(.82)}100%{opacity:0;transform:translate(340%,260%) scale(1.5)}}
 @keyframes impactPop{0%{opacity:0;transform:translateY(12px) scale(.5)}35%{opacity:1;transform:translateY(-5px) scale(1.08)}100%{opacity:0;transform:translateY(-32px) scale(.92)}}
