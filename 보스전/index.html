@@ -9,8 +9,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=Noto+Serif+KR:wght@700;900&amp;display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../jp-nav-2.css?v=4">
-  <link rel="stylesheet" href="boss-hall.css?v=1">
+  <link rel="stylesheet" href="boss-hall.css?v=2">
   <script src="../jp-nav-2.js?v=6" data-jp-section="보스전" defer></script>
+  <script src="boss-catalog.js?v=1" defer></script>
+  <script src="boss-hall.js?v=1" defer></script>
 </head>
 <body>
   <main>
@@ -25,9 +27,10 @@
     </section>
 
     <section class="featured-boss" aria-labelledby="featuredTitle">
-      <div class="boss-portrait" aria-hidden="true">
+      <div class="boss-portrait">
         <div class="boss-aura"></div>
-        <svg viewBox="0 0 240 210"><path class="wing" d="M73 78C32 43 13 64 27 100c9 23 31 31 55 23M167 78c41-35 60-14 46 22-9 23-31 31-55 23"/><path class="horn" d="M88 55 63 17l45 27M152 55l25-38-45 27"/><path class="body" d="M120 37c-46 0-72 34-64 81 7 42 29 67 64 67s57-25 64-67c8-47-18-81-64-81Z"/><path class="mask" d="M76 83c29-18 59-18 88 0l-11 49c-22 18-44 18-66 0Z"/><path class="eye" d="m87 93 25 8-27 8Zm66 0-25 8 27 8Z"/><path class="core" d="m120 123 14 19-14 17-14-17Z"/></svg>
+        <img src="../assets/bosses/derivative-iron-beast.webp" alt="곡선 갑옷과 빛나는 미분 코어를 지닌 미분의 철갑수">
+        <div class="portrait-tag"><span>D09</span><b>철갑 방어 · 3단계</b></div>
       </div>
       <div class="boss-intro">
         <p>현재 플레이 가능 · BOSS 2.1 #01</p>
@@ -39,13 +42,18 @@
     </section>
 
     <section class="boss-roadmap" aria-labelledby="roadmapTitle">
-      <header><p>NEXT BOSS</p><h2 id="roadmapTitle">검증한 뒤 하나씩 개방합니다.</h2><span>첫 보스의 재도전율과 플레이 시간을 확인한 뒤 같은 엔진으로 확장합니다.</span></header>
-      <div class="roadmap-grid">
-        <article class="active"><span>01 · 미분</span><h3>미분의 철갑수</h3><p>계수×지수, 지수 하나 내리기</p><b>PLAYABLE</b></article>
-        <article><span>02 · 극한</span><h3>시간의 파수꾼</h3><p>변형을 늦추면 시간을 빼앗습니다.</p><b>다음 후보</b></article>
-        <article><span>03 · 그래프</span><h3>그래프의 미러 팬텀</h3><p>부호와 개형을 뒤집어 판단하게 합니다.</p><b>설계 중</b></article>
-        <article><span>04 · 기하</span><h3>회전의 수호자</h3><p>공간을 회전시켜 같은 관계를 다시 묻습니다.</p><b>기하 개편 후</b></article>
+      <header><p>BOSS ROSTER 2.2</p><h2 id="roadmapTitle"><span data-boss-total>64</span>종의 보스를 순서대로 깨웁니다.</h2><span>미적분 <b data-calculus-total>28</b>종과 기하 <b data-geometry-total>36</b>종. 이름만 다른 복제품이 아니라 외형과 전투 규칙이 수학 개념을 드러내도록 설계했습니다.</span></header>
+      <div class="roster-summary" aria-label="보스 제작 현황">
+        <div><span>전체 설계</span><strong><i data-boss-total>64</i> / 64</strong></div>
+        <div><span>실제 전투 가능</span><strong>1 / 64</strong></div>
+        <div><span>다음 제작</span><strong>극한 계열</strong></div>
       </div>
+      <div class="roster-toolbar" role="group" aria-label="과목별 보스 보기">
+        <button class="active" type="button" data-boss-filter="all" aria-pressed="true">전체 64</button>
+        <button type="button" data-boss-filter="calculus" aria-pressed="false">미적분 28</button>
+        <button type="button" data-boss-filter="geometry" aria-pressed="false">기하 36</button>
+      </div>
+      <div class="boss-archive-grid" data-boss-grid></div>
     </section>
   </main>
   <footer><b>JP Math Lab · Boss Archive</b><a href="../">메인으로</a></footer>

@@ -68,3 +68,36 @@
 @keyframes impactPop{0%{opacity:0;transform:translateY(12px) scale(.5)}35%{opacity:1;transform:translateY(-5px) scale(1.08)}100%{opacity:0;transform:translateY(-32px) scale(.92)}}
 @media(max-width:700px){.boss-art-frame{width:min(300px,96%)}.boss-v2 .boss-aura{width:205px;height:205px}.boss-impact{left:31%;top:35%}.boss-impact.counter-impact{left:54%;top:70%}}
 @media(prefers-reduced-motion:reduce){.boss-art,.boss-projectile,.boss-impact{animation:none!important;transition:none!important}.boss-projectile,.boss-impact{display:none}}
+
+/* 모바일 전투 조종석: 문제를 풀면서도 보스·HP·시간이 항상 보인다. */
+@media(max-width:700px){
+  .boss-stage.boss-v2{overflow:visible;padding:12px}
+  .boss-v2 .boss-arena{position:sticky;top:68px;z-index:20;grid-template-columns:104px minmax(0,1fr);gap:9px;margin:0 0 13px;padding:9px;border:1px solid rgba(255,255,255,.16);border-radius:16px;box-shadow:0 12px 30px rgba(8,21,17,.28)}
+  .boss-v2 .boss-monster{min-height:106px;align-content:center}
+  .boss-v2 .boss-aura{width:86px;height:86px}
+  .boss-v2 .boss-art-frame{width:96px;aspect-ratio:1;border-radius:15px}
+  .boss-v2 .boss-art{object-position:center}
+  .boss-v2 .boss-monster>strong{max-width:100px;margin:5px 0 0;overflow:hidden;color:#fff;font:800 11px var(--font-body);text-overflow:ellipsis;white-space:nowrap}
+  .boss-v2 .boss-monster>span{display:none}
+  .boss-v2 .boss-dashboard{padding:10px;border-radius:13px}
+  .boss-v2 .boss-hp-label span,.boss-v2 .boss-clock span{font-size:7px;letter-spacing:.08em}
+  .boss-v2 .boss-hp-label strong{font-size:11px}
+  .boss-v2 .boss-hp-track{height:8px;margin-top:5px}
+  .boss-v2 .boss-clock{grid-template-columns:1fr auto auto;gap:3px;margin-top:8px}
+  .boss-v2 .boss-clock strong{font-size:23px}
+  .boss-v2 .boss-timer-track{height:5px;margin-top:5px}
+  .boss-v2 .boss-combat-stats{gap:4px;margin-top:7px}
+  .boss-v2 .boss-combat-stats div{padding:5px 2px;border-radius:8px}
+  .boss-v2 .boss-combat-stats span{font-size:6px}
+  .boss-v2 .boss-combat-stats b{margin-top:2px;font-size:11px}
+  .boss-v2 .boss-limit-copy{display:none}
+  .boss-v2 .boss-progress{gap:5px;margin:0 3px 11px}
+  .boss-v2 .boss-node{height:5px}
+  .boss-v2 .question-topline{font-size:8px}
+  .boss-v2 .question-equation{margin:15px 0 8px;padding:14px 7px}
+  .boss-v2 .question-prompt{margin:12px 0 14px;font-size:17px}
+  .boss-v2 .answer-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .boss-v2 .answer-btn{min-height:56px;padding:7px;font-size:15px}
+  .boss-v2 .boss-status{position:sticky;bottom:8px;z-index:19;box-shadow:0 8px 20px rgba(21,38,32,.16)}
+}
+@media(max-width:370px){.boss-v2 .boss-arena{top:64px;grid-template-columns:88px minmax(0,1fr)}.boss-v2 .boss-art-frame{width:82px}.boss-v2 .boss-monster>strong{max-width:86px;font-size:10px}.boss-v2 .boss-clock strong{font-size:20px}}

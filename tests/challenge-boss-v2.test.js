@@ -29,7 +29,7 @@ assert.match(bossHall, /HP 2600/);
 
 assert.match(skillHtml, /jp-game-telemetry\.js\?v=2/);
 assert.match(skillHtml, /미적분1_계산스킬\.js\?v=9/);
-assert.match(skillHtml, /미적분1_계산스킬\.css\?v=6/);
+assert.match(skillHtml, /미적분1_계산스킬\.css\?v=7/);
 assert.match(skillJs, /BOSS_V2_HP=2600,BOSS_V2_BASE_TIME=38,BOSS_V2_MIN_TIME=24/);
 assert.match(skillJs, /bossV2=skill\.id==='differentiate_polynomial'/);
 assert.match(skillJs, /bossMultiplier\(\)/);
