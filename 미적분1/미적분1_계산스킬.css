@@ -152,6 +152,21 @@
 .boss-v2.boss-forbidden .boss-heal-impact{color:#fff0f3;background:#7f1730;border-color:rgba(255,174,192,.72);box-shadow:0 0 34px rgba(235,45,85,.7)}
 .boss-v2.boss-forbidden.boss-phase-two .boss-arena{background:radial-gradient(circle at 24% 36%,rgba(232,41,78,.38),transparent 39%),radial-gradient(circle at 42% 37%,rgba(61,216,226,.24),transparent 33%),linear-gradient(145deg,#10080c,#31121b 52%,#2f210d)}
 .boss-v2.boss-forbidden.boss-phase-three .boss-arena{background:radial-gradient(circle at 24% 36%,rgba(255,42,83,.47),transparent 41%),radial-gradient(circle at 42% 37%,rgba(69,230,237,.3),transparent 35%),linear-gradient(145deg,#11070b,#3a111d 50%,#3b270b)}
+.boss-v2.boss-difference{--h-ring-scale:1;--h-inner-scale:1}
+.boss-v2.boss-difference .boss-arena{background:radial-gradient(circle at 24% 35%,rgba(39,164,235,.32),transparent 38%),radial-gradient(circle at 42% 36%,rgba(216,157,68,.2),transparent 34%),linear-gradient(145deg,#06111f,#0e2741 54%,#1d1a18)}
+.boss-v2.boss-difference .boss-aura{border-color:rgba(83,204,255,.58);box-shadow:0 0 64px rgba(28,150,225,.38),inset 0 0 34px rgba(235,184,89,.15)}
+.boss-v2.boss-difference .boss-hp-track div{background:linear-gradient(90deg,#265a91,#2fa7d8 58%,#e0b45e)}
+.boss-v2.boss-difference .boss-art-frame{border-color:rgba(88,201,244,.42);box-shadow:0 18px 38px rgba(0,0,0,.38),0 0 30px rgba(44,162,226,.24)}
+.boss-v2.boss-difference .boss-art-frame::before,.boss-v2.boss-difference .boss-art-frame::after{content:'';position:absolute;z-index:3;border-radius:50%;pointer-events:none;transition:transform .32s cubic-bezier(.2,.8,.24,1),opacity .25s ease,box-shadow .25s ease}
+.boss-v2.boss-difference .boss-art-frame::before{inset:5%;border:2px solid rgba(99,215,255,.58);transform:scale(var(--h-ring-scale));box-shadow:0 0 19px rgba(45,180,240,.32),inset 0 0 18px rgba(228,177,76,.14)}
+.boss-v2.boss-difference .boss-art-frame::after{inset:24%;border:2px solid rgba(231,183,88,.58);transform:scale(var(--h-inner-scale));box-shadow:0 0 18px rgba(231,177,70,.28),inset 0 0 18px rgba(55,198,247,.18)}
+.boss-v2.boss-difference .boss-combat-stats div:last-child b{color:#86dcff;text-shadow:0 0 14px rgba(67,190,241,.5)}
+.boss-v2.boss-difference.boss-h-core-open .boss-aura{border-color:rgba(143,234,255,.9);box-shadow:0 0 78px rgba(48,193,246,.62),inset 0 0 42px rgba(255,211,112,.25)}
+.boss-v2.boss-difference.boss-h-core-open .boss-art-frame::before,.boss-v2.boss-difference.boss-h-core-open .boss-art-frame::after{opacity:.25;box-shadow:0 0 35px rgba(104,226,255,.65)}
+.boss-v2.boss-difference.boss-h-collapse .boss-art-frame{animation:hRingCollapse .64s cubic-bezier(.18,.82,.24,1)}
+.boss-v2.boss-difference.boss-h-rebound .boss-art-frame{animation:hRingRebound .72s cubic-bezier(.18,.82,.24,1)}
+.boss-v2.boss-difference.boss-phase-two .boss-arena{background:radial-gradient(circle at 24% 35%,rgba(48,183,243,.4),transparent 40%),radial-gradient(circle at 43% 36%,rgba(230,163,61,.26),transparent 36%),linear-gradient(145deg,#061322,#10304d 52%,#272016)}
+.boss-v2.boss-difference.boss-phase-three .boss-arena{background:radial-gradient(circle at 24% 35%,rgba(74,207,255,.49),transparent 42%),radial-gradient(circle at 44% 36%,rgba(246,178,58,.34),transparent 38%),linear-gradient(145deg,#051525,#123a5c 50%,#322510)}
 @keyframes mathStrike{0%{opacity:0;transform:translate(0,0) scale(.35)}20%{opacity:1}80%{opacity:1;transform:translate(-330%,-230%) scale(.78)}100%{opacity:0;transform:translate(-380%,-260%) scale(1.65)}}
 @keyframes bossCounter{0%{opacity:0;transform:translate(0,0) scale(.4)}18%{opacity:1}78%{opacity:1;transform:translate(300%,230%) scale(.82)}100%{opacity:0;transform:translate(340%,260%) scale(1.5)}}
 @keyframes impactPop{0%{opacity:0;transform:translateY(12px) scale(.5)}35%{opacity:1;transform:translateY(-5px) scale(1.08)}100%{opacity:0;transform:translateY(-32px) scale(.92)}}
@@ -164,8 +179,10 @@
 @keyframes forbiddenCharge{from{transform:scale(.98);opacity:.72}to{transform:scale(1.05);opacity:1}}
 @keyframes forbiddenSealBreak{0%{filter:brightness(1);transform:scale(1)}36%{filter:brightness(1.65) saturate(1.25);transform:scale(1.045);box-shadow:0 0 52px rgba(70,227,232,.55),0 0 78px rgba(238,189,66,.4)}100%{filter:brightness(1);transform:scale(1)}}
 @keyframes forbiddenCast{0%{filter:brightness(1);transform:translateX(0) scale(1)}30%{filter:brightness(1.42) saturate(1.35);transform:translateX(5px) scale(1.035);box-shadow:0 0 52px rgba(240,39,80,.66)}65%{transform:translateX(-3px) scale(1.015)}100%{filter:brightness(1);transform:translateX(0) scale(1)}}
+@keyframes hRingCollapse{0%{filter:brightness(1);transform:scale(1)}36%{filter:brightness(1.48) saturate(1.25);transform:scale(.965);box-shadow:0 0 52px rgba(74,207,255,.62)}100%{filter:brightness(1);transform:scale(1)}}
+@keyframes hRingRebound{0%{filter:brightness(1);transform:scale(1)}38%{filter:brightness(1.28) saturate(1.12);transform:scale(1.055);box-shadow:0 0 48px rgba(235,168,67,.56)}100%{filter:brightness(1);transform:scale(1)}}
 @media(max-width:700px){.boss-art-frame{width:min(300px,96%)}.boss-v2 .boss-aura{width:205px;height:205px}.boss-impact{left:31%;top:35%}.boss-impact.counter-impact{left:54%;top:70%}}
-@media(prefers-reduced-motion:reduce){.boss-art,.boss-projectile,.boss-impact,.boss-boundary-cross .boss-art-frame,.boss-stitch-complete .boss-art-frame,.boss-heal-pulse .boss-art-frame,.boss-wall-slam .boss-art-frame,.boss-wall-repel .boss-art-frame,.boss-squeeze .boss-art-frame::before,.boss-squeeze .boss-art-frame::after,.boss-forbidden .boss-aura,.boss-forbidden .boss-art-frame{animation:none!important;transition:none!important}.boss-projectile,.boss-impact{display:none}}
+@media(prefers-reduced-motion:reduce){.boss-art,.boss-projectile,.boss-impact,.boss-boundary-cross .boss-art-frame,.boss-stitch-complete .boss-art-frame,.boss-heal-pulse .boss-art-frame,.boss-wall-slam .boss-art-frame,.boss-wall-repel .boss-art-frame,.boss-squeeze .boss-art-frame::before,.boss-squeeze .boss-art-frame::after,.boss-forbidden .boss-aura,.boss-forbidden .boss-art-frame,.boss-difference .boss-art-frame,.boss-difference .boss-art-frame::before,.boss-difference .boss-art-frame::after{animation:none!important;transition:none!important}.boss-projectile,.boss-impact{display:none}}
 
 /* 모바일 전투 조종석: 문제를 풀면서도 보스·HP·시간이 항상 보인다. */
 @media(max-width:700px){
@@ -177,6 +194,7 @@
   .boss-v2 .boss-art{object-position:center}
   .boss-v2.boss-squeeze .boss-art{object-fit:contain;background:#07131b}
   .boss-v2.boss-forbidden .boss-art{object-fit:cover;object-position:center 42%;background:#10090c}
+  .boss-v2.boss-difference .boss-art{object-fit:cover;object-position:center;background:#06111f}
   .boss-v2.boss-squeeze .boss-arena{grid-template-columns:128px minmax(0,1fr)}
   .boss-v2.boss-squeeze .boss-art-frame{width:120px}
   .boss-v2.boss-squeeze .boss-monster>strong{max-width:126px}
