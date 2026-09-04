@@ -199,7 +199,22 @@
 @keyframes bladeCross{0%{filter:brightness(1);transform:scale(1) rotate(0)}35%{filter:brightness(1.65) saturate(1.35);transform:scale(1.055) rotate(-2deg);box-shadow:-24px 0 50px rgba(43,225,231,.58),24px 0 50px rgba(255,193,61,.56),0 0 76px rgba(73,235,159,.34)}70%{transform:scale(.985) rotate(1deg)}100%{filter:brightness(1);transform:scale(1) rotate(0)}}
 @keyframes bladeBreak{0%{filter:brightness(1);transform:translateX(0)}28%{filter:grayscale(.35) brightness(.8);transform:translateX(7px) rotate(2deg)}58%{transform:translateX(-6px) rotate(-2deg);box-shadow:0 0 42px rgba(239,76,52,.54)}100%{filter:brightness(1);transform:translateX(0)}}
 @media(max-width:700px){.boss-art-frame{width:min(300px,96%)}.boss-v2 .boss-aura{width:205px;height:205px}.boss-impact{left:31%;top:35%}.boss-impact.counter-impact{left:54%;top:70%}}
-@media(prefers-reduced-motion:reduce){.boss-art,.boss-projectile,.boss-impact,.boss-boundary-cross .boss-art-frame,.boss-stitch-complete .boss-art-frame,.boss-heal-pulse .boss-art-frame,.boss-wall-slam .boss-art-frame,.boss-wall-repel .boss-art-frame,.boss-squeeze .boss-art-frame::before,.boss-squeeze .boss-art-frame::after,.boss-forbidden .boss-aura,.boss-forbidden .boss-art-frame,.boss-difference .boss-art-frame,.boss-difference .boss-art-frame::before,.boss-difference .boss-art-frame::after,.boss-product .boss-art-frame,.boss-product .boss-art-frame::before,.boss-product .boss-art-frame::after{animation:none!important;transition:none!important}.boss-projectile,.boss-impact{display:none}}
+/* 접선의 저격수 — 카탈로그의 대표색 #2b7991 을 그대로 쓴다.
+   조준이 한 칸 잡힐 때마다 조준경이 밝아지고, 발사하면 한 번 번쩍인다. */
+.boss-v2.boss-sniper .boss-arena{background:radial-gradient(circle at 30% 30%,rgba(63,177,205,.28),transparent 38%),linear-gradient(155deg,#04141c,#0d2c38 56%,#13404e)}
+.boss-v2.boss-sniper .boss-aura{border-color:rgba(96,208,232,.5);box-shadow:0 0 54px rgba(43,121,145,.36),inset 0 0 32px rgba(127,227,245,.14)}
+.boss-v2.boss-sniper .boss-hp-track div{background:linear-gradient(90deg,#17607a,#3fb1cd 55%,#9fe8ff)}
+.boss-v2.boss-sniper .boss-art-frame{border-color:rgba(110,214,236,.42);box-shadow:0 0 30px rgba(45,150,180,.26),0 18px 38px rgba(0,0,0,.36);background:#04141c}
+.boss-v2.boss-sniper .boss-combat-stats div:last-child b{color:#8fe6ff;text-shadow:0 0 14px rgba(94,208,236,.5)}
+.boss-v2.boss-sniper.boss-sniper-aimed .boss-art-frame{box-shadow:0 0 40px rgba(70,190,222,.44),0 18px 38px rgba(0,0,0,.36)}
+.boss-v2.boss-sniper.boss-sniper-locked .boss-art-frame{box-shadow:0 0 58px rgba(133,232,255,.6),0 18px 38px rgba(0,0,0,.36);filter:brightness(1.16) saturate(1.12)}
+.boss-v2.boss-sniper.boss-sniper-fire .boss-art-frame{animation:sniperFire .62s cubic-bezier(.16,.84,.28,1)}
+.boss-v2.boss-sniper.boss-sniper-miss .boss-art-frame{animation:sniperMiss .6s cubic-bezier(.18,.82,.24,1)}
+.boss-v2.boss-sniper.boss-phase-two .boss-arena{background:radial-gradient(circle at 30% 30%,rgba(76,196,224,.34),transparent 40%),linear-gradient(155deg,#04161f,#0f3644 56%,#175064)}
+.boss-v2.boss-sniper.boss-phase-three .boss-arena{background:radial-gradient(circle at 30% 30%,rgba(96,220,246,.42),transparent 42%),linear-gradient(155deg,#03181f,#124254 54%,#1c6076)}
+@keyframes sniperFire{0%{filter:brightness(1)}30%{filter:brightness(1.7) saturate(1.3);box-shadow:0 0 84px rgba(150,238,255,.7)}70%{filter:brightness(1.12)}100%{filter:brightness(1)}}
+@keyframes sniperMiss{0%{transform:translateX(0)}25%{transform:translateX(6px) rotate(1.4deg);filter:grayscale(.4) brightness(.82)}60%{transform:translateX(-5px) rotate(-1.2deg);box-shadow:0 0 38px rgba(239,76,52,.5)}100%{transform:translateX(0)}}
+@media(prefers-reduced-motion:reduce){.boss-sniper .boss-art-frame,.boss-art,.boss-projectile,.boss-impact,.boss-boundary-cross .boss-art-frame,.boss-stitch-complete .boss-art-frame,.boss-heal-pulse .boss-art-frame,.boss-wall-slam .boss-art-frame,.boss-wall-repel .boss-art-frame,.boss-squeeze .boss-art-frame::before,.boss-squeeze .boss-art-frame::after,.boss-forbidden .boss-aura,.boss-forbidden .boss-art-frame,.boss-difference .boss-art-frame,.boss-difference .boss-art-frame::before,.boss-difference .boss-art-frame::after,.boss-product .boss-art-frame,.boss-product .boss-art-frame::before,.boss-product .boss-art-frame::after{animation:none!important;transition:none!important}.boss-projectile,.boss-impact{display:none}}
 
 /* 모바일 전투 조종석: 문제를 풀면서도 보스·HP·시간이 항상 보인다. */
 @media(max-width:700px){

@@ -11,6 +11,7 @@ const live = read('경제수학/live/index.html');
 const bossHall = read('보스전/index.html');
 const skillHtml = read('미적분1/미적분1_계산스킬.html');
 const skillJs = read('미적분1/미적분1_계산스킬.js');
+const skillCss = read('미적분1/미적분1_계산스킬.css');
 
 for (const source of [home, nav]) {
   assert.match(source, /오늘의 도전/, '전역 도전 메뉴에 오늘의 도전이 있어야 한다.');
@@ -28,8 +29,8 @@ assert.match(bossHall, /38초/);
 assert.match(bossHall, /HP 2600/);
 
 assert.match(skillHtml, /jp-game-telemetry\.js\?v=2/);
-assert.match(skillHtml, /미적분1_계산스킬\.js\?v=20/);
-assert.match(skillHtml, /미적분1_계산스킬\.css\?v=23/);
+assert.match(skillHtml, /미적분1_계산스킬\.js\?v=21/);
+assert.match(skillHtml, /미적분1_계산스킬\.css\?v=24/);
 assert.match(skillJs, /differentiate_polynomial:\{name:'미분의 철갑수'/);
 assert.match(skillJs, /limit_factor:\{name:'인수분해의 문지기'/);
 assert.match(skillJs, /limit_rationalize:\{name:'켤레의 연금술사'/);
@@ -109,6 +110,24 @@ assert.match(skillJs, /RIGHT BLADE · 역으로 항 복원/,'심화 오른날은
 assert.match(skillJs, /쌍날 교차 베기!/);
 assert.match(skillJs, /쌍날 연계 파괴 · 왼날부터 재시작/);
 assert.match(skillJs, /productBattle&&!completingProduct/,'교차 베기 공격으로만 쌍날 곱셈귀를 끝낼 수 있어야 한다.');
+// ── 접선의 저격수 ──────────────────────────────────────────────
+// 접선은 접점과 기울기가 둘 다 있어야 그을 수 있다. 그 둘을 따로
+// 조준한 뒤 합쳐야 레이저가 나가는 것이 이 보스의 규칙이다.
+assert.match(skillJs, /tangent_equation:\{name:'접선의 저격수'/);
+assert.match(skillJs, /sniper-lock/);
+assert.match(skillJs, /function buildSniperTarget/,'세 문제가 같은 곡선과 같은 a 를 공유해야 한다.');
+assert.match(skillJs, /keep=boss\.sniperLock>0&&boss\.sniperTarget/,'조준 중에는 목표 곡선이 바뀌면 안 된다.');
+assert.match(skillJs, /if\(m===0\|\|m===a\)continue/,'기울기 0과 기울기=접점x 는 걸러야 한다.');
+assert.match(skillJs, /접점의 y좌표 f\(/);
+assert.match(skillJs, /접선의 기울기 f′\(/);
+assert.match(skillJs, /조준 완료 · 접선 레이저 발사!/);
+assert.match(skillJs, /sniperBattle&&!firingSniper/,'조준을 끝낸 발사로만 접선의 저격수를 쓰러뜨릴 수 있어야 한다.');
+assert.match(skillJs, /boss\.sniperLock=0;boss\.sniperTarget=null;boss\.sniperResetOnNext=false;\$\('\[data-boss-stage\]'\)\.classList\.add\('boss-sniper-miss'\)/,'오답이면 조준이 통째로 풀려야 한다.');
+assert.match(skillCss, /\.boss-v2\.boss-sniper /,'저격수 전용 겉모습이 있어야 한다.');
+assert.match(skillJs, /tangent-sniper\.jpg/,'접선의 저격수 데스크톱 초상을 사용해야 한다.');
+assert.match(skillJs, /tangent-sniper-mobile\.jpg/,'접선의 저격수 모바일 초상을 사용해야 한다.');
+assert.match(skillJs, /조준 실패 · 접점부터 다시 포착/,'오답 피드백은 저격수 규칙을 직접 설명해야 한다.');
+
 assert.match(skillJs, /function makeQuestion\(id,level=currentLevel,forcedSide=null\)/,'보스 페이즈 난도와 접근 방향이 실제 문제 생성기에 전달되어야 한다.');
 assert.match(skillJs, /currentBossV2Limit/);
 assert.match(skillJs, /바로 다시 도전/);

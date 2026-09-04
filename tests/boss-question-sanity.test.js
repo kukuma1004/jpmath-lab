@@ -35,12 +35,16 @@ function loadGenerators() {
     for (let i = start + 1; i < lines.length; i += 1) if (lines[i] === '  }') return i;
     throw new Error('함수 끝을 못 찾음');
   };
+  // 보스 전용 문제 생성기는 hDistanceLabel 과 makeForbiddenQuestion 사이에
+  // 모여 있다. 새 보스를 만들면 그 사이에 두어야 여기서 함께 잘려 나온다.
   const code = [
-    'const boss = { phase: 1, hStep: 0, productPair: null };',
+    'const boss = { phase: 1, hStep: 0, productPair: null, sniperLock: 0, sniperTarget: null };',
     lines.slice(2, lineOf('  const excluded={')).join('\n'),
-    lines.slice(lineOf('  function makeDifferenceQuestion'),
+    lines.slice(lineOf('  function hDistanceLabel'),
       endOf(lineOf('  function makeForbiddenQuestion')) + 1).join('\n'),
-    'globalThis.API = { makeQuestion, makeDifferenceQuestion, makeForbiddenQuestion };'
+    'globalThis.API = { makeQuestion, makeDifferenceQuestion, makeForbiddenQuestion, boss,' +
+    '  makeSniperQuestion: typeof makeSniperQuestion === "function" ? makeSniperQuestion : null,' +
+    '  makeProductBossQuestion: typeof makeProductBossQuestion === "function" ? makeProductBossQuestion : null };'
   ].join('\n');
   const ctx = { console };
   ctx.globalThis = ctx;
@@ -114,7 +118,20 @@ function limitOf(js, to, f) {
   return (l + r) / 2;
 }
 
-/* 문제 모양은 일곱 가지다. 새 모양을 만들면 여기에 읽는 법을 더한다. */
+// y=mx+k 꼴로 적힌 답이 주어진 기울기·절편과 맞는지 본다.
+function checkLine(correct, m, k) {
+  const s = String(correct).replace(/−/g, '-');
+  const lm = /^y=(-?[0-9]*)x([+-][0-9]+)?$/.exec(s);
+  if (!lm) return `접선의 방정식 꼴이 아니다 (${correct})`;
+  const gm = lm[1] === '' ? 1 : lm[1] === '-' ? -1 : Number(lm[1]);
+  const gk = lm[2] ? Number(lm[2]) : 0;
+  if (!near(gm, m) || !near(gk, k)) {
+    return `접선이 안 맞는다 (있어야 할 기울기 ${m}, 절편 ${k} / 적힌 것 ${gm}, ${gk})`;
+  }
+  return null;
+}
+
+/* 문제 모양은 열 가지다. 새 모양을 만들면 여기에 읽는 법을 더한다. */
 function verify(q) {
   const eq = q.equation.replace(/−/g, '-'), want = toNum(q.correct);
 
@@ -142,6 +159,64 @@ function verify(q) {
     const to = m[4].trim(), lo = limitOf(toJs(m[1]), to), hi = limitOf(toJs(m[2]), to);
     if (!near(lo, hi)) return `상·하한의 극한이 다르다 (${lo} vs ${hi})`;
     if (want !== null && !near(lo, want)) return `식과 답이 다르다 (계산 ${lo})`;
+    return null;
+  }
+
+  // 쌍날 곱셈귀 · 한쪽 날:  u(x)=…,  v(x)=…   / "x=T에서 … u′(x)v(x)의 값은?"
+  m = /^u\(x\)=(.+?),\s*v\(x\)=(.+)$/.exec(eq);
+  if (m) {
+    const tm = /x=(-?[0-9]+)에서/.exec(q.prompt.replace(/−/g, '-'));
+    if (!tm) return '어느 x 인지 못 읽음';
+    const t = Number(tm[1]), e = 1e-5;
+    const u = compile(toJs(m[1])), v = compile(toJs(m[2]));
+    const at = (fn, x) => fn(...args(x, undefined, null));
+    const dU = (at(u, t + e) - at(u, t - e)) / (2 * e), dV = (at(v, t + e) - at(v, t - e)) / (2 * e);
+    const left = dU * at(v, t), right = at(u, t) * dV;
+    const target = /왼날/.test(q.prompt) ? left : right;
+    if (want !== null && !near(want, target)) return `식과 답이 다르다 (계산 ${target})`;
+    return null;
+  }
+
+  // 쌍날 곱셈귀 · 항 복원:  w(x)=u(x)v(x),  w′(T)=전체   / "u′v=L일 때 uv′는?"
+  m = /^w\(x\)=u\(x\)v\(x\),\s*w′\((-?[0-9]+)\)=(-?[0-9]+)$/.exec(eq);
+  if (m) {
+    const total = Number(m[2]);
+    const lm = /u′v=(-?[0-9]+)/.exec(q.prompt.replace(/−/g, '-'));
+    if (!lm) return '왼날 값을 못 읽음';
+    const rest = total - Number(lm[1]);
+    if (want !== null && !near(want, rest)) return `u′v+uv′ 가 안 맞는다 (있어야 할 값 ${rest})`;
+    return null;
+  }
+
+  // 접선의 저격수 · 발사:  접점 (A, Y),  기울기 M
+  m = /^접점 \((-?[0-9]+), (-?[0-9]+)\),\s*기울기 (-?[0-9]+)$/.exec(eq);
+  if (m) {
+    const A = Number(m[1]), Y = Number(m[2]), M = Number(m[3]);
+    return checkLine(q.correct, M, Y - M * A);
+  }
+
+  // 접선 문제:  f(x)=다항식,  x=A
+  // 접점 f(A) · 기울기 f′(A) · 접선의 방정식 — 물음에 따라 갈린다.
+  m = /^f\(x\)=(.+?),\s*x=(-?[0-9]+)$/.exec(eq);
+  if (m) {
+    const at = Number(m[2]), e = 1e-5, fn = compile(toJs(m[1]));
+    const val = fn(...args(at, undefined, null));
+    const der = (fn(...args(at + e, undefined, null)) - fn(...args(at - e, undefined, null))) / (2 * e);
+    if (/방정식/.test(q.prompt || '')) return checkLine(q.correct, der, val - der * at);
+    const target = /기울기/.test(q.prompt || '') ? der : val;
+    if (want !== null && !near(want, target)) return `식과 답이 다르다 (계산 ${target})`;
+    return null;
+  }
+
+  // 기울기로 접점 찾기:  f(x)=다항식  /  "기울기가 M인 접선의 접점 x좌표는?"
+  // 물음의 빼기 기호도 먼저 맞춘다 — 화면에는 −12 로 찍힌다.
+  const prompt = (q.prompt || '').replace(/−/g, '-');
+  m = /^f\(x\)=(.+)$/.exec(eq);
+  if (m && /기울기가 (-?[0-9]+)인 접선의 접점/.test(prompt)) {
+    const M = Number(/기울기가 (-?[0-9]+)인/.exec(prompt)[1]);
+    const e = 1e-5, fn = compile(toJs(m[1]));
+    const der = (fn(...args(want + e, undefined, null)) - fn(...args(want - e, undefined, null))) / (2 * e);
+    if (!near(der, M)) return `그 x 에서 기울기가 ${M} 이 아니다 (계산 ${der})`;
     return null;
   }
 
@@ -218,7 +293,8 @@ const SKILL_BOSSES = [
   ['limit_factor', '인수분해의 문지기'], ['limit_rationalize', '켤레의 연금술사'],
   ['limit_infinity_ratio', '무한비의 거신'], ['limit_infinity_diff', '미정형의 혼돈수'],
   ['limit_one_sided', '양면의 경계자'], ['continuity_parameter', '연속의 봉합사'],
-  ['squeeze_limit', '압착의 쌍벽'], ['differentiate_polynomial', '미분의 철갑수']
+  ['squeeze_limit', '압착의 쌍벽'], ['differentiate_polynomial', '미분의 철갑수'],
+  ['tangent_equation', '접선의 저격수']
 ];
 const LEVELS = ['basic', 'applied', 'deep'];
 
@@ -240,6 +316,21 @@ for (const [id, name] of SKILL_BOSSES) for (const lv of LEVELS) run(`${name}(${l
 for (const lv of LEVELS) {
   run(`금단의 미분술사(${lv})`, () => API.makeForbiddenQuestion(lv));
   run(`차분몫의 원형(${lv})`, () => API.makeDifferenceQuestion(lv));
+}
+// 저격수는 조준 0 → 1 → 2 로 이어져야 세 번째 문제가 앞의 두 답을 합친다.
+// 조준 단계를 직접 돌려 가며 세 문제 모두 뽑아 본다.
+if (API.makeSniperQuestion) {
+  for (const lv of LEVELS) {
+    for (let step = 0; step < 3; step += 1) {
+      run(`접선의 저격수(${lv}·조준${step})`, () => {
+        API.boss.sniperLock = step;
+        if (step === 0) API.boss.sniperTarget = null;
+        return API.makeSniperQuestion(lv);
+      });
+    }
+  }
+  API.boss.sniperLock = 0;
+  API.boss.sniperTarget = null;
 }
 if (API.makeProductBossQuestion) {
   for (const lv of LEVELS) for (const blade of ['left', 'right']) {
