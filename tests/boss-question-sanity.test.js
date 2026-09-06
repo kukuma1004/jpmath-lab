@@ -157,6 +157,23 @@ function signChanges(g) {
   return out;
 }
 
+// 서로 다른 실근을 센다. 부호 변화만 세면 중근을 놓친다 —
+// x³−3x+2=(x−1)²(x+2) 는 근이 둘인데 부호는 한 번만 바뀐다.
+// 부호가 안 바뀌면서 0 에 닿는 자리(접점)도 근으로 센다.
+function distinctRoots(g) {
+  const step = 0.002, hits = [];
+  let pv = g(-12);
+  for (let x = -12 + step; x <= 12; x += step) {
+    const v = g(x);
+    if (Math.sign(v) !== Math.sign(pv) && pv !== 0) hits.push(x - step / 2);
+    else if (Math.abs(v) < 1e-3 && Math.abs(v) < Math.abs(pv) && Math.abs(v) < Math.abs(g(x + step))) hits.push(x);
+    pv = v;
+  }
+  const uniq = [];
+  for (const r of hits) if (!uniq.some((u) => Math.abs(u - r) < 0.05)) uniq.push(r);
+  return uniq;
+}
+
 // "(−∞,-2) ∪ (4,∞)" 를 구간 목록으로
 function parseIntervals(text) {
   const t = String(text).replace(/−/g, '-').replace(/\s/g, '');
@@ -289,6 +306,8 @@ function verify(q) {
           for (let x = -14; x <= 14; x += 0.02) if (g(x) < -1e-6) return false;
           return true;
         }
+        // 수평접선이 하나도 없다 = f′ 에 실근이 없다
+        if (/수평접선이 하나도 없/.test(prompt)) return distinctRoots(g).length === 0;
         // 극대와 극소를 모두 갖는다 = f′ 의 부호가 두 번 바뀐다
         return signChanges(g).length === 2;
       };
@@ -379,6 +398,247 @@ function verify(q) {
     return null;
   }
 
+
+  // ── 실근·평균값·운동·적분 계열 ────────────────────────────────────
+
+  // 실근의 개수:  x³−3x=-2   /  "서로 다른 실근의 개수는?"
+  m = /^(.+?)\s*=\s*(-?[0-9]+)$/.exec(eq);
+  if (m && /서로 다른 실근의 개수/.test(prompt)) {
+    const fn = polyFn(m[1]), rhs = Number(m[2]);
+    const g = (x) => evalAt(fn, x) - rhs;
+    const n = distinctRoots(g).length;               // 중근도 하나로 센다
+    const said = Number(String(q.correct).replace(/[^0-9]/g, ''));
+    if (n !== said) return `부호가 ${n}번 바뀌는데 ${said}개라고 적혀 있다`;
+    return null;
+  }
+
+  // 실근 3개가 되게 하는 k:  x³−3x = k   /  "…k의 범위는?"
+  m = /^(.+?)\s*=\s*k$/.exec(eq);
+  if (m && /실근이 (\d)개가 되게 하는 k의 범위/.test(prompt)) {
+    const want3 = Number(/실근이 (\d)개가/.exec(prompt)[1]);
+    const fn = polyFn(m[1]);
+    const rootCount = (k) => distinctRoots((x) => evalAt(fn, x) - k).length;
+    // "−2 < k < 2" 를 읽는다
+    const rm = /^(-?[0-9.]+)\s*(<|≤)\s*k\s*(<|≤)\s*(-?[0-9.]+)$/.exec(String(q.correct).replace(/−/g, '-').replace(/\s+/g, ' ').trim());
+    if (!rm) return '범위를 못 읽음: ' + q.correct;
+    const lo = Number(rm[1]), hi = Number(rm[4]);
+    const mid = (lo + hi) / 2;
+    if (rootCount(mid) !== want3) return `범위 한가운데 k=${mid} 에서 실근이 ${rootCount(mid)}개다`;
+    if (rootCount(lo - 0.5) === want3) return `범위 밖 k=${lo - 0.5} 에서도 ${want3}개가 된다`;
+    if (rootCount(hi + 0.5) === want3) return `범위 밖 k=${hi + 0.5} 에서도 ${want3}개가 된다`;
+    // 경계는 등호가 없어야 한다 (중근이 생겨 개수가 준다)
+    if (rm[2] === '≤' && rootCount(lo) === want3) return '경계에서 등호를 쓰면 안 된다';
+    return null;
+  }
+
+  // 평균값 정리:  f(x)=x²,  [1,7]   /  "…c는?"
+  m = /^f\(x\)=(.+?),\s*\[(-?[0-9]+),(-?[0-9]+)\]$/.exec(eq);
+  if (m && want !== null) {
+    const fn = polyFn(m[1]), a = Number(m[2]), b = Number(m[3]);
+    if (want <= a || want >= b) return `c=${want} 가 구간 (${a},${b}) 안에 없다`;
+    const slope = (evalAt(fn, b) - evalAt(fn, a)) / (b - a);
+    const got = deriv(fn, want);
+    // 롤의 정리 꼴이면 f′(c)=0 이어야 하고, 그때 평균 기울기도 0이다
+    if (Math.abs(got - slope) > 1e-3 * Math.max(1, Math.abs(slope))) {
+      return `f′(${want})=${got.toFixed(3)} 인데 평균 기울기는 ${slope.toFixed(3)} 이다`;
+    }
+    return null;
+  }
+
+  // 운동:  s(t)=…  /  "t=T에서 속도는? · 가속도는? · 방향이 바뀌는 시각은?"
+  m = /^s\(t\)=(.+?)(\s*\(t ≥ 0\))?$/.exec(eq);
+  if (m && want !== null) {
+    const fn = polyFn(m[1].replace(/t/g, 'x'));
+    if (/방향이 바뀌는 시각/.test(prompt)) {
+      const v = (x) => deriv(fn, x);
+      if (Math.abs(v(want)) > 1e-2) return `t=${want} 에서 속도가 ${v(want).toFixed(3)} 로 0이 아니다`;
+      if (Math.sign(v(want - 0.3)) === Math.sign(v(want + 0.3))) return `t=${want} 에서 속도의 부호가 안 바뀐다`;
+      return null;
+    }
+    const tm = /t=(-?[0-9]+)에서/.exec(prompt);
+    if (!tm) return '어느 t 인지 못 읽음';
+    const t = Number(tm[1]);
+    const target = /가속도/.test(prompt)
+      ? (deriv(fn, t + 1e-3) - deriv(fn, t - 1e-3)) / 2e-3
+      : deriv(fn, t);
+    if (Math.abs(target - want) > 0.02 * Math.max(1, Math.abs(want))) {
+      return `식과 답이 다르다 (계산 ${target.toFixed(3)})`;
+    }
+    return null;
+  }
+
+  // 수평접선의 개수:  f(x)=…   /  "수평접선의 개수는?"
+  m = /^f\(x\)=(.+)$/.exec(eq);
+  if (m && /수평접선의 개수/.test(prompt)) {
+    const fn = polyFn(m[1]);
+    const n = distinctRoots((x) => deriv(fn, x)).length;
+    const said = Number(String(q.correct).replace(/[^0-9]/g, ''));
+    if (n !== said) return `f′ 의 실근이 ${n}개인데 ${said}개라고 적혀 있다`;
+    return null;
+  }
+
+  // 부정적분:  ∫ 8x³ dx   /  답 "2x⁴+C"
+  // 구간이 붙은 ∫[a→b] 는 아래 정적분 규칙이 맡는다. 여기서 먼저
+  // 걸리지 않도록 [ 로 시작하는 것은 뺀다.
+  m = /^∫\s*(?!\[)\(?(.+?)\)?\s*dx$/.exec(eq);
+  if (m) {
+    const body = String(q.correct).replace(/\+\s*C$/, '').trim();
+    let F, g;
+    try { F = polyFn(body); g = polyFn(m[1]) } catch (e) { return '식을 못 읽음' }
+    for (const x of [-2.3, -0.7, 0.6, 1.4, 2.9]) {
+      const d = deriv(F, x), want2 = evalAt(g, x);
+      if (Math.abs(d - want2) > 1e-2 * Math.max(1, Math.abs(want2))) {
+        return `x=${x} 에서 답을 미분하면 ${d.toFixed(3)} 인데 피적분함수는 ${want2.toFixed(3)} 이다`;
+      }
+    }
+    return null;
+  }
+
+  // 도함수에서 원함수:  f′(x)=4x+3   /  "f(x)로 가능한 식은?"
+  m = /^f′\(x\)=(.+)$/.exec(eq);
+  if (m && /f\(x\)로 가능한 식/.test(prompt)) {
+    const F = polyFn(String(q.correct).replace(/\+\s*C$/, '').trim()), g = polyFn(m[1]);
+    for (const x of [-2.1, -0.4, 1.3, 2.7]) {
+      const d = deriv(F, x), w = evalAt(g, x);
+      if (Math.abs(d - w) > 1e-2 * Math.max(1, Math.abs(w))) {
+        return `x=${x} 에서 답을 미분하면 ${d.toFixed(3)} 인데 f′ 은 ${w.toFixed(3)} 이다`;
+      }
+    }
+    return null;
+  }
+
+  // 초기조건이 붙은 원시함수:  F′(x)=4x,  F(0)=3   /  "F(1)의 값은?"
+  m = /^F′\(x\)=(.+?),\s*F\((-?[0-9]+)\)=(-?[0-9]+)$/.exec(eq);
+  if (m && want !== null) {
+    const tm = /F\((-?[0-9]+)\)의 값/.exec(prompt.replace(/−/g, '-'));
+    if (!tm) return '어느 점의 값인지 못 읽음';
+    const g = polyFn(m[1]), x0 = Number(m[2]), F0 = Number(m[3]), at2 = Number(tm[1]);
+    // F(at) = F(x0) + ∫[x0→at] f  — 사다리꼴로 촘촘히 적분한다
+    const steps = 20000, h = (at2 - x0) / steps;
+    let sum = 0;
+    for (let i = 0; i < steps; i += 1) sum += (evalAt(g, x0 + i * h) + evalAt(g, x0 + (i + 1) * h)) / 2 * h;
+    const got = F0 + sum;
+    if (Math.abs(got - want) > 1e-2 * Math.max(1, Math.abs(want))) {
+      return `식과 답이 다르다 (계산 ${got.toFixed(3)})`;
+    }
+    return null;
+  }
+
+  // 정적분:  ∫[0→4] 2x dx
+  m = /^∫\[(-?[0-9]+)→(-?[0-9]+)\]\s*\(?(.+?)\)?\s*dx$/.exec(eq);
+  if (m && want !== null) {
+    const g = polyFn(m[3]), lo = Number(m[1]), hi = Number(m[2]);
+    const steps = 20000, h = (hi - lo) / steps;
+    let sum = 0;
+    for (let i = 0; i < steps; i += 1) sum += (evalAt(g, lo + i * h) + evalAt(g, lo + (i + 1) * h)) / 2 * h;
+    if (Math.abs(sum - want) > 1e-2 * Math.max(1, Math.abs(want))) {
+      return `식과 답이 다르다 (계산 ${sum.toFixed(3)})`;
+    }
+    return null;
+  }
+
+  // 부정적분과 미분계수:  f(x)=…  /  "F가 f의 부정적분일 때 lim … 의 값은?"
+  m = /^f\(x\)=(.+)$/.exec(eq);
+  if (m && /부정적분일 때/.test(prompt) && want !== null) {
+    const am = /lim x→(-?[0-9]+)/.exec(prompt.replace(/−/g, '-'));
+    if (!am) return '어느 점의 극한인지 못 읽음';
+    // 이 극한은 F′(a) 의 정의이고 F′=f 이므로 f(a) 여야 한다
+    const at2 = Number(am[1]), got = evalAt(polyFn(m[1]), at2);
+    if (Math.abs(got - want) > 1e-6) return `F′(${at2})=f(${at2})=${got} 여야 한다`;
+    return null;
+  }
+
+  // 그래프와 x축 사이 넓이:  y=x²−2x,  0≤x≤2
+  // x축 아래도 넓이는 양수이므로 |f| 를 적분해야 한다.
+  m = /^y=(.+?),\s*(-?[0-9]+)≤x≤(-?[0-9]+)$/.exec(eq);
+  if (m && /x축 사이 넓이/.test(prompt) && want !== null) {
+    const g = polyFn(m[1]), lo = Number(m[2]), hi = Number(m[3]);
+    const steps = 40000, h = (hi - lo) / steps;
+    let sum = 0;
+    for (let i = 0; i < steps; i += 1) {
+      sum += (Math.abs(evalAt(g, lo + i * h)) + Math.abs(evalAt(g, lo + (i + 1) * h))) / 2 * h;
+    }
+    if (Math.abs(sum - want) > 5e-3 * Math.max(1, Math.abs(want))) {
+      return `식과 답이 다르다 (|f| 를 적분하면 ${sum.toFixed(4)})`;
+    }
+    return null;
+  }
+
+  // 두 곡선 사이 넓이:  y=4x, y=3x,  0≤x≤2
+  m = /^y=(.+?),\s*y=(.+?),\s*(-?[0-9]+)≤x≤(-?[0-9]+)$/.exec(eq);
+  if (m && /사이 넓이/.test(prompt) && want !== null) {
+    const f1 = polyFn(m[1]), f2 = polyFn(m[2]);
+    const lo = Number(m[3]), hi = Number(m[4]);
+    const steps = 40000, h = (hi - lo) / steps;
+    const d = (x) => Math.abs(evalAt(f1, x) - evalAt(f2, x));
+    let sum = 0;
+    for (let i = 0; i < steps; i += 1) sum += (d(lo + i * h) + d(lo + (i + 1) * h)) / 2 * h;
+    if (Math.abs(sum - want) > 5e-3 * Math.max(1, Math.abs(want))) {
+      return `식과 답이 다르다 (|f−g| 를 적분하면 ${sum.toFixed(4)})`;
+    }
+    return null;
+  }
+
+  // 두 곡선이 둘러싼 넓이:  y=x²,  y=4x
+  // 구간이 안 적혀 있으므로 두 곡선의 교점 사이를 잰다.
+  m = /^y=(.+?),\s+y=(.+)$/.exec(eq);
+  if (m && /둘러싸인 부분의 넓이/.test(prompt) && want !== null) {
+    const f1 = polyFn(m[1]), f2 = polyFn(m[2]);
+    const gap = (x) => evalAt(f1, x) - evalAt(f2, x);
+    const cross = distinctRoots(gap);
+    if (cross.length < 2) return `교점이 ${cross.length}개라 둘러싸인 영역이 없다`;
+    const lo = Math.min(...cross), hi = Math.max(...cross);
+    const steps = 40000, h = (hi - lo) / steps;
+    let sum = 0;
+    for (let i = 0; i < steps; i += 1) sum += (Math.abs(gap(lo + i * h)) + Math.abs(gap(lo + (i + 1) * h))) / 2 * h;
+    if (Math.abs(sum - want) > 1e-2 * Math.max(1, Math.abs(want))) {
+      return `식과 답이 다르다 (교점 사이를 재면 ${sum.toFixed(3)})`;
+    }
+    return null;
+  }
+
+  // 이동거리·위치 변화:  v(t)=2t−4,  0≤t≤4
+  // 이동거리는 ∫|v| 이고 위치 변화는 ∫v 다. 이 둘을 헷갈리는 것이 함정이다.
+  m = /^v\(t\)=(.+?),\s*(-?[0-9]+)≤t≤(-?[0-9]+)$/.exec(eq);
+  if (m && want !== null) {
+    const g = polyFn(m[1].replace(/t/g, 'x'));
+    const lo = Number(m[2]), hi = Number(m[3]);
+    const steps = 40000, h = (hi - lo) / steps;
+    const useAbs = /이동거리/.test(prompt);
+    const val = (x) => (useAbs ? Math.abs(evalAt(g, x)) : evalAt(g, x));
+    let sum = 0;
+    for (let i = 0; i < steps; i += 1) sum += (val(lo + i * h) + val(lo + (i + 1) * h)) / 2 * h;
+    if (Math.abs(sum - want) > 5e-3 * Math.max(1, Math.abs(want))) {
+      return `식과 답이 다르다 (${useAbs ? '∫|v|' : '∫v'} 를 재면 ${sum.toFixed(4)})`;
+    }
+    return null;
+  }
+
+  // 미적분의 기본정리:  F(x)=∫[0→x] (2t²) dt   /  "F′(2)의 값은?"
+  // F′(x)=f(x) 이므로 답은 피적분함수에 그 값을 넣은 것이어야 한다.
+  m = /^F\(x\)=∫\[(-?[0-9]+)→x\]\s*\(?(.+?)\)?\s*dt$/.exec(eq);
+  if (m && want !== null) {
+    const tm = /F′\((-?[0-9]+)\)의 값/.exec(prompt.replace(/−/g, '-'));
+    if (!tm) return '어느 점의 값인지 못 읽음';
+    const at2 = Number(tm[1]), got = evalAt(polyFn(m[2].replace(/t/g, 'x')), at2);
+    if (Math.abs(got - want) > 1e-6) return `F′(${at2})=f(${at2})=${got} 여야 한다`;
+    return null;
+  }
+
+  // 양변을 미분하기:  ∫[2→x] f(t) dt = x²−2x   /  "f(2)의 값은?"
+  m = /^∫\[(-?[0-9]+)→x\]\s*f\(t\)\s*dt\s*=\s*(.+)$/.exec(eq);
+  if (m && want !== null) {
+    const tm = /f\((-?[0-9]+)\)의 값/.exec(prompt.replace(/−/g, '-'));
+    if (!tm) return '어느 점의 값인지 못 읽음';
+    const lo = Number(m[1]), at2 = Number(tm[1]);
+    const R = polyFn(m[2]);
+    // 양변을 미분하면 f(x)=우변′ 이다. 그리고 아래끝에서 우변은 0이어야 한다.
+    if (Math.abs(evalAt(R, lo)) > 1e-6) return `x=${lo} 에서 우변이 0이 아니다 (${evalAt(R, lo)})`;
+    const got = deriv(R, at2);
+    if (Math.abs(got - want) > 1e-3) return `우변을 미분해 x=${at2} 를 넣으면 ${got.toFixed(3)} 이다`;
+    return null;
+  }
+
   // 연속이 되게 하는 k:  f(x)=유리식 (x≠a),  f(a)=k
   m = /^f\(x\)=(.+?)\s*\(x≠(-?[0-9]+)\),\s*f\(-?[0-9]+\)=k$/.exec(eq);
   if (m) {
@@ -439,6 +699,10 @@ function checkCommon(q) {
   if (!q.choices.includes(String(q.correct))) return '보기에 정답이 없다';
   if (q.choices.length !== 4) return `보기가 ${q.choices.length}개`;
   if (/다른 값 [0-9]/.test(q.choices.join(' '))) return '보기를 못 채워 "다른 값 N" 버튼이 생겼다';
+  // 이 앱의 답은 정수 아니면 1/3 같은 분수다. 0.3333333333333333 처럼
+  // 소수가 그대로 나오면 계산 도중 값이 새어 나온 것이다.
+  const decimal = [String(q.correct), ...q.choices].find((c) => /\d\.\d{3,}/.test(String(c)));
+  if (decimal) return `보기에 소수가 그대로 나온다: ${decimal}`;
   for (const [where, text] of [['식', q.equation], ['보기', q.choices.join(' ')], ['해설', q.explanation || '']]) {
     for (const t of (text.match(/√([0-9]+)/g) || [])) {
       const r = Math.sqrt(Number(t.slice(1)));
@@ -455,7 +719,19 @@ const SKILL_BOSSES = [
   ['squeeze_limit', '압착의 쌍벽'], ['differentiate_polynomial', '미분의 철갑수'],
   ['tangent_equation', '접선의 저격수'],
   ['monotonic_interval', '부호표의 순찰자'], ['extrema_sign', '극점의 전환자'],
-  ['cubic_extrema', '판별식의 삼두룡'], ['quartic_shape', '사차의 봉우리왕']
+  ['cubic_extrema', '판별식의 삼두룡'], ['quartic_shape', '사차의 봉우리왕'],
+  ['real_roots', '교점의 군주'],
+  ['mean_value', '평균값의 추적자'],
+  ['motion_rate', '가속의 폭주마'],
+  ['horizontal_tangent', '수평접선의 사냥꾼'],
+  ['antiderivative', '원시함수의 수집가'],
+  ['initial_antiderivative', '상수 C의 봉인자'],
+  ['definite_integral', '구간의 판관'],
+  ['integral_symmetry', '대칭적분의 거울왕'],
+  ['area_axis', '절댓값의 재단사'],
+  ['area_between', '교차영역의 포식자'],
+  ['distance_velocity', '속도누적의 질주귀'],
+  ['fundamental_theorem', '미적분의 문지기']
 ];
 const LEVELS = ['basic', 'applied', 'deep'];
 

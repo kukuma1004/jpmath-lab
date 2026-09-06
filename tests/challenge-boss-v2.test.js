@@ -29,7 +29,7 @@ assert.match(bossHall, /38초/);
 assert.match(bossHall, /HP 2600/);
 
 assert.match(skillHtml, /jp-game-telemetry\.js\?v=2/);
-assert.match(skillHtml, /미적분1_계산스킬\.js\?v=22/);
+assert.match(skillHtml, /미적분1_계산스킬\.js\?v=23/);
 assert.match(skillHtml, /미적분1_계산스킬\.css\?v=25/);
 assert.match(skillJs, /differentiate_polynomial:\{name:'미분의 철갑수'/);
 assert.match(skillJs, /limit_factor:\{name:'인수분해의 문지기'/);

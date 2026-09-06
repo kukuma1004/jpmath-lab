@@ -95,7 +95,8 @@ function look(tag, q) {
 
 const SKILLS = ['limit_factor', 'limit_rationalize', 'limit_infinity_ratio', 'limit_infinity_diff',
   'limit_one_sided', 'continuity_parameter', 'squeeze_limit', 'differentiate_polynomial', 'tangent_equation',
-  'monotonic_interval', 'extrema_sign', 'cubic_extrema', 'quartic_shape'];
+  'monotonic_interval', 'extrema_sign', 'cubic_extrema', 'quartic_shape',
+  'real_roots', 'mean_value', 'motion_rate', 'horizontal_tangent', 'antiderivative', 'initial_antiderivative', 'definite_integral', 'integral_symmetry', 'area_axis', 'area_between', 'distance_velocity', 'fundamental_theorem'];
 const LEVELS = ['basic', 'applied', 'deep'];
 
 for (const id of SKILLS) for (const lv of LEVELS) {

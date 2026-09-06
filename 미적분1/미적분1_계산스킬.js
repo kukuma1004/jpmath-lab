@@ -85,11 +85,13 @@
   // 계수 배열 [a0,a1,a2,…] 하나에서 표시 문자열과 값을 함께 만든다.
   // 식과 답이 따로 놀아서 생기는 오류를 원천적으로 막기 위한 것이다.
   const P={
-    text(c){
+    // 변수 이름을 받는다. 시간을 다루는 문제는 s(t)=… 라고 써 놓고
+    // 식은 x 로 나오면 안 된다. 기본값은 x 라 나머지 호출은 그대로다.
+    text(c,name='x'){
       let out='';
       for(let i=c.length-1;i>=0;i--){
         const v=c[i]; if(!v) continue;
-        const body=i===0?String(Math.abs(v)):(Math.abs(v)===1?pow('x',i):Math.abs(v)+pow('x',i));
+        const body=i===0?String(Math.abs(v)):(Math.abs(v)===1?pow(name,i):Math.abs(v)+pow(name,i));
         out+= out? (v>0?'+':'−')+body : (v>0?body:'−'+body);
       }
       return out||'0';
@@ -483,16 +485,16 @@
       const A=ri(1,2),B=nonzero(-6,-2),t=ri(1,3);
       const s=[0,0,B,A],v=P.d(s),acc=P.d(v);
       const correct=P.at(acc,t);
-      const q=Q('VELOCITY · 가속도',`s(t)=${P.text(s)}`,`t=${t}에서 가속도는?`,correct,[P.at(v,t),correct+t,-correct],
-        `v(t)=${P.text(v)}, a(t)=${P.text(acc)}이므로 t=${t}에서 ${correct}입니다.`);
+      const q=Q('VELOCITY · 가속도',`s(t)=${P.text(s,'t')}`,`t=${t}에서 가속도는?`,correct,[P.at(v,t),correct+t,-correct],
+        `v(t)=${P.text(v,'t')}, a(t)=${P.text(acc,'t')}이므로 t=${t}에서 ${correct}입니다.`);
       q.check={k:'deriv2',c:s,at:t};return q;
     },
     deep(){
       const r=ri(1,4);                              // v(t)=3(t−r)(t+r) 형태를 피하고 정수 해를 보장
       const v=P.fromRoots(3,[r,-r]),s=P.i(v).map(x=>Math.round(x*6)/6);
       const correct=r;
-      const q=Q('VELOCITY · 운동 방향이 바뀌는 시각',`s(t)=${P.text(s)}  (t ≥ 0)`,'물체의 운동 방향이 바뀌는 시각 t는?',correct,[2*r,0,r*r],
-        `v(t)=${P.text(v)}=3(t−${r})(t+${r})이고 t ≥ 0에서 부호가 바뀌는 것은 t=${r}뿐입니다.`);
+      const q=Q('VELOCITY · 운동 방향이 바뀌는 시각',`s(t)=${P.text(s,'t')}  (t ≥ 0)`,'물체의 운동 방향이 바뀌는 시각 t는?',correct,[2*r,0,r*r],
+        `v(t)=${P.text(v,'t')}=3(t−${r})(t+${r})이고 t ≥ 0에서 부호가 바뀌는 것은 t=${r}뿐입니다.`);
       q.check={k:'signChange',c:v,at:r};return q;
     }
   };
@@ -549,7 +551,7 @@
       const correct=P.at(c,a);
       // 식 자리에는 함수만 두고 조건은 발문으로 뺀다 (390px에서 넘치지 않게)
       const q=Q('부정적분과 미분계수',`f(x)=${P.text(c)}`,
-        `F가 f의 부정적분일 때, lim x→${num(a)} (F(x)−F(${num(a)}))/(${lin(a)}) 의 값은?`,correct,[P.at(P.i(c),a),P.at(P.d(c),a),0],
+        `F가 f의 부정적분일 때, lim x→${num(a)} (F(x)−F(${num(a)}))/(${lin(a)}) 의 값은?`,correct,[P.at(c,-a),P.at(P.d(c),a),0],
         `이 극한은 F′(${num(a)})의 정의이고 F′=f이므로 f(${num(a)})=${correct}입니다.`);
       q.check={k:'polyval',c:c,at:a};return q;
     }
@@ -634,14 +636,14 @@
       const r=ri(2,4);                              // v(t)=t²−r² , 0≤t≤r+1 은 계산이 지저분해 [0,r] 로 둔다
       const v=[-r*r,0,1],T=r;
       const correct=frac(2*r*r*r,3);
-      const q=Q('TOTAL DISTANCE · 이차 속도',`v(t)=${P.text(v)},  0≤t≤${T}`,'이동거리는?',correct,[frac(-2*r*r*r,3),'0',frac(r*r*r,3)],
+      const q=Q('TOTAL DISTANCE · 이차 속도',`v(t)=${P.text(v,'t')},  0≤t≤${T}`,'이동거리는?',correct,[frac(-2*r*r*r,3),'0',frac(r*r*r,3)],
         `구간 내내 v ≤ 0이므로 이동거리는 −∫v dt = ${correct}입니다.`);
       q.check={k:'absint',c:v,a:0,b:T};return q;
     },
     deep(){
       const k=ri(1,3),T=2*k;                        // v(t)=2t−2k : t=k 에서 부호가 바뀐다
       const v=[-2*k,2];                             // 변위는 0, 이동거리는 2k² — 여기서는 변위를 묻는다
-      const q=Q('DISPLACEMENT vs DISTANCE',`v(t)=${P.text(v)},  0≤t≤${T}`,`위치의 변화량(변위)은?`,0,[2*k*k,k*k,-2*k*k],
+      const q=Q('DISPLACEMENT vs DISTANCE',`v(t)=${P.text(v,'t')},  0≤t≤${T}`,`위치의 변화량(변위)은?`,0,[2*k*k,k*k,-2*k*k],
         `변위는 ∫v dt로 0입니다. 이동거리 ${2*k*k}와 다릅니다. t=${k}에서 방향이 바뀌어 되돌아왔기 때문입니다.`);
       q.check={k:'defint',c:v,a:0,b:T};return q;
     }
@@ -651,7 +653,7 @@
     applied(){
       const c=[nonzero(-3,3),nonzero(-3,3),pick([1,2,-1])],t=nonzero(-2,2);
       const correct=P.at(c,t);
-      const q=Q('FTC · 위끝이 x인 누적함수',`F(x)=∫[0→x] (${P.text(c).replace(/x/g,'t')}) dt`,`F′(${num(t)})의 값은?`,correct,[P.at(P.i(c),t),P.at(P.d(c),t),0],
+      const q=Q('FTC · 위끝이 x인 누적함수',`F(x)=∫[0→x] (${P.text(c).replace(/x/g,'t')}) dt`,`F′(${num(t)})의 값은?`,correct,[P.at(c,-t),P.at(P.d(c),t),0],
         `미적분의 기본정리에 따라 F′(x)=${P.text(c)}이므로 ${correct}입니다.`);
       q.check={k:'polyval',c:c,at:t};return q;
     },
@@ -764,7 +766,7 @@
         return Q('TOTAL DISTANCE',`v(t)=2t−${2*k},  0≤t≤${2*k}`,'이동거리는?',correct,[0,4*k*k,k*k],`t=${k}에서 속도 부호가 바뀝니다. 두 삼각형 넓이의 합은 ${correct}입니다.`);
       case'fundamental_theorem':
         A=ri(1,4);B=ri(-3,3);c=ri(1,4);correct=A*c*c+B;
-        return Q('FTC',`F(x)=∫[0→x] (${A}t²${B?sign(B):''}) dt`,'F′('+c+')의 값은?',correct,[frac(A*c*c*c,3)+B*c,A*c+B,2*A*c+B],`미적분의 기본정리에 따라 F′(x)=${A}x²${B?sign(B):''}이므로 ${correct}입니다.`);
+        return Q('FTC',`F(x)=∫[0→x] (${A}t²${B?sign(B):''}) dt`,'F′('+c+')의 값은?',correct,[frac(A*c*c*c+3*B*c,3),A*c+B,2*A*c+B],`미적분의 기본정리에 따라 F′(x)=${A}x²${B?sign(B):''}이므로 ${correct}입니다.`);
       default:return Q('BASIC','1+1','값은?',2,[0,1,3],'기본 계산입니다.');
     }
   }
@@ -795,6 +797,18 @@
     extrema_sign:{name:'극점의 전환자',theme:'step',art:'../assets/bosses/turning-point-shapeshifter.jpg',alt:'상승과 하강이 뒤바뀌는 순간에만 모습을 드러내는 극점의 전환자',accent:'#4e8d72',hp:2400,baseTime:43,minTime:28,baseDamage:195,mechanic:'step-lock',lockLabel:'전환',lockSteps:3,tapDamage:90,finishMultiplier:2.8,finishText:'전환점 포착 · 치명타!',breakText:'전환 흐트러짐 · 처음부터',moodStart:'전환 추적 · 0/3',defeatText:'전환축 절단',gameId:'calculus-skill-boss-extrema-sign',intro:'전환자는 상승이 하강으로 바뀌는 그 순간에만 약점을 드러냅니다. 부호가 바뀌는 자리를 세 번 연속으로 짚어야 그 순간을 잡을 수 있습니다.',start:'세 문제를 연속으로 맞히면 세 번째 공격이 전환점을 관통합니다. 오답이면 추적이 끊기고 시간 3초를 잃습니다.'},
     cubic_extrema:{name:'판별식의 삼두룡',theme:'step',art:'../assets/bosses/discriminant-tri-dragon.jpg',alt:'판별식의 부호에 따라 세 머리가 다른 공격을 쓰는 삼두룡',accent:'#365c8d',hp:2600,baseTime:45,minTime:29,baseDamage:200,mechanic:'step-lock',lockLabel:'머리',lockSteps:3,tapDamage:88,finishMultiplier:2.9,finishText:'삼두 동시 절단!',breakText:'머리 재생 · 처음부터',moodStart:'세 머리 각성 · 0/3',defeatText:'삼두 코어 절단',gameId:'calculus-skill-boss-cubic-extrema',intro:'머리 하나를 베어도 판별식이 살아 있는 한 다시 자랍니다. 세 머리를 끊지 않고 이어서 베어야 본체에 닿습니다.',start:'세 문제를 연속으로 맞히면 세 머리가 한 번에 잘립니다. 오답이면 벤 머리가 모두 되살아나고 시간 3초를 잃습니다.'},
     quartic_shape:{name:'사차의 봉우리왕',theme:'step',art:'../assets/bosses/quartic-peak-king.jpg',alt:'세 임계점의 봉우리로 중앙 왕관을 지키는 사차의 봉우리왕',accent:'#5a568f',hp:2650,baseTime:45,minTime:29,baseDamage:198,mechanic:'step-lock',lockLabel:'봉우리',lockSteps:3,tapDamage:92,finishMultiplier:2.85,finishText:'중앙 왕관 강타!',breakText:'봉우리 재건 · 처음부터',moodStart:'세 봉우리 전개 · 0/3',defeatText:'중앙 왕관 붕괴',gameId:'calculus-skill-boss-quartic-shape',intro:'사차함수의 임계점 세 개가 중앙의 왕관을 둘러싸고 있습니다. 세 봉우리를 순서대로 무너뜨려야 왕관이 드러납니다.',start:'세 문제를 연속으로 맞히면 세 번째 공격이 왕관을 칩니다. 오답이면 봉우리가 다시 서고 시간 3초를 잃습니다.'},
+    real_roots:{name:'교점의 군주',theme:'step',art:'../assets/bosses/intersection-lord.jpg',alt:'수평선 높이를 바꾸며 가짜 교점 환영을 부리는 교점의 군주',accent:'#5c6f9b',hp:2500,baseTime:44,minTime:29,baseDamage:194,mechanic:'step-lock',lockLabel:'교점',lockSteps:3,tapDamage:90,finishMultiplier:2.8,finishText:'진짜 교점 관통!',breakText:'환영에 속음 · 처음부터',moodStart:'교점 추적 · 0/3',defeatText:'교점 좌표 붕괴',gameId:'calculus-skill-boss-real-roots',intro:'군주는 수평선의 높이를 바꿔 가며 가짜 교점 환영을 세웁니다. 실근의 개수를 세 번 연속으로 정확히 세야 진짜 교점이 드러납니다.',start:'세 문제를 연속으로 맞히면 세 번째 공격이 진짜 교점을 관통합니다. 오답이면 환영에 속아 처음부터 다시 세고 시간 3초를 잃습니다.'},
+    mean_value:{name:'평균값의 추적자',theme:'step',art:'../assets/bosses/mean-value-tracker.jpg',alt:'평균 기울기와 같아지는 순간까지 모습을 감추는 평균값의 추적자',accent:'#2f7791',hp:2450,baseTime:44,minTime:28,baseDamage:192,mechanic:'step-lock',lockLabel:'추적',lockSteps:3,tapDamage:90,finishMultiplier:2.8,finishText:'평균 기울기 일치 · 포착!',breakText:'자취 놓침 · 처음부터',moodStart:'자취 추적 · 0/3',defeatText:'평균값 자취 절단',gameId:'calculus-skill-boss-mean-value',intro:'추적자는 순간변화율이 평균변화율과 같아지는 그 지점에서만 모습을 드러냅니다. 자취를 세 번 연속으로 이어야 그 순간에 닿습니다.',start:'세 문제를 연속으로 맞히면 세 번째 공격이 추적자를 붙잡습니다. 오답이면 자취가 끊기고 시간 3초를 잃습니다.'},
+    motion_rate:{name:'가속의 폭주마',theme:'step',art:'../assets/bosses/acceleration-rampage-steed.jpg',alt:'연속 정답마다 속도가 오르고 오답이면 돌진하는 가속의 폭주마',accent:'#b45a3f',hp:2350,baseTime:42,minTime:27,baseDamage:186,mechanic:'step-lock',lockLabel:'가속',lockSteps:2,tapDamage:98,finishMultiplier:2.3,finishText:'가속 붕괴 · 정면 강타!',breakText:'돌진 반격 · 가속 초기화',moodStart:'가속 축적 · 0/2',defeatText:'가속축 파괴',gameId:'calculus-skill-boss-motion-rate',intro:'폭주마는 달릴수록 빨라집니다. 속도와 가속도를 이어서 정확히 읽어야 가속이 끊기고, 놓치면 그대로 돌진해 옵니다.',start:'두 문제를 연속으로 맞히면 두 번째 공격이 가속을 끊습니다. 오답이면 폭주마가 돌진해 시간 3초를 빼앗습니다.'},
+    horizontal_tangent:{name:'수평접선의 사냥꾼',theme:'step',art:'../assets/bosses/horizontal-tangent-hunter.jpg',alt:'기울기가 0이 되는 순간에만 약점을 드러내는 수평접선의 사냥꾼',accent:'#477e84',hp:2450,baseTime:44,minTime:28,baseDamage:193,mechanic:'step-lock',lockLabel:'조준',lockSteps:2,tapDamage:100,finishMultiplier:2.35,finishText:'기울기 0 · 약점 관통!',breakText:'약점 은폐 · 처음부터',moodStart:'약점 탐색 · 0/2',defeatText:'수평접선 절단',gameId:'calculus-skill-boss-horizontal-tangent',intro:'사냥꾼의 약점은 기울기가 정확히 0이 되는 순간에만 열립니다. 두 번 연속으로 그 순간을 짚어야 창이 닿습니다.',start:'두 문제를 연속으로 맞히면 두 번째 공격이 약점을 관통합니다. 오답이면 약점이 다시 닫히고 시간 3초를 잃습니다.'},
+    antiderivative:{name:'원시함수의 수집가',theme:'step',art:'../assets/bosses/antiderivative-collector.jpg',alt:'잃어버린 지수와 적분상수 조각을 모아 몸을 재생하는 원시함수의 수집가',accent:'#76598f',hp:2450,baseTime:43,minTime:28,baseDamage:190,mechanic:'step-lock',lockLabel:'회수',lockSteps:3,tapDamage:90,finishMultiplier:2.75,finishText:'조각 전부 회수 · 본체 노출!',breakText:'조각 흩어짐 · 처음부터',moodStart:'조각 회수 · 0/3',defeatText:'수집품 붕괴',gameId:'calculus-skill-boss-antiderivative',intro:'수집가는 잃어버린 지수 조각을 흡수해 몸을 되살립니다. 지수를 올리고 그 수로 나누는 절차를 세 번 연속으로 정확히 밟아야 조각을 되찾습니다.',start:'세 문제를 연속으로 맞히면 세 번째 공격이 본체에 닿습니다. 오답이면 회수한 조각이 흩어지고 시간 3초를 잃습니다.'},
+    initial_antiderivative:{name:'상수 C의 봉인자',theme:'step',art:'../assets/bosses/constant-seal-keeper.jpg',alt:'적분상수 C를 봉인해 본체를 지키는 상수 C의 봉인자',accent:'#8c5d99',hp:2500,baseTime:44,minTime:29,baseDamage:196,mechanic:'step-lock',lockLabel:'봉인',lockSteps:3,tapDamage:88,finishMultiplier:2.85,finishText:'C 봉인 해제 · 본체 강타!',breakText:'봉인 재구성 · 처음부터',moodStart:'C 봉인 · 0/3',defeatText:'C 봉인 소멸',gameId:'calculus-skill-boss-initial-antiderivative',intro:'부정적분만으로는 함수가 하나로 정해지지 않습니다. 봉인자는 그 틈에 숨습니다. 초기조건을 세 번 연속으로 풀어야 C가 정해지고 본체가 드러납니다.',start:'세 문제를 연속으로 맞히면 세 번째 공격이 봉인을 깹니다. 오답이면 봉인이 다시 세워지고 시간 3초를 잃습니다.'},
+    definite_integral:{name:'구간의 판관',theme:'step',art:'../assets/bosses/interval-judge.jpg',alt:'위끝과 아래끝의 순서를 뒤집어 부호로 반격하는 구간의 판관',accent:'#6f558b',hp:2500,baseTime:44,minTime:29,baseDamage:195,mechanic:'step-lock',lockLabel:'판결',lockSteps:3,tapDamage:89,finishMultiplier:2.8,finishText:'판결 확정 · 구간 절단!',breakText:'부호 반격 · 처음부터',moodStart:'판결 진행 · 0/3',defeatText:'판결문 파기',gameId:'calculus-skill-boss-definite-integral',intro:'판관은 위끝과 아래끝의 순서를 뒤집어 부호로 반격합니다. F(b)−F(a)의 차례를 세 번 연속으로 지켜야 판결이 확정됩니다.',start:'세 문제를 연속으로 맞히면 세 번째 공격이 구간을 절단합니다. 오답이면 부호 반격을 맞고 시간 3초를 잃습니다.'},
+    integral_symmetry:{name:'대칭적분의 거울왕',theme:'step',art:'../assets/bosses/symmetric-integral-mirror-king.jpg',alt:'짝함수와 홀함수의 대칭으로 복제체를 세우는 대칭적분의 거울왕',accent:'#735c9e',hp:2400,baseTime:43,minTime:28,baseDamage:188,mechanic:'step-lock',lockLabel:'거울',lockSteps:2,tapDamage:96,finishMultiplier:2.4,finishText:'복제체 소멸 · 두 배 강타!',breakText:'거울 재생 · 처음부터',moodStart:'거울 대치 · 0/2',defeatText:'거울면 파쇄',gameId:'calculus-skill-boss-integral-symmetry',intro:'거울왕은 좌우 대칭으로 복제체를 세웁니다. 짝함수인지 홀함수인지 읽어 내면 복제체가 사라지고 공격이 두 배가 됩니다.',start:'두 문제를 연속으로 맞히면 두 번째 공격이 두 배로 들어갑니다. 오답이면 거울이 다시 서고 시간 3초를 잃습니다.'},
+    area_axis:{name:'절댓값의 재단사',theme:'step',art:'../assets/bosses/absolute-value-tailor.jpg',alt:'x축 아래 영역을 접어 올리지 않으면 잘못된 넓이를 흡수하는 절댓값의 재단사',accent:'#99577d',hp:2450,baseTime:43,minTime:28,baseDamage:191,mechanic:'step-lock',lockLabel:'재단',lockSteps:3,tapDamage:90,finishMultiplier:2.78,finishText:'재단 완성 · 넓이 절단!',breakText:'천 되감김 · 처음부터',moodStart:'재단 진행 · 0/3',defeatText:'재단선 절단',gameId:'calculus-skill-boss-area-axis',intro:'재단사는 x축 아래 영역을 그대로 두면 잘못된 넓이만큼 힘을 얻습니다. 부호를 뒤집어 접어 올리는 재단을 세 번 연속으로 해내야 합니다.',start:'세 문제를 연속으로 맞히면 세 번째 공격이 재단을 끝냅니다. 오답이면 천이 되감기고 시간 3초를 잃습니다.'},
+    area_between:{name:'교차영역의 포식자',theme:'step',art:'../assets/bosses/crossing-region-devourer.jpg',alt:'위아래 함수가 뒤바뀌는 교점에서 공격 순서를 뒤집는 교차영역의 포식자',accent:'#7b4f83',hp:2550,baseTime:45,minTime:29,baseDamage:197,mechanic:'step-lock',lockLabel:'교차',lockSteps:3,tapDamage:88,finishMultiplier:2.85,finishText:'교차영역 절단!',breakText:'위아래 뒤집힘 · 처음부터',moodStart:'교차 추적 · 0/3',defeatText:'교차영역 소멸',gameId:'calculus-skill-boss-area-between',intro:'두 곡선이 만나는 자리에서 위아래가 뒤바뀝니다. 포식자는 그 순간을 노립니다. 어느 쪽이 위인지를 세 번 연속으로 지켜 내야 합니다.',start:'세 문제를 연속으로 맞히면 세 번째 공격이 교차영역을 절단합니다. 오답이면 위아래가 뒤집히고 시간 3초를 잃습니다.'},
+    distance_velocity:{name:'속도누적의 질주귀',theme:'step',art:'../assets/bosses/velocity-accumulation-runner.jpg',alt:'방향 전환점을 놓치면 이동거리를 흡수해 가속하는 속도누적의 질주귀',accent:'#a34e69',hp:2400,baseTime:43,minTime:28,baseDamage:189,mechanic:'step-lock',lockLabel:'전환',lockSteps:2,tapDamage:97,finishMultiplier:2.35,finishText:'전환점 포착 · 질주 차단!',breakText:'이동거리 흡수 · 처음부터',moodStart:'전환점 감시 · 0/2',defeatText:'질주선 절단',gameId:'calculus-skill-boss-distance-velocity',intro:'질주귀는 방향이 바뀌는 지점을 놓치면 그만큼의 이동거리를 흡수해 더 빨라집니다. 위치 변화와 이동거리를 구분해 이어서 읽어야 합니다.',start:'두 문제를 연속으로 맞히면 두 번째 공격이 질주를 끊습니다. 오답이면 이동거리를 흡수하고 시간 3초를 빼앗습니다.'},
+    fundamental_theorem:{name:'미적분의 문지기',theme:'step',art:'../assets/bosses/calculus-gatekeeper.jpg',alt:'미분과 적분을 번갈아 써야 열리는 최종 관문을 지키는 미적분의 문지기',accent:'#674d8e',hp:2700,baseTime:46,minTime:30,baseDamage:204,mechanic:'step-lock',lockLabel:'관문',lockSteps:3,tapDamage:86,finishMultiplier:2.95,finishText:'최종 관문 개방 · 관통!',breakText:'관문 폐쇄 · 처음부터',moodStart:'관문 세 겹 · 0/3',defeatText:'최종 관문 붕괴',gameId:'calculus-skill-boss-fundamental-theorem',intro:'적분한 것을 미분하면 원래로 돌아옵니다. 문지기의 관문은 그 왕복을 세 번 이어서 보여야 열립니다.',start:'세 문제를 연속으로 맞히면 세 번째 공격이 최종 관문을 관통합니다. 오답이면 관문이 다시 닫히고 시간 3초를 잃습니다.'},
     differentiate_polynomial:{name:'미분의 철갑수',theme:'iron',art:'../assets/bosses/derivative-iron-beast.webp',alt:'곡선 갑옷과 빛나는 미분 코어를 지닌 미분의 철갑수',hp:2600,baseTime:38,minTime:24,baseDamage:170,mechanic:'iron-armor',gameId:'calculus-skill-boss-differentiate-polynomial',intro:'기본 → 응용 → 심화로 문제가 강해집니다. 클리어할수록 문제는 더 어려워지는 대신 다음 전투의 시간만 2초씩 줄어듭니다.',start:'정답은 수식 공격으로 바뀝니다. 3단계까지 문제 난도가 올라가며 오답은 콤보 초기화와 시간 −2초입니다.'}
   };
   const fallbackBossNames={limit:'극한의 파수꾼',differentiate:'미분의 철갑수',graph:'그래프의 심연왕',integral:'적분의 수문장'};
