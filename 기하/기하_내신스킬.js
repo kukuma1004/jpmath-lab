@@ -70,9 +70,9 @@
       case'threeperp_distance':
         [[a,b],c]=pick([[[3,4],5],[[6,8],10],[[5,12],13]]);return Q('RIGHT TRIANGLE',`PO=${a}, OQ=${b}, ∠POQ=90°`,'PQ의 길이는?',c,[a+b,Math.abs(a-b),a*a+b*b],`PQ=√(PO²+OQ²)=√${a*a+b*b}=${c}`);
       case'projection_length':
-        angle=pick([0,30,45,60]);L=angle===0?ri(2,7):pick([2,4,6]);ans=projectionValue(L,angle);return Q('PROJECTED LENGTH',`L=${L}, θ=${angle}°`,'선분의 정사영 길이는?',ans,[String(L),projectionValue(L,angle===60?30:60),String(L*2)],`정사영 길이는 Lcosθ=${ans}입니다.`);
+        angle=pick([0,30,45,60]);L=ri(1,4)*2;ans=projectionValue(L,angle);return Q('PROJECTED LENGTH',`L=${L}, θ=${angle}°`,'선분의 정사영 길이는?',ans,[0,30,45,60].filter(a=>a!==angle).map(a=>projectionValue(L,a)),`정사영 길이는 Lcosθ=${ans}입니다.`);
       case'projection_area':
-        angle=pick([0,30,45,60]);L=angle===0?ri(2,8):pick([2,4,6]);ans=projectionValue(L,angle);return Q('PROJECTED AREA',`원래 넓이 S=${L}, θ=${angle}°`,'정사영의 넓이는?',ans,[String(L),projectionValue(L,angle===60?30:60),String(L*2)],`정사영 넓이는 S cosθ=${ans}입니다.`);
+        angle=pick([0,30,45,60]);L=ri(1,4)*2;ans=projectionValue(L,angle);return Q('PROJECTED AREA',`원래 넓이 S=${L}, θ=${angle}°`,'정사영의 넓이는?',ans,[0,30,45,60].filter(a=>a!==angle).map(a=>projectionValue(L,a)),`정사영 넓이는 S cosθ=${ans}입니다.`);
       case'space_distance':
         [d,c]=pick(diffTriples);A=[ri(-2,2),ri(-2,2),ri(-2,2)];B=A.map((x,i)=>x+d[i]*pick([-1,1]));return Q('3D DISTANCE',`A${point(A)}, B${point(B)}`,'두 점 사이의 거리는?',c,[c*c,d.reduce((x,y)=>x+y,0),c+1],`좌표 차의 제곱합은 ${c*c}이므로 거리는 ${c}입니다.`);
       case'space_division':
@@ -80,7 +80,7 @@
       case'sphere_read':
         A=[ri(-3,3),ri(-3,3),ri(-3,3)];if(A.every(x=>x===0))A[0]=1;r=ri(1,5);type=ri(0,1);return type===0?Q('READ CENTER',equationSphere(A,r),'구의 중심은?',point(A),[point(A.map(x=>-x)),point([0,0,0]),point(A.map(x=>x+1))],`괄호 안 부호를 반대로 읽어 중심 ${point(A)}를 얻습니다.`):Q('READ RADIUS',equationSphere(A,r),'구의 반지름은?',r,[r*r,2*r,r+1],`우변은 r²=${r*r}이므로 반지름은 ${r}입니다.`);
       case'sphere_build':
-        A=[ri(-2,2),ri(-2,2),ri(-2,2)];if(A.every(x=>x===0))A[0]=1;r=ri(1,4);ans=equationSphere(A,r);return Q('BUILD SPHERE',`중심 C${point(A)}, 반지름 ${r}`,'구의 방정식은?',ans,[equationSphere(A.map(x=>-x),r),equationSphere(A,r+1),`${sqTerm('x',A[0])}+${sqTerm('y',A[1])}+${sqTerm('z',A[2])}=${r}`],`중심 좌표의 부호를 반대로 괄호에 넣고 우변은 r²로 씁니다.`);
+        A=[ri(-2,2),ri(-2,2),ri(-2,2)];if(A.every(x=>x===0))A[0]=1;r=ri(2,4);ans=equationSphere(A,r);return Q('BUILD SPHERE',`중심 C${point(A)}, 반지름 ${r}`,'구의 방정식은?',ans,[equationSphere(A.map(x=>-x),r),equationSphere(A,r+1),`${sqTerm('x',A[0])}+${sqTerm('y',A[1])}+${sqTerm('z',A[2])}=${r}`],`중심 좌표의 부호를 반대로 괄호에 넣고 우변은 r²로 씁니다.`);
       case'vector_addsub':
         v=[ri(-4,4),ri(-4,4)];w=[ri(-4,4),ri(-4,4)];type=ri(0,1);ans=type===0?v.map((x,i)=>x+w[i]):v.map((x,i)=>x-w[i]);return Q('ADD · SUBTRACT',`a=${vec(v)}, b=${vec(w)}`,type===0?'a+b는?':'a−b는?',vec(ans),[vec([ans[0]+1,ans[1]]),vec([ans[0],ans[1]+1]),vec([ans[0]+1,ans[1]-1])],`같은 위치의 성분끼리 ${type===0?'더':'빼'}면 ${vec(ans)}입니다.`);
       case'vector_scalar':
@@ -106,7 +106,7 @@
       case'plane_normal':
         n=[ri(1,4),ri(-3,3)||1,ri(1,4)];k=ri(-5,5);return Q('NORMAL VECTOR',`${n[0]}x${n[1]>=0?'+':''}${n[1]}y+${n[2]}z=${k}`,'계수로 바로 읽은 법선벡터는?',vec(n),[vec([n[0]+1,n[1],n[2]]),vec([n[0],n[1]+1,n[2]]),vec([n[0],n[1],n[2]+1])],`x,y,z의 계수를 순서대로 읽으면 ${vec(n)}입니다.`);
       case'sphere_vector':
-        A=[ri(-2,2),ri(-2,2),ri(-2,2)];if(A.every(x=>x===0))A[0]=1;r=ri(1,5);type=ri(0,1);return type===0?Q('VECTOR SPHERE',`|x−${vec(A)}|=${r}`,'이 도형의 중심과 반지름은?',`중심 ${point(A)}, 반지름 ${r}`,[`중심 ${point(A.map(x=>-x))}, 반지름 ${r}`,`중심 ${point(A)}, 반지름 ${r*r}`,'하나의 평면'],`중심벡터에서 거리가 ${r}인 점의 집합입니다.`):Q('COORDINATE FORM',`|x−${vec(A)}|=${r}`,'좌표 방정식은?',equationSphere(A,r),[equationSphere(A.map(x=>-x),r),equationSphere(A,r+1),`${sqTerm('x',A[0])}+${sqTerm('y',A[1])}+${sqTerm('z',A[2])}=${r}`],`벡터 거리식을 세 좌표 차의 제곱합으로 바꿉니다.`);
+        A=[ri(-2,2),ri(-2,2),ri(-2,2)];if(A.every(x=>x===0))A[0]=1;r=ri(2,5);type=ri(0,1);return type===0?Q('VECTOR SPHERE',`|x−${vec(A)}|=${r}`,'이 도형의 중심과 반지름은?',`중심 ${point(A)}, 반지름 ${r}`,[`중심 ${point(A.map(x=>-x))}, 반지름 ${r}`,`중심 ${point(A)}, 반지름 ${r*r}`,'하나의 평면'],`중심벡터에서 거리가 ${r}인 점의 집합입니다.`):Q('COORDINATE FORM',`|x−${vec(A)}|=${r}`,'좌표 방정식은?',equationSphere(A,r),[equationSphere(A.map(x=>-x),r),equationSphere(A,r+1),`${sqTerm('x',A[0])}+${sqTerm('y',A[1])}+${sqTerm('z',A[2])}=${r}`],`벡터 거리식을 세 좌표 차의 제곱합으로 바꿉니다.`);
       default:return Q('BASIC','a²=b²+c²','c²은?','a²−b²',['a²+b²','a−b','2a'],'타원에서는 c²=a²−b²입니다.');
     }
   }
