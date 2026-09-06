@@ -308,8 +308,6 @@
     $$('.skill-level-btn').forEach(b=>{const on=b.dataset.level===id;b.classList.toggle('active',on);b.setAttribute('aria-pressed',String(on))});
     $('[data-level-desc]').textContent=LEVELS.find(l=>l.id===id).desc;
     $('[data-drill-result]').classList.add('hidden');$('[data-drill-start]').classList.remove('hidden');$('[data-drill-answers]').innerHTML='';
-    $('[data-boss-body]').innerHTML=`<div class="boss-start-copy"><strong>${skill.title}</strong><p>${LEVELS.find(l=>l.id===id).name} 난이도로 세 문제를 연속 해결하세요.</p></div>`;
-    $('[data-boss-start]').textContent='보스전 시작';$('[data-boss-start]').classList.remove('hidden');
     newExample();updateMastery();
   }
   $$('.skill-level-btn').forEach(b=>b.addEventListener('click',()=>setLevel(b.dataset.level)));
@@ -317,4 +315,7 @@
   $('[data-level-desc]').textContent=LEVELS.find(l=>l.id===currentLevel).desc;
   if(params.has('probe'))window.JPGeoSkillProbe={id:skill.id,make:()=>makeQuestion(skill.id),setLevel:l=>{currentLevel=l},levels:LEVELS.map(l=>l.id)};
   updateMastery();
+  // 보스전 홀에서 ?mode=boss 로 들어오면 곧장 전투 화면을 연다.
+  // 이것이 없어 홀에서 기하 보스를 누르면 원리 화면이 열렸다.
+  if(params.get('mode')==='boss')showPanel('boss');
 })();
