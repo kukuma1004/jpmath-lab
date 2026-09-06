@@ -86,6 +86,77 @@
     return n<=12?'이차곡선':n<=23?'공간도형과 공간좌표':'벡터';
   };
 
+  /* 명단에 쓰는 작은 그림. 원본은 한 장에 200KB 가 넘어 예순네 장을
+     늘어놓을 수 없으므로 192px webp 로 줄인 것을 쓴다(장당 7KB).
+     assets/bosses/thumbs/ 아래에 있고, 이름은 원본을 따른다. */
+  const THUMB_DIR='../assets/bosses/thumbs/';
+  const THUMBS={
+    limit_factor:'factor-gate-guardian.webp',
+    limit_rationalize:'conjugate-alchemist.webp',
+    limit_infinity_ratio:'infinite-ratio-colossus.webp',
+    limit_infinity_diff:'indeterminate-chaos-beast.webp',
+    limit_one_sided:'two-faced-boundary-warden.webp',
+    continuity_parameter:'continuity-stitcher.webp',
+    squeeze_limit:'squeeze-twin-walls.webp',
+    lhopital:'forbidden-differentiation-warlock.webp',
+    derivative_definition:'difference-quotient-origin.webp',
+    differentiate_polynomial:'derivative-iron-beast.webp',
+    product_rule:'twin-blade-product-fiend.webp',
+    tangent_equation:'tangent-sniper.webp',
+    monotonic_interval:'monotonic-interval-patrol-warden.webp',
+    extrema_sign:'turning-point-shapeshifter.webp',
+    cubic_extrema:'discriminant-tri-dragon.webp',
+    quartic_shape:'quartic-peak-king.webp',
+    real_roots:'intersection-lord.webp',
+    mean_value:'mean-value-tracker.webp',
+    motion_rate:'acceleration-rampage-steed.webp',
+    horizontal_tangent:'horizontal-tangent-hunter.webp',
+    antiderivative:'antiderivative-collector.webp',
+    initial_antiderivative:'constant-seal-keeper.webp',
+    definite_integral:'interval-judge.webp',
+    integral_symmetry:'symmetric-integral-mirror-king.webp',
+    area_axis:'absolute-value-tailor.webp',
+    area_between:'crossing-region-devourer.webp',
+    distance_velocity:'velocity-accumulation-runner.webp',
+    fundamental_theorem:'calculus-gatekeeper.webp',
+    parabola_form:'parabola-compass-beast.webp',
+    parabola_focus:'focus-directrix-twins.webp',
+    parabola_point:'coordinate-substitution-tracker.webp',
+    ellipse_abc:'ellipse-core-guardian.webp',
+    ellipse_distance:'twin-focus-binder.webp',
+    ellipse_equation:'major-axis-architect.webp',
+    hyperbola_abc:'hyperbola-rift-beast.webp',
+    hyperbola_asymptote:'asymptote-twin-sword-master.webp',
+    hyperbola_distance:'distance-difference-executor.webp',
+    tangent_parabola:'reflection-cannon-archer.webp',
+    tangent_ellipse:'ellipse-tangent-watcher.webp',
+    tangent_hyperbola:'hyperbola-tangent-severer.webp',
+    relation_lines:'skew-lines-wanderer.webp',
+    relation_line_plane:'line-plane-sentinel.webp',
+    relation_planes:'plane-intersection-lord.webp',
+    threeperp_conclusion:'three-perpendicular-triangle-beast.webp',
+    threeperp_distance:'shortest-distance-tracker-hound.webp',
+    projection_length:'projection-length-caster.webp',
+    projection_area:'projection-area-devourer.webp',
+    space_distance:'space-distance-surveyor-giant.webp',
+    space_division:'internal-division-balancer.webp',
+    sphere_read:'sphere-coordinate-observer.webp',
+    sphere_build:'sphere-sculptor.webp',
+    vector_addsub:'vector-composition-beast.webp',
+    vector_scalar:'scalar-scale-steed.webp',
+    vector_linear:'linear-combination-weaver.webp',
+    vector_component:'direction-component-tracker.webp',
+    position_point:'position-vector-beacon-keeper.webp',
+    vector_division:'vector-division-mediator.webp',
+    dot_component:'dot-product-calculation-core.webp',
+    dot_angle:'angle-judicator.webp',
+    dot_length:'squared-vector-length-guardian.webp',
+    line_point_direction:'direction-vector-guide.webp',
+    line_parameter:'parameter-line-runner.webp',
+    plane_normal:'normal-vector-shield-knight.webp',
+    sphere_vector:'spherical-vector-nebula-dragon.webp'
+  };
+
   function make(subject,row,index){
     const [skillId,code,skillTitle,name,mechanic,visual,palette]=row;
     return {
@@ -94,7 +165,8 @@
       order:index+1,
       skillId,code,skillTitle,name,mechanic,visual,palette,
       unit:unitOf(subject,code),
-        status:PLANNED.includes(skillId)?'planned':'playable',
+      thumb:THUMB_DIR+THUMBS[skillId],
+      status:PLANNED.includes(skillId)?'planned':'playable',
       href:`../${subject==='calculus'?'미적분1/미적분1_계산스킬':'기하/기하_내신스킬'}.html?id=${skillId}&mode=boss`
     };
   }

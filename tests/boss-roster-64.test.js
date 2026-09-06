@@ -31,20 +31,41 @@ const hallCss=fs.readFileSync('보스전/boss-hall.css','utf8');
 // 모바일 조종석 스타일은 두 페이지가 나눠 쓰는 공용 파일에 있다.
 const calcCss=fs.readFileSync('보스전/boss-engine.css','utf8');
 assert.match(hall,/boss-catalog\.js\?v=16/);
-assert.match(hall,/boss-hall\.js\?v=2/);
-assert.match(hall,/boss-hall\.css\?v=3/);
+assert.match(hall,/boss-hall\.js\?v=3/);
+assert.match(hall,/boss-hall\.css\?v=4/);
 // 전투 가능 수는 카탈로그에서 채우므로 페이지에 손으로 적지 않는다.
 // 예전에는 "12 / 64" 가 박혀 있어 보스를 만들어도 그대로였다.
 assert.match(hall,/data-boss-playable/,'전투 가능 수를 카탈로그에서 채워야 한다.');
 assert.doesNotMatch(hall,/<strong>\d+ \/ 64<\/strong>/,'전투 가능 수를 페이지에 손으로 적으면 안 된다.');
-assert.match(hall,/derivative-iron-beast\.webp/,'보스전 홀도 실제 철갑수 이미지를 사용해야 한다.');
+// 한 보스만 크게 걸어 두던 구획은 걷어냈다. 이제 명단이 예순네 얼굴을 다 보여 준다.
+assert.doesNotMatch(hall,/featured-boss/,'보스 한 마리만 크게 거는 구획은 없어야 한다.');
+assert.doesNotMatch(hallCss,/\.featured-boss|\.boss-portrait|\.roadmap-grid/,'걷어낸 구획의 스타일도 남기지 않는다.');
+
+const hallJs=fs.readFileSync('보스전/boss-hall.js','utf8');
+/* 명단의 얼굴.
+
+   원본은 한 장에 200KB 가 넘어 예순네 장을 늘어놓을 수 없다. 192px webp 로
+   줄인 것을 쓰고, 화면에 들어올 때 불러온다. */
+const thumbDir='assets/bosses/thumbs';
+let thumbBytes=0;
+for(const boss of catalog.bosses){
+  assert.ok(boss.thumb,`${boss.id}에 작은 그림이 없다.`);
+  const file=boss.thumb.replace('../','');
+  assert.ok(fs.existsSync(file),`작은 그림 파일이 없다: ${file}`);
+  assert.ok(file.startsWith(thumbDir),`작은 그림은 ${thumbDir} 아래에 있어야 한다: ${file}`);
+  thumbBytes+=fs.statSync(file).size;
+}
+// 다시 무거워지면 명단이 열리다 만다. 원본 그대로 쓰면 13MB 가 넘는다.
+assert.ok(thumbBytes<1.5*1024*1024,
+  `명단 그림 전부가 1.5MB 이하여야 한다 — 지금 ${(thumbBytes/1024/1024).toFixed(1)}MB`);
+assert.match(hallJs,/loading="lazy"/,'명단 그림은 화면에 들어올 때 불러와야 한다.');
+assert.match(hallCss,/\.archive-face\{/,'명단 타일에 얼굴 자리가 있어야 한다.');
 assert.match(hallCss,/boss-archive-grid/);
 
 /* 명단 나누기.
 
    64종을 한 줄로 늘어놓으면 카드 하나가 390px 라 모바일 스크롤이 2만
    픽셀을 넘었다. 과목을 먼저 고르고 단원으로 건너뛰게 바꾼 것을 지킨다. */
-const hallJs=fs.readFileSync('보스전/boss-hall.js','utf8');
 for(const boss of catalog.bosses){
   assert.ok(boss.unit,`${boss.id}에 단원이 없다. 홀이 단원으로 명단을 나눈다.`);
 }

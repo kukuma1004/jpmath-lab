@@ -26,10 +26,18 @@ for (const source of [home, nav]) {
 
 assert.doesNotMatch(live, /ECONOMY LIVE MAP|live-roadmap|전체 8게임 체험하기/, '투자왕 아래 중복 게임 지도를 제거한다.');
 
-assert.match(bossHall, /미분의 철갑수/);
-assert.match(bossHall, /differentiate_polynomial&amp;mode=boss/);
-assert.match(bossHall, /38초/);
-assert.match(bossHall, /HP 2600/);
+/* 보스전 홀에는 철갑수 한 마리를 크게 걸고 그 체력과 제한시간을 손으로 적어
+   두었었다. 보스가 예순넷이 된 지금은 명단이 카탈로그에서 만들어지므로,
+   페이지에 특정 보스의 이름이나 수치가 박혀 있으면 안 된다. */
+assert.doesNotMatch(bossHall, /미분의 철갑수|HP 2600|38초/,
+  '홀에 특정 보스의 이름과 수치를 손으로 적지 않는다.');
+assert.match(bossHall, /data-boss-grid/, '명단은 카탈로그에서 만들어야 한다.');
+{
+  const hallJs = read('보스전/boss-hall.js');
+  assert.match(hallJs, /boss\.href/, '전투로 가는 길은 카탈로그의 href 를 쓴다.');
+  const catalogSrc = read('보스전/boss-catalog.js');
+  assert.match(catalogSrc, /mode=boss/, '홀에서 누르면 곧장 전투 화면으로 가야 한다.');
+}
 
 assert.match(skillHtml, /jp-game-telemetry\.js\?v=2/);
 assert.match(skillHtml, /미적분1_계산스킬\.js\?v=25/);

@@ -3,69 +3,266 @@
   "total": 64,
   "format": "One master portrait per boss. Optional mobile variants are listed separately.",
   "images": {
-    "limit_factor": { "master": "factor-gate-guardian.jpg" },
-    "limit_rationalize": { "master": "conjugate-alchemist.jpg" },
-    "limit_infinity_ratio": { "master": "infinite-ratio-colossus.jpg" },
-    "limit_infinity_diff": { "master": "indeterminate-chaos-beast.jpg" },
-    "limit_one_sided": { "master": "two-faced-boundary-warden.jpg" },
-    "continuity_parameter": { "master": "continuity-stitcher.jpg" },
-    "squeeze_limit": { "master": "squeeze-twin-walls.jpg", "mobile": "squeeze-twin-walls-mobile-v3.jpg" },
-    "lhopital": { "master": "forbidden-differentiation-warlock.jpg", "mobile": "forbidden-differentiation-warlock-mobile.jpg" },
-    "derivative_definition": { "master": "difference-quotient-origin.jpg", "mobile": "difference-quotient-origin-mobile.jpg" },
-    "differentiate_polynomial": { "master": "derivative-iron-beast.webp" },
-    "product_rule": { "master": "twin-blade-product-fiend.jpg", "mobile": "twin-blade-product-fiend-mobile.jpg" },
-    "tangent_equation": { "master": "tangent-sniper.jpg", "mobile": "tangent-sniper-mobile.jpg" },
-    "monotonic_interval": { "master": "monotonic-interval-patrol-warden.jpg" },
-    "extrema_sign": { "master": "turning-point-shapeshifter.jpg" },
-    "cubic_extrema": { "master": "discriminant-tri-dragon.jpg" },
-    "quartic_shape": { "master": "quartic-peak-king.jpg" },
-    "real_roots": { "master": "intersection-lord.jpg" },
-    "mean_value": { "master": "mean-value-tracker.jpg" },
-    "motion_rate": { "master": "acceleration-rampage-steed.jpg" },
-    "horizontal_tangent": { "master": "horizontal-tangent-hunter.jpg" },
-    "antiderivative": { "master": "antiderivative-collector.jpg" },
-    "initial_antiderivative": { "master": "constant-seal-keeper.jpg" },
-    "definite_integral": { "master": "interval-judge.jpg" },
-    "integral_symmetry": { "master": "symmetric-integral-mirror-king.jpg" },
-    "area_axis": { "master": "absolute-value-tailor.jpg" },
-    "area_between": { "master": "crossing-region-devourer.jpg" },
-    "distance_velocity": { "master": "velocity-accumulation-runner.jpg" },
-    "fundamental_theorem": { "master": "calculus-gatekeeper.jpg" },
-    "parabola_form": { "master": "parabola-compass-beast.jpg" },
-    "parabola_focus": { "master": "focus-directrix-twins.jpg" },
-    "parabola_point": { "master": "coordinate-substitution-tracker.jpg" },
-    "ellipse_abc": { "master": "ellipse-core-guardian.jpg" },
-    "ellipse_distance": { "master": "twin-focus-binder.jpg" },
-    "ellipse_equation": { "master": "major-axis-architect.jpg" },
-    "hyperbola_abc": { "master": "hyperbola-rift-beast.jpg" },
-    "hyperbola_asymptote": { "master": "asymptote-twin-sword-master.jpg" },
-    "hyperbola_distance": { "master": "distance-difference-executor.jpg" },
-    "tangent_parabola": { "master": "reflection-cannon-archer.jpg" },
-    "tangent_ellipse": { "master": "ellipse-tangent-watcher.jpg" },
-    "tangent_hyperbola": { "master": "hyperbola-tangent-severer.jpg" },
-    "relation_lines": { "master": "skew-lines-wanderer.jpg" },
-    "relation_line_plane": { "master": "line-plane-sentinel.jpg" },
-    "relation_planes": { "master": "plane-intersection-lord.jpg" },
-    "threeperp_conclusion": { "master": "three-perpendicular-triangle-beast.jpg" },
-    "threeperp_distance": { "master": "shortest-distance-tracker-hound.jpg" },
-    "projection_length": { "master": "projection-length-caster.jpg" },
-    "projection_area": { "master": "projection-area-devourer.jpg" },
-    "space_distance": { "master": "space-distance-surveyor-giant.jpg" },
-    "space_division": { "master": "internal-division-balancer.jpg" },
-    "sphere_read": { "master": "sphere-coordinate-observer.jpg" },
-    "sphere_build": { "master": "sphere-sculptor.jpg" },
-    "vector_addsub": { "master": "vector-composition-beast.jpg" },
-    "vector_scalar": { "master": "scalar-scale-steed.jpg" },
-    "vector_linear": { "master": "linear-combination-weaver.jpg" },
-    "vector_component": { "master": "direction-component-tracker.jpg" },
-    "position_point": { "master": "position-vector-beacon-keeper.jpg" },
-    "vector_division": { "master": "vector-division-mediator.jpg" },
-    "dot_component": { "master": "dot-product-calculation-core.jpg" },
-    "dot_angle": { "master": "angle-judicator.jpg" },
-    "dot_length": { "master": "squared-vector-length-guardian.jpg" },
-    "line_point_direction": { "master": "direction-vector-guide.jpg" },
-    "line_parameter": { "master": "parameter-line-runner.jpg" },
-    "plane_normal": { "master": "normal-vector-shield-knight.jpg" },
-    "sphere_vector": { "master": "spherical-vector-nebula-dragon.jpg" }
+    "limit_factor": {
+      "master": "factor-gate-guardian.jpg",
+      "thumb": "thumbs/factor-gate-guardian.webp"
+    },
+    "limit_rationalize": {
+      "master": "conjugate-alchemist.jpg",
+      "thumb": "thumbs/conjugate-alchemist.webp"
+    },
+    "limit_infinity_ratio": {
+      "master": "infinite-ratio-colossus.jpg",
+      "thumb": "thumbs/infinite-ratio-colossus.webp"
+    },
+    "limit_infinity_diff": {
+      "master": "indeterminate-chaos-beast.jpg",
+      "thumb": "thumbs/indeterminate-chaos-beast.webp"
+    },
+    "limit_one_sided": {
+      "master": "two-faced-boundary-warden.jpg",
+      "thumb": "thumbs/two-faced-boundary-warden.webp"
+    },
+    "continuity_parameter": {
+      "master": "continuity-stitcher.jpg",
+      "thumb": "thumbs/continuity-stitcher.webp"
+    },
+    "squeeze_limit": {
+      "master": "squeeze-twin-walls.jpg",
+      "mobile": "squeeze-twin-walls-mobile-v3.jpg",
+      "thumb": "thumbs/squeeze-twin-walls.webp"
+    },
+    "lhopital": {
+      "master": "forbidden-differentiation-warlock.jpg",
+      "mobile": "forbidden-differentiation-warlock-mobile.jpg",
+      "thumb": "thumbs/forbidden-differentiation-warlock.webp"
+    },
+    "derivative_definition": {
+      "master": "difference-quotient-origin.jpg",
+      "mobile": "difference-quotient-origin-mobile.jpg",
+      "thumb": "thumbs/difference-quotient-origin.webp"
+    },
+    "differentiate_polynomial": {
+      "master": "derivative-iron-beast.webp",
+      "thumb": "thumbs/derivative-iron-beast.webp"
+    },
+    "product_rule": {
+      "master": "twin-blade-product-fiend.jpg",
+      "mobile": "twin-blade-product-fiend-mobile.jpg",
+      "thumb": "thumbs/twin-blade-product-fiend.webp"
+    },
+    "tangent_equation": {
+      "master": "tangent-sniper.jpg",
+      "mobile": "tangent-sniper-mobile.jpg",
+      "thumb": "thumbs/tangent-sniper.webp"
+    },
+    "monotonic_interval": {
+      "master": "monotonic-interval-patrol-warden.jpg",
+      "thumb": "thumbs/monotonic-interval-patrol-warden.webp"
+    },
+    "extrema_sign": {
+      "master": "turning-point-shapeshifter.jpg",
+      "thumb": "thumbs/turning-point-shapeshifter.webp"
+    },
+    "cubic_extrema": {
+      "master": "discriminant-tri-dragon.jpg",
+      "thumb": "thumbs/discriminant-tri-dragon.webp"
+    },
+    "quartic_shape": {
+      "master": "quartic-peak-king.jpg",
+      "thumb": "thumbs/quartic-peak-king.webp"
+    },
+    "real_roots": {
+      "master": "intersection-lord.jpg",
+      "thumb": "thumbs/intersection-lord.webp"
+    },
+    "mean_value": {
+      "master": "mean-value-tracker.jpg",
+      "thumb": "thumbs/mean-value-tracker.webp"
+    },
+    "motion_rate": {
+      "master": "acceleration-rampage-steed.jpg",
+      "thumb": "thumbs/acceleration-rampage-steed.webp"
+    },
+    "horizontal_tangent": {
+      "master": "horizontal-tangent-hunter.jpg",
+      "thumb": "thumbs/horizontal-tangent-hunter.webp"
+    },
+    "antiderivative": {
+      "master": "antiderivative-collector.jpg",
+      "thumb": "thumbs/antiderivative-collector.webp"
+    },
+    "initial_antiderivative": {
+      "master": "constant-seal-keeper.jpg",
+      "thumb": "thumbs/constant-seal-keeper.webp"
+    },
+    "definite_integral": {
+      "master": "interval-judge.jpg",
+      "thumb": "thumbs/interval-judge.webp"
+    },
+    "integral_symmetry": {
+      "master": "symmetric-integral-mirror-king.jpg",
+      "thumb": "thumbs/symmetric-integral-mirror-king.webp"
+    },
+    "area_axis": {
+      "master": "absolute-value-tailor.jpg",
+      "thumb": "thumbs/absolute-value-tailor.webp"
+    },
+    "area_between": {
+      "master": "crossing-region-devourer.jpg",
+      "thumb": "thumbs/crossing-region-devourer.webp"
+    },
+    "distance_velocity": {
+      "master": "velocity-accumulation-runner.jpg",
+      "thumb": "thumbs/velocity-accumulation-runner.webp"
+    },
+    "fundamental_theorem": {
+      "master": "calculus-gatekeeper.jpg",
+      "thumb": "thumbs/calculus-gatekeeper.webp"
+    },
+    "parabola_form": {
+      "master": "parabola-compass-beast.jpg",
+      "thumb": "thumbs/parabola-compass-beast.webp"
+    },
+    "parabola_focus": {
+      "master": "focus-directrix-twins.jpg",
+      "thumb": "thumbs/focus-directrix-twins.webp"
+    },
+    "parabola_point": {
+      "master": "coordinate-substitution-tracker.jpg",
+      "thumb": "thumbs/coordinate-substitution-tracker.webp"
+    },
+    "ellipse_abc": {
+      "master": "ellipse-core-guardian.jpg",
+      "thumb": "thumbs/ellipse-core-guardian.webp"
+    },
+    "ellipse_distance": {
+      "master": "twin-focus-binder.jpg",
+      "thumb": "thumbs/twin-focus-binder.webp"
+    },
+    "ellipse_equation": {
+      "master": "major-axis-architect.jpg",
+      "thumb": "thumbs/major-axis-architect.webp"
+    },
+    "hyperbola_abc": {
+      "master": "hyperbola-rift-beast.jpg",
+      "thumb": "thumbs/hyperbola-rift-beast.webp"
+    },
+    "hyperbola_asymptote": {
+      "master": "asymptote-twin-sword-master.jpg",
+      "thumb": "thumbs/asymptote-twin-sword-master.webp"
+    },
+    "hyperbola_distance": {
+      "master": "distance-difference-executor.jpg",
+      "thumb": "thumbs/distance-difference-executor.webp"
+    },
+    "tangent_parabola": {
+      "master": "reflection-cannon-archer.jpg",
+      "thumb": "thumbs/reflection-cannon-archer.webp"
+    },
+    "tangent_ellipse": {
+      "master": "ellipse-tangent-watcher.jpg",
+      "thumb": "thumbs/ellipse-tangent-watcher.webp"
+    },
+    "tangent_hyperbola": {
+      "master": "hyperbola-tangent-severer.jpg",
+      "thumb": "thumbs/hyperbola-tangent-severer.webp"
+    },
+    "relation_lines": {
+      "master": "skew-lines-wanderer.jpg",
+      "thumb": "thumbs/skew-lines-wanderer.webp"
+    },
+    "relation_line_plane": {
+      "master": "line-plane-sentinel.jpg",
+      "thumb": "thumbs/line-plane-sentinel.webp"
+    },
+    "relation_planes": {
+      "master": "plane-intersection-lord.jpg",
+      "thumb": "thumbs/plane-intersection-lord.webp"
+    },
+    "threeperp_conclusion": {
+      "master": "three-perpendicular-triangle-beast.jpg",
+      "thumb": "thumbs/three-perpendicular-triangle-beast.webp"
+    },
+    "threeperp_distance": {
+      "master": "shortest-distance-tracker-hound.jpg",
+      "thumb": "thumbs/shortest-distance-tracker-hound.webp"
+    },
+    "projection_length": {
+      "master": "projection-length-caster.jpg",
+      "thumb": "thumbs/projection-length-caster.webp"
+    },
+    "projection_area": {
+      "master": "projection-area-devourer.jpg",
+      "thumb": "thumbs/projection-area-devourer.webp"
+    },
+    "space_distance": {
+      "master": "space-distance-surveyor-giant.jpg",
+      "thumb": "thumbs/space-distance-surveyor-giant.webp"
+    },
+    "space_division": {
+      "master": "internal-division-balancer.jpg",
+      "thumb": "thumbs/internal-division-balancer.webp"
+    },
+    "sphere_read": {
+      "master": "sphere-coordinate-observer.jpg",
+      "thumb": "thumbs/sphere-coordinate-observer.webp"
+    },
+    "sphere_build": {
+      "master": "sphere-sculptor.jpg",
+      "thumb": "thumbs/sphere-sculptor.webp"
+    },
+    "vector_addsub": {
+      "master": "vector-composition-beast.jpg",
+      "thumb": "thumbs/vector-composition-beast.webp"
+    },
+    "vector_scalar": {
+      "master": "scalar-scale-steed.jpg",
+      "thumb": "thumbs/scalar-scale-steed.webp"
+    },
+    "vector_linear": {
+      "master": "linear-combination-weaver.jpg",
+      "thumb": "thumbs/linear-combination-weaver.webp"
+    },
+    "vector_component": {
+      "master": "direction-component-tracker.jpg",
+      "thumb": "thumbs/direction-component-tracker.webp"
+    },
+    "position_point": {
+      "master": "position-vector-beacon-keeper.jpg",
+      "thumb": "thumbs/position-vector-beacon-keeper.webp"
+    },
+    "vector_division": {
+      "master": "vector-division-mediator.jpg",
+      "thumb": "thumbs/vector-division-mediator.webp"
+    },
+    "dot_component": {
+      "master": "dot-product-calculation-core.jpg",
+      "thumb": "thumbs/dot-product-calculation-core.webp"
+    },
+    "dot_angle": {
+      "master": "angle-judicator.jpg",
+      "thumb": "thumbs/angle-judicator.webp"
+    },
+    "dot_length": {
+      "master": "squared-vector-length-guardian.jpg",
+      "thumb": "thumbs/squared-vector-length-guardian.webp"
+    },
+    "line_point_direction": {
+      "master": "direction-vector-guide.jpg",
+      "thumb": "thumbs/direction-vector-guide.webp"
+    },
+    "line_parameter": {
+      "master": "parameter-line-runner.jpg",
+      "thumb": "thumbs/parameter-line-runner.webp"
+    },
+    "plane_normal": {
+      "master": "normal-vector-shield-knight.jpg",
+      "thumb": "thumbs/normal-vector-shield-knight.webp"
+    },
+    "sphere_vector": {
+      "master": "spherical-vector-nebula-dragon.jpg",
+      "thumb": "thumbs/spherical-vector-nebula-dragon.webp"
+    }
   }
 }

@@ -47,19 +47,28 @@
     return out;
   }
 
+  /* 얼굴을 먼저 보여 준다. 이름과 스킬만 적힌 타일은 예순네 장이 늘어서면
+     서로 구별되지 않는다. 그림은 192px webp 라 장당 7KB 이고, 화면에 들어올
+     때 불러오므로(loading="lazy") 명단을 열자마자 다 받지는 않는다. */
+  function faceHtml(boss){
+    return `<span class="archive-face">`
+      + `<img src="${esc(boss.thumb)}" alt="" loading="lazy" decoding="async" width="192" height="192">`
+      + `</span>`;
+  }
+
   function cardHtml(boss){
+    const body=`<span class="archive-text">`
+      + `<span class="archive-code">${esc(boss.code)}</span>`
+      + `<b>${esc(boss.name)}</b>`
+      + `<span class="archive-skill">${esc(boss.skillTitle)}</span>`
+      + `</span>`;
     if(boss.status!=='playable'){
       return `<div class="archive-card planned" style="--boss-accent:${esc(boss.palette)}">
-        <span class="archive-code">${esc(boss.code)}</span>
-        <b>${esc(boss.name)}</b>
-        <span class="archive-skill">${esc(boss.skillTitle)}</span>
-        <em>제작 예정</em>
+        ${faceHtml(boss)}${body}<em>제작 예정</em>
       </div>`;
     }
     return `<a class="archive-card" href="${esc(boss.href)}" style="--boss-accent:${esc(boss.palette)}" title="${esc(boss.name)} — ${esc(boss.mechanic)}">
-      <span class="archive-code">${esc(boss.code)}</span>
-      <b>${esc(boss.name)}</b>
-      <span class="archive-skill">${esc(boss.skillTitle)}</span>
+      ${faceHtml(boss)}${body}
     </a>`;
   }
 
