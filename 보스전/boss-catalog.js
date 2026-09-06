@@ -71,6 +71,21 @@
     ['sphere_vector','S36','구의 벡터식과 좌표식','구면벡터의 성운룡','벡터식과 좌표식을 오가며 구면 우주를 뒤집는다.','구면 성운을 휘감은 벡터 화살 용','#416aa1']
   ];
 
+  /* 아직 페이지가 없는 보스의 skillId 를 여기 적는다. 지금은 비어 있다 —
+     64종이 모두 실제로 싸울 수 있다. 예전에는 반대로 "되는 것" 을 적었는데,
+     보스를 만들 때마다 목록이 길어지기만 하고 빠뜨리기도 쉬웠다. */
+  const PLANNED=[];
+
+  /* 단원. 보스전 홀이 이것으로 명단을 나눈다. 코드가 이미 단원을 말하고
+     있으므로(L 극한 · D 미분법 · G 도함수의 활용 · I 적분) 코드에서 읽는다.
+     기하는 전부 S 라서 번호로 가른다. */
+  const CALC_UNITS={L:'극한과 연속',D:'미분법',G:'도함수의 활용',I:'적분'};
+  const unitOf=(subject,code)=>{
+    if(subject==='calculus')return CALC_UNITS[code[0]]||'기타';
+    const n=Number(code.slice(1));
+    return n<=12?'이차곡선':n<=23?'공간도형과 공간좌표':'벡터';
+  };
+
   function make(subject,row,index){
     const [skillId,code,skillTitle,name,mechanic,visual,palette]=row;
     return {
@@ -78,7 +93,8 @@
       subject,
       order:index+1,
       skillId,code,skillTitle,name,mechanic,visual,palette,
-      status:['differentiate_polynomial','limit_factor','limit_rationalize','limit_infinity_ratio','limit_infinity_diff','limit_one_sided','continuity_parameter','squeeze_limit','lhopital','derivative_definition','product_rule','tangent_equation','monotonic_interval','extrema_sign','cubic_extrema','quartic_shape','real_roots','mean_value','motion_rate','horizontal_tangent','antiderivative','initial_antiderivative','definite_integral','integral_symmetry','area_axis','area_between','distance_velocity','fundamental_theorem','parabola_form','parabola_focus','parabola_point','ellipse_abc','ellipse_distance','ellipse_equation','hyperbola_abc','hyperbola_asymptote','hyperbola_distance','tangent_parabola','tangent_ellipse','tangent_hyperbola','relation_lines','relation_line_plane','relation_planes','threeperp_conclusion','threeperp_distance','projection_length','projection_area','space_distance','space_division','sphere_read','sphere_build','vector_addsub','vector_scalar','vector_linear','vector_component','position_point','vector_division','dot_component','dot_angle','dot_length','line_point_direction','line_parameter','plane_normal','sphere_vector'].includes(skillId)?'playable':'planned',
+      unit:unitOf(subject,code),
+        status:PLANNED.includes(skillId)?'planned':'playable',
       href:`../${subject==='calculus'?'미적분1/미적분1_계산스킬':'기하/기하_내신스킬'}.html?id=${skillId}&mode=boss`
     };
   }

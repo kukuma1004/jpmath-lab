@@ -9,10 +9,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=Noto+Serif+KR:wght@700;900&amp;display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../jp-nav-2.css?v=4">
-  <link rel="stylesheet" href="boss-hall.css?v=2">
+  <link rel="stylesheet" href="boss-hall.css?v=3">
   <script src="../jp-nav-2.js?v=6" data-jp-section="보스전" defer></script>
-  <script src="boss-catalog.js?v=15" defer></script>
-  <script src="boss-hall.js?v=1" defer></script>
+  <script src="boss-catalog.js?v=16" defer></script>
+  <script src="boss-hall.js?v=2" defer></script>
 </head>
 <body>
   <main>
@@ -22,6 +22,7 @@
         <h1>수학 실력을<br><em>데미지로 바꿉니다.</em></h1>
         <div class="hero-rule"><span>제한시간</span><i>+</i><span>보스 HP</span><i>+</i><span>데미지</span><i>+</i><span>콤보</span></div>
         <p class="hero-description">세 문제를 연속으로 맞히는 훈련에서 끝나지 않습니다. 시간 안에 더 많은 문제를 해결하고, 정확도를 유지해 실제로 보스를 쓰러뜨립니다.</p>
+        <a class="hero-jump" href="#roadmapTitle">보스 명단 바로가기 <span>↓</span></a>
       </div>
       <div class="hero-core" aria-hidden="true"><span></span><b>JP</b><i></i></div>
     </section>
@@ -42,17 +43,18 @@
     </section>
 
     <section class="boss-roadmap" aria-labelledby="roadmapTitle">
-      <header><p>BOSS ROSTER 2.2</p><h2 id="roadmapTitle"><span data-boss-total>64</span>종의 보스를 순서대로 깨웁니다.</h2><span>미적분 <b data-calculus-total>28</b>종과 기하 <b data-geometry-total>36</b>종. 이름만 다른 복제품이 아니라 외형과 전투 규칙이 수학 개념을 드러내도록 설계했습니다.</span></header>
-      <div class="roster-summary" aria-label="보스 제작 현황">
-        <div><span>전체 설계</span><strong><i data-boss-total>64</i> / 64</strong></div>
-        <div><span>실제 전투 가능</span><strong>12 / 64</strong></div>
-        <div><span>다음 제작</span><strong>부호표의 순찰자</strong></div>
+      <header><p>BOSS ROSTER 2.2</p><h2 id="roadmapTitle"><span data-boss-total>64</span>종의 보스를 순서대로 깨웁니다.</h2><span>미적분 <b data-calculus-total>28</b>종과 기하 <b data-geometry-total>36</b>종. 과목을 고르고 단원으로 건너뛰세요. 이름만 다른 복제품이 아니라 외형과 전투 규칙이 수학 개념을 드러내도록 설계했습니다.</span></header>
+      <div class="roster-summary" aria-label="보스 현황">
+        <div><span>보스</span><strong><i data-boss-total>64</i>종</strong></div>
+        <div><span>단원</span><strong>7개</strong></div>
+        <div><span>전투 가능</span><strong><i data-boss-playable>64</i>종 · 전부</strong></div>
       </div>
       <div class="roster-toolbar" role="group" aria-label="과목별 보스 보기">
-        <button class="active" type="button" data-boss-filter="all" aria-pressed="true">전체 64</button>
-        <button type="button" data-boss-filter="calculus" aria-pressed="false">미적분 28</button>
-        <button type="button" data-boss-filter="geometry" aria-pressed="false">기하 36</button>
+        <button class="active" type="button" data-boss-filter="calculus" aria-pressed="true">미적분Ⅰ <i data-calculus-total>28</i></button>
+        <button type="button" data-boss-filter="geometry" aria-pressed="false">기하 <i data-geometry-total>36</i></button>
+        <button type="button" data-boss-filter="all" aria-pressed="false">전체 <i data-boss-total>64</i></button>
       </div>
+      <nav class="unit-bar" data-unit-bar aria-label="단원 바로가기"></nav>
       <div class="boss-archive-grid" data-boss-grid></div>
     </section>
   </main>
