@@ -40,8 +40,10 @@ function loadGenerators() {
   const code = [
     'const boss = { phase: 1, hStep: 0, productPair: null, sniperLock: 0, sniperTarget: null };',
     lines.slice(2, lineOf('  const excluded={')).join('\n'),
-    lines.slice(lineOf('  function hDistanceLabel'),
-      endOf(lineOf('  function makeForbiddenQuestion')) + 1).join('\n'),
+    // 생성기 구간은 주석 표식 사이다. 함수 이름을 표식으로 쓰면
+    // 코드가 엔진으로 옮겨 갈 때 조용히 어긋난다.
+    lines.slice(lineOf('  /* ── 보스 전용 문제 생성기 시작'),
+      lineOf('  /* ── 보스 전용 문제 생성기 끝')).join('\n'),
     'globalThis.API = { makeQuestion, makeDifferenceQuestion, makeForbiddenQuestion, boss,' +
     '  makeSniperQuestion: typeof makeSniperQuestion === "function" ? makeSniperQuestion : null,' +
     '  makeProductBossQuestion: typeof makeProductBossQuestion === "function" ? makeProductBossQuestion : null };'

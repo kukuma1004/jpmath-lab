@@ -52,13 +52,11 @@ function loadGenerators() {
     if (i < 0) throw new Error('못 찾음: ' + p);
     return i;
   };
-  let end = -1;
-  const forb = at('  function makeForbiddenQuestion');
-  for (let i = forb + 1; i < lines.length; i += 1) if (lines[i] === '  }') { end = i; break }
   const code = [
     'const boss = { phase: 1, hStep: 0, productPair: null, sniperLock: 0, sniperTarget: null };',
     lines.slice(2, at('  const excluded={')).join('\n'),
-    lines.slice(at('  function hDistanceLabel'), end + 1).join('\n'),
+    lines.slice(at('  /* ── 보스 전용 문제 생성기 시작'),
+      at('  /* ── 보스 전용 문제 생성기 끝')).join('\n'),
     'globalThis.API = { makeQuestion, makeDifferenceQuestion, makeForbiddenQuestion, boss,'
     + ' makeSniperQuestion: typeof makeSniperQuestion === "function" ? makeSniperQuestion : null,'
     + ' makeProductBossQuestion: typeof makeProductBossQuestion === "function" ? makeProductBossQuestion : null };'
