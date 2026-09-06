@@ -131,7 +131,51 @@ function checkLine(correct, m, k) {
   return null;
 }
 
-/* 문제 모양은 열 가지다. 새 모양을 만들면 여기에 읽는 법을 더한다. */
+
+// 다항식을 함수로. 상수 b·k·m 이 들어 있으면 값을 먼저 꽂는다.
+function polyFn(src, param, value) {
+  let t = String(src).replace(/−/g, '-');
+  if (param) t = t.replace(new RegExp(param, 'g'), '(' + value + ')');
+  return compile(toJs(t));
+}
+const evalAt = (fn, x) => fn(...args(x, undefined, null));
+const deriv = (fn, x) => (evalAt(fn, x + 1e-5) - evalAt(fn, x - 1e-5)) / 2e-5;
+
+// f′ 의 부호가 바뀌는 자리를 훑어 찾는다. 정확한 근이 아니라
+// 부호가 어디서 바뀌는지만 알면 극대·극소를 셀 수 있다.
+function signChanges(g) {
+  // 0 에 닿기만 하는 식(3(x−3)² 같은 것)에서 부동소수점 잡음이
+  // −1e-15 를 만들어 부호가 바뀐 것처럼 보인다. 문턱을 둔다.
+  const sgn = (v) => (v > 1e-6 ? 1 : v < -1e-6 ? -1 : 0);
+  const out = [];
+  let prev = sgn(g(-12));
+  for (let x = -12 + 0.01; x <= 12; x += 0.01) {
+    const cur = sgn(g(x));
+    if (cur !== 0 && prev !== 0 && cur !== prev) out.push({ x: x - 0.005, from: prev, to: cur });
+    if (cur !== 0) prev = cur;
+  }
+  return out;
+}
+
+// "(−∞,-2) ∪ (4,∞)" 를 구간 목록으로
+function parseIntervals(text) {
+  const t = String(text).replace(/−/g, '-').replace(/\s/g, '');
+  const out = [];
+  for (const m of t.matchAll(/\((-?(?:\d+(?:\.\d+)?|inf|∞)),(-?(?:\d+(?:\.\d+)?|inf|∞))\)/g)) {
+    const num = (v) => (/∞|inf/.test(v) ? (v.startsWith('-') ? -Infinity : Infinity) : Number(v));
+    out.push([num(m[1]), num(m[2])]);
+  }
+  return out;
+}
+const inSet = (iv, x) => iv.some(([lo, hi]) => x > lo && x < hi);
+
+// "b ≥ 12" 같은 조건을 읽는다
+function parseCondition(text) {
+  const m = /^([a-z])\s*(≥|≤|>|<)\s*(-?[0-9.]+)$/.exec(String(text).replace(/−/g, '-').trim());
+  return m ? { param: m[1], op: m[2], bound: Number(m[3]) } : null;
+}
+
+/* 문제 모양은 열여덟 가지다. 새 모양을 만들면 여기에 읽는 법을 더한다. */
 function verify(q) {
   const eq = q.equation.replace(/−/g, '-'), want = toNum(q.correct);
 
@@ -220,6 +264,121 @@ function verify(q) {
     return null;
   }
 
+
+  // ── 부호표·극값 계열 (단계잠금 보스 4종) ──────────────────────────
+
+  // 부호 변화표:  x=-1:  f′(x)  + → −
+  m = /^x=(-?[0-9]+):\s*f′\(x\)\s*([+-−])\s*→\s*([+-−])$/.exec(eq);
+  if (m) {
+    const from = m[2] === '+' ? 1 : -1, to = m[3] === '+' ? 1 : -1;
+    const should = from > 0 && to < 0 ? '극대' : from < 0 && to > 0 ? '극소' : '변곡점';
+    if (String(q.correct) !== should) return `부호 ${m[2]}→${m[3]} 이면 ${should} 여야 한다`;
+    return null;
+  }
+
+  // 조건식:  f(x)=… (상수 b·k·m 포함)  /  "… 조건은?"
+  if (/조건은\?/.test(prompt)) {
+    const em = /^f(′)?\(x\)=(.+)$/.exec(eq);
+    const cond = parseCondition(q.correct);
+    if (em && cond) {
+      const isPrime = !!em[1];
+      const holds = (v) => {
+        const fn = polyFn(em[2], cond.param, v);
+        const g = isPrime ? (x) => evalAt(fn, x) : (x) => deriv(fn, x);
+        if (/모든 실수에서 f가 증가/.test(prompt)) {
+          for (let x = -14; x <= 14; x += 0.02) if (g(x) < -1e-6) return false;
+          return true;
+        }
+        // 극대와 극소를 모두 갖는다 = f′ 의 부호가 두 번 바뀐다
+        return signChanges(g).length === 2;
+      };
+      const strict = cond.op === '>' || cond.op === '<';
+      const dir = cond.op === '≥' || cond.op === '>' ? 1 : -1;
+      const inside = cond.bound + dir * 0.5;      // 조건을 만족해야 하는 값
+      const outside = cond.bound - dir * 0.5;     // 만족하면 안 되는 값
+      if (!holds(inside)) return `${cond.param}=${inside} 에서 조건이 성립해야 하는데 안 한다`;
+      if (holds(outside)) return `${cond.param}=${outside} 에서는 성립하면 안 되는데 성립한다`;
+      // 경계는 등호가 있으면 성립, 없으면 불성립이어야 한다
+      if (holds(cond.bound) === strict) {
+        return `경계 ${cond.param}=${cond.bound} 의 등호 처리가 뒤집혀 있다 (적힌 것 ${cond.op})`;
+      }
+      return null;
+    }
+  }
+
+  // 극값을 갖게 하는 상수:  f(x)=…b…  /  "f가 x=A에서 극값을 갖게 하는 b는?"
+  m = /^f\(x\)=(.+)$/.exec(eq);
+  if (m && /x=(-?[0-9]+)에서 극값을 갖게 하는 ([a-z])는\?/.test(prompt)) {
+    const pm = /x=(-?[0-9]+)에서 극값을 갖게 하는 ([a-z])는\?/.exec(prompt);
+    const at = Number(pm[1]), fn = polyFn(m[1], pm[2], want);
+    if (Math.abs(deriv(fn, at)) > 1e-3) return `그 값을 넣으면 f′(${at})=${deriv(fn, at).toFixed(3)} 로 0이 아니다`;
+    // 0이 되는 것만으로는 부족하다. 부호가 실제로 바뀌어야 극값이다.
+    if (Math.sign(deriv(fn, at - 0.3)) === Math.sign(deriv(fn, at + 0.3))) {
+      return `f′ 가 x=${at} 에서 0이지만 부호가 안 바뀌어 극값이 아니다`;
+    }
+    return null;
+  }
+
+  // 증가·감소 구간:  f(x)=… 또는 f′(x)=…  /  "f가 증가하는 구간은?"
+  m = /^f(′)?\(x\)=(.+)$/.exec(eq);
+  if (m && /(증가|감소)하는 구간/.test(prompt)) {
+    const wantUp = /증가하는 구간/.test(prompt);
+    const fn = polyFn(m[2]);
+    const g = m[1] ? (x) => evalAt(fn, x) : (x) => deriv(fn, x);
+    const iv = parseIntervals(q.correct);
+    if (!iv.length) return '구간을 못 읽음: ' + q.correct;
+    for (let x = -11; x <= 11; x += 0.05) {
+      const v = g(x);
+      if (Math.abs(v) < 0.05) continue;           // 근 언저리는 건너뛴다
+      const claimed = inSet(iv, x);
+      const actual = wantUp ? v > 0 : v < 0;
+      if (claimed !== actual) {
+        return `x=${x.toFixed(2)} 에서 어긋난다 (적힌 구간 ${claimed ? '안' : '밖'}, 실제 f′=${v.toFixed(2)})`;
+      }
+    }
+    return null;
+  }
+
+  // 극댓값·극솟값·그 차:  f(x)=…
+  m = /^f\(x\)=(.+)$/.exec(eq);
+  if (m && /극(댓값|솟값)/.test(prompt) && want !== null) {
+    const fn = polyFn(m[1]);
+    const chg = signChanges((x) => deriv(fn, x));
+    const maxes = chg.filter((c) => c.from > 0 && c.to < 0).map((c) => evalAt(fn, c.x));
+    const mins = chg.filter((c) => c.from < 0 && c.to > 0).map((c) => evalAt(fn, c.x));
+    let target = null;
+    if (/차는\?/.test(prompt)) {
+      if (!maxes.length || !mins.length) return '극대와 극소가 둘 다 있어야 차를 묻는다';
+      target = Math.max(...maxes) - Math.min(...mins);
+    } else if (/극댓값/.test(prompt)) target = maxes.length ? Math.max(...maxes) : null;
+    else target = mins.length ? Math.min(...mins) : null;
+    if (target === null) return '극값을 찾지 못했다';
+    if (Math.abs(target - want) > 0.05 * Math.max(1, Math.abs(want))) {
+      return `식과 답이 다르다 (계산 ${target.toFixed(2)})`;
+    }
+    return null;
+  }
+
+  // 사차 임계점 판정:  f′(x)=4(x+2)x(x−2)  /  "가운데 임계점 x=A에서 f는?"
+  m = /^f′\(x\)=(.+)$/.exec(eq);
+  if (m && /임계점 x=(-?[0-9]+)에서 f는\?/.test(prompt)) {
+    const at = Number(/임계점 x=(-?[0-9]+)에서/.exec(prompt)[1]);
+    const g = polyFn(m[1]);
+    const l = evalAt(g, at - 0.3), r = evalAt(g, at + 0.3);
+    const should = l > 0 && r < 0 ? '극대' : l < 0 && r > 0 ? '극소' : '변곡점';
+    if (String(q.correct) !== should) return `x=${at} 좌우 부호가 ${l > 0 ? '+' : '-'}→${r > 0 ? '+' : '-'} 이므로 ${should}`;
+    return null;
+  }
+
+  // 극값의 개수:  f′(x)=…  /  "f의 극값은 모두 몇 개인가요?"
+  if (m && /극값은 모두 몇 개/.test(prompt)) {
+    const g = polyFn(m[1]);
+    const n = signChanges((x) => evalAt(g, x)).length;
+    const said = Number(String(q.correct).replace(/[^0-9]/g, ''));
+    if (n !== said) return `부호가 ${n}번 바뀌는데 ${said}개라고 적혀 있다`;
+    return null;
+  }
+
   // 연속이 되게 하는 k:  f(x)=유리식 (x≠a),  f(a)=k
   m = /^f\(x\)=(.+?)\s*\(x≠(-?[0-9]+)\),\s*f\(-?[0-9]+\)=k$/.exec(eq);
   if (m) {
@@ -294,7 +453,9 @@ const SKILL_BOSSES = [
   ['limit_infinity_ratio', '무한비의 거신'], ['limit_infinity_diff', '미정형의 혼돈수'],
   ['limit_one_sided', '양면의 경계자'], ['continuity_parameter', '연속의 봉합사'],
   ['squeeze_limit', '압착의 쌍벽'], ['differentiate_polynomial', '미분의 철갑수'],
-  ['tangent_equation', '접선의 저격수']
+  ['tangent_equation', '접선의 저격수'],
+  ['monotonic_interval', '부호표의 순찰자'], ['extrema_sign', '극점의 전환자'],
+  ['cubic_extrema', '판별식의 삼두룡'], ['quartic_shape', '사차의 봉우리왕']
 ];
 const LEVELS = ['basic', 'applied', 'deep'];
 

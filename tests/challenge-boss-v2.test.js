@@ -29,8 +29,8 @@ assert.match(bossHall, /38초/);
 assert.match(bossHall, /HP 2600/);
 
 assert.match(skillHtml, /jp-game-telemetry\.js\?v=2/);
-assert.match(skillHtml, /미적분1_계산스킬\.js\?v=21/);
-assert.match(skillHtml, /미적분1_계산스킬\.css\?v=24/);
+assert.match(skillHtml, /미적분1_계산스킬\.js\?v=22/);
+assert.match(skillHtml, /미적분1_계산스킬\.css\?v=25/);
 assert.match(skillJs, /differentiate_polynomial:\{name:'미분의 철갑수'/);
 assert.match(skillJs, /limit_factor:\{name:'인수분해의 문지기'/);
 assert.match(skillJs, /limit_rationalize:\{name:'켤레의 연금술사'/);
@@ -127,6 +127,22 @@ assert.match(skillCss, /\.boss-v2\.boss-sniper /,'저격수 전용 겉모습이 
 assert.match(skillJs, /tangent-sniper\.jpg/,'접선의 저격수 데스크톱 초상을 사용해야 한다.');
 assert.match(skillJs, /tangent-sniper-mobile\.jpg/,'접선의 저격수 모바일 초상을 사용해야 한다.');
 assert.match(skillJs, /조준 실패 · 접점부터 다시 포착/,'오답 피드백은 저격수 규칙을 직접 설명해야 한다.');
+
+// ── 공통 단계잠금(step-lock) ────────────────────────────────────
+// 보스마다 배선을 따로 하면 if 분기가 스물여덟 갈래가 된다. 정해진
+// 횟수를 연속으로 맞히면 마무리 공격이 되고 틀리면 처음으로 돌아간다.
+// 보스마다 다른 것은 횟수·이름·데미지·색이며 전부 설정에 적는다.
+assert.match(skillJs, /mechanic:'step-lock'/);
+assert.match(skillJs, /function stepLockLabel/);
+assert.match(skillJs, /finishingStep=stepBattle&&boss\.lockStep===\(bossConfig\.lockSteps\|\|3\)-1/,'마무리 단계는 설정한 횟수에서 열려야 한다.');
+assert.match(skillJs, /stepBattle&&!finishingStep/,'마무리 공격으로만 단계잠금 보스를 쓰러뜨릴 수 있어야 한다.');
+assert.match(skillJs, /boss\.lockStep=0;boss\.lockBreaks\+=1/,'오답이면 단계가 처음으로 돌아가야 한다.');
+assert.match(skillJs, /monotonic_interval:\{name:'부호표의 순찰자'/);
+assert.match(skillJs, /extrema_sign:\{name:'극점의 전환자'/);
+assert.match(skillJs, /cubic_extrema:\{name:'판별식의 삼두룡'/);
+assert.match(skillJs, /quartic_shape:\{name:'사차의 봉우리왕'/);
+assert.match(skillCss, /\.boss-v2\.boss-step /,'단계잠금 보스의 겉모습이 있어야 한다.');
+assert.match(skillJs, /--boss-accent:\$\{bossConfig\.accent\}/,'보스마다 다른 강조색을 무대에 실어야 한다.');
 
 assert.match(skillJs, /function makeQuestion\(id,level=currentLevel,forcedSide=null\)/,'보스 페이즈 난도와 접근 방향이 실제 문제 생성기에 전달되어야 한다.');
 assert.match(skillJs, /currentBossV2Limit/);

@@ -21,13 +21,13 @@ for(const boss of catalog.bosses){
 }
 
 const playable=catalog.bosses.filter(x=>x.status==='playable');
-assert.equal(playable.length, 12, '현재 실제 플레이 가능한 보스는 열두 종이어야 한다.');
-assert.deepEqual([...playable.map(x=>x.name)].sort(),['미분의 철갑수','인수분해의 문지기','켤레의 연금술사','무한비의 거신','미정형의 혼돈수','양면의 경계자','연속의 봉합사','압착의 쌍벽','금단의 미분술사','차분몫의 원형','쌍날 곱셈귀','접선의 저격수'].sort());
+assert.equal(playable.length, 16, '현재 실제 플레이 가능한 보스는 열여섯 종이어야 한다.');
+assert.deepEqual([...playable.map(x=>x.name)].sort(),['미분의 철갑수','인수분해의 문지기','켤레의 연금술사','무한비의 거신','미정형의 혼돈수','양면의 경계자','연속의 봉합사','압착의 쌍벽','금단의 미분술사','차분몫의 원형','쌍날 곱셈귀','접선의 저격수','부호표의 순찰자','극점의 전환자','판별식의 삼두룡','사차의 봉우리왕'].sort());
 
 const hall=fs.readFileSync('보스전/index.html','utf8');
 const hallCss=fs.readFileSync('보스전/boss-hall.css','utf8');
 const calcCss=fs.readFileSync('미적분1/미적분1_계산스킬.css','utf8');
-assert.match(hall,/boss-catalog\.js\?v=12/);
+assert.match(hall,/boss-catalog\.js\?v=13/);
 assert.match(hall,/boss-hall\.js\?v=1/);
 assert.match(hall,/실제 전투 가능<\/span><strong>12 \/ 64/,'보스전 홀의 실제 전투 가능 수가 열두 종이어야 한다.');
 assert.match(hall,/다음 제작<\/span><strong>부호표의 순찰자/,'다음 제작 보스를 안내해야 한다.');
