@@ -5,8 +5,8 @@ const html = fs.readFileSync('기하/기하_내신스킬.html', 'utf8');
 const js = fs.readFileSync('기하/기하_내신스킬.js', 'utf8');
 const css = fs.readFileSync('기하/기하_내신스킬.css', 'utf8');
 
-assert.match(html, /기하_내신스킬\.js\?v=4/);
-assert.match(html, /기하_내신스킬\.css\?v=5/);
+assert.match(html, /기하_내신스킬\.js\?v=6/);
+assert.match(html, /기하_내신스킬\.css\?v=6/);
 assert.match(js, /const LEVELS=\[/);
 assert.match(js, /id:'basic'/);
 assert.match(js, /id:'applied'/);

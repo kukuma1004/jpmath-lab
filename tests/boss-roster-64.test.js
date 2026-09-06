@@ -21,13 +21,16 @@ for(const boss of catalog.bosses){
 }
 
 const playable=catalog.bosses.filter(x=>x.status==='playable');
-assert.equal(playable.length, 28, '현재 실제 플레이 가능한 보스는 스물여덟 종이어야 한다.');
-assert.deepEqual([...playable.map(x=>x.name)].sort(),['미분의 철갑수','인수분해의 문지기','켤레의 연금술사','무한비의 거신','미정형의 혼돈수','양면의 경계자','연속의 봉합사','압착의 쌍벽','금단의 미분술사','차분몫의 원형','쌍날 곱셈귀','접선의 저격수','부호표의 순찰자','극점의 전환자','판별식의 삼두룡','사차의 봉우리왕','교점의 군주','평균값의 추적자','가속의 폭주마','수평접선의 사냥꾼','원시함수의 수집가','상수 C의 봉인자','구간의 판관','대칭적분의 거울왕','절댓값의 재단사','교차영역의 포식자','속도누적의 질주귀','미적분의 문지기'].sort());
+assert.equal(playable.length, 64, '64종이 모두 실제로 플레이 가능해야 한다.');
+// 도전 가능 목록은 카탈로그가 진실이다. 이름을 손으로 옮겨 적으면
+// 보스를 더할 때마다 어긋나므로, 64종 전체와 견준다.
+assert.deepEqual([...playable.map(x=>x.name)].sort(),[...catalog.bosses.map(x=>x.name)].sort(),'64종이 모두 도전 가능해야 한다.');
 
 const hall=fs.readFileSync('보스전/index.html','utf8');
 const hallCss=fs.readFileSync('보스전/boss-hall.css','utf8');
-const calcCss=fs.readFileSync('미적분1/미적분1_계산스킬.css','utf8');
-assert.match(hall,/boss-catalog\.js\?v=14/);
+// 모바일 조종석 스타일은 두 페이지가 나눠 쓰는 공용 파일에 있다.
+const calcCss=fs.readFileSync('보스전/boss-engine.css','utf8');
+assert.match(hall,/boss-catalog\.js\?v=15/);
 assert.match(hall,/boss-hall\.js\?v=1/);
 assert.match(hall,/실제 전투 가능<\/span><strong>12 \/ 64/,'보스전 홀의 실제 전투 가능 수가 열두 종이어야 한다.');
 assert.match(hall,/다음 제작<\/span><strong>부호표의 순찰자/,'다음 제작 보스를 안내해야 한다.');

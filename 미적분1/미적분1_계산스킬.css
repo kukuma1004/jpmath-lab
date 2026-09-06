@@ -1,17 +1,124 @@
 :root{--paper:#F4F6F5;--panel:#fff;--ink:#1F2925;--muted:#6B756F;--line:#DDE3DF;--skill:#2B6CA3;--skill-dark:#173E5E;--rush:#C1442D;--boss:#172A24;--gold:#C99A2E;--success:#2E7D5B;--cream:#F8F1DF;--font-body:'IBM Plex Sans KR','Pretendard','Malgun Gothic',sans-serif;--font-mono:'IBM Plex Mono',Consolas,monospace;--font-display:'Noto Serif KR','Malgun Gothic',serif}
-*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--paper);color:var(--ink);font-family:var(--font-body)}button,input{font:inherit}.hidden{display:none!important}.calc-skill-page{min-height:100vh;background:radial-gradient(#DCE4E0 1px,transparent 1px),var(--paper);background-size:20px 20px}
-.skill-nav{position:sticky;top:0;z-index:30;padding:10px 14px 8px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--paper) 93%,transparent);backdrop-filter:blur(14px)}.skill-nav-inner{max-width:920px;margin:auto;display:flex;gap:8px}.skill-back{width:44px;flex:0 0 44px;display:grid;place-items:center;border:1.5px solid var(--line);border-radius:13px;background:#fff;color:var(--ink);text-decoration:none;font-size:20px;font-weight:800}.skill-tab{flex:1;border:1.5px solid var(--line);background:#fff;border-radius:13px;padding:10px 7px;color:var(--muted);font-size:12px;font-weight:750;cursor:pointer}.skill-tab span{font:700 9px var(--font-mono);opacity:.62;margin-right:4px}.skill-tab.active{color:#fff;background:var(--skill-dark);border-color:var(--skill-dark)}.skill-tab.rush.active{background:var(--rush);border-color:var(--rush)}.skill-tab.boss.active{background:var(--boss);border-color:var(--boss)}
-.skill-wrap{max-width:920px;margin:auto;padding:25px 16px 64px}.skill-hero,.mode-header{display:flex;align-items:flex-end;justify-content:space-between;gap:22px;margin-bottom:20px}.skill-kicker{margin:0 0 7px;color:var(--skill);font:700 11px/1.4 var(--font-mono);letter-spacing:1.3px}.skill-hero h1,.mode-header h1{margin:0 0 8px;font:900 clamp(27px,5vw,40px)/1.17 var(--font-display);letter-spacing:-.04em}.skill-hero p:last-child,.mode-header p:last-child{margin:0;color:var(--muted);font-size:14px;line-height:1.65}.mastery-card,.mode-stat{flex:0 0 175px;padding:14px 16px;border:1px solid var(--line);border-radius:17px;background:#fff}.mastery-card span,.mode-stat span{display:block;color:var(--muted);font:700 9px var(--font-mono);letter-spacing:1px}.mastery-card strong{display:block;margin:5px 0;color:var(--gold);font-size:21px;letter-spacing:2px}.mastery-card small{color:var(--muted);font-size:10px}.mode-stat strong{display:block;margin-top:5px;font:700 23px var(--font-mono)}
-.rule-strip{display:grid;grid-template-columns:auto auto 1fr;align-items:center;gap:16px;margin-bottom:15px;padding:15px 19px;border-radius:18px;background:var(--skill-dark);color:#fff}.rule-strip span:first-child{color:#CFDFEB;font:700 10px var(--font-mono);letter-spacing:1px}.rule-strip strong{font:700 18px var(--font-mono)}.rule-strip em{justify-self:end;padding:6px 9px;border:1px solid rgba(255,255,255,.28);border-radius:999px;font:700 9px var(--font-mono);font-style:normal}
-.concept-layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(275px,.75fr);gap:15px}.formula-card,.routine-card,.question-shell,.rush-stage,.boss-stage{border:1px solid var(--line);border-radius:22px;background:#fff}.formula-card{display:grid;min-height:330px;place-items:center;padding:25px;text-align:center;overflow:hidden}.formula-orbit{position:relative;display:grid;width:min(410px,94%);aspect-ratio:1;place-items:center;border:1px dashed color-mix(in srgb,var(--skill) 38%,transparent);border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--skill) 8%,white),#fff 62%)}.formula-orbit::before,.formula-orbit::after{content:'';position:absolute;border-radius:50%;border:1px solid color-mix(in srgb,var(--skill) 24%,transparent)}.formula-orbit::before{inset:12%}.formula-orbit::after{inset:28%}.formula-main{position:relative;z-index:2;width:100%;max-width:92%;padding:8px 2px;overflow:hidden;color:var(--skill-dark);font:700 clamp(18px,3vw,24px)/1.45 var(--font-mono);word-break:normal}.formula-main .katex,.example-equation .katex,.question-equation .katex,.rush-eq .katex,.answer-btn .katex{white-space:nowrap}.formula-main .katex{font-size:1em}.formula-card p{margin:18px 0 0;color:var(--muted);font-size:12px;line-height:1.6}.routine-card{padding:17px}.routine-card h2{margin:0 0 14px;font-size:16px}.routine-list{display:grid;gap:9px}.routine-step{display:grid;grid-template-columns:28px 1fr;gap:9px;align-items:center;padding:10px;border-radius:13px;background:#F4F7F5}.routine-step>span{display:grid;width:27px;height:27px;place-items:center;border-radius:50%;background:var(--skill-dark);color:#fff;font:700 10px var(--font-mono)}.routine-step b{font-size:12px}.routine-step small{display:block;margin-top:2px;color:var(--muted);font-size:10.5px;line-height:1.4}.trap-box{margin-top:12px;padding:12px;border:1px solid #E8C8BE;border-radius:13px;background:#FFF5F1}.trap-box span{color:var(--rush);font:700 9px var(--font-mono)}.trap-box p{margin:6px 0 0;color:#7F4535;font-size:11px;line-height:1.5}.example-box{margin-top:12px;padding:13px;border:1px solid #E4D19D;border-radius:14px;background:var(--cream)}.example-label{color:#8A641A;font:700 9px var(--font-mono);letter-spacing:1px}.example-equation{margin:8px 0 5px;font:700 17px var(--font-mono);overflow-x:auto}.example-prompt{font-size:11.5px;line-height:1.5}.example-answer{margin-top:9px;padding-top:9px;border-top:1px dashed #D6BD83;color:var(--success);font-size:11.5px;font-weight:700}.example-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}.example-actions button{border:1px solid var(--line);border-radius:10px;background:#fff;padding:8px 5px;font-size:10.5px;font-weight:700;cursor:pointer}.launch-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:15px}.launch-card{padding:15px;border:1.5px solid var(--line);border-radius:18px;background:#fff;color:var(--ink);text-align:left;cursor:pointer}.launch-card:hover{transform:translateY(-3px);border-color:var(--skill)}.launch-card span{color:var(--skill);font:700 9px var(--font-mono);letter-spacing:1px}.launch-card b,.launch-card small{display:block}.launch-card b{margin:7px 0 4px;font-size:14px}.launch-card small{color:var(--muted);font-size:11px;line-height:1.45}.launch-card.hot{border-color:#E8B8A9;background:#FFF5F1}.launch-card.hot span{color:var(--rush)}.launch-card.dark{border-color:var(--boss);background:var(--boss);color:#fff}.launch-card.dark span{color:#9BD4BF}.launch-card.dark small{color:#C3D2CC}
-.mode-header{margin-bottom:18px}.question-shell,.rush-stage,.boss-stage{padding:clamp(18px,4vw,30px)}.question-topline{display:flex;justify-content:space-between;color:var(--skill);font:700 10px var(--font-mono);letter-spacing:1px}.question-equation{margin:22px 0 12px;padding:19px;overflow-x:auto;border-radius:17px;background:var(--cream);text-align:center;font:700 clamp(19px,4vw,28px) var(--font-mono);word-break:normal}.question-prompt{margin:18px 0 22px;text-align:center;font-size:clamp(17px,4vw,22px);font-weight:700;word-break:keep-all}.answer-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.answer-btn{min-height:58px;padding:8px 10px;overflow-x:auto;border:1.5px solid var(--line);border-radius:15px;background:#fff;color:var(--ink);font:700 15px var(--font-mono);cursor:pointer}.answer-btn:hover{border-color:var(--skill);background:#F8FBFD}.answer-btn.correct{border-color:var(--success);background:#EAF6F0;color:var(--success)}.answer-btn.wrong{border-color:var(--rush);background:#FFF0EC;color:var(--rush)}.answer-btn:disabled{cursor:default}.answer-feedback{margin-top:12px;padding:13px 15px;border-radius:14px;font-size:12.5px;line-height:1.55}.answer-feedback.good{background:#EAF6F0;color:#205E41}.answer-feedback.bad{background:#FFF0EC;color:#913521}.primary-action{width:100%;margin-top:15px;padding:14px 18px;border:0;border-radius:15px;background:var(--skill-dark);color:#fff;font-weight:800;cursor:pointer}.result-card{margin-top:15px;padding:22px;border:1px solid var(--line);border-radius:20px;background:#fff;text-align:center}.result-card strong{display:block;margin-bottom:7px;font:900 30px var(--font-display)}.result-card p{margin:0 0 14px;color:var(--muted)}.result-card button{padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;font-weight:700;cursor:pointer}
-.rush-stage{position:relative;overflow:hidden;border-color:#E7C2B7}.rush-hud{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.rush-hud div{padding:12px;border-radius:15px;background:#251D1A;color:#fff;text-align:center}.rush-hud span{display:block;color:#CDBAB3;font:700 9px var(--font-mono);letter-spacing:1px}.rush-hud strong{display:block;margin-top:3px;font:700 21px var(--font-mono)}.rush-track{height:9px;margin:12px 0 22px;overflow:hidden;border-radius:9px;background:#E9DDD9}.rush-track div{height:100%;width:100%;background:linear-gradient(90deg,#C1442D,#E39A39);transform-origin:left}.rush-question{display:grid;min-height:135px;place-content:center;text-align:center}.rush-eq{margin-bottom:8px;color:var(--skill-dark);font:700 clamp(19px,4vw,27px) var(--font-mono)}.rush-prompt{font-size:17px;font-weight:800}.rush-ready{font-size:35px}.rush-flash{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;opacity:0;font:900 44px var(--font-display)}.rush-flash.show{animation:flash .35s ease}.rush-flash.good{color:var(--success)}.rush-flash.bad{color:var(--rush)}@keyframes flash{0%{opacity:0;transform:scale(.7)}45%{opacity:1}100%{opacity:0;transform:scale(1.18)}}
-.boss-stage{overflow:hidden;border-color:#82978f;background:#f7f9f8;box-shadow:inset 0 5px 0 var(--boss),0 18px 45px rgba(23,42,36,.1)}.boss-arena{position:relative;display:grid;grid-template-columns:minmax(210px,.75fr) minmax(280px,1.25fr);gap:22px;align-items:center;margin:-6px -6px 20px;padding:22px;border-radius:18px;background:radial-gradient(circle at 22% 35%,rgba(73,151,123,.22),transparent 32%),linear-gradient(145deg,#101d19,#203a31 62%,#12241e);color:#fff;overflow:hidden}.boss-arena::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px);background-size:24px 24px;pointer-events:none}.boss-monster{position:relative;display:grid;justify-items:center;min-height:230px;align-content:center;filter:drop-shadow(0 18px 20px rgba(0,0,0,.35));animation:bossFloat 2.8s ease-in-out infinite}.boss-aura{position:absolute;width:190px;height:190px;border:1px solid rgba(126,231,191,.2);border-radius:50%;box-shadow:0 0 45px rgba(85,201,158,.15),inset 0 0 28px rgba(85,201,158,.12);animation:auraPulse 1.8s ease-in-out infinite}.boss-creature{position:relative;width:min(220px,92%);overflow:visible}.boss-wing{fill:#162a24;stroke:#6f9b8b;stroke-width:3}.boss-horn{fill:#cc9c32;stroke:#f1d68c;stroke-width:2}.boss-body-shape{fill:#28463c;stroke:#8cb9a9;stroke-width:3}.boss-mask{fill:#101b18;stroke:#4e7869;stroke-width:2}.boss-eye{fill:#ffcf55;filter:drop-shadow(0 0 6px #ffb72c)}.boss-core{fill:#db5945;stroke:#ffb09f;stroke-width:2;filter:drop-shadow(0 0 7px #db5945)}.boss-monster>strong{margin-top:-9px;color:#f7e9c1;font:900 18px var(--font-display);letter-spacing:-.02em}.boss-monster>span{margin-top:5px;color:#a7c9bd;font:700 10px var(--font-mono)}.boss-dashboard{position:relative;padding:20px;border:1px solid rgba(255,255,255,.11);border-radius:18px;background:rgba(4,13,10,.38);box-shadow:inset 0 1px rgba(255,255,255,.05)}.boss-hp-label{display:flex;justify-content:space-between;align-items:end}.boss-hp-label span,.boss-clock span{color:#9eb9b0;font:800 9px var(--font-mono);letter-spacing:1.3px}.boss-hp-label strong{color:#ffe29b;font:800 15px var(--font-mono)}.boss-hp-track,.boss-timer-track{height:13px;margin-top:8px;overflow:hidden;border-radius:999px;background:#09120f;box-shadow:inset 0 1px 3px rgba(0,0,0,.7)}.boss-hp-track div,.boss-timer-track div{height:100%;width:100%;transform-origin:left;transition:width .32s ease}.boss-hp-track div{background:linear-gradient(90deg,#c53f32,#f07839 72%,#ffd15c);box-shadow:0 0 12px rgba(240,120,57,.45)}.boss-clock{display:grid;grid-template-columns:1fr auto auto;align-items:end;gap:5px;margin-top:22px}.boss-clock strong{color:#fff;font:900 clamp(31px,6vw,48px)/.9 var(--font-mono);font-variant-numeric:tabular-nums}.boss-clock em{color:#ffcf55;font:800 9px var(--font-mono);font-style:normal}.boss-timer-track{height:8px}.boss-timer-track div{background:linear-gradient(90deg,#3dbd82,#f4c94e 62%,#e5543d);transition:none}.boss-danger .boss-clock strong{color:#ff745f;animation:dangerBlink .48s steps(2,end) infinite}.boss-danger .boss-arena{box-shadow:inset 0 0 0 2px rgba(229,84,61,.58)}.boss-progress{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:17px}.boss-node{height:9px;border-radius:8px;background:#DDE4E1;transition:.25s ease}.boss-node.active{background:var(--gold);box-shadow:0 0 0 3px rgba(201,154,46,.14)}.boss-node.done{background:var(--success)}.boss-start-copy{padding:24px 10px;text-align:center}.boss-start-copy strong{display:block;margin-bottom:8px;font:900 27px var(--font-display)}.boss-start-copy p{margin:0;color:var(--muted);font-size:12px;line-height:1.6}.boss-status{margin-top:12px;padding:12px 14px;border-radius:13px;font-size:12px;line-height:1.55}.boss-status.good{background:#EAF6F0;color:#205E41}.boss-status.bad{background:#FFF0EC;color:#913521}.boss-action{background:linear-gradient(135deg,#172a24,#315c4d);box-shadow:0 9px 20px rgba(23,42,36,.2)}.boss-monster.boss-hit{animation:bossHit .45s ease}.boss-monster.boss-attack{animation:bossAttack .5s ease}.boss-monster.boss-defeated{animation:none;opacity:.55;filter:grayscale(.5) drop-shadow(0 12px 14px rgba(0,0,0,.3));transform:translateY(16px) rotate(-5deg)}.boss-monster.boss-defeated .boss-eye,.boss-monster.boss-defeated .boss-core{fill:#63736d;filter:none}@keyframes bossFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}@keyframes auraPulse{0%,100%{transform:scale(.94);opacity:.45}50%{transform:scale(1.05);opacity:1}}@keyframes bossHit{0%{transform:translateX(0)}20%{transform:translateX(12px) rotate(3deg);filter:brightness(2) drop-shadow(0 0 20px #fff)}45%{transform:translateX(-9px) rotate(-2deg)}100%{transform:translateX(0)}}@keyframes bossAttack{0%{transform:scale(1)}45%{transform:scale(1.14) translateY(8px);filter:drop-shadow(0 0 24px #d94d39)}100%{transform:scale(1)}}@keyframes dangerBlink{50%{opacity:.35}}.not-found{max-width:620px;margin:80px auto;padding:30px;border:1px solid var(--line);border-radius:22px;background:#fff;text-align:center}.not-found h1{font-family:var(--font-display)}.not-found a{display:inline-block;margin-top:12px;color:var(--skill);font-weight:700}
-.formula-card>div{width:100%}.formula-orbit{margin:auto}.example-equation{overflow:hidden}.example-equation .katex{font-size:1em}
-@media(max-width:700px){.skill-nav-inner{gap:5px}.skill-tab{padding:9px 3px;font-size:10px}.skill-tab span{display:none}.skill-hero,.mode-header{align-items:stretch;flex-direction:column;gap:12px}.mastery-card,.mode-stat{width:100%;flex:auto}.rule-strip{grid-template-columns:auto 1fr}.rule-strip em{grid-column:1/-1;justify-self:start}.concept-layout{grid-template-columns:1fr}.formula-card{min-height:280px}.launch-row{grid-template-columns:1fr}.skill-wrap{padding-top:18px}.boss-arena{grid-template-columns:1fr}.boss-monster{min-height:195px}.boss-creature{width:185px}.boss-dashboard{padding:17px}}
-.boss-limit-copy{display:block;margin-top:10px;color:rgba(255,255,255,.68);font-size:12px;text-align:right}.boss-limit-copy b{color:#fff;font-size:13px}
-.boss-combat-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:16px}.boss-combat-stats div{padding:10px 8px;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:rgba(255,255,255,.045);text-align:center}.boss-combat-stats span{display:block;color:#91aca2;font:700 8px var(--font-mono);letter-spacing:.1em}.boss-combat-stats b{display:block;margin-top:4px;color:#fff;font:800 17px var(--font-mono)}.boss-v2 .boss-status{font-weight:700}.boss-v2.boss-phase-two .boss-arena{background:radial-gradient(circle at 22% 35%,rgba(204,69,51,.28),transparent 34%),linear-gradient(145deg,#1f1513,#3d2921 62%,#241713)}.boss-v2.boss-phase-two .boss-aura{border-color:rgba(255,113,83,.42);box-shadow:0 0 55px rgba(229,84,61,.28),inset 0 0 30px rgba(229,84,61,.14)}.boss-v2.boss-phase-two .boss-core{fill:#ff5c42;filter:drop-shadow(0 0 11px #ff4c32)}.boss-result-v2{padding:27px 12px;text-align:center}.boss-result-v2 span{display:block;color:var(--skill);font:800 10px var(--font-mono);letter-spacing:.13em}.boss-result-v2 strong{display:block;margin:9px 0 7px;font:900 clamp(30px,7vw,48px) var(--font-display)}.boss-result-v2 p{margin:0;color:var(--ink);font-weight:800}.boss-result-v2 small{display:block;margin-top:8px;color:var(--muted);font-size:12px;line-height:1.6}
-@media(max-width:430px){.skill-nav{padding-inline:8px}.skill-back{width:38px;flex-basis:38px}.skill-tab{border-radius:11px}.answer-grid{grid-template-columns:1fr}.example-actions{grid-template-columns:1fr}.rush-hud strong{font-size:17px}.question-shell,.rush-stage,.boss-stage{padding:16px}.boss-arena{margin:-2px -2px 16px;padding:15px}.boss-monster{min-height:175px}.boss-creature{width:160px}.boss-clock strong{font-size:34px}}
+
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--paper);color:var(--ink);font-family:var(--font-body)}
+button,input{font:inherit}
+.hidden{display:none!important}
+.calc-skill-page{min-height:100vh;background:radial-gradient(#DCE4E0 1px,transparent 1px),var(--paper);background-size:20px 20px}
+
+.skill-nav{position:sticky;top:0;z-index:30;padding:10px 14px 8px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--paper) 93%,transparent);backdrop-filter:blur(14px)}
+.skill-nav-inner{max-width:920px;margin:auto;display:flex;gap:8px}
+.skill-back{width:44px;flex:0 0 44px;display:grid;place-items:center;border:1.5px solid var(--line);border-radius:13px;background:#fff;color:var(--ink);text-decoration:none;font-size:20px;font-weight:800}
+.skill-tab{flex:1;border:1.5px solid var(--line);background:#fff;border-radius:13px;padding:10px 7px;color:var(--muted);font-size:12px;font-weight:750;cursor:pointer}
+.skill-tab span{font:700 9px var(--font-mono);opacity:.62;margin-right:4px}
+.skill-tab.active{color:#fff;background:var(--skill-dark);border-color:var(--skill-dark)}
+.skill-tab.rush.active{background:var(--rush);border-color:var(--rush)}
+
+.skill-wrap{max-width:920px;margin:auto;padding:25px 16px 64px}
+.skill-hero,.mode-header{display:flex;align-items:flex-end;justify-content:space-between;gap:22px;margin-bottom:20px}
+.skill-kicker{margin:0 0 7px;color:var(--skill);font:700 11px/1.4 var(--font-mono);letter-spacing:1.3px}
+.skill-hero h1,.mode-header h1{margin:0 0 8px;font:900 clamp(27px,5vw,40px)/1.17 var(--font-display);letter-spacing:-.04em}
+.skill-hero p:last-child,.mode-header p:last-child{margin:0;color:var(--muted);font-size:14px;line-height:1.65}
+.mastery-card,.mode-stat{flex:0 0 175px;padding:14px 16px;border:1px solid var(--line);border-radius:17px;background:#fff}
+.mastery-card span,.mode-stat span{display:block;color:var(--muted);font:700 9px var(--font-mono);letter-spacing:1px}
+.mastery-card strong{display:block;margin:5px 0;color:var(--gold);font-size:21px;letter-spacing:2px}
+.mastery-card small{color:var(--muted);font-size:10px}
+.mode-stat strong{display:block;margin-top:5px;font:700 23px var(--font-mono)}
+
+.rule-strip{display:grid;grid-template-columns:auto auto 1fr;align-items:center;gap:16px;margin-bottom:15px;padding:15px 19px;border-radius:18px;background:var(--skill-dark);color:#fff}
+.rule-strip span:first-child{color:#CFDFEB;font:700 10px var(--font-mono);letter-spacing:1px}
+.rule-strip strong{font:700 18px var(--font-mono)}
+.rule-strip em{justify-self:end;padding:6px 9px;border:1px solid rgba(255,255,255,.28);border-radius:999px;font:700 9px var(--font-mono);font-style:normal}
+
+.concept-layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(275px,.75fr);gap:15px}
+.formula-card,.routine-card,.question-shell,.rush-stage,.boss-stage{border:1px solid var(--line);border-radius:22px;background:#fff}
+.formula-card{display:grid;min-height:330px;place-items:center;padding:25px;text-align:center;overflow:hidden}
+.formula-orbit{position:relative;display:grid;width:min(410px,94%);aspect-ratio:1;place-items:center;border:1px dashed color-mix(in srgb,var(--skill) 38%,transparent);border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--skill) 8%,white),#fff 62%)}
+.formula-orbit::before,.formula-orbit::after{content:'';position:absolute;border-radius:50%;border:1px solid color-mix(in srgb,var(--skill) 24%,transparent)}
+.formula-orbit::before{inset:12%}
+.formula-orbit::after{inset:28%}
+.formula-main{position:relative;z-index:2;width:100%;max-width:92%;padding:8px 2px;overflow:hidden;color:var(--skill-dark);font:700 clamp(18px,3vw,24px)/1.45 var(--font-mono);word-break:normal}
+.formula-main .katex,.example-equation .katex,.question-equation .katex,.rush-eq .katex,.answer-btn .katex{white-space:nowrap}
+.formula-main .katex{font-size:1em}
+.formula-card p{margin:18px 0 0;color:var(--muted);font-size:12px;line-height:1.6}
+.routine-card{padding:17px}
+.routine-card h2{margin:0 0 14px;font-size:16px}
+.routine-list{display:grid;gap:9px}
+.routine-step{display:grid;grid-template-columns:28px 1fr;gap:9px;align-items:center;padding:10px;border-radius:13px;background:#F4F7F5}
+.routine-step>span{display:grid;width:27px;height:27px;place-items:center;border-radius:50%;background:var(--skill-dark);color:#fff;font:700 10px var(--font-mono)}
+.routine-step b{font-size:12px}
+.routine-step small{display:block;margin-top:2px;color:var(--muted);font-size:10.5px;line-height:1.4}
+.trap-box{margin-top:12px;padding:12px;border:1px solid #E8C8BE;border-radius:13px;background:#FFF5F1}
+.trap-box span{color:var(--rush);font:700 9px var(--font-mono)}
+.trap-box p{margin:6px 0 0;color:#7F4535;font-size:11px;line-height:1.5}
+.example-box{margin-top:12px;padding:13px;border:1px solid #E4D19D;border-radius:14px;background:var(--cream)}
+.example-label{color:#8A641A;font:700 9px var(--font-mono);letter-spacing:1px}
+.example-equation{margin:8px 0 5px;font:700 17px var(--font-mono);overflow-x:auto}
+.example-prompt{font-size:11.5px;line-height:1.5}
+.example-answer{margin-top:9px;padding-top:9px;border-top:1px dashed #D6BD83;color:var(--success);font-size:11.5px;font-weight:700}
+.example-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
+.example-actions button{border:1px solid var(--line);border-radius:10px;background:#fff;padding:8px 5px;font-size:10.5px;font-weight:700;cursor:pointer}
+.launch-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:15px}
+.launch-card{padding:15px;border:1.5px solid var(--line);border-radius:18px;background:#fff;color:var(--ink);text-align:left;cursor:pointer}
+.launch-card:hover{transform:translateY(-3px);border-color:var(--skill)}
+.launch-card span{color:var(--skill);font:700 9px var(--font-mono);letter-spacing:1px}
+.launch-card b,.launch-card small{display:block}
+.launch-card b{margin:7px 0 4px;font-size:14px}
+.launch-card small{color:var(--muted);font-size:11px;line-height:1.45}
+.launch-card.hot{border-color:#E8B8A9;background:#FFF5F1}
+.launch-card.hot span{color:var(--rush)}
+.launch-card.dark{border-color:var(--boss);background:var(--boss);color:#fff}
+.launch-card.dark span{color:#9BD4BF}
+.launch-card.dark small{color:#C3D2CC}
+
+.mode-header{margin-bottom:18px}
+.question-shell,.rush-stage,.boss-stage{padding:clamp(18px,4vw,30px)}
+.question-topline{display:flex;justify-content:space-between;color:var(--skill);font:700 10px var(--font-mono);letter-spacing:1px}
+.question-equation{margin:22px 0 12px;padding:19px;overflow-x:auto;border-radius:17px;background:var(--cream);text-align:center;font:700 clamp(19px,4vw,28px) var(--font-mono);word-break:normal}
+.question-prompt{margin:18px 0 22px;text-align:center;font-size:clamp(17px,4vw,22px);font-weight:700;word-break:keep-all}
+.answer-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.answer-btn{min-height:58px;padding:8px 10px;overflow-x:auto;border:1.5px solid var(--line);border-radius:15px;background:#fff;color:var(--ink);font:700 15px var(--font-mono);cursor:pointer}
+.answer-btn:hover{border-color:var(--skill);background:#F8FBFD}
+.answer-btn.correct{border-color:var(--success);background:#EAF6F0;color:var(--success)}
+.answer-btn.wrong{border-color:var(--rush);background:#FFF0EC;color:var(--rush)}
+.answer-btn:disabled{cursor:default}
+.answer-feedback{margin-top:12px;padding:13px 15px;border-radius:14px;font-size:12.5px;line-height:1.55}
+.answer-feedback.good{background:#EAF6F0;color:#205E41}
+.answer-feedback.bad{background:#FFF0EC;color:#913521}
+.primary-action{width:100%;margin-top:15px;padding:14px 18px;border:0;border-radius:15px;background:var(--skill-dark);color:#fff;font-weight:800;cursor:pointer}
+.result-card{margin-top:15px;padding:22px;border:1px solid var(--line);border-radius:20px;background:#fff;text-align:center}
+.result-card strong{display:block;margin-bottom:7px;font:900 30px var(--font-display)}
+.result-card p{margin:0 0 14px;color:var(--muted)}
+.result-card button{padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;font-weight:700;cursor:pointer}
+
+.rush-stage{position:relative;overflow:hidden;border-color:#E7C2B7}
+.rush-hud{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.rush-hud div{padding:12px;border-radius:15px;background:#251D1A;color:#fff;text-align:center}
+.rush-hud span{display:block;color:#CDBAB3;font:700 9px var(--font-mono);letter-spacing:1px}
+.rush-hud strong{display:block;margin-top:3px;font:700 21px var(--font-mono)}
+.rush-track{height:9px;margin:12px 0 22px;overflow:hidden;border-radius:9px;background:#E9DDD9}
+.rush-track div{height:100%;width:100%;background:linear-gradient(90deg,#C1442D,#E39A39);transform-origin:left}
+.rush-question{display:grid;min-height:135px;place-content:center;text-align:center}
+.rush-eq{margin-bottom:8px;color:var(--skill-dark);font:700 clamp(19px,4vw,27px) var(--font-mono)}
+.rush-prompt{font-size:17px;font-weight:800}
+.rush-ready{font-size:35px}
+.rush-flash{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;opacity:0;font:900 44px var(--font-display)}
+.rush-flash.show{animation:flash .35s ease}
+.rush-flash.good{color:var(--success)}
+.rush-flash.bad{color:var(--rush)}
+@keyframes flash{0%{opacity:0;transform:scale(.7)}45%{opacity:1}100%{opacity:0;transform:scale(1.18)}}
+@keyframes auraPulse{0%,100%{transform:scale(.94);opacity:.45}50%{transform:scale(1.05);opacity:1}}
+@keyframes dangerBlink{50%{opacity:.35}}
+.not-found{max-width:620px;margin:80px auto;padding:30px;border:1px solid var(--line);border-radius:22px;background:#fff;text-align:center}
+.not-found h1{font-family:var(--font-display)}
+.not-found a{display:inline-block;margin-top:12px;color:var(--skill);font-weight:700}
+
+.formula-card>div{width:100%}
+.formula-orbit{margin:auto}
+.example-equation{overflow:hidden}
+.example-equation .katex{font-size:1em}
+@media(max-width:700px){.skill-nav-inner{gap:5px}.skill-tab{padding:9px 3px;font-size:10px}.skill-tab span{display:none}.skill-hero,.mode-header{align-items:stretch;flex-direction:column;gap:12px}.mastery-card,.mode-stat{width:100%;flex:auto}.rule-strip{grid-template-columns:auto 1fr}.rule-strip em{grid-column:1/-1;justify-self:start}.concept-layout{grid-template-columns:1fr}.formula-card{min-height:280px}.launch-row{grid-template-columns:1fr}.skill-wrap{padding-top:18px}}
+@media(max-width:430px){.skill-nav{padding-inline:8px}.skill-back{width:38px;flex-basis:38px}.skill-tab{border-radius:11px}.answer-grid{grid-template-columns:1fr}.example-actions{grid-template-columns:1fr}.rush-hud strong{font-size:17px}.question-shell,.rush-stage,.boss-stage{padding:16px}}
 
 /* ── 난이도 선택 ─────────────────────────────────────────────
    기본은 지금까지의 문제, 응용·심화는 계수·차수·부호가 바뀐다. */
@@ -21,252 +128,43 @@
   padding:12px 14px;border:1px solid var(--jp-line,#dde4e0);border-radius:16px;
   background:#fff;
 }
+
 .skill-level-label{
   color:#5f6964;font:800 10px 'IBM Plex Mono','JetBrains Mono',monospace;letter-spacing:.1em;
 }
+
 .skill-level-seg{display:flex;gap:6px;padding:4px;border-radius:12px;background:#eef1ef}
+
 .skill-level-btn{
   display:flex;flex-direction:column;align-items:center;gap:1px;
   min-height:44px;padding:7px 15px;border:0;border-radius:9px;
   background:transparent;color:#5f6964;cursor:pointer;
   font-family:inherit;transition:background .18s ease,color .18s ease;
 }
+
 .skill-level-btn b{font-size:14px;font-weight:800}
+
 .skill-level-btn small{font:700 8.5px 'IBM Plex Mono','JetBrains Mono',monospace;letter-spacing:.08em;opacity:.75}
+
 .skill-level-btn:hover:not(.active){background:#e3e8e5;color:#2b3733}
+
 .skill-level-btn.active{background:var(--skill,#bf4630);color:#fff}
+
 .skill-level-btn:focus-visible{outline:3px solid color-mix(in srgb,var(--skill,#bf4630) 45%,transparent);outline-offset:2px}
+
 .skill-level-desc{flex:1 1 240px;min-width:0;margin:0;color:#5f6964;font-size:12px;line-height:1.5;word-break:keep-all}
 @media(max-width:640px){
   .skill-level-bar{width:calc(100% - 24px);gap:8px 10px;padding:10px 12px}
   .skill-level-seg{flex:1 1 100%}
   .skill-level-btn{flex:1}
-  .skill-level-desc{flex-basis:100%;font-size:11.5px}
-}
-@media(max-width:430px){.boss-combat-stats{gap:5px}.boss-combat-stats div{padding:8px 4px}.boss-combat-stats b{font-size:14px}.boss-v2 .question-topline{gap:8px;font-size:8px}}
+  .skill-level-desc{flex-basis:100%;font-size:11.5px}}
 
-/* BOSS 2.1 · 고유 캐릭터와 수식 공격 피드백 */
-.boss-v2 .boss-monster{width:100%;isolation:isolate}
-.boss-art-frame{position:relative;z-index:1;width:min(310px,100%);aspect-ratio:3/2;overflow:hidden;border:1px solid rgba(112,220,190,.24);border-radius:24px;background:#111b19;box-shadow:0 18px 38px rgba(0,0,0,.34),inset 0 0 0 1px rgba(255,255,255,.04)}
-.boss-art-frame::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 42% 52%,transparent 38%,rgba(8,17,14,.22) 72%,rgba(8,17,14,.52));pointer-events:none}
-.boss-art-picture{display:block;width:100%;height:100%}
-.boss-art{display:block;width:100%;height:100%;object-fit:cover;object-position:center;transition:filter .3s ease,transform .45s ease}
-.boss-v2 .boss-aura{z-index:0;width:230px;height:230px}.boss-v2 .boss-monster>strong,.boss-v2 .boss-monster>span{position:relative;z-index:2}
-.boss-fx-layer{position:absolute;inset:0;z-index:8;overflow:hidden;pointer-events:none}
-.boss-projectile,.boss-impact{position:absolute;display:grid;place-items:center;margin:0;font-family:var(--font-mono);font-style:normal;font-weight:900;pointer-events:none}
-.boss-projectile{left:75%;top:78%;width:58px;height:58px;border-radius:50%;color:#10251e;background:radial-gradient(circle,#fff 0 20%,#7fffd0 42%,#2dc28a 65%,transparent 68%);filter:drop-shadow(0 0 13px #62efbc);animation:mathStrike .62s cubic-bezier(.18,.82,.3,1) forwards}
-.boss-projectile.boss-counter{left:28%;top:43%;color:#fff;background:radial-gradient(circle,#fff 0 18%,#ff845e 40%,#d2362b 64%,transparent 68%);filter:drop-shadow(0 0 14px #ff4f3b);animation:bossCounter .7s cubic-bezier(.18,.72,.25,1) forwards}
-.boss-impact{left:24%;top:42%;z-index:2;min-width:92px;padding:8px 12px;border:1px solid rgba(255,255,255,.45);border-radius:999px;color:#fff;background:#1e9e71;box-shadow:0 0 28px rgba(85,242,183,.55);font-size:18px;animation:impactPop .8s ease forwards}
-.boss-impact.counter-impact{left:66%;top:72%;background:#b83d31;box-shadow:0 0 28px rgba(255,82,61,.45)}
-.boss-v2.boss-phase-three .boss-arena{background:radial-gradient(circle at 22% 35%,rgba(114,73,188,.34),transparent 38%),linear-gradient(145deg,#151224,#332752 62%,#1a132b)}
-.boss-v2.boss-phase-three .boss-aura{border-color:rgba(198,155,255,.55);box-shadow:0 0 62px rgba(155,105,234,.34),inset 0 0 34px rgba(155,105,234,.18)}
-.boss-v2.boss-phase-three .boss-art{filter:saturate(1.15) contrast(1.05)}
-.boss-v2 .boss-monster.boss-hit .boss-art{filter:brightness(1.65) saturate(.7);transform:translateX(-8px) scale(.985)}
-.boss-v2 .boss-monster.boss-attack .boss-art{filter:contrast(1.12) saturate(1.25);transform:translateX(8px) scale(1.025)}
-.boss-v2 .boss-monster.boss-defeated .boss-art{filter:grayscale(.75) brightness(.58);transform:translateY(10px) rotate(-2deg)}
-.boss-v2.boss-factor .boss-arena{background:radial-gradient(circle at 22% 35%,rgba(232,157,55,.28),transparent 36%),linear-gradient(145deg,#1d1813,#3a2b20 62%,#211810)}
-.boss-v2.boss-factor .boss-aura{border-color:rgba(255,194,93,.48);box-shadow:0 0 58px rgba(230,144,42,.28),inset 0 0 32px rgba(255,184,72,.16)}
-.boss-v2.boss-factor .boss-hp-track div{background:linear-gradient(90deg,#8d3f2b,#d47a32 58%,#ffd06a)}
-.boss-v2.boss-factor .boss-art-frame{border-color:rgba(255,190,85,.28)}
-.boss-v2.boss-factor.boss-phase-two .boss-arena{background:radial-gradient(circle at 22% 35%,rgba(48,168,147,.24),transparent 36%),linear-gradient(145deg,#151c1a,#283c35 62%,#17221e)}
-.boss-v2.boss-factor.boss-phase-three .boss-arena{background:radial-gradient(circle at 22% 35%,rgba(239,91,51,.32),transparent 38%),linear-gradient(145deg,#221410,#44241a 62%,#271510)}
-.boss-v2.boss-conjugate .boss-arena{background:radial-gradient(circle at 13% 38%,rgba(95,158,255,.27),transparent 34%),radial-gradient(circle at 37% 38%,rgba(255,172,65,.24),transparent 34%),linear-gradient(145deg,#101726,#25223a 62%,#171426)}
-.boss-v2.boss-conjugate .boss-aura{border-color:rgba(186,209,255,.52);box-shadow:-18px 0 50px rgba(85,154,255,.24),18px 0 50px rgba(255,171,70,.22),inset 0 0 34px rgba(232,224,255,.15)}
-.boss-v2.boss-conjugate .boss-hp-track div{background:linear-gradient(90deg,#5d8ee8,#d8dff1 48%,#f0a641)}
-.boss-v2.boss-conjugate .boss-art-frame{border-color:rgba(197,211,255,.3)}
-.boss-v2.boss-conjugate.boss-reflect-ready .boss-art{filter:brightness(1.12) saturate(1.18);transform:scale(1.025)}
-.boss-v2.boss-conjugate.boss-reflect-ready .boss-aura{animation:auraPulse .7s ease-in-out infinite;box-shadow:-22px 0 62px rgba(82,154,255,.42),22px 0 62px rgba(255,166,58,.4),inset 0 0 38px rgba(255,255,255,.22)}
-.boss-v2.boss-conjugate.boss-phase-two .boss-arena{background:radial-gradient(circle at 15% 38%,rgba(94,102,232,.32),transparent 36%),radial-gradient(circle at 38% 38%,rgba(235,123,57,.29),transparent 36%),linear-gradient(145deg,#141426,#302443 62%,#1d162b)}
-.boss-v2.boss-conjugate.boss-phase-three .boss-arena{background:radial-gradient(circle at 14% 38%,rgba(104,87,255,.36),transparent 38%),radial-gradient(circle at 38% 38%,rgba(255,96,52,.34),transparent 38%),linear-gradient(145deg,#171127,#3a2043 62%,#22142d)}
-.boss-v2.boss-ratio .boss-arena{background:radial-gradient(circle at 23% 35%,rgba(236,202,116,.25),transparent 35%),linear-gradient(145deg,#131516,#302d27 62%,#191917)}
-.boss-v2.boss-ratio .boss-aura{border-color:rgba(246,220,151,.48);box-shadow:0 0 64px rgba(221,181,84,.3),inset 0 0 36px rgba(255,235,176,.16)}
-.boss-v2.boss-ratio .boss-hp-track div{background:linear-gradient(90deg,#706b5d,#c39c49 58%,#ffe6a1)}
-.boss-v2.boss-ratio .boss-art-frame{border-color:rgba(244,218,146,.3)}
-.boss-v2.boss-ratio .boss-combat-stats div:last-child b{color:#ffe19a;text-shadow:0 0 14px rgba(255,211,111,.42)}
-.boss-v2.boss-ratio.boss-phase-two .boss-arena{background:radial-gradient(circle at 23% 35%,rgba(126,147,210,.27),transparent 36%),linear-gradient(145deg,#141821,#2c3240 62%,#171b24)}
-.boss-v2.boss-ratio.boss-phase-three .boss-arena{background:radial-gradient(circle at 23% 35%,rgba(255,220,125,.38),transparent 39%),linear-gradient(145deg,#1b1710,#44371e 62%,#211b11)}
-.boss-v2.boss-chaos .boss-arena{background:radial-gradient(circle at 12% 38%,rgba(231,64,74,.31),transparent 35%),radial-gradient(circle at 37% 31%,rgba(118,218,229,.2),transparent 33%),linear-gradient(145deg,#190d14,#39131e 60%,#111d22)}
-.boss-v2.boss-chaos .boss-aura{border-color:rgba(255,122,137,.47);box-shadow:-22px 0 58px rgba(224,48,65,.3),22px 0 58px rgba(104,211,226,.2),inset 0 0 34px rgba(255,159,169,.15)}
-.boss-v2.boss-chaos .boss-hp-track div{background:linear-gradient(90deg,#692636,#d64b58 54%,#97e4e9)}
-.boss-v2.boss-chaos .boss-art-frame{border-color:rgba(255,137,153,.32)}
-.boss-v2.boss-chaos .boss-combat-stats div:last-child b{color:#ff9aa6;text-shadow:0 0 14px rgba(255,86,105,.42)}
-.boss-v2.boss-chaos.boss-chaos-split .boss-art{animation:chaosSplitPulse .78s ease-in-out infinite alternate}
-.boss-v2.boss-chaos[data-bodies="2"] .boss-art{filter:drop-shadow(-9px 0 rgba(238,57,76,.55)) drop-shadow(9px 0 rgba(111,218,231,.42))}
-.boss-v2.boss-chaos[data-bodies="3"] .boss-art{filter:drop-shadow(-15px 0 rgba(238,57,76,.58)) drop-shadow(15px 0 rgba(111,218,231,.48)) saturate(1.12)}
-.boss-v2.boss-chaos[data-bodies="4"] .boss-art{filter:drop-shadow(-22px 0 rgba(238,57,76,.64)) drop-shadow(22px 0 rgba(111,218,231,.54)) saturate(1.2)}
-.boss-v2.boss-chaos.boss-phase-two .boss-arena{background:radial-gradient(circle at 11% 38%,rgba(241,68,78,.37),transparent 37%),radial-gradient(circle at 39% 32%,rgba(103,215,232,.26),transparent 35%),linear-gradient(145deg,#1c0d15,#451520 60%,#102329)}
-.boss-v2.boss-chaos.boss-phase-three .boss-arena{background:radial-gradient(circle at 12% 38%,rgba(255,64,80,.46),transparent 40%),radial-gradient(circle at 40% 32%,rgba(102,229,242,.33),transparent 38%),linear-gradient(145deg,#200b13,#511321 58%,#0e2930)}
-.boss-v2.boss-boundary .boss-arena{background:radial-gradient(circle at 12% 36%,rgba(92,80,214,.28),transparent 35%),radial-gradient(circle at 37% 36%,rgba(230,169,59,.24),transparent 35%),linear-gradient(90deg,#12152b 0 29%,#241b27 50%,#302313 72%,#171510)}
-.boss-v2.boss-boundary .boss-aura{border-color:rgba(221,201,255,.42);box-shadow:-22px 0 58px rgba(91,78,221,.3),22px 0 58px rgba(235,177,60,.26),inset 0 0 34px rgba(255,242,207,.14)}
-.boss-v2.boss-boundary .boss-hp-track div{background:linear-gradient(90deg,#5a52c9,#a88ed8 47%,#e3ac47 53%,#ffe09b)}
-.boss-v2.boss-boundary .boss-art-frame{border-color:rgba(224,205,255,.3)}
-.boss-v2.boss-boundary .boss-art-frame::before{content:'';position:absolute;inset:0;z-index:2;border-left:1px solid rgba(255,245,213,.28);background:linear-gradient(90deg,rgba(80,70,214,.16) 0 49.6%,rgba(255,220,136,.16) 50.4% 100%);pointer-events:none;transition:background .25s ease,box-shadow .25s ease}
-.boss-v2.boss-boundary.boss-side-left .boss-art-frame{box-shadow:-15px 0 38px rgba(99,86,230,.45),0 18px 38px rgba(0,0,0,.3)}
-.boss-v2.boss-boundary.boss-side-left .boss-art-frame::before{background:linear-gradient(90deg,rgba(93,80,231,.34) 0 49.6%,rgba(255,220,136,.07) 50.4% 100%)}
-.boss-v2.boss-boundary.boss-side-right .boss-art-frame{box-shadow:15px 0 38px rgba(236,177,55,.42),0 18px 38px rgba(0,0,0,.3)}
-.boss-v2.boss-boundary.boss-side-right .boss-art-frame::before{background:linear-gradient(90deg,rgba(93,80,231,.07) 0 49.6%,rgba(255,196,72,.34) 50.4% 100%)}
-.boss-v2.boss-boundary .boss-combat-stats div:last-child b{color:#ffe0a0;text-shadow:0 0 13px rgba(248,190,72,.38)}
-.boss-v2.boss-boundary.boss-boundary-cross .boss-art-frame{animation:boundarySeam .62s cubic-bezier(.2,.8,.25,1)}
-.boss-v2.boss-boundary.boss-phase-two .boss-arena{background:radial-gradient(circle at 12% 36%,rgba(103,83,239,.34),transparent 37%),radial-gradient(circle at 38% 36%,rgba(241,176,54,.3),transparent 37%),linear-gradient(90deg,#11152d 0 29%,#291b2c 50%,#392711 72%,#19160e)}
-.boss-v2.boss-boundary.boss-phase-three .boss-arena{background:radial-gradient(circle at 12% 36%,rgba(121,88,255,.4),transparent 39%),radial-gradient(circle at 39% 36%,rgba(255,186,48,.38),transparent 39%),linear-gradient(90deg,#12142f 0 28%,#321b31 50%,#442b0d 73%,#1d180b)}
-.boss-v2.boss-stitch .boss-arena{background:radial-gradient(circle at 17% 34%,rgba(52,191,154,.3),transparent 37%),radial-gradient(circle at 40% 33%,rgba(233,183,74,.2),transparent 35%),linear-gradient(145deg,#081b18,#12372f 60%,#211d12)}
-.boss-v2.boss-stitch .boss-aura{border-color:rgba(115,235,199,.5);box-shadow:0 0 58px rgba(47,194,151,.3),inset 0 0 34px rgba(232,197,100,.18)}
-.boss-v2.boss-stitch .boss-hp-track div{background:linear-gradient(90deg,#2b765f,#3bbd91 58%,#f2ce70)}
-.boss-v2.boss-stitch .boss-art-frame{border-color:rgba(105,226,191,.34);box-shadow:0 18px 38px rgba(0,0,0,.32),0 0 0 1px rgba(231,196,101,.08)}
-.boss-v2.boss-stitch .boss-art-frame::before{content:'';position:absolute;inset:0;z-index:2;background:linear-gradient(115deg,transparent 0 43%,rgba(255,219,111,.12) 47%,transparent 51% 100%);background-size:240% 100%;pointer-events:none}
-.boss-v2.boss-stitch .boss-combat-stats div:last-child b{color:#f7d777;text-shadow:0 0 13px rgba(241,198,79,.42)}
-.boss-v2.boss-stitch.boss-regenerating .boss-aura{animation:auraPulse 1.05s ease-in-out infinite;box-shadow:0 0 68px rgba(47,218,164,.43),inset 0 0 40px rgba(243,203,101,.2)}
-.boss-v2.boss-stitch.boss-stitch-sealed .boss-aura{border-color:rgba(250,218,119,.72);box-shadow:0 0 70px rgba(244,203,83,.42),inset 0 0 42px rgba(66,224,177,.2)}
-.boss-v2.boss-stitch.boss-stitch-sealed .boss-art-frame{border-color:rgba(255,219,111,.7);box-shadow:0 0 34px rgba(238,199,84,.38),0 18px 38px rgba(0,0,0,.32)}
-.boss-v2.boss-stitch.boss-stitch-complete .boss-art-frame{animation:stitchSeal .62s cubic-bezier(.2,.82,.24,1)}
-.boss-v2.boss-stitch.boss-heal-pulse .boss-art-frame{animation:stitchHeal .82s ease}
-.boss-v2.boss-stitch.boss-phase-two .boss-arena{background:radial-gradient(circle at 17% 34%,rgba(45,208,165,.36),transparent 39%),radial-gradient(circle at 41% 33%,rgba(243,177,62,.25),transparent 37%),linear-gradient(145deg,#071d19,#154337 60%,#2a2110)}
-.boss-v2.boss-stitch.boss-phase-three .boss-arena{background:radial-gradient(circle at 18% 34%,rgba(40,235,179,.43),transparent 41%),radial-gradient(circle at 42% 33%,rgba(255,178,45,.33),transparent 39%),linear-gradient(145deg,#061e19,#174e3d 58%,#34250c)}
-.boss-heal-impact{left:22%;top:30%;color:#092a20;background:#71e6b7;border-color:rgba(219,255,241,.72);box-shadow:0 0 32px rgba(87,239,180,.62)}
-.boss-v2.boss-squeeze{--wall-left:-105%;--wall-right:105%}
-.boss-v2.boss-squeeze .boss-arena{background:radial-gradient(circle at 25% 35%,rgba(71,184,220,.26),transparent 36%),radial-gradient(circle at 42% 35%,rgba(222,146,53,.24),transparent 36%),linear-gradient(145deg,#08131b,#172734 52%,#2e2014)}
-.boss-v2.boss-squeeze .boss-aura{border-color:rgba(119,221,247,.48);box-shadow:-20px 0 58px rgba(59,167,212,.28),20px 0 58px rgba(224,145,48,.26),inset 0 0 34px rgba(231,244,255,.14)}
-.boss-v2.boss-squeeze .boss-hp-track div{background:linear-gradient(90deg,#39718d,#6bc9e2 47%,#d99237 53%,#f4c56d)}
-.boss-v2.boss-squeeze .boss-art-frame{border-color:rgba(131,214,237,.36);box-shadow:0 18px 38px rgba(0,0,0,.34),-8px 0 24px rgba(58,164,211,.18),8px 0 24px rgba(222,141,45,.18)}
-.boss-v2.boss-squeeze .boss-art-frame::before,.boss-v2.boss-squeeze .boss-art-frame::after{content:'';position:absolute;top:-3%;bottom:-3%;z-index:3;width:52%;pointer-events:none;transition:transform .08s linear;box-shadow:inset 0 0 0 1px rgba(255,255,255,.13),0 0 22px rgba(0,0,0,.4)}
-.boss-v2.boss-squeeze .boss-art-frame::before{left:0;transform:translateX(var(--wall-left));background:linear-gradient(90deg,#162c3b 0 74%,#3e7790 76% 88%,#8bd8e9 90% 94%,#243d4c 96%)}
-.boss-v2.boss-squeeze .boss-art-frame::after{right:0;transform:translateX(var(--wall-right));background:linear-gradient(270deg,#3a2818 0 74%,#8a5a2b 76% 88%,#efb75f 90% 94%,#4b321d 96%)}
-.boss-v2.boss-squeeze .boss-combat-stats div:last-child b{color:#9ee7f4;text-shadow:0 0 14px rgba(93,209,237,.42)}
-.boss-v2.boss-squeeze.boss-walls-danger .boss-art-frame{border-color:rgba(255,199,104,.72);box-shadow:0 0 38px rgba(235,154,48,.42),0 18px 38px rgba(0,0,0,.34)}
-.boss-v2.boss-squeeze.boss-walls-crushed .boss-combat-stats div:last-child b{color:#ffb179;text-shadow:0 0 14px rgba(255,104,61,.5)}
-.boss-v2.boss-squeeze.boss-wall-slam .boss-art-frame{animation:wallSlam .62s cubic-bezier(.18,.82,.24,1)}
-.boss-v2.boss-squeeze.boss-wall-repel .boss-art-frame{animation:wallRepel .62s cubic-bezier(.18,.82,.24,1)}
-.boss-v2.boss-squeeze.boss-phase-two .boss-arena{background:radial-gradient(circle at 24% 35%,rgba(69,193,230,.33),transparent 38%),radial-gradient(circle at 43% 35%,rgba(237,148,42,.3),transparent 38%),linear-gradient(145deg,#071520,#193044 52%,#392514)}
-.boss-v2.boss-squeeze.boss-phase-three .boss-arena{background:radial-gradient(circle at 24% 35%,rgba(77,211,246,.4),transparent 40%),radial-gradient(circle at 44% 35%,rgba(255,145,34,.38),transparent 40%),linear-gradient(145deg,#061622,#1b3850 50%,#452914)}
-.boss-v2.boss-forbidden .boss-arena{background:radial-gradient(circle at 24% 36%,rgba(210,39,71,.3),transparent 37%),radial-gradient(circle at 42% 37%,rgba(54,202,220,.2),transparent 31%),linear-gradient(145deg,#10090c,#281017 52%,#251b0d)}
-.boss-v2.boss-forbidden .boss-aura{border-color:rgba(226,62,91,.56);box-shadow:0 0 58px rgba(187,28,57,.38),inset 0 0 32px rgba(255,213,133,.12)}
-.boss-v2.boss-forbidden .boss-hp-track div{background:linear-gradient(90deg,#741a31,#d72f51 58%,#daa83d)}
-.boss-v2.boss-forbidden .boss-art-frame{border-color:rgba(220,177,77,.4);box-shadow:0 18px 38px rgba(0,0,0,.38),0 0 28px rgba(182,35,65,.22)}
-.boss-v2.boss-forbidden .boss-art-frame::before{content:'';position:absolute;inset:8%;z-index:3;border:2px solid rgba(227,180,75,.5);border-radius:50%;background:repeating-conic-gradient(from 0deg,rgba(232,185,79,.38) 0 2deg,transparent 2deg 28deg);box-shadow:inset 0 0 26px rgba(62,225,230,.18),0 0 24px rgba(213,39,76,.16);pointer-events:none;transition:opacity .25s ease,transform .35s ease,filter .25s ease}
-.boss-v2.boss-forbidden .boss-combat-stats div:last-child b{color:#f0c85f;text-shadow:0 0 14px rgba(239,188,65,.42)}
-.boss-v2.boss-forbidden.boss-forbidden-charged .boss-aura{border-color:rgba(255,50,92,.86);box-shadow:0 0 72px rgba(231,32,72,.56),inset 0 0 34px rgba(255,226,153,.14);animation:forbiddenCharge .7s ease-in-out infinite alternate}
-.boss-v2.boss-forbidden.boss-forbidden-charged .boss-combat-stats div:last-child b{color:#ff6d86;text-shadow:0 0 16px rgba(255,54,93,.62)}
-.boss-v2.boss-forbidden.boss-seal-open .boss-art-frame::before{opacity:.12;transform:scale(1.32) rotate(18deg);filter:brightness(2)}
-.boss-v2.boss-forbidden.boss-seal-break .boss-art-frame{animation:forbiddenSealBreak .68s cubic-bezier(.18,.82,.24,1)}
-.boss-v2.boss-forbidden.boss-forbidden-cast .boss-art-frame{animation:forbiddenCast .72s cubic-bezier(.18,.82,.24,1)}
-.boss-v2.boss-forbidden .boss-heal-impact{color:#fff0f3;background:#7f1730;border-color:rgba(255,174,192,.72);box-shadow:0 0 34px rgba(235,45,85,.7)}
-.boss-v2.boss-forbidden.boss-phase-two .boss-arena{background:radial-gradient(circle at 24% 36%,rgba(232,41,78,.38),transparent 39%),radial-gradient(circle at 42% 37%,rgba(61,216,226,.24),transparent 33%),linear-gradient(145deg,#10080c,#31121b 52%,#2f210d)}
-.boss-v2.boss-forbidden.boss-phase-three .boss-arena{background:radial-gradient(circle at 24% 36%,rgba(255,42,83,.47),transparent 41%),radial-gradient(circle at 42% 37%,rgba(69,230,237,.3),transparent 35%),linear-gradient(145deg,#11070b,#3a111d 50%,#3b270b)}
-.boss-v2.boss-difference{--h-ring-scale:1;--h-inner-scale:1}
-.boss-v2.boss-difference .boss-arena{background:radial-gradient(circle at 24% 35%,rgba(39,164,235,.32),transparent 38%),radial-gradient(circle at 42% 36%,rgba(216,157,68,.2),transparent 34%),linear-gradient(145deg,#06111f,#0e2741 54%,#1d1a18)}
-.boss-v2.boss-difference .boss-aura{border-color:rgba(83,204,255,.58);box-shadow:0 0 64px rgba(28,150,225,.38),inset 0 0 34px rgba(235,184,89,.15)}
-.boss-v2.boss-difference .boss-hp-track div{background:linear-gradient(90deg,#265a91,#2fa7d8 58%,#e0b45e)}
-.boss-v2.boss-difference .boss-art-frame{border-color:rgba(88,201,244,.42);box-shadow:0 18px 38px rgba(0,0,0,.38),0 0 30px rgba(44,162,226,.24)}
-.boss-v2.boss-difference .boss-art-frame::before,.boss-v2.boss-difference .boss-art-frame::after{content:'';position:absolute;z-index:3;border-radius:50%;pointer-events:none;transition:transform .32s cubic-bezier(.2,.8,.24,1),opacity .25s ease,box-shadow .25s ease}
-.boss-v2.boss-difference .boss-art-frame::before{inset:5%;border:2px solid rgba(99,215,255,.58);transform:scale(var(--h-ring-scale));box-shadow:0 0 19px rgba(45,180,240,.32),inset 0 0 18px rgba(228,177,76,.14)}
-.boss-v2.boss-difference .boss-art-frame::after{inset:24%;border:2px solid rgba(231,183,88,.58);transform:scale(var(--h-inner-scale));box-shadow:0 0 18px rgba(231,177,70,.28),inset 0 0 18px rgba(55,198,247,.18)}
-.boss-v2.boss-difference .boss-combat-stats div:last-child b{color:#86dcff;text-shadow:0 0 14px rgba(67,190,241,.5)}
-.boss-v2.boss-difference.boss-h-core-open .boss-aura{border-color:rgba(143,234,255,.9);box-shadow:0 0 78px rgba(48,193,246,.62),inset 0 0 42px rgba(255,211,112,.25)}
-.boss-v2.boss-difference.boss-h-core-open .boss-art-frame::before,.boss-v2.boss-difference.boss-h-core-open .boss-art-frame::after{opacity:.25;box-shadow:0 0 35px rgba(104,226,255,.65)}
-.boss-v2.boss-difference.boss-h-collapse .boss-art-frame{animation:hRingCollapse .64s cubic-bezier(.18,.82,.24,1)}
-.boss-v2.boss-difference.boss-h-rebound .boss-art-frame{animation:hRingRebound .72s cubic-bezier(.18,.82,.24,1)}
-.boss-v2.boss-difference.boss-phase-two .boss-arena{background:radial-gradient(circle at 24% 35%,rgba(48,183,243,.4),transparent 40%),radial-gradient(circle at 43% 36%,rgba(230,163,61,.26),transparent 36%),linear-gradient(145deg,#061322,#10304d 52%,#272016)}
-.boss-v2.boss-difference.boss-phase-three .boss-arena{background:radial-gradient(circle at 24% 35%,rgba(74,207,255,.49),transparent 42%),radial-gradient(circle at 44% 36%,rgba(246,178,58,.34),transparent 38%),linear-gradient(145deg,#051525,#123a5c 50%,#322510)}
-.boss-v2.boss-product .boss-arena{background:radial-gradient(circle at 18% 34%,rgba(36,207,218,.3),transparent 34%),radial-gradient(circle at 39% 35%,rgba(244,178,52,.27),transparent 35%),linear-gradient(145deg,#06141d,#102d39 52%,#2f2310)}
-.boss-v2.boss-product .boss-aura{border-color:rgba(74,224,226,.52);box-shadow:-18px 0 58px rgba(42,198,211,.34),18px 0 58px rgba(237,176,53,.31),inset 0 0 34px rgba(75,231,161,.16)}
-.boss-v2.boss-product .boss-hp-track div{background:linear-gradient(90deg,#167f91,#42d0d7 46%,#d59429 54%,#f2c75c)}
-.boss-v2.boss-product .boss-art-frame{border-color:rgba(103,224,221,.4);box-shadow:-10px 0 28px rgba(31,194,210,.24),10px 0 28px rgba(236,169,45,.22),0 18px 38px rgba(0,0,0,.36)}
-.boss-v2.boss-product .boss-art-frame::before,.boss-v2.boss-product .boss-art-frame::after{content:'';position:absolute;inset:5%;z-index:3;border-radius:50%;pointer-events:none;opacity:.18;transition:opacity .25s ease,transform .3s ease,filter .25s ease}
-.boss-v2.boss-product .boss-art-frame::before{clip-path:polygon(0 0,52% 0,52% 100%,0 100%);border:2px solid #62eef2;box-shadow:inset 18px 0 24px rgba(48,220,228,.2),0 0 22px rgba(61,217,226,.28)}
-.boss-v2.boss-product .boss-art-frame::after{clip-path:polygon(48% 0,100% 0,100% 100%,48% 100%);border:2px solid #ffd268;box-shadow:inset -18px 0 24px rgba(244,183,60,.2),0 0 22px rgba(241,178,52,.27)}
-.boss-v2.boss-product .boss-combat-stats div:last-child b{color:#73ece9;text-shadow:0 0 14px rgba(64,220,222,.48)}
-.boss-v2.boss-product.boss-blade-left-ready .boss-art-frame::before{opacity:.92;transform:scale(1.04);filter:brightness(1.35)}
-.boss-v2.boss-product.boss-blade-left-ready .boss-art-frame{box-shadow:-18px 0 42px rgba(39,216,225,.5),8px 0 24px rgba(236,169,45,.2),0 18px 38px rgba(0,0,0,.36)}
-.boss-v2.boss-product.boss-blade-dual-ready .boss-art-frame::before,.boss-v2.boss-product.boss-blade-dual-ready .boss-art-frame::after{opacity:1;transform:scale(1.05);filter:brightness(1.45)}
-.boss-v2.boss-product.boss-blade-cross .boss-art-frame{animation:bladeCross .68s cubic-bezier(.18,.82,.24,1)}
-.boss-v2.boss-product.boss-blade-break .boss-art-frame{animation:bladeBreak .72s cubic-bezier(.18,.82,.24,1)}
-.boss-v2.boss-product.boss-phase-two .boss-arena{background:radial-gradient(circle at 18% 34%,rgba(43,223,230,.37),transparent 37%),radial-gradient(circle at 40% 35%,rgba(255,188,52,.34),transparent 37%),linear-gradient(145deg,#061721,#123746 52%,#3b2a0e)}
-.boss-v2.boss-product.boss-phase-three .boss-arena{background:radial-gradient(circle at 18% 34%,rgba(52,239,239,.44),transparent 40%),radial-gradient(circle at 41% 35%,rgba(255,198,58,.42),transparent 40%),linear-gradient(145deg,#051923,#154253 50%,#49320b)}
 @keyframes mathStrike{0%{opacity:0;transform:translate(0,0) scale(.35)}20%{opacity:1}80%{opacity:1;transform:translate(-330%,-230%) scale(.78)}100%{opacity:0;transform:translate(-380%,-260%) scale(1.65)}}
-@keyframes bossCounter{0%{opacity:0;transform:translate(0,0) scale(.4)}18%{opacity:1}78%{opacity:1;transform:translate(300%,230%) scale(.82)}100%{opacity:0;transform:translate(340%,260%) scale(1.5)}}
-@keyframes impactPop{0%{opacity:0;transform:translateY(12px) scale(.5)}35%{opacity:1;transform:translateY(-5px) scale(1.08)}100%{opacity:0;transform:translateY(-32px) scale(.92)}}
-@keyframes chaosSplitPulse{from{transform:translateX(-3px) scale(.995)}to{transform:translateX(3px) scale(1.018)}}
-@keyframes boundarySeam{0%{filter:brightness(1);transform:scale(1)}35%{filter:brightness(1.5);transform:scale(1.035);box-shadow:-25px 0 48px rgba(107,90,255,.48),25px 0 48px rgba(255,191,61,.46)}100%{filter:brightness(1);transform:scale(1)}}
-@keyframes stitchHeal{0%{filter:brightness(1);transform:scale(1)}35%{filter:brightness(1.25) saturate(1.2);transform:scale(1.025);box-shadow:0 0 38px rgba(80,235,177,.48)}100%{filter:brightness(1);transform:scale(1)}}
-@keyframes stitchSeal{0%{filter:brightness(1);transform:scale(1)}38%{filter:brightness(1.5) saturate(1.25);transform:scale(1.04);box-shadow:0 0 46px rgba(252,210,91,.62)}100%{filter:brightness(1);transform:scale(1)}}
-@keyframes wallSlam{0%{filter:brightness(1);transform:scale(1)}35%{filter:brightness(1.35) saturate(1.2);transform:scale(.96);box-shadow:0 0 46px rgba(255,102,58,.58)}100%{filter:brightness(1);transform:scale(1)}}
-@keyframes wallRepel{0%{filter:brightness(1);transform:scale(1)}38%{filter:brightness(1.45) saturate(1.18);transform:scale(1.035);box-shadow:-18px 0 40px rgba(76,200,238,.42),18px 0 40px rgba(243,165,63,.42)}100%{filter:brightness(1);transform:scale(1)}}
-@keyframes forbiddenCharge{from{transform:scale(.98);opacity:.72}to{transform:scale(1.05);opacity:1}}
-@keyframes forbiddenSealBreak{0%{filter:brightness(1);transform:scale(1)}36%{filter:brightness(1.65) saturate(1.25);transform:scale(1.045);box-shadow:0 0 52px rgba(70,227,232,.55),0 0 78px rgba(238,189,66,.4)}100%{filter:brightness(1);transform:scale(1)}}
-@keyframes forbiddenCast{0%{filter:brightness(1);transform:translateX(0) scale(1)}30%{filter:brightness(1.42) saturate(1.35);transform:translateX(5px) scale(1.035);box-shadow:0 0 52px rgba(240,39,80,.66)}65%{transform:translateX(-3px) scale(1.015)}100%{filter:brightness(1);transform:translateX(0) scale(1)}}
-@keyframes hRingCollapse{0%{filter:brightness(1);transform:scale(1)}36%{filter:brightness(1.48) saturate(1.25);transform:scale(.965);box-shadow:0 0 52px rgba(74,207,255,.62)}100%{filter:brightness(1);transform:scale(1)}}
-@keyframes hRingRebound{0%{filter:brightness(1);transform:scale(1)}38%{filter:brightness(1.28) saturate(1.12);transform:scale(1.055);box-shadow:0 0 48px rgba(235,168,67,.56)}100%{filter:brightness(1);transform:scale(1)}}
-@keyframes bladeCross{0%{filter:brightness(1);transform:scale(1) rotate(0)}35%{filter:brightness(1.65) saturate(1.35);transform:scale(1.055) rotate(-2deg);box-shadow:-24px 0 50px rgba(43,225,231,.58),24px 0 50px rgba(255,193,61,.56),0 0 76px rgba(73,235,159,.34)}70%{transform:scale(.985) rotate(1deg)}100%{filter:brightness(1);transform:scale(1) rotate(0)}}
-@keyframes bladeBreak{0%{filter:brightness(1);transform:translateX(0)}28%{filter:grayscale(.35) brightness(.8);transform:translateX(7px) rotate(2deg)}58%{transform:translateX(-6px) rotate(-2deg);box-shadow:0 0 42px rgba(239,76,52,.54)}100%{filter:brightness(1);transform:translateX(0)}}
-@media(max-width:700px){.boss-art-frame{width:min(300px,96%)}.boss-v2 .boss-aura{width:205px;height:205px}.boss-impact{left:31%;top:35%}.boss-impact.counter-impact{left:54%;top:70%}}
-/* 접선의 저격수 — 카탈로그의 대표색 #2b7991 을 그대로 쓴다.
-   조준이 한 칸 잡힐 때마다 조준경이 밝아지고, 발사하면 한 번 번쩍인다. */
-.boss-v2.boss-sniper .boss-arena{background:radial-gradient(circle at 30% 30%,rgba(63,177,205,.28),transparent 38%),linear-gradient(155deg,#04141c,#0d2c38 56%,#13404e)}
-.boss-v2.boss-sniper .boss-aura{border-color:rgba(96,208,232,.5);box-shadow:0 0 54px rgba(43,121,145,.36),inset 0 0 32px rgba(127,227,245,.14)}
-.boss-v2.boss-sniper .boss-hp-track div{background:linear-gradient(90deg,#17607a,#3fb1cd 55%,#9fe8ff)}
-.boss-v2.boss-sniper .boss-art-frame{border-color:rgba(110,214,236,.42);box-shadow:0 0 30px rgba(45,150,180,.26),0 18px 38px rgba(0,0,0,.36);background:#04141c}
-.boss-v2.boss-sniper .boss-combat-stats div:last-child b{color:#8fe6ff;text-shadow:0 0 14px rgba(94,208,236,.5)}
-.boss-v2.boss-sniper.boss-sniper-aimed .boss-art-frame{box-shadow:0 0 40px rgba(70,190,222,.44),0 18px 38px rgba(0,0,0,.36)}
-.boss-v2.boss-sniper.boss-sniper-locked .boss-art-frame{box-shadow:0 0 58px rgba(133,232,255,.6),0 18px 38px rgba(0,0,0,.36);filter:brightness(1.16) saturate(1.12)}
-.boss-v2.boss-sniper.boss-sniper-fire .boss-art-frame{animation:sniperFire .62s cubic-bezier(.16,.84,.28,1)}
-.boss-v2.boss-sniper.boss-sniper-miss .boss-art-frame{animation:sniperMiss .6s cubic-bezier(.18,.82,.24,1)}
-.boss-v2.boss-sniper.boss-phase-two .boss-arena{background:radial-gradient(circle at 30% 30%,rgba(76,196,224,.34),transparent 40%),linear-gradient(155deg,#04161f,#0f3644 56%,#175064)}
-.boss-v2.boss-sniper.boss-phase-three .boss-arena{background:radial-gradient(circle at 30% 30%,rgba(96,220,246,.42),transparent 42%),linear-gradient(155deg,#03181f,#124254 54%,#1c6076)}
-@keyframes sniperFire{0%{filter:brightness(1)}30%{filter:brightness(1.7) saturate(1.3);box-shadow:0 0 84px rgba(150,238,255,.7)}70%{filter:brightness(1.12)}100%{filter:brightness(1)}}
-@keyframes sniperMiss{0%{transform:translateX(0)}25%{transform:translateX(6px) rotate(1.4deg);filter:grayscale(.4) brightness(.82)}60%{transform:translateX(-5px) rotate(-1.2deg);box-shadow:0 0 38px rgba(239,76,52,.5)}100%{transform:translateX(0)}}
-/* 단계잠금 보스는 규칙이 같으므로 겉모습도 한 벌을 나눠 쓴다.
-   색만 --boss-accent 로 보스마다 다르게 받는다(보스전 카탈로그의 대표색). */
-.boss-v2.boss-step{--boss-accent:#5a568f}
-.boss-v2.boss-step .boss-arena{background:radial-gradient(circle at 28% 30%,color-mix(in srgb,var(--boss-accent) 42%,transparent),transparent 40%),linear-gradient(155deg,#0a0d16,color-mix(in srgb,var(--boss-accent) 34%,#0a0d16) 58%,color-mix(in srgb,var(--boss-accent) 52%,#0a0d16))}
-.boss-v2.boss-step .boss-aura{border-color:color-mix(in srgb,var(--boss-accent) 62%,transparent);box-shadow:0 0 54px color-mix(in srgb,var(--boss-accent) 44%,transparent),inset 0 0 32px color-mix(in srgb,var(--boss-accent) 22%,transparent)}
-.boss-v2.boss-step .boss-hp-track div{background:linear-gradient(90deg,color-mix(in srgb,var(--boss-accent) 70%,#000),var(--boss-accent) 60%,color-mix(in srgb,var(--boss-accent) 45%,#fff))}
-.boss-v2.boss-step .boss-art-frame{border-color:color-mix(in srgb,var(--boss-accent) 55%,transparent);box-shadow:0 0 30px color-mix(in srgb,var(--boss-accent) 34%,transparent),0 18px 38px rgba(0,0,0,.36)}
-.boss-v2.boss-step .boss-combat-stats div:last-child b{color:color-mix(in srgb,var(--boss-accent) 40%,#fff);text-shadow:0 0 14px color-mix(in srgb,var(--boss-accent) 55%,transparent)}
-.boss-v2.boss-step.boss-step-finish .boss-art-frame{animation:stepFinish .62s cubic-bezier(.16,.84,.28,1)}
-.boss-v2.boss-step.boss-step-break .boss-art-frame{animation:stepBreak .6s cubic-bezier(.18,.82,.24,1)}
-.boss-v2.boss-step.boss-phase-two .boss-arena{filter:saturate(1.14) brightness(1.06)}
-.boss-v2.boss-step.boss-phase-three .boss-arena{filter:saturate(1.3) brightness(1.13)}
-@keyframes stepFinish{0%{filter:brightness(1)}30%{filter:brightness(1.6) saturate(1.3);box-shadow:0 0 80px color-mix(in srgb,var(--boss-accent) 70%,#fff)}100%{filter:brightness(1)}}
-@keyframes stepBreak{0%{transform:translateX(0)}25%{transform:translateX(6px) rotate(1.2deg);filter:grayscale(.4) brightness(.82)}60%{transform:translateX(-5px) rotate(-1deg);box-shadow:0 0 38px rgba(239,76,52,.5)}100%{transform:translateX(0)}}
-@media(prefers-reduced-motion:reduce){.boss-step .boss-art-frame,.boss-sniper .boss-art-frame,.boss-art,.boss-projectile,.boss-impact,.boss-boundary-cross .boss-art-frame,.boss-stitch-complete .boss-art-frame,.boss-heal-pulse .boss-art-frame,.boss-wall-slam .boss-art-frame,.boss-wall-repel .boss-art-frame,.boss-squeeze .boss-art-frame::before,.boss-squeeze .boss-art-frame::after,.boss-forbidden .boss-aura,.boss-forbidden .boss-art-frame,.boss-difference .boss-art-frame,.boss-difference .boss-art-frame::before,.boss-difference .boss-art-frame::after,.boss-product .boss-art-frame,.boss-product .boss-art-frame::before,.boss-product .boss-art-frame::after{animation:none!important;transition:none!important}.boss-projectile,.boss-impact{display:none}}
 
-/* 모바일 전투 조종석: 문제를 풀면서도 보스·HP·시간이 항상 보인다. */
-@media(max-width:700px){
-  .boss-stage.boss-v2{overflow:visible;padding:12px}
-  .boss-v2 .boss-arena{position:sticky;top:68px;z-index:20;grid-template-columns:104px minmax(0,1fr);gap:9px;margin:0 0 13px;padding:9px;border:1px solid rgba(255,255,255,.16);border-radius:16px;box-shadow:0 12px 30px rgba(8,21,17,.28)}
-  .boss-v2 .boss-monster{min-height:106px;align-content:center}
-  .boss-v2 .boss-aura{width:86px;height:86px}
-  .boss-v2 .boss-art-frame{width:96px;aspect-ratio:1;border-radius:15px}
-  .boss-v2 .boss-art{object-position:center}
-  .boss-v2.boss-squeeze .boss-art{object-fit:contain;background:#07131b}
-  .boss-v2.boss-forbidden .boss-art{object-fit:cover;object-position:center 42%;background:#10090c}
-  .boss-v2.boss-difference .boss-art{object-fit:cover;object-position:center;background:#06111f}
-  .boss-v2.boss-product .boss-art{object-fit:cover;object-position:center;background:#06141d}
-  .boss-v2.boss-squeeze .boss-arena{grid-template-columns:128px minmax(0,1fr)}
-  .boss-v2.boss-squeeze .boss-art-frame{width:120px}
-  .boss-v2.boss-squeeze .boss-monster>strong{max-width:126px}
-  .boss-v2 .boss-monster>strong{max-width:100px;margin:5px 0 0;overflow:hidden;color:#fff;font:800 11px var(--font-body);text-overflow:ellipsis;white-space:nowrap}
-  .boss-v2 .boss-monster>span{display:none}
-  .boss-v2 .boss-dashboard{padding:10px;border-radius:13px}
-  .boss-v2 .boss-hp-label span,.boss-v2 .boss-clock span{font-size:7px;letter-spacing:.08em}
-  .boss-v2 .boss-hp-label strong{font-size:11px}
-  .boss-v2 .boss-hp-track{height:8px;margin-top:5px}
-  .boss-v2 .boss-clock{grid-template-columns:1fr auto auto;gap:3px;margin-top:8px}
-  .boss-v2 .boss-clock strong{font-size:23px}
-  .boss-v2 .boss-timer-track{height:5px;margin-top:5px}
-  .boss-v2 .boss-combat-stats{gap:4px;margin-top:7px}
-  .boss-v2 .boss-combat-stats div{padding:5px 2px;border-radius:8px}
-  .boss-v2 .boss-combat-stats span{font-size:6px}
-  .boss-v2 .boss-combat-stats b{margin-top:2px;font-size:11px}
-  .boss-v2 .boss-limit-copy{display:none}
-  .boss-v2 .boss-progress{gap:5px;margin:0 3px 11px}
-  .boss-v2 .boss-node{height:5px}
-  .boss-v2 .question-topline{font-size:8px}
-  .boss-v2 .question-equation{margin:15px 0 8px;padding:14px 7px;font-size:clamp(15px,4.2vw,18px)}
-  .boss-v2 .question-equation .katex{font-size:1.12em}
-  .boss-v2 .question-prompt{margin:12px 0 14px;font-size:17px}
-  .boss-v2 .answer-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-  .boss-v2 .answer-btn{min-height:56px;padding:7px;font-size:15px}
-  .boss-v2 .boss-status{position:sticky;bottom:8px;z-index:19;box-shadow:0 8px 20px rgba(21,38,32,.16)}
-}
-@media(max-width:370px){.boss-v2 .boss-arena{top:64px;grid-template-columns:88px minmax(0,1fr)}.boss-v2 .boss-art-frame{width:82px}.boss-v2 .boss-monster>strong{max-width:86px;font-size:10px}.boss-v2 .boss-clock strong{font-size:20px}.boss-v2.boss-squeeze .boss-arena{grid-template-columns:108px minmax(0,1fr)}.boss-v2.boss-squeeze .boss-art-frame{width:102px}.boss-v2.boss-squeeze .boss-monster>strong{max-width:106px}}
+@keyframes chaosSplitPulse{from{transform:translateX(-3px) scale(.995)}to{transform:translateX(3px) scale(1.018)}}
+
+@keyframes boundarySeam{0%{filter:brightness(1);transform:scale(1)}35%{filter:brightness(1.5);transform:scale(1.035);box-shadow:-25px 0 48px rgba(107,90,255,.48),25px 0 48px rgba(255,191,61,.46)}100%{filter:brightness(1);transform:scale(1)}}
+
+@keyframes hRingCollapse{0%{filter:brightness(1);transform:scale(1)}36%{filter:brightness(1.48) saturate(1.25);transform:scale(.965);box-shadow:0 0 52px rgba(74,207,255,.62)}100%{filter:brightness(1);transform:scale(1)}}
+
+@keyframes hRingRebound{0%{filter:brightness(1);transform:scale(1)}38%{filter:brightness(1.28) saturate(1.12);transform:scale(1.055);box-shadow:0 0 48px rgba(235,168,67,.56)}100%{filter:brightness(1);transform:scale(1)}}

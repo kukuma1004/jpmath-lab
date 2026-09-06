@@ -11,7 +11,8 @@ const live = read('경제수학/live/index.html');
 const bossHall = read('보스전/index.html');
 const skillHtml = read('미적분1/미적분1_계산스킬.html');
 const skillJs = read('미적분1/미적분1_계산스킬.js');
-const skillCss = read('미적분1/미적분1_계산스킬.css');
+// 보스 스타일은 공용 파일로 옮겼다. 두 페이지가 같은 화면을 쓰기 때문이다.
+const skillCss = read('보스전/boss-engine.css');
 // 보스 전투는 공용 엔진이 맡는다. 엔진 내부를 보는 검사는 이 파일에서 읽는다.
 const engine = read('보스전/boss-engine.js');
 
@@ -32,7 +33,7 @@ assert.match(bossHall, /HP 2600/);
 
 assert.match(skillHtml, /jp-game-telemetry\.js\?v=2/);
 assert.match(skillHtml, /미적분1_계산스킬\.js\?v=25/);
-assert.match(skillHtml, /미적분1_계산스킬\.css\?v=25/);
+assert.match(skillHtml, /미적분1_계산스킬\.css\?v=26/);
 assert.match(skillJs, /differentiate_polynomial:\{name:'미분의 철갑수'/);
 assert.match(skillJs, /limit_factor:\{name:'인수분해의 문지기'/);
 assert.match(skillJs, /limit_rationalize:\{name:'켤레의 연금술사'/);
