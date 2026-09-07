@@ -5,264 +5,328 @@
   "images": {
     "limit_factor": {
       "master": "factor-gate-guardian.jpg",
-      "thumb": "thumbs/factor-gate-guardian.webp"
+      "thumb": "thumbs/factor-gate-guardian.webp",
+      "name": "인수분해의 문지기"
     },
     "limit_rationalize": {
       "master": "conjugate-alchemist.jpg",
-      "thumb": "thumbs/conjugate-alchemist.webp"
+      "thumb": "thumbs/conjugate-alchemist.webp",
+      "name": "켤레의 연금술사"
     },
     "limit_infinity_ratio": {
       "master": "infinite-ratio-colossus.jpg",
-      "thumb": "thumbs/infinite-ratio-colossus.webp"
+      "thumb": "thumbs/infinite-ratio-colossus.webp",
+      "name": "무한비의 거신"
     },
     "limit_infinity_diff": {
       "master": "indeterminate-chaos-beast.jpg",
-      "thumb": "thumbs/indeterminate-chaos-beast.webp"
+      "thumb": "thumbs/indeterminate-chaos-beast.webp",
+      "name": "미정형의 혼돈수"
     },
     "limit_one_sided": {
       "master": "two-faced-boundary-warden.jpg",
-      "thumb": "thumbs/two-faced-boundary-warden.webp"
+      "thumb": "thumbs/two-faced-boundary-warden.webp",
+      "name": "양면의 경계자"
     },
     "continuity_parameter": {
       "master": "continuity-stitcher.jpg",
-      "thumb": "thumbs/continuity-stitcher.webp"
+      "thumb": "thumbs/continuity-stitcher.webp",
+      "name": "연속의 봉합사"
     },
     "squeeze_limit": {
       "master": "squeeze-twin-walls.jpg",
       "mobile": "squeeze-twin-walls-mobile-v3.jpg",
-      "thumb": "thumbs/squeeze-twin-walls.webp"
+      "thumb": "thumbs/squeeze-twin-walls.webp",
+      "name": "압착의 쌍벽"
     },
     "lhopital": {
       "master": "forbidden-differentiation-warlock.jpg",
       "mobile": "forbidden-differentiation-warlock-mobile.jpg",
-      "thumb": "thumbs/forbidden-differentiation-warlock.webp"
+      "thumb": "thumbs/forbidden-differentiation-warlock.webp",
+      "name": "금단의 미분술사"
     },
     "derivative_definition": {
       "master": "difference-quotient-origin.jpg",
       "mobile": "difference-quotient-origin-mobile.jpg",
-      "thumb": "thumbs/difference-quotient-origin.webp"
+      "thumb": "thumbs/difference-quotient-origin.webp",
+      "name": "차분몫의 원형"
     },
     "differentiate_polynomial": {
       "master": "derivative-iron-beast.webp",
-      "thumb": "thumbs/derivative-iron-beast.webp"
+      "thumb": "thumbs/derivative-iron-beast.webp",
+      "name": "미분의 철갑수"
     },
     "product_rule": {
       "master": "twin-blade-product-fiend.jpg",
       "mobile": "twin-blade-product-fiend-mobile.jpg",
-      "thumb": "thumbs/twin-blade-product-fiend.webp"
+      "thumb": "thumbs/twin-blade-product-fiend.webp",
+      "name": "쌍날 곱셈귀"
     },
     "tangent_equation": {
       "master": "tangent-sniper.jpg",
       "mobile": "tangent-sniper-mobile.jpg",
-      "thumb": "thumbs/tangent-sniper.webp"
+      "thumb": "thumbs/tangent-sniper.webp",
+      "name": "접선의 저격수"
     },
     "monotonic_interval": {
       "master": "monotonic-interval-patrol-warden.jpg",
-      "thumb": "thumbs/monotonic-interval-patrol-warden.webp"
+      "thumb": "thumbs/monotonic-interval-patrol-warden.webp",
+      "name": "부호표의 순찰자"
     },
     "extrema_sign": {
       "master": "turning-point-shapeshifter.jpg",
-      "thumb": "thumbs/turning-point-shapeshifter.webp"
+      "thumb": "thumbs/turning-point-shapeshifter.webp",
+      "name": "극점의 전환자"
     },
     "cubic_extrema": {
       "master": "discriminant-tri-dragon.jpg",
-      "thumb": "thumbs/discriminant-tri-dragon.webp"
+      "thumb": "thumbs/discriminant-tri-dragon.webp",
+      "name": "판별식의 삼두룡"
     },
     "quartic_shape": {
       "master": "quartic-peak-king.jpg",
-      "thumb": "thumbs/quartic-peak-king.webp"
+      "thumb": "thumbs/quartic-peak-king.webp",
+      "name": "사차의 봉우리왕"
     },
     "real_roots": {
       "master": "intersection-lord.jpg",
-      "thumb": "thumbs/intersection-lord.webp"
+      "thumb": "thumbs/intersection-lord.webp",
+      "name": "교점의 군주"
     },
     "mean_value": {
       "master": "mean-value-tracker.jpg",
-      "thumb": "thumbs/mean-value-tracker.webp"
+      "thumb": "thumbs/mean-value-tracker.webp",
+      "name": "평균값의 추적자"
     },
     "motion_rate": {
       "master": "acceleration-rampage-steed.jpg",
-      "thumb": "thumbs/acceleration-rampage-steed.webp"
+      "thumb": "thumbs/acceleration-rampage-steed.webp",
+      "name": "가속의 폭주마"
     },
     "horizontal_tangent": {
       "master": "horizontal-tangent-hunter.jpg",
-      "thumb": "thumbs/horizontal-tangent-hunter.webp"
+      "thumb": "thumbs/horizontal-tangent-hunter.webp",
+      "name": "수평접선의 사냥꾼"
     },
     "antiderivative": {
       "master": "antiderivative-collector.jpg",
-      "thumb": "thumbs/antiderivative-collector.webp"
+      "thumb": "thumbs/antiderivative-collector.webp",
+      "name": "원시함수의 수집가"
     },
     "initial_antiderivative": {
       "master": "constant-seal-keeper.jpg",
-      "thumb": "thumbs/constant-seal-keeper.webp"
+      "thumb": "thumbs/constant-seal-keeper.webp",
+      "name": "상수 C의 봉인자"
     },
     "definite_integral": {
       "master": "interval-judge.jpg",
-      "thumb": "thumbs/interval-judge.webp"
+      "thumb": "thumbs/interval-judge.webp",
+      "name": "구간의 판관"
     },
     "integral_symmetry": {
       "master": "symmetric-integral-mirror-king.jpg",
-      "thumb": "thumbs/symmetric-integral-mirror-king.webp"
+      "thumb": "thumbs/symmetric-integral-mirror-king.webp",
+      "name": "대칭적분의 거울왕"
     },
     "area_axis": {
       "master": "absolute-value-tailor.jpg",
-      "thumb": "thumbs/absolute-value-tailor.webp"
+      "thumb": "thumbs/absolute-value-tailor.webp",
+      "name": "절댓값의 재단사"
     },
     "area_between": {
       "master": "crossing-region-devourer.jpg",
-      "thumb": "thumbs/crossing-region-devourer.webp"
+      "thumb": "thumbs/crossing-region-devourer.webp",
+      "name": "교차영역의 포식자"
     },
     "distance_velocity": {
       "master": "velocity-accumulation-runner.jpg",
-      "thumb": "thumbs/velocity-accumulation-runner.webp"
+      "thumb": "thumbs/velocity-accumulation-runner.webp",
+      "name": "속도누적의 질주귀"
     },
     "fundamental_theorem": {
       "master": "calculus-gatekeeper.jpg",
-      "thumb": "thumbs/calculus-gatekeeper.webp"
+      "thumb": "thumbs/calculus-gatekeeper.webp",
+      "name": "미적분의 문지기"
     },
     "parabola_form": {
       "master": "parabola-compass-beast.jpg",
-      "thumb": "thumbs/parabola-compass-beast.webp"
+      "thumb": "thumbs/parabola-compass-beast.webp",
+      "name": "포물선의 나침수"
     },
     "parabola_focus": {
       "master": "focus-directrix-twins.jpg",
-      "thumb": "thumbs/focus-directrix-twins.webp"
+      "thumb": "thumbs/focus-directrix-twins.webp",
+      "name": "초점과 준선의 쌍둥이"
     },
     "parabola_point": {
       "master": "coordinate-substitution-tracker.jpg",
-      "thumb": "thumbs/coordinate-substitution-tracker.webp"
+      "thumb": "thumbs/coordinate-substitution-tracker.webp",
+      "name": "좌표대입의 추적자"
     },
     "ellipse_abc": {
       "master": "ellipse-core-guardian.jpg",
-      "thumb": "thumbs/ellipse-core-guardian.webp"
+      "thumb": "thumbs/ellipse-core-guardian.webp",
+      "name": "타원핵의 수호자"
     },
     "ellipse_distance": {
       "master": "twin-focus-binder.jpg",
-      "thumb": "thumbs/twin-focus-binder.webp"
+      "thumb": "thumbs/twin-focus-binder.webp",
+      "name": "쌍초점의 결속수"
     },
     "ellipse_equation": {
       "master": "major-axis-architect.jpg",
-      "thumb": "thumbs/major-axis-architect.webp"
+      "thumb": "thumbs/major-axis-architect.webp",
+      "name": "장축의 설계자"
     },
     "hyperbola_abc": {
       "master": "hyperbola-rift-beast.jpg",
-      "thumb": "thumbs/hyperbola-rift-beast.webp"
+      "thumb": "thumbs/hyperbola-rift-beast.webp",
+      "name": "쌍곡선의 균열수"
     },
     "hyperbola_asymptote": {
       "master": "asymptote-twin-sword-master.jpg",
-      "thumb": "thumbs/asymptote-twin-sword-master.webp"
+      "thumb": "thumbs/asymptote-twin-sword-master.webp",
+      "name": "점근선의 쌍검사"
     },
     "hyperbola_distance": {
       "master": "distance-difference-executor.jpg",
-      "thumb": "thumbs/distance-difference-executor.webp"
+      "thumb": "thumbs/distance-difference-executor.webp",
+      "name": "거리차의 집행자"
     },
     "tangent_parabola": {
       "master": "reflection-cannon-archer.jpg",
-      "thumb": "thumbs/reflection-cannon-archer.webp"
+      "thumb": "thumbs/reflection-cannon-archer.webp",
+      "name": "반사포의 궁수"
     },
     "tangent_ellipse": {
       "master": "ellipse-tangent-watcher.jpg",
-      "thumb": "thumbs/ellipse-tangent-watcher.webp"
+      "thumb": "thumbs/ellipse-tangent-watcher.webp",
+      "name": "타원접선의 감시자"
     },
     "tangent_hyperbola": {
       "master": "hyperbola-tangent-severer.jpg",
-      "thumb": "thumbs/hyperbola-tangent-severer.webp"
+      "thumb": "thumbs/hyperbola-tangent-severer.webp",
+      "name": "쌍곡접선의 절단자"
     },
     "relation_lines": {
       "master": "skew-lines-wanderer.jpg",
-      "thumb": "thumbs/skew-lines-wanderer.webp"
+      "thumb": "thumbs/skew-lines-wanderer.webp",
+      "name": "꼬인 직선의 방랑자"
     },
     "relation_line_plane": {
       "master": "line-plane-sentinel.jpg",
-      "thumb": "thumbs/line-plane-sentinel.webp"
+      "thumb": "thumbs/line-plane-sentinel.webp",
+      "name": "선면교차의 파수꾼"
     },
     "relation_planes": {
       "master": "plane-intersection-lord.jpg",
-      "thumb": "thumbs/plane-intersection-lord.webp"
+      "thumb": "thumbs/plane-intersection-lord.webp",
+      "name": "교선의 지배자"
     },
     "threeperp_conclusion": {
       "master": "three-perpendicular-triangle-beast.jpg",
-      "thumb": "thumbs/three-perpendicular-triangle-beast.webp"
+      "thumb": "thumbs/three-perpendicular-triangle-beast.webp",
+      "name": "삼수선의 삼각수"
     },
     "threeperp_distance": {
       "master": "shortest-distance-tracker-hound.jpg",
-      "thumb": "thumbs/shortest-distance-tracker-hound.webp"
+      "thumb": "thumbs/shortest-distance-tracker-hound.webp",
+      "name": "최단거리의 추적견"
     },
     "projection_length": {
       "master": "projection-length-caster.jpg",
-      "thumb": "thumbs/projection-length-caster.webp"
+      "thumb": "thumbs/projection-length-caster.webp",
+      "name": "그림자길이의 투영자"
     },
     "projection_area": {
       "master": "projection-area-devourer.jpg",
-      "thumb": "thumbs/projection-area-devourer.webp"
+      "thumb": "thumbs/projection-area-devourer.webp",
+      "name": "그림자넓이의 포식자"
     },
     "space_distance": {
       "master": "space-distance-surveyor-giant.jpg",
-      "thumb": "thumbs/space-distance-surveyor-giant.webp"
+      "thumb": "thumbs/space-distance-surveyor-giant.webp",
+      "name": "공간거리의 측량거인"
     },
     "space_division": {
       "master": "internal-division-balancer.jpg",
-      "thumb": "thumbs/internal-division-balancer.webp"
+      "thumb": "thumbs/internal-division-balancer.webp",
+      "name": "내분점의 균형자"
     },
     "sphere_read": {
       "master": "sphere-coordinate-observer.jpg",
-      "thumb": "thumbs/sphere-coordinate-observer.webp"
+      "thumb": "thumbs/sphere-coordinate-observer.webp",
+      "name": "구면좌표의 관측자"
     },
     "sphere_build": {
       "master": "sphere-sculptor.jpg",
-      "thumb": "thumbs/sphere-sculptor.webp"
+      "thumb": "thumbs/sphere-sculptor.webp",
+      "name": "구의 조형사"
     },
     "vector_addsub": {
       "master": "vector-composition-beast.jpg",
-      "thumb": "thumbs/vector-composition-beast.webp"
+      "thumb": "thumbs/vector-composition-beast.webp",
+      "name": "벡터의 합성수"
     },
     "vector_scalar": {
       "master": "scalar-scale-steed.jpg",
-      "thumb": "thumbs/scalar-scale-steed.webp"
+      "thumb": "thumbs/scalar-scale-steed.webp",
+      "name": "배율의 확대마"
     },
     "vector_linear": {
       "master": "linear-combination-weaver.jpg",
-      "thumb": "thumbs/linear-combination-weaver.webp"
+      "thumb": "thumbs/linear-combination-weaver.webp",
+      "name": "일차결합의 직조자"
     },
     "vector_component": {
       "master": "direction-component-tracker.jpg",
-      "thumb": "thumbs/direction-component-tracker.webp"
+      "thumb": "thumbs/direction-component-tracker.webp",
+      "name": "방향성분의 추적자"
     },
     "position_point": {
       "master": "position-vector-beacon-keeper.jpg",
-      "thumb": "thumbs/position-vector-beacon-keeper.webp"
+      "thumb": "thumbs/position-vector-beacon-keeper.webp",
+      "name": "위치벡터의 등대지기"
     },
     "vector_division": {
       "master": "vector-division-mediator.jpg",
-      "thumb": "thumbs/vector-division-mediator.webp"
+      "thumb": "thumbs/vector-division-mediator.webp",
+      "name": "내분벡터의 중재자"
     },
     "dot_component": {
       "master": "dot-product-calculation-core.jpg",
-      "thumb": "thumbs/dot-product-calculation-core.webp"
+      "thumb": "thumbs/dot-product-calculation-core.webp",
+      "name": "내적의 계산핵"
     },
     "dot_angle": {
       "master": "angle-judicator.jpg",
-      "thumb": "thumbs/angle-judicator.webp"
+      "thumb": "thumbs/angle-judicator.webp",
+      "name": "각도의 심판자"
     },
     "dot_length": {
       "master": "squared-vector-length-guardian.jpg",
-      "thumb": "thumbs/squared-vector-length-guardian.webp"
+      "thumb": "thumbs/squared-vector-length-guardian.webp",
+      "name": "벡터길이의 제곱수"
     },
     "line_point_direction": {
       "master": "direction-vector-guide.jpg",
-      "thumb": "thumbs/direction-vector-guide.webp"
+      "thumb": "thumbs/direction-vector-guide.webp",
+      "name": "방향벡터의 길잡이"
     },
     "line_parameter": {
       "master": "parameter-line-runner.jpg",
-      "thumb": "thumbs/parameter-line-runner.webp"
+      "thumb": "thumbs/parameter-line-runner.webp",
+      "name": "매개변수의 주행자"
     },
     "plane_normal": {
       "master": "normal-vector-shield-knight.jpg",
-      "thumb": "thumbs/normal-vector-shield-knight.webp"
+      "thumb": "thumbs/normal-vector-shield-knight.webp",
+      "name": "법선의 방패기사"
     },
     "sphere_vector": {
       "master": "spherical-vector-nebula-dragon.jpg",
-      "thumb": "thumbs/spherical-vector-nebula-dragon.webp"
+      "thumb": "thumbs/spherical-vector-nebula-dragon.webp",
+      "name": "구면벡터의 성운룡"
     }
   }
 }

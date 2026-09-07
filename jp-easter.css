@@ -1,0 +1,56 @@
+/* 숨은 손님의 겉모습. jp-easter.js 가 쓴다.
+
+   화면 아래를 지나갈 뿐이므로 아무 것도 가리지 않는다 — 층 전체는 클릭을
+   통과시키고, 보스 자신만 눌린다. */
+
+.jp-easter-layer{position:fixed;z-index:70;inset:0;overflow:hidden;pointer-events:none}
+
+.jp-easter-boss{position:absolute;bottom:var(--jp-easter-bottom,12vh);left:0;display:flex;align-items:flex-end;gap:10px;pointer-events:auto;cursor:pointer;will-change:transform}
+.jp-easter-boss img{display:block;width:76px;height:76px;border-radius:16px;object-fit:cover;background:#20302a;box-shadow:0 0 0 2px rgba(255,255,255,.7),0 10px 24px rgba(12,26,21,.35);animation:jpEasterBob 1.05s ease-in-out infinite}
+
+/* 걸어간다. 들어오는 쪽에 따라 바라보는 방향이 바뀐다. */
+.jp-easter-boss.from-left{animation:jpEasterWalk 9.2s linear both}
+.jp-easter-boss.from-right{animation:jpEasterWalkBack 9.2s linear both}
+.jp-easter-boss.from-right img{transform:scaleX(-1)}
+@keyframes jpEasterWalk{from{transform:translateX(-140px)}to{transform:translateX(calc(100vw + 40px))}}
+@keyframes jpEasterWalkBack{from{transform:translateX(calc(100vw + 40px))}to{transform:translateX(-260px)}}
+@keyframes jpEasterBob{50%{transform:translateY(-7px) rotate(-2deg)}}
+.jp-easter-boss.from-right img{animation:jpEasterBobFlip 1.05s ease-in-out infinite}
+@keyframes jpEasterBobFlip{0%,100%{transform:scaleX(-1)}50%{transform:scaleX(-1) translateY(-7px) rotate(2deg)}}
+
+/* 말풍선 */
+.jp-easter-say{display:grid;gap:2px;max-width:min(62vw,260px);margin-bottom:14px;padding:9px 13px;border-radius:14px 14px 14px 3px;color:#12241d;background:rgba(255,255,255,.96);font-size:12.5px;font-weight:600;line-height:1.45;word-break:keep-all;box-shadow:0 8px 22px rgba(12,26,21,.26);animation:jpEasterSay .4s ease both}
+.jp-easter-say em{color:#1e7a63;font-size:10.5px;font-style:normal;font-weight:800;letter-spacing:.02em}
+.jp-easter-boss.from-right .jp-easter-say{order:-1;border-radius:14px 14px 3px 14px}
+@keyframes jpEasterSay{from{opacity:0;transform:translateY(6px) scale(.94)}to{opacity:1;transform:none}}
+
+/* 눌렀을 때 — 폴짝 뛰고 달아난다 */
+.jp-easter-boss.poked img{animation:jpEasterHop .5s cubic-bezier(.2,1.6,.4,1) 2}
+.jp-easter-boss.poked{animation-duration:1.5s!important}
+@keyframes jpEasterHop{0%,100%{transform:translateY(0) rotate(0)}
+  35%{transform:translateY(-26px) rotate(-9deg)}
+  60%{transform:translateY(-6px) rotate(5deg)}}
+.jp-easter-boss.from-right.poked img{animation-name:jpEasterHopFlip}
+@keyframes jpEasterHopFlip{0%,100%{transform:scaleX(-1)}
+  35%{transform:scaleX(-1) translateY(-26px) rotate(9deg)}
+  60%{transform:scaleX(-1) translateY(-6px) rotate(-5deg)}}
+
+/* 다섯 번째 두드림부터 마크가 흔들려 "뭔가 있다" 는 것만 알린다 */
+.jp-easter-wiggle{animation:jpEasterWiggle .42s ease}
+@keyframes jpEasterWiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-11deg) scale(1.08)}
+  60%{transform:rotate(9deg) scale(1.08)}}
+
+/* 움직임을 줄여 달라는 사람에게는 걷지 않는다. 잠깐 나타났다 사라진다. */
+@media(prefers-reduced-motion:reduce){
+  .jp-easter-boss,.jp-easter-boss.from-left,.jp-easter-boss.from-right{
+    left:50%;transform:translateX(-50%);animation:jpEasterFade 4s ease both}
+  .jp-easter-boss img,.jp-easter-boss.from-right img,.jp-easter-boss.poked img{animation:none}
+  .jp-easter-boss.from-right img{transform:scaleX(-1)}
+  .jp-easter-wiggle{animation:none}
+  @keyframes jpEasterFade{0%{opacity:0}12%{opacity:1}80%{opacity:1}100%{opacity:0}}
+}
+
+@media(max-width:600px){
+  .jp-easter-boss img{width:62px;height:62px;border-radius:13px}
+  .jp-easter-say{max-width:58vw;font-size:11.5px}
+}

@@ -131,4 +131,25 @@
 
   updateHeader();
   window.addEventListener('scroll', updateHeader, { passive: true });
+
+  /* 숨은 손님.
+
+     머리띠는 모든 페이지에 있으므로 여기서 이스터에그를 불러 준다.
+     쉰다섯 장의 HTML 에 줄을 더하지 않으려고 이렇게 했다.
+     실제 동작은 jp-easter.js 에 있다. */
+  function loadEasterEgg() {
+    if (document.querySelector('[data-jp-easter-egg]')) return;
+    const css = document.createElement('link');
+    css.rel = 'stylesheet';
+    css.href = siteHref('jp-easter.css?v=3');
+    document.head.appendChild(css);
+
+    const egg = document.createElement('script');
+    egg.src = siteHref('jp-easter.js?v=5');
+    egg.defer = true;
+    egg.dataset.jpEasterEgg = '1';
+    egg.dataset.siteRoot = siteHref('');
+    document.head.appendChild(egg);
+  }
+  loadEasterEgg();
 })();
