@@ -472,3 +472,74 @@
   .boss-v2 .boss-status{position:sticky;bottom:8px;z-index:19;box-shadow:0 8px 20px rgba(21,38,32,.16)}}
 
 @media(max-width:370px){.boss-v2 .boss-arena{top:64px;grid-template-columns:88px minmax(0,1fr)}.boss-v2 .boss-art-frame{width:82px}.boss-v2 .boss-monster>strong{max-width:86px;font-size:10px}.boss-v2 .boss-clock strong{font-size:20px}.boss-v2.boss-squeeze .boss-arena{grid-template-columns:108px minmax(0,1fr)}.boss-v2.boss-squeeze .boss-art-frame{width:102px}.boss-v2.boss-squeeze .boss-monster>strong{max-width:106px}}
+
+/* ── 손맛 ─────────────────────────────────────────────────────────
+
+   지금까지는 30 데미지든 500 데미지든 같은 크기의 숫자가 떴고, 콤보가
+   올라도 작은 배수 하나만 바뀌어 아무도 알아채지 못했다. 여기서 세 가지를
+   눈에 보이게 만든다 — 한 방의 크기, 콤보의 열기, 그리고 각성.
+
+   보스마다 다른 색은 무대의 --boss-accent 로 들어온다. */
+
+/* 큰 한 방. 평타의 1.3배면 강타, 1.9배면 치명타다. */
+.boss-impact.boss-impact-heavy{min-width:112px;padding:10px 15px;font-size:25px;letter-spacing:-.02em;box-shadow:0 0 40px rgba(85,242,183,.7)}
+.boss-impact.boss-impact-crit{min-width:136px;padding:12px 19px;border-width:2px;color:#12261f;background:linear-gradient(140deg,#ffe27a,#ffb03a);font-size:31px;letter-spacing:-.03em;text-shadow:0 1px 0 rgba(255,255,255,.5);box-shadow:0 0 18px #ffd15c,0 0 40px rgba(255,176,58,.6);animation:critPop .82s cubic-bezier(.2,1.5,.4,1) forwards}
+@keyframes critPop{0%{transform:scale(.3) rotate(-9deg);opacity:0}
+  40%{transform:scale(1.22) rotate(2deg);opacity:1}
+  62%{transform:scale(1) rotate(0)}
+  100%{transform:scale(1.04) translateY(-26px);opacity:0}}
+
+/* 퍼지는 고리. 맞은 자리에서 파문이 번진다. */
+.boss-burst{position:absolute;left:24%;top:42%;z-index:1;width:34px;height:34px;border:3px solid rgba(255,255,255,.9);border-radius:50%;margin:-17px 0 0 -17px;pointer-events:none;animation:burstRing .68s cubic-bezier(.15,.75,.3,1) forwards}
+.boss-burst-heavy{border-color:rgba(120,255,205,.9)}
+.boss-burst-crit{border-color:#ffd15c;border-width:4px;box-shadow:0 0 30px #ffb03a,inset 0 0 22px rgba(255,209,92,.6)}
+.boss-burst-crit::after{position:absolute;inset:-14px;border:2px solid rgba(255,209,92,.55);border-radius:50%;content:'';animation:burstRing .68s .1s cubic-bezier(.15,.75,.3,1) forwards}
+@keyframes burstRing{from{transform:scale(.3);opacity:1}to{transform:scale(7.5);opacity:0}}
+
+/* 무대가 흔들린다. 큰 한 방일수록 크게. */
+.boss-shake{animation:bossShake .32s ease-out}
+.boss-shake-hard{animation:bossShakeHard .5s ease-out}
+@keyframes bossShake{0%,100%{transform:translate3d(0,0,0)}
+  22%{transform:translate3d(-5px,2px,0)}52%{transform:translate3d(4px,-2px,0)}78%{transform:translate3d(-2px,1px,0)}}
+@keyframes bossShakeHard{0%,100%{transform:translate3d(0,0,0) rotate(0)}
+  12%{transform:translate3d(-10px,4px,0) rotate(-.5deg)}30%{transform:translate3d(9px,-5px,0) rotate(.5deg)}
+  50%{transform:translate3d(-7px,3px,0) rotate(-.35deg)}70%{transform:translate3d(5px,-2px,0) rotate(.25deg)}
+  86%{transform:translate3d(-2px,1px,0)}}
+
+/* 콤보 칸이 오를 때 뜨는 알림. 배수가 4·7·10… 에서 오른다. */
+.boss-combo-up{position:absolute;left:50%;top:26%;z-index:6;display:grid;justify-items:center;gap:2px;font-style:normal;text-decoration:none;text-align:center;pointer-events:none;transform:translateX(-50%);animation:comboUp 1.1s cubic-bezier(.2,1.3,.35,1) forwards}
+.boss-combo-up em{padding:4px 12px;border-radius:999px;color:#0f2019;background:color-mix(in srgb,var(--boss-accent,#4ad3a0) 82%,#fff);font:900 13px/1 var(--font-mono);font-style:normal;letter-spacing:.08em;box-shadow:0 0 26px color-mix(in srgb,var(--boss-accent,#4ad3a0) 70%,transparent)}
+.boss-combo-up b{color:#fff;font:900 20px/1.1 var(--font-mono);text-shadow:0 2px 12px rgba(0,0,0,.6)}
+@keyframes comboUp{0%{transform:translateX(-50%) scale(.55);opacity:0}
+  30%{transform:translateX(-50%) scale(1.12);opacity:1}
+  48%{transform:translateX(-50%) scale(1)}
+  100%{transform:translateX(-50%) translateY(-40px) scale(1);opacity:0}}
+
+/* 각성과 무결점은 금빛으로 따로 논다. */
+.boss-combo-awake em{color:#2a1a00;background:linear-gradient(120deg,#ffe27a,#ffab2e);font-size:15px;box-shadow:0 0 34px rgba(255,183,50,.85)}
+.boss-combo-awake b{font-size:24px;text-shadow:0 0 20px rgba(255,183,50,.8),0 2px 12px rgba(0,0,0,.6)}
+
+/* 무대의 열기. 콤보가 쌓일수록 테두리와 빛이 진해진다. */
+.boss-v2 .boss-arena{transition:box-shadow .35s ease,border-color .35s ease}
+.boss-heat-1 .boss-arena{border-color:color-mix(in srgb,var(--boss-accent,#4ad3a0) 55%,transparent);box-shadow:0 12px 30px rgba(8,21,17,.28),0 0 20px color-mix(in srgb,var(--boss-accent,#4ad3a0) 26%,transparent)}
+.boss-heat-2 .boss-arena{border-color:color-mix(in srgb,var(--boss-accent,#4ad3a0) 78%,transparent);box-shadow:0 12px 30px rgba(8,21,17,.28),0 0 34px color-mix(in srgb,var(--boss-accent,#4ad3a0) 45%,transparent)}
+.boss-heat-3 .boss-arena{border-color:#ffd15c;box-shadow:0 12px 30px rgba(8,21,17,.28),0 0 46px rgba(255,183,50,.5)}
+.boss-heat-2 .boss-combat-stats [data-boss-combo],.boss-heat-3 .boss-combat-stats [data-boss-combo]{color:#ffd15c}
+
+/* 각성. 콤보 열 번을 이어야 열리는 숨은 상태다.
+   따로 안내하지 않는다 — 해내면 저절로 보인다. */
+.boss-overdrive .boss-arena{border-color:#ffce55;box-shadow:0 12px 30px rgba(8,21,17,.3),0 0 0 1px rgba(255,206,85,.5),0 0 58px rgba(255,176,58,.6);animation:overdrivePulse 1.5s ease-in-out infinite}
+.boss-overdrive .boss-art-frame{box-shadow:0 0 0 2px rgba(255,206,85,.65),0 0 40px rgba(255,176,58,.55)}
+.boss-overdrive .boss-art-frame img{filter:saturate(1.25) contrast(1.08)}
+.boss-overdrive [data-boss-combo]{color:#ffd15c;text-shadow:0 0 16px rgba(255,183,50,.9)}
+@keyframes overdrivePulse{50%{box-shadow:0 12px 30px rgba(8,21,17,.3),0 0 0 1px rgba(255,206,85,.75),0 0 78px rgba(255,176,58,.8)}}
+
+/* 무결점 격파 — 한 번도 틀리지 않고 이겼을 때만. */
+.boss-flawless .boss-arena{border-color:#ffe27a;box-shadow:0 12px 30px rgba(8,21,17,.3),0 0 70px rgba(255,206,85,.75)}
+.boss-result-flawless{border-color:#ffd15c!important}
+.boss-result-flawless span{color:#2a1a00;background:linear-gradient(120deg,#ffe27a,#ffab2e);box-shadow:0 0 30px rgba(255,183,50,.7)}
+
+@media(prefers-reduced-motion:reduce){
+  .boss-shake,.boss-shake-hard,.boss-overdrive .boss-arena{animation:none}
+  .boss-burst{display:none}
+}

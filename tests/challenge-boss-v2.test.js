@@ -162,4 +162,42 @@ assert.match(skillJs, /params\.get\('mode'\)==='boss'/);
 assert.match(skillJs, /calculus-skill-boss-differentiate-polynomial/);
 assert.match(engine, /telemetry\.finishPlay/);
 
+/* 손맛.
+
+   콤보가 쌓여도, 마무리 한 방이 평타의 세 배여도 화면은 똑같았다.
+   숫자 하나만 바뀌니 큰 한 방을 때린 줄도 몰랐다. 세 가지를 넣었고
+   그것이 다시 빠지지 않게 지킨다. */
+{
+  const engineCss = read('보스전/boss-engine.css');
+
+  // ① 한 방의 크기를 등급으로 나눈다
+  assert.match(engine, /'boss-impact-'\+grade/, '큰 한 방은 등급을 달고 나와야 한다.');
+  assert.match(engine, /ratio>=1\.9\?'crit'/, '평타의 두 배 가까우면 치명타다.');
+  assert.match(engineCss, /\.boss-impact\.boss-impact-crit\{/, '치명타 숫자는 따로 그린다.');
+  assert.match(engineCss, /@keyframes burstRing/, '큰 한 방에는 고리가 퍼져야 한다.');
+  assert.match(engineCss, /@keyframes bossShakeHard/, '치명타에는 무대가 크게 흔들려야 한다.');
+
+  // ② 콤보가 오르는 순간을 알린다
+  assert.match(engine, /function announceCombo/, '콤보 칸이 오르면 알려야 한다.');
+  assert.match(engine, /boss-heat-/, '콤보가 쌓이면 무대가 달아올라야 한다.');
+  assert.match(engineCss, /\.boss-heat-3 \.boss-arena\{/, '열기는 세 칸이어야 한다.');
+
+  /* 열기 세 칸과 각성이 한 판 안에 열려야 의미가 있다. 한 판은 열~열두
+     문제다. 배수는 콤보 4·7·10 에서 오르므로 문턱도 그 안에 두어야 한다. */
+  const overdrive = Number(/OVERDRIVE_COMBO=(\d+)/.exec(engine)[1]);
+  assert.ok(overdrive >= 6 && overdrive <= 10,
+    `각성 문턱은 한 판 안에 닿을 수 있어야 한다 — 지금 ${overdrive}콤보`);
+  assert.match(engine, /boss-overdrive/, '각성 상태가 무대에 실려야 한다.');
+  assert.match(engineCss, /\.boss-overdrive \.boss-arena\{/, '각성은 눈에 띄게 달라야 한다.');
+
+  // ③ 무결점 격파 — 한 번도 틀리지 않고 이겼을 때만
+  assert.match(engine, /boss\.correct===boss\.attempts/, '무결점은 오답이 하나도 없을 때다.');
+  assert.match(engine, /FLAWLESS CLEAR/, '무결점 격파를 따로 알려야 한다.');
+  assert.match(engine, /최고 콤보 \$\{boss\.bestCombo\}/, '전투 결과에 최고 콤보를 남긴다.');
+
+  // 움직임을 줄여 달라는 사람에게는 흔들지 않는다
+  assert.match(engineCss, /@media\(prefers-reduced-motion:reduce\)\{[\s\S]{0,200}boss-shake/,
+    '움직임을 줄이는 설정에서는 흔들림을 끈다.');
+}
+
 console.log('challenge and boss battle 2.2 tests: ok');

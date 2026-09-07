@@ -55,6 +55,7 @@
       if(true){
         const hp=Math.max(0,boss.hp);$('[data-boss-hp]').style.width=`${hp/boss.maxHp*100}%`;$('[data-boss-hp-text]').textContent=`${hp} / ${boss.maxHp}`;$('[data-boss-time]').textContent=boss.time.toFixed(1);$('[data-boss-timer]').style.width=`${boss.time/boss.limit*100}%`;
         $('[data-boss-damage]').textContent=boss.damage;$('[data-boss-combo]').textContent=`×${bossMultiplier().toFixed(2)}`;
+        updateComboHeat();
         const shieldBattle=cfg.mechanic==='factor-shield',reflectBattle=cfg.mechanic==='conjugate-reflect',gradeBattle=cfg.mechanic==='degree-grade',chaosBattle=cfg.mechanic==='chaos-split',sideBattle=cfg.mechanic==='side-switch',stitchBattle=cfg.mechanic==='continuity-stitch',squeezeBattle=cfg.mechanic==='squeeze-walls',forbiddenBattle=cfg.mechanic==='forbidden-seal',differenceBattle=cfg.mechanic==='h-collapse',productBattle=cfg.mechanic==='product-blades',sniperBattle=cfg.mechanic==='sniper-lock',stepBattle=cfg.mechanic==='step-lock',wallGap=Number.isFinite(boss.wallGap)?boss.wallGap:100;$('[data-boss-state-label]').textContent=shieldBattle?'SHIELD':reflectBattle?'MIRROR':gradeBattle?'GRADE':chaosBattle?'BODIES':sideBattle?'방향':stitchBattle?'봉합':squeezeBattle?'벽 간격':forbiddenBattle?'정석 봉인':differenceBattle?'h 거리':productBattle?'쌍날':sniperBattle?'조준':stepBattle?cfg.lockLabel:'PHASE';$('[data-boss-phase]').textContent=shieldBattle?boss.shield:reflectBattle?`${boss.reflectCharge}/2`:gradeBattle?boss.attackGrade:chaosBattle?boss.splitCount:sideBattle?(boss.targetSide==='right'?'우 →':'← 좌'):stitchBattle?`${boss.stitches}/3`:squeezeBattle?`${Math.round(wallGap)}%`:forbiddenBattle?`${boss.orthodoxSeal}/3`:differenceBattle?hDistanceLabel():productBattle?bladeStateLabel():sniperBattle?sniperLockLabel():stepBattle?stepLockLabel():boss.phase;
         stage.classList.toggle('boss-reflect-ready',reflectBattle&&boss.reflectCharge===1);
         stage.classList.toggle('boss-chaos-split',chaosBattle&&boss.splitCount>1);if(chaosBattle)stage.dataset.bodies=String(boss.splitCount);else delete stage.dataset.bodies;
@@ -70,6 +71,9 @@
       }
       const hp=Math.max(0,3-boss.index);$('[data-boss-hp]').style.width=`${hp/3*100}%`;$('[data-boss-hp-text]').textContent=`${hp} / 3`;$('[data-boss-time]').textContent=boss.time.toFixed(1);$('[data-boss-timer]').style.width=`${boss.limit?boss.time/boss.limit*100:0}%`;stage.classList.toggle('boss-danger',boss.time<=Math.min(4,boss.limit*.34)&&boss.running)
     }
+    /* 각성 문턱. 열 번을 이어 맞히면 무대가 달아오른다.
+       배수가 오르는 자리(4·7·10…)와 겹치게 두어, 눈에 띄는 보상이 겹쳐 온다. */
+    const OVERDRIVE_COMBO=8;
     function bossMultiplier(){return 1+Math.min(1.5,Math.floor(Math.max(0,boss.combo-1)/3)*.25)}
     function bossStartPhase(){return api.level()==='deep'?3:api.level()==='applied'?2:1}
     function bossQuestionLevel(){return cfg?.mechanic==='degree-grade'?(boss.phase===3?'deep':boss.phase===2?'applied':'basic'):api.level()}
@@ -79,10 +83,11 @@
     function sniperLockLabel(){return ['0/2','접점 1/2','기울기 2/2'][Math.max(0,Math.min(2,boss.sniperLock||0))]}
     function bladeStateLabel(){return boss.leftBladeReady?(boss.rightBladeReady?'연계!':'우 대기'):'좌 대기'}
     function startBossV2(){
-      stopBossTimer();bossSessionPlayIndex++;const limit=currentBossV2Limit(),startPhase=bossStartPhase();boss={running:true,raf:0,time:limit,limit,last:performance.now(),hp:bossMaxHp(),maxHp:bossMaxHp(),damage:0,combo:0,correct:0,attempts:0,phase:startPhase,shield:cfg.mechanic==='factor-shield'?3:0,reflectCharge:0,attackGrade:'C',splitCount:1,nextSide:'left',targetSide:'left',lastSide:null,boundaryStreak:0,stitches:0,regenBuffer:0,healed:0,reopenOnNext:false,wallGap:100,wallCrushed:false,wallEscapes:0,orthodoxSeal:3,forbiddenPower:0,sealBreaks:0,resealOnNext:false,lastForbidden:false,hStep:0,hCoreHits:0,hResetOnNext:false,leftBladeReady:false,rightBladeReady:false,nextBlade:'left',bladePairs:0,bladesResetOnNext:false,productPair:null,sniperLock:0,sniperTarget:null,sniperShots:0,sniperResetOnNext:false,lockStep:0,lockBreaks:0,lockResetOnNext:false,questionStartedAt:0,q:null,locked:false};
+      stopBossTimer();bossSessionPlayIndex++;const limit=currentBossV2Limit(),startPhase=bossStartPhase();boss={running:true,raf:0,time:limit,limit,last:performance.now(),hp:bossMaxHp(),maxHp:bossMaxHp(),damage:0,combo:0,bestCombo:0,overdriveShown:false,correct:0,attempts:0,phase:startPhase,shield:cfg.mechanic==='factor-shield'?3:0,reflectCharge:0,attackGrade:'C',splitCount:1,nextSide:'left',targetSide:'left',lastSide:null,boundaryStreak:0,stitches:0,regenBuffer:0,healed:0,reopenOnNext:false,wallGap:100,wallCrushed:false,wallEscapes:0,orthodoxSeal:3,forbiddenPower:0,sealBreaks:0,resealOnNext:false,lastForbidden:false,hStep:0,hCoreHits:0,hResetOnNext:false,leftBladeReady:false,rightBladeReady:false,nextBlade:'left',bladePairs:0,bladesResetOnNext:false,productPair:null,sniperLock:0,sniperTarget:null,sniperShots:0,sniperResetOnNext:false,lockStep:0,lockBreaks:0,lockResetOnNext:false,questionStartedAt:0,q:null,locked:false};
       api.rec().bossAttempts=(api.rec().bossAttempts||0)+1;api.save();
       bossActivePlay=api.telemetry?api.telemetry.startPlay({gameId:cfg.gameId,sessionId:bossSessionId,retry:bossSessionPlayIndex>1,sessionPlayIndex:bossSessionPlayIndex,dateKey:new Date().toISOString().slice(0,10)}):null;
-      const monster=$('[data-boss-monster]');monster.classList.remove('boss-hit','boss-attack','boss-defeated');$('[data-boss-mood]').textContent=cfg.mechanic==='factor-shield'?'석문 보호막 3칸':cfg.mechanic==='conjugate-reflect'?'거울 충전 0 / 2':cfg.mechanic==='degree-grade'?'하위 차수 장갑 · C GRADE':cfg.mechanic==='chaos-split'?'혼돈 코어 안정 · 1 BODY':cfg.mechanic==='side-switch'?'왼쪽 가면 봉인 · ← 좌극한':cfg.mechanic==='continuity-stitch'?'재생축 가동 · 봉합 0/3':cfg.mechanic==='squeeze-walls'?'상·하한 벽 전개 · 간격 100%':cfg.mechanic==='forbidden-seal'?'금단 두루마리 봉인 · 정석 0/3':cfg.mechanic==='h-collapse'?'할선 고리 전개 · h=1':cfg.mechanic==='sniper-lock'?'조준경 개방 · 조준 0/2':cfg.mechanic==='step-lock'?cfg.moodStart:cfg.mechanic==='product-blades'?'청록 왼날 대기 · u′v':'기본 방어';if(startPhase>1)$('[data-boss-mood]').textContent+=` · ${api.levels[startPhase-1].name} 시작`;$('[data-boss-start]').classList.add('hidden');$('[data-boss-status]').className='boss-status hidden';renderBossV2();renderBossHud();boss.raf=requestAnimationFrame(tickBoss)
+      const monster=$('[data-boss-monster]');monster.classList.remove('boss-hit','boss-attack','boss-defeated');$('[data-boss-mood]').textContent=cfg.mechanic==='factor-shield'?'석문 보호막 3칸':cfg.mechanic==='conjugate-reflect'?'거울 충전 0 / 2':cfg.mechanic==='degree-grade'?'하위 차수 장갑 · C GRADE':cfg.mechanic==='chaos-split'?'혼돈 코어 안정 · 1 BODY':cfg.mechanic==='side-switch'?'왼쪽 가면 봉인 · ← 좌극한':cfg.mechanic==='continuity-stitch'?'재생축 가동 · 봉합 0/3':cfg.mechanic==='squeeze-walls'?'상·하한 벽 전개 · 간격 100%':cfg.mechanic==='forbidden-seal'?'금단 두루마리 봉인 · 정석 0/3':cfg.mechanic==='h-collapse'?'할선 고리 전개 · h=1':cfg.mechanic==='sniper-lock'?'조준경 개방 · 조준 0/2':cfg.mechanic==='step-lock'?cfg.moodStart:cfg.mechanic==='product-blades'?'청록 왼날 대기 · u′v':'기본 방어';if(startPhase>1)$('[data-boss-mood]').textContent+=` · ${api.levels[startPhase-1].name} 시작`;$('[data-boss-start]').classList.add('hidden');$('[data-boss-status]').className='boss-status hidden';// 지난 판의 열기·각성·무결점 자국을 지우고 새로 시작한다
+      $('[data-boss-stage]').classList.remove('boss-heat-1','boss-heat-2','boss-heat-3','boss-overdrive','boss-flawless');lastComboTier=0;renderBossV2();renderBossHud();boss.raf=requestAnimationFrame(tickBoss)
     }
     function startBossTimer(){stopBossTimer();boss.running=true;boss.last=performance.now();boss.raf=requestAnimationFrame(tickBoss)}
     function tickBoss(now){if(!boss.running)return;const elapsed=(now-boss.last)/1000;boss.time=Math.max(0,boss.time-elapsed);boss.last=now;if(true&&cfg.mechanic==='continuity-stitch'&&boss.stitches<3&&boss.hp<boss.maxHp){boss.regenBuffer+=elapsed;if(boss.regenBuffer>=1){const ticks=Math.floor(boss.regenBuffer),heal=ticks*(cfg.regenRate+Math.max(0,boss.phase-1)*2);boss.regenBuffer-=ticks;const actual=Math.min(heal,boss.maxHp-boss.hp);boss.hp+=actual;boss.healed+=actual;if(actual>0)launchBossHealFx(actual)}}if(true&&cfg.mechanic==='squeeze-walls'&&boss.questionStartedAt&&!boss.wallCrushed){const questionElapsed=(now-boss.questionStartedAt)/1000,windowLimit=squeezeSafeWindow();boss.wallGap=Math.max(0,100-questionElapsed/windowLimit*100);if(boss.wallGap<=0){boss.wallCrushed=true;boss.time=Math.max(0,boss.time-2);const stage=$('[data-boss-stage]'),monster=$('[data-boss-monster]');stage.classList.add('boss-wall-slam');monster.classList.remove('boss-hit');monster.classList.add('boss-attack');$('[data-boss-mood]').textContent='쌍벽 충돌 · 시간 −2초';launchBossFx(false,0,2);setTimeout(()=>{stage.classList.remove('boss-wall-slam');monster.classList.remove('boss-attack')},620)}}renderBossHud();if(boss.time<=0){finishBossV2(false);return}boss.raf=requestAnimationFrame(tickBoss)}
@@ -94,8 +99,60 @@
       const layer=$('[data-boss-fx]');if(!layer)return;
       const shot=document.createElement('i'),impact=document.createElement('b');
       shot.className=`boss-projectile ${ok?'player-strike':'boss-counter'}`;shot.textContent=ok?(cfg?.mechanic==='factor-shield'?'(x−a)':cfg?.mechanic==='conjugate-reflect'?'√±':cfg?.mechanic==='degree-grade'?'∞/∞':cfg?.mechanic==='chaos-split'?'∞−∞':cfg?.mechanic==='side-switch'?(boss.q?.side==='left'?'←':'→'):cfg?.mechanic==='continuity-stitch'?'∪':cfg?.mechanic==='squeeze-walls'?'≤·≤':cfg?.mechanic==='forbidden-seal'?'정석':cfg?.mechanic==='h-collapse'?'h→0':cfg?.mechanic==='product-blades'?(boss.q?.blade==='left'?'u′v':'uv′'):pick(['f′','Δx','dy','∫'])):cfg?.mechanic==='forbidden-seal'&&boss.lastForbidden?'L’H':cfg?.mechanic==='h-collapse'?'Δh':cfg?.mechanic==='product-blades'?'×':'×';
-      impact.className=`boss-impact ${ok?'player-impact':'counter-impact'}`;impact.textContent=ok?`−${damage}`:`−${penalty}초`;
-      layer.append(shot,impact);setTimeout(()=>{shot.remove();impact.remove()},900);
+      /* 한 방의 크기를 눈에 보이게 한다.
+
+         지금까지는 30 데미지든 500 데미지든 같은 크기의 숫자가 떴다.
+         마무리 공격이 평타의 두세 배인데 화면이 똑같으니 손맛이 없었다.
+         평타 한 방(cfg.baseDamage)을 기준으로 재어 세 등급으로 나눈다. */
+      const base=cfg?.baseDamage||150,ratio=ok?damage/base:0;
+      const grade=ratio>=1.9?'crit':ratio>=1.15?'heavy':'';
+      impact.className=`boss-impact ${ok?'player-impact':'counter-impact'} ${grade?'boss-impact-'+grade:''}`.trim();
+      impact.textContent=ok?`−${damage}`:`−${penalty}초`;
+      layer.append(shot,impact);
+
+      if(grade){
+        // 큰 한 방에는 고리가 퍼지고 무대가 흔들린다
+        const burst=document.createElement('u');
+        burst.className=`boss-burst boss-burst-${grade}`;
+        layer.append(burst);setTimeout(()=>burst.remove(),720);
+        const stage=$('[data-boss-stage]');
+        if(stage){
+          stage.classList.remove('boss-shake','boss-shake-hard');
+          void stage.offsetWidth;                       // 같은 흔들림을 다시 태우려면 한 번 끊어야 한다
+          stage.classList.add(grade==='crit'?'boss-shake-hard':'boss-shake');
+          setTimeout(()=>stage.classList.remove('boss-shake','boss-shake-hard'),grade==='crit'?520:340);
+        }
+      }
+      setTimeout(()=>{shot.remove();impact.remove()},900);
+    }
+
+    /* 콤보가 오르면 배수가 4·7·10… 에서 한 칸씩 올라간다. 그동안 화면에는
+       작은 숫자 하나만 바뀌어 아무도 알아채지 못했다. 칸이 오르는 순간을
+       크게 알리고, 무대의 열기도 같이 올린다. */
+    let lastComboTier=0;
+    function updateComboHeat(){
+      const stage=$('[data-boss-stage]');if(!stage)return;
+      const tier=Math.round((bossMultiplier()-1)/.25);   // 0 ~ 6
+      stage.classList.remove('boss-heat-1','boss-heat-2','boss-heat-3');
+      if(tier>=1)stage.classList.add('boss-heat-'+Math.min(3,tier));   // 콤보 4·7·10 에서 한 칸씩
+      // 각성. 콤보 열 번을 이어야 열리는 숨은 상태다.
+      stage.classList.toggle('boss-overdrive',boss.combo>=OVERDRIVE_COMBO);
+      /* 각성은 배수가 오르는 자리와 어긋난 콤보에서 열린다. 배수가 오를 때만
+         알리도록 짜 두었더니 각성이 조용히 켜져 아무도 못 봤다. */
+      const 각성열림=boss.combo>=OVERDRIVE_COMBO&&!boss.overdriveShown&&boss.running;
+      if(각성열림){boss.overdriveShown=true;announceCombo(tier,'각성')}
+      else if(tier>lastComboTier&&boss.running)announceCombo(tier);
+      if(boss.combo===0)boss.overdriveShown=false;
+      lastComboTier=tier;
+    }
+    function announceCombo(tier,label){
+      const layer=$('[data-boss-fx]');if(!layer)return;
+      const tag=document.createElement('s');
+      tag.className='boss-combo-up'+(label?' boss-combo-awake':'');
+      tag.innerHTML=label
+        ?`<em>${label}</em><b>${boss.combo} COMBO</b>`
+        :`<em>COMBO ×${bossMultiplier().toFixed(2)}</em><b>${boss.combo}연속</b>`;
+      layer.append(tag);setTimeout(()=>tag.remove(),1150);
     }
     function launchBossHealFx(amount){
       const layer=$('[data-boss-fx]'),stage=$('[data-boss-stage]');if(!layer||!amount)return;const impact=document.createElement('b');impact.className='boss-impact boss-heal-impact';impact.textContent=`+${amount} HP`;layer.append(impact);stage.classList.remove('boss-heal-pulse');void stage.offsetWidth;stage.classList.add('boss-heal-pulse');setTimeout(()=>{impact.remove();stage.classList.remove('boss-heal-pulse')},820)
@@ -103,7 +160,7 @@
     function resolveBossV2(value,button){
       if(!boss.running||boss.locked)return;boss.locked=true;boss.attempts++;const q=boss.q,box=$('.answer-grid',$('[data-boss-body]')),ok=String(value)===q.correct,answerSeconds=(performance.now()-boss.questionStartedAt)/1000;api.markAnswers(box,q,value,button);const st=$('[data-boss-status]'),monster=$('[data-boss-monster]');
       if(ok){
-        boss.combo++;boss.correct++;
+        boss.combo++;boss.correct++;boss.bestCombo=Math.max(boss.bestCombo||0,boss.combo);
         const shieldBattle=cfg.mechanic==='factor-shield',reflectBattle=cfg.mechanic==='conjugate-reflect',gradeBattle=cfg.mechanic==='degree-grade',chaosBattle=cfg.mechanic==='chaos-split',sideBattle=cfg.mechanic==='side-switch',stitchBattle=cfg.mechanic==='continuity-stitch',squeezeBattle=cfg.mechanic==='squeeze-walls',forbiddenBattle=cfg.mechanic==='forbidden-seal',differenceBattle=cfg.mechanic==='h-collapse',productBattle=cfg.mechanic==='product-blades',sniperBattle=cfg.mechanic==='sniper-lock',stepBattle=cfg.mechanic==='step-lock',breakingShield=shieldBattle&&boss.shield>0,reflecting=reflectBattle&&boss.reflectCharge===1,chaosLimit=boss.phase===3?3.5:boss.phase===2?4.1:4.8,fastFusion=chaosBattle&&answerSeconds<=chaosLimit,boundaryCrossing=sideBattle&&boss.lastSide&&boss.lastSide!==q.side,completingStitch=stitchBattle&&boss.stitches===2,withinSqueezeWindow=squeezeBattle&&!boss.wallCrushed&&answerSeconds<=squeezeSafeWindow(),breakingForbiddenSeal=forbiddenBattle&&boss.orthodoxSeal===1,exposingHCore=differenceBattle&&boss.hStep===2,completingProduct=productBattle&&q.blade==='right'&&boss.leftBladeReady,firingSniper=sniperBattle&&boss.sniperLock===2,finishingStep=stepBattle&&boss.lockStep===(cfg.lockSteps||3)-1;
         if(breakingShield)boss.shield--;if(reflectBattle)boss.reflectCharge=reflecting?0:1;
         let chaosPenalty=0;if(chaosBattle){if(fastFusion){boss.splitCount=Math.max(1,boss.splitCount-1);boss.time=Math.min(boss.limit,boss.time+1)}else{boss.splitCount=Math.min(4,boss.splitCount+1);chaosPenalty=boss.splitCount;boss.time=Math.max(0,boss.time-chaosPenalty)}}
@@ -141,7 +198,17 @@
       }
     }
     function finishBossV2(cleared){
-      if(!boss.running)return;stopBossTimer();const r=api.rec(),previousBest=r.bossBestDamage||0,personalBest=boss.damage>previousBest;r.bossBestDamage=Math.max(previousBest,boss.damage);if(cleared)r.bossClears++;api.save();api.updateStats();if(api.telemetry&&bossActivePlay){api.telemetry.finishPlay(bossActivePlay.playId,{score:boss.damage,accuracy:boss.attempts?Math.round(boss.correct/boss.attempts*100):0,playTime:Math.round((boss.limit-boss.time)*10)/10,retry:bossSessionPlayIndex>1,sessionPlayIndex:bossSessionPlayIndex,personalBest});bossActivePlay=null}const monster=$('[data-boss-monster]');monster.classList.remove('boss-hit','boss-attack');if(cleared)monster.classList.add('boss-defeated');const defeatText=cfg.mechanic==='factor-shield'?'석문 붕괴':cfg.mechanic==='conjugate-reflect'?'거울 연성 해제':cfg.mechanic==='degree-grade'?'최고차항 코어 붕괴':cfg.mechanic==='chaos-split'?'혼돈 코어 융합':cfg.mechanic==='side-switch'?'경계선 절단':cfg.mechanic==='continuity-stitch'?'재생축 정지':cfg.mechanic==='squeeze-walls'?'쌍벽 분쇄':cfg.mechanic==='forbidden-seal'?'금단 문양 봉인':cfg.mechanic==='h-collapse'?'접선 코어 소멸':cfg.mechanic==='product-blades'?'쌍날 코어 절단':cfg.mechanic==='sniper-lock'?'조준선 절단':cfg.mechanic==='step-lock'?cfg.defeatText:'철갑 파괴';$('[data-boss-mood]').textContent=cleared?`${defeatText} · 승리`:'시간 종료 · 전투 기록 저장';if(cleared)$$('.boss-node').forEach(x=>x.className='boss-node done');renderBossHud();const nextLimit=currentBossV2Limit(),nextLevel=api.levels.find(level=>level.id===api.level())?.name||'기본';$('[data-boss-body]').innerHTML=`<div class="boss-result-v2"><span>${cleared?'BOSS CLEAR':'TIME OVER'}</span><strong>${boss.damage} DAMAGE</strong><p>${boss.correct}문제 정답 · 최고 데미지 ${r.bossBestDamage}</p><small>${cleared?`다음 전투 제한시간은 ${nextLimit.toFixed(0)}초입니다. 선택한 ${nextLevel} 난이도로 다시 시작합니다.`:'남은 HP '+Math.max(0,boss.hp)+' · 콤보를 유지하면 더 큰 데미지를 줄 수 있습니다.'}</small></div>`;$('[data-boss-status]').className='boss-status hidden';const start=$('[data-boss-start]');start.textContent=cleared?'더 빠른 보스 도전':'바로 다시 도전';start.classList.remove('hidden');if(window.jpMotionFeedback)window.jpMotionFeedback(cleared?'success':'info',cleared?'보스 클리어!':`${boss.damage} 데미지 · 다시 도전하세요.`)
+      if(!boss.running)return;stopBossTimer();const r=api.rec(),previousBest=r.bossBestDamage||0,personalBest=boss.damage>previousBest;r.bossBestDamage=Math.max(previousBest,boss.damage);if(cleared)r.bossClears++;api.save();api.updateStats();if(api.telemetry&&bossActivePlay){api.telemetry.finishPlay(bossActivePlay.playId,{score:boss.damage,accuracy:boss.attempts?Math.round(boss.correct/boss.attempts*100):0,playTime:Math.round((boss.limit-boss.time)*10)/10,retry:bossSessionPlayIndex>1,sessionPlayIndex:bossSessionPlayIndex,personalBest});bossActivePlay=null}const monster=$('[data-boss-monster]');monster.classList.remove('boss-hit','boss-attack');if(cleared)monster.classList.add('boss-defeated');const defeatText=cfg.mechanic==='factor-shield'?'석문 붕괴':cfg.mechanic==='conjugate-reflect'?'거울 연성 해제':cfg.mechanic==='degree-grade'?'최고차항 코어 붕괴':cfg.mechanic==='chaos-split'?'혼돈 코어 융합':cfg.mechanic==='side-switch'?'경계선 절단':cfg.mechanic==='continuity-stitch'?'재생축 정지':cfg.mechanic==='squeeze-walls'?'쌍벽 분쇄':cfg.mechanic==='forbidden-seal'?'금단 문양 봉인':cfg.mechanic==='h-collapse'?'접선 코어 소멸':cfg.mechanic==='product-blades'?'쌍날 코어 절단':cfg.mechanic==='sniper-lock'?'조준선 절단':cfg.mechanic==='step-lock'?cfg.defeatText:'철갑 파괴';$('[data-boss-mood]').textContent=cleared?`${defeatText} · 승리`:'시간 종료 · 전투 기록 저장';if(cleared)$$('.boss-node').forEach(x=>x.className='boss-node done');renderBossHud();const nextLimit=currentBossV2Limit(),nextLevel=api.levels.find(level=>level.id===api.level())?.name||'기본';/* 무결점 격파. 한 번도 틀리지 않고 이긴 사람에게만 보이는 것이라
+   따로 안내하지 않는다 — 해내면 저절로 알게 된다. */
+const flawless=cleared&&boss.attempts>0&&boss.correct===boss.attempts;
+if(flawless){
+  const stage=$('[data-boss-stage]');if(stage)stage.classList.add('boss-flawless');
+  const layer=$('[data-boss-fx]');
+  if(layer){const tag=document.createElement('s');tag.className='boss-combo-up boss-combo-awake boss-flawless-tag';
+    tag.innerHTML='<em>무결점</em><b>FLAWLESS</b>';layer.append(tag);setTimeout(()=>tag.remove(),1800)}
+}
+if(cleared&&boss.bestCombo>(r.bossBestCombo||0))r.bossBestCombo=boss.bestCombo;
+$('[data-boss-body]').innerHTML=`<div class="boss-result-v2${flawless?' boss-result-flawless':''}"><span>${flawless?'FLAWLESS CLEAR':cleared?'BOSS CLEAR':'TIME OVER'}</span><strong>${boss.damage} DAMAGE</strong><p>${boss.correct}문제 정답 · 최고 콤보 ${boss.bestCombo} · 최고 데미지 ${r.bossBestDamage}</p><small>${cleared?`다음 전투 제한시간은 ${nextLimit.toFixed(0)}초입니다. 선택한 ${nextLevel} 난이도로 다시 시작합니다.`:'남은 HP '+Math.max(0,boss.hp)+' · 콤보를 유지하면 더 큰 데미지를 줄 수 있습니다.'}</small></div>`;$('[data-boss-status]').className='boss-status hidden';const start=$('[data-boss-start]');start.textContent=cleared?'더 빠른 보스 도전':'바로 다시 도전';start.classList.remove('hidden');if(window.jpMotionFeedback)window.jpMotionFeedback(cleared?'success':'info',cleared?'보스 클리어!':`${boss.damage} 데미지 · 다시 도전하세요.`)
     }
 
     // ── 화면 ────────────────────────────────────────────────────────
@@ -180,7 +247,7 @@
     function reset() {
       stopBossTimer();
       const limit = currentBossV2Limit();
-      boss = {running:false,raf:0,time:limit,limit,hp:bossMaxHp(),maxHp:bossMaxHp(),damage:0,combo:0,correct:0,attempts:0,phase:bossStartPhase(),shield:cfg.mechanic==='factor-shield'?3:0,reflectCharge:0,attackGrade:'C',splitCount:1,nextSide:'left',targetSide:'left',lastSide:null,boundaryStreak:0,stitches:0,regenBuffer:0,healed:0,reopenOnNext:false,wallGap:100,wallCrushed:false,wallEscapes:0,orthodoxSeal:3,forbiddenPower:0,sealBreaks:0,resealOnNext:false,lastForbidden:false,hStep:0,hCoreHits:0,hResetOnNext:false,leftBladeReady:false,rightBladeReady:false,nextBlade:'left',bladePairs:0,bladesResetOnNext:false,productPair:null,sniperLock:0,sniperTarget:null,sniperShots:0,sniperResetOnNext:false,lockStep:0,lockBreaks:0,lockResetOnNext:false,questionStartedAt:0,q:null,locked:false};
+      boss = {running:false,raf:0,time:limit,limit,hp:bossMaxHp(),maxHp:bossMaxHp(),damage:0,combo:0,bestCombo:0,overdriveShown:false,correct:0,attempts:0,phase:bossStartPhase(),shield:cfg.mechanic==='factor-shield'?3:0,reflectCharge:0,attackGrade:'C',splitCount:1,nextSide:'left',targetSide:'left',lastSide:null,boundaryStreak:0,stitches:0,regenBuffer:0,healed:0,reopenOnNext:false,wallGap:100,wallCrushed:false,wallEscapes:0,orthodoxSeal:3,forbiddenPower:0,sealBreaks:0,resealOnNext:false,lastForbidden:false,hStep:0,hCoreHits:0,hResetOnNext:false,leftBladeReady:false,rightBladeReady:false,nextBlade:'left',bladePairs:0,bladesResetOnNext:false,productPair:null,sniperLock:0,sniperTarget:null,sniperShots:0,sniperResetOnNext:false,lockStep:0,lockBreaks:0,lockResetOnNext:false,questionStartedAt:0,q:null,locked:false};
       $('[data-boss-body]').innerHTML = `<div class="boss-start-copy">${startCopy()}</div>`;
       $('[data-boss-status]').className = 'boss-status hidden';
       const st = $('[data-boss-start]');
