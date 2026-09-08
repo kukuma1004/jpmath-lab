@@ -1,7 +1,12 @@
 (function(){
   'use strict';
 
+  /* 대단원 총력전 셋. 스킬 보스 스물여덟이 하나씩 잘게 쪼개져 있어
+     단원 전체를 한 번에 겨루는 자리가 없었다. 명단에서도 맨 앞에 선다. */
   const calculus=[
+    ['unit_limit','U1','극한과 연속 총력전','무한의 관문지기','여덟 갈래가 뒤섞여 나오고, 한 묶음 안에서 같은 갈래는 두 번 나오지 않는다.','여덟 보스의 얼굴이 겹쳐진 관문','#8d5aa8'],
+    ['unit_differentiate','U2','미분 총력전','도함수의 대군주','미분법과 도함수의 활용 열두 갈래를 한 자리에서 겨룬다.','열두 얼굴이 두른 도함수의 관','#1f8f82'],
+    ['unit_integral','U3','적분 총력전','누적의 대제','적분 여덟 갈래가 겹겹이 쌓여 누적을 이룬다.','여덟 겹으로 쌓인 누적의 옥좌','#76598f'],
     ['limit_factor','L01','0/0꼴 인수분해','인수분해의 문지기','공통인수를 숨기고 약분 전에는 피해를 받지 않는다.','겹쳐진 다항식 석문과 깨지는 인수 사슬','#c65a3b'],
     ['limit_rationalize','L02','0/0꼴 유리화','켤레의 연금술사','켤레식을 고르면 보호막이 반전되어 추가 피해를 받는다.','은빛 근호 가면과 서로 반대인 두 개의 수정','#d08a45'],
     ['limit_infinity_ratio','L03','∞/∞꼴 최고차항 비교','무한비의 거신','낮은 차수 공격을 흡수하고 최고차항 공격만 온전히 받는다.','무한대로 뻗는 탑과 거대한 계수 왕관','#9c7046'],
@@ -79,7 +84,7 @@
   /* 단원. 보스전 홀이 이것으로 명단을 나눈다. 코드가 이미 단원을 말하고
      있으므로(L 극한 · D 미분법 · G 도함수의 활용 · I 적분) 코드에서 읽는다.
      기하는 전부 S 라서 번호로 가른다. */
-  const CALC_UNITS={L:'극한과 연속',D:'미분법',G:'도함수의 활용',I:'적분'};
+  const CALC_UNITS={U:'대단원 총력전',L:'극한과 연속',D:'미분법',G:'도함수의 활용',I:'적분'};
   const unitOf=(subject,code)=>{
     if(subject==='calculus')return CALC_UNITS[code[0]]||'기타';
     const n=Number(code.slice(1));
@@ -91,6 +96,12 @@
      assets/bosses/thumbs/ 아래에 있고, 이름은 원본을 따른다. */
   const THUMB_DIR='../assets/bosses/thumbs/';
   const THUMBS={
+    /* 대단원 총력전은 제 그림이 없다. 전투 화면에서는 그 단원 보스들의
+       얼굴을 모아 붙이지만, 명단의 작은 타일에는 모자이크가 들어가지
+       않으므로 단원의 첫 보스 얼굴을 대표로 세운다. */
+    unit_limit:'factor-gate-guardian.webp',
+    unit_differentiate:'difference-quotient-origin.webp',
+    unit_integral:'antiderivative-collector.webp',
     limit_factor:'factor-gate-guardian.webp',
     limit_rationalize:'conjugate-alchemist.webp',
     limit_infinity_ratio:'infinite-ratio-colossus.webp',

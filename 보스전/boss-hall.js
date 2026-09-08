@@ -24,6 +24,8 @@
   setAll('[data-calculus-total]',counts.calculus);
   setAll('[data-geometry-total]',counts.geometry);
   setAll('[data-boss-playable]',playable);
+  // 단원 수도 카탈로그에서 센다. 손으로 적어 두면 단원을 더할 때 낡는다.
+  setAll('[data-unit-count]',new Set(bosses.map(x=>`${x.subject}/${x.unit}`)).size);
 
   const grid=document.querySelector('[data-boss-grid]');
   const unitBar=document.querySelector('[data-unit-bar]');

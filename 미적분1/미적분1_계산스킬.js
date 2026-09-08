@@ -45,7 +45,9 @@
     limit:{name:'극한·연속 계산',color:'#C1442D',dark:'#71301F'},
     differentiate:{name:'미분 계산',color:'#2B6CA3',dark:'#173E5E'},
     graph:{name:'도함수·그래프 실전',color:'#176B5B',dark:'#123F34'},
-    integral:{name:'적분·변화량 계산',color:'#7A4E8C',dark:'#493055'}
+    integral:{name:'적분·변화량 계산',color:'#7A4E8C',dark:'#493055'},
+    // 대단원 보스. 한 갈래의 색이 아니라 단원 전체를 두르는 색이다.
+    unit:{name:'대단원 총력전',color:'#8A5A2B',dark:'#4E3319'}
   };
   const S=(id,code,title,desc,group,tag,formula,routine,trap)=>({id,code,title,desc,group,tag,formula,routine,trap});
   const skillList=[
@@ -77,6 +79,12 @@
     S('area_between','I25','두 곡선 사이 넓이','위 함수−아래 함수의 정적분','integral','수능 실전','넓이=∫|f(x)−g(x)|dx',['두 곡선의 교점으로 구간 확인','각 구간에서 위아래 함수 판정','위−아래를 적분해 양수 넓이로 합하기'],'그래프의 위아래가 바뀌면 식의 순서도 바뀝니다.'),
     S('distance_velocity','I26','속도에서 이동거리','속도의 부호가 바뀌면 절댓값 적분','integral','수능 실전','이동거리=∫|v(t)|dt',['v(t)=0인 시각 찾기','속도의 부호가 바뀌는 구간 분할','각 구간의 변위를 절댓값으로 더하기'],'이동거리는 전체 변위의 절댓값과 다를 수 있습니다.'),
     S('fundamental_theorem','I27','정적분으로 정의된 함수','적분으로 정의된 함수의 미분','integral','수능 실전',"F(x)=∫[a→x]f(t)dt ⇒ F′(x)=f(x)",['적분의 위끝이 x인지 확인','적분 안의 변수 t를 임시 변수로 읽기','F′(x)에 위끝 x를 대입해 마무리'],'미적분Ⅱ의 합성함수 미분을 섞지 않고 위끝이 x인 경우만 다룹니다.')
+,
+    /* 대단원 보스. 스킬 보스 스물여덟은 하나씩 잘게 쪼개져 있어 짧게 붙기는
+       좋은데, 단원 전체를 한 번에 겨루는 자리가 없었다. 셋을 둔다. */
+    S('unit_limit','U1','극한과 연속 총력전','극한과 연속 여덟 스킬을 뒤섞어 겨룬다','unit','대단원','극한과 연속 전 범위',['극한과 연속의 모든 스킬이 섞여 나옵니다','한 묶음 안에서 같은 스킬은 두 번 나오지 않습니다','약한 갈래가 있으면 반드시 걸립니다'],'한 갈래만 파고들면 묶음을 못 채웁니다'),
+    S('unit_differentiate','U2','미분 총력전','미분법과 도함수의 활용 열두 스킬을 뒤섞어 겨룬다','unit','대단원','미분 전 범위',['미분의 모든 스킬이 섞여 나옵니다','한 묶음 안에서 같은 스킬은 두 번 나오지 않습니다','약한 갈래가 있으면 반드시 걸립니다'],'한 갈래만 파고들면 묶음을 못 채웁니다'),
+    S('unit_integral','U3','적분 총력전','적분 여덟 스킬을 뒤섞어 겨룬다','unit','대단원','적분 전 범위',['적분의 모든 스킬이 섞여 나옵니다','한 묶음 안에서 같은 스킬은 두 번 나오지 않습니다','약한 갈래가 있으면 반드시 걸립니다'],'한 갈래만 파고들면 묶음을 못 채웁니다')
   ];
   const skills=Object.fromEntries(skillList.map(s=>[s.id,s]));
 
@@ -688,7 +696,21 @@
 
   const levelIds=Object.keys(levelMakers);
   const hasLevels=id=>levelIds.includes(id);
+  /* 대단원 보스가 어느 스킬에서 문제를 뽑는지. 보스 설정보다 앞에 둔다 —
+     설정은 파일 아래쪽에 있어서, 문제를 만드는 쪽에서 그것을 바로 보면
+     아직 만들어지기 전이라 터진다. 설정 쪽이 이 명단을 가져다 쓴다. */
+  const UNIT_MEMBERS={
+    unit_limit:['limit_factor','limit_rationalize','limit_infinity_ratio','limit_infinity_diff','limit_one_sided','continuity_parameter','squeeze_limit','lhopital'],
+    unit_differentiate:['derivative_definition','differentiate_polynomial','product_rule','tangent_equation','monotonic_interval','extrema_sign','cubic_extrema','quartic_shape','real_roots','mean_value','motion_rate','horizontal_tangent'],
+    unit_integral:['antiderivative','initial_antiderivative','definite_integral','integral_symmetry','area_axis','area_between','distance_velocity','fundamental_theorem'],
+  };
+
   function makeQuestion(id,level=currentLevel,forcedSide=null){
+    /* 대단원 보스는 제 문제가 없다. 그 단원의 스킬에서 하나 골라 낸다.
+       보스뿐 아니라 예제·드릴·러시도 이 길로 오므로 여기서 갈라 준다 —
+       여기서 안 갈라 주면 그 탭들이 빈 기본 문제를 내놓는다. */
+    const members=UNIT_MEMBERS[id];
+    if(members)return makeQuestion(pick(members),level,forcedSide);
     const targetLevel=LEVELS.some(x=>x.id===level)?level:'basic';
     let question;
     if(targetLevel!=='basic'){
@@ -851,6 +873,9 @@
   if(!skill){const moved=excluded[requestedId];app.innerHTML=`<div class="not-found"><h1>${moved?'미적분Ⅰ에서 분리했어요.':'계산 스킬을 찾을 수 없어요.'}</h1><p>${moved?`${moved} 내용이어서 2022 개정 미적분Ⅰ 계산 지도에서는 제외했습니다.`:'미적분 스킬 지도에서 다시 선택해 주세요.'}</p><a href="index.html#skills">미적분Ⅰ 스킬 지도로 돌아가기</a></div>`;return}
   const group=groups[skill.group];
   const BOSS_V2_CONFIGS={
+    unit_limit:{name:'무한의 관문지기',theme:'unit',mosaic:['../assets/bosses/thumbs/factor-gate-guardian.webp','../assets/bosses/thumbs/conjugate-alchemist.webp','../assets/bosses/thumbs/infinite-ratio-colossus.webp','../assets/bosses/thumbs/indeterminate-chaos-beast.webp','../assets/bosses/thumbs/two-faced-boundary-warden.webp','../assets/bosses/thumbs/continuity-stitcher.webp','../assets/bosses/thumbs/squeeze-twin-walls.webp','../assets/bosses/thumbs/forbidden-differentiation-warlock.webp'],art:'../assets/bosses/thumbs/factor-gate-guardian.webp',alt:'극한과 연속 보스 8종이 하나로 뭉친 무한의 관문지기',accent:'#8d5aa8',hp:4200,baseTime:100,minTime:70,baseDamage:230,mechanic:'step-lock',lockLabel:'관문',lockSteps:4,tapDamage:110,finishMultiplier:3,finishText:'여덟 관문 관통!',breakText:'관문 재봉인 · 처음부터',moodStart:'관문 4단계 · 0/4',defeatText:'여덟 관문 관통',unitOf:UNIT_MEMBERS.unit_limit,gameId:'calculus-unit-boss-limit',intro:'극한과 연속 8개 스킬이 뒤섞여 나옵니다. 관문을 4단계까지 끊지 않고 통과해야 본체에 닿습니다.',start:'4문제를 연속으로 맞히면 마지막 한 방이 마무리 공격이 됩니다. 한 묶음 안에서 같은 스킬은 두 번 나오지 않으므로 약한 갈래가 있으면 반드시 걸립니다. 한 번이라도 틀리면 관문이 처음으로 돌아가고 시간 3초를 잃습니다.'},
+    unit_differentiate:{name:'도함수의 대군주',theme:'unit',mosaic:['../assets/bosses/thumbs/difference-quotient-origin.webp','../assets/bosses/thumbs/derivative-iron-beast.webp','../assets/bosses/thumbs/twin-blade-product-fiend.webp','../assets/bosses/thumbs/tangent-sniper.webp','../assets/bosses/thumbs/monotonic-interval-patrol-warden.webp','../assets/bosses/thumbs/turning-point-shapeshifter.webp','../assets/bosses/thumbs/discriminant-tri-dragon.webp','../assets/bosses/thumbs/quartic-peak-king.webp','../assets/bosses/thumbs/intersection-lord.webp','../assets/bosses/thumbs/mean-value-tracker.webp','../assets/bosses/thumbs/acceleration-rampage-steed.webp','../assets/bosses/thumbs/horizontal-tangent-hunter.webp'],art:'../assets/bosses/thumbs/difference-quotient-origin.webp',alt:'미분 보스 12종이 하나로 뭉친 도함수의 대군주',accent:'#1f8f82',hp:4200,baseTime:100,minTime:70,baseDamage:230,mechanic:'step-lock',lockLabel:'봉인',lockSteps:4,tapDamage:110,finishMultiplier:3,finishText:'열두 봉인 절단!',breakText:'봉인 복원 · 처음부터',moodStart:'봉인 4단계 · 0/4',defeatText:'열두 봉인 절단',unitOf:UNIT_MEMBERS.unit_differentiate,gameId:'calculus-unit-boss-differentiate',intro:'미분 12개 스킬이 뒤섞여 나옵니다. 봉인을 4단계까지 끊지 않고 통과해야 본체에 닿습니다.',start:'4문제를 연속으로 맞히면 마지막 한 방이 마무리 공격이 됩니다. 한 묶음 안에서 같은 스킬은 두 번 나오지 않으므로 약한 갈래가 있으면 반드시 걸립니다. 한 번이라도 틀리면 봉인이 처음으로 돌아가고 시간 3초를 잃습니다.'},
+    unit_integral:{name:'누적의 대제',theme:'unit',mosaic:['../assets/bosses/thumbs/antiderivative-collector.webp','../assets/bosses/thumbs/constant-seal-keeper.webp','../assets/bosses/thumbs/interval-judge.webp','../assets/bosses/thumbs/symmetric-integral-mirror-king.webp','../assets/bosses/thumbs/absolute-value-tailor.webp','../assets/bosses/thumbs/crossing-region-devourer.webp','../assets/bosses/thumbs/velocity-accumulation-runner.webp','../assets/bosses/thumbs/calculus-gatekeeper.webp'],art:'../assets/bosses/thumbs/antiderivative-collector.webp',alt:'적분 보스 8종이 하나로 뭉친 누적의 대제',accent:'#76598f',hp:4200,baseTime:100,minTime:70,baseDamage:230,mechanic:'step-lock',lockLabel:'누적',lockSteps:4,tapDamage:110,finishMultiplier:3,finishText:'여덟 겹 누적 붕괴!',breakText:'누적 재시작 · 처음부터',moodStart:'누적 4단계 · 0/4',defeatText:'여덟 겹 누적 붕괴',unitOf:UNIT_MEMBERS.unit_integral,gameId:'calculus-unit-boss-integral',intro:'적분 8개 스킬이 뒤섞여 나옵니다. 누적을 4단계까지 끊지 않고 통과해야 본체에 닿습니다.',start:'4문제를 연속으로 맞히면 마지막 한 방이 마무리 공격이 됩니다. 한 묶음 안에서 같은 스킬은 두 번 나오지 않으므로 약한 갈래가 있으면 반드시 걸립니다. 한 번이라도 틀리면 누적이 처음으로 돌아가고 시간 3초를 잃습니다.'},
     limit_factor:{name:'인수분해의 문지기',theme:'factor',art:'../assets/bosses/factor-gate-guardian.jpg',alt:'공통인수 코어와 석문 갑옷을 지닌 인수분해의 문지기',hp:2100,baseTime:42,minTime:28,baseDamage:190,mechanic:'factor-shield',gameId:'calculus-skill-boss-limit-factor',intro:'공통인수를 찾아 석문 보호막을 먼저 깨세요. 페이즈가 바뀌면 보호막이 다시 닫히며, 오답은 보호막 한 칸을 복구합니다.',start:'정답으로 보호막 3칸을 깨면 공통인수 코어가 열립니다. 열린 동안 콤보 공격으로 큰 피해를 주세요.'},
     limit_rationalize:{name:'켤레의 연금술사',theme:'conjugate',art:'../assets/bosses/conjugate-alchemist.jpg',alt:'은빛과 금빛 켤레 수정을 든 네 팔의 켤레의 연금술사',hp:2300,baseTime:40,minTime:26,baseDamage:185,mechanic:'conjugate-reflect',gameId:'calculus-skill-boss-limit-rationalize',intro:'정답으로 은빛·금빛 거울을 차례로 충전하세요. 두 거울이 모두 켜지면 켤레 반사가 발동해 큰 피해가 들어가고, 오답이면 충전이 사라지며 시간 3초를 빼앗깁니다.',start:'첫 정답은 거울을 충전하고 두 번째 연속 정답은 켤레 반사 공격이 됩니다. 두 문제씩 정확하게 연결하는 것이 핵심입니다.'},
     limit_infinity_ratio:{name:'무한비의 거신',theme:'ratio',art:'../assets/bosses/infinite-ratio-colossus.jpg',alt:'끝없이 높아지는 탑 왕관과 비율 코어를 지닌 무한비의 거신',hp:1900,baseTime:45,minTime:29,baseDamage:210,mechanic:'degree-grade',gameId:'calculus-skill-boss-limit-infinity-ratio',intro:'기본 문제는 거신의 하위 차수 갑옷에 막혀 피해가 줄어듭니다. 페이즈가 올라가 응용·심화 문제를 해결하면 B·A등급 최고차항 관통 공격이 들어갑니다.',start:'C등급 공격은 55%, B등급은 100%, A등급은 180% 피해입니다. 강해지는 문제를 정확히 해결해 공격 등급을 올리세요.'},
@@ -937,8 +962,30 @@
   // 문제 생성기들이 이 이름으로 전투 상태를 읽는다. 실제 상태는 엔진이 갖고,
   // 문제를 만들 때마다 엔진이 넘겨주는 것을 여기에 받아 둔다.
   let boss={};
+  /* 대단원 보스는 한 묶음 안에서 같은 스킬을 두 번 내지 않는다.
+     한 갈래만 파고든 학생이 통과하지 못하게 하려는 것이다. */
+  let unitSeen=[];
+  function pickUnitSkill(list,state){
+    if((state.lockStep||0)===0)unitSeen=[];
+    const left=list.filter(x=>!unitSeen.includes(x));
+    const from=left.length?left:list;
+    const chosen=from[Math.floor(Math.random()*from.length)];
+    unitSeen.push(chosen);
+    return chosen;
+  }
+
   function makeBossQuestion(level,state){
-    boss=state;                                   // 생성기들이 이 이름으로 읽는다
+    boss=state;
+    if(bossConfig&&bossConfig.unitOf){
+      const id=pickUnitSkill(bossConfig.unitOf,state);
+      const q=makeQuestion(id,level);
+      /* 어느 갈래에서 나온 문제인지 물음 앞에 달아 준다. 무대의 머리글은
+         엔진이 만들므로 q.type 을 고쳐도 화면에 안 나온다. 물음은 페이지
+         것이라 여기서 붙일 수 있다. 틀린 뒤 어디를 다시 볼지 알게 된다. */
+      const from=skills[id];
+      if(from)q.prompt=`[${from.code} ${from.title}] ${q.prompt}`;
+      return q;
+    }                                   // 생성기들이 이 이름으로 읽는다
     const m=bossConfig.mechanic;
     if(m==='sniper-lock')return makeSniperQuestion(level);
     if(m==='forbidden-seal')return makeForbiddenQuestion(level);

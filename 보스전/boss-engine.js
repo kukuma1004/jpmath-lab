@@ -217,7 +217,13 @@ $('[data-boss-body]').innerHTML=`<div class="boss-result-v2${flawless?' boss-res
     const bossDifficultyCopy = cfg?.mechanic==='degree-grade'?'난도 상승: <b>기본 → 응용 → 심화</b>':'선택 난이도 <b>고정</b> · 전투 단계만 상승';
     const initialBossStateLabel = cfg?.mechanic==='factor-shield'?'SHIELD':cfg?.mechanic==='conjugate-reflect'?'MIRROR':cfg?.mechanic==='degree-grade'?'GRADE':cfg?.mechanic==='chaos-split'?'BODIES':cfg?.mechanic==='side-switch'?'방향':cfg?.mechanic==='continuity-stitch'?'봉합':cfg?.mechanic==='squeeze-walls'?'벽 간격':cfg?.mechanic==='forbidden-seal'?'정석 봉인':cfg?.mechanic==='h-collapse'?'h 거리':cfg?.mechanic==='product-blades'?'쌍날':cfg?.mechanic==='sniper-lock'?'조준':cfg?.mechanic==='step-lock'?cfg.lockLabel:'PHASE';
     const initialBossStateValue = cfg?.mechanic==='factor-shield'?3:cfg?.mechanic==='conjugate-reflect'?'0/2':cfg?.mechanic==='degree-grade'?'C':cfg?.mechanic==='side-switch'?'← 좌':cfg?.mechanic==='continuity-stitch'?'0/3':cfg?.mechanic==='squeeze-walls'?'100%':cfg?.mechanic==='forbidden-seal'?'3/3':cfg?.mechanic==='h-collapse'?'1':cfg?.mechanic==='product-blades'?'좌 대기':cfg?.mechanic==='sniper-lock'?'0/2':cfg?.mechanic==='step-lock'?`0/${cfg.lockSteps}`:1;
-    const bossPicture = true&&cfg.mobileArt?`<picture class="boss-art-picture"><source media="(max-width:700px)" srcset="${cfg.mobileArt}"><img class="boss-art" src="${cfg.art}" alt="${cfg.alt}"></picture>`:true?`<img class="boss-art" src="${cfg.art}" alt="${cfg.alt}">`:'';
+    /* 대단원 보스는 제 그림이 따로 없다. 그 단원 보스들의 얼굴을 모아
+       초상으로 쓴다 — 여럿이 하나로 뭉쳤다는 뜻이 그대로 그림이 된다. */
+    const bossPicture = cfg.mosaic&&cfg.mosaic.length
+      ?`<div class="boss-art-mosaic" role="img" aria-label="${cfg.alt}">`
+        +cfg.mosaic.map(src=>`<i style="background-image:url('${src}')"></i>`).join('')
+        +'</div>'
+      : true&&cfg.mobileArt?`<picture class="boss-art-picture"><source media="(max-width:700px)" srcset="${cfg.mobileArt}"><img class="boss-art" src="${cfg.art}" alt="${cfg.alt}"></picture>`:true?`<img class="boss-art" src="${cfg.art}" alt="${cfg.alt}">`:'';
     const bossVisual = true?`<div class="boss-art-frame">${bossPicture}</div>`:'<svg class="boss-creature" viewBox="0 0 240 190" role="img" aria-hidden="true"><path class="boss-wing" d="M73 73C36 44 16 62 27 91c8 22 29 30 52 27M167 73c37-29 57-11 46 18-8 22-29 30-52 27"/><path class="boss-horn" d="M86 50 63 16l42 23M154 50l23-34-42 23"/><path class="boss-body-shape" d="M120 34c-45 0-70 31-64 75 5 39 27 64 64 64s59-25 64-64c6-44-19-75-64-75Z"/><path class="boss-mask" d="M76 78c29-17 59-17 88 0l-11 47c-22 17-44 17-66 0Z"/><path class="boss-eye" d="m88 87 23 8-25 7Zm64 0-23 8 25 7Z"/><path class="boss-core" d="m120 117 13 18-13 15-13-15Z"/></svg>';
 
     function startCopy() {

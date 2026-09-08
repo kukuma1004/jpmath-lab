@@ -543,3 +543,16 @@
   .boss-shake,.boss-shake-hard,.boss-overdrive .boss-arena{animation:none}
   .boss-burst{display:none}
 }
+
+/* 대단원 보스의 초상.
+
+   제 그림이 따로 없어서 그 단원 보스들의 얼굴을 격자로 깐다.
+   여럿이 하나로 뭉쳤다는 뜻이 그대로 그림이 된다. */
+.boss-art-mosaic{display:grid;width:100%;height:100%;gap:1px;grid-template-columns:repeat(4,1fr);background:#0e1b17;border-radius:inherit;overflow:hidden}
+.boss-art-mosaic i{display:block;background-size:cover;background-position:center;filter:saturate(.9) contrast(1.05) brightness(.86)}
+.boss-art-mosaic i:nth-child(odd){filter:saturate(.85) contrast(1.05) brightness(.94)}
+/* 가운데를 살짝 밝혀 얼굴 무리가 하나의 덩어리로 읽히게 한다 */
+.boss-art-mosaic::after{position:absolute;inset:0;background:radial-gradient(circle at 50% 45%,transparent 30%,rgba(6,16,13,.55));content:'';pointer-events:none}
+.boss-art-frame:has(.boss-art-mosaic){position:relative}
+.boss-overdrive .boss-art-mosaic i{filter:saturate(1.15) contrast(1.08) brightness(1)}
+@media(max-width:700px){.boss-art-mosaic{grid-template-columns:repeat(3,1fr)}}

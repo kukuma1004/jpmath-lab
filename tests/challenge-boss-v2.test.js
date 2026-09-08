@@ -40,7 +40,7 @@ assert.match(bossHall, /data-boss-grid/, '명단은 카탈로그에서 만들어
 }
 
 assert.match(skillHtml, /jp-game-telemetry\.js\?v=2/);
-assert.match(skillHtml, /미적분1_계산스킬\.js\?v=26/);
+assert.match(skillHtml, /미적분1_계산스킬\.js\?v=29/);
 assert.match(skillHtml, /미적분1_계산스킬\.css\?v=26/);
 assert.match(skillJs, /differentiate_polynomial:\{name:'미분의 철갑수'/);
 assert.match(skillJs, /limit_factor:\{name:'인수분해의 문지기'/);
