@@ -37,7 +37,11 @@
     ['fundamental_theorem','I27','정적분으로 정의된 함수','미적분의 문지기','미분과 적분 공격을 번갈아 써야 최종 관문이 열린다.','미분 칼날과 적분 방패를 든 최종 수호자','#674d8e']
   ];
 
+  /* 대단원 총력전 셋. 명단에서도 맨 앞에 선다. */
   const geometry=[
+    ['unit_conic','U4','이차곡선 총력전','삼곡선의 지배자','열두 갈래가 뒤섞여 나오고, 한 묶음 안에서 같은 갈래는 두 번 나오지 않는다.','열두 얼굴이 겹쳐진 세 곡선의 왕좌','#7557A8'],
+    ['unit_space','U5','공간도형 총력전','공간의 대측량사','위치 관계·삼수선·정사영·공간좌표 열한 갈래를 한 자리에서 겨룬다.','열한 얼굴이 세운 측량탑','#2B6CA3'],
+    ['unit_vector','U6','벡터 총력전','벡터의 총사령','연산·성분·내적·직선과 평면 열세 갈래가 한 진형을 이룬다.','열세 얼굴이 늘어선 벡터 진형','#176B5B'],
     ['parabola_form','S01','포물선 표준형과 방향','포물선의 나침수','제곱된 변수를 읽을 때마다 열리는 방향이 고정된다.','네 방향으로 회전하는 포물선 나침반','#8b5db1'],
     ['parabola_focus','S02','포물선 초점·준선 역산','초점과 준선의 쌍둥이','초점과 준선을 반대편에 동시에 맞혀야 합체 보호막이 깨진다.','빛나는 초점 쌍둥이와 직선 방패','#9564b5'],
     ['parabola_point','S03','포물선 위 점의 조건','좌표대입의 추적자','곡선 위 가짜 좌표를 섞어 약점을 이동시킨다.','포물선을 달리는 좌표 표식 사냥수','#7455a1'],
@@ -86,6 +90,8 @@
      기하는 전부 S 라서 번호로 가른다. */
   const CALC_UNITS={U:'대단원 총력전',L:'극한과 연속',D:'미분법',G:'도함수의 활용',I:'적분'};
   const unitOf=(subject,code)=>{
+    // U 로 시작하는 것은 과목을 가리지 않고 대단원 총력전이다
+    if(code[0]==='U')return '대단원 총력전';
     if(subject==='calculus')return CALC_UNITS[code[0]]||'기타';
     const n=Number(code.slice(1));
     return n<=12?'이차곡선':n<=23?'공간도형과 공간좌표':'벡터';
@@ -102,6 +108,9 @@
     unit_limit:'factor-gate-guardian.webp',
     unit_differentiate:'difference-quotient-origin.webp',
     unit_integral:'antiderivative-collector.webp',
+    unit_conic:'parabola-compass-beast.webp',
+    unit_space:'skew-lines-wanderer.webp',
+    unit_vector:'vector-composition-beast.webp',
     limit_factor:'factor-gate-guardian.webp',
     limit_rationalize:'conjugate-alchemist.webp',
     limit_infinity_ratio:'infinite-ratio-colossus.webp',

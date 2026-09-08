@@ -66,7 +66,11 @@ function geoIds() {
   const s = js.indexOf('  const BOSS_V2_CONFIGS={');
   const e = js.indexOf('\n  };', s) + 4;
   const ctx = { CONFIGS: null };
-  vm.runInNewContext(js.slice(s, e).replace('const BOSS_V2_CONFIGS=', 'CONFIGS='), ctx);
+  // 설정이 대단원 명단(UNIT_MEMBERS)을 가져다 쓰므로 그것부터 읽어 둔다
+  const um = js.indexOf('  const UNIT_MEMBERS={');
+  const ume = um < 0 ? 0 : js.indexOf('\n  };', um) + 4;
+  vm.runInNewContext((um < 0 ? '' : js.slice(um, ume) + '\n')
+    + js.slice(s, e).replace('const BOSS_V2_CONFIGS=', 'CONFIGS='), ctx);
   return Object.keys(ctx.CONFIGS);
 }
 

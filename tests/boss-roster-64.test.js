@@ -8,13 +8,14 @@ vm.runInNewContext(source,context);
 const catalog=context.window.JPBossCatalog;
 
 assert.ok(catalog,'보스 카탈로그가 전역에 공개되어야 한다.');
-/* 스킬 보스 64종(미적분 28 + 기하 36)에 미적분 대단원 총력전 3종을 더해 67종.
-   대단원은 제 문제를 갖지 않고 그 단원 스킬에서 뽑아 낸다. */
-assert.equal(catalog.total,67,'보스는 스킬 64종과 미적분 대단원 3종, 모두 67종이어야 한다.');
+/* 스킬 보스 64종(미적분 28 + 기하 36)에 대단원 총력전 6종(과목마다 3종)을
+   더해 70종. 대단원은 제 문제를 갖지 않고 그 단원 스킬에서 뽑아 낸다. */
+assert.equal(catalog.total,70,'보스는 스킬 64종과 대단원 6종, 모두 70종이어야 한다.');
 assert.equal(catalog.bosses.filter(x=>x.subject==='calculus').length,31);
-assert.equal(catalog.bosses.filter(x=>x.subject==='geometry').length,36);
-assert.equal(new Set(catalog.bosses.map(x=>x.id)).size,67,'보스 ID는 중복되면 안 된다.');
-assert.equal(new Set(catalog.bosses.map(x=>x.name)).size,67,'보스 이름은 모두 달라야 한다.');
+assert.equal(catalog.bosses.filter(x=>x.subject==='geometry').length,39);
+assert.equal(new Set(catalog.bosses.map(x=>x.id)).size,70,'보스 ID는 중복되면 안 된다.');
+assert.equal(new Set(catalog.bosses.map(x=>x.name)).size,70,'보스 이름은 모두 달라야 한다.');
+assert.equal(new Set(catalog.bosses.map(x=>x.code)).size,70,'보스 코드도 겹치면 안 된다.');
 
 for(const boss of catalog.bosses){
   for(const field of ['id','subject','skillId','code','skillTitle','name','mechanic','visual','palette','href']){
@@ -23,7 +24,7 @@ for(const boss of catalog.bosses){
 }
 
 const playable=catalog.bosses.filter(x=>x.status==='playable');
-assert.equal(playable.length, 67, '67종이 모두 실제로 플레이 가능해야 한다.');
+assert.equal(playable.length, 70, '70종이 모두 실제로 플레이 가능해야 한다.');
 // 도전 가능 목록은 카탈로그가 진실이다. 이름을 손으로 옮겨 적으면
 // 보스를 더할 때마다 어긋나므로, 64종 전체와 견준다.
 assert.deepEqual([...playable.map(x=>x.name)].sort(),[...catalog.bosses.map(x=>x.name)].sort(),'64종이 모두 도전 가능해야 한다.');
@@ -33,8 +34,8 @@ const hallCss=fs.readFileSync('보스전/boss-hall.css','utf8');
 // 모바일 조종석 스타일은 두 페이지가 나눠 쓰는 공용 파일에 있다.
 const calcCss=fs.readFileSync('보스전/boss-engine.css','utf8');
 const engineJs=fs.readFileSync('보스전/boss-engine.js','utf8');
-assert.match(hall,/boss-catalog\.js\?v=17/);
-assert.match(hall,/boss-hall\.js\?v=3/);
+assert.match(hall,/boss-catalog\.js\?v=18/);
+assert.match(hall,/boss-hall\.js\?v=4/);
 assert.match(hall,/data-unit-count/,'단원 수도 카탈로그에서 채워야 한다.');
 assert.match(hall,/boss-hall\.css\?v=4/);
 // 전투 가능 수는 카탈로그에서 채우므로 페이지에 손으로 적지 않는다.
@@ -77,10 +78,11 @@ for(const boss of catalog.bosses){
   assert.ok(boss.unit,`${boss.id}에 단원이 없다. 홀이 단원으로 명단을 나눈다.`);
 }
 const units=[...new Set(catalog.bosses.map(x=>`${x.subject}/${x.unit}`))];
-assert.equal(units.length,8,'단원은 미적분 5개(대단원 포함)와 기하 3개, 모두 여덟이어야 한다.');
+assert.equal(units.length,9,'단원은 과목마다 대단원 하나씩을 더해 모두 아홉이어야 한다.');
 for(const [subject,unit,n] of [
   ['calculus','대단원 총력전',3],
   ['calculus','극한과 연속',8],['calculus','미분법',4],['calculus','도함수의 활용',8],['calculus','적분',8],
+  ['geometry','대단원 총력전',3],
   ['geometry','이차곡선',12],['geometry','공간도형과 공간좌표',11],['geometry','벡터',13]
 ]){
   assert.equal(catalog.bosses.filter(x=>x.subject===subject&&x.unit===unit).length,n,`${unit}은 ${n}종이어야 한다.`);
@@ -112,54 +114,88 @@ assert.ok(fs.existsSync('assets/bosses/twin-blade-product-fiend-mobile.jpg'),'�
 assert.ok(fs.existsSync('assets/bosses/tangent-sniper.jpg'),'접선의 저격수 캐릭터 이미지가 있어야 한다.');
 assert.ok(fs.existsSync('assets/bosses/tangent-sniper-mobile.jpg'),'접선의 저격수 모바일 초상 이미지가 있어야 한다.');
 
-/* 미적분 대단원 총력전.
+/* 대단원 총력전.
 
-   스킬 보스 스물여덟은 하나씩 잘게 쪼개져 있어 짧게 붙기는 좋은데 단원
-   전체를 한 번에 겨루는 자리가 없었다. 셋을 두었다. 제 그림이 따로 없어서
+   스킬 보스는 하나씩 잘게 쪼개져 있어 짧게 붙기는 좋은데 단원 전체를 한
+   자리에서 겨루는 곳이 없었다. 과목마다 셋씩 두었다. 제 그림이 따로 없어서
    그 단원 보스들의 얼굴을 모아 초상으로 쓴다. */
 {
-  const calcJs = fs.readFileSync('미적분1/미적분1_계산스킬.js','utf8').replace(/\r\n/g,'\n');
-  const um = calcJs.indexOf('  const UNIT_MEMBERS={');
-  const ume = calcJs.indexOf('\n  };', um) + 4;
-  const cs = calcJs.indexOf('  const BOSS_V2_CONFIGS={');
-  const ce = calcJs.indexOf('\n  };', cs) + 4;
-  assert.ok(um > 0 && cs > 0, '대단원 명단과 보스 설정이 있어야 한다.');
-  /* 명단이 설정보다 앞에 있어야 한다. 문제를 만드는 쪽이 설정을 바로 보면
-     아직 만들어지기 전이라 터진다 — 실제로 그렇게 한 번 깨졌다. */
-  assert.ok(um < cs, '대단원 명단은 보스 설정보다 앞에 있어야 한다.');
-  const box = {CONFIGS:null};
-  vm.runInNewContext(calcJs.slice(um,ume) + '\n'
-    + calcJs.slice(cs,ce).replace('const BOSS_V2_CONFIGS=','CONFIGS='), box);
+  const read = (p) => fs.readFileSync(p,'utf8').replace(/\r\n/g,'\n');
 
-  // 스킬 묶음이 진실이다. 손으로 옮겨 적으면 스킬을 더할 때 어긋난다.
-  const skills = [...calcJs.matchAll(/S\('([a-z_]+)','([A-Z][0-9]+)',(?:'[^']*'|"[^"]*"),(?:'[^']*'|"[^"]*"),'([a-z]+)'/g)]
-    .map(m => ({id:m[1], group:m[3]}));
-  const inGroup = g => skills.filter(x => x.group === g).map(x => x.id);
-  const UNITS = {
-    unit_limit: ['limit'],
-    unit_differentiate: ['differentiate','graph'],
-    unit_integral: ['integral']
+  // 단원 명단과 보스 설정을 함께 실행해 실제 값으로 본다
+  const loadConfigs = (js, label) => {
+    const um = js.indexOf('  const UNIT_MEMBERS={');
+    const ume = js.indexOf('\n  };', um) + 4;
+    const cs = js.indexOf('  const BOSS_V2_CONFIGS={');
+    const ce = js.indexOf('\n  };', cs) + 4;
+    assert.ok(um > 0 && cs > 0, `${label}: 대단원 명단과 보스 설정이 있어야 한다.`);
+    /* 명단이 설정보다 앞에 있어야 한다. 설정이 명단을 가져다 쓰므로 순서가
+       뒤집히면 페이지가 통째로 안 뜬다 — 두 과목 모두 그렇게 한 번 깨졌다. */
+    assert.ok(um < cs, `${label}: 대단원 명단은 보스 설정보다 앞에 있어야 한다.`);
+    const box = {CONFIGS:null};
+    vm.runInNewContext(js.slice(um,ume) + '\n'
+      + js.slice(cs,ce).replace('const BOSS_V2_CONFIGS=','CONFIGS='), box);
+    return box.CONFIGS;
   };
-  for (const [id, gs] of Object.entries(UNITS)) {
-    const cfg = box.CONFIGS[id];
-    assert.ok(cfg, `${id} 설정이 없다.`);
-    const want = gs.flatMap(inGroup);
-    assert.deepEqual([...cfg.unitOf].sort(), [...want].sort(),
-      `${cfg.name}이 뽑는 스킬이 단원과 다르다.`);
-    assert.equal(cfg.mosaic.length, want.length,
-      `${cfg.name}의 얼굴 수가 스킬 수와 다르다.`);
-    for (const t of cfg.mosaic) {
-      assert.ok(fs.existsSync(t.replace('../','')), `얼굴 그림이 없다: ${t}`);
-    }
-    // 단원 보스는 스킬 보스보다 길고 무거워야 한다
-    assert.ok(cfg.hp >= 4000, `${cfg.name}의 체력이 스킬 보스와 다를 바 없다.`);
-    assert.ok(cfg.lockSteps >= 4, `${cfg.name}의 묶음이 너무 짧다.`);
-    // 홀에도 올라와 있어야 한다
-    const inHall = catalog.bosses.find(x => x.skillId === id);
-    assert.ok(inHall, `${cfg.name}이 보스전 홀에 없다.`);
-    assert.equal(inHall.unit, '대단원 총력전', `${cfg.name}은 대단원으로 묶여야 한다.`);
+
+  const calcJs = read('미적분1/미적분1_계산스킬.js');
+  const geoJs = read('기하/기하_내신스킬.js');
+
+  /* 스킬 묶음이 진실이다. 손으로 옮겨 적으면 스킬을 더할 때 어긋난다.
+     미적분은 S(...) 로, 기하는 defs 의 배열로 적혀 있다. */
+  const calcGroup = {};
+  for (const m of calcJs.matchAll(/S\('([a-z_]+)','([A-Z][0-9]+)',(?:'[^']*'|"[^"]*"),(?:'[^']*'|"[^"]*"),'([a-z]+)'/g)) {
+    (calcGroup[m[3]] = calcGroup[m[3]] || []).push(m[1]);
   }
+  const geoGroup = {};
+  for (const m of geoJs.matchAll(/^ {4}\['([a-z_]+)','([a-z]+)','(S[0-9]+)'/gm)) {
+    (geoGroup[m[2]] = geoGroup[m[2]] || []).push(m[1]);
+  }
+
+  const CASES = [
+    ['미적분', loadConfigs(calcJs,'미적분'), calcGroup, {
+      unit_limit: ['limit'],
+      unit_differentiate: ['differentiate','graph'],
+      unit_integral: ['integral']
+    }],
+    ['기하', loadConfigs(geoJs,'기하'), geoGroup, {
+      unit_conic: ['conic'],
+      unit_space: ['space'],
+      unit_vector: ['vector']
+    }]
+  ];
+
+  let seen = 0;
+  for (const [label, CFG, groups, UNITS] of CASES) {
+    for (const [id, gs] of Object.entries(UNITS)) {
+      const cfg = CFG[id];
+      assert.ok(cfg, `${label} ${id} 설정이 없다.`);
+      const want = gs.flatMap(g => groups[g] || []);
+      assert.ok(want.length, `${label} ${id}: 단원에 스킬이 없다.`);
+      assert.deepEqual([...cfg.unitOf].sort(), [...want].sort(),
+        `${cfg.name}이 뽑는 스킬이 단원과 다르다.`);
+      assert.equal(cfg.mosaic.length, want.length,
+        `${cfg.name}의 얼굴 수가 스킬 수와 다르다.`);
+      for (const t of cfg.mosaic) {
+        assert.ok(fs.existsSync(t.replace('../','')), `얼굴 그림이 없다: ${t}`);
+      }
+      // 대단원은 스킬 보스보다 길고 무거워야 한다
+      assert.ok(cfg.hp >= 4000, `${cfg.name}의 체력이 스킬 보스와 다를 바 없다.`);
+      assert.ok(cfg.lockSteps >= 4, `${cfg.name}의 묶음이 너무 짧다.`);
+      // 홀에도 올라와 있어야 한다
+      const inHall = catalog.bosses.find(x => x.skillId === id);
+      assert.ok(inHall, `${cfg.name}이 보스전 홀에 없다.`);
+      assert.equal(inHall.unit, '대단원 총력전', `${cfg.name}은 대단원으로 묶여야 한다.`);
+      seen += 1;
+    }
+  }
+  assert.equal(seen, 6, '대단원은 과목마다 셋씩 모두 여섯이어야 한다.');
+
+  /* 한 묶음 안에서 같은 스킬을 두 번 내지 않는 것이 대단원의 핵심이다.
+     이것이 빠지면 한 갈래만 판 학생도 통과한다. */
+  assert.match(calcJs, /pickUnitSkill/, '미적분 대단원이 같은 갈래를 두 번 내면 안 된다.');
+  assert.match(geoJs, /makeUnitAwareQuestion/, '기하 대단원이 같은 갈래를 두 번 내면 안 된다.');
   assert.match(engineJs, /cfg\.mosaic/, '엔진이 모아 붙인 초상을 그릴 줄 알아야 한다.');
 }
 
-console.log('67 boss roster and mobile cockpit tests: ok');
+console.log('70 boss roster and mobile cockpit tests: ok');

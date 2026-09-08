@@ -12,6 +12,9 @@
   const diffTriples=[[[1,2,2],3],[[2,3,6],7],[[2,6,9],11],[[4,4,7],9]];
   const projectionValue=(L,a)=>a===0?String(L):a===60?String(L/2):a===30?(L===2?'√3':`${L/2}√3`):(L===2?'√2':`${L/2}√2`);
   const groupTraps={
+    /* 대단원 총력전. 한 갈래가 아니라 단원 전체를 오가며 푸는 자리라,
+       흔히 걸리는 것도 갈래 사이를 건널 때 생긴다. */
+    unit:[['앞 문제의 틀을 그대로 적용','갈래가 바뀌면 쓰는 공식도 바뀝니다. 무엇을 묻는지 먼저 읽으세요.'],['약한 갈래를 미뤄 두기','한 묶음 안에서 같은 갈래는 두 번 나오지 않아 약한 곳이 반드시 걸립니다.'],['부호와 순서를 눈으로만 확인','섞여 나올수록 종점−시점, 큰 분모, 절댓값 같은 기본을 손으로 짚어야 합니다.']],
     conic:[['제곱과 길이 혼동','분모 a²와 실제 길이 a를 구분하세요.'],['부호를 한 종류로 암기','타원은 빼기, 쌍곡선은 더하기 관계입니다.'],['축 방향 확인 생략','큰 분모 또는 제곱된 변수로 열린 방향을 먼저 확인하세요.']],
     space:[['그림의 모양만 믿기','공간 그림의 평행·수직은 조건과 정리로 판단해야 합니다.'],['좌표 차를 제곱하지 않기','공간거리도 각 좌표 차를 제곱해 더합니다.'],['각도의 기준 혼동','정사영에서는 원래 도형과 투영면 사이의 각을 확인하세요.']],
     vector:[['종점−시점 순서 반대','AB벡터는 반드시 B의 좌표에서 A의 좌표를 뺍니다.'],['성분별 계산 누락','x, y, z 성분을 같은 자리끼리 계산하세요.'],['방향과 위치 혼동','기준점과 방향벡터는 서로 다른 역할을 합니다.']]
@@ -141,7 +144,19 @@
      맞히면 마지막 한 방이 마무리 공격이 되고, 틀리면 처음으로 돌아간다.
      이름·규칙·대표색은 보스전/boss-catalog.js 를, 그림은
      assets/bosses/boss-image-manifest.json 을 따른다. */
+  /* 대단원 보스가 어느 스킬에서 문제를 뽑는지. 보스 설정보다 앞에 둔다 —
+     설정은 파일 아래쪽에 있어서, 문제를 만드는 쪽에서 그것을 바로 보면
+     아직 만들어지기 전이라 터진다. 설정 쪽이 이 명단을 가져다 쓴다. */
+  const UNIT_MEMBERS={
+    unit_conic:['parabola_form','parabola_focus','parabola_point','ellipse_abc','ellipse_distance','ellipse_equation','hyperbola_abc','hyperbola_asymptote','hyperbola_distance','tangent_parabola','tangent_ellipse','tangent_hyperbola'],
+    unit_space:['relation_lines','relation_line_plane','relation_planes','threeperp_conclusion','threeperp_distance','projection_length','projection_area','space_distance','space_division','sphere_read','sphere_build'],
+    unit_vector:['vector_addsub','vector_scalar','vector_linear','vector_component','position_point','vector_division','dot_component','dot_angle','dot_length','line_point_direction','line_parameter','plane_normal','sphere_vector'],
+  };
+
   const BOSS_V2_CONFIGS={
+    unit_conic:{name:'삼곡선의 지배자',theme:'unit',mosaic:['../assets/bosses/thumbs/parabola-compass-beast.webp','../assets/bosses/thumbs/focus-directrix-twins.webp','../assets/bosses/thumbs/coordinate-substitution-tracker.webp','../assets/bosses/thumbs/ellipse-core-guardian.webp','../assets/bosses/thumbs/twin-focus-binder.webp','../assets/bosses/thumbs/major-axis-architect.webp','../assets/bosses/thumbs/hyperbola-rift-beast.webp','../assets/bosses/thumbs/asymptote-twin-sword-master.webp','../assets/bosses/thumbs/distance-difference-executor.webp','../assets/bosses/thumbs/reflection-cannon-archer.webp','../assets/bosses/thumbs/ellipse-tangent-watcher.webp','../assets/bosses/thumbs/hyperbola-tangent-severer.webp'],art:'../assets/bosses/thumbs/parabola-compass-beast.webp',alt:'이차곡선 보스 12종이 하나로 뭉친 삼곡선의 지배자',accent:'#7557A8',hp:4200,baseTime:100,minTime:70,baseDamage:230,mechanic:'step-lock',lockLabel:'곡선',lockSteps:4,tapDamage:110,finishMultiplier:3,finishText:'세 곡선 관통!',breakText:'곡선 재정렬 · 처음부터',moodStart:'곡선 4단계 · 0/4',defeatText:'세 곡선 관통',unitOf:UNIT_MEMBERS.unit_conic,gameId:'geo-unit-boss-conic',intro:'이차곡선 12개 스킬이 뒤섞여 나옵니다. 곡선을 4단계까지 끊지 않고 통과해야 본체에 닿습니다.',start:'4문제를 연속으로 맞히면 마지막 한 방이 마무리 공격이 됩니다. 한 묶음 안에서 같은 스킬은 두 번 나오지 않으므로 약한 갈래가 있으면 반드시 걸립니다. 한 번이라도 틀리면 곡선이 처음으로 돌아가고 시간 3초를 잃습니다.'},
+    unit_space:{name:'공간의 대측량사',theme:'unit',mosaic:['../assets/bosses/thumbs/skew-lines-wanderer.webp','../assets/bosses/thumbs/line-plane-sentinel.webp','../assets/bosses/thumbs/plane-intersection-lord.webp','../assets/bosses/thumbs/three-perpendicular-triangle-beast.webp','../assets/bosses/thumbs/shortest-distance-tracker-hound.webp','../assets/bosses/thumbs/projection-length-caster.webp','../assets/bosses/thumbs/projection-area-devourer.webp','../assets/bosses/thumbs/space-distance-surveyor-giant.webp','../assets/bosses/thumbs/internal-division-balancer.webp','../assets/bosses/thumbs/sphere-coordinate-observer.webp','../assets/bosses/thumbs/sphere-sculptor.webp'],art:'../assets/bosses/thumbs/skew-lines-wanderer.webp',alt:'공간도형과 공간좌표 보스 11종이 하나로 뭉친 공간의 대측량사',accent:'#2B6CA3',hp:4200,baseTime:100,minTime:70,baseDamage:230,mechanic:'step-lock',lockLabel:'측량',lockSteps:4,tapDamage:110,finishMultiplier:3,finishText:'공간 측량 완료 · 관통!',breakText:'측량 초기화 · 처음부터',moodStart:'측량 4단계 · 0/4',defeatText:'공간 측량 완료 · 관통',unitOf:UNIT_MEMBERS.unit_space,gameId:'geo-unit-boss-space',intro:'공간도형과 공간좌표 11개 스킬이 뒤섞여 나옵니다. 측량을 4단계까지 끊지 않고 통과해야 본체에 닿습니다.',start:'4문제를 연속으로 맞히면 마지막 한 방이 마무리 공격이 됩니다. 한 묶음 안에서 같은 스킬은 두 번 나오지 않으므로 약한 갈래가 있으면 반드시 걸립니다. 한 번이라도 틀리면 측량이 처음으로 돌아가고 시간 3초를 잃습니다.'},
+    unit_vector:{name:'벡터의 총사령',theme:'unit',mosaic:['../assets/bosses/thumbs/vector-composition-beast.webp','../assets/bosses/thumbs/scalar-scale-steed.webp','../assets/bosses/thumbs/linear-combination-weaver.webp','../assets/bosses/thumbs/direction-component-tracker.webp','../assets/bosses/thumbs/position-vector-beacon-keeper.webp','../assets/bosses/thumbs/vector-division-mediator.webp','../assets/bosses/thumbs/dot-product-calculation-core.webp','../assets/bosses/thumbs/angle-judicator.webp','../assets/bosses/thumbs/squared-vector-length-guardian.webp','../assets/bosses/thumbs/direction-vector-guide.webp','../assets/bosses/thumbs/parameter-line-runner.webp','../assets/bosses/thumbs/normal-vector-shield-knight.webp','../assets/bosses/thumbs/spherical-vector-nebula-dragon.webp'],art:'../assets/bosses/thumbs/vector-composition-beast.webp',alt:'벡터 보스 13종이 하나로 뭉친 벡터의 총사령',accent:'#176B5B',hp:4200,baseTime:100,minTime:70,baseDamage:230,mechanic:'step-lock',lockLabel:'진형',lockSteps:4,tapDamage:110,finishMultiplier:3,finishText:'전 진형 붕괴!',breakText:'진형 재편성 · 처음부터',moodStart:'진형 4단계 · 0/4',defeatText:'전 진형 붕괴',unitOf:UNIT_MEMBERS.unit_vector,gameId:'geo-unit-boss-vector',intro:'벡터 13개 스킬이 뒤섞여 나옵니다. 진형을 4단계까지 끊지 않고 통과해야 본체에 닿습니다.',start:'4문제를 연속으로 맞히면 마지막 한 방이 마무리 공격이 됩니다. 한 묶음 안에서 같은 스킬은 두 번 나오지 않으므로 약한 갈래가 있으면 반드시 걸립니다. 한 번이라도 틀리면 진형이 처음으로 돌아가고 시간 3초를 잃습니다.'},
     parabola_form:{name:'포물선의 나침수',theme:'step',art:'../assets/bosses/parabola-compass-beast.jpg',alt:'포물선의 나침수 — 제곱된 변수를 읽을 때마다 열리는 방향이 고정된다.',accent:'#8b5db1',hp:2350,baseTime:42,minTime:27,baseDamage:186,mechanic:'step-lock',lockLabel:'방향',lockSteps:2,tapDamage:96,finishMultiplier:2.35,finishText:'초점축 관통!',breakText:'나침반 흔들림 · 처음부터',moodStart:'방향 2단계 · 0/2',defeatText:'초점축 관통',gameId:'geo-skill-boss-parabola-form',intro:'제곱된 변수를 읽을 때마다 열리는 방향이 고정된다. 방향을 2단계까지 끊지 않고 통과해야 본체에 닿습니다.',start:'2문제를 연속으로 맞히면 마지막 한 방이 마무리 공격이 됩니다. 한 번이라도 틀리면 방향이 처음으로 돌아가고 시간 3초를 잃습니다.'},
     parabola_focus:{name:'초점과 준선의 쌍둥이',theme:'step',art:'../assets/bosses/focus-directrix-twins.jpg',alt:'초점과 준선의 쌍둥이 — 초점과 준선을 반대편에 동시에 맞혀야 합체 보호막이 깨진다.',accent:'#9564b5',hp:2395,baseTime:43,minTime:28,baseDamage:190,mechanic:'step-lock',lockLabel:'준선',lockSteps:3,tapDamage:90,finishMultiplier:2.8,finishText:'초점·준선 동시 절단!',breakText:'준선 재정렬 · 처음부터',moodStart:'준선 3단계 · 0/3',defeatText:'초점·준선 동시 절단',gameId:'geo-skill-boss-parabola-focus',intro:'초점과 준선을 반대편에 동시에 맞혀야 합체 보호막이 깨진다. 준선을 3단계까지 끊지 않고 통과해야 본체에 닿습니다.',start:'3문제를 연속으로 맞히면 마지막 한 방이 마무리 공격이 됩니다. 한 번이라도 틀리면 준선이 처음으로 돌아가고 시간 3초를 잃습니다.'},
     parabola_point:{name:'좌표대입의 추적자',theme:'step',art:'../assets/bosses/coordinate-substitution-tracker.jpg',alt:'좌표대입의 추적자 — 곡선 위 가짜 좌표를 섞어 약점을 이동시킨다.',accent:'#7455a1',hp:2440,baseTime:44,minTime:29,baseDamage:194,mechanic:'step-lock',lockLabel:'좌표',lockSteps:2,tapDamage:96,finishMultiplier:2.35,finishText:'좌표 고정 · 추적 성공!',breakText:'좌표 유실 · 처음부터',moodStart:'좌표 2단계 · 0/2',defeatText:'좌표 고정 · 추적 성공',gameId:'geo-skill-boss-parabola-point',intro:'곡선 위 가짜 좌표를 섞어 약점을 이동시킨다. 좌표를 2단계까지 끊지 않고 통과해야 본체에 닿습니다.',start:'2문제를 연속으로 맞히면 마지막 한 방이 마무리 공격이 됩니다. 한 번이라도 틀리면 좌표가 처음으로 돌아가고 시간 3초를 잃습니다.'},
@@ -200,6 +215,10 @@
     return text.length/35+(text.match(/[−-]/g)||[]).length*2.2+(text.match(/[±√²³]/g)||[]).length*1.8+(text.match(/,/g)||[]).length*.9+Math.min(5,magnitude/5);
   }
   function makeQuestion(id,level=currentLevel){
+    /* 대단원 보스는 제 문제가 없다. 그 단원의 스킬에서 하나 골라 낸다.
+       보스뿐 아니라 예제·드릴·러시도 이 길로 오므로 여기서 갈라 준다. */
+    const members=UNIT_MEMBERS[id];
+    if(members)return makeQuestion(pick(members),level);
     const spec=LEVELS.find(x=>x.id===level)||LEVELS[0];
     const pool=[];
     for(let i=0;i<spec.samples;i++){const q=makeBaseQuestion(id);pool.push({q,score:questionComplexity(q)})}
@@ -250,7 +269,12 @@
     ['line_point_direction','vector','S33','직선의 기준점·방향벡터','벡터방정식에서 기준점과 방향벡터를 즉시 읽습니다.','x=p+tv','line',['t가 없는 벡터에서 기준점','t의 계수에서 방향벡터','두 역할을 바꾸지 않기'],'기하_벡터로표현한직선.html'],
     ['line_parameter','vector','S34','직선의 매개변수 계산','매개변수 값을 대입해 직선 위 점의 좌표를 계산합니다.','x(t)=p+tv','line',['주어진 t 확인','방향벡터를 t배','기준점에 성분별로 더하기'],'기하_벡터로표현한직선.html'],
     ['plane_normal','vector','S35','평면의 법선벡터','평면 방정식의 세 계수에서 법선벡터를 읽고 만듭니다.','ax+by+cz=d ⇒ n=(a,b,c)','plane',['x,y,z 계수 확인','상수항과 구분','법선벡터의 성분으로 기록'],'기하_벡터로표현한평면과구.html'],
-    ['sphere_vector','vector','S36','구의 벡터식과 좌표식','중심벡터와 거리 조건을 좌표 방정식으로 변환합니다.','|x−c|=r','sphere',['중심벡터 c 확인','거리 r 확인','세 좌표 차의 제곱합으로 변환'],'기하_벡터로표현한평면과구.html']
+    ['sphere_vector','vector','S36','구의 벡터식과 좌표식','중심벡터와 거리 조건을 좌표 방정식으로 변환합니다.','|x−c|=r','sphere',['중심벡터 c 확인','거리 r 확인','세 좌표 차의 제곱합으로 변환'],'기하_벡터로표현한평면과구.html'],
+    /* 대단원 총력전. 스킬 보스 서른여섯은 하나씩 잘게 쪼개져 있어 짧게 붙기는
+       좋은데, 단원 전체를 한 자리에서 겨루는 곳이 없었다. 셋을 둔다. */
+    ['unit_conic','unit','U4','이차곡선 총력전','포물선·타원·쌍곡선과 그 접선을 한 자리에서 겨룬다','이차곡선 전 범위','parabola',['이차곡선의 모든 스킬이 섞여 나옵니다','한 묶음 안에서 같은 스킬은 두 번 나오지 않습니다','약한 갈래가 있으면 반드시 걸립니다'],'한 갈래만 파고들면 묶음을 못 채웁니다'],
+    ['unit_space','unit','U5','공간도형 총력전','위치 관계·삼수선·정사영·공간좌표를 한 자리에서 겨룬다','공간도형과 공간좌표 전 범위','space',['공간도형과 공간좌표의 모든 스킬이 섞여 나옵니다','한 묶음 안에서 같은 스킬은 두 번 나오지 않습니다','약한 갈래가 있으면 반드시 걸립니다'],'한 갈래만 파고들면 묶음을 못 채웁니다'],
+    ['unit_vector','unit','U6','벡터 총력전','연산·성분·내적·직선과 평면의 방정식을 한 자리에서 겨룬다','벡터 전 범위','vector',['벡터의 모든 스킬이 섞여 나옵니다','한 묶음 안에서 같은 스킬은 두 번 나오지 않습니다','약한 갈래가 있으면 반드시 걸립니다'],'한 갈래만 파고들면 묶음을 못 채웁니다']
   ];
   const skills=Object.fromEntries(defs.map((x,i)=>[x[0],{id:x[0],index:i+1,group:x[1],code:x[2],title:x[3],desc:x[4],formula:x[5],visual:x[6],steps:x[7],lesson:x[8]}]));
 
@@ -263,8 +287,9 @@
   const bossV2=!!bossConfig;
   const bossName=bossV2?bossConfig.name:skill.title;
   const bossIntro=bossV2?bossConfig.intro:'세 문제를 연속으로 돌파하세요.';
-  const groupName=skill.group==='conic'?'이차곡선':skill.group==='space'?'공간도형·좌표':'벡터';
-  const color=skill.group==='conic'?'#7557A8':skill.group==='space'?'#2B6CA3':'#176B5B';
+  const groupName=skill.group==='unit'?'대단원 총력전':skill.group==='conic'?'이차곡선':skill.group==='space'?'공간도형·좌표':'벡터';
+  // 대단원은 한 갈래의 색이 아니라 단원 전체를 두르는 색이다.
+  const color=skill.group==='unit'?'#8A5A2B':skill.group==='conic'?'#7557A8':skill.group==='space'?'#2B6CA3':'#176B5B';
   root.style.setProperty('--skill',color);
   const levelBar=`<div class="skill-level-bar"><span class="skill-level-label">난이도</span><div class="skill-level-seg" role="group" aria-label="난이도 선택">${LEVELS.map(l=>`<button type="button" class="skill-level-btn${l.id===currentLevel?' active':''}" data-level="${l.id}" aria-pressed="${l.id===currentLevel}"><b>${l.name}</b><small>${l.tag}</small></button>`).join('')}</div><p class="skill-level-desc" data-level-desc>${LEVELS[0].desc}</p></div>`;
   root.innerHTML=`<div class="skill-page"><nav class="skill-nav"><div class="skill-nav-inner"><a class="skill-back" href="index.html" aria-label="기하 목록으로 돌아가기">←</a><button class="skill-tab active" data-skill-tab="concept"><span>01</span> 원리</button><button class="skill-tab" data-skill-tab="drill"><span>02</span> 5문제</button><button class="skill-tab rush-tab" data-skill-tab="rush"><span>03</span> 60초</button><button class="skill-tab boss-tab" data-skill-tab="boss"><span>04</span> 보스</button></div></nav>${levelBar}<main class="skill-wrap">
@@ -278,6 +303,24 @@
   if(!saved.byLevel||typeof saved.byLevel!=='object')saved.byLevel={basic:{bestRush:saved.bestRush||0,bossClears:saved.bossClears||0,drillBest:saved.drillBest||0}};
   currentLevel=LEVELS.some(l=>l.id===saved.level)?saved.level:'basic';
   const rec=()=>(saved.byLevel[currentLevel]||(saved.byLevel[currentLevel]={bestRush:0,bossClears:0,drillBest:0}));
+  /* 대단원 보스는 한 묶음 안에서 같은 스킬을 두 번 내지 않는다.
+     한 갈래만 파고든 학생이 통과하지 못하게 하려는 것이다. */
+  let unitSeen=[];
+  function makeUnitAwareQuestion(level,state){
+    const members=bossConfig&&bossConfig.unitOf;
+    if(!members)return makeQuestion(skill.id,level);
+    if(((state&&state.lockStep)||0)===0)unitSeen=[];
+    const left=members.filter(x=>!unitSeen.includes(x));
+    const from=left.length?left:members;
+    const id=from[Math.floor(Math.random()*from.length)];
+    unitSeen.push(id);
+    const q=makeQuestion(id,level);
+    // 어느 갈래에서 나온 문제인지 물음 앞에 달아 준다. 틀린 뒤 어디를 볼지 알게 된다.
+    const meta=skills[id];
+    if(meta)q.prompt=`[${meta.code} ${meta.title}] ${q.prompt}`;
+    return q;
+  }
+
   const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(saved))}catch(e){}};
 
   /* 전투는 공용 엔진이 맡는다. 페이지는 문제를 만들어 주고
@@ -285,7 +328,7 @@
   const engine=bossV2&&window.JPBossEngine?window.JPBossEngine.create({
     root:root,config:bossConfig,skillId:skill.id,skillTitle:skill.title,
     levels:LEVELS,level:()=>currentLevel,
-    makeBossQuestion:(level)=>makeQuestion(skill.id,level),
+    makeBossQuestion:(level,state)=>makeUnitAwareQuestion(level,state),
     setMath:(el,v)=>setMath(el,v),
     fillAnswers:(box,q,h)=>fillAnswers(box,q,h),
     markAnswers:(box,q,v,b)=>markAnswers(box,q,v,b),

@@ -81,14 +81,22 @@ function bossIds() {
   const e = js.indexOf('\n  };', s) + 4;
   assert.ok(s > 0 && e > 4, '기하 보스 설정을 찾지 못했다.');
   const ctx = { CONFIGS: null };
-  vm.runInNewContext(js.slice(s, e).replace('const BOSS_V2_CONFIGS=', 'CONFIGS='), ctx);
+  // 설정이 대단원 명단(UNIT_MEMBERS)을 가져다 쓰므로 그것부터 읽어 둔다
+  const um = js.indexOf('  const UNIT_MEMBERS={');
+  const ume = um < 0 ? 0 : js.indexOf('\n  };', um) + 4;
+  vm.runInNewContext((um < 0 ? '' : js.slice(um, ume) + '\n')
+    + js.slice(s, e).replace('const BOSS_V2_CONFIGS=', 'CONFIGS='), ctx);
   return Object.keys(ctx.CONFIGS);
 }
 
 const toTex = loadToTex();
 const API = loadGeometry();
 const IDS = bossIds();
-assert.equal(IDS.length, 36, '기하 보스는 서른여섯 종이어야 한다.');
+/* 스킬 보스 서른여섯에 대단원 총력전 셋을 더해 서른아홉.
+   대단원은 제 문제가 없고 그 단원 스킬에서 뽑으므로, 여기서 함께 돌리면
+   같은 생성기를 한 번 더 훑는 셈이 되어 손해가 없다. */
+assert.equal(IDS.length, 39, '기하 보스는 스킬 36종과 대단원 3종이어야 한다.');
+assert.equal(IDS.filter((x) => x.startsWith('unit_')).length, 3, '대단원은 셋이어야 한다.');
 
 // 이미 \dfrac 이 된 부분을 지우고 나서 / 가 남았는지 본다
 function leftoverSlash(tex) {
