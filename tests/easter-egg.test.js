@@ -52,15 +52,26 @@ for (const [id, v] of Object.entries(manifest.images)) {
   assert.ok(fs.existsSync(path.join(ROOT, 'assets/bosses', v.thumb)), `그림 파일이 없다: ${v.thumb}`);
 }
 
-/* 머리띠의 JP 는 홈으로 가는 링크다. 두드림을 세느라 이동을 붙들었으므로,
-   더 두드리지 않으면 반드시 홈으로 보내 주어야 한다. */
-assert.match(js, /window\.location\.href = link\.href/, '더 두드리지 않으면 홈으로 가야 한다.');
-assert.match(js, /metaKey \|\| event\.ctrlKey/, '새 탭으로 열려는 클릭은 막지 않는다.');
-assert.match(js, /\.global-brand-mark/, '동그란 JP 마크만 잡아야 한다. 옆 글자는 곧장 이동한다.');
+/* 부르는 자리는 어디로도 가지 않아야 한다.
+
+   처음에는 머리띠의 JP 마크를 두드리게 했는데, 그것은 홈으로 가는 링크라
+   두드리는 동안 이동을 붙들어야 했다. 홈이 느려지는 값을 치를 장난이
+   아니어서 제목과 단원 머리글로 옮겼다 — 둘 다 링크가 아니다.
+   JP 마크는 다시 그냥 홈으로 간다. */
+assert.doesNotMatch(js, /global-brand-mark/, 'JP 마크는 홈으로 가는 링크로 두어야 한다.');
+assert.doesNotMatch(js, /window\.location\.href/, '이스터에그가 페이지를 옮기면 안 된다.');
+assert.doesNotMatch(nav, /jp-easter[^']*['"]\s*[^]*?preventDefault/, '머리띠는 이스터에그를 불러오기만 한다.');
+assert.match(js, /closest\('h1'\)/, '제목은 어느 페이지에나 있고 링크가 아니다.');
+assert.match(js, /archive-unit > header/, '보스전 홀에서는 단원 머리글로도 부를 수 있어야 한다.');
+assert.match(js, /devicemotion/, '흔들어서도 부를 수 있어야 한다.');
+assert.match(js, /ArrowUp/, '자판으로 부르는 길도 남겨 둔다.');
+/* 링크나 단추를 누른 것까지 세면 페이지를 옮기려던 사람이 붙잡힌다. */
+assert.match(js, /closest\('a,button,input,textarea,select,label'\)/,
+  '링크·단추를 누른 것은 두드림으로 세지 않아야 한다.');
 
 // 두드림 횟수는 우연히 닿지 않을 만큼, 그러나 포기하지 않을 만큼
 const taps = Number(/TAPS_NEEDED = (\d+)/.exec(js)[1]);
-assert.ok(taps >= 5 && taps <= 10, `두드림 횟수가 ${taps}번이면 너무 쉽거나 너무 멀다.`);
+assert.ok(taps >= 4 && taps <= 8, `두드림 횟수가 ${taps}번이면 너무 쉽거나 너무 멀다.`);
 
 // 화면을 가리면 안 된다 — 층은 클릭을 통과시키고 보스만 눌린다
 assert.match(css, /\.jp-easter-layer\{[^}]*pointer-events:none/, '이스터에그 층은 클릭을 통과시켜야 한다.');

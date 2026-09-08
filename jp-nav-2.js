@@ -141,11 +141,11 @@
     if (document.querySelector('[data-jp-easter-egg]')) return;
     const css = document.createElement('link');
     css.rel = 'stylesheet';
-    css.href = siteHref('jp-easter.css?v=3');
+    css.href = siteHref('jp-easter.css?v=4');
     document.head.appendChild(css);
 
     const egg = document.createElement('script');
-    egg.src = siteHref('jp-easter.js?v=5');
+    egg.src = siteHref('jp-easter.js?v=8');
     egg.defer = true;
     egg.dataset.jpEasterEgg = '1';
     egg.dataset.siteRoot = siteHref('');

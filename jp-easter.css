@@ -35,7 +35,10 @@
   35%{transform:scaleX(-1) translateY(-26px) rotate(9deg)}
   60%{transform:scaleX(-1) translateY(-6px) rotate(-5deg)}}
 
-/* 다섯 번째 두드림부터 마크가 흔들려 "뭔가 있다" 는 것만 알린다 */
+/* 세 번째 두드림부터 눌린 곳이 흔들려 "뭔가 있다" 는 것만 알린다.
+   제목과 단원 머리글은 링크가 아니므로 눌러도 아무 데도 가지 않는다.
+   처음에는 머리띠의 JP 마크였는데 그것은 홈으로 가는 링크라, 두드리는
+   동안 이동을 붙들어야 했다. 홈이 느려지는 값을 치를 장난이 아니었다. */
 .jp-easter-wiggle{animation:jpEasterWiggle .42s ease}
 @keyframes jpEasterWiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-11deg) scale(1.08)}
   60%{transform:rotate(9deg) scale(1.08)}}
@@ -54,3 +57,8 @@
   .jp-easter-boss img{width:62px;height:62px;border-radius:13px}
   .jp-easter-say{max-width:58vw;font-size:11.5px}
 }
+
+/* 두드릴 수 있는 자리라는 것만 아주 옅게 알린다. 손가락 모양도 주지 않는다 —
+   숨은 것이라 대놓고 눌러 보라고 할 이유가 없다. 다만 두드리는 동안 글자가
+   드래그로 잡히면 성가시므로 선택만 막는다. */
+h1,.archive-unit>header{-webkit-user-select:none;user-select:none}
