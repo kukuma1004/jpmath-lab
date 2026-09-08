@@ -217,9 +217,11 @@ $('[data-boss-body]').innerHTML=`<div class="boss-result-v2${flawless?' boss-res
     const bossDifficultyCopy = cfg?.mechanic==='degree-grade'?'난도 상승: <b>기본 → 응용 → 심화</b>':'선택 난이도 <b>고정</b> · 전투 단계만 상승';
     const initialBossStateLabel = cfg?.mechanic==='factor-shield'?'SHIELD':cfg?.mechanic==='conjugate-reflect'?'MIRROR':cfg?.mechanic==='degree-grade'?'GRADE':cfg?.mechanic==='chaos-split'?'BODIES':cfg?.mechanic==='side-switch'?'방향':cfg?.mechanic==='continuity-stitch'?'봉합':cfg?.mechanic==='squeeze-walls'?'벽 간격':cfg?.mechanic==='forbidden-seal'?'정석 봉인':cfg?.mechanic==='h-collapse'?'h 거리':cfg?.mechanic==='product-blades'?'쌍날':cfg?.mechanic==='sniper-lock'?'조준':cfg?.mechanic==='step-lock'?cfg.lockLabel:'PHASE';
     const initialBossStateValue = cfg?.mechanic==='factor-shield'?3:cfg?.mechanic==='conjugate-reflect'?'0/2':cfg?.mechanic==='degree-grade'?'C':cfg?.mechanic==='side-switch'?'← 좌':cfg?.mechanic==='continuity-stitch'?'0/3':cfg?.mechanic==='squeeze-walls'?'100%':cfg?.mechanic==='forbidden-seal'?'3/3':cfg?.mechanic==='h-collapse'?'1':cfg?.mechanic==='product-blades'?'좌 대기':cfg?.mechanic==='sniper-lock'?'0/2':cfg?.mechanic==='step-lock'?`0/${cfg.lockSteps}`:1;
-    /* 대단원 보스는 제 그림이 따로 없다. 그 단원 보스들의 얼굴을 모아
-       초상으로 쓴다 — 여럿이 하나로 뭉쳤다는 뜻이 그대로 그림이 된다. */
-    const bossPicture = cfg.mosaic&&cfg.mosaic.length
+    /* 대단원 보스는 전용 초상을 먼저 쓴다. 예전 데이터의 모자이크는
+       혹시 전용 파일을 아직 붙이지 못한 경우에만 안전망으로 남긴다. */
+    const bossPicture = cfg.theme==='unit'&&cfg.art
+      ? `<img class="boss-art" src="${cfg.art}" alt="${cfg.alt}">`
+      : cfg.mosaic&&cfg.mosaic.length
       ?`<div class="boss-art-mosaic" role="img" aria-label="${cfg.alt}">`
         +cfg.mosaic.map(src=>`<i style="background-image:url('${src}')"></i>`).join('')
         +'</div>'

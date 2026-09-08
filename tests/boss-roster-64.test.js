@@ -54,9 +54,7 @@ const hallJs=fs.readFileSync('보스전/boss-hall.js','utf8');
 const thumbDir='assets/bosses/thumbs';
 let thumbBytes=0;
 for(const boss of catalog.bosses){
-  /* 대단원 총력전은 전투 화면에서 그 단원 보스들의 얼굴을 모아 붙이지만,
-     명단의 작은 타일에는 모자이크가 들어가지 않으므로 단원의 첫 보스
-     얼굴을 대표로 세운다. 얼굴이 없으면 명단에 깨진 그림이 뜬다. */
+  // 얼굴이 없으면 명단에 깨진 그림이 뜬다.
   assert.ok(boss.thumb,`${boss.id}에 작은 그림이 없다.`);
   const file=boss.thumb.replace('../','');
   assert.ok(fs.existsSync(file),`작은 그림 파일이 없다: ${file}`);
@@ -117,8 +115,7 @@ assert.ok(fs.existsSync('assets/bosses/tangent-sniper-mobile.jpg'),'접선의 �
 /* 대단원 총력전.
 
    스킬 보스는 하나씩 잘게 쪼개져 있어 짧게 붙기는 좋은데 단원 전체를 한
-   자리에서 겨루는 곳이 없었다. 과목마다 셋씩 두었다. 제 그림이 따로 없어서
-   그 단원 보스들의 얼굴을 모아 초상으로 쓴다. */
+   자리에서 겨루는 곳이 없었다. 과목마다 셋씩 두었다. */
 {
   const read = (p) => fs.readFileSync(p,'utf8').replace(/\r\n/g,'\n');
 
@@ -174,11 +171,11 @@ assert.ok(fs.existsSync('assets/bosses/tangent-sniper-mobile.jpg'),'접선의 �
       assert.ok(want.length, `${label} ${id}: 단원에 스킬이 없다.`);
       assert.deepEqual([...cfg.unitOf].sort(), [...want].sort(),
         `${cfg.name}이 뽑는 스킬이 단원과 다르다.`);
-      assert.equal(cfg.mosaic.length, want.length,
-        `${cfg.name}의 얼굴 수가 스킬 수와 다르다.`);
-      for (const t of cfg.mosaic) {
-        assert.ok(fs.existsSync(t.replace('../','')), `얼굴 그림이 없다: ${t}`);
-      }
+      /* 처음에는 제 그림이 없어 그 단원 보스들의 얼굴을 모아 붙였는데,
+         이제 여섯 종 모두 제 초상이 생겼다. */
+      assert.ok(cfg.art && !cfg.mosaic, `${cfg.name}은 제 초상을 써야 한다.`);
+      assert.ok(fs.existsSync(cfg.art.replace('../','')), `초상 그림이 없다: ${cfg.art}`);
+      assert.ok(cfg.alt && cfg.alt.includes(cfg.name), `${cfg.name}의 그림 설명이 비었다.`);
       // 대단원은 스킬 보스보다 길고 무거워야 한다
       assert.ok(cfg.hp >= 4000, `${cfg.name}의 체력이 스킬 보스와 다를 바 없다.`);
       assert.ok(cfg.lockSteps >= 4, `${cfg.name}의 묶음이 너무 짧다.`);
@@ -195,7 +192,7 @@ assert.ok(fs.existsSync('assets/bosses/tangent-sniper-mobile.jpg'),'접선의 �
      이것이 빠지면 한 갈래만 판 학생도 통과한다. */
   assert.match(calcJs, /pickUnitSkill/, '미적분 대단원이 같은 갈래를 두 번 내면 안 된다.');
   assert.match(geoJs, /makeUnitAwareQuestion/, '기하 대단원이 같은 갈래를 두 번 내면 안 된다.');
-  assert.match(engineJs, /cfg\.mosaic/, '엔진이 모아 붙인 초상을 그릴 줄 알아야 한다.');
+  assert.match(engineJs, /cfg\.theme==='unit'&&cfg\.art/, '대단원은 제 초상을 먼저 써야 한다.');
 }
 
 console.log('70 boss roster and mobile cockpit tests: ok');

@@ -102,15 +102,14 @@
      assets/bosses/thumbs/ 아래에 있고, 이름은 원본을 따른다. */
   const THUMB_DIR='../assets/bosses/thumbs/';
   const THUMBS={
-    /* 대단원 총력전은 제 그림이 없다. 전투 화면에서는 그 단원 보스들의
-       얼굴을 모아 붙이지만, 명단의 작은 타일에는 모자이크가 들어가지
-       않으므로 단원의 첫 보스 얼굴을 대표로 세운다. */
-    unit_limit:'factor-gate-guardian.webp',
-    unit_differentiate:'difference-quotient-origin.webp',
-    unit_integral:'antiderivative-collector.webp',
-    unit_conic:'parabola-compass-beast.webp',
-    unit_space:'skew-lines-wanderer.webp',
-    unit_vector:'vector-composition-beast.webp',
+    /* 대단원 총력전도 이제 제 얼굴을 갖는다. 하위 보스 대표 이미지를
+       빌려 쓰면 단원 보스가 스킬 보스처럼 보여 위계가 무너진다. */
+    unit_limit:'infinity-gatekeeper.webp',
+    unit_differentiate:'derivative-overlord.webp',
+    unit_integral:'accumulation-emperor.webp',
+    unit_conic:'three-conic-sovereign.webp',
+    unit_space:'grand-space-surveyor.webp',
+    unit_vector:'vector-supreme-commander.webp',
     limit_factor:'factor-gate-guardian.webp',
     limit_rationalize:'conjugate-alchemist.webp',
     limit_infinity_ratio:'infinite-ratio-colossus.webp',

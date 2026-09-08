@@ -1,8 +1,38 @@
 {
-  "version": "1.0",
-  "total": 64,
+  "version": "1.1",
+  "total": 70,
   "format": "One master portrait per boss. Optional mobile variants are listed separately.",
   "images": {
+    "unit_limit": {
+      "master": "infinity-gatekeeper.jpg",
+      "thumb": "thumbs/infinity-gatekeeper.webp",
+      "name": "무한의 관문지기"
+    },
+    "unit_differentiate": {
+      "master": "derivative-overlord.jpg",
+      "thumb": "thumbs/derivative-overlord.webp",
+      "name": "도함수의 대군주"
+    },
+    "unit_integral": {
+      "master": "accumulation-emperor.jpg",
+      "thumb": "thumbs/accumulation-emperor.webp",
+      "name": "누적의 대제"
+    },
+    "unit_conic": {
+      "master": "three-conic-sovereign.jpg",
+      "thumb": "thumbs/three-conic-sovereign.webp",
+      "name": "삼곡선의 지배자"
+    },
+    "unit_space": {
+      "master": "grand-space-surveyor.jpg",
+      "thumb": "thumbs/grand-space-surveyor.webp",
+      "name": "공간의 대측량사"
+    },
+    "unit_vector": {
+      "master": "vector-supreme-commander.jpg",
+      "thumb": "thumbs/vector-supreme-commander.webp",
+      "name": "벡터의 총사령"
+    },
     "limit_factor": {
       "master": "factor-gate-guardian.jpg",
       "thumb": "thumbs/factor-gate-guardian.webp",

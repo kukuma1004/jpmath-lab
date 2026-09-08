@@ -45,7 +45,9 @@ assert.equal(navVersions.size, 1,
 assert.match(js, /boss-image-manifest\.json/, '보스 목록은 그림 목록에서 가져와야 한다.');
 const manifest = JSON.parse(read('assets/bosses/boss-image-manifest.json'));
 const entries = Object.values(manifest.images);
-assert.equal(entries.length, 64, '그림 목록은 예순네 종이어야 한다.');
+/* 스킬 보스 예순네 종에 대단원 여섯 종을 더해 일흔. 대단원도 제 초상이
+   생겼으므로 숨은 손님으로 걸어 다닌다. */
+assert.equal(entries.length, 70, '그림 목록은 일흔 종이어야 한다.');
 for (const [id, v] of Object.entries(manifest.images)) {
   assert.ok(v.thumb, `${id}에 작은 그림이 없다.`);
   assert.ok(v.name, `${id}에 이름이 없다. 이스터에그가 이름을 부른다.`);
