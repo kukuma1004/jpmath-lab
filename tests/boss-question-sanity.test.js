@@ -198,8 +198,28 @@ function parseCondition(text) {
 function verify(q) {
   const eq = q.equation.replace(/−/g, '-'), want = toNum(q.correct);
 
+  /* 절댓값으로 끼운 압착:  |f(x)−L| ≤ A·xⁿ,  x→0
+     오른쪽이 0으로 가면 f(x) 는 L 로 간다. L 이 곧 답이다. */
+  let am = /^\|f\(x\)([+-][0-9]+)?\|\s*≤\s*([0-9]+)x([²³⁴])\s*,\s*x→(\S+)$/.exec(eq);
+  if (am) {
+    const L = am[1] ? -Number(am[1]) : 0;
+    const n = { '²': 2, '³': 3, '⁴': 4 }[am[3]];
+    const cap = limitOf(`${Number(am[2])}*Math.pow(x,${n})`, am[4]);
+    if (!near(cap, 0)) return `오른쪽이 0으로 안 간다 (${cap})`;
+    if (want !== null && !near(want, L)) return `끼인 값은 ${L} 인데 답이 ${want}`;
+    return null;
+  }
+
   // 유계 g 를 낀 압착:  |g(x)|≤M,  lim x→a  (식)g(x)
-  let m = /^\|g\(x\)\|≤([0-9]+),\s*lim\s+x→(\S+)\s+(.+?)g\(x\)$/.exec(eq);
+  let m = /^\|g\(x\)\|≤([0-9]+),\s*lim\s+x→(\S+)\s+\[(-?[0-9]+)\s*\+\s*(.+?)g\(x\)\]$/.exec(eq);
+  if (m) {
+    // 상수를 얹은 꼴: 0으로 가는 것은 뒤 항뿐이고 상수가 답으로 남는다
+    const cap = limitOf('AB(' + toJs(m[4]) + ')*' + Number(m[1]), m[2]);
+    if (!near(cap, 0)) return `유계 상한이 0으로 안 간다 (${cap})`;
+    if (want !== null && !near(want, Number(m[3]))) return `남는 상수는 ${m[3]} 인데 답이 ${want}`;
+    return null;
+  }
+  m = /^\|g\(x\)\|≤([0-9]+),\s*lim\s+x→(\S+)\s+(.+?)g\(x\)$/.exec(eq);
   if (m) {
     const cap = limitOf('AB(' + toJs(m[3]) + ')*' + Number(m[1]), m[2]);
     if (!near(cap, 0)) return `유계 상한이 0으로 안 간다 (${cap})`;
@@ -310,6 +330,8 @@ function verify(q) {
         }
         // 수평접선이 하나도 없다 = f′ 에 실근이 없다
         if (/수평접선이 하나도 없/.test(prompt)) return distinctRoots(g).length === 0;
+        // 극값이 하나도 없다 = f′ 의 부호가 한 번도 안 바뀐다
+        if (/극값을 갖지 않/.test(prompt)) return signChanges(g).length === 0;
         // 극대와 극소를 모두 갖는다 = f′ 의 부호가 두 번 바뀐다
         return signChanges(g).length === 2;
       };
@@ -382,8 +404,9 @@ function verify(q) {
 
   // 사차 임계점 판정:  f′(x)=4(x+2)x(x−2)  /  "가운데 임계점 x=A에서 f는?"
   m = /^f′\(x\)=(.+)$/.exec(eq);
-  if (m && /임계점 x=(-?[0-9]+)에서 f는\?/.test(prompt)) {
-    const at = Number(/임계점 x=(-?[0-9]+)에서/.exec(prompt)[1]);
+  if (m && /x=(-?[0-9]+)에서 f는\?/.test(prompt)) {
+    // 예전에는 늘 가운데 임계점만 물었다. 이제 셋 중 아무거나 묻는다.
+    const at = Number(/x=(-?[0-9]+)에서/.exec(prompt)[1]);
     const g = polyFn(m[1]);
     const l = evalAt(g, at - 0.3), r = evalAt(g, at + 0.3);
     const should = l > 0 && r < 0 ? '극대' : l < 0 && r > 0 ? '극소' : '변곡점';

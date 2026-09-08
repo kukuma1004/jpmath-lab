@@ -65,8 +65,20 @@
         type=ri(0,2);return [Q('LINE · PLANE','직선과 평면의 공통점이 없다.','위치 관계는?','평행',['한 점에서 만남','직선이 평면에 포함','수직'],'공통점이 없으면 직선과 평면은 평행입니다.'),Q('LINE · PLANE','직선 위 서로 다른 두 점이 평면 위에 있다.','반드시 성립하는 것은?','직선이 평면에 포함된다',['평행','한 점에서만 만난다','꼬인 위치'],'직선의 서로 다른 두 점이 평면 위에 있으면 직선 전체가 포함됩니다.'),Q('LINE · PLANE','직선과 평면의 공통점이 정확히 하나다.','위치 관계는?','한 점에서 만남',['평행','직선이 평면에 포함','일치'],'공통점이 하나면 직선이 평면을 가로질러 만납니다.')][type];
       case'relation_planes':
         type=ri(0,2);return [Q('PLANE · PLANE','서로 다른 두 평면의 공통점이 없다.','위치 관계는?','평행',['한 직선에서 만남','일치','꼬인 위치'],'서로 다른 두 평면이 만나지 않으면 평행입니다.'),Q('PLANE · PLANE','서로 다른 두 평면이 한 점을 공유한다.','반드시 성립하는 것은?','한 직선에서 만난다',['한 점에서만 만난다','평행','일치'],'두 평면이 만나면 교선 하나를 공유합니다.'),Q('PLANE · PLANE','두 평면이 서로 다른 세 공선점이 아닌 점을 공유한다.','위치 관계는?','일치',['평행','수직','한 직선에서 만남'],'한 직선 위에 있지 않은 세 점은 하나의 평면을 결정합니다.')][type];
-      case'threeperp_conclusion':
-        return Q('THREE PERPENDICULARS','PO⊥평면 α, OQ⊥직선 ℓ (OQ⊂α)','삼수선의 정리로 얻는 결론은?','PQ⊥ℓ',['PQ∥ℓ','PO∥ℓ','OQ⊥PQ'],'평면에 내린 수선 PO와 평면 위 수선 OQ로부터 PQ⊥ℓ을 얻습니다.');
+      case'threeperp_conclusion':{
+        /* 예전에는 셋 중 늘 같은 하나만 결론으로 물어 답이 고정이었다.
+           삼수선의 정리는 셋 중 둘을 알면 나머지가 따라오는 정리이므로,
+           무엇을 주고 무엇을 묻는지 돌려 가며 낸다. */
+        const forms=[
+          ['PO⊥평면 α, OQ⊥직선 ℓ (OQ⊂α)','PQ⊥ℓ'],
+          ['PO⊥평면 α, PQ⊥직선 ℓ (ℓ⊂α)','OQ⊥ℓ'],
+          ['PQ⊥직선 ℓ, OQ⊥직선 ℓ (ℓ⊂α, O는 P의 정사영)','PO⊥α']
+        ];
+        const chosen=pick(forms);
+        return Q('THREE PERPENDICULARS',chosen[0],'삼수선의 정리로 얻는 결론은?',chosen[1],
+          forms.map(f=>f[1]).filter(x=>x!==chosen[1]).concat(['PQ∥ℓ']),
+          '삼수선의 정리는 PO⊥α, OQ⊥ℓ, PQ⊥ℓ 셋 중 둘이 참이면 나머지도 참임을 말합니다.');
+      }
       case'threeperp_distance':
         [[a,b],c]=pick([[[3,4],5],[[6,8],10],[[5,12],13]]);return Q('RIGHT TRIANGLE',`PO=${a}, OQ=${b}, ∠POQ=90°`,'PQ의 길이는?',c,[a+b,Math.abs(a-b),a*a+b*b],`PQ=√(PO²+OQ²)=√${a*a+b*b}=${c}`);
       case'projection_length':
@@ -95,8 +107,21 @@
         m=pick([1,2]);n=pick([1,2]);A=[ri(-3,2),ri(-3,2)];d=[ri(1,3),ri(-2,2)];B=A.map((x,i)=>x+(m+n)*d[i]);P=A.map((x,i)=>x+m*d[i]);return Q('VECTOR DIVISION',`A${point(A)}, B${point(B)}, AP:PB=${m}:${n}`,'P의 위치벡터는?',vec(P),[vec(A),vec(B),vec(P.map(x=>x+1))],`OP=(n·OA+m·OB)/(m+n)=${vec(P)}입니다.`);
       case'dot_component':
         v=[ri(-3,3),ri(-3,3)];w=[ri(-3,3),ri(-3,3)];ans=v[0]*w[0]+v[1]*w[1];return Q('DOT PRODUCT',`a=${vec(v)}, b=${vec(w)}`,'a·b는?',ans,[v[0]*w[1]+v[1]*w[0],-ans,ans+2],`같은 위치의 성분끼리 곱해 더하면 ${ans}입니다.`);
-      case'dot_angle':
-        type=pick(['acute','right','obtuse']);v=[ri(1,4),0];w=type==='acute'?[ri(1,4),ri(1,3)]:type==='right'?[0,ri(1,4)]:[-ri(1,4),ri(1,3)];ans=type==='acute'?'예각':type==='right'?'직각':'둔각';return Q('ANGLE SIGN',`a=${vec(v)}, b=${vec(w)}, a·b=${v[0]*w[0]}`,'두 벡터의 사이각은?',ans,['예각','직각','둔각','평각'],`내적이 ${type==='acute'?'양수':type==='right'?'0':'음수'}이므로 사이각은 ${ans}입니다.`);
+      case'dot_angle':{
+        /* 세 가지가 겹쳐 있었다. 내적 값을 문제에 그대로 적어 주어 부호만
+           보면 끝났고, a 는 늘 (k,0) 이었으며, 음수 성분은 둔각일 때만 나와서
+           계산하지 않고 빼기 기호만 보고도 둔각을 찍을 수 있었다. 심화의
+           98%가 둔각이었던 까닭이다. 두 벡터만 주고 직접 재게 한다. */
+        type=pick(['acute','right','obtuse']);
+        for(let guard=0;guard<400;guard++){
+          v=[ri(-4,4),ri(-4,4)];w=[ri(-4,4),ri(-4,4)];d=v[0]*w[0]+v[1]*w[1];
+          if(!(v[0]||v[1])||!(w[0]||w[1]))continue;
+          if(type==='acute'?d>0:type==='right'?d===0:d<0)break;
+        }
+        ans=d>0?'예각':d===0?'직각':'둔각';
+        return Q('ANGLE SIGN',`a=${vec(v)}, b=${vec(w)}`,'두 벡터가 이루는 각은?',ans,['예각','직각','둔각','평각'],
+          `a·b=${v[0]*w[0]}+${v[1]*w[1]}=${d}입니다. 내적이 ${d>0?'양수':d===0?'0':'음수'}이므로 사이각은 ${ans}입니다.`);
+      }
       case'dot_length':
         a=pick([4,9,16]);b=pick([4,9,16]);c=ri(-2,3);type=ri(0,1);ans=type===0?a+b+2*c:a+b-2*c;return Q('LENGTH IDENTITY',`|a|²=${a}, |b|²=${b}, a·b=${c}`,type===0?'|a+b|²은?':'|a−b|²은?',ans,[a+b,Math.abs(a-b),type===0?a+b-2*c:a+b+2*c],`|a${type===0?'+':'−'}b|²=|a|²+|b|²${type===0?'+':'−'}2a·b=${ans}`);
       case'line_point_direction':
@@ -161,22 +186,32 @@
     {id:'deep',name:'심화',tag:'DEEP',desc:'여러 조건과 부호가 겹친 문제를 골라 실전 판단력을 높입니다.',samples:9}
   ];
   let currentLevel='basic';
+  /* 문제가 얼마나 빡센지 점수를 매긴다. 응용·심화는 여러 개를 뽑아 점수가
+     높은 것을 고른다.
+
+     정답(q.correct)은 절대 넣지 않는다. 예전에는 넣었는데, 빼기 기호에
+     가중치가 붙어 있어서 답이 음수이거나 '둔각' 처럼 빼기에서 나오는 것이
+     늘 이겼다. 그 결과 dot_angle 심화는 98%가 둔각이었다 — 아이들이 식을
+     안 보고 찍을 수 있었다. 점수는 학생이 읽는 부분만 보고 매긴다. */
   function questionComplexity(q){
-    const text=[q.type,q.equation,q.prompt,q.correct].join(' ');
-    const nums=(text.match(/-?\d+(?:\.\d+)?/g)||[]).map(Number);
+    const text=[q.type,q.equation,q.prompt].join(' ');
+    const nums=(text.match(/-?d+(?:.d+)?/g)||[]).map(Number);
     const magnitude=nums.length?Math.max(...nums.map(Math.abs)):0;
     return text.length/35+(text.match(/[−-]/g)||[]).length*2.2+(text.match(/[±√²³]/g)||[]).length*1.8+(text.match(/,/g)||[]).length*.9+Math.min(5,magnitude/5);
   }
   function makeQuestion(id,level=currentLevel){
     const spec=LEVELS.find(x=>x.id===level)||LEVELS[0];
-    let best=makeBaseQuestion(id),bestScore=questionComplexity(best);
-    for(let i=1;i<spec.samples;i++){
-      const candidate=makeBaseQuestion(id),score=questionComplexity(candidate);
-      if(score>bestScore){best=candidate;bestScore=score}
-    }
-    best.level=spec.id;
-    best.type=`${spec.name} · ${best.type}`;
-    return best;
+    const pool=[];
+    for(let i=0;i<spec.samples;i++){const q=makeBaseQuestion(id);pool.push({q,score:questionComplexity(q)})}
+    /* 예전에는 점수가 가장 높은 하나만 골랐다. 그러면 같은 모양이 늘 이겨서
+       답이 한쪽으로 쏠린다. 최고점에 가까운 것들 중에서 하나를 고른다 —
+       난이도는 지키면서 답은 흩어진다. */
+    const best=Math.max(...pool.map(x=>x.score));
+    const near=pool.filter(x=>x.score>=best-1.2);
+    const best2=near[ri(0,near.length-1)].q;
+    best2.level=spec.id;
+    best2.type=`${spec.name} · ${best2.type}`;
+    return best2;
   }
 
   const defs=[

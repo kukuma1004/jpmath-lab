@@ -238,9 +238,18 @@
     // 샌드위치 · 유계 조건의 형태를 바꾼다
     squeeze_limit:{
       applied(){
-        const a=ri(1,4);
-        return Q('SQUEEZE · 두 함수 사이',`${2*a}x+1 ≤ f(x) ≤ x²${sign(2*a)}x+1,  x→0`,'lim f(x)의 값은?',1,[2*a+1,0,'판정 불가'],
-          `양 끝 함수의 x→0 극한이 모두 1이므로 사이에 낀 f(x)의 극한도 1입니다.`);
+        /* 예전에는 양 끝의 상수항을 늘 1로 두어 답이 언제나 1이었다.
+           아이들이 식을 읽지 않고 1만 눌러도 통과했다. 끼인 값 L 과
+           다가가는 자리 p 를 함께 굴린다.
+
+           두 끝은 a(x−p)+L 과 (x−p)²+a(x−p)+L 이다. 화면에는 P.text 로 펼쳐
+           적는다 — 4(x+1) 처럼 곱셈 기호를 생략하면 검산기가 못 읽는다. */
+        const a=ri(1,4),L=ri(-4,5),p=pick([0,0,1,-1,2]);
+        const lo=P.text([L-a*p,a],'x');
+        const hi=P.text([p*p-a*p+L,a-2*p,1],'x');
+        return Q('SQUEEZE · 두 함수 사이',`${lo} ≤ f(x) ≤ ${hi},  x→${num(p)}`,
+          'lim f(x)의 값은?',L,[L+a,0,'판정 불가'],
+          `x→${num(p)}에서 두 끝이 모두 ${num(L)}이 됩니다. 사이에 낀 f(x)의 극한도 ${num(L)}입니다.`);
       },
       deep(){
         const A=ri(1,5),B=ri(1,5),c=ri(2,6),correct=A-B,limit=2*correct+A;
@@ -641,11 +650,21 @@
       q.check={k:'absint',c:v,a:0,b:T};return q;
     },
     deep(){
-      const k=ri(1,3),T=2*k;                        // v(t)=2t−2k : t=k 에서 부호가 바뀐다
-      const v=[-2*k,2];                             // 변위는 0, 이동거리는 2k² — 여기서는 변위를 묻는다
-      const q=Q('DISPLACEMENT vs DISTANCE',`v(t)=${P.text(v,'t')},  0≤t≤${T}`,`위치의 변화량(변위)은?`,0,[2*k*k,k*k,-2*k*k],
-        `변위는 ∫v dt로 0입니다. 이동거리 ${2*k*k}와 다릅니다. t=${k}에서 방향이 바뀌어 되돌아왔기 때문입니다.`);
-      q.check={k:'defint',c:v,a:0,b:T};return q;
+      /* 예전에는 구간을 늘 [0,2k] 로 잡아 변위가 언제나 0이었다.
+         t=k 에서 방향이 바뀌는 것은 그대로 두되, 끝을 굴려 답이 달라지게 한다.
+           변위    = (T−k)² − k²
+           이동거리 = (T−k)² + k²                  */
+      const k=ri(1,3),T=k*pick([1,2,3]);            // v(t)=2t−2k : t=k 에서 부호가 바뀐다
+      const v=[-2*k,2];
+      const gap=(T-k)*(T-k);
+      const displacement=gap-k*k, distance=gap+k*k;
+      const askDistance=pick([true,false]);
+      const correct=askDistance?distance:displacement;
+      const q=Q('DISPLACEMENT vs DISTANCE',`v(t)=${P.text(v,'t')},  0≤t≤${T}`,
+        askDistance?'이동거리는?':'위치의 변화량(변위)은?',correct,
+        [askDistance?displacement:distance,-correct,k*k],
+        `t=${k}에서 방향이 바뀝니다. 변위는 ${num(displacement)}, 이동거리는 ${num(distance)}입니다. ${askDistance?'이동거리는 되돌아온 만큼도 더합니다.':'변위는 되돌아온 만큼이 상쇄됩니다.'}`);
+      q.check={k:askDistance?'absint':'defint',c:v,a:0,b:T};return q;
     }
   };
 
@@ -702,9 +721,22 @@
       case'continuity_parameter':
         a=ri(1,6);correct=2*a;
         return Q('CONTINUITY',`f(x)=(x²−${a*a})/${factor(a)} (x≠${a}),  f(${a})=k`,'x='+a+'에서 연속이 되게 하는 k는?',correct,[a,a*a,-correct],`x≠${a}에서 f(x)=x+${a}이므로 극한값은 ${correct}입니다.`);
-      case'squeeze_limit':
-        n=pick([2,4,6]);A=ri(2,5);
-        return Q('SQUEEZE',`|g(x)|≤${A},  lim x→0  x${['','','²','³','⁴','⁵','⁶'][n]}g(x)`,'주어진 유계 조건에서 극한값은?',0,[1,-1,'판정 불가'],`|x${['','','²','³','⁴','⁵','⁶'][n]}g(x)|≤${A}|x|${['','','²','³','⁴','⁵','⁶'][n]}이고 오른쪽이 0으로 갑니다.`);
+      case'squeeze_limit':{
+        /* x^n·g(x) 만 물으면 답이 언제나 0이라, 아이들이 식을 안 보고 0을 눌렀다.
+           끼우는 자리를 0이 아닌 값으로도 두어 양 끝을 실제로 읽게 한다. */
+        const sup=['','','²','³','⁴','⁵','⁶'];
+        n=pick([2,3,4]);A=ri(2,5);k=ri(-4,5);
+        if(pick([0,1])){
+          // |f(x) − L| ≤ A·xⁿ 꼴 — 끼인 값이 그대로 답이 된다
+          // k=0 이면 |f(x)−0| 이 되어 보기 흉하다
+          const head=k===0?'|f(x)|':`|f(x)${tail(-k,'')}|`;
+          return Q('SQUEEZE',`${head} ≤ ${A}x${sup[n]},  x→0`,'lim f(x)의 값은?',k,[k+A,k===0?1:-k,'판정 불가'],
+            `${A}x${sup[n]}→0이므로 f(x)−${num(k)}→0, 곧 lim f(x)=${num(k)}입니다.`);
+        }
+        // xⁿ·g(x)→0 에 상수를 얹어 둔다. 0으로 가는 것은 뒤 항뿐이다.
+        return Q('SQUEEZE',`|g(x)|≤${A},  lim x→0  [${num(k)} + x${sup[n]}g(x)]`,'주어진 유계 조건에서 극한값은?',k,[0,k+A,'판정 불가'],
+          `|x${sup[n]}g(x)|≤${A}|x${sup[n]}|→0이므로 남는 것은 상수 ${num(k)}입니다.`);
+      }
       case'lhopital':
         a=nonzero(-4,4);n=pick([2,3,4]);A=Math.pow(a,n);correct=n*Math.pow(a,n-1);
         return Q('L’HÔPITAL CHECK',`lim x→${a}  (${pow('x',n)}${A>=0?`−${A}`:`+${Math.abs(A)}`})/${factor(a)}`,'로피탈 정리로 검산한 극한값은?',correct,[Math.pow(a,n-1),n*a,A],`0/0꼴이므로 분자와 분모를 각각 미분하면 ${n}${pow('x',n-1)}/1입니다. x=${a}를 대입하면 ${correct}입니다.`);
@@ -726,11 +758,30 @@
       case'extrema_sign':
         a=ri(-3,3);mode=pick(['max','min']);correct=mode==='max'?'극대':'극소';
         return Q('SIGN CHANGE',`x=${a}:  f′(x)  ${mode==='max'?'+ → −':'− → +'}`,'x='+a+'에서 f의 상태는?',correct,[mode==='max'?'극소':'극대','변곡점','판정 불가'],`${mode==='max'?'증가에서 감소로':'감소에서 증가로'} 바뀌므로 ${correct}입니다.`);
-      case'cubic_extrema':
-        return Q('CUBIC EXTREMA',`f(x)=x³−3mx+1`,'f가 극대와 극소를 모두 갖기 위한 m의 조건은?','m>0',['m≥0','m<0','m≤0'],`f′(x)=3(x²−m)이 서로 다른 두 실근을 가져야 하므로 m>0입니다.`);
-      case'quartic_shape':
-        roots=pick([[-2,0,2],[-3,-1,2],[-1,1,3]]);correct='극대';
-        return Q('QUARTIC SHAPE',`f′(x)=4${factor(roots[0])}${factor(roots[1])}${factor(roots[2])}`,'가운데 임계점 x='+roots[1]+'에서 f는? ',correct,['극소','변곡점','판정 불가'],`도함수 부호가 +에서 −로 바뀌므로 가운데 임계점은 극대입니다.`);
+      case'cubic_extrema':{
+        /* 예전에는 문제가 한 가지뿐이라 답이 늘 'm>0' 이었다.
+           부호와 묻는 방향을 굴린다 — 조건식을 세우는 힘은 그대로 쓰인다. */
+        const minus=pick([true,false]),wantBoth=pick([true,false]);
+        k=ri(1,5);
+        // f′=0 이 서로 다른 두 실근을 가질 조건 : − 는 m>0, + 는 m<0
+        const both=minus?'m>0':'m<0', none=minus?'m≤0':'m≥0';
+        const ans=wantBoth?both:none;
+        return Q('CUBIC EXTREMA',`f(x)=x³${minus?'−':'+'}3mx+${k}`,
+          wantBoth?'f가 극대와 극소를 모두 갖기 위한 m의 조건은?':'f가 극값을 갖지 않기 위한 m의 조건은?',
+          ans,['m>0','m<0','m≥0','m≤0'].filter(x=>x!==ans),
+          `f′(x)=3(x²${minus?'−':'+'}m)입니다. 서로 다른 두 실근을 가지면 극대·극소가 모두 생기고(${both}), 아니면 극값이 없습니다(${none}).`);
+      }
+      case'quartic_shape':{
+        /* 예전에는 늘 가운데 임계점을 물었다. 세 근짜리 f′ 에서 가운데는
+           언제나 극대라 답이 고정이었다. 어느 임계점을 묻는지 굴린다. */
+        roots=pick([[-2,0,2],[-3,-1,2],[-1,1,3],[-2,1,3]]);
+        const i=ri(0,2);
+        // f′=4(x−r₀)(x−r₁)(x−r₂) 의 부호는 왼쪽부터 −,+,−,+ 이다
+        correct=i===1?'극대':'극소';
+        return Q('QUARTIC SHAPE',`f′(x)=4${factor(roots[0])}${factor(roots[1])}${factor(roots[2])}`,
+          `x=${num(roots[i])}에서 f는?`,correct,[correct==='극대'?'극소':'극대','변곡점','판정 불가'],
+          `f′의 부호가 왼쪽부터 −, +, −, + 로 바뀝니다. x=${num(roots[i])}에서는 ${correct==='극대'?'+에서 −로 바뀌어 극대':'−에서 +로 바뀌어 극소'}입니다.`);
+      }
       case'real_roots':
         k=pick([-3,-2,-1,0,1,2,3]);correct=Math.abs(k)<2?'3개':Math.abs(k)===2?'2개':'1개';
         return Q('REAL ROOTS',`x³−3x=${k}`,'서로 다른 실근의 개수는?',correct,['1개','2개','3개'].filter(x=>x!==correct).concat(['0개']),`y=x³−3x의 극댓값은 2, 극솟값은 −2이므로 수평선 y=${k}와의 교점을 셉니다.`);
@@ -752,9 +803,27 @@
       case'definite_integral':
         A=2*ri(1,4);b=ri(1,5);correct=A*b*b/2;
         return Q('DEFINITE INTEGRAL',`∫[0→${b}] ${A}x dx`,'정적분의 값은?',correct,[A*b,A*b*b,correct-b],`원시함수 ${A/2}x²에 ${b}와 0을 대입하면 ${correct}입니다.`);
-      case'integral_symmetry':
-        n=pick([1,3,5]);a=ri(1,5);
-        return Q('SYMMETRY',`∫[−${a}→${a}] ${pow('x',n)} dx`,'정적분의 값은?',0,[a,2*a,frac(2*Math.pow(a,n+1),n+1)],`${pow('x',n)}은 홀함수이고 구간이 원점 대칭이므로 0입니다.`);
+      case'integral_symmetry':{
+        /* 예전에는 홀함수만 물어 답이 언제나 0이었다. 아이들이 적분을 하지 않고
+           0을 눌렀다. 홀함수에 상수를 얹거나 짝함수를 섞는다. */
+        a=ri(1,4);
+        const shape=ri(0,2);
+        if(shape===0){
+          n=pick([1,3,5]);
+          return Q('SYMMETRY',`∫[−${a}→${a}] ${pow('x',n)} dx`,'정적분의 값은?',0,[a,2*a,frac(2*Math.pow(a,n+1),n+1)],
+            `${pow('x',n)}은 홀함수이고 구간이 원점 대칭이므로 0입니다.`);
+        }
+        if(shape===1){
+          // 홀함수 + 상수 : 홀함수 쪽만 사라지고 상수의 넓이가 남는다
+          n=pick([1,3]);k=nonzero(-4,4);correct=2*a*k;
+          return Q('SYMMETRY',`∫[−${a}→${a}] (${pow('x',n)}${tail(k,'')}) dx`,'정적분의 값은?',correct,[0,a*k,4*a*k],
+            `${pow('x',n)}은 홀함수라 0이 되고, 상수 ${num(k)}의 적분 ${num(k)}×${2*a}=${num(correct)}만 남습니다.`);
+        }
+        // 짝함수 : 반쪽의 두 배
+        n=pick([2,4]);correct=frac(2*Math.pow(a,n+1),n+1);
+        return Q('SYMMETRY',`∫[−${a}→${a}] ${pow('x',n)} dx`,'정적분의 값은?',correct,[0,frac(Math.pow(a,n+1),n+1),frac(4*Math.pow(a,n+1),n+1)],
+          `${pow('x',n)}은 짝함수이므로 2∫[0→${a}]=${correct}입니다.`);
+      }
       case'area_axis':
         k=ri(1,4);a=ri(1,4);correct=k*a*a;
         return Q('AREA & SIGN',`y=${k}(x−${a}),  0≤x≤${2*a}`,'그래프와 x축 사이 넓이는?',correct,[2*correct,frac(correct,2),0],`x=${a}에서 나누면 합동인 두 삼각형의 넓이 합은 ${correct}입니다.`);
