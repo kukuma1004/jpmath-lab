@@ -39,7 +39,9 @@ button{font-family:inherit;cursor:pointer}
 .seg button.on{background:var(--green);border-color:var(--green);color:#fff}
 .name-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:9px}
 .name-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--white)}
-.dot{width:14px;height:14px;border-radius:50%;flex:none}
+.dot{width:18px;height:18px;border-radius:50%;flex:none;display:inline-flex;align-items:center;justify-content:center}
+.dot svg{width:72%;height:72%;fill:#fff;display:block}
+.turnbar .dot svg,.rrow .dot svg{width:70%;height:70%}
 .name-row input{flex:1;min-width:0;border:0;background:transparent;font:600 14px inherit;color:var(--ink);outline:none}
 .mode-seg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:22px}
 .mode-seg button{padding:15px 12px;border:1px solid var(--line);border-radius:13px;background:var(--white);text-align:left}
@@ -132,9 +134,10 @@ button{font-family:inherit;cursor:pointer}
   .board.sc3{--bs:1.3!important}
 }
 .cell.stepping{background:var(--yellow);box-shadow:inset 0 0 0 2px var(--orange-dark)}
-.pawns{position:absolute;bottom:2px;left:0;right:0;display:flex;justify-content:center;gap:3px}
-.pawn{width:calc(var(--bs)*max(8px,calc(var(--cell)*.13)));height:calc(var(--bs)*max(8px,calc(var(--cell)*.13)));border-radius:50%;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.35)}
-.pawn.active{width:calc(var(--bs)*max(13px,calc(var(--cell)*.21)));height:calc(var(--bs)*max(13px,calc(var(--cell)*.21)));border-color:var(--ink);box-shadow:0 0 0 3px rgba(217,111,50,.5),0 1px 4px rgba(0,0,0,.4);animation:pawnPulse 1s ease-in-out infinite}
+.pawns{position:absolute;bottom:2px;left:0;right:0;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;gap:2px;padding:0 2px}
+.pawn{flex:none;width:calc(var(--pm,1)*var(--bs)*max(11px,calc(var(--cell)*.17)));height:calc(var(--pm,1)*var(--bs)*max(11px,calc(var(--cell)*.17)));border-radius:50%;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.pawn svg{width:74%;height:74%;fill:#fff;display:block}
+.pawn.active{flex:none;width:calc(var(--pm,1)*var(--bs)*max(17px,calc(var(--cell)*.27)));height:calc(var(--pm,1)*var(--bs)*max(17px,calc(var(--cell)*.27)));border-color:var(--ink);box-shadow:0 0 0 3px rgba(217,111,50,.5),0 1px 4px rgba(0,0,0,.4);animation:pawnPulse 1s ease-in-out infinite}
 @keyframes pawnPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.16)}}
 @media(prefers-reduced-motion:reduce){.pawn.active{animation:none}}
 /* 크기 고르는 칩 */
@@ -150,7 +153,7 @@ button{font-family:inherit;cursor:pointer}
 
 /* ── 컨트롤 ── */
 .turnbar{display:flex;align-items:center;gap:10px;padding:13px 15px;margin-bottom:12px;border-radius:14px;background:var(--white);border:1px solid var(--line)}
-.turnbar .dot{width:18px;height:18px}
+.turnbar .dot{width:26px;height:26px}
 .turnbar .who{flex:1;min-width:0}
 .turnbar .who b{display:block;font-size:15px}
 .turnbar .who small{color:var(--muted);font:700 12px "IBM Plex Mono",monospace}
@@ -179,7 +182,7 @@ button{font-family:inherit;cursor:pointer}
 .plist{display:grid;gap:6px}
 .prow{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:9px;background:var(--paper)}
 .prow.now{background:var(--green-light);outline:1px solid var(--green)}
-.prow .dot{width:11px;height:11px}
+.prow .dot{width:20px;height:20px}
 .prow .nm{flex:1;min-width:0;font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .prow .as{font:700 12.5px "IBM Plex Mono",monospace}
 .prow .ct{font:700 11px "IBM Plex Mono",monospace;color:var(--muted)}
@@ -442,6 +445,27 @@ const EVENTS=[
 ];
 
 const COLORS=['#d96f32','#1f6b50','#315f78','#7a4f9e','#b5892a','#b8443a'];
+
+/* ── 말 도안 ──
+   세계 여행 테마의 탈것 6종. 파일을 추가하지 않으려고 인라인 SVG 로 그린다.
+   어느 배율에서도 또렷하고, 색(플레이어)과 모양(탈것) 두 가지로 구분된다.
+   작을 때는 색 원반이, 키우면 안쪽 도안이 읽힌다. */
+const TOKENS=[
+ {n:'비행기',d:'M21.5 3.2 3.4 10.6l6.3 2.6 2.6 6.3 9.2-16.3z'},
+ {n:'돛단배',d:'M12.8 2.2 19 13.4h-6.2V2.2zM11.2 5.6v7.8H5.7l5.5-7.8zM2.6 15.4h18.8l-2.2 4.6H4.8l-2.2-4.6z'},
+ {n:'기차',d:'M7 3.4h10a2.4 2.4 0 0 1 2.4 2.4v7.6a2.4 2.4 0 0 1-2.4 2.4H7a2.4 2.4 0 0 1-2.4-2.4V5.8A2.4 2.4 0 0 1 7 3.4zM6.2 17.2h11.6l2.4 4.2H3.8l2.4-4.2z'},
+ {n:'열기구',d:'M12 2.2a7 7 0 0 1 7 7c0 3.6-3 6.2-5.4 8.6h-3.2C8 15.4 5 12.8 5 9.2a7 7 0 0 1 7-7zM10.2 18.6h3.6v3.2h-3.6z'},
+ {n:'자동차',d:'M6 10.4 7.8 5.6h8.4l1.8 4.8h1.4v6.2h-2.6a2.2 2.2 0 0 1-4.4 0h-1.2a2.2 2.2 0 0 1-4.4 0H4.6v-6.2H6z'},
+ {n:'로켓',d:'M12 1.8c3.1 3.3 4.7 7.1 4.7 10.9v3.5h-9.4v-3.5c0-3.8 1.6-7.6 4.7-10.9zM6.2 13.2 3.8 18l3.5-1.3v-3.5zm11.6 0v3.5l3.5 1.3-2.4-4.8zM10 18.8h4L12 22.6 10 18.8z'}
+];
+/* 말 하나를 그린다. 원반은 플레이어 색, 안쪽 도안은 흰색. */
+function paintToken(el,idx,color){
+  const t=TOKENS[idx%TOKENS.length];
+  el.style.background=color;
+  el.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${t.d}"/></svg>`;
+  return t;
+}
+const tokenName=idx=>TOKENS[idx%TOKENS.length].n;
 const SPECIAL={0:'start',3:'news',6:'news',9:'bank',12:'bank',15:'news',18:'tax',21:'tax'};
 const START_CASH=2500;      // 만원
 const PASS_BONUS=150;       // 출발선 통과 (전원에게 똑같이 주는 돈이라 크면 판단 차이를 덮는다)
@@ -584,7 +608,7 @@ function buildSetup(){
   BRAINS.slice(0,cfg.npcs).forEach((br,k)=>{
     const d=document.createElement('div');d.className='npc-chip';
     d.innerHTML='<i class="dot"></i><b></b><span></span>';
-    d.querySelector('.dot').style.background=COLORS[cfg.humans+k];
+    paintToken(d.querySelector('.dot'),cfg.humans+k,COLORS[cfg.humans+k]);
     d.querySelector('b').textContent=br.name;
     d.querySelector('span').textContent=br.desc;
     pv.appendChild(d);
@@ -600,8 +624,9 @@ function buildSetup(){
   for(let i=0;i<cfg.humans;i++){
     const row=document.createElement('div');row.className='name-row';
     row.innerHTML='<i class="dot"></i><input maxlength="8" placeholder="">';
-    row.querySelector('.dot').style.background=COLORS[i];
+    paintToken(row.querySelector('.dot'),i,COLORS[i]);
     const inp=row.querySelector('input');
+    row.title=tokenName(i)+' 말';
     inp.placeholder='참가자 '+(i+1);inp.value=cfg.names[i]||'';
     inp.oninput=()=>{cfg.names[i]=inp.value};
     nl.appendChild(row);
@@ -717,7 +742,7 @@ function render(){
   $('[data-round]').textContent=`라운드 ${S.round} / ${S.maxRound}`;
   renderBoard();renderPlayers();renderFx();
   const p=S.players[S.turn];
-  $('[data-turn-dot]').style.background=p.color;
+  paintToken($('[data-turn-dot]'),p.id,p.color);
   $('[data-turn-name]').textContent=p.name;
   $('[data-turn-cash]').textContent=`현금 ${man(p.cash)}원 · 총재산 ${man(totalAssets(p))}원`;
 }
@@ -746,7 +771,12 @@ function renderBoard(){
       el.innerHTML=`<span class="ic">${map[cell.type][0]}</span><span class="lbl">${map[cell.type][1]}</span>`;
     }
     const pw=document.createElement('div');pw.className='pawns';
-    S.players.forEach(p=>{if(p.pos===i){const d=document.createElement('i');d.className='pawn'+(p.id===S.turn?' active':'');d.style.background=p.color;pw.appendChild(d)}});
+    // 한 칸에 여럿이 모이면 말을 줄인다. 안 그러면 칸 밖으로 삐져나가 잘린다.
+    const here=S.players.filter(p=>p.pos===i).length;
+    pw.style.setProperty('--pm',here>=5?.55:here>=3?.72:1);
+    S.players.forEach(p=>{if(p.pos===i){
+      const d=document.createElement('i');d.className='pawn'+(p.id===S.turn?' active':'');
+      const t=paintToken(d,p.id,p.color);d.title=`${p.name} · ${t.n}`;pw.appendChild(d)}});
     el.appendChild(pw);
     b.appendChild(el);
   });
@@ -760,7 +790,7 @@ function renderCenter(msg){
   if(msg){ctr.innerHTML=msg;return}
   const p=S.players[S.turn];
   const owned=S.board.filter(c=>c.type==='city'&&c.owner===p.id);
-  ctr.innerHTML=`<h3>${p.name}</h3>
+  ctr.innerHTML=`<h3>${p.name} <span style="font-size:.55em;opacity:.65;font-weight:400">${tokenName(p.id)}</span></h3>
     <p class="sub">현금</p><div class="big">${man(p.cash)}원</div>
     <p class="sub">총재산 ${man(totalAssets(p))}원 · 도시 ${owned.length}곳${p.deposit?` · 예금 ${man(p.deposit)}원`:''}</p>
     ${owned.length?`<div class="why">${owned.map(c=>`${COUNTRIES[c.ci].f} ${COUNTRIES[c.ci].city} ${man(cityValue(c))}`).join(' · ')}</div>`:'<div class="why">아직 가진 도시가 없습니다. 통화가 싸진 나라를 노려 보세요.</div>'}
@@ -774,7 +804,7 @@ function renderPlayers(){
     const row=document.createElement('div');
     row.className='prow'+(p.id===S.turn?' now':'')+(p.npc?' npc':'');
     row.innerHTML=`<i class="dot"></i><span class="nm"></span><span class="ct">${n}곳</span><span class="as">${man(a)}</span>`;
-    row.querySelector('.dot').style.background=p.color;
+    paintToken(row.querySelector('.dot'),p.id,p.color);
     row.querySelector('.nm').textContent=p.name;
     if(p.npc)row.querySelector('.nm').insertAdjacentHTML('beforeend','<span class="tag-npc">NPC</span>');
     box.appendChild(row);
@@ -1182,7 +1212,7 @@ function finish(){
     el.innerHTML=`<span class="no">${i+1}</span><i class="dot"></i>
       <span class="nm"></span>
       <span class="as">${man(r.a)}원<small>도시 ${r.n}곳 · 시작 대비 ${diff>=0?'+':''}${man(diff)}</small></span>`;
-    el.querySelector('.dot').style.background=r.p.color;
+    paintToken(el.querySelector('.dot'),r.p.id,r.p.color);
     el.querySelector('.nm').textContent=r.p.name;
     if(r.p.npc)el.querySelector('.nm').insertAdjacentHTML('beforeend','<span class="tag-npc">NPC</span>');
     rk.appendChild(el);
@@ -1316,7 +1346,7 @@ async function watchRoom(){
       players.forEach(([uid,pl],i)=>{
         const d=document.createElement('div');d.className='r';
         d.innerHTML='<i></i><span></span><small></small>';
-        d.querySelector('i').style.background=COLORS[i]||'#999';
+        paintToken(d.querySelector('i'),i,COLORS[i]||'#999');
         d.querySelector('span').textContent=pl.nickname;
         d.querySelector('small').textContent=(uid===room.hostId?'진행자':'')+(uid===LIVE.uid?' · 나':'');
         box.appendChild(d);
@@ -1599,7 +1629,7 @@ function liveFinish(){
     const diff=r.a-START_CASH;
     el.innerHTML=`<span class="no">${i+1}</span><i class="dot"></i><span class="nm"></span>
       <span class="as">${man(r.a)}원<small>도시 ${r.n}곳 · 시작 대비 ${diff>=0?'+':''}${man(diff)}</small></span>`;
-    el.querySelector('.dot').style.background=r.p.color;
+    paintToken(el.querySelector('.dot'),r.p.id,r.p.color);
     el.querySelector('.nm').textContent=r.p.name+(r.p.uid===LIVE.uid?' (나)':'');
     rk.appendChild(el);
   });
