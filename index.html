@@ -14,6 +14,22 @@
   <script src="jp-nav-2.js?v=14" defer></script>
   <script src="jp-home-2.js?v=1" defer></script>
   <script src="jp-home-art.js?v=4" defer></script>
+  <style>
+    /* QR 버튼 — 수업 시작할 때마다 쓰는 것이라 머리에 상시로 둔다.
+       공용 jp-nav-2.css 는 62개 파일이 함께 읽어서 손대지 않는다(캐시 버전 일괄 상향 회피). */
+    .global-header > .header-right { display: flex; align-items: center; gap: clamp(6px, 1.6vw, 16px); }
+    .header-qr {
+      display: inline-flex; align-items: center; gap: 7px;
+      min-height: 44px; padding: 0 15px;
+      border: 1px solid currentColor; border-radius: 999px;
+      color: inherit; text-decoration: none;
+      font-size: 13px; font-weight: 700; letter-spacing: .02em;
+      opacity: .82; transition: opacity .2s ease, background-color .2s ease;
+    }
+    .header-qr:hover, .header-qr:focus-visible { opacity: 1; background: rgba(127,127,127,.12); }
+    .header-qr svg { width: 15px; height: 15px; fill: currentColor; flex: none; }
+    @media (max-width: 430px) { .header-qr { padding: 0 12px; } .header-qr b { display: none; } }
+  </style>
 </head>
 <body class="jp-home">
   <a class="skip-link" href="#main">본문으로 바로가기</a>
@@ -23,10 +39,16 @@
       <span class="global-brand-mark" aria-hidden="true">JP</span>
       <span class="global-brand-name">MATH LAB</span>
     </a>
-    <button class="menu-open" type="button" aria-haspopup="dialog" aria-controls="globalMenu" aria-expanded="false" data-menu-open>
-      <span>메뉴</span>
-      <span class="menu-open-icon" aria-hidden="true"><i></i><i></i></span>
-    </button>
+    <div class="header-right">
+      <a class="header-qr" href="공유.html" title="QR 띄우기 — 학생이 찍어서 바로 들어옵니다">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm8-2h3v3h-3v-3zm5 0h3v3h-3v-3zm-5 5h3v3h-3v-3zm5 0h3v3h-3v-3z"/></svg>
+        <b>QR</b>
+      </a>
+      <button class="menu-open" type="button" aria-haspopup="dialog" aria-controls="globalMenu" aria-expanded="false" data-menu-open>
+        <span>메뉴</span>
+        <span class="menu-open-icon" aria-hidden="true"><i></i><i></i></span>
+      </button>
+    </div>
   </header>
 
   <div class="global-menu" id="globalMenu" role="dialog" aria-modal="true" aria-labelledby="globalMenuTitle" aria-hidden="true" data-global-menu>
