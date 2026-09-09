@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>QR로 들어오기 · JP Math Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500;600;700&amp;family=Noto+Serif+KR:wght@700;900&amp;display=swap" rel="stylesheet">
+<script src="vendor/qr.js?v=1"></script>
+<style>
+:root{--ink:#17231d;--muted:#616a66;--paper:#f4f0e6;--white:#fffdf7;--line:#d8d2c5;--green:#1f6b50;--green-light:#dce9df;--orange:#d96f32}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans KR",system-ui,sans-serif;-webkit-text-size-adjust:100%}
+button{font-family:inherit;cursor:pointer}
+.hidden{display:none!important}
+
+.bar{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);background:rgba(244,240,230,.96);position:sticky;top:0;z-index:5}
+.bar a.back{display:inline-flex;align-items:center;gap:6px;padding:8px 13px;border:1px solid var(--ink);border-radius:9px;background:var(--white);color:var(--ink);text-decoration:none;font-size:13px;font-weight:700}
+.bar h1{flex:1;margin:0;font:900 17px/1.2 "Noto Serif KR",serif;letter-spacing:-.04em}
+.bar button{padding:9px 14px;border:1px solid var(--ink);border-radius:9px;background:var(--ink);color:#fff;font-size:13px;font-weight:700}
+
+.wrap{max-width:940px;margin:0 auto;padding:24px 16px 60px}
+.stage{display:grid;grid-template-columns:minmax(0,auto) minmax(0,1fr);gap:26px;align-items:center;
+  padding:26px;border-radius:20px;background:var(--white);border:1px solid var(--line)}
+@media(max-width:760px){.stage{grid-template-columns:1fr;text-align:center;justify-items:center;padding:20px}}
+.qbox{width:min(46vw,340px);aspect-ratio:1/1;padding:14px;border-radius:16px;background:#fff;border:1px solid var(--line)}
+.qbox svg{width:100%;height:100%;display:block}
+.info h2{margin:0 0 6px;font:900 26px/1.25 "Noto Serif KR",serif;letter-spacing:-.04em}
+.info .desc{margin:0 0 16px;color:var(--muted);font-size:14px;line-height:1.75}
+.addr{display:block;width:100%;padding:14px 16px;border-radius:12px;background:var(--paper);border:1px solid var(--line);
+  font:700 15px/1.5 "IBM Plex Mono",monospace;word-break:break-all;text-align:left;color:var(--ink)}
+.acts{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}
+.acts button{padding:13px 18px;border:1px solid var(--ink);border-radius:11px;background:var(--white);font-size:14px;font-weight:700}
+.acts button.primary{background:var(--ink);color:#fff}
+.copied{margin:10px 0 0;padding:10px 13px;border-radius:10px;background:var(--green-light);color:var(--green);font-size:13px;font-weight:700}
+
+h3.sec{margin:34px 0 12px;font:900 19px/1.3 "Noto Serif KR",serif;letter-spacing:-.03em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.card{display:flex;align-items:center;gap:13px;padding:13px;border-radius:14px;background:var(--white);border:1px solid var(--line);
+  text-align:left;width:100%}
+.card:hover{border-color:var(--green)}
+.card .mini{width:64px;height:64px;flex:none;padding:4px;border-radius:9px;background:#fff;border:1px solid var(--line)}
+.card .mini svg{width:100%;height:100%;display:block}
+.card b{display:block;font-size:14px;margin-bottom:3px}
+.card small{color:var(--muted);font-size:11.5px;line-height:1.5}
+
+/* 전자칠판용 — 화면 가득 */
+.full{position:fixed;inset:0;z-index:50;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:24px}
+.full .fq{width:min(72vh,72vw);aspect-ratio:1/1}
+.full .fq svg{width:100%;height:100%;display:block}
+.full .furl{font:700 clamp(14px,2.2vw,26px) "IBM Plex Mono",monospace;word-break:break-all;text-align:center;max-width:90vw}
+.full .ftitle{font:900 clamp(20px,3.4vw,40px) "Noto Serif KR",serif;letter-spacing:-.04em}
+.full .close{position:absolute;top:18px;right:18px;padding:11px 16px;border:1px solid var(--ink);border-radius:10px;background:var(--white);font-size:14px;font-weight:700}
+.hint{margin:14px 0 0;color:var(--muted);font-size:12.5px;line-height:1.7}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <a class="back" href="index.html">← JP Math Lab</a>
+  <h1>QR로 들어오기</h1>
+  <button data-full>전자칠판에 크게</button>
+</div>
+
+<div class="wrap">
+  <section class="stage">
+    <div class="qbox" data-main-qr></div>
+    <div class="info">
+      <h2 data-title>JP Math Lab</h2>
+      <p class="desc">휴대폰 카메라로 이 QR을 비추면 바로 들어옵니다. 주소를 칠 필요가 없습니다.</p>
+      <div class="addr" data-url>—</div>
+      <div class="acts">
+        <button class="primary" data-copy>주소 복사</button>
+        <button data-share hidden>공유하기</button>
+        <button data-full2>크게 보기</button>
+      </div>
+      <p class="copied hidden" data-copied>복사했습니다.</p>
+      <p class="hint" data-hint></p>
+    </div>
+  </section>
+
+  <h3 class="sec">바로 가는 곳</h3>
+  <div class="grid" data-links></div>
+
+  <p class="hint">화면에 띄운 QR을 학생이 찍어도 되고, 학생끼리 서로 화면을 보여 줘도 됩니다.<br>
+  다른 페이지의 QR이 필요하면 그 페이지 주소를 <b>?u=</b> 뒤에 붙이면 됩니다.</p>
+</div>
+
+<div class="full hidden" data-fullscreen>
+  <button class="close" data-close>닫기</button>
+  <div class="ftitle" data-ftitle>JP Math Lab</div>
+  <div class="fq" data-fq></div>
+  <div class="furl" data-furl></div>
+</div>
+
+<script>
+/* 이 페이지가 있는 곳이 사이트 뿌리다. 도메인을 새로 사서 붙여도
+   여기 코드는 그대로 두면 된다 — 주소를 박아 두지 않는다. */
+const ROOT = location.href.replace(/공유\.html.*$/, '');
+const $ = s => document.querySelector(s);
+
+const LINKS = [
+  ['', 'JP Math Lab', '전체 입구'],
+  ['경제수학/경제수학_세계시장.html', '세계시장 원정', '환율 보드게임 · 혼자도 친구방도'],
+  ['경제수학/', '경제수학', '개념 학습과 게임'],
+  ['미적분1/', '미적분Ⅰ', '개념 페이지와 게임'],
+  ['기하/', '기하', '공간 실험실과 아레나'],
+  ['보스전/', '보스전', '계산 스킬 총력전']
+];
+
+function target() {
+  const u = new URLSearchParams(location.search).get('u');
+  if (!u) return { url: ROOT, title: 'JP Math Lab' };
+  // 바깥 주소로는 못 만들게 한다. 이 사이트 안만 허용한다.
+  let abs;
+  try { abs = new URL(u, ROOT).href; } catch (e) { return { url: ROOT, title: 'JP Math Lab' }; }
+  if (abs.indexOf(ROOT) !== 0) return { url: ROOT, title: 'JP Math Lab' };
+  const known = LINKS.find(l => ROOT + l[0] === abs);
+  return { url: abs, title: known ? known[1] : decodeURIComponent(abs.slice(ROOT.length)) || 'JP Math Lab' };
+}
+
+function draw(el, url, size) {
+  try {
+    el.innerHTML = JPQR.svg(url, { margin: 3, dark: '#17231d', light: '#ffffff' });
+  } catch (e) {
+    el.innerHTML = '<div style="padding:12px;font-size:12px;color:#9f4320">QR을 만들지 못했습니다. 아래 주소를 직접 쳐 주세요.</div>';
+  }
+}
+
+const T = target();
+$('[data-title]').textContent = T.title;
+$('[data-url]').textContent = decodeURIComponent(T.url);
+draw($('[data-main-qr]'), T.url);
+
+// 주소가 길면 QR이 촘촘해진다. 짧은 도메인을 쓰면 훨씬 굵어진다는 것을 알려 준다.
+try {
+  const m = JPQR.matrix(T.url);
+  $('[data-hint]').textContent = `QR 크기 ${m.length}×${m.length}칸 · 주소 ${decodeURIComponent(T.url).length}자.`
+    + (m.length >= 45 ? ' 주소가 길어 QR이 촘촘합니다. 짧은 도메인을 붙이면 훨씬 굵고 잘 읽힙니다.' : '');
+} catch (e) {}
+
+$('[data-links]').innerHTML = '';
+LINKS.forEach(([path, name, desc]) => {
+  const url = ROOT + path;
+  const b = document.createElement('button');
+  b.className = 'card';
+  b.innerHTML = '<span class="mini"></span><span><b></b><small></small></span>';
+  draw(b.querySelector('.mini'), url);
+  b.querySelector('b').textContent = name;
+  b.querySelector('small').textContent = desc;
+  b.onclick = () => { location.search = '?u=' + encodeURIComponent(path); };
+  $('[data-links]').appendChild(b);
+});
+
+$('[data-copy]').onclick = async () => {
+  const text = decodeURIComponent(T.url);
+  try { await navigator.clipboard.writeText(text); }
+  catch (e) {
+    // 클립보드가 막힌 브라우저에서는 선택만 해 준다
+    const r = document.createRange(); r.selectNodeContents($('[data-url]'));
+    const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+  }
+  const c = $('[data-copied]'); c.classList.remove('hidden');
+  setTimeout(() => c.classList.add('hidden'), 1800);
+};
+
+if (navigator.share) {
+  const sb = $('[data-share]'); sb.hidden = false;
+  sb.onclick = () => navigator.share({ title: T.title, url: T.url }).catch(() => {});
+}
+
+function openFull() {
+  $('[data-ftitle]').textContent = T.title;
+  $('[data-furl]').textContent = decodeURIComponent(T.url);
+  draw($('[data-fq]'), T.url);
+  $('[data-fullscreen]').classList.remove('hidden');
+  if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
+}
+function closeFull() {
+  $('[data-fullscreen]').classList.add('hidden');
+  if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
+}
+$('[data-full]').onclick = openFull;
+$('[data-full2]').onclick = openFull;
+$('[data-close]').onclick = closeFull;
+addEventListener('keydown', e => { if (e.key === 'Escape') closeFull(); });
+</script>
+</body>
+</html>
