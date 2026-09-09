@@ -250,7 +250,6 @@ button{font-family:inherit;cursor:pointer}
 <div class="topbar">
   <a class="tab-back" href="게임.html">← 게임 연구소</a>
   <h1>세계시장 원정</h1>
-  <a class="tab-back" id="shareLink" href="../공유.html" title="이 페이지 QR 보기">📱 공유</a>
   <div class="size-chip" data-size-chip hidden>
     <button data-size="1">보통</button><button data-size="1.3">크게</button><button data-size="1.7">아주 크게</button>
   </div>
@@ -1332,10 +1331,6 @@ function finish(){
 $('[data-start]').onclick=newGame;
 $('[data-again]').onclick=newGame;
 $('[data-reset]').onclick=()=>{clearTimeout(npcTimer);S=null;show('setup');buildSetup()};
-// 공유 버튼은 "지금 이 페이지"의 QR 로 간다. 홈이 아니라 이 게임으로 바로 들어온다.
-try{
-  $('#shareLink').href='../공유.html?u='+encodeURIComponent(location.pathname.split('/').slice(-2).join('/'));
-}catch(e){}
 buildSetup();
 // 보스 초상을 읽어 온 뒤 설정 화면을 다시 그린다. 못 읽으면 탈것 도안 그대로다.
 loadBosses().then(list=>{if(list.length)buildSetup()});
