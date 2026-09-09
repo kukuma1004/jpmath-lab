@@ -147,10 +147,11 @@ assert.match(skillJs, /mechanic:'step-lock'/);
 assert.match(engine, /function stepLockLabel/);
 assert.match(engine, /function lockStepCount\(\)/,'관문 수는 한 곳에서 정해야 한다.');
 assert.match(engine, /finishingStep=stepBattle&&boss\.lockStep===\(lockStepCount\(\)\)-1/,'마무리 단계는 그 판의 관문 수에서 열려야 한다.');
-// 대단원 총력전은 레벨별 문제 생성기가 극한과 연속에만 있어서, 난이도를
-// 문제가 아니라 전투 조건(체력·관문 수)으로 만든다. 그 배선이 살아 있어야 한다.
+// 대단원 총력전은 난이도를 올리면 문제가 어려워지고(멤버가 전부 레벨을
+// 갖는다) 거기에 체력과 관문이 얹힌다. 그 배선이 살아 있어야 한다.
 assert.match(engine, /cfg\.unitOf \? \[1, 1\.3, 1\.7\]/,'대단원 보스는 난이도에 따라 체력이 달라져야 한다.');
 assert.match(engine, /cfg\.unitOf\?Math\.max\(2,base\+LEVEL_LOCK\[bossLevelIndex\(\)\]\)/,'대단원 보스는 난이도에 따라 관문 수가 달라져야 한다.');
+assert.match(engine, /const LEVEL_LOCK = \[0, 0, 1\]/,'기본 난이도는 종전 고정 난이도와 같아야 한다.');
 assert.match(engine, /stepBattle&&!finishingStep/,'마무리 공격으로만 단계잠금 보스를 쓰러뜨릴 수 있어야 한다.');
 assert.match(engine, /boss\.lockStep=0;boss\.lockBreaks\+=1/,'오답이면 단계가 처음으로 돌아가야 한다.');
 assert.match(skillJs, /monotonic_interval:\{name:'부호표의 순찰자'/);

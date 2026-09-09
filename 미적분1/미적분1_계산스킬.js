@@ -695,21 +695,24 @@
   };
 
   const levelIds=Object.keys(levelMakers);
-  /* 대단원 보스도 난이도를 고를 수 있다. 다만 레벨별 문제 생성기가 있는 것은
-     극한과 연속 여덟 스킬뿐이라, 미분·적분 총력전은 문제가 아니라 전투 조건
-     (체력·시간·연속 관문 수)이 달라진다. UNIT_LEVEL_DESC 가 그것을 그대로 적는다. */
+  /* 대단원 보스도 난이도를 고를 수 있다.
+     levelMakers 는 위에서 리터럴로 여덟 개를 선언한 뒤 아래에서 스무 개를
+     더 붙인다(levelMakers.xxx = ...). 그래서 대단원 멤버 스물여덟 개가
+     전부 레벨을 갖는다 — 난이도를 올리면 문제 자체가 달라진다.
+     battle 쪽 문구는 레벨 없는 멤버가 섞인 대단원이 나중에 생길 때를 위한
+     대비다. 문제가 안 바뀌는데 "역조건까지 묻는다"고 적으면 거짓말이 된다. */
   const hasLevels=id=>levelIds.includes(id)||!!UNIT_MEMBERS[id];
   const unitQuestionLevels=id=>!!UNIT_MEMBERS[id]&&UNIT_MEMBERS[id].every(m=>levelIds.includes(m));
   const UNIT_LEVEL_DESC={
     real:{
-      basic:'여덟 갈래를 기본형으로 겨룹니다. 관문 3단계.',
-      applied:'같은 갈래가 2단계 변형으로 나옵니다. 관문 4단계 · 체력 1.3배.',
-      deep:'역조건과 풀이 선택까지 묻습니다. 관문 5단계 · 체력 1.7배.'
+      basic:'전 범위가 기본형으로 섞여 나옵니다. 관문 4단계.',
+      applied:'같은 범위가 2단계 변형으로 나옵니다. 체력 1.3배 · 관문 4단계.',
+      deep:'역조건과 부호, 풀이 선택까지 묻습니다. 체력 1.7배 · 관문 5단계.'
     },
     battle:{
-      basic:'전 범위가 섞여 나옵니다. 관문 3단계.',
-      applied:'문제는 같지만 관문이 4단계로 늘고 체력이 1.3배가 됩니다. 한 번 틀리면 처음으로 돌아갑니다.',
-      deep:'관문 5단계 · 체력 1.7배. 다섯 문제를 연속으로 맞혀야 마무리 공격이 나갑니다.'
+      basic:'전 범위가 섞여 나옵니다. 관문 4단계.',
+      applied:'문제는 같고 체력이 1.3배가 됩니다. 관문 4단계.',
+      deep:'문제는 같고 체력 1.7배 · 관문 5단계입니다. 다섯을 연속으로 맞혀야 마무리가 나갑니다.'
     }
   };
   const levelDesc=(skillId,levelId)=>{

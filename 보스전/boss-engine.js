@@ -36,12 +36,13 @@
     const BOSS_V2_HP = cfg.hp || 2600;
     const BOSS_V2_BASE_TIME = cfg.baseTime || 38;
     const BOSS_V2_MIN_TIME = cfg.minTime || 24;
-    /* 대단원 총력전은 난이도를 올려도 문제가 늘 어려워지지는 않는다
-       (레벨별 문제 생성기가 극한과 연속에만 있다). 그래서 체력과 연속 관문
-       수로 난이도를 만든다 — 전 범위를 더 오래, 더 길게 이어 맞혀야 한다. */
+    /* 대단원 총력전은 난이도를 올리면 문제 자체가 어려워진다(멤버 스킬이
+       전부 레벨을 갖는다). 거기에 체력을 얹어 판을 길게 만든다.
+       기본은 지금까지의 고정 난이도와 같게 두고(관문 가감 0), 심화에서만
+       관문을 하나 늘린다 — 문제까지 어려워진 위에 관문까지 늘리면 과하다. */
     const LEVEL_HP = cfg.mechanic === 'degree-grade' ? [1, 1.2, 1.65]
       : cfg.unitOf ? [1, 1.3, 1.7] : [1, 1, 1];
-    const LEVEL_LOCK = [-1, 0, 1];   // 대단원 관문 단계 가감
+    const LEVEL_LOCK = [0, 0, 1];   // 대단원 관문 단계 가감
     const LEVEL_TIME = [1, 1.2, 1.45];
     const bossLevelIndex = () => bossStartPhase() - 1;
     const bossMaxHp = () => Math.round(BOSS_V2_HP * LEVEL_HP[bossLevelIndex()]);
