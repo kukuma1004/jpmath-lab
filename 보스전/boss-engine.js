@@ -36,7 +36,12 @@
     const BOSS_V2_HP = cfg.hp || 2600;
     const BOSS_V2_BASE_TIME = cfg.baseTime || 38;
     const BOSS_V2_MIN_TIME = cfg.minTime || 24;
-    const LEVEL_HP = cfg.mechanic === 'degree-grade' ? [1, 1.2, 1.65] : [1, 1, 1];
+    /* 대단원 총력전은 난이도를 올려도 문제가 늘 어려워지지는 않는다
+       (레벨별 문제 생성기가 극한과 연속에만 있다). 그래서 체력과 연속 관문
+       수로 난이도를 만든다 — 전 범위를 더 오래, 더 길게 이어 맞혀야 한다. */
+    const LEVEL_HP = cfg.mechanic === 'degree-grade' ? [1, 1.2, 1.65]
+      : cfg.unitOf ? [1, 1.3, 1.7] : [1, 1, 1];
+    const LEVEL_LOCK = [-1, 0, 1];   // 대단원 관문 단계 가감
     const LEVEL_TIME = [1, 1.2, 1.45];
     const bossLevelIndex = () => bossStartPhase() - 1;
     const bossMaxHp = () => Math.round(BOSS_V2_HP * LEVEL_HP[bossLevelIndex()]);
@@ -79,7 +84,12 @@
     function bossQuestionLevel(){return cfg?.mechanic==='degree-grade'?(boss.phase===3?'deep':boss.phase===2?'applied':'basic'):api.level()}
     function squeezeSafeWindow(){return cfg?.safeWindows?.[Math.max(0,Math.min(2,boss.phase-1))]||5}
     function hDistanceLabel(){return ['1','0.1','0.01','0'][Math.max(0,Math.min(3,boss.hStep||0))]}
-    function stepLockLabel(){return `${boss.lockStep||0}/${cfg.lockSteps||3}`}
+    /* 관문 수는 대단원 보스에서만 난이도를 탄다. 나머지는 설정값 그대로다. */
+    function lockStepCount(){
+      const base=cfg.lockSteps||3;
+      return cfg.unitOf?Math.max(2,base+LEVEL_LOCK[bossLevelIndex()]):base;
+    }
+    function stepLockLabel(){return `${boss.lockStep||0}/${lockStepCount()}`}
     function sniperLockLabel(){return ['0/2','접점 1/2','기울기 2/2'][Math.max(0,Math.min(2,boss.sniperLock||0))]}
     function bladeStateLabel(){return boss.leftBladeReady?(boss.rightBladeReady?'연계!':'우 대기'):'좌 대기'}
     function startBossV2(){
@@ -161,14 +171,14 @@
       if(!boss.running||boss.locked)return;boss.locked=true;boss.attempts++;const q=boss.q,box=$('.answer-grid',$('[data-boss-body]')),ok=String(value)===q.correct,answerSeconds=(performance.now()-boss.questionStartedAt)/1000;api.markAnswers(box,q,value,button);const st=$('[data-boss-status]'),monster=$('[data-boss-monster]');
       if(ok){
         boss.combo++;boss.correct++;boss.bestCombo=Math.max(boss.bestCombo||0,boss.combo);
-        const shieldBattle=cfg.mechanic==='factor-shield',reflectBattle=cfg.mechanic==='conjugate-reflect',gradeBattle=cfg.mechanic==='degree-grade',chaosBattle=cfg.mechanic==='chaos-split',sideBattle=cfg.mechanic==='side-switch',stitchBattle=cfg.mechanic==='continuity-stitch',squeezeBattle=cfg.mechanic==='squeeze-walls',forbiddenBattle=cfg.mechanic==='forbidden-seal',differenceBattle=cfg.mechanic==='h-collapse',productBattle=cfg.mechanic==='product-blades',sniperBattle=cfg.mechanic==='sniper-lock',stepBattle=cfg.mechanic==='step-lock',breakingShield=shieldBattle&&boss.shield>0,reflecting=reflectBattle&&boss.reflectCharge===1,chaosLimit=boss.phase===3?3.5:boss.phase===2?4.1:4.8,fastFusion=chaosBattle&&answerSeconds<=chaosLimit,boundaryCrossing=sideBattle&&boss.lastSide&&boss.lastSide!==q.side,completingStitch=stitchBattle&&boss.stitches===2,withinSqueezeWindow=squeezeBattle&&!boss.wallCrushed&&answerSeconds<=squeezeSafeWindow(),breakingForbiddenSeal=forbiddenBattle&&boss.orthodoxSeal===1,exposingHCore=differenceBattle&&boss.hStep===2,completingProduct=productBattle&&q.blade==='right'&&boss.leftBladeReady,firingSniper=sniperBattle&&boss.sniperLock===2,finishingStep=stepBattle&&boss.lockStep===(cfg.lockSteps||3)-1;
+        const shieldBattle=cfg.mechanic==='factor-shield',reflectBattle=cfg.mechanic==='conjugate-reflect',gradeBattle=cfg.mechanic==='degree-grade',chaosBattle=cfg.mechanic==='chaos-split',sideBattle=cfg.mechanic==='side-switch',stitchBattle=cfg.mechanic==='continuity-stitch',squeezeBattle=cfg.mechanic==='squeeze-walls',forbiddenBattle=cfg.mechanic==='forbidden-seal',differenceBattle=cfg.mechanic==='h-collapse',productBattle=cfg.mechanic==='product-blades',sniperBattle=cfg.mechanic==='sniper-lock',stepBattle=cfg.mechanic==='step-lock',breakingShield=shieldBattle&&boss.shield>0,reflecting=reflectBattle&&boss.reflectCharge===1,chaosLimit=boss.phase===3?3.5:boss.phase===2?4.1:4.8,fastFusion=chaosBattle&&answerSeconds<=chaosLimit,boundaryCrossing=sideBattle&&boss.lastSide&&boss.lastSide!==q.side,completingStitch=stitchBattle&&boss.stitches===2,withinSqueezeWindow=squeezeBattle&&!boss.wallCrushed&&answerSeconds<=squeezeSafeWindow(),breakingForbiddenSeal=forbiddenBattle&&boss.orthodoxSeal===1,exposingHCore=differenceBattle&&boss.hStep===2,completingProduct=productBattle&&q.blade==='right'&&boss.leftBladeReady,firingSniper=sniperBattle&&boss.sniperLock===2,finishingStep=stepBattle&&boss.lockStep===(lockStepCount())-1;
         if(breakingShield)boss.shield--;if(reflectBattle)boss.reflectCharge=reflecting?0:1;
         let chaosPenalty=0;if(chaosBattle){if(fastFusion){boss.splitCount=Math.max(1,boss.splitCount-1);boss.time=Math.min(boss.limit,boss.time+1)}else{boss.splitCount=Math.min(4,boss.splitCount+1);chaosPenalty=boss.splitCount;boss.time=Math.max(0,boss.time-chaosPenalty)}}
         if(sideBattle){boss.boundaryStreak++;boss.lastSide=q.side;boss.nextSide=q.side==='left'?'right':'left'}
         if(stitchBattle)boss.stitches=Math.min(3,boss.stitches+1);
         if(squeezeBattle&&withinSqueezeWindow){boss.wallEscapes++;boss.wallGap=100;boss.time=Math.min(boss.limit,boss.time+1.2);$('[data-boss-stage]').classList.add('boss-wall-repel')}
         if(forbiddenBattle){boss.orthodoxSeal=Math.max(0,boss.orthodoxSeal-1);boss.lastForbidden=false;if(breakingForbiddenSeal){boss.sealBreaks++;boss.forbiddenPower=Math.max(0,boss.forbiddenPower-1);$('[data-boss-stage]').classList.add('boss-seal-break')}}
-        if(stepBattle){if(finishingStep){boss.lockResetOnNext=true;$('[data-boss-stage]').classList.add('boss-step-finish')}else boss.lockStep=Math.min((cfg.lockSteps||3)-1,(boss.lockStep||0)+1)}
+        if(stepBattle){if(finishingStep){boss.lockResetOnNext=true;$('[data-boss-stage]').classList.add('boss-step-finish')}else boss.lockStep=Math.min((lockStepCount())-1,(boss.lockStep||0)+1)}
         if(sniperBattle){if(firingSniper){boss.sniperShots+=1;boss.sniperResetOnNext=true;$('[data-boss-stage]').classList.add('boss-sniper-fire')}else boss.sniperLock=Math.min(2,boss.sniperLock+1)}
         if(differenceBattle){boss.hStep=Math.min(3,boss.hStep+1);$('[data-boss-stage]').classList.add('boss-h-collapse');if(exposingHCore)boss.hCoreHits++}
         if(productBattle){if(q.blade==='left'){boss.leftBladeReady=true;boss.nextBlade='right'}else{boss.rightBladeReady=true;if(completingProduct){boss.bladePairs++;$('[data-boss-stage]').classList.add('boss-blade-cross')}}}
@@ -216,7 +226,7 @@ $('[data-boss-body]').innerHTML=`<div class="boss-result-v2${flawless?' boss-res
     const bossName = cfg?cfg.name:fallbackBossNames[skill.group];
     const bossDifficultyCopy = cfg?.mechanic==='degree-grade'?'난도 상승: <b>기본 → 응용 → 심화</b>':'선택 난이도 <b>고정</b> · 전투 단계만 상승';
     const initialBossStateLabel = cfg?.mechanic==='factor-shield'?'SHIELD':cfg?.mechanic==='conjugate-reflect'?'MIRROR':cfg?.mechanic==='degree-grade'?'GRADE':cfg?.mechanic==='chaos-split'?'BODIES':cfg?.mechanic==='side-switch'?'방향':cfg?.mechanic==='continuity-stitch'?'봉합':cfg?.mechanic==='squeeze-walls'?'벽 간격':cfg?.mechanic==='forbidden-seal'?'정석 봉인':cfg?.mechanic==='h-collapse'?'h 거리':cfg?.mechanic==='product-blades'?'쌍날':cfg?.mechanic==='sniper-lock'?'조준':cfg?.mechanic==='step-lock'?cfg.lockLabel:'PHASE';
-    const initialBossStateValue = cfg?.mechanic==='factor-shield'?3:cfg?.mechanic==='conjugate-reflect'?'0/2':cfg?.mechanic==='degree-grade'?'C':cfg?.mechanic==='side-switch'?'← 좌':cfg?.mechanic==='continuity-stitch'?'0/3':cfg?.mechanic==='squeeze-walls'?'100%':cfg?.mechanic==='forbidden-seal'?'3/3':cfg?.mechanic==='h-collapse'?'1':cfg?.mechanic==='product-blades'?'좌 대기':cfg?.mechanic==='sniper-lock'?'0/2':cfg?.mechanic==='step-lock'?`0/${cfg.lockSteps}`:1;
+    const initialBossStateValue = cfg?.mechanic==='factor-shield'?3:cfg?.mechanic==='conjugate-reflect'?'0/2':cfg?.mechanic==='degree-grade'?'C':cfg?.mechanic==='side-switch'?'← 좌':cfg?.mechanic==='continuity-stitch'?'0/3':cfg?.mechanic==='squeeze-walls'?'100%':cfg?.mechanic==='forbidden-seal'?'3/3':cfg?.mechanic==='h-collapse'?'1':cfg?.mechanic==='product-blades'?'좌 대기':cfg?.mechanic==='sniper-lock'?'0/2':cfg?.mechanic==='step-lock'?`0/${lockStepCount()}`:1;
     /* 대단원 보스는 전용 초상을 먼저 쓴다. 예전 데이터의 모자이크는
        혹시 전용 파일을 아직 붙이지 못한 경우에만 안전망으로 남긴다. */
     const bossPicture = cfg.theme==='unit'&&cfg.art

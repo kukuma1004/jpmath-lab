@@ -695,7 +695,28 @@
   };
 
   const levelIds=Object.keys(levelMakers);
-  const hasLevels=id=>levelIds.includes(id);
+  /* 대단원 보스도 난이도를 고를 수 있다. 다만 레벨별 문제 생성기가 있는 것은
+     극한과 연속 여덟 스킬뿐이라, 미분·적분 총력전은 문제가 아니라 전투 조건
+     (체력·시간·연속 관문 수)이 달라진다. UNIT_LEVEL_DESC 가 그것을 그대로 적는다. */
+  const hasLevels=id=>levelIds.includes(id)||!!UNIT_MEMBERS[id];
+  const unitQuestionLevels=id=>!!UNIT_MEMBERS[id]&&UNIT_MEMBERS[id].every(m=>levelIds.includes(m));
+  const UNIT_LEVEL_DESC={
+    real:{
+      basic:'여덟 갈래를 기본형으로 겨룹니다. 관문 3단계.',
+      applied:'같은 갈래가 2단계 변형으로 나옵니다. 관문 4단계 · 체력 1.3배.',
+      deep:'역조건과 풀이 선택까지 묻습니다. 관문 5단계 · 체력 1.7배.'
+    },
+    battle:{
+      basic:'전 범위가 섞여 나옵니다. 관문 3단계.',
+      applied:'문제는 같지만 관문이 4단계로 늘고 체력이 1.3배가 됩니다. 한 번 틀리면 처음으로 돌아갑니다.',
+      deep:'관문 5단계 · 체력 1.7배. 다섯 문제를 연속으로 맞혀야 마무리 공격이 나갑니다.'
+    }
+  };
+  const levelDesc=(skillId,levelId)=>{
+    const base=LEVELS.find(l=>l.id===levelId);
+    if(!UNIT_MEMBERS[skillId])return base.desc;
+    return UNIT_LEVEL_DESC[unitQuestionLevels(skillId)?'real':'battle'][levelId]||base.desc;
+  };
   /* 대단원 보스가 어느 스킬에서 문제를 뽑는지. 보스 설정보다 앞에 둔다 —
      설정은 파일 아래쪽에 있어서, 문제를 만드는 쪽에서 그것을 바로 보면
      아직 만들어지기 전이라 터진다. 설정 쪽이 이 명단을 가져다 쓴다. */
@@ -922,7 +943,7 @@
   const levelBar=hasLevels(skill.id)?`<div class="skill-level-bar">
       <span class="skill-level-label">난이도</span>
       <div class="skill-level-seg" role="group" aria-label="난이도 선택">${LEVELS.map(l=>`<button type="button" class="skill-level-btn${l.id===currentLevel?' active':''}" data-level="${l.id}" aria-pressed="${l.id===currentLevel}"><b>${l.name}</b><small>${l.tag}</small></button>`).join('')}</div>
-      <p class="skill-level-desc" data-level-desc>${LEVELS.find(l=>l.id===currentLevel).desc}</p>
+      <p class="skill-level-desc" data-level-desc>${levelDesc(skill.id,currentLevel)}</p>
     </div>`:'';
   document.documentElement.style.setProperty('--skill',group.color);
   document.documentElement.style.setProperty('--skill-dark',group.dark);
@@ -1166,7 +1187,7 @@
     if(id===currentLevel||!LEVELS.some(l=>l.id===id))return;
     currentLevel=id;saved.level=id;save();
     $$('.skill-level-btn').forEach(b=>{const on=b.dataset.level===id;b.classList.toggle('active',on);b.setAttribute('aria-pressed',String(on))});
-    $('[data-level-desc]').textContent=LEVELS.find(l=>l.id===id).desc;
+    $('[data-level-desc]').textContent=levelDesc(skill.id,id);
     resetModes();updateStats();newExample();
     if(window.jpMotionFeedback)window.jpMotionFeedback('success',`난이도를 ${LEVELS.find(l=>l.id===id).name}으로 바꿨습니다.`);
   }
