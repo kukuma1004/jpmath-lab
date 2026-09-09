@@ -39,7 +39,26 @@ button{font-family:inherit;cursor:pointer}
 .seg button.on{background:var(--green);border-color:var(--green);color:#fff}
 .name-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:9px}
 .name-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--white)}
-.dot{width:18px;height:18px;border-radius:50%;flex:none;display:inline-flex;align-items:center;justify-content:center}
+.dot{width:18px;height:18px;border-radius:50%;flex:none;display:inline-flex;align-items:center;justify-content:center;overflow:hidden}
+.dot img,.pawn img{width:100%;height:100%;object-fit:cover;display:block;border-radius:50%}
+/* 말 고르기 */
+.pick-btn{margin-left:auto;padding:5px 9px;border:1px solid var(--line);border-radius:8px;background:var(--white);font-size:11px;font-weight:700;color:var(--muted);flex:none}
+.pick-btn:hover{border-color:var(--green);color:var(--green)}
+.picker{width:100%;max-width:620px;max-height:86vh;display:flex;flex-direction:column;padding:22px;border-radius:18px;background:var(--white);box-shadow:var(--shadow)}
+.picker h3{margin:0 0 4px;font:900 22px/1.25 "Noto Serif KR",serif;letter-spacing:-.04em}
+.picker p{margin:0 0 14px;color:var(--muted);font-size:13px;line-height:1.6}
+.picker-grid{flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:10px;padding:2px}
+.pk{display:flex;flex-direction:column;align-items:center;gap:5px;padding:7px 4px;border:2px solid transparent;border-radius:12px;background:var(--paper);cursor:pointer}
+.pk:hover{border-color:var(--line)}
+.pk.on{border-color:var(--green);background:var(--green-light)}
+.pk.taken{opacity:.42}
+.pk span{width:56px;height:56px;border-radius:50%;overflow:hidden;background:var(--line);display:flex;align-items:center;justify-content:center}
+.pk span img{width:100%;height:100%;object-fit:cover;display:block}
+.pk span svg{width:70%;height:70%;fill:#fff}
+.pk b{font-size:10.5px;font-weight:700;line-height:1.3;text-align:center;word-break:keep-all}
+.picker-foot{display:flex;gap:8px;margin-top:14px}
+.picker-foot button{flex:1;padding:13px;border:1px solid var(--ink);border-radius:11px;background:var(--white);font-size:14px;font-weight:700}
+.picker-foot button.primary{background:var(--ink);color:#fff}
 .dot svg{width:72%;height:72%;fill:#fff;display:block}
 .turnbar .dot svg,.rrow .dot svg{width:70%;height:70%}
 .name-row input{flex:1;min-width:0;border:0;background:transparent;font:600 14px inherit;color:var(--ink);outline:none}
@@ -109,8 +128,8 @@ button{font-family:inherit;cursor:pointer}
 /* 말판은 언제나 화면 안에 통째로 들어와야 한다. 보드게임에서 판이 잘리면
    말이 어디 있는지 볼 수가 없다. 높이에 맞춰 최대 크기로 잡고,
    크기 칩은 판을 넘기지 않고 글씨와 말만 키운다. */
-.board{--bs:1;--cell:40px;display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(7,1fr);gap:4px;padding:8px;aspect-ratio:1/1;max-width:min(100%,calc(100vh - 185px));margin:0 auto}
-.cell{position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:1px;padding:2px;border:1px solid var(--line);border-radius:calc(7px*var(--bs));background:var(--white);overflow:hidden;text-align:center;line-height:1.15;transition:background .18s,box-shadow .18s}
+.board{--bs:1;--cell:40px;--pawnh:calc(var(--bs)*max(11px,calc(var(--cell)*.17)));display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(7,1fr);gap:4px;padding:8px;aspect-ratio:1/1;max-width:min(100%,calc(100vh - 185px));margin:0 auto}
+.cell{position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:1px;padding:2px 2px calc(var(--pawnh)*.75) 2px;border:1px solid var(--line);border-radius:calc(7px*var(--bs));background:var(--white);overflow:hidden;text-align:center;line-height:1.15;transition:background .18s,box-shadow .18s}
 .cell .flag{font-size:calc(var(--bs)*max(13px,calc(var(--cell)*.24)))}
 .cell .cc{font:700 calc(var(--bs)*max(8px,calc(var(--cell)*.115))) "IBM Plex Mono",monospace;color:var(--muted);letter-spacing:.02em}
 .cell .pr{font:700 calc(var(--bs)*max(9px,calc(var(--cell)*.135))) "IBM Plex Mono",monospace;color:var(--ink)}
@@ -127,6 +146,11 @@ button{font-family:inherit;cursor:pointer}
 /* 아주 크게에서는 통화코드 줄을 접는다. 세 줄을 다 키우면 칸을 넘긴다.
    국기와 값만 남겨야 멀리서도 읽힌다. 통화코드는 옆 환율표에 그대로 있다. */
 .board.sc3 .cc{display:none}
+/* 폰은 칸이 44px 남짓이라 말 자리를 많이 못 준다. 조금만 비운다. */
+@media(max-width:620px){.cell{padding-bottom:calc(var(--pawnh)*.4)}}
+/* 아주 크게에서는 말 자리까지 빼면 세로가 빠듯하다. 국기를 줄이고 값을 살린다. */
+.board.sc3 .flag{font-size:calc(var(--bs)*max(13px,calc(var(--cell)*.185)))}
+.board.sc3.special .ic,.board.sc3 .cell.special .ic{font-size:calc(var(--bs)*max(13px,calc(var(--cell)*.18)))}
 /* 375px 폰에서 칸은 45px 남짓이라 상한이 더 낮다. */
 @media(max-width:620px){
   .board.sc2 .cc{display:none}
@@ -135,7 +159,7 @@ button{font-family:inherit;cursor:pointer}
 }
 .cell.stepping{background:var(--yellow);box-shadow:inset 0 0 0 2px var(--orange-dark)}
 .pawns{position:absolute;bottom:2px;left:0;right:0;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;gap:2px;padding:0 2px}
-.pawn{flex:none;width:calc(var(--pm,1)*var(--bs)*max(11px,calc(var(--cell)*.17)));height:calc(var(--pm,1)*var(--bs)*max(11px,calc(var(--cell)*.17)));border-radius:50%;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.pawn{flex:none;width:calc(var(--pm,1)*var(--pawnh));height:calc(var(--pm,1)*var(--pawnh));border-radius:50%;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;overflow:hidden}
 .pawn svg{width:74%;height:74%;fill:#fff;display:block}
 .pawn.active{flex:none;width:calc(var(--pm,1)*var(--bs)*max(17px,calc(var(--cell)*.27)));height:calc(var(--pm,1)*var(--bs)*max(17px,calc(var(--cell)*.27)));border-color:var(--ink);box-shadow:0 0 0 3px rgba(217,111,50,.5),0 1px 4px rgba(0,0,0,.4);animation:pawnPulse 1s ease-in-out infinite}
 @keyframes pawnPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.16)}}
@@ -351,6 +375,16 @@ button{font-family:inherit;cursor:pointer}
 
 </div>
 
+<!-- ═══ 말 고르기 ═══ -->
+<div class="overlay hidden" data-picker>
+  <div class="picker">
+    <h3>말 고르기</h3>
+    <p><b data-pick-who>참가자</b>가 쓸 말을 고르세요. 이미 다른 사람이 고른 말을 누르면 서로 바뀝니다.</p>
+    <div class="picker-grid" data-pick-grid></div>
+    <div class="picker-foot"><button data-pick-close>닫기</button></div>
+  </div>
+</div>
+
 <!-- ═══ 사건 오버레이 ═══ -->
 <div class="overlay hidden" data-ev>
   <div class="evcard">
@@ -458,14 +492,42 @@ const TOKENS=[
  {n:'자동차',d:'M6 10.4 7.8 5.6h8.4l1.8 4.8h1.4v6.2h-2.6a2.2 2.2 0 0 1-4.4 0h-1.2a2.2 2.2 0 0 1-4.4 0H4.6v-6.2H6z'},
  {n:'로켓',d:'M12 1.8c3.1 3.3 4.7 7.1 4.7 10.9v3.5h-9.4v-3.5c0-3.8 1.6-7.6 4.7-10.9zM6.2 13.2 3.8 18l3.5-1.3v-3.5zm11.6 0v3.5l3.5 1.3-2.4-4.8zM10 18.8h4L12 22.6 10 18.8z'}
 ];
-/* 말 하나를 그린다. 원반은 플레이어 색, 안쪽 도안은 흰색. */
-function paintToken(el,idx,color){
-  const t=TOKENS[idx%TOKENS.length];
+/* ── 보스 말 ──
+   보스전에 쓰는 초상 썸네일(192x192 webp, 개당 10KB)을 말로 쓴다.
+   목록은 assets/bosses/boss-image-manifest.json 에서 읽는다. 보스를 더
+   그리면 여기도 저절로 늘어난다. 못 읽으면 위의 탈것 도안으로 돌아간다. */
+let BOSSES=[];
+const BOSS_DIR='../assets/bosses/';
+async function loadBosses(){
+  try{
+    const r=await fetch(BOSS_DIR+'boss-image-manifest.json',{cache:'force-cache'});
+    if(!r.ok)throw 0;
+    const j=await r.json();
+    BOSSES=Object.entries(j.images||{})
+      .filter(([,v])=>v&&v.thumb&&v.name)
+      .map(([id,v])=>({id,n:v.name,src:BOSS_DIR+v.thumb}));
+  }catch(e){BOSSES=[]}     // 파일로 직접 열었거나 오프라인이면 조용히 탈것으로 간다
+  return BOSSES;
+}
+/* 말 하나를 그린다. 보스 초상이 있으면 그것을, 없으면 색 원반에 탈것 도안을. */
+function paintToken(el,tokenId,color){
   el.style.background=color;
+  const b=BOSSES.length?BOSSES[((tokenId%BOSSES.length)+BOSSES.length)%BOSSES.length]:null;
+  if(b){
+    const img=document.createElement('img');
+    img.src=b.src;img.alt=b.n;img.loading='lazy';img.decoding='async';
+    // 그림이 깨져도 말이 빈 원으로 남지 않게 도안으로 되돌린다
+    img.onerror=()=>{const t=TOKENS[tokenId%TOKENS.length];
+      el.innerHTML=`<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"${t.d}\"/></svg>`};
+    el.innerHTML='';el.appendChild(img);
+    return b;
+  }
+  const t=TOKENS[((tokenId%TOKENS.length)+TOKENS.length)%TOKENS.length];
   el.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${t.d}"/></svg>`;
   return t;
 }
-const tokenName=idx=>TOKENS[idx%TOKENS.length].n;
+const tokenName=id=>BOSSES.length?BOSSES[((id%BOSSES.length)+BOSSES.length)%BOSSES.length].n
+                                 :TOKENS[((id%TOKENS.length)+TOKENS.length)%TOKENS.length].n;
 const SPECIAL={0:'start',3:'news',6:'news',9:'bank',12:'bank',15:'news',18:'tax',21:'tax'};
 const START_CASH=2500;      // 만원
 const PASS_BONUS=150;       // 출발선 통과 (전원에게 똑같이 주는 돈이라 크면 판단 차이를 덮는다)
@@ -488,7 +550,7 @@ const SPREAD=0.01;
 const FX_BUY=r=>r*(1+SPREAD);      // 원 → 외화 (비싸게 산다)
 const FX_SELL=r=>r*(1-SPREAD);     // 외화 → 원 (싸게 판다)
 
-let S=null, cfg={humans:4,npcs:0,rounds:12,names:['','','','','','']};
+let S=null, cfg={humans:4,npcs:0,rounds:12,names:['','','','','',''],tokens:[0,1,2,3,4,5]};
 
 /* ── NPC 두뇌 ────────────────────────────────────────────────
    NPC 마다 서로 다른 경제 전략을 준다. 혼자 하는 학생이 "누가 왜 이겼는지"를
@@ -608,7 +670,7 @@ function buildSetup(){
   BRAINS.slice(0,cfg.npcs).forEach((br,k)=>{
     const d=document.createElement('div');d.className='npc-chip';
     d.innerHTML='<i class="dot"></i><b></b><span></span>';
-    paintToken(d.querySelector('.dot'),cfg.humans+k,COLORS[cfg.humans+k]);
+    paintToken(d.querySelector('.dot'),cfg.tokens[cfg.humans+k],COLORS[cfg.humans+k]);
     d.querySelector('b').textContent=br.name;
     d.querySelector('span').textContent=br.desc;
     pv.appendChild(d);
@@ -624,9 +686,13 @@ function buildSetup(){
   for(let i=0;i<cfg.humans;i++){
     const row=document.createElement('div');row.className='name-row';
     row.innerHTML='<i class="dot"></i><input maxlength="8" placeholder="">';
-    paintToken(row.querySelector('.dot'),i,COLORS[i]);
+    paintToken(row.querySelector('.dot'),cfg.tokens[i],COLORS[i]);
     const inp=row.querySelector('input');
-    row.title=tokenName(i)+' 말';
+    const pick=document.createElement('button');
+    pick.type='button';pick.className='pick-btn';pick.textContent='말 고르기';
+    pick.onclick=()=>openPicker(i);
+    row.appendChild(pick);
+    row.title=tokenName(cfg.tokens[i]);
     inp.placeholder='참가자 '+(i+1);inp.value=cfg.names[i]||'';
     inp.oninput=()=>{cfg.names[i]=inp.value};
     nl.appendChild(row);
@@ -637,6 +703,39 @@ function buildSetup(){
   const secs=cfg.humans*cfg.rounds*17+cfg.npcs*cfg.rounds*5;
   $('[data-est]').textContent=`${total}명 (사람 ${cfg.humans}${cfg.npcs?' · NPC '+cfg.npcs:''}) · 총 ${turns}턴 · 대략 ${Math.round(secs/60)}분 예상`;
 }
+
+/* ── 말 고르기 ──
+   같은 말을 두 사람이 쓰면 말판에서 구분이 안 된다. 이미 누가 쓰는 말을
+   고르면 서로 자리를 바꾼다. 아무도 못 쓰게 막는 것보다 이쪽이 덜 답답하다. */
+let pickSeat=0;
+function openPicker(seat){
+  pickSeat=seat;
+  $('[data-pick-who]').textContent=(cfg.names[seat]||'').trim()||('참가자 '+(seat+1));
+  const grid=$('[data-pick-grid]');grid.innerHTML='';
+  const list=BOSSES.length?BOSSES.map((b,i)=>({i,n:b.n})):TOKENS.map((t,i)=>({i,n:t.n}));
+  list.forEach(({i,n})=>{
+    const taken=cfg.tokens.indexOf(i);
+    const mine=taken===seat;
+    const el=document.createElement('button');
+    el.type='button';
+    el.className='pk'+(mine?' on':'')+(taken>=0&&!mine?' taken':'');
+    el.innerHTML='<span></span><b></b>';
+    paintToken(el.querySelector('span'),i,COLORS[taken>=0?taken:seat]);
+    el.querySelector('b').textContent=n;
+    if(taken>=0&&!mine)el.title=((cfg.names[taken]||'').trim()||('참가자 '+(taken+1)))+'가 쓰는 중 · 누르면 바꿉니다';
+    el.onclick=()=>chooseToken(seat,i);
+    grid.appendChild(el);
+  });
+  $('[data-picker]').classList.remove('hidden');
+}
+function chooseToken(seat,id){
+  const other=cfg.tokens.indexOf(id);
+  if(other>=0&&other!==seat)cfg.tokens[other]=cfg.tokens[seat];   // 자리 맞바꾸기
+  cfg.tokens[seat]=id;
+  buildSetup();openPicker(seat);
+}
+$('[data-pick-close]').onclick=()=>$('[data-picker]').classList.add('hidden');
+$('[data-picker]').addEventListener('click',e=>{if(e.target===$('[data-picker]'))$('[data-picker]').classList.add('hidden')});
 
 /* ── 판 만들기 ── */
 function newGame(){
@@ -663,11 +762,12 @@ function newGame(){
   const players=[];
   for(let i=0;i<cfg.humans;i++){
     players.push({id:i,name:(cfg.names[i]||'').trim()||('참가자 '+(i+1)),color:COLORS[i],npc:null,
-                  pos:0,cash:START_CASH,deposit:0,fx:{},fxCost:{}});
+                  token:cfg.tokens[i],pos:0,cash:START_CASH,deposit:0,fx:{},fxCost:{}});
   }
   BRAINS.slice(0,cfg.npcs).forEach((br,k)=>{
     const i=cfg.humans+k;
-    players.push({id:i,name:br.name,color:COLORS[i],npc:br,pos:0,cash:START_CASH,deposit:0,fx:{},fxCost:{}});
+    players.push({id:i,name:br.name,color:COLORS[i],npc:br,token:cfg.tokens[i],
+                  pos:0,cash:START_CASH,deposit:0,fx:{},fxCost:{}});
   });
 
   // 사건 순서를 미리 섞어 둔다. 같은 판을 다시 돌려도 같은 흐름이 나온다.
@@ -742,7 +842,7 @@ function render(){
   $('[data-round]').textContent=`라운드 ${S.round} / ${S.maxRound}`;
   renderBoard();renderPlayers();renderFx();
   const p=S.players[S.turn];
-  paintToken($('[data-turn-dot]'),p.id,p.color);
+  paintToken($('[data-turn-dot]'),p.token,p.color);
   $('[data-turn-name]').textContent=p.name;
   $('[data-turn-cash]').textContent=`현금 ${man(p.cash)}원 · 총재산 ${man(totalAssets(p))}원`;
 }
@@ -776,7 +876,7 @@ function renderBoard(){
     pw.style.setProperty('--pm',here>=5?.55:here>=3?.72:1);
     S.players.forEach(p=>{if(p.pos===i){
       const d=document.createElement('i');d.className='pawn'+(p.id===S.turn?' active':'');
-      const t=paintToken(d,p.id,p.color);d.title=`${p.name} · ${t.n}`;pw.appendChild(d)}});
+      const t=paintToken(d,p.token,p.color);d.title=`${p.name} · ${t.n}`;pw.appendChild(d)}});
     el.appendChild(pw);
     b.appendChild(el);
   });
@@ -790,7 +890,7 @@ function renderCenter(msg){
   if(msg){ctr.innerHTML=msg;return}
   const p=S.players[S.turn];
   const owned=S.board.filter(c=>c.type==='city'&&c.owner===p.id);
-  ctr.innerHTML=`<h3>${p.name} <span style="font-size:.55em;opacity:.65;font-weight:400">${tokenName(p.id)}</span></h3>
+  ctr.innerHTML=`<h3>${p.name} <span style="font-size:.55em;opacity:.65;font-weight:400">${tokenName(p.token)}</span></h3>
     <p class="sub">현금</p><div class="big">${man(p.cash)}원</div>
     <p class="sub">총재산 ${man(totalAssets(p))}원 · 도시 ${owned.length}곳${p.deposit?` · 예금 ${man(p.deposit)}원`:''}</p>
     ${owned.length?`<div class="why">${owned.map(c=>`${COUNTRIES[c.ci].f} ${COUNTRIES[c.ci].city} ${man(cityValue(c))}`).join(' · ')}</div>`:'<div class="why">아직 가진 도시가 없습니다. 통화가 싸진 나라를 노려 보세요.</div>'}
@@ -804,7 +904,7 @@ function renderPlayers(){
     const row=document.createElement('div');
     row.className='prow'+(p.id===S.turn?' now':'')+(p.npc?' npc':'');
     row.innerHTML=`<i class="dot"></i><span class="nm"></span><span class="ct">${n}곳</span><span class="as">${man(a)}</span>`;
-    paintToken(row.querySelector('.dot'),p.id,p.color);
+    paintToken(row.querySelector('.dot'),p.token,p.color);
     row.querySelector('.nm').textContent=p.name;
     if(p.npc)row.querySelector('.nm').insertAdjacentHTML('beforeend','<span class="tag-npc">NPC</span>');
     box.appendChild(row);
@@ -1212,7 +1312,7 @@ function finish(){
     el.innerHTML=`<span class="no">${i+1}</span><i class="dot"></i>
       <span class="nm"></span>
       <span class="as">${man(r.a)}원<small>도시 ${r.n}곳 · 시작 대비 ${diff>=0?'+':''}${man(diff)}</small></span>`;
-    paintToken(el.querySelector('.dot'),r.p.id,r.p.color);
+    paintToken(el.querySelector('.dot'),r.p.token,r.p.color);
     el.querySelector('.nm').textContent=r.p.name;
     if(r.p.npc)el.querySelector('.nm').insertAdjacentHTML('beforeend','<span class="tag-npc">NPC</span>');
     rk.appendChild(el);
@@ -1232,6 +1332,8 @@ $('[data-start]').onclick=newGame;
 $('[data-again]').onclick=newGame;
 $('[data-reset]').onclick=()=>{clearTimeout(npcTimer);S=null;show('setup');buildSetup()};
 buildSetup();
+// 보스 초상을 읽어 온 뒤 설정 화면을 다시 그린다. 못 읽으면 탈것 도안 그대로다.
+loadBosses().then(list=>{if(list.length)buildSetup()});
 
 /* ════════════════════════════════════════════════════════════
    친구방 LIVE
@@ -1273,7 +1375,7 @@ function snapOut(){
     pk:S.picked, rt:S.rates.map ? S.rates : S.rates, bs:S.base,
     rd:S.round, mx:S.maxRound, ph:LIVE.phase,
     cl:S.board.map(c=>c.type==='city'?[c.ci,Math.round(c.localPrice),c.owner===null?-1:c.owner,c.level]:0),
-    pl:S.players.map(p=>[p.name,p.color,p.pos,Math.round(p.cash),Math.round(p.deposit),p.fx,p.fxCost,p.uid]),
+    pl:S.players.map(p=>[p.name,p.color,p.pos,Math.round(p.cash),Math.round(p.deposit),p.fx,p.fxCost,p.uid,p.token]),
     ld:LIVE.landings, dc:LIVE.dice, ev:LIVE.lastEvent
   });
 }
@@ -1286,7 +1388,7 @@ function snapIn(text){
   });
   S={seed:0,rnd:Math.random,board,picked:o.pk,rates:o.rt,base:o.bs,
      players:o.pl.map((a,i)=>({id:i,name:a[0],color:a[1],pos:a[2],cash:a[3],deposit:a[4],
-                               fx:a[5]||{},fxCost:a[6]||{},uid:a[7],npc:null})),
+                               fx:a[5]||{},fxCost:a[6]||{},uid:a[7],token:a[8]!=null?a[8]:i,npc:null})),
      turn:LIVE.me,round:o.rd,maxRound:o.mx,evOrder:[],evPtr:0};
   LIVE.phase=o.ph;LIVE.landings=o.ld||[];LIVE.dice=o.dc||[];LIVE.lastEvent=o.ev||null;
 }
@@ -1346,7 +1448,7 @@ async function watchRoom(){
       players.forEach(([uid,pl],i)=>{
         const d=document.createElement('div');d.className='r';
         d.innerHTML='<i></i><span></span><small></small>';
-        paintToken(d.querySelector('i'),i,COLORS[i]||'#999');
+        paintToken(d.querySelector('i'),cfg.tokens[i]!=null?cfg.tokens[i]:i,COLORS[i]||'#999');
         d.querySelector('span').textContent=pl.nickname;
         d.querySelector('small').textContent=(uid===room.hostId?'진행자':'')+(uid===LIVE.uid?' · 나':'');
         box.appendChild(d);
@@ -1629,7 +1731,7 @@ function liveFinish(){
     const diff=r.a-START_CASH;
     el.innerHTML=`<span class="no">${i+1}</span><i class="dot"></i><span class="nm"></span>
       <span class="as">${man(r.a)}원<small>도시 ${r.n}곳 · 시작 대비 ${diff>=0?'+':''}${man(diff)}</small></span>`;
-    paintToken(el.querySelector('.dot'),r.p.id,r.p.color);
+    paintToken(el.querySelector('.dot'),r.p.token,r.p.color);
     el.querySelector('.nm').textContent=r.p.name+(r.p.uid===LIVE.uid?' (나)':'');
     rk.appendChild(el);
   });
