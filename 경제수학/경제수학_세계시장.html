@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>세계시장 원정 · 경제수학 보드 · JP Math Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500;600;700&amp;family=Noto+Serif+KR:wght@700;900&amp;display=swap" rel="stylesheet">
+<script src="live/firebase-config.js?v=1"></script>
+<script src="live/realtime-adapter.js?v=1"></script>
+<style>
+:root{--ink:#17231d;--muted:#616a66;--paper:#f4f0e6;--white:#fffdf7;--line:#d8d2c5;--orange:#d96f32;--orange-dark:#9f4320;--green:#1f6b50;--green-light:#dce9df;--yellow:#efc75e;--blue:#315f78;--shadow:0 24px 70px rgba(35,45,38,.12)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans KR",system-ui,sans-serif;-webkit-text-size-adjust:100%}
+.mono{font-family:"IBM Plex Mono",monospace}
+button{font-family:inherit;cursor:pointer}
+.hidden{display:none!important}
+
+/* ── 상단 바 ── */
+.topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(244,240,230,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.tab-back{display:inline-flex;align-items:center;gap:6px;padding:8px 13px;border:1px solid var(--ink);border-radius:9px;background:var(--white);color:var(--ink);text-decoration:none;font-size:13px;font-weight:700;white-space:nowrap}
+.tab-back:hover{background:var(--green-light);border-color:var(--green)}
+.topbar h1{flex:1;margin:0;font:900 17px/1.2 "Noto Serif KR",serif;letter-spacing:-.04em}
+.round-chip{padding:7px 12px;border-radius:999px;background:var(--ink);color:#fff;font:700 12px "IBM Plex Mono",monospace;white-space:nowrap}
+@media(max-width:520px){.topbar{gap:7px;padding:9px 10px}.topbar h1{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tab-back{padding:7px 9px;font-size:12px}.round-chip{padding:6px 9px;font-size:11px}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:18px 14px 60px}
+.card{background:var(--white);border:1px solid var(--line);border-radius:16px}
+
+/* ── 설정 화면 ── */
+.setup{padding:26px 22px}
+.setup h2{margin:0 0 6px;font:900 30px/1.2 "Noto Serif KR",serif;letter-spacing:-.05em}
+.setup .lead{margin:0 0 22px;color:var(--muted);font-size:14px;line-height:1.75}
+.field{margin-bottom:20px}
+.field>span{display:block;margin-bottom:9px;font-size:13px;font-weight:700}
+.seg{display:flex;flex-wrap:wrap;gap:7px}
+.seg button{padding:10px 16px;border:1px solid var(--line);border-radius:10px;background:var(--white);font-size:14px;font-weight:700;color:var(--muted)}
+.seg button.on{background:var(--green);border-color:var(--green);color:#fff}
+.name-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:9px}
+.name-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--white)}
+.dot{width:14px;height:14px;border-radius:50%;flex:none}
+.name-row input{flex:1;min-width:0;border:0;background:transparent;font:600 14px inherit;color:var(--ink);outline:none}
+.mode-seg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:22px}
+.mode-seg button{padding:15px 12px;border:1px solid var(--line);border-radius:13px;background:var(--white);text-align:left}
+.mode-seg button.on{border-color:var(--green);background:var(--green-light)}
+.mode-seg b{display:block;font-size:14.5px;font-weight:700;color:var(--ink)}
+.mode-seg span{display:block;margin-top:4px;color:var(--muted);font-size:11.5px;line-height:1.5}
+.mode-seg button.on b{color:var(--green)}
+.lobby{padding:26px 22px}
+.lobby h2{margin:0 0 6px;font:900 28px/1.2 "Noto Serif KR",serif;letter-spacing:-.05em}
+.lobby .lead{margin:0 0 20px;color:var(--muted);font-size:13.5px;line-height:1.75}
+.lobby-field{margin-bottom:14px}
+.lobby-field>span{display:block;margin-bottom:7px;font-size:12.5px;font-weight:700}
+.lobby-field input{width:100%;padding:14px;border:1px solid var(--line);border-radius:11px;background:var(--white);font:600 16px inherit;color:var(--ink)}
+.lobby-field input.code{font:700 24px "IBM Plex Mono",monospace;letter-spacing:.28em;text-align:center}
+.lobby-btns{display:grid;gap:9px;margin-top:16px}
+.lobby-btns button{padding:15px;border:1px solid var(--ink);border-radius:12px;background:var(--white);font-size:14.5px;font-weight:700}
+.lobby-btns button.primary{background:var(--ink);color:#fff}
+.lobby-btns button:disabled{opacity:.45}
+.room-code{margin:0 0 16px;padding:18px;border-radius:14px;background:var(--ink);color:#fff;text-align:center}
+.room-code small{display:block;color:#a9b8b0;font-size:11.5px}
+.room-code b{display:block;margin-top:6px;font:700 40px "IBM Plex Mono",monospace;letter-spacing:.18em}
+.room-players{display:grid;gap:6px;margin-bottom:14px}
+.room-players .r{display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:10px;background:var(--paper);font-size:13.5px;font-weight:700}
+.room-players .r i{width:11px;height:11px;border-radius:50%;flex:none}
+.room-players .r small{margin-left:auto;color:var(--muted);font:700 11px "IBM Plex Mono",monospace}
+.lobby-msg{margin:12px 0 0;padding:12px 14px;border-radius:11px;font-size:12.5px;line-height:1.7}
+.lobby-msg.bad{background:#f8e4df;color:#8f3527}
+.lobby-msg.ok{background:var(--green-light);color:var(--green)}
+.wait-strip{display:flex;align-items:center;gap:9px;margin:10px 0 0;padding:11px 13px;border-radius:10px;background:var(--paper);font-size:12.5px;font-weight:700;color:var(--muted)}
+.wait-strip b{color:var(--green);font-family:"IBM Plex Mono",monospace}
+.fx-intro{margin:0 0 10px;color:var(--muted);font-size:12.5px;line-height:1.7}
+.fx-hold{display:grid;gap:5px;margin:0 0 12px}
+.fx-hold .row{display:grid;grid-template-columns:20px 1fr auto auto;align-items:center;gap:7px;padding:8px 10px;border-radius:9px;background:var(--green-light);font-size:12px}
+.fx-hold .row b{font:700 12px "IBM Plex Mono",monospace}
+.fx-hold .row button{padding:6px 9px;border:1px solid var(--green);border-radius:7px;background:#fff;color:var(--green);font-size:11px;font-weight:700}
+.fx-mkt{display:grid;gap:3px;max-height:270px;overflow:auto;margin-bottom:11px}
+.fx-mkt .row{display:grid;grid-template-columns:20px minmax(0,1fr) auto auto auto;align-items:center;gap:7px;padding:7px 9px;border-radius:8px;font-size:12px}
+.fx-mkt .row:nth-child(odd){background:var(--paper)}
+.fx-mkt .row.pick{background:var(--ink);color:#fff}
+.fx-mkt .row .rt{font:700 11px "IBM Plex Mono",monospace}
+.fx-mkt .row .ch{min-width:44px;text-align:right;font:700 11px "IBM Plex Mono",monospace}
+.fx-mkt .row button{padding:5px 9px;border:1px solid var(--ink);border-radius:7px;background:var(--white);font-size:11px;font-weight:700;color:var(--ink)}
+.fx-amt{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:11px}
+.fx-amt button{flex:1;min-width:62px;padding:10px 6px;border:1px solid var(--ink);border-radius:9px;background:var(--white);font-size:12.5px;font-weight:700}
+.fx-amt button:disabled{opacity:.35}
+.fx-note{margin:0 0 10px;padding:9px 11px;border-radius:9px;background:var(--paper);font-size:11.5px;line-height:1.6;color:var(--muted)}
+.npc-preview{display:grid;gap:6px;margin-top:11px}
+.npc-chip{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:10px;background:var(--paper);font-size:12.5px}
+.npc-chip b{flex:none;font-weight:700}
+.npc-chip span{color:var(--muted);line-height:1.5}
+.tag-npc{margin-left:5px;padding:1px 5px;border-radius:5px;background:#e6e1d4;color:var(--muted);font:700 9px "IBM Plex Mono",monospace;vertical-align:1px}
+.npc-why{margin:10px 0 0;padding:10px 12px;border-radius:10px;background:var(--green-light);color:var(--green);font-size:12.5px;line-height:1.65;font-weight:600}
+.est{margin:14px 0 0;padding:12px 14px;border-radius:11px;background:var(--green-light);color:var(--green);font-size:13px;font-weight:700}
+.btn-go{width:100%;margin-top:18px;padding:16px;border:0;border-radius:12px;background:var(--ink);color:#fff;font-size:16px;font-weight:700}
+.rule-box{margin-top:22px;padding:16px 18px;border:1px dashed var(--line);border-radius:12px;font-size:13px;line-height:1.85;color:var(--muted)}
+.rule-box b{color:var(--ink)}
+
+/* ── 게임 레이아웃 ── */
+.play-grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;align-items:start}
+@media(max-width:900px){.play-grid{grid-template-columns:1fr}}
+
+/* ── 말판 ── */
+.board{display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(7,1fr);gap:4px;padding:8px;aspect-ratio:1/1}
+.cell{position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:1px;padding:2px;border:1px solid var(--line);border-radius:7px;background:var(--white);overflow:hidden;text-align:center;line-height:1.15}
+.cell .flag{font-size:clamp(13px,2.4vw,20px)}
+.cell .cc{font:700 clamp(7px,1.05vw,10px) "IBM Plex Mono",monospace;color:var(--muted);letter-spacing:.02em}
+.cell .pr{font:700 clamp(7px,1.05vw,10px) "IBM Plex Mono",monospace;color:var(--ink)}
+.cell.special{background:var(--green-light);border-color:#bcd4c3}
+.cell.special .lbl{font-size:clamp(8px,1.25vw,11px);font-weight:700;color:var(--green)}
+.cell.special .ic{font-size:clamp(13px,2.4vw,19px)}
+.cell.owned{border-width:2px}
+.cell .lvl{position:absolute;top:2px;right:3px;font:700 8px "IBM Plex Mono",monospace;color:var(--orange-dark)}
+.cell .up{position:absolute;top:2px;left:3px;font-size:8px}
+.pawns{position:absolute;bottom:1px;left:0;right:0;display:flex;justify-content:center;gap:2px}
+.pawn{width:8px;height:8px;border-radius:50%;border:1.5px solid #fff;box-shadow:0 1px 2px rgba(0,0,0,.3)}
+.pawn.active{transform:scale(1.45)}
+.center{grid-row:2/7;grid-column:2/7;display:flex;flex-direction:column;justify-content:center;padding:14px;border-radius:12px;background:var(--ink);color:#fff;overflow:auto}
+.center h3{margin:0 0 4px;font:900 clamp(17px,2.6vw,24px)/1.2 "Noto Serif KR",serif}
+.center .sub{margin:0;color:#a9b8b0;font-size:clamp(10px,1.5vw,13px);line-height:1.6}
+.center .big{margin:8px 0 2px;font:700 clamp(20px,3.6vw,34px) "IBM Plex Mono",monospace}
+.center .why{margin:10px 0 0;padding:9px 11px;border-radius:8px;background:rgba(255,255,255,.09);color:#cfdcd6;font-size:clamp(10px,1.4vw,12.5px);line-height:1.65}
+
+/* ── 컨트롤 ── */
+.turnbar{display:flex;align-items:center;gap:10px;padding:13px 15px;margin-bottom:12px;border-radius:14px;background:var(--white);border:1px solid var(--line)}
+.turnbar .dot{width:18px;height:18px}
+.turnbar .who{flex:1;min-width:0}
+.turnbar .who b{display:block;font-size:15px}
+.turnbar .who small{color:var(--muted);font:700 12px "IBM Plex Mono",monospace}
+.dice{display:flex;align-items:center;gap:8px}
+.die{width:38px;height:38px;display:flex;align-items:center;justify-content:center;border:2px solid var(--ink);border-radius:9px;background:var(--white);font:700 20px "IBM Plex Mono",monospace}
+.act{padding:15px;border-radius:14px;background:var(--white);border:1px solid var(--line)}
+.act h4{margin:0 0 5px;font-size:16px;font-weight:700}
+.act p{margin:0 0 12px;color:var(--muted);font-size:13px;line-height:1.7}
+.act .price-line{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;margin:0 0 10px;padding:11px 13px;border-radius:10px;background:var(--paper)}
+.act .price-line .local{font:700 19px "IBM Plex Mono",monospace}
+.act .price-line .krw{color:var(--muted);font:700 13px "IBM Plex Mono",monospace}
+.act .btns{display:grid;gap:8px}
+.act .btns.two{grid-template-columns:1fr 1fr}
+.act button{padding:14px;border:1px solid var(--ink);border-radius:11px;background:var(--white);font-size:14px;font-weight:700;color:var(--ink)}
+.act button.primary{background:var(--ink);color:#fff}
+.act button.primary:disabled{background:#c3c9c5;border-color:#c3c9c5;color:#fff}
+.act button:disabled{opacity:.5;cursor:default}
+.note{margin:10px 0 0;font-size:12px;line-height:1.7;color:var(--muted)}
+.note b{color:var(--orange-dark)}
+
+/* ── 사이드 ── */
+.side{display:grid;gap:12px}
+.panel{padding:14px 15px}
+.panel h4{display:flex;justify-content:space-between;align-items:center;margin:0 0 10px;font-size:13px;font-weight:700}
+.panel h4 button{padding:5px 9px;border:1px solid var(--line);border-radius:7px;background:var(--white);font-size:11px;font-weight:700;color:var(--muted)}
+.plist{display:grid;gap:6px}
+.prow{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:9px;background:var(--paper)}
+.prow.now{background:var(--green-light);outline:1px solid var(--green)}
+.prow .dot{width:11px;height:11px}
+.prow .nm{flex:1;min-width:0;font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prow .as{font:700 12.5px "IBM Plex Mono",monospace}
+.prow .ct{font:700 11px "IBM Plex Mono",monospace;color:var(--muted)}
+.fxlist{display:grid;gap:3px;max-height:330px;overflow:auto}
+.fxrow{display:grid;grid-template-columns:22px 1fr auto auto;align-items:center;gap:7px;padding:5px 7px;border-radius:7px;font-size:12px}
+.fxrow:nth-child(odd){background:var(--paper)}
+.fxrow .cn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fxrow .rt{font:700 11.5px "IBM Plex Mono",monospace}
+.fxrow .ch{min-width:46px;text-align:right;font:700 11px "IBM Plex Mono",monospace}
+.up{color:var(--green)}.down{color:var(--orange-dark)}
+
+/* ── 사건 배너 ── */
+.overlay{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(23,35,29,.72);backdrop-filter:blur(4px)}
+.evcard{width:100%;max-width:470px;padding:26px 24px;border-radius:18px;background:var(--white);box-shadow:var(--shadow)}
+.evcard .ic{font-size:44px}
+.evcard h3{margin:8px 0 6px;font:900 25px/1.25 "Noto Serif KR",serif;letter-spacing:-.04em}
+.evcard p{margin:0 0 14px;color:var(--muted);font-size:14px;line-height:1.75}
+.evcard .why{padding:12px 14px;border-radius:11px;background:var(--green-light);color:var(--green);font-size:13px;line-height:1.7;font-weight:600}
+.movers{display:grid;gap:5px;margin:14px 0 0}
+.mv{display:flex;justify-content:space-between;gap:8px;padding:7px 11px;border-radius:8px;background:var(--paper);font-size:12.5px}
+.mv b{font-family:"IBM Plex Mono",monospace}
+.evcard button{width:100%;margin-top:16px;padding:15px;border:0;border-radius:12px;background:var(--ink);color:#fff;font-size:15px;font-weight:700}
+
+/* ── 결과 ── */
+.result{padding:26px 22px}
+.result h2{margin:0 0 18px;font:900 30px/1.2 "Noto Serif KR",serif;letter-spacing:-.05em}
+.rank{display:grid;gap:8px;margin-bottom:20px}
+.rrow{display:grid;grid-template-columns:30px 14px 1fr auto;align-items:center;gap:10px;padding:13px 14px;border-radius:12px;background:var(--paper)}
+.rrow.first{background:var(--ink);color:#fff}
+.rrow .no{font:900 17px "IBM Plex Mono",monospace}
+.rrow .nm{font-size:15px;font-weight:700}
+.rrow .as{font:700 15px "IBM Plex Mono",monospace}
+.rrow small{display:block;font:600 11px "IBM Plex Mono",monospace;opacity:.72}
+.rbtns{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.rbtns button{padding:15px;border:1px solid var(--ink);border-radius:12px;background:var(--white);font-size:14px;font-weight:700}
+.rbtns button.primary{background:var(--ink);color:#fff}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="tab-back" href="게임.html">← 게임 연구소</a>
+  <h1>세계시장 원정</h1>
+  <span class="round-chip" data-round hidden>라운드 —</span>
+</div>
+
+<div class="wrap">
+
+<!-- ═══ 설정 ═══ -->
+<section class="card setup" data-screen="setup">
+  <h2>세계시장 원정</h2>
+  <div class="mode-seg" data-mode-seg>
+    <button data-mode="local" class="on"><b>한 기기로</b><span>기기 하나를 돌려가며 합니다. NPC를 넣으면 혼자서도 됩니다.</span></button>
+    <button data-mode="live"><b>친구방 LIVE</b><span>각자 폰으로 접속해 같이 합니다. 방 코드가 필요합니다.</span></button>
+  </div>
+  <p class="lead">세계 도시를 사 모으는 보드게임입니다. 도시 값은 <b>그 나라 통화</b>로 매겨져 있어서, 환율이 움직이면 내 재산도 같이 움직입니다.<br>기기 하나를 돌려가며 플레이합니다.</p>
+
+  <div class="field">
+    <span>사람은 몇 명인가요</span>
+    <div class="seg" data-seg="count"></div>
+  </div>
+
+  <div class="field">
+    <span>NPC를 몇 명 넣을까요</span>
+    <div class="seg" data-seg="npc"></div>
+    <div class="npc-preview" data-npc-preview></div>
+  </div>
+
+  <div class="field">
+    <span>사람 이름</span>
+    <div class="name-list" data-names></div>
+  </div>
+
+  <div class="field">
+    <span>몇 라운드 할까요</span>
+    <div class="seg" data-seg="rounds"></div>
+    <p class="est" data-est></p>
+  </div>
+
+  <button class="btn-go" data-start>원정 시작</button>
+
+  <div class="rule-box">
+    <b>이기는 법</b> — 마지막에 <b>총재산</b>(현금 + 예금 + 가진 도시의 지금 원화 가치)이 가장 큰 사람이 이깁니다.<br>
+    <b>도시</b> — 빈 도시에 도착하면 살 수 있습니다. 값은 현지 통화로 고정이고, <b>원화로 얼마인지는 환율에 따라 달라집니다.</b> 통화가 약할 때 사면 싸게 삽니다.<br>
+    <b>통행료</b> — 남의 도시에 도착하면 그 도시 값의 22%를 냅니다.<br>
+    <b>사건</b> — 라운드가 끝날 때마다, 그리고 세계뉴스 칸을 밟을 때마다 사건이 터져 여러 나라 환율이 한꺼번에 움직입니다.<br>
+    <b>파산 없음</b> — 돈이 마이너스여도 끝까지 합니다.<br>
+    <b>혼자 하기</b> — 사람 1명에 NPC를 붙이면 혼자서도 됩니다. NPC는 저마다 다른 경제 전략을 쓰고, <b>왜 그렇게 했는지 매번 이유를 말합니다.</b> 누가 왜 이겼는지 보면서 전략을 배우세요.
+  </div>
+</section>
+
+<!-- ═══ 친구방 로비 ═══ -->
+<section class="card lobby hidden" data-screen="lobby">
+  <h2>친구방 LIVE</h2>
+  <p class="lead">한 사람이 방을 만들고 <b>6자리 코드</b>를 알려 주면, 나머지가 그 코드로 들어옵니다. 2~6명.<br>
+  라운드마다 모두가 <b>동시에</b> 결정을 제출합니다. 남을 기다리는 시간이 없습니다.</p>
+
+  <div class="lobby-field"><span>내 이름 (최대 12자)</span><input maxlength="12" data-live-name placeholder="이름"></div>
+
+  <div class="lobby-btns">
+    <button class="primary" data-create>방 만들기</button>
+  </div>
+
+  <div class="lobby-field" style="margin-top:18px"><span>또는 코드로 들어가기</span><input class="code" inputmode="numeric" maxlength="6" data-join-code placeholder="000000"></div>
+  <div class="lobby-btns"><button data-join>입장하기</button></div>
+
+  <div class="lobby-msg hidden" data-live-msg></div>
+
+  <div class="hidden" data-room-box style="margin-top:20px">
+    <div class="room-code"><small>방 코드</small><b data-room-code>—</b></div>
+    <div class="room-players" data-room-players></div>
+    <div class="lobby-btns">
+      <button class="primary hidden" data-live-start>이 인원으로 시작</button>
+      <p class="lobby-msg ok hidden" data-guest-wait>진행자가 시작할 때까지 기다려 주세요.</p>
+    </div>
+  </div>
+
+  <div class="lobby-btns" style="margin-top:16px"><button data-live-back>← 한 기기 모드로</button></div>
+</section>
+
+<!-- ═══ 플레이 ═══ -->
+<section data-screen="play" class="hidden">
+  <div class="turnbar">
+    <i class="dot" data-turn-dot></i>
+    <div class="who"><b data-turn-name>—</b><small data-turn-cash>—</small></div>
+    <div class="dice">
+      <div class="die" data-d1>·</div>
+      <div class="die" data-d2>·</div>
+    </div>
+  </div>
+
+  <div class="play-grid">
+    <div>
+      <div class="card"><div class="board" data-board></div></div>
+    </div>
+    <div class="side">
+      <div class="act card" data-act></div>
+      <div class="card panel">
+        <h4>재산 순위</h4>
+        <div class="plist" data-players></div>
+      </div>
+      <div class="card panel">
+        <h4>환율 <span class="mono" style="color:var(--muted);font-size:11px">원 / 1단위</span></h4>
+        <div class="fxlist" data-fx></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 결과 ═══ -->
+<section class="card result hidden" data-screen="result">
+  <h2>원정 끝</h2>
+  <div class="rank" data-rank></div>
+  <div class="card panel" style="margin-bottom:18px">
+    <h4>이번 판에서 가장 크게 움직인 통화</h4>
+    <div class="movers" data-final-fx></div>
+  </div>
+  <div class="rbtns">
+    <button class="primary" data-again>같은 인원으로 한 판 더</button>
+    <button data-reset>처음부터</button>
+  </div>
+</section>
+
+</div>
+
+<!-- ═══ 사건 오버레이 ═══ -->
+<div class="overlay hidden" data-ev>
+  <div class="evcard">
+    <div class="ic" data-ev-ic>🌍</div>
+    <h3 data-ev-t>—</h3>
+    <p data-ev-d>—</p>
+    <div class="why" data-ev-why>—</div>
+    <div class="movers" data-ev-mv></div>
+    <button data-ev-ok>확인</button>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   세계시장 원정 — 경제수학 보드게임 (2~6인, 한 기기)
+   환율이 게임의 중심 장치다. 도시 값은 현지 통화로 고정하고,
+   원화 환산값만 움직이게 해서 "환율이 재산을 바꾼다"를 몸으로 겪게 한다.
+   ════════════════════════════════════════════════════════════ */
+
+/* ── 나라 데이터 ──
+   rate 는 원/1단위 기준값이다. 실제 시세의 대략값이며, 선생님이 가끔
+   최신 값으로 갈아 끼우면 시작 감각이 계속 맞는다.
+   tags 는 사건이 때리는 표적이다. 사건은 나라 이름을 지목하지 않고
+   속성만 지목한다 — 학생이 "어느 나라가 그 속성이지?"를 스스로 찾게 한다. */
+const COUNTRIES=[
+ {f:'🇺🇸',n:'미국',city:'뉴욕',cur:'달러',code:'USD',rate:1380,tags:['안전자산','선진국']},
+ {f:'🇯🇵',n:'일본',city:'도쿄',cur:'엔',code:'JPY',rate:9.2,tags:['안전자산','지진대','선진국']},
+ {f:'🇩🇪',n:'독일',city:'프랑크푸르트',cur:'유로',code:'EUR',rate:1490,tags:['선진국','제조업']},
+ {f:'🇬🇧',n:'영국',city:'런던',cur:'파운드',code:'GBP',rate:1750,tags:['선진국','관광의존']},
+ {f:'🇨🇭',n:'스위스',city:'취리히',cur:'프랑',code:'CHF',rate:1560,tags:['안전자산','선진국']},
+ {f:'🇨🇳',n:'중국',city:'상하이',cur:'위안',code:'CNY',rate:190,tags:['제조업','신흥국']},
+ {f:'🇨🇦',n:'캐나다',city:'토론토',cur:'달러',code:'CAD',rate:1010,tags:['산유국','원자재','선진국']},
+ {f:'🇦🇺',n:'호주',city:'시드니',cur:'달러',code:'AUD',rate:900,tags:['원자재','선진국']},
+ {f:'🇳🇿',n:'뉴질랜드',city:'오클랜드',cur:'달러',code:'NZD',rate:830,tags:['지진대','관광의존','농업']},
+ {f:'🇸🇬',n:'싱가포르',city:'싱가포르',cur:'달러',code:'SGD',rate:1030,tags:['선진국','제조업']},
+ {f:'🇭🇰',n:'홍콩',city:'홍콩',cur:'달러',code:'HKD',rate:177,tags:['선진국','관광의존']},
+ {f:'🇮🇳',n:'인도',city:'뭄바이',cur:'루피',code:'INR',rate:16.5,tags:['신흥국','몬순','제조업']},
+ {f:'🇮🇩',n:'인도네시아',city:'자카르타',cur:'루피아',code:'IDR',rate:0.085,tags:['신흥국','지진대','원자재','몬순']},
+ {f:'🇹🇭',n:'태국',city:'방콕',cur:'바트',code:'THB',rate:39,tags:['관광의존','몬순','신흥국']},
+ {f:'🇻🇳',n:'베트남',city:'하노이',cur:'동',code:'VND',rate:0.054,tags:['제조업','신흥국','몬순']},
+ {f:'🇵🇭',n:'필리핀',city:'마닐라',cur:'페소',code:'PHP',rate:24,tags:['지진대','몬순','신흥국']},
+ {f:'🇲🇾',n:'말레이시아',city:'쿠알라룸푸르',cur:'링깃',code:'MYR',rate:310,tags:['산유국','신흥국','몬순']},
+ {f:'🇧🇷',n:'브라질',city:'상파울루',cur:'헤알',code:'BRL',rate:250,tags:['원자재','농업','신흥국']},
+ {f:'🇲🇽',n:'멕시코',city:'멕시코시티',cur:'페소',code:'MXN',rate:68,tags:['지진대','제조업','신흥국']},
+ {f:'🇨🇱',n:'칠레',city:'산티아고',cur:'페소',code:'CLP',rate:1.45,tags:['지진대','원자재','신흥국']},
+ {f:'🇵🇪',n:'페루',city:'리마',cur:'솔',code:'PEN',rate:370,tags:['지진대','원자재','신흥국']},
+ {f:'🇦🇷',n:'아르헨티나',city:'부에노스아이레스',cur:'페소',code:'ARS',rate:1.1,tags:['농업','신흥국']},
+ {f:'🇿🇦',n:'남아프리카공화국',city:'요하네스버그',cur:'랜드',code:'ZAR',rate:76,tags:['원자재','신흥국']},
+ {f:'🇳🇬',n:'나이지리아',city:'라고스',cur:'나이라',code:'NGN',rate:0.85,tags:['산유국','신흥국']},
+ {f:'🇪🇬',n:'이집트',city:'카이로',cur:'파운드',code:'EGP',rate:28,tags:['관광의존','신흥국','농업']},
+ {f:'🇰🇪',n:'케냐',city:'나이로비',cur:'실링',code:'KES',rate:10.5,tags:['농업','관광의존','신흥국']},
+ {f:'🇹🇷',n:'튀르키예',city:'이스탄불',cur:'리라',code:'TRY',rate:34,tags:['지진대','관광의존','신흥국']},
+ {f:'🇵🇱',n:'폴란드',city:'바르샤바',cur:'즈워티',code:'PLN',rate:345,tags:['제조업','선진국']},
+ {f:'🇨🇿',n:'체코',city:'프라하',cur:'코루나',code:'CZK',rate:59,tags:['제조업','관광의존']},
+ {f:'🇭🇺',n:'헝가리',city:'부다페스트',cur:'포린트',code:'HUF',rate:3.8,tags:['제조업','관광의존']},
+ {f:'🇳🇴',n:'노르웨이',city:'오슬로',cur:'크로네',code:'NOK',rate:128,tags:['산유국','선진국']},
+ {f:'🇸🇪',n:'스웨덴',city:'스톡홀름',cur:'크로나',code:'SEK',rate:130,tags:['제조업','선진국']},
+ {f:'🇸🇦',n:'사우디아라비아',city:'리야드',cur:'리얄',code:'SAR',rate:368,tags:['산유국']},
+ {f:'🇦🇪',n:'아랍에미리트',city:'두바이',cur:'디르함',code:'AED',rate:376,tags:['산유국','관광의존']},
+ {f:'🇮🇱',n:'이스라엘',city:'텔아비브',cur:'셰켈',code:'ILS',rate:375,tags:['제조업']}
+];
+
+/* ── 사건 ──
+   실제 국가를 지목하지 않는다. 속성(tags)만 때린다.
+   why 는 결과를 설명하는 경제 원리 한 줄이다. 학생이 읽고 다음 판단에 쓴다. */
+const EVENTS=[
+ {ic:'🌋',t:'환태평양 지진대 강진',d:'해당 지역에서 강진이 이어져 공장이 멈추고 복구 비용이 크게 늘었습니다.',hit:{'지진대':-14},why:'재해가 나면 복구 물자를 밖에서 사와야 해 수입이 늘고 수출은 줄어듭니다. 나가는 돈이 많아지면 그 나라 통화는 약해집니다.'},
+ {ic:'🌊',t:'몬순 대홍수',d:'우기 폭우로 농경지와 공업단지가 잠겼습니다.',hit:{'몬순':-12,'농업':-6},why:'농산물 생산이 줄면 먹을 것을 수입해야 합니다. 무역수지가 나빠지면 통화 가치가 떨어집니다.'},
+ {ic:'🛢️',t:'국제 유가 급등',d:'원유 공급이 막히면서 배럴당 가격이 크게 올랐습니다.',hit:{'산유국':16,'제조업':-7},why:'같은 사건도 파는 쪽과 사는 쪽에 반대로 작용합니다. 유가가 오르면 산유국은 돈이 들어오고 공장을 돌리는 나라는 돈이 나갑니다.'},
+ {ic:'🕊️',t:'국제 정세 불안 고조',d:'투자자들이 위험을 피해 안전한 통화로 돈을 옮기고 있습니다.',hit:{'안전자산':11,'신흥국':-12},why:'불안할수록 돈은 안전한 곳으로 몰립니다. 이것을 안전자산 선호라고 합니다.'},
+ {ic:'🕊️',t:'긴장 완화 합의',d:'주요국이 갈등을 봉합하면서 위험을 감수하려는 분위기가 돌아왔습니다.',hit:{'안전자산':-8,'신흥국':13},why:'안심하면 돈은 더 높은 수익을 찾아 신흥국으로 돌아갑니다. 앞의 사건과 정확히 반대입니다.'},
+ {ic:'✈️',t:'세계 관광 회복',d:'여행 수요가 폭발해 관광지마다 외국인이 몰렸습니다.',hit:{'관광의존':14},why:'외국인이 와서 돈을 쓰면 그 나라 통화를 사야 합니다. 사려는 사람이 많으면 값이 오릅니다.'},
+ {ic:'🦠',t:'감염병 경보로 국경 통제',d:'각국이 입국을 제한하면서 여행길이 막혔습니다.',hit:{'관광의존':-15},why:'관광 수입이 큰 나라일수록 타격이 큽니다. 한 산업에 기대면 위험도 그만큼 커집니다.'},
+ {ic:'📈',t:'주요국 금리 인상',d:'큰 나라가 금리를 올리자 세계의 돈이 그쪽으로 빨려 들어갑니다.',hit:{'선진국':9,'신흥국':-13},why:'이자를 더 주는 곳으로 돈이 옮겨 갑니다. 돈이 빠져나가는 나라의 통화는 약해집니다.'},
+ {ic:'📉',t:'주요국 금리 인하',d:'경기를 살리려고 금리를 내리자 풀린 돈이 밖으로 나갑니다.',hit:{'선진국':-7,'신흥국':11},why:'금리가 낮아지면 그 통화를 들고 있을 이유가 줄어듭니다. 돈은 더 나은 수익을 찾아 떠납니다.'},
+ {ic:'⛏️',t:'원자재 슈퍼사이클',d:'구리와 철광석 수요가 몰리며 가격이 치솟았습니다.',hit:{'원자재':15,'제조업':-6},why:'원자재를 캐서 파는 나라는 벌고, 그것을 사서 가공하는 나라는 비용이 늘어납니다.'},
+ {ic:'📦',t:'원자재 가격 붕괴',d:'수요가 꺾이며 광물 가격이 급락했습니다.',hit:{'원자재':-13,'제조업':8},why:'재료값이 내려가면 공장을 돌리는 나라의 사정이 좋아집니다. 방금 사건의 뒤집힌 판입니다.'},
+ {ic:'🌾',t:'대가뭄으로 곡물 흉작',d:'주요 곡창지대에 비가 오지 않아 수확이 크게 줄었습니다.',hit:{'농업':-14,'몬순':-5},why:'팔 것이 줄면 벌어들이는 외화도 줄어듭니다.'},
+ {ic:'🚢',t:'주요 항로 물류 대란',d:'해상 운임이 폭등해 수출입 일정이 줄줄이 밀렸습니다.',hit:{'제조업':-11,'신흥국':-6},why:'물건을 제때 못 보내면 수출 대금도 늦게 들어옵니다. 무역 의존이 큰 나라일수록 흔들립니다.'},
+ {ic:'🤝',t:'대형 무역협정 타결',d:'관세 장벽이 낮아지며 수출길이 넓어졌습니다.',hit:{'제조업':12,'신흥국':7},why:'관세가 낮아지면 더 많이 팔 수 있고, 수출이 늘면 그 나라 통화를 사려는 수요도 늘어납니다.'},
+ {ic:'🏭',t:'글로벌 제조업 호황',d:'전자·자동차 주문이 밀려들며 공장이 밤낮으로 돌아갑니다.',hit:{'제조업':13,'원자재':6},why:'공장이 바쁘면 재료를 대는 나라까지 함께 좋아집니다. 경제는 사슬로 이어져 있습니다.'},
+ {ic:'💸',t:'신흥국 자금 이탈',d:'위험 신호가 켜지자 외국 투자금이 한꺼번에 빠져나갔습니다.',hit:{'신흥국':-16,'안전자산':7},why:'외국 돈이 나갈 때는 그 나라 통화를 팔고 나갑니다. 파는 사람이 많으면 값은 떨어집니다.'},
+ {ic:'🌡️',t:'이상 고온으로 전력난',d:'냉방 수요가 폭증해 산업용 전기가 부족해졌습니다.',hit:{'제조업':-9,'산유국':9},why:'전기를 만들려면 연료가 더 필요합니다. 연료를 파는 나라에는 기회가 됩니다.'},
+ {ic:'💎',t:'대규모 자원 발견',d:'새 광맥과 유전이 확인되며 기대가 커졌습니다.',hit:{'원자재':11,'산유국':10},why:'앞으로 벌어들일 돈이 늘 것이라는 기대만으로도 통화 가치는 미리 오릅니다.'},
+ {ic:'🪫',t:'국제 유가 급락',d:'수요가 꺾이고 재고가 쌓이며 유가가 무너졌습니다.',hit:{'산유국':-18,'제조업':5},why:'유가가 오를 때와 정확히 반대입니다. 같은 사건도 파는 쪽과 쓰는 쪽에 늘 반대로 작용합니다.'},
+ {ic:'🏗️',t:'재해 복구 특수',d:'무너진 도시를 다시 세우는 대규모 공사가 시작됐습니다.',hit:{'지진대':15},why:'재해 직후에는 통화가 약해지지만, 복구 투자가 몰리면 다시 올라오기도 합니다.'},
+ {ic:'🌾',t:'세계적 대풍년',d:'날씨가 좋아 곡물 수확이 기록을 세웠습니다.',hit:{'농업':21,'몬순':9},why:'팔 것이 늘면 외화가 들어옵니다. 흉작 때와 정반대 방향입니다.'},
+ {ic:'💹',t:'신흥국으로 투자 유입',d:'높은 성장률을 보고 세계의 돈이 신흥국으로 몰렸습니다.',hit:{'신흥국':17,'안전자산':-10},why:'돈이 들어오려면 그 나라 통화를 사야 합니다. 자금 이탈 때와 반대입니다.'},
+ {ic:'📉',t:'원자재 수요 둔화',d:'건설과 설비 투자가 줄며 광물 주문이 끊겼습니다.',hit:{'원자재':-20,'제조업':-5},why:'원자재는 경기를 따라 크게 오르내립니다. 한 방향으로만 가는 자산은 없습니다.'},
+ {ic:'🛢️',t:'산유국 증산 경쟁',d:'점유율을 두고 생산을 늘리며 가격이 밀렸습니다.',hit:{'산유국':-17},why:'많이 팔아도 값이 더 크게 내리면 벌이는 오히려 줄어듭니다.'},
+ {ic:'☔',t:'우기가 순조롭게 지나감',d:'큰 피해 없이 우기가 끝나 농사와 공장이 정상으로 돌아왔습니다.',hit:{'몬순':9},why:'나쁜 일이 안 일어난 것만으로도 통화는 회복합니다.'}
+];
+
+const COLORS=['#d96f32','#1f6b50','#315f78','#7a4f9e','#b5892a','#b8443a'];
+const SPECIAL={0:'start',3:'news',6:'news',9:'bank',12:'bank',15:'news',18:'tax',21:'tax'};
+const START_CASH=2500;      // 만원
+const PASS_BONUS=150;       // 출발선 통과 (전원에게 똑같이 주는 돈이라 크면 판단 차이를 덮는다)
+const TOLL=0.22;            // 통행료 비율
+const DEV_COST=0.60;        // 개발 비용 = 현재가치의 60%
+const DEV_MUL=[1,1.6,2.4];  // 개발 단계별 가치 배수
+const DEPOSIT_RATE=0.03;    // 예금 라운드당 복리
+/* 은행 이자는 도시가 통행료로 버는 기대수익(6인 기준 라운드당 약 4.6%)보다 낮아야 한다.
+   높게 두면 "그냥 은행에 넣는 것"이 최적이 되어 환율을 읽을 이유가 사라진다.
+   은행은 안전한 바닥이지, 이기는 수가 아니다. */
+const TAX_RATE=0.06;        // 세관 세율(총재산 기준)
+/* 평균 회귀 — 환율을 순수 랜덤워크로 두면 "비쌀 때 사기"가 손해가 아니게 된다.
+   비싸게 사도 그 도시의 원화 가치가 같이 높기 때문이다. 기준값 쪽으로 당겨 줘야
+   비로소 "쌀 때 사서 회복될 때 이득"이 성립하고, 환율을 읽는 판단이 보상받는다.
+   현실의 구매력 평가(PPP) 되돌림과 같은 방향이다. */
+const REVERT=0.13;
+/* 살 때와 팔 때 환율 차이(환전 수수료). 왕복 2%라 아무 때나 사고팔면 손해다.
+   실제로 은행 고시환율에 있는 것이고, 되돌림 폭보다 작아야 판단이 보상받는다. */
+const SPREAD=0.01;
+const FX_BUY=r=>r*(1+SPREAD);      // 원 → 외화 (비싸게 산다)
+const FX_SELL=r=>r*(1-SPREAD);     // 외화 → 원 (싸게 판다)
+
+let S=null, cfg={humans:4,npcs:0,rounds:12,names:['','','','','','']};
+
+/* ── NPC 두뇌 ────────────────────────────────────────────────
+   NPC 마다 서로 다른 경제 전략을 준다. 혼자 하는 학생이 "누가 왜 이겼는지"를
+   보고 배우도록, 모든 판단에 한 줄짜리 이유(why)를 붙여 화면에 띄운다.
+   '환율 사냥꾼'이 이 게임의 정답 전략이고 '묻지마 투자'는 학생이 처음에
+   하는 행동이다. 둘을 나란히 놓으면 차이가 눈에 보인다. */
+const BRAINS=[
+ {id:'hunter',name:'환율 사냥꾼',desc:'통화가 시작보다 싸진 나라만 골라 삽니다.',
+  buy(p,cell,val,d){return d<-2
+    ?{yes:true,why:`${GA(CUR(cell))} 시작보다 ${d.toFixed(1)}%. 쌀 때 사 둡니다.`}
+    :{yes:false,why:`${GA(CUR(cell))} ${d>=0?'+':''}${d.toFixed(1)}%. 아직 비싸서 넘깁니다.`}},
+  dev(p,cell,cost){return p.cash>cost*2.5
+    ?{yes:true,why:'현금이 넉넉해 가진 도시를 키웁니다.'}
+    :{yes:false,why:'현금은 다음에 싸진 도시를 살 때 쓰려고 아낍니다.'}},
+  save(p,amt,left){return{yes:false,why:'은행 이자보다 싸진 도시를 찾는 편이 낫다고 봅니다.'}},
+  fx(p){return npcFx(p,{enter:-6,take:5,share:0.45})}},
+
+ {id:'allin',name:'묻지마 투자',desc:'환율은 안 보고, 돈이 있으면 일단 삽니다.',
+  buy(p,cell,val,d){return{yes:true,why:'값이 어떻든 땅은 많을수록 좋다고 믿습니다.'}},
+  dev(p,cell,cost){return p.cash>cost?{yes:true,why:'가진 것을 계속 키웁니다.'}:{yes:false,why:'현금이 없습니다.'}},
+  save(p,amt,left){return{yes:false,why:'돈을 묶어 두는 것은 손해라고 봅니다.'}},
+  fx(p){return null}},
+
+ {id:'safe',name:'안전 제일',desc:'흔들림이 작은 안전자산·선진국 통화만 삽니다.',
+  buy(p,cell,val,d){const t=COUNTRIES[cell.ci].tags;
+    return t.includes('안전자산')||t.includes('선진국')
+    ?{yes:true,why:`${NEUN(COUNTRIES[cell.ci].n)} 흔들림이 작은 편이라 안심하고 삽니다.`}
+    :{yes:false,why:`${NEUN(CUR(cell))} 사건에 크게 흔들려서 피합니다.`}},
+  dev(p,cell,cost){return{yes:false,why:'개발보다 현금을 들고 있는 쪽을 택합니다.'}},
+  save(p,amt,left){return left>=4
+    ?{yes:true,why:`남은 ${left}라운드 동안 확실하게 붙는 이자라 맡깁니다.`}
+    :{yes:false,why:'남은 라운드가 적어 복리가 얼마 못 붙습니다.'}},
+  fx(p){return npcFx(p,{enter:-9,take:6,share:0.3,only:['안전자산','선진국']})}},
+
+ {id:'builder',name:'개발왕',desc:'싼 도시만 사고, 산 도시는 끝까지 키웁니다.',
+  buy(p,cell,val,d){return val<=260
+    ?{yes:true,why:`${man(val)}원이면 싼 편입니다. 사서 키울 생각입니다.`}
+    :{yes:false,why:`${man(val)}원은 비쌉니다. 그 돈으로 개발을 하겠습니다.`}},
+  dev(p,cell,cost){return p.cash>=cost
+    ?{yes:true,why:'통행료를 올리려고 개발합니다.'}
+    :{yes:false,why:'개발할 현금이 모자랍니다.'}},
+  save(p,amt,left){return{yes:false,why:'개발에 쓸 현금을 남겨 둡니다.'}},
+  fx(p){return null}},
+
+ {id:'compound',name:'복리 신봉자',desc:'도시보다 은행 복리를 믿습니다.',
+  buy(p,cell,val,d){return d<-8
+    ?{yes:true,why:`${GA(CUR(cell))} ${d.toFixed(1)}%까지 떨어졌습니다. 이 정도면 삽니다.`}
+    :{yes:false,why:'이 정도 값이면 은행에 맡기는 편이 낫다고 봅니다.'}},
+  dev(p,cell,cost){return{yes:false,why:'개발 대신 현금을 은행으로 보냅니다.'}},
+  save(p,amt,left){return{yes:true,why:`복리는 배신하지 않는다고 믿습니다.`}},
+  fx(p){return null}}
+];
+const CUR=cell=>COUNTRIES[cell.ci].cur;
+/* NPC 환전 판단. enter 보다 싸지면 사고, take 만큼 오르면 되판다.
+   only 가 있으면 그 태그를 가진 나라 통화만 본다. */
+function npcFx(p,{enter,take,share,only}){
+  for(const k in p.fx){
+    if(p.fx[k]>0){
+      const pr=fxProfit(p,k);
+      if(pr>=take){
+        const cur=COUNTRIES[k].cur, r=sellFx(p,+k);
+        return `${cur} 되팔아 +${pr.toFixed(1)}% 실현. ${man(r.got)}원을 회수했습니다.`;
+      }
+    }
+  }
+  const cands=S.picked.map(idx=>({idx,ch:(S.rates[idx]/S.base[idx]-1)*100}))
+    .filter(x=>x.ch<enter&&!p.fx[x.idx]&&(!only||COUNTRIES[x.idx].tags.some(t=>only.includes(t))))
+    .sort((a,b)=>a.ch-b.ch);
+  if(cands.length&&p.cash>=300){
+    const r=buyFx(p,cands[0].idx,Math.floor(p.cash*share));
+    if(r)return `${GA(COUNTRIES[cands[0].idx].cur)} ${cands[0].ch.toFixed(1)}%까지 내려왔습니다. ${man(r.amt)}원어치 사 둡니다.`;
+  }
+  return null;
+}
+/* 받침에 따라 조사를 고른다. 통화 이름이 매번 달라져서 고정으로 쓸 수 없다.
+   예: 셰켈 → "셰켈이", 달러 → "달러가" */
+function batchim(w){const c=String(w).charCodeAt(String(w).length-1);
+  return c>=0xAC00&&c<=0xD7A3&&(c-0xAC00)%28!==0}
+const GA=w=>w+(batchim(w)?'이':'가');
+const NEUN=w=>w+(batchim(w)?'은':'는');
+let npcTimer=null;
+function driftOf(cell){return (S.rates[cell.ci]/S.base[cell.ci]-1)*100}
+
+/* ── 유틸 ── */
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+function rngFrom(seed){let s=seed>>>0||1;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296}}
+function man(v){return Math.round(v).toLocaleString('ko-KR')+'만'}
+function local(v){return v>=1000?Math.round(v).toLocaleString('ko-KR'):v.toFixed(v<10?2:1)}
+function cellPos(i){
+  if(i<=6)return[1,i+1];
+  if(i<=12)return[i-5,7];
+  if(i<=18)return[7,19-i];
+  return[25-i,1];
+}
+
+/* ── 설정 화면 ── */
+function buildSetup(){
+  // 사람 수를 바꾸면 전체가 2~6명 안에 들어오도록 NPC 수를 먼저 맞춘다
+  if(cfg.humans+cfg.npcs>6)cfg.npcs=6-cfg.humans;
+  if(cfg.humans+cfg.npcs<2)cfg.npcs=2-cfg.humans;
+
+  const cs=$('[data-seg="count"]');cs.innerHTML='';
+  for(let n=1;n<=6;n++){
+    const b=document.createElement('button');b.textContent=n+'명';b.className=n===cfg.humans?'on':'';
+    b.onclick=()=>{cfg.humans=n;buildSetup()};cs.appendChild(b);
+  }
+  const ns=$('[data-seg="npc"]');ns.innerHTML='';
+  for(let n=0;n<=5;n++){
+    const b=document.createElement('button');b.textContent=n?n+'명':'없음';
+    b.className=n===cfg.npcs?'on':'';
+    if(cfg.humans+n>6||cfg.humans+n<2){b.disabled=true;b.style.opacity=.32}
+    else b.onclick=()=>{cfg.npcs=n;buildSetup()};
+    ns.appendChild(b);
+  }
+  const pv=$('[data-npc-preview]');pv.innerHTML='';
+  BRAINS.slice(0,cfg.npcs).forEach((br,k)=>{
+    const d=document.createElement('div');d.className='npc-chip';
+    d.innerHTML='<i class="dot"></i><b></b><span></span>';
+    d.querySelector('.dot').style.background=COLORS[cfg.humans+k];
+    d.querySelector('b').textContent=br.name;
+    d.querySelector('span').textContent=br.desc;
+    pv.appendChild(d);
+  });
+
+  const rs=$('[data-seg="rounds"]');rs.innerHTML='';
+  [8,12,16].forEach(n=>{
+    const b=document.createElement('button');b.textContent=n+'라운드'+(n===12?' · 권장':'');b.className=n===cfg.rounds?'on':'';
+    b.onclick=()=>{cfg.rounds=n;buildSetup()};rs.appendChild(b);
+  });
+
+  const nl=$('[data-names]');nl.innerHTML='';
+  for(let i=0;i<cfg.humans;i++){
+    const row=document.createElement('div');row.className='name-row';
+    row.innerHTML='<i class="dot"></i><input maxlength="8" placeholder="">';
+    row.querySelector('.dot').style.background=COLORS[i];
+    const inp=row.querySelector('input');
+    inp.placeholder='참가자 '+(i+1);inp.value=cfg.names[i]||'';
+    inp.oninput=()=>{cfg.names[i]=inp.value};
+    nl.appendChild(row);
+  }
+
+  const total=cfg.humans+cfg.npcs, turns=total*cfg.rounds;
+  // NPC 턴은 사람 턴보다 훨씬 빠르다 (자동 판단 + 짧은 설명)
+  const secs=cfg.humans*cfg.rounds*17+cfg.npcs*cfg.rounds*5;
+  $('[data-est]').textContent=`${total}명 (사람 ${cfg.humans}${cfg.npcs?' · NPC '+cfg.npcs:''}) · 총 ${turns}턴 · 대략 ${Math.round(secs/60)}분 예상`;
+}
+
+/* ── 판 만들기 ── */
+function newGame(){
+  clearTimeout(npcTimer);
+  const seed=Date.now()&0xffffffff, rnd=rngFrom(seed);
+  // 나라 16개를 무작위로 뽑는다. 판마다 다른 나라가 나온다.
+  const pool=COUNTRIES.map((_,i)=>i);
+  for(let i=pool.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}
+  const picked=pool.slice(0,16);
+
+  const board=[];let ci=0;
+  for(let i=0;i<24;i++){
+    if(SPECIAL[i]){board.push({type:SPECIAL[i],i});continue}
+    const idx=picked[ci], c=COUNTRIES[idx];
+    const baseMan=90+ci*22;                      // 90만 → 420만
+    const localPrice=baseMan*10000/c.rate;       // 현지 통화로 고정
+    board.push({type:'city',i,ci:idx,localPrice,owner:null,level:0});
+    ci++;
+  }
+
+  const rates={},base={};
+  picked.forEach(idx=>{rates[idx]=COUNTRIES[idx].rate;base[idx]=COUNTRIES[idx].rate});
+
+  const players=[];
+  for(let i=0;i<cfg.humans;i++){
+    players.push({id:i,name:(cfg.names[i]||'').trim()||('참가자 '+(i+1)),color:COLORS[i],npc:null,
+                  pos:0,cash:START_CASH,deposit:0,fx:{},fxCost:{}});
+  }
+  BRAINS.slice(0,cfg.npcs).forEach((br,k)=>{
+    const i=cfg.humans+k;
+    players.push({id:i,name:br.name,color:COLORS[i],npc:br,pos:0,cash:START_CASH,deposit:0,fx:{},fxCost:{}});
+  });
+
+  // 사건 순서를 미리 섞어 둔다. 같은 판을 다시 돌려도 같은 흐름이 나온다.
+  const evOrder=EVENTS.map((_,i)=>i);
+  for(let i=evOrder.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[evOrder[i],evOrder[j]]=[evOrder[j],evOrder[i]]}
+
+  S={seed,rnd,board,picked,rates,base,players,turn:0,round:1,maxRound:cfg.rounds,
+     evOrder,evPtr:0,phase:'roll',moving:false,landed:null};
+
+  show('play');
+  render();
+  turnStart();
+}
+
+/* ── 화면 전환 ── */
+function show(name){
+  $$('[data-screen]').forEach(s=>s.classList.toggle('hidden',s.dataset.screen!==name));
+  $('[data-round]').hidden=(name!=='play');
+}
+
+/* ── 값 계산 ── */
+function cityValue(cell){ // 만원
+  return cell.localPrice*S.rates[cell.ci]/10000*DEV_MUL[cell.level];
+}
+function totalAssets(p){
+  let sum=p.cash+p.deposit+fxValue(p);
+  S.board.forEach(c=>{if(c.type==='city'&&c.owner===p.id)sum+=cityValue(c)});
+  return sum;
+}
+/* 보유 외화는 지금 팔면 받을 돈으로 친다. 사자마자 2% 줄어 보이는 것이 맞다 —
+   왕복 수수료를 학생이 눈으로 보게 하는 편이 설명보다 낫다. */
+function fxValue(p){
+  let v=0;
+  for(const k in p.fx){if(p.fx[k]>0)v+=p.fx[k]*FX_SELL(S.rates[k])/10000}
+  return v;
+}
+function fxProfit(p,ci){
+  const now=p.fx[ci]*FX_SELL(S.rates[ci])/10000, paid=p.fxCost[ci]||0;
+  return paid>0?(now/paid-1)*100:0;
+}
+function cur(p){return S.players[S.turn]}
+
+/* ── 렌더 ── */
+function render(){
+  $('[data-round]').textContent=`라운드 ${S.round} / ${S.maxRound}`;
+  renderBoard();renderPlayers();renderFx();
+  const p=S.players[S.turn];
+  $('[data-turn-dot]').style.background=p.color;
+  $('[data-turn-name]').textContent=p.name;
+  $('[data-turn-cash]').textContent=`현금 ${man(p.cash)}원 · 총재산 ${man(totalAssets(p))}원`;
+}
+
+function renderBoard(){
+  const b=$('[data-board]');b.innerHTML='';
+  S.board.forEach((cell,i)=>{
+    const [r,c]=cellPos(i);
+    const el=document.createElement('div');
+    el.style.gridRow=r;el.style.gridColumn=c;
+    if(cell.type==='city'){
+      const co=COUNTRIES[cell.ci];
+      el.className='cell'+(cell.owner!==null?' owned':'');
+      if(cell.owner!==null)el.style.borderColor=S.players[cell.owner].color;
+      const drift=(S.rates[cell.ci]/S.base[cell.ci]-1)*100;
+      el.innerHTML=`<span class="flag">${co.f}</span><span class="cc">${co.code}</span><span class="pr">${man(cityValue(cell))}</span>`
+        +(cell.level?`<span class="lvl">+${cell.level}</span>`:'')
+        +(Math.abs(drift)>=4?`<span class="up">${drift>0?'▲':'▼'}</span>`:'');
+      el.title=`${co.city} · ${co.n}`;
+    }else{
+      const map={start:['🛫','출발'],news:['📰','세계뉴스'],bank:['🏦','세계은행'],tax:['🛃','세관']};
+      el.className='cell special';
+      el.innerHTML=`<span class="ic">${map[cell.type][0]}</span><span class="lbl">${map[cell.type][1]}</span>`;
+    }
+    const pw=document.createElement('div');pw.className='pawns';
+    S.players.forEach(p=>{if(p.pos===i){const d=document.createElement('i');d.className='pawn'+(p.id===S.turn?' active':'');d.style.background=p.color;pw.appendChild(d)}});
+    el.appendChild(pw);
+    b.appendChild(el);
+  });
+  const ctr=document.createElement('div');ctr.className='center';ctr.dataset.center='';
+  b.appendChild(ctr);
+  renderCenter();
+}
+
+function renderCenter(msg){
+  const ctr=$('[data-center]');if(!ctr)return;
+  if(msg){ctr.innerHTML=msg;return}
+  const p=S.players[S.turn];
+  const owned=S.board.filter(c=>c.type==='city'&&c.owner===p.id);
+  ctr.innerHTML=`<h3>${p.name}</h3>
+    <p class="sub">현금</p><div class="big">${man(p.cash)}원</div>
+    <p class="sub">총재산 ${man(totalAssets(p))}원 · 도시 ${owned.length}곳${p.deposit?` · 예금 ${man(p.deposit)}원`:''}</p>
+    ${owned.length?`<div class="why">${owned.map(c=>`${COUNTRIES[c.ci].f} ${COUNTRIES[c.ci].city} ${man(cityValue(c))}`).join(' · ')}</div>`:'<div class="why">아직 가진 도시가 없습니다. 통화가 싸진 나라를 노려 보세요.</div>'}
+    ${Object.keys(p.fx).filter(k=>p.fx[k]>0).length?`<div class="why">💱 ${Object.keys(p.fx).filter(k=>p.fx[k]>0).map(k=>`${COUNTRIES[k].f} ${COUNTRIES[k].cur} ${fxProfit(p,k)>=0?'+':''}${fxProfit(p,k).toFixed(1)}%`).join(' · ')}</div>`:''}`;
+}
+
+function renderPlayers(){
+  const box=$('[data-players]');box.innerHTML='';
+  S.players.map(p=>({p,a:totalAssets(p)})).sort((x,y)=>y.a-x.a).forEach(({p,a})=>{
+    const n=S.board.filter(c=>c.type==='city'&&c.owner===p.id).length;
+    const row=document.createElement('div');
+    row.className='prow'+(p.id===S.turn?' now':'')+(p.npc?' npc':'');
+    row.innerHTML=`<i class="dot"></i><span class="nm"></span><span class="ct">${n}곳</span><span class="as">${man(a)}</span>`;
+    row.querySelector('.dot').style.background=p.color;
+    row.querySelector('.nm').textContent=p.name;
+    if(p.npc)row.querySelector('.nm').insertAdjacentHTML('beforeend','<span class="tag-npc">NPC</span>');
+    box.appendChild(row);
+  });
+}
+
+function renderFx(){
+  const box=$('[data-fx]');box.innerHTML='';
+  S.picked.map(idx=>({idx,ch:(S.rates[idx]/S.base[idx]-1)*100}))
+   .sort((a,b)=>b.ch-a.ch).forEach(({idx,ch})=>{
+    const c=COUNTRIES[idx];
+    const row=document.createElement('div');row.className='fxrow';
+    row.innerHTML=`<span>${c.f}</span><span class="cn">${c.cur}</span>
+      <span class="rt">${local(S.rates[idx])}</span>
+      <span class="ch ${ch>=0?'up':'down'}">${ch>=0?'+':''}${ch.toFixed(1)}%</span>`;
+    row.title=`${c.n} · ${c.code}`;
+    box.appendChild(row);
+  });
+}
+
+/* ── 액션 패널 ── */
+function setAct({title,body,priceLine,buttons,note}){
+  const a=$('[data-act]');
+  a.innerHTML=`<h4></h4>${body?'<p></p>':''}${priceLine||''}<div class="btns"></div>${note?'<p class="note"></p>':''}`;
+  a.querySelector('h4').textContent=title;
+  if(body)a.querySelector('p').innerHTML=body;
+  if(note)a.querySelector('.note').innerHTML=note;
+  const bs=a.querySelector('.btns');
+  if(buttons.length===2)bs.classList.add('two');
+  buttons.forEach(b=>{
+    const el=document.createElement('button');
+    el.textContent=b.label;if(b.primary)el.className='primary';
+    if(b.disabled)el.disabled=true;else el.onclick=b.fn;
+    bs.appendChild(el);
+  });
+}
+
+/* ── 환전 ──
+   도시와 따로 노는 순수 타이밍 판이다. 도시는 밟아야 살 수 있어서 물량이 실력을 이기지만,
+   외화는 언제든 원하는 만큼 살 수 있어 환율을 읽는 판단이 곧바로 돈이 된다. */
+function buyFx(p,ci,amountMan){
+  const amt=Math.min(amountMan,Math.floor(p.cash));
+  if(amt<10)return false;
+  const units=amt*10000/FX_BUY(S.rates[ci]);
+  p.cash-=amt;
+  p.fx[ci]=(p.fx[ci]||0)+units;
+  p.fxCost[ci]=(p.fxCost[ci]||0)+amt;
+  return {amt,units};
+}
+function sellFx(p,ci){
+  const units=p.fx[ci]||0;
+  if(units<=0)return false;
+  const got=units*FX_SELL(S.rates[ci])/10000, paid=p.fxCost[ci]||0;
+  p.cash+=got;
+  delete p.fx[ci];delete p.fxCost[ci];
+  return {got,paid,units,profit:paid>0?(got/paid-1)*100:0};
+}
+
+/* 환전소 화면. 액션 패널 안에 그린다. */
+function showExchange(pick){
+  const p=S.players[S.turn];
+  S.fxPick=(pick===undefined)?null:pick;
+  const a=$('[data-act]');
+  const held=Object.keys(p.fx).filter(k=>p.fx[k]>0);
+
+  let html='<h4>💱 환전소</h4>';
+  html+='<p class="fx-intro">쌀 때 사서 오를 때 되팔면 도시 없이도 돈을 법니다. <b>살 때와 팔 때 환율이 1%씩 다릅니다.</b></p>';
+  html+=`<div class="fx-note">현금 <b>${man(p.cash)}원</b>${held.length?` · 보유 외화 ${man(fxValue(p))}원`:''}</div>`;
+
+  if(held.length){
+    html+='<div class="fx-hold">';
+    held.forEach(k=>{
+      const c=COUNTRIES[k], pr=fxProfit(p,k);
+      html+=`<div class="row"><span>${c.f}</span>
+        <span>${c.cur} <b>${local(p.fx[k])}</b></span>
+        <b class="${pr>=0?'up':'down'}">${pr>=0?'+':''}${pr.toFixed(1)}%</b>
+        <button data-sell="${k}">팔기</button></div>`;
+    });
+    html+='</div>';
+  }
+
+  if(S.fxPick!==null&&S.fxPick!==undefined){
+    const c=COUNTRIES[S.fxPick];
+    html+=`<div class="fx-note"><b>${c.f} ${c.cur}</b> 살 때 환율 <b>${local(FX_BUY(S.rates[S.fxPick]))}원</b> · 얼마나 바꿀까요?</div>`;
+    html+='<div class="fx-amt">';
+    [200,500,900].forEach(v=>{html+=`<button data-amt="${v}"${p.cash<v?' disabled':''}>${v}만</button>`});
+    html+=`<button data-amt="all"${p.cash<10?' disabled':''}>전액</button>`;
+    html+='<button data-amt="cancel">취소</button></div>';
+  }
+
+  html+='<div class="fx-mkt">';
+  S.picked.map(idx=>({idx,ch:(S.rates[idx]/S.base[idx]-1)*100})).sort((a,b)=>a.ch-b.ch).forEach(({idx,ch})=>{
+    const c=COUNTRIES[idx];
+    html+=`<div class="row${S.fxPick===idx?' pick':''}"><span>${c.f}</span>
+      <span>${c.cur}</span><span class="rt">${local(S.rates[idx])}</span>
+      <span class="ch ${ch>=0?'up':'down'}">${ch>=0?'+':''}${ch.toFixed(1)}%</span>
+      <button data-buy="${idx}">사기</button></div>`;
+  });
+  html+='</div>';
+  html+='<div class="btns"><button class="primary" data-fx-done>환전 끝내고 주사위</button></div>';
+  a.innerHTML=html;
+
+  a.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>showExchange(+b.dataset.buy));
+  a.querySelectorAll('[data-sell]').forEach(b=>b.onclick=()=>{
+    const r=sellFx(p,+b.dataset.sell);render();
+    if(r)showExchange(null);
+  });
+  a.querySelectorAll('[data-amt]').forEach(b=>b.onclick=()=>{
+    const v=b.dataset.amt;
+    if(v==='cancel')return showExchange(null);
+    buyFx(p,S.fxPick,v==='all'?Math.floor(p.cash):+v);
+    render();showExchange(null);
+  });
+  a.querySelector('[data-fx-done]').onclick=()=>{S.fxPick=null;turnStart()};
+}
+
+/* 사람 차례의 시작 화면 — 환전과 주사위 중 고른다 */
+function turnStart(){
+  const p=S.players[S.turn];
+  setAct({title:`${p.name} 차례`,
+    body:`현금 ${man(p.cash)}원 · 총재산 ${man(totalAssets(p))}원`,
+    buttons:[{label:'🎲 주사위 굴리기',primary:true,fn:roll},{label:'💱 환전소',fn:()=>showExchange(null)}],
+    note:'주사위를 굴리기 전에 환전할 수 있습니다. 싸진 통화를 사 두면 회복될 때 이득입니다.'});
+}
+
+/* ── NPC 진행 ──
+   NPC 는 버튼을 쓰지 않는다. 스스로 판단하고, 왜 그랬는지 한 줄 남긴 뒤 턴을 넘긴다.
+   그 한 줄이 혼자 하는 학생에게는 유일한 교사다. */
+function npcSay(title,body,why,ms){
+  setAct({title,body:body||' ',buttons:[]});
+  if(why){
+    const d=document.createElement('div');d.className='npc-why';d.textContent='\u{1F4AD} '+why;
+    $('[data-act]').appendChild(d);
+  }
+  clearTimeout(npcTimer);
+  npcTimer=setTimeout(()=>{if(S)nextTurn()},ms||(why?2100:1400));
+}
+
+function npcCity(p,cell,co,val,d){
+  if(cell.owner===null){
+    const r=p.npc.buy(p,cell,val,d);
+    if(r.yes&&p.cash>=val){
+      p.cash-=val;cell.owner=p.id;render();
+      return npcSay(`${co.f} ${co.city} 구입`,
+        `<b>${p.name}</b>가 ${man(val)}원에 샀습니다. — ${local(cell.localPrice)} ${co.cur}`,r.why);
+    }
+    return npcSay(`${co.f} ${co.city}`,`<b>${p.name}</b>가 사지 않고 지나갔습니다.`,
+      (r.yes&&p.cash<val)?'사고 싶지만 현금이 모자랍니다.':r.why);
+  }
+  if(cell.owner===p.id){
+    if(cell.level>=2)return npcSay(`${co.f} ${co.city} · 내 도시`,`<b>${p.name}</b>의 도시입니다. 이미 최대 단계입니다.`);
+    const cost=val*DEV_COST, r=p.npc.dev(p,cell,cost);
+    if(r.yes&&p.cash>=cost){
+      p.cash-=cost;cell.level++;render();
+      return npcSay(`${co.f} ${co.city} 개발`,
+        `<b>${p.name}</b>가 ${man(cost)}원을 들여 ${cell.level}단계로 키웠습니다.`,r.why);
+    }
+    return npcSay(`${co.f} ${co.city} · 내 도시`,`<b>${p.name}</b>가 개발하지 않았습니다.`,
+      (r.yes&&p.cash<cost)?'개발할 현금이 모자랍니다.':r.why);
+  }
+  const owner=S.players[cell.owner], toll=val*TOLL;
+  p.cash-=toll;owner.cash+=toll;render();
+  return npcSay(`${co.f} ${co.city} · ${owner.name}의 도시`,
+    `<b>${p.name}</b>가 통행료 ${man(toll)}원을 ${owner.name}에게 냈습니다.`,
+    `${GA(co.cur)} 시작보다 ${d>=0?'+':''}${d.toFixed(1)}%. 통행료도 그만큼 따라 움직였습니다.`);
+}
+
+/* ── 주사위와 이동 ──
+   함정 4: 이 환경에서는 requestAnimationFrame 이 멈춘다.
+   움직이는 것은 전부 setInterval 로 돌린다. */
+function roll(){
+  if(S.moving)return;S.moving=true;
+  const d1=1+Math.floor(S.rnd()*6), d2=1+Math.floor(S.rnd()*6);
+  let shake=0;
+  const spin=setInterval(()=>{
+    $('[data-d1]').textContent=1+Math.floor(Math.random()*6);
+    $('[data-d2]').textContent=1+Math.floor(Math.random()*6);
+    if(++shake>=8){
+      clearInterval(spin);
+      $('[data-d1]').textContent=d1;$('[data-d2]').textContent=d2;
+      step(d1+d2);
+    }
+  },70);
+  setAct({title:'주사위를 굴리는 중',body:'',buttons:[]});
+}
+
+function step(n){
+  const p=S.players[S.turn];let left=n;
+  const mv=setInterval(()=>{
+    p.pos=(p.pos+1)%24;
+    if(p.pos===0)p.cash+=PASS_BONUS;
+    renderBoard();renderPlayers();
+    if(--left<=0){clearInterval(mv);S.moving=false;land()}
+  },170);
+}
+
+/* ── 칸 처리 ── */
+function land(){
+  const p=S.players[S.turn], cell=S.board[p.pos];
+  render();
+  if(cell.type==='city')return landCity(p,cell);
+  if(cell.type==='start')return landPlain('🛫 출발선',`세계 여행 지원금 <b>${man(PASS_BONUS)}원</b>을 받았습니다.`);
+  if(cell.type==='news')return fireEvent(true);
+  if(cell.type==='bank')return landBank(p);
+  if(cell.type==='tax')return landTax(p);
+}
+
+function landPlain(title,body){
+  if(S.players[S.turn].npc)return npcSay(title,body);
+  setAct({title,body,buttons:[{label:'턴 넘기기',primary:true,fn:nextTurn}]});
+}
+
+function landCity(p,cell){
+  const co=COUNTRIES[cell.ci];
+  const val=cityValue(cell);
+  const drift=(S.rates[cell.ci]/S.base[cell.ci]-1)*100;
+  if(p.npc)return npcCity(p,cell,co,val,drift);
+  const priceLine=`<div class="price-line">
+      <span class="local">${local(cell.localPrice*DEV_MUL[cell.level])} ${co.cur}</span>
+      <span class="krw">≈ ${man(val)}원</span></div>`;
+  const fxNote=`<b>${co.cur}</b>${batchim(co.cur)?'은':'는'} 시작보다 <b>${drift>=0?'+':''}${drift.toFixed(1)}%</b>. `
+    +(drift<-3?'지금은 싸게 살 수 있는 자리입니다.':drift>3?'지금 사면 비싸게 사는 셈입니다.':'아직 시작값 근처입니다.');
+
+  if(cell.owner===null){
+    setAct({
+      title:`${co.f} ${co.city} · ${co.n}`,
+      body:`아직 주인이 없습니다. 값은 <b>${co.cur}</b>${batchim(co.cur)?'으로':'로'} 매겨져 있고, 원화로 얼마인지는 환율이 정합니다.`,
+      priceLine,
+      buttons:[
+        {label:`사기 (${man(val)}원)`,primary:true,disabled:p.cash<val,
+         fn:()=>{p.cash-=val;cell.owner=p.id;render();
+                 setAct({title:'구입 완료',body:`${co.city}가 내 도시가 되었습니다. 앞으로 <b>${co.cur}</b>${batchim(co.cur)?'이':'가'} 오르면 이 도시의 원화 가치도 함께 오릅니다.`,
+                         buttons:[{label:'턴 넘기기',primary:true,fn:nextTurn}]})}},
+        {label:'사지 않기',fn:nextTurn}
+      ],
+      note:fxNote+(p.cash<val?'<br><b>현금이 모자랍니다.</b>':'')
+    });
+  }else if(cell.owner===p.id){
+    const cost=val*DEV_COST, can=cell.level<2&&p.cash>=cost;
+    setAct({
+      title:`${co.f} ${co.city} · 내 도시`,
+      body:cell.level<2?`개발하면 도시 가치와 통행료가 함께 올라갑니다. (${cell.level} → ${cell.level+1}단계)`:'이미 최대 단계까지 개발했습니다.',
+      priceLine,
+      buttons:[
+        {label:cell.level<2?`개발하기 (${man(cost)}원)`:'개발 완료',primary:true,disabled:!can,
+         fn:()=>{p.cash-=cost;cell.level++;render();
+                 setAct({title:'개발 완료',body:`${co.city}가 ${cell.level}단계가 되었습니다. 이제 가치는 <b>${man(cityValue(cell))}원</b>입니다.`,
+                         buttons:[{label:'턴 넘기기',primary:true,fn:nextTurn}]})}},
+        {label:'그냥 두기',fn:nextTurn}
+      ],
+      note:fxNote
+    });
+  }else{
+    const owner=S.players[cell.owner], toll=val*TOLL;
+    p.cash-=toll;owner.cash+=toll;render();
+    setAct({
+      title:`${co.f} ${co.city} · ${owner.name}의 도시`,
+      body:`통행료 <b>${man(toll)}원</b>을 ${owner.name}에게 냈습니다.`,
+      priceLine,
+      buttons:[{label:'턴 넘기기',primary:true,fn:nextTurn}],
+      note:`통행료는 <b>지금 원화 가치</b>의 22%입니다. ${GA(co.cur)} 오르면 통행료도 같이 오릅니다.`
+    });
+  }
+}
+
+function landBank(p){
+  const left=S.maxRound-S.round+1;
+  const amount=Math.min(600,Math.max(0,Math.floor(p.cash*0.4)));
+  const future=amount*Math.pow(1+DEPOSIT_RATE,left);
+  if(p.npc){
+    if(amount<50)return npcSay('🏦 세계은행',`<b>${p.name}</b>는 맡길 현금이 부족합니다.`);
+    const r=p.npc.save(p,amount,left);
+    if(r.yes){
+      p.cash-=amount;p.deposit+=amount;render();
+      return npcSay('🏦 세계은행',
+        `<b>${p.name}</b>가 ${man(amount)}원을 맡겼습니다. ${left}라운드 뒤 ${man(future)}원이 됩니다.`,r.why);
+    }
+    return npcSay('🏦 세계은행',`<b>${p.name}</b>가 맡기지 않았습니다.`,r.why);
+  }
+  setAct({
+    title:'🏦 세계은행',
+    body:`현금 <b>${man(amount)}원</b>을 맡기면 남은 <b>${left}라운드</b> 동안 라운드마다 3%씩 복리로 불어납니다.<br>맡긴 돈은 게임이 끝날 때까지 <b>도시를 사는 데 쓸 수 없습니다.</b>`,
+    priceLine:`<div class="price-line"><span class="local">${man(future)}원</span><span class="krw">${man(amount)}원 × 1.07<sup>${left}</sup> — 끝날 때 받는 돈</span></div>`,
+    buttons:[
+      {label:'맡기기',primary:true,disabled:amount<50,
+       fn:()=>{p.cash-=amount;p.deposit+=amount;render();
+               setAct({title:'예치 완료',body:`${man(amount)}원을 맡겼습니다. 남은 라운드가 많을수록 복리가 크게 붙습니다.`,
+                       buttons:[{label:'턴 넘기기',primary:true,fn:nextTurn}]})}},
+      {label:'맡기지 않기',fn:nextTurn}
+    ],
+    note:amount<50?'맡길 현금이 부족합니다.':`지금 도시를 사면 <b>환율</b>로 벌고, 맡기면 <b>복리</b>로 법니다. 남은 라운드가 적으면 복리는 얼마 못 붙습니다.`
+  });
+}
+
+function landTax(p){
+  const tax=totalAssets(p)*TAX_RATE;
+  p.cash-=tax;render();
+  if(p.npc)return npcSay('🛃 세관',
+    `<b>${p.name}</b>가 총재산의 6%인 ${man(tax)}원을 냈습니다.`,
+    '세금은 현금이 아니라 총재산 기준입니다. 도시를 많이 가질수록 무거워집니다.');
+  setAct({
+    title:'🛃 세관',
+    body:`총재산의 6%인 <b>${man(tax)}원</b>을 세금으로 냈습니다.`,
+    buttons:[{label:'턴 넘기기',primary:true,fn:nextTurn}],
+    note:'세금은 현금이 아니라 <b>총재산</b>을 기준으로 매깁니다. 도시를 많이 가질수록 세금도 커집니다.'
+  });
+}
+
+/* ── 사건 ── */
+function fireEvent(midTurn){
+  const ev=EVENTS[S.evOrder[S.evPtr%S.evOrder.length]];S.evPtr++;
+  const moved=[];
+  S.picked.forEach(idx=>{
+    const co=COUNTRIES[idx];
+    let pct=0;
+    for(const tag in ev.hit)if(co.tags.includes(tag))pct+=ev.hit[tag];
+    pct+=(S.rnd()*4-2);                       // 나라마다 약간의 자체 변동
+    let r=S.rates[idx]*(1+pct/100);
+    r+=(S.base[idx]-r)*REVERT;                // 기준값 쪽으로 되돌림
+    S.rates[idx]=Math.max(S.base[idx]*0.35,r);
+    if(Math.abs(pct)>=5)moved.push({idx,pct});
+  });
+  moved.sort((a,b)=>Math.abs(b.pct)-Math.abs(a.pct));
+
+  $('[data-ev-ic]').textContent=ev.ic;
+  $('[data-ev-t]').textContent=ev.t;
+  $('[data-ev-d]').textContent=ev.d;
+  $('[data-ev-why]').textContent=ev.why;
+  const mv=$('[data-ev-mv]');mv.innerHTML='';
+  moved.slice(0,6).forEach(({idx,pct})=>{
+    const c=COUNTRIES[idx];
+    const d=document.createElement('div');d.className='mv';
+    d.innerHTML=`<span>${c.f} ${c.n} · ${c.cur}</span><b class="${pct>=0?'up':'down'}">${pct>=0?'+':''}${pct.toFixed(1)}%</b>`;
+    mv.appendChild(d);
+  });
+  if(!moved.length)mv.innerHTML='<div class="mv"><span>이번 판에 있는 나라들은 큰 영향을 받지 않았습니다.</span></div>';
+
+  $('[data-ev]').classList.remove('hidden');
+  $('[data-ev-ok]').onclick=()=>{
+    $('[data-ev]').classList.add('hidden');
+    render();
+    if(midTurn){
+      const cp=S.players[S.turn];
+      if(cp.npc)return npcSay('📰 세계뉴스',
+        `<b>${cp.name}</b>가 밟은 세계뉴스 칸에서 사건이 터졌습니다.`,
+        '환율이 바뀌면서 모두의 도시 가치가 함께 달라졌습니다.');
+      setAct({title:'📰 세계뉴스',body:'사건이 환율을 바꿔 놓았습니다. 내 도시들의 원화 가치도 달라졌습니다.',
+              buttons:[{label:'턴 넘기기',primary:true,fn:nextTurn}]});
+    }
+    else afterRoundEvent();
+  };
+}
+
+/* ── 턴 진행 ── */
+function nextTurn(){
+  S.turn++;
+  if(S.turn>=S.players.length){
+    S.turn=0;
+    // 예금에 복리를 붙인다
+    S.players.forEach(p=>{if(p.deposit>0)p.deposit*=1+DEPOSIT_RATE});
+    if(S.round>=S.maxRound){return finish()}
+    render();
+    return fireEvent(false);
+  }
+  render();
+  const p=S.players[S.turn];
+  if(p.npc){
+    const fxMsg=p.npc.fx?p.npc.fx(p):null;
+    setAct({title:`${p.name} 차례`,body:`<b>NPC</b> · ${p.npc.desc}`,buttons:[]});
+    if(fxMsg){
+      const d=document.createElement('div');d.className='npc-why';d.textContent='\u{1F4B1} '+fxMsg;
+      $('[data-act]').appendChild(d);
+      render();
+    }
+    clearTimeout(npcTimer);
+    npcTimer=setTimeout(()=>{if(S)roll()},fxMsg?1900:850);
+    return;
+  }
+  turnStart();
+}
+
+function afterRoundEvent(){
+  S.round++;
+  render();
+  const p=S.players[0];
+  setAct({title:`라운드 ${S.round} 시작 · ${p.name} 차례`,
+          body:'환율이 바뀌었습니다. 어느 나라가 싸졌는지 보고 환전할 기회입니다.',
+          buttons:[{label:'🎲 주사위 굴리기',primary:true,fn:roll},{label:'💱 환전소',fn:()=>showExchange(null)}]});
+}
+
+/* ── 결과 ── */
+function finish(){
+  clearTimeout(npcTimer);
+  show('result');
+  const rows=S.players.map(p=>({p,a:totalAssets(p),
+    n:S.board.filter(c=>c.type==='city'&&c.owner===p.id).length})).sort((x,y)=>y.a-x.a);
+  const rk=$('[data-rank]');rk.innerHTML='';
+  rows.forEach((r,i)=>{
+    const el=document.createElement('div');el.className='rrow'+(i===0?' first':'');
+    const diff=r.a-START_CASH;
+    el.innerHTML=`<span class="no">${i+1}</span><i class="dot"></i>
+      <span class="nm"></span>
+      <span class="as">${man(r.a)}원<small>도시 ${r.n}곳 · 시작 대비 ${diff>=0?'+':''}${man(diff)}</small></span>`;
+    el.querySelector('.dot').style.background=r.p.color;
+    el.querySelector('.nm').textContent=r.p.name;
+    if(r.p.npc)el.querySelector('.nm').insertAdjacentHTML('beforeend','<span class="tag-npc">NPC</span>');
+    rk.appendChild(el);
+  });
+  const fx=$('[data-final-fx]');fx.innerHTML='';
+  S.picked.map(idx=>({idx,ch:(S.rates[idx]/S.base[idx]-1)*100}))
+   .sort((a,b)=>Math.abs(b.ch)-Math.abs(a.ch)).slice(0,6).forEach(({idx,ch})=>{
+    const c=COUNTRIES[idx];
+    const d=document.createElement('div');d.className='mv';
+    d.innerHTML=`<span>${c.f} ${c.n} · ${c.cur}</span><b class="${ch>=0?'up':'down'}">${ch>=0?'+':''}${ch.toFixed(1)}%</b>`;
+    fx.appendChild(d);
+  });
+}
+
+/* ── 시작 ── */
+$('[data-start]').onclick=newGame;
+$('[data-again]').onclick=newGame;
+$('[data-reset]').onclick=()=>{clearTimeout(npcTimer);S=null;show('setup');buildSetup()};
+buildSetup();
+
+/* ════════════════════════════════════════════════════════════
+   친구방 LIVE
+   진행자(호스트)가 판을 굴리고, 판 전체를 문자열로 압축해 방에 올린다.
+   참가자는 그 스냅샷을 그대로 복원해 같은 화면을 본다.
+
+   라운드마다 제출은 딱 한 번이다.
+     호스트가 전원 주사위를 굴려 이동 → 각자 도착 칸과 환율을 보고
+     "환전 + 도착 칸 결정"을 동시에 제출 → 호스트가 정산 → 사건 → 다음 라운드
+   순서를 기다리는 시간이 없어 45분 수업에 들어간다.
+
+   제출 내용은 공용 어댑터를 고치지 않으려고 strategyId 문자열에 넣는다.
+     "b12_500~buy"  = 12번 통화를 500만원어치 사고, 도착한 도시를 산다
+     "s4~pass"      = 4번 통화를 팔고, 도착 칸은 넘긴다
+     "n~dev"        = 환전 없이 내 도시를 개발한다
+   ════════════════════════════════════════════════════════════ */
+const LIVE={on:false,host:false,code:null,uid:null,me:0,phase:'lobby',
+            landings:[],dice:[],lastEvent:null,newsHits:0,submitted:false,
+            roomOff:null,choiceOff:null,room:null,pick:null};
+const RT=()=>window.JPEconomyRealtime;
+
+function liveMsg(text,kind){
+  const el=$('[data-live-msg]');
+  el.className='lobby-msg '+(kind||'');
+  el.textContent=text||'';
+  el.classList.toggle('hidden',!text);
+}
+function liveError(code){
+  const map={'config-missing':'연결 정보가 없습니다.','database-not-created':'실시간 데이터베이스가 아직 만들어지지 않았습니다.',
+    'room-not-found':'그 코드의 방이 없습니다. 숫자를 다시 확인해 주세요.','game-already-started':'이미 시작한 방입니다.',
+    'room-full':'이 방에는 이미 6명이 있습니다.','auth/operation-not-allowed':'Firebase 콘솔에서 익명 로그인을 켜야 합니다.',
+    'auth/unauthorized-domain':'이 주소가 Firebase 인증 도메인에 등록되어 있지 않습니다. 콘솔에서 도메인을 추가해 주세요.'};
+  return map[code]||('연결하지 못했습니다. ('+code+')');
+}
+
+/* ── 판을 문자열로 ── */
+function snapOut(){
+  return JSON.stringify({
+    pk:S.picked, rt:S.rates.map ? S.rates : S.rates, bs:S.base,
+    rd:S.round, mx:S.maxRound, ph:LIVE.phase,
+    cl:S.board.map(c=>c.type==='city'?[c.ci,Math.round(c.localPrice),c.owner===null?-1:c.owner,c.level]:0),
+    pl:S.players.map(p=>[p.name,p.color,p.pos,Math.round(p.cash),Math.round(p.deposit),p.fx,p.fxCost,p.uid]),
+    ld:LIVE.landings, dc:LIVE.dice, ev:LIVE.lastEvent
+  });
+}
+function snapIn(text){
+  const o=JSON.parse(text);
+  const board=[];let ci=0;
+  o.cl.forEach((c,i)=>{
+    if(c===0){board.push({type:SPECIAL[i],i});return}
+    board.push({type:'city',i,ci:c[0],localPrice:c[1],owner:c[2]<0?null:c[2],level:c[3]});
+  });
+  S={seed:0,rnd:Math.random,board,picked:o.pk,rates:o.rt,base:o.bs,
+     players:o.pl.map((a,i)=>({id:i,name:a[0],color:a[1],pos:a[2],cash:a[3],deposit:a[4],
+                               fx:a[5]||{},fxCost:a[6]||{},uid:a[7],npc:null})),
+     turn:LIVE.me,round:o.rd,maxRound:o.mx,evOrder:[],evPtr:0};
+  LIVE.phase=o.ph;LIVE.landings=o.ld||[];LIVE.dice=o.dc||[];LIVE.lastEvent=o.ev||null;
+}
+
+/* ── 로비 ── */
+function openLobby(){
+  show('lobby');liveMsg('');
+  $('[data-room-box]').classList.add('hidden');
+  // 시크릿 모드나 사이트 데이터 차단이면 localStorage 접근 자체가 예외를 던진다
+  try{const saved=localStorage.getItem('jp_wm_name');if(saved)$('[data-live-name]').value=saved}catch(e){}
+}
+function myName(){
+  const v=String($('[data-live-name]').value||'').trim().slice(0,12);
+  try{if(v)localStorage.setItem('jp_wm_name',v)}catch(e){}
+  return v;
+}
+
+async function createRoom(){
+  const name=myName();
+  if(!name)return liveMsg('이름을 먼저 입력해 주세요.','bad');
+  liveMsg('방을 만드는 중...','ok');
+  try{
+    const r=await RT().createRoom('world-market',name);
+    LIVE.on=true;LIVE.host=true;LIVE.code=r.code;LIVE.uid=r.uid;
+    $('[data-room-code]').textContent=r.code;
+    $('[data-room-box]').classList.remove('hidden');
+    $('[data-live-start]').classList.remove('hidden');
+    liveMsg('코드를 친구들에게 알려 주세요.','ok');
+    watchRoom();
+  }catch(e){liveMsg(liveError(e.code||e.message),'bad')}
+}
+async function joinRoom(){
+  const name=myName();
+  if(!name)return liveMsg('이름을 먼저 입력해 주세요.','bad');
+  const code=String($('[data-join-code]').value||'').replace(/\D/g,'');
+  if(code.length!==6)return liveMsg('6자리 코드를 입력해 주세요.','bad');
+  liveMsg('입장하는 중...','ok');
+  try{
+    const r=await RT().joinRoom(code,name);
+    LIVE.on=true;LIVE.host=false;LIVE.code=r.code;LIVE.uid=r.uid;
+    $('[data-room-code]').textContent=r.code;
+    $('[data-room-box]').classList.remove('hidden');
+    $('[data-guest-wait]').classList.remove('hidden');
+    liveMsg('입장했습니다.','ok');
+    watchRoom();
+  }catch(e){liveMsg(liveError(e.code||e.message),'bad')}
+}
+
+async function watchRoom(){
+  if(LIVE.roomOff)LIVE.roomOff();
+  LIVE.roomOff=await RT().watchRoom(LIVE.code,room=>{
+    if(!room)return;
+    LIVE.room=room;
+    const players=Object.entries(room.players||{});
+    if(room.status==='lobby'){
+      const box=$('[data-room-players]');box.innerHTML='';
+      players.forEach(([uid,pl],i)=>{
+        const d=document.createElement('div');d.className='r';
+        d.innerHTML='<i></i><span></span><small></small>';
+        d.querySelector('i').style.background=COLORS[i]||'#999';
+        d.querySelector('span').textContent=pl.nickname;
+        d.querySelector('small').textContent=(uid===room.hostId?'진행자':'')+(uid===LIVE.uid?' · 나':'');
+        box.appendChild(d);
+      });
+      if(LIVE.host)$('[data-live-start]').disabled=players.length<2;
+      return;
+    }
+    if(room.board){
+      /* 호스트는 스냅샷을 되읽지 않는다. 되읽으면 자기 시드 난수와 사건 순서가
+         날아가서 다음 라운드가 딴 판이 된다. 호스트의 S 가 원본이다. */
+      if(!LIVE.host){
+        snapIn(room.board);
+        LIVE.me=S.players.findIndex(p=>p.uid===LIVE.uid);
+        if(LIVE.me<0)LIVE.me=0;
+        S.turn=LIVE.me;
+      }
+      if(LIVE.lastRound!==room.round||LIVE.lastStatus!==room.status){
+        if(room.status==='turn')LIVE.submitted=false;   // 새 라운드면 제출 상태를 푼다
+        LIVE.lastRound=room.round;LIVE.lastStatus=room.status;
+      }
+      if(LIVE.phase==='final')return liveFinish();
+      show('play');render();
+      renderLiveAct();
+    }
+  });
+}
+
+/* ── 호스트: 판 만들고 라운드 굴리기 ── */
+async function liveStart(){
+  const players=Object.entries(LIVE.room.players||{});
+  if(players.length<2)return;
+  cfg.humans=players.length;cfg.npcs=0;
+  cfg.names=players.map(([,pl])=>pl.nickname);
+  newGame();                                  // 판·환율·플레이어 생성
+  S.players.forEach((p,i)=>{p.uid=players[i][0]});
+  LIVE.on=true;LIVE.me=players.findIndex(([uid])=>uid===LIVE.uid);
+  S.turn=LIVE.me;
+  await hostRound();
+}
+async function hostRound(){
+  LIVE.landings=[];LIVE.dice=[];LIVE.newsHits=0;
+  S.players.forEach(p=>{
+    const d1=1+Math.floor(S.rnd()*6), d2=1+Math.floor(S.rnd()*6);
+    LIVE.dice.push([d1,d2]);
+    for(let k=0;k<d1+d2;k++){p.pos=(p.pos+1)%24;if(p.pos===0)p.cash+=PASS_BONUS}
+    LIVE.landings.push(landKind(p));
+  });
+  LIVE.phase='act';LIVE.submitted=false;
+  await publish('turn');
+  watchSubmissions();
+}
+function landKind(p){
+  const cell=S.board[p.pos];
+  if(cell.type!=='city')return cell.type;
+  if(cell.owner===null)return 'free';
+  if(cell.owner===p.id)return 'mine';
+  return 'other';
+}
+async function publish(status){
+  if(!LIVE.host)return;
+  await RT().hostUpdate(LIVE.code,{status,round:S.round,board:snapOut()});
+}
+async function watchSubmissions(){
+  if(LIVE.choiceOff)LIVE.choiceOff();
+  LIVE.choiceOff=await RT().watchChoices(LIVE.code,S.round,async choices=>{
+    const n=Object.keys(choices||{}).length;
+    await RT().hostUpdate(LIVE.code,{submittedCount:n});
+    if(n>=S.players.length&&LIVE.phase==='act'){
+      if(LIVE.choiceOff){LIVE.choiceOff();LIVE.choiceOff=null}
+      await hostSettle(choices);
+    }
+  });
+}
+
+/* ── 호스트: 정산 ── */
+function parseChoice(str){
+  const [fxPart,cellPart]=String(str||'n~pass').split('~');
+  let fx=null;
+  if(fxPart&&fxPart[0]==='b'){const [ci,amt]=fxPart.slice(1).split('_');fx={act:'buy',ci:+ci,amt:+amt}}
+  else if(fxPart&&fxPart[0]==='s'){fx={act:'sell',ci:+fxPart.slice(1)}}
+  return {fx,cell:cellPart||'pass'};
+}
+async function hostSettle(choices){
+  const byUid={};
+  Object.entries(choices||{}).forEach(([uid,c])=>{byUid[uid]=parseChoice(c.strategyId)});
+
+  S.players.forEach((p,i)=>{
+    const ch=byUid[p.uid]||{fx:null,cell:'pass'};
+    if(ch.fx&&ch.fx.act==='buy'&&S.picked.includes(ch.fx.ci))buyFx(p,ch.fx.ci,ch.fx.amt);
+    if(ch.fx&&ch.fx.act==='sell')sellFx(p,ch.fx.ci);
+
+    const kind=LIVE.landings[i], cell=S.board[p.pos];
+    if(kind==='free'){
+      const val=cityValue(cell);
+      if(ch.cell==='buy'&&p.cash>=val){p.cash-=val;cell.owner=p.id}
+    }else if(kind==='mine'){
+      const cost=cityValue(cell)*DEV_COST;
+      if(ch.cell==='dev'&&cell.level<2&&p.cash>=cost){p.cash-=cost;cell.level++}
+    }else if(kind==='other'){
+      const toll=cityValue(cell)*TOLL;
+      p.cash-=toll;S.players[cell.owner].cash+=toll;
+    }else if(kind==='bank'){
+      const left=S.maxRound-S.round+1, amt=Math.min(600,Math.max(0,Math.floor(p.cash*0.4)));
+      if(ch.cell==='buy'&&amt>=50){p.cash-=amt;p.deposit+=amt}
+    }else if(kind==='tax'){
+      p.cash-=totalAssets(p)*TAX_RATE;
+    }else if(kind==='news'){
+      LIVE.newsHits++;
+    }
+  });
+
+  const times=1+LIVE.newsHits;
+  for(let k=0;k<times;k++)LIVE.lastEvent=applyEventSilent();
+  S.players.forEach(p=>{if(p.deposit>0)p.deposit*=1+DEPOSIT_RATE});
+
+  LIVE.phase='reveal';
+  await publish('reveal');
+  await RT().clearRoundChoices(LIVE.code,S.round);
+}
+/* 화면 없이 사건만 적용한다(호스트가 계산하고, 결과는 스냅샷으로 전달된다) */
+function applyEventSilent(){
+  const ev=EVENTS[S.evOrder[S.evPtr%S.evOrder.length]];S.evPtr++;
+  const moved=[];
+  S.picked.forEach(idx=>{
+    const co=COUNTRIES[idx];let pct=0;
+    for(const tag in ev.hit)if(co.tags.includes(tag))pct+=ev.hit[tag];
+    pct+=(S.rnd()*4-2);
+    let r=S.rates[idx]*(1+pct/100);
+    r+=(S.base[idx]-r)*REVERT;
+    S.rates[idx]=Math.max(S.base[idx]*0.35,r);
+    if(Math.abs(pct)>=5)moved.push([idx,+pct.toFixed(1)]);
+  });
+  moved.sort((a,b)=>Math.abs(b[1])-Math.abs(a[1]));
+  return {ic:ev.ic,t:ev.t,d:ev.d,why:ev.why,mv:moved.slice(0,6)};
+}
+async function hostNext(){
+  if(S.round>=S.maxRound){LIVE.phase='final';return publish('final')}
+  S.round++;
+  await hostRound();
+}
+
+/* ── 참가자·호스트 공통: 라운드 화면 ── */
+function renderLiveAct(){
+  const p=S.players[LIVE.me], kind=LIVE.landings[LIVE.me], cell=S.board[p.pos];
+  const dice=LIVE.dice[LIVE.me]||[0,0];
+
+  if(LIVE.phase==='reveal'){
+    const ev=LIVE.lastEvent;
+    let body=ev?`<b>${ev.ic} ${ev.t}</b><br>${ev.d}`:'라운드가 끝났습니다.';
+    if(ev&&ev.mv&&ev.mv.length)body+='<br><br>'+ev.mv.map(([i,v])=>`${COUNTRIES[i].f} ${COUNTRIES[i].cur} <b>${v>=0?'+':''}${v}%</b>`).join(' · ');
+    setAct({title:`라운드 ${S.round} 결과`,body,
+      note:ev?ev.why:'',
+      buttons:LIVE.host?[{label:S.round>=S.maxRound?'최종 결과 보기':'다음 라운드',primary:true,fn:hostNext}]:[]});
+    if(!LIVE.host){
+      const w=document.createElement('div');w.className='wait-strip';
+      w.textContent='진행자가 다음 라운드를 시작할 때까지 기다려 주세요.';
+      $('[data-act]').appendChild(w);
+    }
+    return;
+  }
+
+  if(LIVE.submitted){
+    const done=(LIVE.room&&LIVE.room.submittedCount)||0;
+    setAct({title:'제출 완료',body:'다른 사람들이 결정을 마치면 한꺼번에 공개됩니다.',buttons:[]});
+    const w=document.createElement('div');w.className='wait-strip';
+    w.innerHTML=`제출 <b>${done} / ${S.players.length}</b>`;
+    $('[data-act]').appendChild(w);
+    return;
+  }
+
+  // 결정 화면
+  const co=cell.type==='city'?COUNTRIES[cell.ci]:null;
+  let title=`🎲 ${dice[0]}+${dice[1]} · `, body='', opts=[];
+  if(kind==='free'){
+    const val=cityValue(cell);
+    title+=`${co.f} ${co.city}`;
+    body=`주인이 없습니다. <b>${local(cell.localPrice)} ${co.cur}</b> ≈ <b>${man(val)}원</b>`;
+    opts=[{k:'buy',l:`사기 (${man(val)}원)`,dis:p.cash<val},{k:'pass',l:'사지 않기'}];
+  }else if(kind==='mine'){
+    const cost=cityValue(cell)*DEV_COST;
+    title+=`${co.f} ${co.city} · 내 도시`;
+    body=cell.level<2?`개발하면 가치와 통행료가 함께 오릅니다.`:'이미 최대 단계입니다.';
+    opts=cell.level<2?[{k:'dev',l:`개발 (${man(cost)}원)`,dis:p.cash<cost},{k:'pass',l:'그냥 두기'}]:[{k:'pass',l:'확인'}];
+  }else if(kind==='other'){
+    title+=`${co.f} ${co.city} · ${S.players[cell.owner].name}의 도시`;
+    body=`통행료 <b>${man(cityValue(cell)*TOLL)}원</b>을 냅니다.`;
+    opts=[{k:'pass',l:'확인'}];
+  }else if(kind==='bank'){
+    const left=S.maxRound-S.round+1, amt=Math.min(600,Math.max(0,Math.floor(p.cash*0.4)));
+    title+='🏦 세계은행';
+    body=`<b>${man(amt)}원</b>을 맡기면 남은 ${left}라운드 동안 라운드마다 3%씩 붙습니다.`;
+    opts=[{k:'buy',l:'맡기기',dis:amt<50},{k:'pass',l:'맡기지 않기'}];
+  }else if(kind==='tax'){
+    title+='🛃 세관';body=`총재산의 6%를 세금으로 냅니다.`;opts=[{k:'pass',l:'확인'}];
+  }else if(kind==='news'){
+    title+='📰 세계뉴스';body='이번 라운드에 사건이 한 번 더 터집니다.';opts=[{k:'pass',l:'확인'}];
+  }else{
+    title+='🛫 출발선';body=`여행 지원금 <b>${man(PASS_BONUS)}원</b>을 받았습니다.`;opts=[{k:'pass',l:'확인'}];
+  }
+
+  LIVE.cellPick=LIVE.cellPick||opts[0].k;
+  const a=$('[data-act]');
+  a.innerHTML=`<h4></h4><p></p><div class="btns" data-cell-opts></div>
+    <div class="fx-note">💱 환전 (선택) — ${LIVE.pick?`<b>${LIVE.pick.label}</b>`:'하지 않음'}</div>
+    <div class="btns"><button data-open-fx>환전소 열기</button></div>
+    <div class="btns" style="margin-top:9px"><button class="primary" data-submit>이 결정으로 제출</button></div>`;
+  a.querySelector('h4').textContent=title;
+  a.querySelector('p').innerHTML=body;
+  const box=a.querySelector('[data-cell-opts]');
+  if(opts.length===2)box.classList.add('two');
+  opts.forEach(o=>{
+    const b=document.createElement('button');b.textContent=o.l;
+    if(o.dis)b.disabled=true;
+    if(LIVE.cellPick===o.k)b.className='primary';
+    b.onclick=()=>{LIVE.cellPick=o.k;renderLiveAct()};
+    box.appendChild(b);
+  });
+  a.querySelector('[data-open-fx]').onclick=liveExchange;
+  a.querySelector('[data-submit]').onclick=liveSubmit;
+}
+
+/* 라이브 환전소 — 라운드당 한 번, 사거나 팔거나 */
+function liveExchange(){
+  const p=S.players[LIVE.me];
+  const a=$('[data-act]');
+  const held=Object.keys(p.fx).filter(k=>p.fx[k]>0);
+  let html='<h4>💱 환전소</h4><p class="fx-intro">이번 라운드에 한 번 사거나 팔 수 있습니다. 살 때와 팔 때 환율이 1%씩 다릅니다.</p>';
+  html+=`<div class="fx-note">현금 <b>${man(p.cash)}원</b></div>`;
+  if(held.length){
+    html+='<div class="fx-hold">';
+    held.forEach(k=>{const c=COUNTRIES[k],pr=fxProfit(p,k);
+      html+=`<div class="row"><span>${c.f}</span><span>${c.cur} <b>${local(p.fx[k])}</b></span>
+        <b class="${pr>=0?'up':'down'}">${pr>=0?'+':''}${pr.toFixed(1)}%</b>
+        <button data-lsell="${k}">팔기</button></div>`});
+    html+='</div>';
+  }
+  if(LIVE.pickCi!==null&&LIVE.pickCi!==undefined){
+    const c=COUNTRIES[LIVE.pickCi];
+    html+=`<div class="fx-note"><b>${c.f} ${c.cur}</b> 살 때 <b>${local(FX_BUY(S.rates[LIVE.pickCi]))}원</b> · 얼마나?</div><div class="fx-amt">`;
+    [200,500,900].forEach(v=>{html+=`<button data-lamt="${v}"${p.cash<v?' disabled':''}>${v}만</button>`});
+    html+='<button data-lamt="cancel">취소</button></div>';
+  }
+  html+='<div class="fx-mkt">';
+  S.picked.map(i=>({i,ch:(S.rates[i]/S.base[i]-1)*100})).sort((x,y)=>x.ch-y.ch).forEach(({i,ch})=>{
+    const c=COUNTRIES[i];
+    html+=`<div class="row${LIVE.pickCi===i?' pick':''}"><span>${c.f}</span><span>${c.cur}</span>
+      <span class="rt">${local(S.rates[i])}</span>
+      <span class="ch ${ch>=0?'up':'down'}">${ch>=0?'+':''}${ch.toFixed(1)}%</span>
+      <button data-lbuy="${i}">사기</button></div>`});
+  html+='</div><div class="btns"><button class="primary" data-lback>결정 화면으로</button></div>';
+  a.innerHTML=html;
+  a.querySelectorAll('[data-lbuy]').forEach(b=>b.onclick=()=>{LIVE.pickCi=+b.dataset.lbuy;liveExchange()});
+  a.querySelectorAll('[data-lsell]').forEach(b=>b.onclick=()=>{
+    const k=+b.dataset.lsell;LIVE.pick={code:'s'+k,label:COUNTRIES[k].cur+' 전량 팔기'};LIVE.pickCi=null;renderLiveAct()});
+  a.querySelectorAll('[data-lamt]').forEach(b=>b.onclick=()=>{
+    const v=b.dataset.lamt;
+    if(v==='cancel'){LIVE.pickCi=null;return liveExchange()}
+    LIVE.pick={code:`b${LIVE.pickCi}_${v}`,label:`${COUNTRIES[LIVE.pickCi].cur} ${v}만원어치 사기`};
+    LIVE.pickCi=null;renderLiveAct();
+  });
+  a.querySelector('[data-lback]').onclick=()=>{LIVE.pickCi=null;renderLiveAct()};
+}
+
+async function liveSubmit(){
+  const code=`${LIVE.pick?LIVE.pick.code:'n'}~${LIVE.cellPick||'pass'}`;
+  LIVE.submitted=true;LIVE.pick=null;LIVE.cellPick=null;
+  renderLiveAct();
+  try{await RT().submitChoice(LIVE.code,S.round,code)}
+  catch(e){LIVE.submitted=false;renderLiveAct();alert('제출하지 못했습니다: '+(e.code||e.message))}
+}
+
+function liveFinish(){
+  LIVE.submitted=false;
+  show('result');
+  const rows=S.players.map(p=>({p,a:totalAssets(p),
+    n:S.board.filter(c=>c.type==='city'&&c.owner===p.id).length})).sort((x,y)=>y.a-x.a);
+  const rk=$('[data-rank]');rk.innerHTML='';
+  rows.forEach((r,i)=>{
+    const el=document.createElement('div');el.className='rrow'+(i===0?' first':'');
+    const diff=r.a-START_CASH;
+    el.innerHTML=`<span class="no">${i+1}</span><i class="dot"></i><span class="nm"></span>
+      <span class="as">${man(r.a)}원<small>도시 ${r.n}곳 · 시작 대비 ${diff>=0?'+':''}${man(diff)}</small></span>`;
+    el.querySelector('.dot').style.background=r.p.color;
+    el.querySelector('.nm').textContent=r.p.name+(r.p.uid===LIVE.uid?' (나)':'');
+    rk.appendChild(el);
+  });
+  const fx=$('[data-final-fx]');fx.innerHTML='';
+  S.picked.map(i=>({i,ch:(S.rates[i]/S.base[i]-1)*100})).sort((a,b)=>Math.abs(b.ch)-Math.abs(a.ch)).slice(0,6)
+   .forEach(({i,ch})=>{const c=COUNTRIES[i];
+    const d=document.createElement('div');d.className='mv';
+    d.innerHTML=`<span>${c.f} ${c.n} · ${c.cur}</span><b class="${ch>=0?'up':'down'}">${ch>=0?'+':''}${ch.toFixed(1)}%</b>`;
+    fx.appendChild(d)});
+}
+
+/* ── 배선 ── */
+$$('[data-mode-seg] button').forEach(b=>b.onclick=()=>{
+  $$('[data-mode-seg] button').forEach(x=>x.classList.toggle('on',x===b));
+  if(b.dataset.mode==='live')openLobby();
+});
+$('[data-create]').onclick=createRoom;
+$('[data-join]').onclick=joinRoom;
+$('[data-live-start]').onclick=liveStart;
+$('[data-live-back]').onclick=()=>{
+  if(LIVE.roomOff)LIVE.roomOff();if(LIVE.choiceOff)LIVE.choiceOff();
+  LIVE.on=false;LIVE.host=false;LIVE.code=null;
+  $$('[data-mode-seg] button').forEach(x=>x.classList.toggle('on',x.dataset.mode==='local'));
+  show('setup');buildSetup();
+};
+</script>
+</body>
+</html>

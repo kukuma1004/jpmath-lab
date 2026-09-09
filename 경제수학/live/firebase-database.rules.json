@@ -20,7 +20,11 @@
         },
         "round": {
           ".write": "auth != null && (data.parent().child('hostId').val() == auth.uid || newData.parent().child('hostId').val() == auth.uid)",
-          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 7"
+          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 30"
+        },
+        "board": {
+          ".write": "auth != null && data.parent().child('hostId').val() == auth.uid",
+          ".validate": "newData.isString() && newData.val().length <= 30000"
         },
         "eventOrder": { ".write": "auth != null && (data.parent().child('hostId').val() == auth.uid || newData.parent().child('hostId').val() == auth.uid)" },
         "results": { ".write": "auth != null && data.parent().child('hostId').val() == auth.uid" },
