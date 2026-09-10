@@ -186,89 +186,249 @@ function cubicRoots(b, c, d) {
   say(near((9 - 3 * 2 + (-6)) ** 2, 9), 'K05 · 합과 곱만으로도 f(3)=9 가 나온다');
 }
 
+/* ── SET 02 ───────────────────────────────────────────────────────
+   수능 4점의 골격을 맞춘 네 문항. 여기서는 조건이 정말 그 함수를 강제하는지,
+   갈린 두 경우 중 하나가 진짜 죽는지를 본다 — 경우를 죽이는 조건이 없으면
+   답이 둘이 되어 문항이 무너진다. */
+
+/* S01 · 연속 : g(x)=f(x) (x<t), f(x-2)+a (x>=t)
+   연속 <=> f(t)-f(t-2)=a. 삼차의 차분이 이차식이라는 것이 요점. */
+{
+  const mk = (k) => (x) => x * (x - 2) * (x - k);
+  const D = (k) => (t) => mk(k)(t) - mk(k)(t - 2);
+
+  // D 가 정말 이차식인가 — 세 점으로 이차식을 세워 네 번째 점에서 맞춰 본다
+  const quadFits = (k) => {
+    const d = D(k), [x0, x1, x2, x3] = [0, 1, 2, 5];
+    const A = d(x0) / ((x0 - x1) * (x0 - x2)), B = d(x1) / ((x1 - x0) * (x1 - x2)), C = d(x2) / ((x2 - x0) * (x2 - x1));
+    const lag = (x) => A * (x - x1) * (x - x2) + B * (x - x0) * (x - x2) + C * (x - x0) * (x - x1);
+    return near(lag(x3), d(x3), 1e-9);
+  };
+  say([4, -2, 7, 0].every(quadFits), 'S01 · f(t)-f(t-2) 는 t 에 대한 이차식이다');
+
+  const minD = (k) => { let m = Infinity; for (let t = -60; t < 60; t += 1e-4) m = Math.min(m, D(k)(t)); return m };
+  say([4, -2, 7].every((k) => near(minD(k), -2 * (k - 1) ** 2 / 3, 1e-3)),
+    'S01 · D 의 최솟값은 -2(k-1)^2/3');
+  const ks = [];
+  for (let k = -20; k <= 20; k += 1e-3) if (Math.abs(-2 * (k - 1) ** 2 / 3 + 6) < 1e-6) ks.push(Math.round(k));
+  say([...new Set(ks)].length === 2, `S01 · 최솟값이 -6 인 k 는 ${[...new Set(ks)].join(', ')} 둘`);
+
+  // N(a) 가 정말 a < -6 에서만 0 인가
+  const countT = (k, a) => {
+    let n = 0, d = D(k), prev = d(-40) - a;
+    for (let t = -40; t < 40; t += 1e-4) { const cur = d(t + 1e-4) - a; if (prev * cur < 0) n++; prev = cur }
+    return n;
+  };
+  say(countT(4, -7) === 0 && countT(4, -5.9) === 2 && countT(4, 3) === 2,
+    `S01 · a=-7 이면 ${countT(4, -7)}개, a=-5.9 면 ${countT(4, -5.9)}개`);
+  say(mk(4)(3) < 0 && mk(-2)(3) > 0,
+    `S01 · f(3) 의 부호가 두 경우를 가른다 (k=4 는 ${mk(4)(3)}, k=-2 는 ${mk(-2)(3)})`);
+  say(mk(4)(5) === 15, `S01 · 답 f(5)=${mk(4)(5)}`);
+}
+
+/* S02 · 미분가능성 : g(x)=f(x)|x-a| 가 x=a 에서 꺾이지 않을 조건 */
+{
+  const smoothAt = (f, a) => {
+    const g = (x) => f(x) * Math.abs(x - a), h = 1e-6;
+    return Math.abs((g(a + h) - g(a)) / h - (g(a) - g(a - h)) / h) < 1e-3;
+  };
+  const cubic = (x) => (x - 1) * (x - 3) * (x - 5);
+  say(smoothAt(cubic, 1) && smoothAt(cubic, 3) && smoothAt(cubic, 5) && !smoothAt(cubic, 2) && !smoothAt(cubic, 0),
+    'S02 · 꺾이지 않는 a 는 f 의 실근일 때뿐');
+
+  const A = (x) => x * x * (x - 3), B = (x) => x * (x - 3) ** 2;
+  say(smoothAt(A, 0) && smoothAt(A, 3) && smoothAt(B, 0) && smoothAt(B, 3),
+    'S02 · 두 배치 모두 a=0, a=3 에서 꺾이지 않는다 — 합 3 만으로는 못 가른다');
+  const dA = (x) => 3 * x * x - 6 * x, dB = (x) => 3 * x * x - 12 * x + 9;
+  say(near(dA(2), 0) && !near(dB(2), 0),
+    `S02 · f'(2)=0 이 x^2(x-3) 만 남긴다 (다른 쪽은 ${dB(2)})`);
+  say(A(5) === 50, `S02 · 답 f(5)=${A(5)}`);
+}
+
+/* S03 · 접선 : 접선의 y절편은 f(t)-t f'(t) = -2t^3-pt^2+r — q 가 사라진다 */
+{
+  const yint = (p, q, r) => (t) => (t ** 3 + p * t * t + q * t + r) - t * (3 * t * t + 2 * p * t + q);
+  say([0, 12, -5, 100].every((q) => near(yint(-6, q, 2)(1.7), yint(-6, 0, 2)(1.7))),
+    'S03 · 접선의 y절편은 일차항의 계수와 무관하다');
+
+  const tangents = (p) => {                       // 2t^3+pt^2+8=0 의 서로 다른 실근
+    const g = (t) => 2 * t ** 3 + p * t * t + 8;
+    const rs = []; let prev = g(-30);
+    for (let t = -30; t < 30; t += 1e-4) { const cur = g(t + 1e-4); if (prev === 0 || prev * cur < 0) rs.push(t); prev = cur }
+    for (let t = -30; t < 30; t += 1e-4) if (Math.abs(g(t)) < 1e-4 && !rs.some((r) => Math.abs(r - t) < 1e-2)) rs.push(t);
+    const u = []; for (const r of rs.sort((x, y) => x - y)) if (!u.some((v) => Math.abs(v - r) < 1e-2)) u.push(r);
+    return u;
+  };
+  say(tangents(-6).length === 2, `S03 · p=-6 에서 접점이 둘 (${tangents(-6).map((x) => x.toFixed(2)).join(', ')})`);
+  say(tangents(-5).length === 1 && tangents(-8).length === 3,
+    `S03 · p=-5 면 ${tangents(-5).length}개, p=-8 이면 ${tangents(-8).length}개 — p=-6 이 경계`);
+
+  const f = (x) => x ** 3 - 6 * x * x + 12 * x + 2, df = (x) => 3 * x * x - 12 * x + 12;
+  say(near(f(0), 2) && near(df(1), 3), `S03 · f(0)=${f(0)}, f'(1)=${df(1)}`);
+  say([2, -1].every((t) => near(f(t) - t * df(t), 10)), 'S03 · 두 접선이 모두 A(0,10) 을 지난다');
+  say(!near(df(2), df(-1)), `S03 · 두 접선은 서로 다른 직선 (기울기 ${df(2)}, ${df(-1)})`);
+  say(near(f(4), 18), `S03 · 답 f(4)=${f(4)}`);
+}
+
+/* S04 · 롤의 정리 : 접어 뒤집은 조각이 미분가능 <=> f'(t)=0.
+   f 의 실근이 넷이라야 f' 의 실근이 셋임을 보장할 수 있다 — 그것이 롤이다. */
+{
+  const f = (x) => x * (x - 4) * (x - 5) * (x + 1);
+  /* 도함수는 식으로 쓴다. 훑어서 부호변화를 세면 격자가 근에 정확히 떨어질 때
+     곱이 0 이 되어 그 근을 놓친다 — x=2 에서 실제로 놓쳤다. */
+  const df = (x) => { const y = x * x - 4 * x; return (2 * x - 4) * (2 * y - 5) };
+  { const h = 1e-6; say(Math.abs((f(2 + h) - f(2 - h)) / (2 * h) - df(2)) < 1e-3, 'S04 · 식으로 쓴 f′ 가 수치미분과 맞는다'); }
+
+  const smoothAt = (t) => {
+    const g = (x) => (x < t ? f(x) : 2 * f(t) - f(x)), h = 1e-6;
+    return Math.abs((g(t + h) - g(t)) / h - (g(t) - g(t - h)) / h) < 1e-2;
+  };
+  const crit = []; { let prev = df(-10); for (let x = -10; x < 10; x += 1e-4) { const cur = df(x + 1e-4); if (prev === 0 || prev * cur < 0) crit.push(x); prev = cur } }
+  say(crit.length === 3, `S04 · f′ 의 실근이 셋 (${crit.length}개) — 롤의 정리와 맞는다`);
+  say(near(crit.reduce((a, b) => a + b, 0), 6, 1e-3),
+    `S04 · 세 근의 합 = ${crit.reduce((a, b) => a + b, 0).toFixed(4)}`);
+  say(crit.every(smoothAt) && !smoothAt(3) && !smoothAt(0),
+    'S04 · 그 세 자리에서만 뒤집은 조각이 꺾이지 않는다');
+
+  const sumOf = (s) => 3 * (9 + s) / 4;             // 근이 0,4,5,s 일 때 f′ 근의 합
+  const found = [];
+  for (let s = -20; s <= 20; s += 1e-3) if (Math.abs(sumOf(s) - 6) < 1e-9) found.push(Math.round(s));
+  say([...new Set(found)].length === 1 && found[0] === -1, `S04 · 합이 6 인 s 는 ${found[0]} 하나뿐`);
+  say([-1, 0, 4, 5].every((r) => near(f(r), 0)) && Math.max(-1, 0, 4, 5) === 5,
+    'S04 · 네 근이 -1, 0, 4, 5 이고 가장 큰 것이 5');
+  say(near(f(6), 84), `S04 · 답 f(6)=${f(6)}`);
+}
+
 for (const c of checks) if (!c.ok) console.log('  X ' + c.msg);
 assert.equal(checks.filter((c) => !c.ok).length, 0,
   '킬러문제의 수학이 맞지 않는다:\n' + checks.filter((c) => !c.ok).map((c) => '  ' + c.msg).join('\n'));
 
 // ── 2) 두 쪽이 짝이 맞는가 ────────────────────────────────────────
-const VERIFIED = { 1: 9, 2: 125, 3: 27, 4: 8, 5: 9 };
+/* 세트마다 문항 번호가 1 부터 다시 시작하므로 세트 번호까지 함께 적는다. */
+const VERIFIED = {
+  1: { 1: 9, 2: 125, 3: 27, 4: 8, 5: 9 },
+  2: { 1: 15, 2: 50, 3: 18, 4: 84 }
+};
 
-function loadData(file, globalName) {
+function loadSets(files, globalName) {
   const box = { window: {} };
-  vm.runInNewContext(read(file), box);
-  const data = box.window[globalName];
-  assert.ok(data, `${file} 이 ${globalName} 을 내놓지 않는다.`);
-  return data;
+  for (const f of files) vm.runInNewContext(read(f), box);
+  const sets = box.window[globalName];
+  assert.ok(Array.isArray(sets) && sets.length, `${globalName} 에 세트가 등록되지 않았다.`);
+  return sets.slice().sort((a, b) => a.id - b.id);
 }
-const pub = loadData('AI킬러문제/문제.js', 'JPKillerSet');
-const tea = loadData('수업창고/AI킬러문제/풀이.js', 'JPKillerSolutions');
+const pubSets = loadSets(['AI킬러문제/문제.js', 'AI킬러문제/문제2.js'], 'JPKillerSets');
+const teaSets = loadSets(['수업창고/AI킬러문제/풀이.js', '수업창고/AI킬러문제/풀이2.js'], 'JPKillerSolutionSets');
 
-assert.equal(pub.problems.length, tea.problems.length, '공개용과 교사용의 문항 수가 다르다.');
-assert.ok(pub.problems.length >= 3, '문항이 셋은 넘어야 한다.');
+assert.equal(pubSets.length, teaSets.length, '공개용과 교사용의 세트 수가 다르다.');
+assert.equal(pubSets.length, Object.keys(VERIFIED).length, '검산해 둔 세트 수와 실제 세트 수가 다르다.');
 
-for (const q of pub.problems) {
-  const t = tea.problems.find((x) => x.no === q.no);
-  assert.ok(t, `K${q.no} 가 교사용에 없다.`);
-  assert.equal(q.stem, t.stem, `K${q.no} 발문이 서로 다르다.`);
-  /* 두 데이터는 서로 다른 vm 안에서 만들어져 배열의 프로토타입이 다르다.
-     deepEqual 은 그것까지 견주므로 값으로만 비교한다. */
-  assert.equal(JSON.stringify(q.conds), JSON.stringify(t.conds), `K${q.no} 조건이 서로 다르다.`);
-  assert.equal(q.ask, t.ask, `K${q.no} 묻는 것이 서로 다르다.`);
-  assert.equal(q.answer, VERIFIED[q.no], `K${q.no} 공개용 답이 검산과 다르다.`);
-  assert.equal(Number(t.answer), VERIFIED[q.no], `K${q.no} 교사용 답이 검산과 다르다.`);
+let total = 0;
+for (const pub of pubSets) {
+  const tea = teaSets.find((s) => s.id === pub.id);
+  assert.ok(tea, `SET ${pub.id} 이 교사용에 없다.`);
+  assert.equal(pub.problems.length, tea.problems.length, `SET ${pub.id} 의 문항 수가 다르다.`);
+  assert.ok(pub.problems.length >= 3, `SET ${pub.id} 은 문항이 셋은 넘어야 한다.`);
+  assert.ok(pub.set && pub.headline && pub.blurb, `SET ${pub.id} 의 이름·소개가 비었다.`);
+  const answers = VERIFIED[pub.id];
+  assert.ok(answers, `SET ${pub.id} 의 답을 검산해 두지 않았다.`);
 
-  /* 수식 괄호가 짝이 맞아야 조판이 안 깨진다.
+  for (const q of pub.problems) {
+    total += 1;
+    const t = tea.problems.find((x) => x.no === q.no);
+    const tag = `SET ${pub.id} K${q.no}`;
+    assert.ok(t, `${tag} 가 교사용에 없다.`);
+    assert.equal(q.stem, t.stem, `${tag} 발문이 서로 다르다.`);
+    /* 두 데이터는 서로 다른 vm 안에서 만들어져 배열의 프로토타입이 다르다.
+       deepEqual 은 그것까지 견주므로 값으로만 비교한다. */
+    assert.equal(JSON.stringify(q.conds), JSON.stringify(t.conds), `${tag} 조건이 서로 다르다.`);
+    assert.equal(q.ask, t.ask, `${tag} 묻는 것이 서로 다르다.`);
+    assert.equal(q.answer, answers[q.no], `${tag} 공개용 답이 검산과 다르다.`);
+    assert.equal(Number(t.answer), answers[q.no], `${tag} 교사용 답이 검산과 다르다.`);
 
-     세기 전에 줄바꿈 간격 표기(\\[2mm])를 걷어낸다. 그 안의 [ 를 블록 수식의
-     여는 괄호로 세면 개수가 어긋난다 — 실제로 한 번 걸렸다. */
-  const OPEN = '\\' + '(', CLOSE = '\\' + ')';
-  const OPEN2 = '\\' + '[', CLOSE2 = '\\' + ']';
-  const lineSkip = new RegExp('\\\\\\\\\\[[^\\]]*\\]', 'g');
-  for (const [label, raw] of [
-    ['공개용', [q.stem, ...q.conds, q.ask, q.hint].join(' ')],
-    ['교사용', [t.stem, ...t.conds, t.ask, t.why, ...t.steps.map((s) => s.body), t.note].join(' ')]
-  ]) {
-    const text = raw.replace(lineSkip, '');
-    assert.equal(text.split(OPEN).length, text.split(CLOSE).length, `K${q.no} ${label} 인라인 수식 괄호가 안 맞는다.`);
-    assert.equal(text.split(OPEN2).length, text.split(CLOSE2).length, `K${q.no} ${label} 블록 수식 괄호가 안 맞는다.`);
+    /* 수식 괄호가 짝이 맞아야 조판이 안 깨진다.
+
+       세기 전에 줄바꿈 간격 표기(\\[2mm])를 걷어낸다. 그 안의 [ 를 블록 수식의
+       여는 괄호로 세면 개수가 어긋난다 — 실제로 한 번 걸렸다. */
+    const OPEN = '\\' + '(', CLOSE = '\\' + ')';
+    const OPEN2 = '\\' + '[', CLOSE2 = '\\' + ']';
+    const lineSkip = new RegExp('\\\\\\\\\\[[^\\]]*\\]', 'g');
+    const teacherText = [t.stem, ...t.conds, t.ask, t.why, ...t.steps.map((s) => s.body), t.note];
+    for (const [label, fields] of [['공개용', [q.stem, ...q.conds, q.ask, q.hint]], ['교사용', teacherText]]) {
+      const text = fields.join(' ').replace(lineSkip, '');
+      assert.equal(text.split(OPEN).length, text.split(CLOSE).length, `${tag} ${label} 인라인 수식 괄호가 안 맞는다.`);
+      assert.equal(text.split(OPEN2).length, text.split(CLOSE2).length, `${tag} ${label} 블록 수식 괄호가 안 맞는다.`);
+
+      /* 수식 안에 날 '<' 가 있으면 안 된다.
+
+         문항은 innerHTML 로 페이지에 꽂힌다. 그러면 브라우저가 '<c' 를 <c> 라는
+         여는 태그로 읽고, 뒤따르는 문장을 통째로 그 태그의 속성으로 삼켜 버린다.
+         SET 01 의 "0<c<t" 때문에 실제로 한 문장이 화면에서 사라졌다. \lt 를 쓴다.
+         교사용 본문에만 진짜 태그 <b> </b> <br> 이 있으므로 그것만 비켜간다. */
+      const rawLt = new RegExp('<(?!/b>|b>|b |br>)', 'g');
+      for (const one of fields) {
+        assert.doesNotMatch(one, rawLt,
+          `${tag} ${label} 수식에 날 '<' 가 있다 — \\lt 로 바꿔야 한다: ${one.slice(0, 60)}`);
+      }
+    }
+
+    // 공개용에는 한 문항이 무엇을 묻는지 알려 주는 것들이 있어야 한다
+    assert.ok(q.title && q.topic && q.turn, `${tag} 목록에 쓸 제목·단원·전환이 비었다.`);
+    assert.ok(q.hint && q.hint.length > 10, `${tag} 힌트가 비었다.`);
+    // 교사용에는 풀이와 수업 노트가 있어야 한다
+    assert.ok(t.steps.length >= 3, `${tag} 풀이 단계가 ${t.steps.length}줄뿐.`);
+    assert.ok(t.why && t.why.length > 30, `${tag} "왜 어려운가" 가 비었다.`);
+    assert.ok(t.note && t.note.length > 40, `${tag} 수업 노트가 빈약하다.`);
+    // 그래프를 움직여야 보이는 문항이므로 판이 하나씩 붙어 있어야 한다
+    assert.ok(t.figure, `${tag} 에 붙일 그림이 정해져 있지 않다.`);
+    assert.match(read('수업창고/AI킬러문제/그림.js'), new RegExp('function ' + t.figure + '\\('),
+      `${tag} 이 부르는 그림 ${t.figure} 이 그림.js 에 없다.`);
   }
+}
 
-  /* 수식 안에 날 '<' 가 있으면 안 된다.
-
-     문항은 innerHTML 로 페이지에 꽂힌다. 그러면 브라우저가 '<c' 를 <c> 라는
-     여는 태그로 읽고, 뒤따르는 문장을 통째로 그 태그의 속성으로 삼켜 버린다.
-     K01 의 "0<c<t" 때문에 실제로 한 문장이 화면에서 사라졌다. \lt 를 쓴다.
-     교사용 본문에만 진짜 태그 <b> </b> <br> 이 있으므로 그것만 비켜간다. */
-  const rawLt = new RegExp('<(?!/b>|b>|b |br>)', 'g');
-  for (const [label, fields] of [
-    ['공개용', [q.stem, ...q.conds, q.ask, q.hint]],
-    ['교사용', [t.stem, ...t.conds, t.ask, t.why, ...t.steps.map((s) => s.body), t.note]]
-  ]) {
-    for (const text of fields) {
-      assert.doesNotMatch(text, rawLt,
-        `K${q.no} ${label} 수식에 날 '<' 가 있다 — \\lt 로 바꿔야 한다: ${text.slice(0, 60)}`);
+/* SET 02 는 수능 4점의 골격을 맞추려고 만들었다. 그 골격이 유지되는지 본다 —
+   기출 세 개와 나란히 놓고 세어 본 결과가 조각함수·경우 나눔·조건 셋이었다. */
+{
+  const s2 = pubSets.find((s) => s.id === 2);
+  const t2 = teaSets.find((s) => s.id === 2);
+  const piecewise = s2.problems.filter((q) => /begin\{cases\}|\|x-a\||\\,\|x-a\|/.test(q.stem));
+  assert.ok(piecewise.length >= 3,
+    `SET 02 는 조각함수가 셋은 되어야 한다 (지금 ${piecewise.length}개). 기출 세 개가 모두 조각함수였다.`);
+  for (const q of s2.problems) {
+    assert.ok(q.conds.length >= 2, `SET 02 K${q.no} 는 조건이 둘은 되어야 한다.`);
+    assert.ok(q.turn.split('→').length >= 4, `SET 02 K${q.no} 의 전환이 ${q.turn.split('→').length}단계뿐이다.`);
+  }
+  for (const t of t2.problems) {
+    assert.ok(t.steps.length >= 4, `SET 02 K${t.no} 의 풀이가 ${t.steps.length}단계뿐 — 4점 골격이면 넷은 넘는다.`);
+  }
+  /* 범위를 넘지 않아야 한다. 교과서 차례로 연속에서 평균값정리까지이므로
+     증가·감소와 극대·극소, 정적분은 아직 배우지 않은 것으로 본다. */
+  const OUT = /극댓값|극솟값|극대|극소|증가하|감소하|정적분|\\int/;
+  for (const q of s2.problems) {
+    for (const one of [q.stem, ...q.conds, q.ask, q.hint]) {
+      assert.doesNotMatch(one, OUT, `SET 02 K${q.no} 가 범위(연속~평균값정리)를 넘는 말을 쓴다: ${one.slice(0, 50)}`);
     }
   }
-
-  // 공개용에는 한 문항이 무엇을 묻는지 알려 주는 것들이 있어야 한다
-  assert.ok(q.title && q.topic && q.turn, `K${q.no} 목록에 쓸 제목·단원·전환이 비었다.`);
-  assert.ok(q.hint && q.hint.length > 10, `K${q.no} 힌트가 비었다.`);
-  // 교사용에는 풀이와 수업 노트가 있어야 한다
-  assert.ok(t.steps.length >= 3, `K${q.no} 풀이 단계가 ${t.steps.length}줄뿐.`);
-  assert.ok(t.why && t.why.length > 30, `K${q.no} "왜 어려운가" 가 비었다.`);
-  assert.ok(t.note && t.note.length > 40, `K${q.no} 수업 노트가 빈약하다.`);
 }
 
 // ── 3) 풀이가 공개 쪽으로 새지 않는가 ─────────────────────────────
-const pubJs = read('AI킬러문제/문제.js');
-assert.doesNotMatch(pubJs, /steps\s*:/, '공개용 문항 데이터에 풀이가 들어 있다.');
-assert.doesNotMatch(pubJs, /\bnote\s*:/, '공개용 문항 데이터에 수업 노트가 들어 있다.');
+for (const file of ['AI킬러문제/문제.js', 'AI킬러문제/문제2.js']) {
+  const js = read(file);
+  assert.doesNotMatch(js, /steps\s*:/, `${file} 에 풀이가 들어 있다.`);
+  assert.doesNotMatch(js, /\bnote\s*:/, `${file} 에 수업 노트가 들어 있다.`);
+  assert.doesNotMatch(js, /\bwhy\s*:/, `${file} 에 교사용 해설이 들어 있다.`);
+}
 for (const page of ['AI킬러문제/index.html', 'AI킬러문제/문제.html']) {
-  assert.doesNotMatch(read(page), /auth\.js/, `${page} 는 공개여야 한다.`);
-  assert.match(read(page), /문제\.js/, `${page} 가 문항 데이터를 불러와야 한다.`);
+  const html = read(page);
+  assert.doesNotMatch(html, /auth\.js/, `${page} 는 공개여야 한다.`);
+  for (const data of ['문제\\.js', '문제2\\.js']) {
+    assert.match(html, new RegExp(data), `${page} 가 ${data.replace('\\', '')} 를 불러와야 한다.`);
+  }
 }
 for (const page of ['수업창고/AI킬러문제/index.html', '수업창고/AI킬러문제/풀이.html']) {
-  assert.match(read(page), /auth\.js/, `${page} 에 수업창고 잠금이 걸려야 한다.`);
+  const html = read(page);
+  assert.match(html, /auth\.js/, `${page} 에 수업창고 잠금이 걸려야 한다.`);
+  assert.match(html, /풀이2\.js/, `${page} 가 SET 02 풀이를 불러와야 한다.`);
 }
 
 /* 기출과 섞이지 않아야 한다. 공개 목록은 서로 다른 자리에 있고,
@@ -283,4 +443,4 @@ assert.match(read('AI킬러문제/index.html'), /기출이 아닙니다/, '기�
 assert.match(read('jp-nav-2.js'), /AI킬러문제\//, '메뉴에 AI 킬러문제가 걸려 있어야 한다.');
 assert.match(read('index.html'), /AI킬러문제\//, '메인에 AI 킬러문제가 걸려 있어야 한다.');
 
-console.log(`AI 킬러문제 검사 통과 — 수학 ${checks.length}건 · ${pub.problems.length}문항 · 공개와 수업창고가 짝이 맞음`);
+console.log(`AI 킬러문제 검사 통과 — 수학 ${checks.length}건 · 세트 ${pubSets.length}개 ${total}문항 · 공개와 수업창고가 짝이 맞음`);

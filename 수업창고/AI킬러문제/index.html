@@ -16,7 +16,8 @@
   <link rel="stylesheet" href="../../jp-nav-2.css?v=4">
   <script src="../../jp-polish.js?v=21" defer></script>
   <script src="../../jp-nav-2.js?v=15" data-jp-section="수업창고" defer></script>
-  <script defer src="풀이.js?v=4"></script>
+  <script defer src="풀이.js?v=5"></script>
+  <script defer src="풀이2.js?v=1"></script>
 </head>
 <body>
   <section class="auth-gate" id="classroomGate" aria-labelledby="gateTitle" hidden>
@@ -47,43 +48,53 @@
       <div class="folder-mark" aria-hidden="true"><span></span></div>
     </header>
 
-    <section class="archive-section" id="killer-list" aria-labelledby="killer-title">
-      <div class="section-heading">
-        <div>
-          <p class="section-number">01</p>
-          <h2 id="killer-title">미적분Ⅰ · SET 01</h2>
-        </div>
-        <p>한 문항씩 풀이와 수업 노트</p>
-      </div>
-      <ul class="resource-grid teacher-grid" id="grid"></ul>
-    </section>
+    <div id="sets"></div>
   </div>
 
 <script>
 window.addEventListener('DOMContentLoaded', function(){
   'use strict';
-  const data = window.JPKillerSolutions;
-  const grid = document.getElementById('grid');
-  if (!data) { grid.innerHTML = '<li>풀이를 불러오지 못했습니다.</li>'; return }
+  const sets = (window.JPKillerSolutionSets || []).slice().sort((a, b) => a.id - b.id);
+  const host = document.getElementById('sets');
+  if (!sets.length) { host.innerHTML = '<p>풀이를 불러오지 못했습니다.</p>'; return }
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  /* 카드에는 조판을 걸지 않는다. 그러니 TeX 구분기호를 떼어 내야 글로 읽힌다 —
+     떼지 않으면 목록에 \(c\) 같은 것이 그대로 드러난다. */
+  const strip = (s) => String(s)
+    .replace(/<[^>]+>/g, '')
+    .replace(/\\[()[\]]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 
-  grid.innerHTML = data.problems.map((p) => `
-    <li>
-      <a class="resource-card teacher-csat" href="풀이.html?no=${p.no}">
-        <div class="card-meta"><span>교사용 풀이</span><b>${String(p.no).padStart(2, '0')}</b></div>
-        <h3>${esc(p.title)}</h3>
-        <p>${esc(p.why)}</p>
-        <div class="card-action">풀이 열기 <span>→</span></div>
-      </a>
-    </li>`).join('')
-    + `<li>
+  host.innerHTML = sets.map((data) => `
+    <section class="archive-section" aria-label="${esc(data.subject)} ${esc(data.set)}">
+      <div class="section-heading">
+        <div>
+          <p class="section-number">${String(data.id).padStart(2, '0')}</p>
+          <h2>${esc(data.subject)} · ${esc(data.set)}</h2>
+        </div>
+        <p>${esc(data.headline || '한 문항씩 풀이와 수업 노트')}</p>
+      </div>
+      <ul class="resource-grid teacher-grid">
+        ${data.problems.map((p) => `
+          <li>
+            <a class="resource-card teacher-csat" href="풀이.html?set=${data.id}&amp;no=${p.no}">
+              <div class="card-meta"><span>교사용 풀이</span><b>${String(p.no).padStart(2, '0')}</b></div>
+              <h3>${esc(p.title)}</h3>
+              <p>${esc(strip(p.why))}</p>
+              <div class="card-action">풀이 열기 <span>→</span></div>
+            </a>
+          </li>`).join('')}
+      </ul>
+    </section>`).join('')
+    + `<ul class="resource-grid teacher-grid"><li>
       <a class="resource-card teacher-csat" href="../../AI킬러문제/index.html">
         <div class="card-meta"><span>학생용 문제지</span><b>공개</b></div>
         <h3>AI 킬러문제 학생용 목록</h3>
         <p>문제와 정답 확인만 있는 공개 페이지입니다. 수업 전에 미리 풀려 보낼 때 이 주소를 주세요.</p>
         <div class="card-action">문제지 열기 <span>→</span></div>
       </a>
-    </li>`;
+    </li></ul>`;
 });
 </script>
 </body>

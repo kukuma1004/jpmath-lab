@@ -16,7 +16,8 @@
 <script defer src="../jp-polish.js?v=21"></script>
 <link rel="stylesheet" href="../jp-nav-2.css?v=3">
 <script src="../jp-nav-2.js?v=15" data-jp-section="AI 킬러문제" defer></script>
-<script defer src="문제.js?v=4"></script>
+<script defer src="문제.js?v=5"></script>
+<script defer src="문제2.js?v=1"></script>
 </head>
 <body>
 
@@ -45,36 +46,43 @@
 <script>
 window.addEventListener('DOMContentLoaded', function(){
   'use strict';
-  const data = window.JPKillerSet;
+  const sets = (window.JPKillerSets || []).slice().sort((a, b) => a.id - b.id);
   const list = document.getElementById('list');
-  if (!data) { list.innerHTML = '<p class="empty">문항을 불러오지 못했습니다.</p>'; return }
+  if (!sets.length) { list.innerHTML = '<p class="empty">문항을 불러오지 못했습니다.</p>'; return }
 
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
   /* 목록에는 발문을 통째로 싣지 않는다. 무엇을 묻는 문제인지만 보여 주고
      들어가서 한 문항만 마주하게 한다 — 여러 문항이 한 화면에 늘어서 있으면
      한 문항에 오래 붙어 있기 어렵다. */
-  list.innerHTML = `
-    <div class="list-head">
-      <h2>${esc(data.subject)} · ${esc(data.set)}</h2>
-      <span>${data.problems.length}문항</span>
-    </div>
-    <ul class="killer-grid">
-      ${data.problems.map((p) => `
-        <li>
-          <a class="killer-card" href="문제.html?no=${p.no}">
-            <div class="card-top">
-              <span class="no">KILLER ${String(p.no).padStart(2, '0')}</span>
-              <span class="level ${p.level === '킬러' ? 'hard' : ''}">${esc(p.level)}</span>
-            </div>
-            <h3>${esc(p.title)}</h3>
-            <p class="topic">${esc(p.topic)}</p>
-            <p class="turn">${esc(p.turn)}</p>
-            <div class="card-go">문제 풀러 가기 <span>→</span></div>
-          </a>
-        </li>`).join('')}
-    </ul>
-    <p class="note">한 문항씩 따로 펴 놓았습니다. 답을 넣으면 맞았는지만 알려 주고, 풀이는 보여 주지 않습니다.</p>`;
+  /* 세트마다 난이도가 다르다. SET 01 은 도구를 하나씩 익히는 자리이고
+     SET 02 는 수능 4점의 골격을 그대로 맞춘 것이라, 어느 쪽에 손을 대야
+     할지 목록에서 바로 보이도록 세트를 나누어 싣는다. */
+  list.innerHTML = sets.map((data) => `
+    <section class="set">
+      <div class="list-head">
+        <h2>${esc(data.subject)} · ${esc(data.set)}</h2>
+        <span>${data.problems.length}문항</span>
+      </div>
+      <p class="set-band"><b>${esc(data.band || '')}</b> ${esc(data.headline || '')}</p>
+      <p class="set-blurb">${esc(data.blurb || '')}</p>
+      <ul class="killer-grid">
+        ${data.problems.map((p) => `
+          <li>
+            <a class="killer-card" href="문제.html?set=${data.id}&amp;no=${p.no}">
+              <div class="card-top">
+                <span class="no">KILLER ${String(p.no).padStart(2, '0')}</span>
+                <span class="level ${p.level === '킬러' ? 'hard' : ''}">${esc(p.level)}</span>
+              </div>
+              <h3>${esc(p.title)}</h3>
+              <p class="topic">${esc(p.topic)}</p>
+              <p class="turn">${esc(p.turn)}</p>
+              <div class="card-go">문제 풀러 가기 <span>→</span></div>
+            </a>
+          </li>`).join('')}
+      </ul>
+    </section>`).join('')
+    + '<p class="note">한 문항씩 따로 펴 놓았습니다. 답을 넣으면 맞았는지만 알려 주고, 풀이는 보여 주지 않습니다.</p>';
 });
 </script>
 </body>

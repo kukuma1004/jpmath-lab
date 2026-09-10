@@ -5,9 +5,11 @@
 
    각 문항에는 "왜 어려운가" 를 적어 둔다. 난도를 매기는 것이 아니라,
    학생이 어디서 방향을 잃는지 미리 알고 들어가려는 것이다. */
-window.JPKillerSolutions = {
+(window.JPKillerSolutionSets = window.JPKillerSolutionSets || []).push({
+  id: 1,
   subject: '미적분Ⅰ',
   set: 'SET 01',
+  headline: '도구를 하나씩 익히는 자리',
   problems: [
     {
       no: 1,
@@ -224,4 +226,4 @@ window.JPKillerSolutions = {
       note: '①이 이 문제의 전부입니다. “분모가 0이면 분자도 0” 까지는 다들 하는데, 거기서 멈추고 극한값 0을 버리는 학생이 많습니다. 남은 극한이 바로 미분계수라는 것을 한 번 소리 내어 정리시키세요. ④에서 판별식으로 경우를 죽이는 것은 익숙하지만, 여기서는 \\(\\alpha\\beta\\) 의 부호를 고르는 데 쓰인다는 점이 낯섭니다. ⑤는 근과 계수의 관계를 쓰는 자리인데, \\(\\sqrt7\\) 을 보고 계산기를 찾는 학생이 나오면 바로 잡아 주기 좋은 순간입니다.'
     }
   ]
-};
+});

@@ -14,8 +14,9 @@
 <link rel="stylesheet" href="../../AI킬러문제/killer.css?v=1"/>
 <script defer src="../../vendor/katex/katex.min.js"></script>
 <script defer src="../../jp-polish.js?v=21"></script>
-<script defer src="풀이.js?v=4"></script>
-<script defer src="그림.js?v=1"></script>
+<script defer src="풀이.js?v=5"></script>
+<script defer src="풀이2.js?v=1"></script>
+<script defer src="그림.js?v=3"></script>
 <style>
   /* 교사용은 인쇄해서 들고 들어가는 일이 많다. */
   .why{margin:18px 0 0;padding:14px 16px;border:1px solid #fde68a;border-radius:12px;background:#fffbeb;color:#92400e;font-size:14px}
@@ -65,21 +66,23 @@
 <script>
 window.addEventListener('DOMContentLoaded', function(){
   'use strict';
-  const data = window.JPKillerSolutions;
+  const sets = (window.JPKillerSolutionSets || []).slice().sort((a, b) => a.id - b.id);
   const paper = document.getElementById('paper');
-  if (!data) { paper.innerHTML = '<p class="empty">풀이를 불러오지 못했습니다.</p>'; return }
+  if (!sets.length) { paper.innerHTML = '<p class="empty">풀이를 불러오지 못했습니다.</p>'; return }
 
-  const want = Number(new URLSearchParams(location.search).get('no')) || 1;
+  const query = new URLSearchParams(location.search);
+  const data = sets.find((s) => s.id === Number(query.get('set'))) || sets[0];
+  const want = Number(query.get('no')) || 1;
   const item = data.problems.find((p) => p.no === want) || data.problems[0];
   const index = data.problems.indexOf(item);
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-  document.title = `KILLER ${String(item.no).padStart(2, '0')} 풀이 · ${item.title} · 수업창고`;
-  document.getElementById('crumb').textContent = `KILLER ${String(item.no).padStart(2, '0')} 풀이`;
+  document.title = `${data.set} KILLER ${String(item.no).padStart(2, '0')} 풀이 · ${item.title} · 수업창고`;
+  document.getElementById('crumb').textContent = `${data.set} KILLER ${String(item.no).padStart(2, '0')} 풀이`;
 
   const link = (el, at) => {
     const to = data.problems[at];
-    if (to) { el.href = `풀이.html?no=${to.no}`; el.removeAttribute('aria-disabled') }
+    if (to) { el.href = `풀이.html?set=${data.id}&no=${to.no}`; el.removeAttribute('aria-disabled') }
     else { el.href = '#'; el.setAttribute('aria-disabled', 'true') }
   };
   link(document.getElementById('prev'), index - 1);
@@ -88,7 +91,7 @@ window.addEventListener('DOMContentLoaded', function(){
   paper.innerHTML = `
     <article class="paper">
       <div class="head">
-        <span class="no">KILLER ${String(item.no).padStart(2, '0')} · ${esc(data.subject)}</span>
+        <span class="no">${esc(data.set)} · KILLER ${String(item.no).padStart(2, '0')} · ${esc(data.subject)}</span>
         <span class="level hard">교사용</span>
       </div>
       <h1>${esc(item.title)}</h1>

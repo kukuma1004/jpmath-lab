@@ -259,13 +259,144 @@ window.JPKillerFigures = (function () {
     return () => { s.show(); draw(s.value) };
   }
 
-  const FIGURES = { k01, k02, k03, k04, k05 };
+  /* ── SET 02 ─────────────────────────────────────────────────────
+     이쪽은 넷 다 조각함수다. 조각을 붙이는 자리가 어떻게 벌어지고 꺾이는지는
+     식으로는 잘 안 보인다 — 이어지는 순간과 꺾이지 않는 순간을 손으로
+     찾아 보게 하는 것이 이 판들의 일이다. */
+
+  /* S01 · 두 조각을 이어 붙이는 자리 */
+  function s01(host) {
+    const f = (x) => x * (x - 2) * (x - 4);
+    const b = board(host, { xmin: -0.8, xmax: 6.6, ymin: -18, ymax: 40, height: 290 });
+    const out = readout(host);
+    let t = 3, a = 0;
+
+    function draw() {
+      const L = f(t), R = f(t - 2) + a, gap = L - R;
+      b.clear(); b.grid(1, 5); b.axes();
+      // 왼쪽 조각과 오른쪽 조각을 각자의 정의역에서만 그린다
+      b.ctx.save(); b.ctx.beginPath(); b.ctx.rect(0, 0, b.px(t), b.H); b.ctx.clip();
+      b.curve(f, CURVE, 2.6); b.ctx.restore();
+      b.ctx.save(); b.ctx.beginPath(); b.ctx.rect(b.px(t), 0, b.W - b.px(t), b.H); b.ctx.clip();
+      b.curve((x) => f(x - 2) + a, COOL, 2.6); b.ctx.restore();
+      b.vline(t, '#cbd5e1', [3, 4]);
+      b.dot(t, L, CURVE, 5); b.dot(t, R, COOL, 5);
+      if (Math.abs(gap) > 0.3) b.line(t, L, t, R, HOT, [4, 3], 2.4);   // 벌어진 틈
+      b.text(t, -15, 'x=t', '#6b7280');
+      out.innerHTML = '좌극한 f(t) = <b>' + L.toFixed(2) + '</b>'
+        + ' &nbsp;·&nbsp; 우극한 f(t−2)+a = <b>' + R.toFixed(2) + '</b>'
+        + ' &nbsp;·&nbsp; 차이 D(t)−a = ' + gap.toFixed(2)
+        + (Math.abs(gap) < 0.05 ? ' &nbsp;·&nbsp; <b style="color:#0e7490">여기서 이어진다</b>'
+          : ' &nbsp;·&nbsp; <b style="color:#dc2626">끊긴다</b>');
+    }
+    const st = slider(host, { name: '이음매 t', min: -0.5, max: 6.3, step: 0.01, value: 3 }, (v) => { t = v; draw() });
+    const sa = slider(host, { name: '올림 a', min: -12, max: 12, step: 0.1, value: 0, format: (v) => v.toFixed(1) }, (v) => { a = v; draw() });
+    return () => { t = st.value; a = sa.value; st.show(); sa.show(); draw() };
+  }
+
+  /* S02 · 절댓값이 꺾이지 않는 자리 */
+  function s02(host) {
+    const f = (x) => x * x * (x - 3);
+    const b = board(host, { xmin: -1.1, xmax: 4.3, ymin: -32, ymax: 58, height: 290 });
+    const out = readout(host);
+
+    function draw(a) {
+      const g = (x) => f(x) * Math.abs(x - a);
+      b.clear(); b.grid(1, 10); b.axes();
+      b.curve(f, '#c4b5fd', 2);
+      b.curve(g, CURVE, 2.8);
+      b.dot(a, 0, HOT, 5);
+      b.text(a, -26, 'x=a', HOT);
+      const smooth = Math.abs(f(a)) < 1e-9;
+      out.innerHTML = 'f(a) = <b>' + f(a).toFixed(3) + '</b>'
+        + ' &nbsp;·&nbsp; 좌미분계수 ' + (-f(a)).toFixed(3) + ' / 우미분계수 ' + f(a).toFixed(3)
+        + (smooth ? ' &nbsp;·&nbsp; <b style="color:#0e7490">부호가 같아져 꺾이지 않는다</b>'
+          : ' &nbsp;·&nbsp; <b style="color:#dc2626">여기서 꺾인다</b>')
+        + ' &nbsp;·&nbsp; 옅은 선이 f, 진한 선이 g';
+    }
+    const s = slider(host, { name: 'a', min: -1, max: 4.2, step: 0.01, value: 1.4 }, draw);
+    return () => { s.show(); draw(s.value) };
+  }
+
+  /* S03 · 한 점에서 그은 접선의 개수 */
+  function s03(host) {
+    const f = (x) => x ** 3 - 6 * x * x + 12 * x + 2, df = (x) => 3 * x * x - 12 * x + 12;
+    const b = board(host, { xmin: -1.6, xmax: 5.2, ymin: -34, ymax: 46, height: 300 });
+    const out = readout(host);
+
+    function touches(k) {                            // f(t) − t f′(t) = k 의 실근
+      const y = (t) => -2 * t ** 3 + 6 * t * t + 2 - k;
+      const rs = []; let prev = y(-6);
+      for (let t = -6; t < 8; t += 0.0005) { const cur = y(t + 0.0005); if (prev === 0 || prev * cur < 0) rs.push(t); prev = cur }
+      // 중근은 부호가 안 바뀐다 — 따로 줍는다
+      for (let t = -6; t < 8; t += 0.0005) if (Math.abs(y(t)) < 5e-4 && !rs.some((r) => Math.abs(r - t) < 0.05)) rs.push(t);
+      const u = []; for (const r of rs.sort((p, q) => p - q)) if (!u.some((v) => Math.abs(v - r) < 0.05)) u.push(r);
+      return u;
+    }
+    function draw(k) {
+      const ts = touches(k);
+      b.clear(); b.grid(1, 10); b.axes();
+      b.curve(f);
+      ts.forEach((t) => { b.through(t, f(t), df(t), HOT, [6, 4], 1.8); b.dot(t, f(t), HOT) });
+      b.dot(0, k, '#f59e0b', 6);
+      b.text(0.15, k + 4, 'A(0, ' + k.toFixed(0) + ')', '#b45309', 'left');
+      out.innerHTML = '접선의 개수 = <b>' + ts.length + '</b>'
+        + (ts.length ? ' &nbsp;·&nbsp; 접점 t = ' + ts.map((t) => t.toFixed(2)).join(', ') : '')
+        + (ts.length === 2 ? ' &nbsp;·&nbsp; <b style="color:#0e7490">여기가 두 개 — 중근이 생긴 자리</b>' : '');
+    }
+    const s = slider(host, { name: 'A 의 높이 k', min: -8, max: 26, step: 0.5, value: 6, format: (v) => v.toFixed(1) }, draw);
+    return () => { s.show(); draw(s.value) };
+  }
+
+  /* S04 · 접어 뒤집어도 꺾이지 않는 자리 */
+  function s04(host) {
+    const f = (x) => x * (x - 4) * (x - 5) * (x + 1);
+    const df = (x) => { const y = x * x - 4 * x; return (2 * x - 4) * (2 * y - 5) };
+    const b = board(host, { xmin: -1.7, xmax: 5.7, ymin: -26, ymax: 46, height: 300 });
+    const out = readout(host);
+
+    /* f'(x)=0 의 세 근. 가운데는 2 지만 나머지 둘은 2±√6.5 라 무리수다.
+       슬라이더로는 정확히 짚을 수 없으므로 x축에 눈금으로 찍어 두고,
+       판정에도 눈으로 구별되지 않을 만큼의 여유를 준다. */
+    const ROOTS = [2 - Math.sqrt(6.5), 2, 2 + Math.sqrt(6.5)];
+
+    function draw(raw) {
+      /* 눈금 가까이 가면 그 자리로 붙여 준다. 무리수를 슬라이더로 정확히
+         맞출 수는 없는데, 붙여 주지 않으면 f′(t) 가 0 근처를 맴돌기만 해서
+         "꺾이지 않는다" 를 끝내 못 본다. */
+      const snapped = ROOTS.find((r) => Math.abs(raw - r) < 0.03);
+      const t = snapped === undefined ? raw : snapped;
+      const g = (x) => (x < t ? f(x) : 2 * f(t) - f(x));
+      b.clear(); b.grid(1, 10); b.axes();
+      b.curve(f, '#ddd6fe', 2);                      // 원래 곡선을 옅게 남겨 둔다
+      ROOTS.forEach((r) => b.line(r, -3.5, r, 3.5, COOL, [], 2.2));
+      b.hline(f(t), '#cbd5e1', [3, 4]);              // 뒤집는 기준선
+      b.curve(g, CURVE, 2.8);
+      b.vline(t, '#cbd5e1', [3, 4]);
+      b.dot(t, f(t), HOT, 5);
+      b.text(t, -22, 'x=t', '#6b7280');
+      out.innerHTML = 't = ' + t.toFixed(3)
+        + ' &nbsp;·&nbsp; f′(t) = <b>' + df(t).toFixed(3) + '</b>'
+        + ' &nbsp;·&nbsp; 좌 ' + df(t).toFixed(2) + ' / 우 ' + (-df(t)).toFixed(2)
+        + (snapped !== undefined ? ' &nbsp;·&nbsp; <b style="color:#0e7490">여기서는 꺾이지 않는다</b>'
+          : ' &nbsp;·&nbsp; <b style="color:#dc2626">꺾인다</b>')
+        + ' &nbsp;·&nbsp; 청록 눈금이 f′(x)=0 인 세 자리 — 2−√6.5, 2, 2+√6.5 (합 6)';
+    }
+    const s = slider(host, { name: '접는 자리 t', min: -1.5, max: 5.5, step: 0.005, value: 3 }, draw);
+    return () => { s.show(); draw(s.value) };
+  }
+
+  const FIGURES = { k01, k02, k03, k04, k05, s01, s02, s03, s04 };
   const CAPTION = {
     k01: 't 를 밀어 보세요. 현이 회전하면서 평행한 접선이 구간 안팎을 드나듭니다 — 개수가 바뀌는 것은 접점이 끝을 지날 때뿐입니다.',
     k02: 'y=t 를 위아래로 밀어 보세요. t 가 0 을 지날 때 곡선은 평평해지지만 교점의 개수는 그대로입니다. 바뀌는 곳은 −27 하나뿐입니다.',
     k03: 'p 를 밀어 보세요. f 의 음수 부분을 접어 올린 것이 g 입니다. 색칠된 넓이가 8 이 되는 자리는 하나뿐입니다.',
     k04: '창을 밀면 넓이가 오르내립니다. 그런데 상수항 c 를 움직여 곡선을 통째로 올렸다 내려도 g(−1)−g(1) 은 꿈쩍하지 않습니다.',
-    k05: 'α+β=2 를 지킨 채 β 를 밀어 보세요. 두 겹근이 벌어지면서 f(0) 이 훑고 지나가고, 36 이 되는 자리는 하나뿐입니다.'
+    k05: 'α+β=2 를 지킨 채 β 를 밀어 보세요. 두 겹근이 벌어지면서 f(0) 이 훑고 지나가고, 36 이 되는 자리는 하나뿐입니다.',
+    s01: '이음매 t 와 올림 a 를 각각 밀어 보세요. 붉은 세로선이 두 조각 사이에 벌어진 틈입니다. a 를 정해 놓고 t 를 밀면 틈이 닫히는 자리가 몇 군데인지 세어 볼 수 있습니다 — 그것이 N(a) 입니다.',
+    s02: 'a 를 밀어 보세요. 대부분의 자리에서는 x=a 에서 뾰족하게 꺾입니다. 꺾이지 않는 자리는 f 가 x축에 닿는 곳뿐입니다.',
+    s03: '점 A 를 위아래로 밀어 보세요. 대개 접선이 세 개인데, 딱 두 자리에서 두 개로 줄어듭니다. 그때 접점 두 개 중 하나가 중근입니다.',
+    s04: 't 를 밀어 보세요. 오른쪽 조각이 회색 가로선을 기준으로 뒤집힙니다. 대부분은 이음매에서 뾰족하게 꺾이고, 꺾이지 않는 자리는 셋뿐입니다.'
   };
 
   return {

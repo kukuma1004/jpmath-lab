@@ -16,7 +16,8 @@
 <script defer src="../jp-polish.js?v=21"></script>
 <link rel="stylesheet" href="../jp-nav-2.css?v=3">
 <script src="../jp-nav-2.js?v=15" data-jp-section="AI 킬러문제" defer></script>
-<script defer src="문제.js?v=4"></script>
+<script defer src="문제.js?v=5"></script>
+<script defer src="문제2.js?v=1"></script>
 </head>
 <body>
 
@@ -38,22 +39,25 @@
 <script>
 window.addEventListener('DOMContentLoaded', function(){
   'use strict';
-  const data = window.JPKillerSet;
+  const sets = (window.JPKillerSets || []).slice().sort((a, b) => a.id - b.id);
   const paper = document.getElementById('paper');
-  if (!data) { paper.innerHTML = '<p class="empty">문항을 불러오지 못했습니다.</p>'; return }
+  if (!sets.length) { paper.innerHTML = '<p class="empty">문항을 불러오지 못했습니다.</p>'; return }
 
-  const want = Number(new URLSearchParams(location.search).get('no')) || 1;
+  /* 주소에 set 이 없으면 첫 세트다 — SET 01 시절 주소가 그대로 살아 있어야 한다. */
+  const query = new URLSearchParams(location.search);
+  const data = sets.find((s) => s.id === Number(query.get('set'))) || sets[0];
+  const want = Number(query.get('no')) || 1;
   const item = data.problems.find((p) => p.no === want) || data.problems[0];
   const index = data.problems.indexOf(item);
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-  document.title = `KILLER ${String(item.no).padStart(2, '0')} · ${item.title} · AI 킬러문제`;
+  document.title = `${data.set} KILLER ${String(item.no).padStart(2, '0')} · ${item.title} · AI 킬러문제`;
   document.getElementById('crumb').textContent = `KILLER ${String(item.no).padStart(2, '0')}`;
 
   // 앞뒤 문항으로 가는 길. 끝에서는 눌리지 않게 둔다.
   const link = (el, at) => {
     const to = data.problems[at];
-    if (to) { el.href = `문제.html?no=${to.no}`; el.removeAttribute('aria-disabled') }
+    if (to) { el.href = `문제.html?set=${data.id}&no=${to.no}`; el.removeAttribute('aria-disabled') }
     else { el.href = '#'; el.setAttribute('aria-disabled', 'true') }
   };
   link(document.getElementById('prev'), index - 1);
@@ -62,7 +66,7 @@ window.addEventListener('DOMContentLoaded', function(){
   paper.innerHTML = `
     <article class="paper">
       <div class="head">
-        <span class="no">KILLER ${String(item.no).padStart(2, '0')} · ${esc(data.subject)}</span>
+        <span class="no">${esc(data.set)} · KILLER ${String(item.no).padStart(2, '0')} · ${esc(data.subject)}</span>
         <span class="level ${item.level === '킬러' ? 'hard' : ''}">${esc(item.level)}</span>
       </div>
       <h1>${esc(item.title)}</h1>

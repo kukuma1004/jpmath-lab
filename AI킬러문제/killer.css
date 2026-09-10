@@ -102,3 +102,10 @@ footer a{color:inherit}
   .killer-grid{grid-template-columns:1fr}
   .answer input{width:120px}
 }
+
+/* 세트가 둘 이상이 되면서 목록을 세트별로 나눈다. 어느 쪽에 손을 대야
+   할지 카드를 보기 전에 알 수 있어야 한다. */
+.set{margin:0 0 42px}
+.set-band{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;margin:2px 0 6px;font-size:13.5px;color:#6d28d9}
+.set-band b{padding:3px 9px;border-radius:999px;background:#ede9fe;font-size:12px;letter-spacing:.02em}
+.set-blurb{margin:0 0 16px;max-width:62ch;color:#57534e;font-size:14px;line-height:1.8}
