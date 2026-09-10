@@ -22,174 +22,168 @@ const near = (a, b, e = 1e-6) => Math.abs(a - b) < e;
 const checks = [];
 const say = (ok, msg) => { checks.push({ ok, msg }); };
 
-/* K01 · 미분가능성 + 평균값정리
-   f = sgn(x²−1)·P(x). x=±1 에서 부호가 뒤집히므로 미분가능하려면
-   P(±1)=P′(±1)=0, 곧 P=(x²−1)². 그러면 평균변화율이 −1 로 떨어진다. */
-{
-  const f = (x) => (x * x - 1) * Math.abs(x * x - 1);
-  const df = (x) => 4 * x * Math.abs(x * x - 1);
-
-  // 미분가능하게 하는 최고차 1 사차가 (x²−1)² 뿐인지
-  const smoothAt = (P, a) => {
-    const g = (x) => (Math.abs(x) === 1 ? 0 : (x * x - 1 > 0 ? 1 : -1) * P(x));
-    const h = 1e-5;
-    const L = (g(a) - g(a - h)) / h, R = (g(a + h) - g(a)) / h;
-    return Math.abs(L - R) < 1e-2 && Math.abs(g(a - h)) < 1e-2 && Math.abs(g(a + h)) < 1e-2;
-  };
-  const found = [];
-  for (let p = -2; p <= 2; p += 1) for (let q = -3; q <= 3; q += 1)
-    for (let r = -2; r <= 2; r += 1) for (let s = -3; s <= 3; s += 1) {
-      const P = (x) => x ** 4 + p * x ** 3 + q * x * x + r * x + s;
-      if (smoothAt(P, 1) && smoothAt(P, -1)) found.push([p, q, r, s].join(','));
-    }
-  say(found.length === 1 && found[0] === '0,-2,0,1',
-    `K01 · 미분가능하게 하는 P 는 (x²−1)² 하나뿐 (찾은 것 ${found.length}개)`);
-
-  // α : f(−α)=α+1, α>1 → 황금비
-  let alpha = null;
-  const cond = (a) => (a * a - 1) ** 2 - (a + 1);
-  for (let a = 1.0001; a < 4; a += 1e-6) if (cond(a) * cond(a + 1e-6) <= 0) { alpha = a; break }
-  say(alpha !== null && near(alpha, (1 + Math.sqrt(5)) / 2, 1e-4), 'K01 · α 는 황금비');
-
-  const slope = (f(1) - f(-alpha)) / (1 + alpha);
-  say(near(slope, -1, 1e-4), `K01 · 평균변화율이 −1 로 떨어진다 (${slope.toFixed(6)})`);
-
-  const roots = [];
-  const step = 1e-6;
-  for (let x = -alpha + step; x < 1 - step; x += step) {
-    const u = df(x) + 1, v = df(x + step) + 1;
-    if (u === 0 || u * v < 0) roots.push(x);
+/* 삼차방정식의 실근. 브루트포스로 훑으면 느리고 겹근을 놓치므로 정면으로 푼다.
+   x^3+bx^2+cx+d 를 y=x+b/3 으로 눌러 y^3+py+q 로 만든 뒤 판별식으로 가른다. */
+function cubicRoots(b, c, d) {
+  const p = c - b * b / 3, q = 2 * b ** 3 / 27 - b * c / 3 + d, s = -b / 3;
+  const D = -4 * p ** 3 - 27 * q * q;
+  let ys;
+  if (Math.abs(p) < 1e-12 && Math.abs(q) < 1e-12) ys = [0];
+  else if (D > 1e-12) {                              // 서로 다른 세 실근
+    const m = 2 * Math.sqrt(-p / 3), th = Math.acos(3 * q / (p * m)) / 3;
+    ys = [0, 1, 2].map((k) => m * Math.cos(th - 2 * Math.PI * k / 3));
+  } else if (Math.abs(D) <= 1e-12) {                 // 겹근이 있다
+    ys = [3 * q / p, -3 * q / (2 * p)];
+  } else {                                           // 실근 하나
+    const r = Math.sqrt(q * q / 4 + p ** 3 / 27);
+    ys = [Math.cbrt(-q / 2 + r) + Math.cbrt(-q / 2 - r)];
   }
-  say(roots.length === 3, `K01 · f′(c)=−1 의 해가 3개 (${roots.length}개)`);
-  say(roots.filter((c) => c < -1).length === 1 && roots.filter((c) => c > -1 && c < 0).length === 2,
-    'K01 · (−α,−1) 에 1개, (−1,0) 에 2개');
+  const out = [];
+  for (const y of ys.map((y) => y + s).sort((x, z) => x - z))
+    if (!out.some((v) => Math.abs(v - y) < 1e-7)) out.push(y);
+  return out;
 }
 
-/* K02 · 절댓값과 실근의 배치
-   x>0 과 x<0 에서 삼차식이 갈라지고, 나머지 근의 합 조건이 두 식을 더해
-   2a=0 으로 떨어뜨린다. */
+/* K01 · 평균값정리의 점이 구간을 빠져나가는 순간
+   f=x(x-3)^2 에서 현의 기울기는 (t-3)^2. f' 이 이차식이라 평균값정리의 점은
+   c=2±√((m+3)/3) 로 정확히 나온다 — 훑지 않고 세도 된다. */
 {
-  const cubic = (p, q) => {                       // x³+px+q 의 실근
-    const D = -4 * p * p * p - 27 * q * q;
-    if (D > 0) {
-      const m = 2 * Math.sqrt(-p / 3), th = Math.acos(3 * q / (p * m)) / 3;
-      return [0, 1, 2].map((k) => m * Math.cos(th - 2 * Math.PI * k / 3));
-    }
-    const s = Math.sqrt(q * q / 4 + p * p * p / 27);
-    return [Math.cbrt(-q / 2 + s) + Math.cbrt(-q / 2 - s)];
-  };
-  const rootsOf = (a) => {
-    const all = [...cubic(-4, a - 1).filter((x) => x < -1e-9), 0, ...cubic(-4, a + 1).filter((x) => x > 1e-9)];
-    const uniq = [];
-    for (const r of all.sort((x, y) => x - y)) if (!uniq.some((u) => Math.abs(u - r) < 1e-7)) uniq.push(r);
-    return uniq;
-  };
-  const r0 = rootsOf(0);
-  say(r0.length === 5, `K02 · a=0 일 때 서로 다른 실근 5개 (${r0.length}개)`);
-  say(near(r0.reduce((p, q) => p + q, 0), 0, 1e-9), 'K02 · 근의 합이 0');
+  // f'(1)=r-3 이므로 r=3 하나뿐이다
+  const dfAt1 = (r) => 3 - 2 * (3 + r) + 3 * r;
+  say([-2, 0, 1, 5, 9].every((r) => near(dfAt1(r), r - 3)),
+    'K01 · f′(1)=r-3 이므로 f′(1)=0 은 r=3 하나뿐');
 
-  const others = [];
-  for (let i = -300; i <= 300; i += 1) {
-    const a = i / 100;
-    if (a === 0) continue;
-    const rs = rootsOf(a);
-    if (rs.length === 5 && Math.abs(rs.reduce((p, q) => p + q, 0)) < 1e-6) others.push(a);
-  }
-  say(others.length === 0, `K02 · 조건을 만족하는 a 는 0 하나뿐 (다른 것 ${others.length}개)`);
+  const f = (x) => x * (x - 3) ** 2, df = (x) => 3 * x * x - 12 * x + 9;
+  say(near(f(0), 0) && near(f(3), 0) && near(df(1), 0), 'K01 · f=x(x-3)^2 이 세 조건을 만족한다');
+
+  const N = (t) => {
+    const m = (f(t) - f(0)) / t, u = Math.sqrt((m + 3) / 3);
+    return [2 - u, 2 + u].filter((c) => c > 1e-9 && c < t - 1e-9).length;
+  };
+  const jumps = [];
+  let last = N(0.02);
+  for (let t = 0.02; t < 12; t += 0.002) { const cur = N(t + 0.002); if (cur !== last) jumps.push(t + 0.001); last = cur }
+  say(jumps.length === 2, `K01 · N(t) 가 두 곳에서만 바뀐다 (${jumps.length}곳)`);
+  say(near(jumps[0], 3, 0.01) && near(jumps[1], 6, 0.01),
+    `K01 · 바뀌는 자리는 t=${jumps.map((x) => x.toFixed(2)).join(', ')}`);
+  say(N(2) === 1 && N(4) === 2 && N(7) === 1, `K01 · N: t=2→${N(2)}, t=4→${N(4)}, t=7→${N(7)}`);
+
+  /* 그림으로 가는 지름길이 정말 맞는지 — 개수가 바뀌는 것은 접점이 끝점을 지날 때다 */
+  say(near(df(3), (f(3) - f(0)) / 3), 'K01 · c=t 가 되는 자리: f′(3)=현의 기울기 → t=3');
+  say(near(df(0), (f(6) - f(0)) / 6), 'K01 · c=0 이 되는 자리: f′(0)=현의 기울기 → t=6');
+  say(3 + 6 === 9, 'K01 · 답은 3+6=9');
 }
 
-/* K03 · |f|−f 와 삼중근
-   g 는 f<0 인 곳에서만 −2f 다. 삼차함수는 반드시 부호를 바꾸므로
-   g 가 꺾이지 않으려면 그 근에서 f′=0, 곧 삼중근뿐이다. */
+/* K02 · 변곡접선은 실근의 개수를 바꾸지 않는다
+   y=t 와의 교점을 부호변화로 센다. 접하는 순간은 세지 못하지만, 개수가
+   튀는 자리는 양옆에서 그대로 잡히므로 불연속점을 찾는 데는 충분하다. */
 {
-  const realRoots = (b, c, d) => {
-    const f = (x) => x * x * x + b * x * x + c * x + d;
-    const rs = [];
-    for (let x = -30; x < 30; x += 0.001) { const u = f(x), v = f(x + 0.001); if (u === 0 || u * v < 0) rs.push(x + 0.0005) }
-    const uniq = [];
-    for (const r of rs) if (!uniq.some((u) => Math.abs(u - r) < 1e-2)) uniq.push(r);
-    return uniq;
+  const crossings = (f, t) => {
+    let n = 0, prev = f(-8) - t;
+    for (let x = -8; x < 8; x += 0.002) { const cur = f(x + 0.002) - t; if (prev * cur < 0) n++; prev = cur }
+    return n;
   };
+  const jumpsOf = (f) => {
+    const j = []; let last = crossings(f, -40);
+    for (let t = -40; t < 40; t += 0.05) { const cur = crossings(f, t + 0.05); if (cur !== last) j.push(t + 0.025); last = cur }
+    return j;
+  };
+  const q3 = (x) => x ** 4 - 4 * x ** 3;              // f' = 4x^2(x-3) — 변곡접선이 x=0
+  const qm3 = (x) => x ** 4 + 4 * x ** 3;             // f' = 4x^2(x+3)
+  const Weq = (x) => (x * x - 4) ** 2 - 5;            // 극솟값이 같은 W
+  const Wne = (x) => x ** 4 - 2 * x ** 3 - 6 * x * x; // 극솟값이 다른 W
+
+  const j3 = jumpsOf(q3);
+  say(j3.length === 1, `K02 · f=x^4-4x^3 은 한 곳에서만 불연속 (${j3.length}곳)`);
+  say(j3.length === 1 && near(j3[0], -27, 0.1), `K02 · 그 자리가 t=${j3[0].toFixed(2)}`);
+  say(crossings(q3, -0.5) === 2 && crossings(q3, 0.5) === 2,
+    'K02 · 변곡접선 높이 t=0 을 지나도 실근의 개수는 둘 그대로');
+  say(jumpsOf(Weq).length === 2, `K02 · 극솟값이 같은 W 는 두 곳에서 불연속 (${jumpsOf(Weq).length}곳)`);
+  say(jumpsOf(Wne).length === 3, `K02 · 극솟값이 다른 W 는 세 곳에서 불연속 (${jumpsOf(Wne).length}곳)`);
+
+  // f(0)=f'(0)=0 아래에서 극솟값 -q^4/3=-27 이 q=±3 을 남긴다
+  say(near(-(3 ** 4) / 3, -27) && near(-((-3) ** 4) / 3, -27),
+    'K02 · 극솟값 조건만으로는 q=3 과 q=-3 이 둘 다 산다');
+  const decreasingLeft = (f) => { for (let x = -12; x < -1e-6; x += 0.001) if (f(x + 0.001) > f(x) + 1e-12) return false; return true };
+  say(decreasingLeft(q3) && !decreasingLeft(qm3), 'K02 · (-∞,0) 에서 감소하는 것은 q=3 뿐');
+  say(near(q3(5), 125), `K02 · 답은 f(5)=${q3(5)}`);
+}
+
+/* K03 · |f|-f 와 삼중근
+   g 는 f<0 인 곳에서만 -2f 다. 삼차함수는 반드시 부호를 바꾸므로
+   g 가 꺾이지 않으려면 부호가 바뀌는 근에서 f'=0, 곧 삼중근뿐이다. */
+{
   const smooth = [];
   for (let b = -3; b <= 3; b += 1) for (let c = -6; c <= 6; c += 1) for (let d = -8; d <= 8; d += 1) {
-    const df = (x) => 3 * x * x + 2 * b * x + c;
-    if (!realRoots(b, c, d).some((r) => Math.abs(df(r)) > 1e-2)) smooth.push([b, c, d]);
+    const f = (x) => x ** 3 + b * x * x + c * x + d, df = (x) => 3 * x * x + 2 * b * x + c;
+    const flips = cubicRoots(b, c, d).filter((r) => f(r - 1e-4) * f(r + 1e-4) < 0);
+    if (flips.every((r) => Math.abs(df(r)) < 1e-3)) smooth.push([b, c, d]);
   }
-  const isTriple = (t) => { const p = -t[0] / 3; return near(t[1], 3 * p * p) && near(t[2], -(p * p * p)) };
+  const isTriple = (t) => { const p = -t[0] / 3; return near(t[1], 3 * p * p, 1e-6) && near(t[2], -(p ** 3), 1e-6) };
   say(smooth.length > 0 && smooth.every(isTriple),
     `K03 · g 가 꺾이지 않는 삼차는 모두 삼중근 (${smooth.length}개 확인)`);
 
   const F = (p) => (p <= 0 ? 0 : p < 3 ? p ** 4 / 2 : (p ** 4 - (p - 3) ** 4) / 2);
   const hits = [];
-  for (let p = -2; p <= 8; p += 1e-4) if (Math.abs(F(p) - 8) < 1e-4) hits.push(Math.round(p * 1e4) / 1e4);
+  for (let p = -2; p <= 9; p += 1e-4) if (Math.abs(F(p) - 8) < 1e-4) hits.push(Math.round(p * 1e4) / 1e4);
   const uniq = [...new Set(hits)];
-  say(uniq.length === 1 && near(uniq[0], 2, 1e-3), `K03 · 적분이 8 인 p 는 2 하나뿐 (${uniq.join(', ')})`);
+  say(uniq.length === 1 && near(uniq[0], 2, 1e-3), `K03 · 적분이 8 인 p 는 ${uniq.join(', ')} 하나뿐`);
+  say(F(3) > 8, `K03 · p>=3 이면 적분이 ${F(3).toFixed(1)} 이상이라 8 이 될 수 없다`);
   say((5 - 2) ** 3 === 27, 'K03 · f(5)=27');
 }
 
-/* K04 · 절댓값 분모와 겹근의 깊이
-   g=f/|x−1| 에서 1 이 몇 겹 근인지가 전부다. 연속이 두 겹을, 미분가능이
-   세 겹을 부른다. 네 겹도 두 조건을 다 만족하므로 f(0)=3 이 그것을 걷어낸다
-   — 값을 정하는 조건이 아니라 경우를 거르는 조건이라는 것이 이 문항의 핵심. */
+/* K04 · 폭 2 의 창을 밀고 간다
+   g'(t)=f(t+2)-f(t) 가 아래로 볼록한 이차식이므로 작은 근에서 극대, 큰 근에서
+   극소다. 두 근이 ∓1 이라는 것이 계수 둘을 정하고, 상수항은 끝내 안 정해진다. */
 {
-  const gOf = (f) => (x) => (x === 1 ? 0 : f(x) / Math.abs(x - 1));
-  const withRoot = (m, r) => (x) => Math.pow(x - 1, m) * (m === 4 ? 1 : (x - r));
-  const contAt1 = (f) => {
-    const g = gOf(f);
-    return [1e-4, 1e-5, 1e-6].every((h) => Math.abs(g(1 + h)) < 1e-2 && Math.abs(g(1 - h)) < 1e-2);
-  };
-  const diffAt1 = (f) => {
-    const g = gOf(f), h = 1e-6;
-    return Math.abs((g(1 + h) - g(1)) / h - (g(1) - g(1 - h)) / h) < 1e-3;
-  };
-  const r = 3;
-  say(!contAt1(withRoot(1, r)), 'K04 · 한 겹이면 g 가 연속이 아니다');
-  say(contAt1(withRoot(2, r)) && !diffAt1(withRoot(2, r)), 'K04 · 두 겹이면 연속이나 미분가능하지 않다');
-  say(contAt1(withRoot(3, r)) && diffAt1(withRoot(3, r)), 'K04 · 세 겹이면 연속이고 미분가능하다');
-  say(contAt1(withRoot(4, r)) && diffAt1(withRoot(4, r)), 'K04 · 네 겹도 두 조건을 만족한다 (f(0) 으로 걸러야 한다)');
+  const a = -3, b = -1;
+  say(near((12 + 4 * a) / 6, 0) && near((8 + 4 * a + 2 * b) / 6, -1),
+    `K04 · g′ 의 두 근이 ∓1 이 되는 것은 a=${a}, b=${b} 뿐`);
 
-  const f3 = (x) => Math.pow(x - 1, 3) * (x - 3);
-  say(near(f3(0), 3), `K04 · 세 겹 f(0)=${f3(0)} 이라 조건과 맞는다`);
-  say(!near(Math.pow(0 - 1, 4), 3), 'K04 · 네 겹은 f(0)=1 이라 떨어진다');
-
-  // f(0) = (−1)³(0−r) = r 이므로 r 은 3 하나뿐이다
-  const hits = [];
-  for (let t = -20; t <= 20; t += 0.001) if (near(t, 3, 1e-6)) hits.push(Math.round(t * 1000) / 1000);
-  const rs = [...new Set(hits)];
-  say(rs.length === 1 && near(rs[0], 3, 1e-3), `K04 · f(0)=3 을 만드는 r 은 ${rs.join(', ')} 하나뿐`);
-  say(near(f3(5), 128), `K04 · f(5)=${f3(5)}`);
+  const mk = (c) => ({
+    f: (x) => x ** 3 + a * x * x + b * x + c,
+    F: (x) => x ** 4 / 4 + a * x ** 3 / 3 + b * x * x / 2 + c * x
+  });
+  const g = (o, t) => o.F(t + 2) - o.F(t);
+  for (const c of [0, 5, -7.5, 100]) {
+    const o = mk(c);
+    say(near(g(o, -1) - g(o, 1), 8, 1e-9),
+      `K04 · c=${c} 일 때 g(-1)-g(1)=${(g(o, -1) - g(o, 1)).toFixed(6)}`);
+  }
+  const o0 = mk(0);
+  say(g(o0, -1) > g(o0, -1.4) && g(o0, -1) > g(o0, -0.6), 'K04 · t=-1 에서 극대');
+  say(g(o0, 1) < g(o0, 0.6) && g(o0, 1) < g(o0, 1.4), 'K04 · t=1 에서 극소');
+  say(near(g(o0, -1), -2, 1e-9) && near(g(o0, 1), -10, 1e-9),
+    `K04 · c=0 에서 두 넓이는 ${g(o0, -1)} 과 ${g(o0, 1)}`);
 }
 
 /* K05 · 두 극한이 부른 겹근
-   lim f/(x−a)=0 은 f(a)=0 과 f′(a)=0 을 한꺼번에 말한다. 두 자리에서
-   그러니 사차가 (x−α)²(x−β)² 로 통째로 정해진다. αβ=6 쪽은 실수해가 없어
-   죽고, 남은 쪽에서 α·β 를 따로 구하지 않고 합과 곱만으로 답이 나온다. */
+   lim f/(x-a)=0 은 f(a)=0 과 f'(a)=0 을 한꺼번에 말한다 — 미분계수의 정의다.
+   두 자리에서 그러니 사차가 (x-α)^2(x-β)^2 로 통째로 정해진다. */
 {
   const lim = (f, a) => [1e-5, -1e-5].map((h) => f(a + h) / h);
   const single = (x) => (x - 2) * (x - 3) * (x - 4) * (x - 5);
   say(Math.min(...lim(single, 2).map(Math.abs)) > 1, 'K05 · 한 겹 근에서는 극한이 0 이 아니다');
-  const dbl = (x) => Math.pow(x - 2, 2) * Math.pow(x - 5, 2);
+  const dbl = (x) => (x - 2) ** 2 * (x - 5) ** 2;
   say(Math.max(...lim(dbl, 2).map(Math.abs)) < 1e-3, 'K05 · 두 겹 근에서라야 극한이 0 이다');
 
-  // f(0)=36 → (αβ)²=36, f′(1)=0 과 α<1<β → α+β=2
+  // f(0)=36 → (αβ)^2=36, f'(1)=0 과 α<1<β → α+β=2
   const found = [];
   for (const prod of [6, -6]) {
-    const D = 4 - 4 * prod;                        // t²−2t+prod=0
+    const D = 4 - 4 * prod;                          // t^2-2t+prod=0
     if (D < 0) continue;
     found.push({ prod, a: (2 - Math.sqrt(D)) / 2, b: (2 + Math.sqrt(D)) / 2 });
   }
   say(found.length === 1 && found[0].prod === -6,
-    `K05 · αβ=6 은 실수해가 없어 죽고 αβ=−6 만 남는다 (남은 것 ${found.length}가지)`);
+    `K05 · αβ=6 은 실수해가 없어 죽고 αβ=-6 만 남는다 (남은 것 ${found.length}가지)`);
   const { a, b } = found[0];
   say(a < 1 && 1 < b, `K05 · α=${a.toFixed(4)} < 1 < β=${b.toFixed(4)}`);
-
-  const f = (x) => Math.pow(x - a, 2) * Math.pow(x - b, 2);
+  const f = (x) => (x - a) ** 2 * (x - b) ** 2;
   say(near(f(0), 36, 1e-6), `K05 · f(0)=${f(0).toFixed(6)}`);
   const df = (x) => { const h = 1e-6; return (f(x + h) - f(x - h)) / (2 * h) };
   say(Math.abs(df(1)) < 1e-4, `K05 · f′(1)=${df(1).toExponential(2)}`);
   say(near(f(3), 9, 1e-6), `K05 · f(3)=${f(3).toFixed(6)}`);
-  // α, β 를 구하지 않는 길: f(3)=[9−3(α+β)+αβ]²
-  say(near(Math.pow(9 - 3 * 2 + (-6), 2), 9), 'K05 · 합과 곱만으로도 f(3)=9 가 나온다');
+  say(near((9 - 3 * 2 + (-6)) ** 2, 9), 'K05 · 합과 곱만으로도 f(3)=9 가 나온다');
 }
 
 for (const c of checks) if (!c.ok) console.log('  X ' + c.msg);
@@ -197,7 +191,7 @@ assert.equal(checks.filter((c) => !c.ok).length, 0,
   '킬러문제의 수학이 맞지 않는다:\n' + checks.filter((c) => !c.ok).map((c) => '  ' + c.msg).join('\n'));
 
 // ── 2) 두 쪽이 짝이 맞는가 ────────────────────────────────────────
-const VERIFIED = { 1: 3, 2: 0, 3: 27, 4: 128, 5: 9 };
+const VERIFIED = { 1: 9, 2: 125, 3: 27, 4: 8, 5: 9 };
 
 function loadData(file, globalName) {
   const box = { window: {} };
@@ -237,6 +231,23 @@ for (const q of pub.problems) {
     const text = raw.replace(lineSkip, '');
     assert.equal(text.split(OPEN).length, text.split(CLOSE).length, `K${q.no} ${label} 인라인 수식 괄호가 안 맞는다.`);
     assert.equal(text.split(OPEN2).length, text.split(CLOSE2).length, `K${q.no} ${label} 블록 수식 괄호가 안 맞는다.`);
+  }
+
+  /* 수식 안에 날 '<' 가 있으면 안 된다.
+
+     문항은 innerHTML 로 페이지에 꽂힌다. 그러면 브라우저가 '<c' 를 <c> 라는
+     여는 태그로 읽고, 뒤따르는 문장을 통째로 그 태그의 속성으로 삼켜 버린다.
+     K01 의 "0<c<t" 때문에 실제로 한 문장이 화면에서 사라졌다. \lt 를 쓴다.
+     교사용 본문에만 진짜 태그 <b> </b> <br> 이 있으므로 그것만 비켜간다. */
+  const rawLt = new RegExp('<(?!/b>|b>|b |br>)', 'g');
+  for (const [label, fields] of [
+    ['공개용', [q.stem, ...q.conds, q.ask, q.hint]],
+    ['교사용', [t.stem, ...t.conds, t.ask, t.why, ...t.steps.map((s) => s.body), t.note]]
+  ]) {
+    for (const text of fields) {
+      assert.doesNotMatch(text, rawLt,
+        `K${q.no} ${label} 수식에 날 '<' 가 있다 — \\lt 로 바꿔야 한다: ${text.slice(0, 60)}`);
+    }
   }
 
   // 공개용에는 한 문항이 무엇을 묻는지 알려 주는 것들이 있어야 한다

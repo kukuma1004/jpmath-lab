@@ -14,7 +14,8 @@
 <link rel="stylesheet" href="../../AI킬러문제/killer.css?v=1"/>
 <script defer src="../../vendor/katex/katex.min.js"></script>
 <script defer src="../../jp-polish.js?v=21"></script>
-<script defer src="풀이.js?v=2"></script>
+<script defer src="풀이.js?v=4"></script>
+<script defer src="그림.js?v=1"></script>
 <style>
   /* 교사용은 인쇄해서 들고 들어가는 일이 많다. */
   .why{margin:18px 0 0;padding:14px 16px;border:1px solid #fde68a;border-radius:12px;background:#fffbeb;color:#92400e;font-size:14px}
@@ -27,7 +28,17 @@
   .teach b{display:block;margin-bottom:5px;color:#b45309;font-size:12.5px;letter-spacing:.04em}
   .lock-note{display:flex;gap:10px;align-items:flex-start;margin-bottom:24px;padding:14px 16px;
     border:1px solid #fde68a;border-radius:14px;background:#fffbeb;color:#92400e;font-size:13px}
-  @media print{.lock-note,.q-nav,footer,.breadcrumb{display:none}.paper{border-color:#ccc}}
+  /* 움직이는 그림. 넷은 그래프를 밀어야 보이는 문항이라 판을 하나씩 붙였다. */
+  .figure{margin:22px 0 0;padding:14px 14px 8px;border:1px solid #ede9fe;border-radius:14px;background:#faf9ff}
+  .fig-caption{margin:0 0 10px;color:#5b21b6;font-size:13px;line-height:1.7}
+  .fig-canvas{display:block;width:100%;border:1px solid #e9e5f8;border-radius:10px;background:#fff}
+  .fig-slider{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:13px;color:#374151}
+  .fig-slider-name{flex:0 0 auto;min-width:5.5em;font-weight:600;color:#6d28d9}
+  .fig-slider input{flex:1;accent-color:#6d28d9}
+  .fig-slider-val{flex:0 0 auto;min-width:4.5em;text-align:right;font-family:"IBM Plex Mono",monospace;font-weight:600}
+  .fig-readout{margin:10px 0 4px;padding:8px 10px;border-radius:9px;background:#fff;border:1px solid #e9e5f8;
+    font-size:13px;line-height:1.8;color:#374151}
+  @media print{.lock-note,.q-nav,footer,.breadcrumb,.fig-slider{display:none}.paper{border-color:#ccc}}
 </style>
 </head>
 <body>
@@ -90,6 +101,8 @@ window.addEventListener('DOMContentLoaded', function(){
 
       <div class="why"><b>왜 어려운가</b>${item.why}</div>
 
+      ${item.figure ? '<div class="figure" data-figure="' + esc(item.figure) + '"></div>' : ''}
+
       ${item.steps.map((s) => `
         <div class="step">
           <h4>${esc(s.head)}</h4>
@@ -121,6 +134,13 @@ window.addEventListener('DOMContentLoaded', function(){
   }
   if (window.katex) typeset();
   else window.addEventListener('load', typeset);
+
+  /* 그림은 조판과 무관하므로 따로 올린다. 그림.js 가 없어도 풀이는 읽힌다. */
+  const slot = paper.querySelector('[data-figure]');
+  if (slot) {
+    const put = () => window.JPKillerFigures && window.JPKillerFigures.mount(slot, slot.dataset.figure);
+    if (window.JPKillerFigures) put(); else window.addEventListener('load', put);
+  }
 });
 </script>
 </body>
