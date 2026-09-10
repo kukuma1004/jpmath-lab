@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow,noarchive"/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<title>AI 킬러문제 미적분Ⅰ | 교사용 풀이</title>
+<script src="../../auth.js" data-classroom-protected></script>
+<link rel="stylesheet" href="../../../vendor/katex/katex.min.css"/>
+<link rel="stylesheet" href="../../../jp-math-typography.css?v=4"/>
+<link rel="stylesheet" href="../../../jp-polish.css?v=11"/>
+<script defer src="../../../vendor/katex/katex.min.js"></script>
+<script defer src="../../../jp-polish.js?v=21"></script>
+<style>
+  :root{--ink:#111827;--muted:#6b7280;--line:#e5e7eb;--paper:#f9fafb;--card:#fff;--accent:#7c3aed;--warn:#b45309}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{max-width:900px;margin:auto;padding:40px 20px 80px;background:var(--paper);color:var(--ink);
+    font-family:'Pretendard Variable',Pretendard,'IBM Plex Sans KR',system-ui,sans-serif;line-height:1.75;word-break:keep-all}
+  .breadcrumb{margin-bottom:22px;color:var(--muted);font-size:13px}
+  .breadcrumb a{color:inherit}
+
+  .hero{padding:30px 26px;border:1px solid var(--line);border-radius:20px;background:var(--card);margin-bottom:14px}
+  .eyebrow{color:var(--accent);font:700 11px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;margin-bottom:12px}
+  .hero h1{font-size:clamp(24px,5vw,34px);letter-spacing:-.03em;line-height:1.25}
+  .hero p{margin-top:12px;color:#4b5563;font-size:15px}
+  .hero .pair{margin-top:14px;font-size:13.5px}
+  .hero .pair a{color:var(--accent);font-weight:600}
+
+  .notice{display:flex;gap:10px;align-items:flex-start;margin-bottom:26px;padding:14px 16px;
+    border:1px solid #fde68a;border-radius:14px;background:#fffbeb;color:#92400e;font-size:13px}
+
+  .q{margin-bottom:20px;padding:24px 22px;border:1px solid var(--line);border-radius:18px;background:var(--card)}
+  .q-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+  .q-no{display:inline-flex;align-items:center;gap:9px;font:700 12px 'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.08em}
+  .q-no i{display:grid;place-items:center;width:26px;height:26px;border-radius:9px;background:var(--accent);color:#fff;font-style:normal;font-size:12px}
+  .q-tag{padding:5px 11px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:11.5px;white-space:nowrap}
+  .stem{font-size:15.5px}
+  .stem .cond{margin:14px 0;padding:14px 16px;border-left:3px solid var(--accent);border-radius:0 10px 10px 0;background:#faf9ff}
+  .stem .cond p{margin:5px 0}
+  .stem .ask{margin-top:14px;font-weight:600}
+
+  h4{margin:22px 0 8px;font-size:13px;color:var(--accent);letter-spacing:.06em;font-family:'IBM Plex Mono',monospace}
+  .steps{margin:0;padding-left:20px}
+  .steps li{margin:9px 0;font-size:14.5px}
+  .ans{display:inline-block;margin-top:14px;padding:9px 16px;border-radius:11px;background:var(--ink);color:#fff;font-weight:700}
+  .note{margin-top:16px;padding:14px 16px;border:1px dashed var(--line);border-radius:12px;background:#fcfcfd;font-size:14px}
+  .note b{display:block;margin-bottom:4px;color:var(--warn);font-size:12.5px;letter-spacing:.04em}
+
+  footer{margin-top:34px;padding-top:22px;border-top:1px solid var(--line);color:var(--muted);font-size:13px}
+  footer a{color:inherit}
+  @media(max-width:600px){body{padding:28px 14px 64px}.q{padding:20px 16px}}
+  @media print{body{background:#fff}.notice,footer,.breadcrumb{display:none}.q{break-inside:avoid;border-color:#ccc}}
+</style>
+</head>
+<body>
+
+<p class="breadcrumb"><a href="../../index.html">수업창고</a> / <a href="../index.html">수능·킬러 문제</a> / AI 킬러문제 풀이</p>
+
+<header class="hero">
+  <p class="eyebrow">TEACHER NOTES · AI KILLER SET 01</p>
+  <h1>AI 킬러문제 미적분Ⅰ · 교사용 풀이</h1>
+  <p>여섯 문항의 풀이와 수업에서 짚을 곳입니다. 학생용 문제지에는 답만 맞춰 보는 기능이 있고 풀이는 없습니다.</p>
+  <p class="pair"><a href="../../../수능문제/미적분1/AI킬러문제.html">학생용 문제지 열기 →</a></p>
+</header>
+
+<div class="notice">
+  <span aria-hidden="true">⚠</span>
+  <div>수업창고 자료입니다. 학생에게 이 주소를 그대로 주지 마세요. 학생용은 위의 문제지 링크입니다.</div>
+</div>
+
+<main id="paper"></main>
+
+<footer>
+  <p>여섯 문항 모두 조건이 서로 어긋나지 않는지, 답이 하나로 정해지는지를 수치로 확인했습니다.</p>
+  <p style="margin-top:8px"><a href="../index.html">← 수능·킬러 문제로 돌아가기</a></p>
+</footer>
+
+<script>
+(function(){
+  'use strict';
+
+  /* 학생용 문제지(수능문제/미적분1/AI킬러문제.html)와 발문이 같아야 한다.
+     발문을 고치면 두 곳을 함께 고친다 — 한쪽만 고치면 수업에서 어긋난다. */
+  const SET = [
+    {
+      no: 1, tag: '극한과 연속', answer: '-60',
+      stem: '최고차항의 계수가 1인 사차함수 \\(f(x)\\)와 함수 \\(\\displaystyle g(x)=\\frac{f(x)}{x^{2}-x}\\) 가 다음 조건을 만족시킨다.',
+      conds: [
+        '\\(g(x)\\)는 \\(x=0\\)과 \\(x=1\\)에서 각각 극한값을 갖는다.',
+        '\\(\\displaystyle\\lim_{x\\to 0}g(x)=3,\\qquad \\lim_{x\\to 1}g(x)=-2\\)'
+      ],
+      ask: '\\(f(4)\\)의 값을 구하시오.',
+      steps: [
+        '분모 \\(x^{2}-x=x(x-1)\\) 이 \\(x=0,1\\)에서 0이 된다. 그 자리에서 극한값이 있으려면 분자도 0이어야 하므로 \\(f(0)=f(1)=0\\).',
+        '따라서 \\(f(x)=x(x-1)q(x)\\) 이고, \\(f\\)가 최고차항의 계수 1인 사차함수이므로 \\(q(x)=x^{2}+px+r\\) 인 이차함수다.',
+        '약분하면 \\(x\\neq 0,1\\) 에서 \\(g(x)=q(x)\\) 이므로 \\(\\lim_{x\\to 0}g=q(0)=r=3\\), \\(\\lim_{x\\to 1}g=q(1)=1+p+3=-2\\) 에서 \\(p=-6\\).',
+        '\\(f(x)=x(x-1)(x^{2}-6x+3)\\) 이므로 \\(f(4)=4\\cdot 3\\cdot(16-24+3)=12\\cdot(-5)=-60\\).'
+      ],
+      note: '“극한값을 갖는다”를 “분모가 0이면 분자도 0”으로 바꿔 읽는 것이 전부입니다. 여기서 막히는 학생은 대개 \\(0/0\\) 꼴을 “값이 없다”로 외워 두고 있습니다. 약분한 뒤의 \\(g\\)가 이차함수라는 것을 칠판에 먼저 적어 두면 나머지는 대입만 남습니다.'
+    },
+    {
+      no: 2, tag: '극한과 연속', answer: '144',
+      stem: '최고차항의 계수가 1인 사차함수 \\(f(x)\\)에 대하여 함수 \\(g(x)=|f(x)|\\) 가 실수 전체의 집합에서 미분가능하고, \\(f(x)\\)는 다음을 만족시킨다.',
+      conds: ['\\(f(0)=0,\\qquad f(1)=0,\\qquad f(2)=4\\)'],
+      ask: '\\(f(4)\\)의 값을 구하시오.',
+      steps: [
+        '\\(|f|\\)가 \\(f(a)=0\\) 인 점 \\(a\\)에서 미분가능하려면 그 점에서 \\(f\\)가 부호를 바꾸지 않아야 한다. 즉 \\(a\\)는 \\(f\\)의 짝수 겹 근이어야 한다.',
+        '\\(f(0)=f(1)=0\\) 이므로 0과 1은 각각 적어도 두 겹. 사차함수의 근은 모두 네 겹이므로 \\(f(x)=x^{2}(x-1)^{2}\\) 로 정해진다 (최고차항의 계수 1).',
+        '검산: \\(f(2)=2^{2}\\cdot 1^{2}=4\\) 로 조건과 맞다.',
+        '\\(f(4)=4^{2}\\cdot 3^{2}=16\\cdot 9=144\\).'
+      ],
+      note: '“절댓값을 씌워도 안 꺾인다 = 부호가 안 바뀐다 = 짝수 겹 근”. 이 세 줄을 한 번에 이어 말하게 하는 것이 이 문제의 목적입니다. 겹근을 세었을 때 차수가 딱 맞아떨어져 \\(f\\)가 하나로 결정된다는 점도 짚어 주세요.'
+    },
+    {
+      no: 3, tag: '미분', answer: '4',
+      stem: '실수 \\(k\\)에 대하여 함수 \\(f(x)=x^{3}-3x^{2}+k\\) 가 있다.',
+      conds: ['방정식 \\(|f(x)|=1\\) 의 서로 다른 실근의 개수가 5이다.'],
+      ask: '이를 만족시키는 모든 정수 \\(k\\)의 값의 합을 구하시오.',
+      steps: [
+        '\\(f\'(x)=3x^{2}-6x=3x(x-2)\\) 이므로 극댓값은 \\(f(0)=k\\), 극솟값은 \\(f(2)=k-4\\). 둘의 차는 항상 4다.',
+        '\\(|f(x)|=1\\) 은 \\(f(x)=1\\) 또는 \\(f(x)=-1\\). 두 값이 다르므로 근이 겹치지 않고, 개수는 그냥 더하면 된다.',
+        '삼차함수에서 \\(f(x)=c\\) 의 실근 개수는 극솟값\\(<c<\\)극댓값이면 3, \\(c\\)가 극값과 같으면 2, 그 밖이면 1이다.',
+        '합이 5가 되려면 \\((3,2)\\) 또는 \\((2,3)\\). \\(c=-1\\)이 극값과 같고 \\(c=1\\)이 두 극값 사이인 경우 \\(k-4=-1\\Rightarrow k=3\\), \\(c=1\\)이 극값과 같고 \\(c=-1\\)이 사이인 경우 \\(k=1\\).',
+        '두 경우 모두 조건을 만족하므로 정수 \\(k\\)의 합은 \\(1+3=4\\).'
+      ],
+      note: '“극값의 차가 4로 고정”이라는 것을 먼저 찾아내면 경우가 확 줄어듭니다. \\(\\pm 1\\)의 간격 2가 4보다 작다는 점이 답이 존재하는 이유이고, 만약 \\(|f(x)|=2\\)로 바꾸면 간격이 4가 되어 답이 하나도 없습니다 — 수업에서 한 번 바꿔 물어보면 좋습니다.'
+    },
+    {
+      no: 4, tag: '미분', answer: '19',
+      stem: '최고차항의 계수가 1인 삼차함수 \\(f(x)\\)와 실수 \\(t\\)에 대하여, 방정식 \\(f(x)=t\\) 의 서로 다른 실근의 개수를 \\(g(t)\\)라 하자. \\(f(x)\\)가 다음 조건을 만족시킨다.',
+      conds: [
+        '함수 \\(g(t)\\)는 \\(t=3\\)과 \\(t=-1\\)에서만 불연속이다.',
+        '\\(f(x)\\)는 \\(x=1\\)에서 극솟값을 갖는다.'
+      ],
+      ask: '\\(f(3)\\)의 값을 구하시오.',
+      steps: [
+        '\\(g(t)\\)가 튀는 자리는 \\(t\\)가 극값을 지날 때뿐이다. 따라서 극댓값 3, 극솟값 \\(-1\\) 이고 그 차는 4.',
+        '극솟점이 \\(x=1\\) 이므로 극댓점을 \\(x=\\alpha\\)라 하면 \\(f\'(x)=3(x-\\alpha)(x-1)\\).',
+        '이 꼴에서 극댓값과 극솟값의 차는 \\(\\displaystyle f(\\alpha)-f(1)=-\\tfrac{1}{2}(\\alpha-1)^{3}\\). 이를 4로 놓으면 \\((\\alpha-1)^{3}=-8\\), \\(\\alpha=-1\\).',
+        '\\(f\'(x)=3(x+1)(x-1)=3x^{2}-3\\) 이므로 \\(f(x)=x^{3}-3x+C\\). \\(f(1)=-1\\) 에서 \\(C=1\\).',
+        '\\(f(x)=x^{3}-3x+1\\) 이므로 \\(f(3)=27-9+1=19\\).'
+      ],
+      note: '\\(g(t)\\)를 그래프의 “가로선 긋기”로 설명하면 불연속점이 극값이라는 것이 바로 보입니다. 극값의 차와 두 극점 사이 거리의 관계 \\(\\bigl(\\text{차}=\\tfrac{1}{2}d^{3}\\bigr)\\) 는 삼차함수에서 계속 쓰이므로 여기서 한 번 유도해 두면 좋습니다.'
+    },
+    {
+      no: 5, tag: '적분', answer: '2',
+      stem: '양수 \\(m\\)에 대하여 곡선 \\(y=x^{2}-4x\\) 와 직선 \\(y=mx\\) 가 있다.',
+      conds: ['곡선과 직선으로 둘러싸인 부분의 넓이가 36이다.'],
+      ask: '\\(m\\)의 값을 구하시오.',
+      steps: [
+        '\\(x^{2}-4x=mx\\) 에서 \\(x\\{x-(m+4)\\}=0\\) 이므로 교점의 \\(x\\)좌표는 \\(0\\)과 \\(m+4\\). \\(m>0\\) 이므로 두 점은 서로 다르다.',
+        '넓이는 \\(\\displaystyle\\int_{0}^{m+4}\\bigl\\{mx-(x^{2}-4x)\\bigr\\}dx\\).',
+        '\\(\\beta-\\alpha=m+4\\) 이고 이차항의 계수가 \\(-1\\) 이므로 넓이는 \\(\\dfrac{(m+4)^{3}}{6}\\).',
+        '\\(\\dfrac{(m+4)^{3}}{6}=36\\) 에서 \\((m+4)^{3}=216\\), \\(m+4=6\\), 따라서 \\(m=2\\).'
+      ],
+      note: '\\(\\dfrac{(\\beta-\\alpha)^{3}}{6}\\) 공식을 외운 학생과 매번 적분하는 학생의 시간 차이가 크게 나는 문제입니다. 공식을 쓰기 전에 이차항의 계수가 \\(\\pm 1\\)인지 반드시 확인해야 한다는 것을 함께 짚어 주세요.'
+    },
+    {
+      no: 6, tag: '적분', answer: '7',
+      stem: '\\(a>1\\) 인 상수 \\(a\\)에 대하여 함수 \\(\\displaystyle f(x)=\\int_{0}^{x}(t-1)(t-a)\\,dt\\) 가 있다.',
+      conds: ['\\(f(x)\\)의 극댓값과 극솟값의 차가 36이다.'],
+      ask: '\\(a\\)의 값을 구하시오.',
+      steps: [
+        '\\(f\'(x)=(x-1)(x-a)\\) 이고 \\(a>1\\) 이므로 \\(x=1\\)에서 극대, \\(x=a\\)에서 극소.',
+        '극댓값과 극솟값의 차는 \\(\\displaystyle f(1)-f(a)=-\\int_{1}^{a}(t-1)(t-a)\\,dt\\).',
+        '\\(\\displaystyle\\int_{1}^{a}(t-1)(t-a)\\,dt=-\\frac{(a-1)^{3}}{6}\\) 이므로 차는 \\(\\dfrac{(a-1)^{3}}{6}\\).',
+        '\\(\\dfrac{(a-1)^{3}}{6}=36\\) 에서 \\((a-1)^{3}=216\\), \\(a-1=6\\), 따라서 \\(a=7\\).'
+      ],
+      note: '5번과 같은 \\(\\dfrac{(\\beta-\\alpha)^{3}}{6}\\) 이 “넓이”가 아니라 “극값의 차”로 나타난 문제입니다. 두 문항을 나란히 놓고 같은 식이 다른 옷을 입었다는 것을 보여 주면 공식이 오래 남습니다.'
+    }
+  ];
+
+  document.getElementById('paper').innerHTML = SET.map((q) => `
+    <section class="q">
+      <div class="q-head">
+        <span class="q-no"><i>${q.no}</i>KILLER 0${q.no}</span>
+        <span class="q-tag">${q.tag}</span>
+      </div>
+      <div class="stem">
+        <p>${q.stem}</p>
+        <div class="cond">${q.conds.map((c) => `<p>${c}</p>`).join('')}</div>
+        <p class="ask">${q.ask}</p>
+      </div>
+      <h4>풀이</h4>
+      <ol class="steps">${q.steps.map((s) => `<li>${s}</li>`).join('')}</ol>
+      <p><span class="ans">답 ${q.answer}</span></p>
+      <div class="note"><b>수업에서 짚을 곳</b>${q.note}</div>
+    </section>`).join('');
+
+  function typeset() {
+    if (!window.katex) return;
+    document.querySelectorAll('.stem, .steps li, .note').forEach((el) => {
+      el.innerHTML = el.innerHTML
+        .replace(/\\\[(.+?)\\\]/g, (m, tex) => {
+          try { return window.katex.renderToString(tex, { throwOnError: false, displayMode: true }) } catch (e) { return m }
+        })
+        .replace(/\\\((.+?)\\\)/g, (m, tex) => {
+          try { return window.katex.renderToString(tex, { throwOnError: false }) } catch (e) { return m }
+        });
+    });
+  }
+  if (window.katex) typeset();
+  else window.addEventListener('load', typeset);
+})();
+</script>
+</body>
+</html>

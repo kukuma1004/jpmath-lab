@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow,noarchive"/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<title>AI 킬러문제 · 미적분Ⅰ | JP Math Lab</title>
+<link rel="stylesheet" href="../../vendor/katex/katex.min.css"/>
+<link rel="stylesheet" href="../../jp-math-typography.css?v=4"/>
+<link rel="stylesheet" href="../../jp-polish.css?v=11"/>
+<script defer src="../../vendor/katex/katex.min.js"></script>
+<script defer src="../../jp-polish.js?v=21"></script>
+<link rel="stylesheet" href="../../jp-nav-2.css?v=3">
+<script src="../../jp-nav-2.js?v=14" data-jp-section="AI 킬러문제" defer></script>
+<style>
+  :root{--ink:#111827;--muted:#6b7280;--line:#e5e7eb;--paper:#f9fafb;--card:#fff;--accent:#7c3aed;--good:#15803d;--bad:#b91c1c}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{max-width:860px;margin:auto;padding:40px 20px 80px;background:var(--paper);color:var(--ink);
+    font-family:'Pretendard Variable',Pretendard,'IBM Plex Sans KR',system-ui,sans-serif;line-height:1.7;word-break:keep-all}
+  .breadcrumb{margin-bottom:22px;color:var(--muted);font-size:13px}
+  .breadcrumb a{color:inherit}
+
+  .hero{padding:30px 26px;border:1px solid var(--line);border-radius:20px;background:var(--card);margin-bottom:14px}
+  .eyebrow{color:var(--accent);font:700 11px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;margin-bottom:12px}
+  .hero h1{font-size:clamp(26px,5vw,36px);letter-spacing:-.03em;line-height:1.25}
+  .hero p{margin-top:12px;color:#4b5563;font-size:15px}
+
+  /* 이 문제들이 어디서 왔는지 분명히 밝힌다. 기출과 섞이면 안 된다. */
+  .origin{display:flex;gap:10px;align-items:flex-start;margin-bottom:26px;padding:14px 16px;
+    border:1px solid #ddd6fe;border-radius:14px;background:#f5f3ff;color:#5b21b6;font-size:13px}
+  .origin b{display:block;margin-bottom:2px;font-size:13px}
+
+  .q{margin-bottom:18px;padding:24px 22px;border:1px solid var(--line);border-radius:18px;background:var(--card)}
+  .q-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+  .q-no{display:inline-flex;align-items:center;gap:9px;font:700 12px 'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.08em}
+  .q-no i{display:grid;place-items:center;width:26px;height:26px;border-radius:9px;background:var(--accent);color:#fff;font-style:normal;font-size:12px}
+  .q-tag{padding:5px 11px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:11.5px;white-space:nowrap}
+  .q-body{font-size:15.5px}
+  .q-body .cond{margin:14px 0;padding:14px 16px;border-left:3px solid var(--accent);border-radius:0 10px 10px 0;background:#faf9ff}
+  .q-body .cond p{margin:5px 0}
+  .q-ask{margin-top:14px;font-weight:600}
+
+  .answer{display:flex;gap:8px;align-items:center;margin-top:18px;flex-wrap:wrap}
+  .answer input{width:130px;padding:11px 13px;border:1px solid var(--line);border-radius:11px;background:#fff;
+    font:600 15px 'IBM Plex Mono',monospace;color:var(--ink)}
+  .answer input:focus{outline:2px solid var(--accent);outline-offset:1px}
+  .answer button{min-height:44px;padding:0 18px;border:0;border-radius:11px;background:var(--ink);color:#fff;font-weight:700;cursor:pointer}
+  .answer button:hover{background:#374151}
+  .verdict{margin-left:2px;font-weight:700;font-size:14px}
+  .verdict.ok{color:var(--good)}
+  .verdict.no{color:var(--bad)}
+  .hint{margin-top:12px;color:var(--muted);font-size:13px}
+
+  footer{margin-top:34px;padding-top:22px;border-top:1px solid var(--line);color:var(--muted);font-size:13px}
+  footer a{color:inherit}
+  @media(max-width:600px){
+    body{padding:28px 14px 64px}
+    .q{padding:20px 16px}
+    .answer input{width:110px}
+  }
+</style>
+</head>
+<body>
+
+<p class="breadcrumb"><a href="../../index.html">JP Math Lab</a> / <a href="../index.html">문제 탐구</a> / AI 킬러문제</p>
+
+<header class="hero">
+  <p class="eyebrow">AI KILLER SET 01 · 미적분Ⅰ</p>
+  <h1>AI 킬러문제 · 미적분Ⅰ</h1>
+  <p>극한과 연속, 미분, 적분에서 두 문항씩. 한 조건만 읽어서는 풀리지 않고, 조건이 서로 무엇을 강제하는지 찾아야 답이 하나로 정해집니다.</p>
+</header>
+
+<div class="origin">
+  <span aria-hidden="true">✦</span>
+  <div>
+    <b>기출이 아닙니다</b>
+    수능 기출을 변형하거나 옮겨 적은 것이 아니라 새로 만든 문제입니다. 답이 하나로 정해지는지, 조건이 서로 어긋나지 않는지는 모두 직접 계산해 확인했습니다.
+  </div>
+</div>
+
+<main id="paper"></main>
+
+<footer>
+  <p>풀이와 교사용 해설은 <b>수업창고</b>에 있습니다. 여기서는 답만 맞춰 볼 수 있습니다.</p>
+  <p style="margin-top:8px"><a href="../index.html">← 문제 탐구로 돌아가기</a></p>
+</footer>
+
+<script>
+(function(){
+  'use strict';
+
+  /* 여섯 문항. 답은 모두 정수다.
+
+     이 페이지에는 풀이를 두지 않는다 — 풀이는 수업창고에만 둔다는 것이
+     이 자료의 규칙이다. 여기서는 맞았는지만 알려 준다. */
+  const SET = [
+    {
+      no: 1, tag: '극한과 연속',
+      body: '최고차항의 계수가 1인 사차함수 \\(f(x)\\)와 함수 \\(\\displaystyle g(x)=\\frac{f(x)}{x^{2}-x}\\) 가 다음 조건을 만족시킨다.',
+      conds: [
+        '\\(g(x)\\)는 \\(x=0\\)과 \\(x=1\\)에서 각각 극한값을 갖는다.',
+        '\\(\\displaystyle\\lim_{x\\to 0}g(x)=3,\\qquad \\lim_{x\\to 1}g(x)=-2\\)'
+      ],
+      ask: '\\(f(4)\\)의 값을 구하시오.',
+      answer: -60,
+      hint: '분모가 0이 되는 자리에서 극한값이 있으려면 분자도 그 자리에서 0이어야 합니다.'
+    },
+    {
+      no: 2, tag: '극한과 연속',
+      body: '최고차항의 계수가 1인 사차함수 \\(f(x)\\)에 대하여 함수 \\(g(x)=|f(x)|\\) 가 실수 전체의 집합에서 미분가능하고, \\(f(x)\\)는 다음을 만족시킨다.',
+      conds: ['\\(f(0)=0,\\qquad f(1)=0,\\qquad f(2)=4\\)'],
+      ask: '\\(f(4)\\)의 값을 구하시오.',
+      answer: 144,
+      hint: '\\(|f|\\)가 어떤 점에서 꺾이지 않으려면 그 점에서 \\(f\\)가 부호를 바꾸지 않아야 합니다.'
+    },
+    {
+      no: 3, tag: '미분',
+      body: '실수 \\(k\\)에 대하여 함수 \\(f(x)=x^{3}-3x^{2}+k\\) 가 있다.',
+      conds: ['방정식 \\(|f(x)|=1\\) 의 서로 다른 실근의 개수가 5이다.'],
+      ask: '이를 만족시키는 모든 정수 \\(k\\)의 값의 합을 구하시오.',
+      answer: 4,
+      hint: '\\(f(x)=1\\)과 \\(f(x)=-1\\)의 실근 개수를 따로 세어 더합니다. 각각의 개수는 극댓값·극솟값과 \\(\\pm 1\\)의 위치로 정해집니다.'
+    },
+    {
+      no: 4, tag: '미분',
+      body: '최고차항의 계수가 1인 삼차함수 \\(f(x)\\)와 실수 \\(t\\)에 대하여, 방정식 \\(f(x)=t\\) 의 서로 다른 실근의 개수를 \\(g(t)\\)라 하자. \\(f(x)\\)가 다음 조건을 만족시킨다.',
+      conds: [
+        '함수 \\(g(t)\\)는 \\(t=3\\)과 \\(t=-1\\)에서만 불연속이다.',
+        '\\(f(x)\\)는 \\(x=1\\)에서 극솟값을 갖는다.'
+      ],
+      ask: '\\(f(3)\\)의 값을 구하시오.',
+      answer: 19,
+      hint: '\\(g(t)\\)가 튀는 자리는 \\(t\\)가 극값을 지날 때입니다. 극댓값과 극솟값의 차가 정해지면 두 극점 사이의 거리도 정해집니다.'
+    },
+    {
+      no: 5, tag: '적분',
+      body: '양수 \\(m\\)에 대하여 곡선 \\(y=x^{2}-4x\\) 와 직선 \\(y=mx\\) 가 있다.',
+      conds: ['곡선과 직선으로 둘러싸인 부분의 넓이가 36이다.'],
+      ask: '\\(m\\)의 값을 구하시오.',
+      answer: 2,
+      hint: '두 교점의 \\(x\\)좌표를 \\(\\alpha,\\beta\\)라 하면 넓이는 \\(\\dfrac{(\\beta-\\alpha)^{3}}{6}\\) 입니다.'
+    },
+    {
+      no: 6, tag: '적분',
+      body: '\\(a>1\\) 인 상수 \\(a\\)에 대하여 함수 \\(\\displaystyle f(x)=\\int_{0}^{x}(t-1)(t-a)\\,dt\\) 가 있다.',
+      conds: ['\\(f(x)\\)의 극댓값과 극솟값의 차가 36이다.'],
+      ask: '\\(a\\)의 값을 구하시오.',
+      answer: 7,
+      hint: '극댓값과 극솟값의 차는 \\(f\'\\)의 두 근 사이에서의 정적분입니다.'
+    }
+  ];
+
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  document.getElementById('paper').innerHTML = SET.map((q) => `
+    <section class="q" data-no="${q.no}">
+      <div class="q-head">
+        <span class="q-no"><i>${q.no}</i>KILLER 0${q.no}</span>
+        <span class="q-tag">${esc(q.tag)}</span>
+      </div>
+      <div class="q-body">
+        <p>${q.body}</p>
+        <div class="cond">${q.conds.map((c) => `<p>${c}</p>`).join('')}</div>
+        <p class="q-ask">${q.ask}</p>
+      </div>
+      <div class="answer">
+        <input type="text" inputmode="numeric" aria-label="${q.no}번 답" placeholder="답">
+        <button type="button">확인</button>
+        <span class="verdict" role="status" aria-live="polite"></span>
+      </div>
+      <p class="hint">${q.hint}</p>
+    </section>`).join('');
+
+  /* 답만 맞춰 준다. 틀렸을 때 정답을 알려 주지 않는 것은, 다시 풀어 보라는 뜻이다. */
+  document.getElementById('paper').addEventListener('click', (event) => {
+    const button = event.target.closest('.answer button');
+    if (!button) return;
+    const box = button.closest('.q');
+    const item = SET.find((q) => q.no === Number(box.dataset.no));
+    const raw = box.querySelector('input').value.trim().replace(/[−–—]/g, '-').replace(/\s/g, '');
+    const verdict = box.querySelector('.verdict');
+    if (raw === '') { verdict.className = 'verdict'; verdict.textContent = '답을 적어 주세요.'; return }
+    const value = Number(raw);
+    if (!Number.isFinite(value)) { verdict.className = 'verdict no'; verdict.textContent = '숫자로 적어 주세요.'; return }
+    const ok = value === item.answer;
+    verdict.className = 'verdict ' + (ok ? 'ok' : 'no');
+    verdict.textContent = ok ? '맞았습니다' : '다시 확인해 보세요';
+  });
+
+  document.getElementById('paper').addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter') return;
+    const input = event.target.closest('.answer input');
+    if (!input) return;
+    event.preventDefault();
+    input.closest('.answer').querySelector('button').click();
+  });
+
+  // 수식 조판
+  function typeset() {
+    if (!window.renderMathInElement && !window.katex) return;
+    document.querySelectorAll('.q-body').forEach((el) => {
+      el.innerHTML = el.innerHTML.replace(/\\\((.+?)\\\)/g, (m, tex) => {
+        try { return window.katex.renderToString(tex, { throwOnError: false }) } catch (e) { return m }
+      }).replace(/\\\[(.+?)\\\]/g, (m, tex) => {
+        try { return window.katex.renderToString(tex, { throwOnError: false, displayMode: true }) } catch (e) { return m }
+      });
+    });
+    document.querySelectorAll('.hint').forEach((el) => {
+      el.innerHTML = el.innerHTML.replace(/\\\((.+?)\\\)/g, (m, tex) => {
+        try { return window.katex.renderToString(tex, { throwOnError: false }) } catch (e) { return m }
+      });
+    });
+  }
+  if (window.katex) typeset();
+  else window.addEventListener('load', typeset);
+})();
+</script>
+</body>
+</html>

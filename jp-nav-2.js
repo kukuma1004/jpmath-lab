@@ -54,7 +54,7 @@
           <section class="menu-group" style="--group-index:2">
             <p class="menu-group-label"><span>03</span> 탐구하기</p>
             <div class="menu-group-links">
-              <a href="${siteHref('수능문제/')}"><strong>수능 문제 탐구</strong><small>조건을 질문으로 바꾸기</small></a>
+              <a href="${siteHref('수능문제/')}"><strong>수능·킬러 문제</strong><small>조건을 질문으로 바꾸기</small></a>
               <a href="${siteHref('주제탐구/')}"><strong>주제탐구</strong><small>호기심을 탐구로 연결하기</small></a>
             </div>
           </section>
