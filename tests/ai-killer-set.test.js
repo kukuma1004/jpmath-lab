@@ -127,12 +127,77 @@ const say = (ok, msg) => { checks.push({ ok, msg }); };
   say((5 - 2) ** 3 === 27, 'K03 · f(5)=27');
 }
 
+/* K04 · 절댓값 분모와 겹근의 깊이
+   g=f/|x−1| 에서 1 이 몇 겹 근인지가 전부다. 연속이 두 겹을, 미분가능이
+   세 겹을 부른다. 네 겹도 두 조건을 다 만족하므로 f(0)=3 이 그것을 걷어낸다
+   — 값을 정하는 조건이 아니라 경우를 거르는 조건이라는 것이 이 문항의 핵심. */
+{
+  const gOf = (f) => (x) => (x === 1 ? 0 : f(x) / Math.abs(x - 1));
+  const withRoot = (m, r) => (x) => Math.pow(x - 1, m) * (m === 4 ? 1 : (x - r));
+  const contAt1 = (f) => {
+    const g = gOf(f);
+    return [1e-4, 1e-5, 1e-6].every((h) => Math.abs(g(1 + h)) < 1e-2 && Math.abs(g(1 - h)) < 1e-2);
+  };
+  const diffAt1 = (f) => {
+    const g = gOf(f), h = 1e-6;
+    return Math.abs((g(1 + h) - g(1)) / h - (g(1) - g(1 - h)) / h) < 1e-3;
+  };
+  const r = 3;
+  say(!contAt1(withRoot(1, r)), 'K04 · 한 겹이면 g 가 연속이 아니다');
+  say(contAt1(withRoot(2, r)) && !diffAt1(withRoot(2, r)), 'K04 · 두 겹이면 연속이나 미분가능하지 않다');
+  say(contAt1(withRoot(3, r)) && diffAt1(withRoot(3, r)), 'K04 · 세 겹이면 연속이고 미분가능하다');
+  say(contAt1(withRoot(4, r)) && diffAt1(withRoot(4, r)), 'K04 · 네 겹도 두 조건을 만족한다 (f(0) 으로 걸러야 한다)');
+
+  const f3 = (x) => Math.pow(x - 1, 3) * (x - 3);
+  say(near(f3(0), 3), `K04 · 세 겹 f(0)=${f3(0)} 이라 조건과 맞는다`);
+  say(!near(Math.pow(0 - 1, 4), 3), 'K04 · 네 겹은 f(0)=1 이라 떨어진다');
+
+  // f(0) = (−1)³(0−r) = r 이므로 r 은 3 하나뿐이다
+  const hits = [];
+  for (let t = -20; t <= 20; t += 0.001) if (near(t, 3, 1e-6)) hits.push(Math.round(t * 1000) / 1000);
+  const rs = [...new Set(hits)];
+  say(rs.length === 1 && near(rs[0], 3, 1e-3), `K04 · f(0)=3 을 만드는 r 은 ${rs.join(', ')} 하나뿐`);
+  say(near(f3(5), 128), `K04 · f(5)=${f3(5)}`);
+}
+
+/* K05 · 두 극한이 부른 겹근
+   lim f/(x−a)=0 은 f(a)=0 과 f′(a)=0 을 한꺼번에 말한다. 두 자리에서
+   그러니 사차가 (x−α)²(x−β)² 로 통째로 정해진다. αβ=6 쪽은 실수해가 없어
+   죽고, 남은 쪽에서 α·β 를 따로 구하지 않고 합과 곱만으로 답이 나온다. */
+{
+  const lim = (f, a) => [1e-5, -1e-5].map((h) => f(a + h) / h);
+  const single = (x) => (x - 2) * (x - 3) * (x - 4) * (x - 5);
+  say(Math.min(...lim(single, 2).map(Math.abs)) > 1, 'K05 · 한 겹 근에서는 극한이 0 이 아니다');
+  const dbl = (x) => Math.pow(x - 2, 2) * Math.pow(x - 5, 2);
+  say(Math.max(...lim(dbl, 2).map(Math.abs)) < 1e-3, 'K05 · 두 겹 근에서라야 극한이 0 이다');
+
+  // f(0)=36 → (αβ)²=36, f′(1)=0 과 α<1<β → α+β=2
+  const found = [];
+  for (const prod of [6, -6]) {
+    const D = 4 - 4 * prod;                        // t²−2t+prod=0
+    if (D < 0) continue;
+    found.push({ prod, a: (2 - Math.sqrt(D)) / 2, b: (2 + Math.sqrt(D)) / 2 });
+  }
+  say(found.length === 1 && found[0].prod === -6,
+    `K05 · αβ=6 은 실수해가 없어 죽고 αβ=−6 만 남는다 (남은 것 ${found.length}가지)`);
+  const { a, b } = found[0];
+  say(a < 1 && 1 < b, `K05 · α=${a.toFixed(4)} < 1 < β=${b.toFixed(4)}`);
+
+  const f = (x) => Math.pow(x - a, 2) * Math.pow(x - b, 2);
+  say(near(f(0), 36, 1e-6), `K05 · f(0)=${f(0).toFixed(6)}`);
+  const df = (x) => { const h = 1e-6; return (f(x + h) - f(x - h)) / (2 * h) };
+  say(Math.abs(df(1)) < 1e-4, `K05 · f′(1)=${df(1).toExponential(2)}`);
+  say(near(f(3), 9, 1e-6), `K05 · f(3)=${f(3).toFixed(6)}`);
+  // α, β 를 구하지 않는 길: f(3)=[9−3(α+β)+αβ]²
+  say(near(Math.pow(9 - 3 * 2 + (-6), 2), 9), 'K05 · 합과 곱만으로도 f(3)=9 가 나온다');
+}
+
 for (const c of checks) if (!c.ok) console.log('  X ' + c.msg);
 assert.equal(checks.filter((c) => !c.ok).length, 0,
   '킬러문제의 수학이 맞지 않는다:\n' + checks.filter((c) => !c.ok).map((c) => '  ' + c.msg).join('\n'));
 
 // ── 2) 두 쪽이 짝이 맞는가 ────────────────────────────────────────
-const VERIFIED = { 1: 3, 2: 0, 3: 27 };
+const VERIFIED = { 1: 3, 2: 0, 3: 27, 4: 128, 5: 9 };
 
 function loadData(file, globalName) {
   const box = { window: {} };
