@@ -41,9 +41,14 @@
        기본은 지금까지의 고정 난이도와 같게 두고(관문 가감 0), 심화에서만
        관문을 하나 늘린다 — 문제까지 어려워진 위에 관문까지 늘리면 과하다. */
     const LEVEL_HP = cfg.mechanic === 'degree-grade' ? [1, 1.2, 1.65]
-      : cfg.unitOf ? [1, 1.3, 1.7] : [1, 1, 1];
+      /* 대단원의 체력. 시간을 고정한 뒤로는 이 배수가 곧 난이도다.
+         1.7 로 두었더니 심화가 문제당 2.9초라 손이 못 따라갔다. */
+      : cfg.unitOf ? [1, 1.25, 1.5] : [1, 1, 1];
     const LEVEL_LOCK = [0, 0, 1];   // 대단원 관문 단계 가감
-    const LEVEL_TIME = [1, 1.2, 1.45];
+    /* 대단원은 난이도를 올려도 시간을 늘리지 않는다. 스킬 보스는 문제가
+       어려워진 만큼 시간을 얹어 주지만, 대단원에서 그렇게 했더니 심화가
+       오히려 쉬웠다 — 체력과 관문이 늘어난 것보다 시간이 더 넉넉해졌다. */
+    const LEVEL_TIME = cfg.unitOf ? [1, 1, 1] : [1, 1.2, 1.45];
     const bossLevelIndex = () => bossStartPhase() - 1;
     const bossMaxHp = () => Math.round(BOSS_V2_HP * LEVEL_HP[bossLevelIndex()]);
     const bossBaseTime = () => Math.round(BOSS_V2_BASE_TIME * LEVEL_TIME[bossLevelIndex()]);

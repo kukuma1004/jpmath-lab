@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow,noarchive"/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<title>AI 킬러문제 · JP Math Lab</title>
+<link rel="stylesheet" href="../vendor/katex/katex.min.css"/>
+<link rel="stylesheet" href="../jp-math-typography.css?v=4"/>
+<link rel="stylesheet" href="../jp-polish.css?v=11"/>
+<link rel="stylesheet" href="killer.css?v=1"/>
+<script defer src="../vendor/katex/katex.min.js"></script>
+<script defer src="../jp-polish.js?v=21"></script>
+<link rel="stylesheet" href="../jp-nav-2.css?v=3">
+<script src="../jp-nav-2.js?v=15" data-jp-section="AI 킬러문제" defer></script>
+<script defer src="문제.js?v=1"></script>
+</head>
+<body>
+
+<p class="breadcrumb"><a href="../index.html">JP Math Lab</a> / <a href="index.html">AI 킬러문제</a> / <span id="crumb">문항</span></p>
+
+<nav class="q-nav">
+  <a id="prev" href="#">← 이전 문항</a>
+  <a href="index.html">목록</a>
+  <a id="next" href="#">다음 문항 →</a>
+</nav>
+
+<main id="paper"></main>
+
+<footer>
+  <p>풀이는 이곳에 없습니다. 교사용 풀이와 수업 노트는 수업창고에 있습니다.</p>
+  <p style="margin-top:8px"><a href="index.html">← 킬러문제 목록</a></p>
+</footer>
+
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  'use strict';
+  const data = window.JPKillerSet;
+  const paper = document.getElementById('paper');
+  if (!data) { paper.innerHTML = '<p class="empty">문항을 불러오지 못했습니다.</p>'; return }
+
+  const want = Number(new URLSearchParams(location.search).get('no')) || 1;
+  const item = data.problems.find((p) => p.no === want) || data.problems[0];
+  const index = data.problems.indexOf(item);
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  document.title = `KILLER ${String(item.no).padStart(2, '0')} · ${item.title} · AI 킬러문제`;
+  document.getElementById('crumb').textContent = `KILLER ${String(item.no).padStart(2, '0')}`;
+
+  // 앞뒤 문항으로 가는 길. 끝에서는 눌리지 않게 둔다.
+  const link = (el, at) => {
+    const to = data.problems[at];
+    if (to) { el.href = `문제.html?no=${to.no}`; el.removeAttribute('aria-disabled') }
+    else { el.href = '#'; el.setAttribute('aria-disabled', 'true') }
+  };
+  link(document.getElementById('prev'), index - 1);
+  link(document.getElementById('next'), index + 1);
+
+  paper.innerHTML = `
+    <article class="paper">
+      <div class="head">
+        <span class="no">KILLER ${String(item.no).padStart(2, '0')} · ${esc(data.subject)}</span>
+        <span class="level ${item.level === '킬러' ? 'hard' : ''}">${esc(item.level)}</span>
+      </div>
+      <h1>${esc(item.title)}</h1>
+      <p class="topic">${esc(item.topic)}</p>
+
+      <div class="stem">
+        <p>${item.stem}</p>
+        <div class="cond">${item.conds.map((c) => `<p>${c}</p>`).join('')}</div>
+        <p class="ask">${item.ask}</p>
+      </div>
+
+      <div class="answer">
+        <input type="text" inputmode="numeric" aria-label="답" placeholder="답" autocomplete="off">
+        <button type="button">확인</button>
+        <span class="verdict" role="status" aria-live="polite"></span>
+      </div>
+
+      <details class="hint-box">
+        <summary>막히면 여기를 한 번</summary>
+        <div class="body">${item.hint}</div>
+      </details>
+    </article>`;
+
+  /* 답만 맞춰 준다. 틀렸을 때 정답을 알려 주지 않는 것은 다시 풀어 보라는 뜻이다. */
+  paper.querySelector('.answer button').addEventListener('click', () => {
+    const input = paper.querySelector('.answer input');
+    const verdict = paper.querySelector('.verdict');
+    const raw = input.value.trim().replace(/[−–—]/g, '-').replace(/\s/g, '');
+    if (raw === '') { verdict.className = 'verdict'; verdict.textContent = '답을 적어 주세요.'; return }
+    const value = Number(raw);
+    if (!Number.isFinite(value)) { verdict.className = 'verdict no'; verdict.textContent = '숫자로 적어 주세요.'; return }
+    const ok = value === item.answer;
+    verdict.className = 'verdict ' + (ok ? 'ok' : 'no');
+    verdict.textContent = ok ? '맞았습니다' : '다시 확인해 보세요';
+  });
+  paper.querySelector('.answer input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); paper.querySelector('.answer button').click() }
+  });
+
+  /* innerHTML 을 한 번 거치면 TeX 안의 & 가 &amp; 로 바뀐다. cases 나 array 는
+     & 로 칸을 나누므로 그대로 넘기면 정렬이 깨진다. 되돌려서 넘긴다. */
+  const unescape = (tex) => tex
+    .replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+    .replace(/&quot;/g, String.fromCharCode(34)).replace(/&amp;/g, "&");
+
+  function typeset() {
+    if (!window.katex) return;
+    paper.querySelectorAll('.stem, .ask, .hint-box .body').forEach((el) => {
+      el.innerHTML = el.innerHTML
+        .replace(/\\\[([\s\S]+?)\\\]/g, (m, tex) => {
+          try { return window.katex.renderToString(unescape(tex), { throwOnError: false, displayMode: true }) } catch (e) { return m }
+        })
+        .replace(/\\\(([\s\S]+?)\\\)/g, (m, tex) => {
+          try { return window.katex.renderToString(unescape(tex), { throwOnError: false }) } catch (e) { return m }
+        });
+    });
+  }
+  if (window.katex) typeset();
+  else window.addEventListener('load', typeset);
+});
+</script>
+</body>
+</html>

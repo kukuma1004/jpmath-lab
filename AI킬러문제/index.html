@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow,noarchive"/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<title>AI 킬러문제 · JP Math Lab</title>
+<link rel="stylesheet" href="../vendor/katex/katex.min.css"/>
+<link rel="stylesheet" href="../jp-math-typography.css?v=4"/>
+<link rel="stylesheet" href="../jp-polish.css?v=11"/>
+<link rel="stylesheet" href="killer.css?v=1"/>
+<script defer src="../vendor/katex/katex.min.js"></script>
+<script defer src="../jp-polish.js?v=21"></script>
+<link rel="stylesheet" href="../jp-nav-2.css?v=3">
+<script src="../jp-nav-2.js?v=15" data-jp-section="AI 킬러문제" defer></script>
+<script defer src="문제.js?v=1"></script>
+</head>
+<body>
+
+<p class="breadcrumb"><a href="../index.html">JP Math Lab</a> / AI 킬러문제</p>
+
+<header class="hero hero-list">
+  <p class="eyebrow">AI KILLER PROBLEMS</p>
+  <h1>AI 킬러문제</h1>
+  <p>계산량으로 밀어붙이는 문제가 아닙니다. 조건을 다른 말로 옮기는 순간이 한 번씩 있고, 그 전환을 찾기 전에는 손이 나가지 않습니다. 한 문항씩 따로 폅니다.</p>
+</header>
+
+<div class="origin">
+  <span aria-hidden="true">✦</span>
+  <div>
+    <b>수능 기출이 아닙니다</b>
+    기출을 변형하거나 옮겨 적은 것이 아니라 새로 만든 문제입니다. 기출 탐구 자료는 <a href="../수능문제/index.html">수능 문제 탐구</a>에 따로 있습니다.
+  </div>
+</div>
+
+<main id="list"></main>
+
+<footer>
+  <p>풀이와 교사용 노트는 수업창고에 있습니다. 여기서는 답만 맞춰 볼 수 있습니다.</p>
+</footer>
+
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  'use strict';
+  const data = window.JPKillerSet;
+  const list = document.getElementById('list');
+  if (!data) { list.innerHTML = '<p class="empty">문항을 불러오지 못했습니다.</p>'; return }
+
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  /* 목록에는 발문을 통째로 싣지 않는다. 무엇을 묻는 문제인지만 보여 주고
+     들어가서 한 문항만 마주하게 한다 — 여러 문항이 한 화면에 늘어서 있으면
+     한 문항에 오래 붙어 있기 어렵다. */
+  list.innerHTML = `
+    <div class="list-head">
+      <h2>${esc(data.subject)} · ${esc(data.set)}</h2>
+      <span>${data.problems.length}문항</span>
+    </div>
+    <ul class="killer-grid">
+      ${data.problems.map((p) => `
+        <li>
+          <a class="killer-card" href="문제.html?no=${p.no}">
+            <div class="card-top">
+              <span class="no">KILLER ${String(p.no).padStart(2, '0')}</span>
+              <span class="level ${p.level === '킬러' ? 'hard' : ''}">${esc(p.level)}</span>
+            </div>
+            <h3>${esc(p.title)}</h3>
+            <p class="topic">${esc(p.topic)}</p>
+            <p class="turn">${esc(p.turn)}</p>
+            <div class="card-go">문제 풀러 가기 <span>→</span></div>
+          </a>
+        </li>`).join('')}
+    </ul>
+    <p class="note">한 문항씩 따로 펴 놓았습니다. 답을 넣으면 맞았는지만 알려 주고, 풀이는 보여 주지 않습니다.</p>`;
+});
+</script>
+</body>
+</html>

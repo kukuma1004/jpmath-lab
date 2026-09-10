@@ -149,7 +149,11 @@ assert.match(engine, /function lockStepCount\(\)/,'관문 수는 한 곳에서 �
 assert.match(engine, /finishingStep=stepBattle&&boss\.lockStep===\(lockStepCount\(\)\)-1/,'마무리 단계는 그 판의 관문 수에서 열려야 한다.');
 // 대단원 총력전은 난이도를 올리면 문제가 어려워지고(멤버가 전부 레벨을
 // 갖는다) 거기에 체력과 관문이 얹힌다. 그 배선이 살아 있어야 한다.
-assert.match(engine, /cfg\.unitOf \? \[1, 1\.3, 1\.7\]/,'대단원 보스는 난이도에 따라 체력이 달라져야 한다.');
+assert.match(engine, /cfg\.unitOf \? \[1, 1\.25, 1\.5\]/,'대단원 보스는 난이도에 따라 체력이 달라져야 한다.');
+/* 대단원은 난이도를 올려도 시간을 늘리지 않는다. 시간이 늘어나니 심화가
+   오히려 쉬웠기 때문이다. 시간을 고정한 뒤로는 체력 배수가 곧 난이도라,
+   1.7 로 두면 심화가 문제당 2.9초가 되어 손이 못 따라간다. */
+assert.match(engine, /const LEVEL_TIME = cfg\.unitOf \? \[1, 1, 1\]/,'대단원 보스는 난이도를 올려도 시간이 늘지 않아야 한다.');
 assert.match(engine, /cfg\.unitOf\?Math\.max\(2,base\+LEVEL_LOCK\[bossLevelIndex\(\)\]\)/,'대단원 보스는 난이도에 따라 관문 수가 달라져야 한다.');
 assert.match(engine, /const LEVEL_LOCK = \[0, 0, 1\]/,'기본 난이도는 종전 고정 난이도와 같아야 한다.');
 assert.match(engine, /stepBattle&&!finishingStep/,'마무리 공격으로만 단계잠금 보스를 쓰러뜨릴 수 있어야 한다.');

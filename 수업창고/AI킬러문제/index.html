@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko" class="classroom-auth-pending">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>AI 킬러문제 교사용 · 수업창고</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500;600;700&amp;family=Noto+Serif+KR:wght@700;900&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../jp-math-typography.css?v=4">
+  <link rel="stylesheet" href="../style.css?v=3">
+  <script src="../auth.js?v=2" data-classroom-entry></script>
+  <noscript><style>#classroomGate[hidden]{display:grid!important}.page-shell,.password-row{display:none!important}</style></noscript>
+  <link rel="stylesheet" href="../../jp-polish.css?v=11">
+  <link rel="stylesheet" href="../../jp-nav-2.css?v=4">
+  <script src="../../jp-polish.js?v=21" defer></script>
+  <script src="../../jp-nav-2.js?v=15" data-jp-section="수업창고" defer></script>
+  <script defer src="풀이.js?v=1"></script>
+</head>
+<body>
+  <section class="auth-gate" id="classroomGate" aria-labelledby="gateTitle" hidden>
+    <form class="auth-card" id="classroomLogin" novalidate>
+      <span class="lock-mark" aria-hidden="true">LOCKED</span>
+      <p class="auth-eyebrow">TEACHER ACCESS</p>
+      <h1 id="gateTitle">수업창고</h1>
+      <p>교사용 수업 자료입니다.<br>비밀번호를 입력해 주세요.</p>
+      <label for="classroomPassword">비밀번호</label>
+      <div class="password-row">
+        <input id="classroomPassword" name="password" type="password" autocomplete="current-password" required>
+        <button type="submit">입장하기</button>
+      </div>
+      <p class="auth-feedback" id="classroomFeedback" role="status" aria-live="polite"></p>
+      <a class="auth-back" href="../../index.html">JP Math Lab 으로 돌아가기</a>
+    </form>
+  </section>
+
+  <div class="page-shell">
+    <p class="breadcrumb"><a href="../../index.html">JP Math Lab</a> / <a href="../index.html">수업창고</a> / AI 킬러문제</p>
+
+    <header class="hero">
+      <div>
+        <p class="eyebrow">CLASSROOM ARCHIVE · 03</p>
+        <h1>AI 킬러문제 교사용</h1>
+        <p class="hero-copy">풀이와 수업 노트입니다. 학생용은 풀이 없이 따로 공개하고, 답만 맞춰 볼 수 있습니다.</p>
+      </div>
+      <div class="folder-mark" aria-hidden="true"><span></span></div>
+    </header>
+
+    <section class="archive-section" id="killer-list" aria-labelledby="killer-title">
+      <div class="section-heading">
+        <div>
+          <p class="section-number">01</p>
+          <h2 id="killer-title">미적분Ⅰ · SET 01</h2>
+        </div>
+        <p>한 문항씩 풀이와 수업 노트</p>
+      </div>
+      <ul class="resource-grid teacher-grid" id="grid"></ul>
+    </section>
+  </div>
+
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  'use strict';
+  const data = window.JPKillerSolutions;
+  const grid = document.getElementById('grid');
+  if (!data) { grid.innerHTML = '<li>풀이를 불러오지 못했습니다.</li>'; return }
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  grid.innerHTML = data.problems.map((p) => `
+    <li>
+      <a class="resource-card teacher-csat" href="풀이.html?no=${p.no}">
+        <div class="card-meta"><span>교사용 풀이</span><b>${String(p.no).padStart(2, '0')}</b></div>
+        <h3>${esc(p.title)}</h3>
+        <p>${esc(p.why)}</p>
+        <div class="card-action">풀이 열기 <span>→</span></div>
+      </a>
+    </li>`).join('')
+    + `<li>
+      <a class="resource-card teacher-csat" href="../../AI킬러문제/index.html">
+        <div class="card-meta"><span>학생용 문제지</span><b>공개</b></div>
+        <h3>AI 킬러문제 학생용 목록</h3>
+        <p>문제와 정답 확인만 있는 공개 페이지입니다. 수업 전에 미리 풀려 보낼 때 이 주소를 주세요.</p>
+        <div class="card-action">문제지 열기 <span>→</span></div>
+      </a>
+    </li>`;
+});
+</script>
+</body>
+</html>

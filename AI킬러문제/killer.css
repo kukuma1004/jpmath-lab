@@ -1,0 +1,104 @@
+/* AI 킬러문제 · 공개용 겉모습.
+
+   수능 기출 자료와 한눈에 구별되어야 해서 색을 따로 쓴다. 기출 쪽은
+   초록·회색 계열이고 여기는 자주색이다. */
+
+:root{
+  --ink:#111827; --muted:#6b7280; --line:#e5e7eb; --paper:#f9fafb; --card:#fff;
+  --killer:#6d28d9; --killer-soft:#f5f3ff; --killer-line:#ddd6fe;
+  --good:#15803d; --bad:#b91c1c;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{max-width:900px;margin:auto;padding:40px 20px 80px;background:var(--paper);color:var(--ink);
+  font-family:'Pretendard Variable',Pretendard,'IBM Plex Sans KR',system-ui,sans-serif;line-height:1.75;word-break:keep-all}
+.breadcrumb{margin-bottom:22px;color:var(--muted);font-size:13px}
+.breadcrumb a{color:inherit}
+
+.hero{padding:32px 28px;border:1px solid var(--line);border-radius:22px;background:var(--card);margin-bottom:14px}
+.hero-list{background:linear-gradient(140deg,#1e1b4b,#3b0764);color:#ede9fe;border-color:#3b0764}
+.hero-list .eyebrow{color:#c4b5fd}
+.hero-list p{color:#ddd6fe}
+.eyebrow{color:var(--killer);font:700 11px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;margin-bottom:12px}
+.hero h1{font-size:clamp(26px,5vw,38px);letter-spacing:-.03em;line-height:1.22}
+.hero p{margin-top:12px;font-size:15px}
+
+/* 기출과 섞이지 않게 첫머리에서 못을 박는다 */
+.origin{display:flex;gap:10px;align-items:flex-start;margin-bottom:28px;padding:14px 16px;
+  border:1px solid var(--killer-line);border-radius:14px;background:var(--killer-soft);color:#5b21b6;font-size:13px}
+.origin b{display:block;margin-bottom:2px}
+.origin a{color:#5b21b6;font-weight:700}
+
+.list-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px;
+  padding-bottom:10px;border-bottom:1px solid var(--ink)}
+.list-head h2{font-size:clamp(19px,3.4vw,24px);letter-spacing:-.03em}
+.list-head span{color:var(--muted);font:700 12px 'IBM Plex Mono',monospace}
+
+.killer-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;list-style:none}
+.killer-card{display:flex;flex-direction:column;gap:6px;height:100%;padding:20px 20px 18px;
+  border:1px solid var(--line);border-left:4px solid var(--killer);border-radius:16px;background:var(--card);
+  color:inherit;text-decoration:none;transition:.16s ease}
+.killer-card:hover,.killer-card:focus-visible{transform:translateY(-2px);border-color:var(--killer);
+  box-shadow:0 12px 24px rgba(109,40,217,.14);outline:0}
+.card-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.card-top .no{color:var(--killer);font:800 11px 'IBM Plex Mono',monospace;letter-spacing:.1em}
+.card-top .level{padding:4px 10px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:11px;white-space:nowrap}
+.card-top .level.hard{border-color:var(--killer-line);background:var(--killer-soft);color:#6d28d9;font-weight:700}
+.killer-card h3{margin-top:4px;font-size:19px;letter-spacing:-.02em}
+.killer-card .topic{color:var(--muted);font-size:12.5px}
+.killer-card .turn{margin-top:6px;color:#4b5563;font-size:12.5px;line-height:1.6}
+.card-go{margin-top:auto;padding-top:12px;color:var(--killer);font-weight:700;font-size:13px}
+
+.note{margin-top:16px;color:var(--muted);font-size:13px}
+.empty{padding:30px;text-align:center;color:var(--muted)}
+
+/* ── 한 문항 페이지 ─────────────────────────────────────────────── */
+.q-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px}
+.q-nav a{padding:9px 14px;border:1px solid var(--line);border-radius:11px;background:var(--card);
+  color:var(--ink);font-size:13px;font-weight:600;text-decoration:none}
+.q-nav a:hover{border-color:var(--killer);color:var(--killer)}
+.q-nav a[aria-disabled="true"]{opacity:.4;pointer-events:none}
+
+.paper{padding:30px 26px;border:1px solid var(--line);border-radius:20px;background:var(--card)}
+.paper .head{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding-bottom:16px;margin-bottom:20px;border-bottom:1px solid var(--line)}
+.paper .head .no{color:var(--killer);font:800 12px 'IBM Plex Mono',monospace;letter-spacing:.1em}
+.paper h1{font-size:clamp(22px,4.4vw,30px);letter-spacing:-.03em;line-height:1.25;margin-bottom:6px}
+.paper .topic{color:var(--muted);font-size:13px;margin-bottom:22px}
+
+.stem{font-size:16px}
+.stem .cond{margin:18px 0;padding:16px 18px;border-left:3px solid var(--killer);border-radius:0 12px 12px 0;background:var(--killer-soft)}
+.stem .cond p{margin:8px 0}
+.stem .cond p:first-child{margin-top:0}
+.stem .cond p:last-child{margin-bottom:0}
+.ask{margin-top:20px;padding-top:18px;border-top:1px dashed var(--line);font-weight:600;font-size:16px}
+
+/* 수식이 길면 가로로만 굴러가게 둔다 — 본문이 가로로 밀리면 안 된다 */
+.stem .katex-display,.ask .katex-display{overflow-x:auto;overflow-y:hidden;padding:4px 0}
+
+.answer{display:flex;gap:8px;align-items:center;margin-top:24px;flex-wrap:wrap}
+.answer input{width:140px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;
+  font:600 16px 'IBM Plex Mono',monospace;color:var(--ink)}
+.answer input:focus{outline:2px solid var(--killer);outline-offset:1px}
+.answer button{min-height:46px;padding:0 20px;border:0;border-radius:12px;background:var(--ink);color:#fff;font-weight:700;cursor:pointer}
+.answer button:hover{background:#374151}
+.verdict{font-weight:700;font-size:14px}
+.verdict.ok{color:var(--good)}
+.verdict.no{color:var(--bad)}
+
+.hint-box{margin-top:18px}
+.hint-box summary{display:inline-block;padding:9px 14px;border:1px solid var(--line);border-radius:11px;
+  background:#fff;color:var(--muted);font-size:13px;cursor:pointer;list-style:none}
+.hint-box summary::-webkit-details-marker{display:none}
+.hint-box summary:hover{border-color:var(--killer);color:var(--killer)}
+.hint-box .body{margin-top:10px;padding:14px 16px;border-radius:12px;background:#f3f4f6;font-size:14px}
+
+footer{margin-top:34px;padding-top:22px;border-top:1px solid var(--line);color:var(--muted);font-size:13px}
+footer a{color:inherit}
+
+@media(max-width:600px){
+  body{padding:28px 14px 64px}
+  .hero{padding:24px 20px}
+  .paper{padding:22px 16px}
+  .killer-grid{grid-template-columns:1fr}
+  .answer input{width:120px}
+}
