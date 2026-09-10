@@ -892,7 +892,29 @@
     higher_derivative:'고계도함수 · 미적분Ⅰ 범위 밖',
     implicit_derivative:'음함수 미분 · 미적분Ⅱ'
   };
-  const params=new URLSearchParams(location.search),requestedId=params.get('id'),skill=skills[requestedId];
+  const params=new URLSearchParams(location.search),requestedId=params.get('id');
+
+  /* ── 내가 고른 보스전 ──
+     대단원 총력전의 UNIT_MEMBERS 는 그냥 스킬 id 배열이다. 학생이 고른
+     목록을 그 자리에 넣으면 총력전 엔진이 그대로 돈다 — 문제 생성·관문·
+     체력·난이도·기록이 전부 재사용된다. 새로 만드는 것은 고르는 화면과
+     그 목록을 주소에 담는 것뿐이다. */
+  const CUSTOM_MIN=2, CUSTOM_MAX=12, CUSTOM_KEY='jp_calc_custom_pick';
+  const bossableList=skillList.filter(x=>x.group!=='unit');
+  function readPicks(){
+    const raw=(params.get('pick')||'').split(',').map(x=>x.trim()).filter(Boolean);
+    const seen=new Set(),out=[];
+    raw.forEach(id=>{if(!seen.has(id)&&bossableList.some(x=>x.id===id)){seen.add(id);out.push(id)}});
+    return out.slice(0,CUSTOM_MAX);
+  }
+  if(requestedId==='custom'&&!skills.custom){
+    skills.custom={id:'custom',code:'MY',title:'내가 고른 보스전',desc:'고른 보스들이 뒤섞여 나온다',
+      group:'unit',tag:'내 조합',formula:'고른 스킬 전 범위',
+      routine:['고른 보스만 섞여 나옵니다','한 묶음 안에서 같은 스킬은 두 번 나오지 않습니다','고른 수가 많을수록 체력과 시간이 늘어납니다'],
+      trap:'쉬운 것만 고르면 판은 짧아도 배우는 것이 적습니다.'};
+  }
+
+  const skill=skills[requestedId];
   const app=$('#calcSkillApp');
   if(!skill){const moved=excluded[requestedId];app.innerHTML=`<div class="not-found"><h1>${moved?'미적분Ⅰ에서 분리했어요.':'계산 스킬을 찾을 수 없어요.'}</h1><p>${moved?`${moved} 내용이어서 2022 개정 미적분Ⅰ 계산 지도에서는 제외했습니다.`:'미적분 스킬 지도에서 다시 선택해 주세요.'}</p><a href="index.html#skills">미적분Ⅰ 스킬 지도로 돌아가기</a></div>`;return}
   const group=groups[skill.group];
@@ -930,6 +952,117 @@
     differentiate_polynomial:{name:'미분의 철갑수',theme:'iron',art:'../assets/bosses/derivative-iron-beast.webp',alt:'곡선 갑옷과 빛나는 미분 코어를 지닌 미분의 철갑수',hp:2600,baseTime:38,minTime:24,baseDamage:170,mechanic:'iron-armor',gameId:'calculus-skill-boss-differentiate-polynomial',intro:'기본 → 응용 → 심화로 문제가 강해집니다. 클리어할수록 문제는 더 어려워지는 대신 다음 전투의 시간만 2초씩 줄어듭니다.',start:'정답은 수식 공격으로 바뀝니다. 3단계까지 문제 난도가 올라가며 오답은 콤보 초기화와 시간 −2초입니다.'}
   };
   const fallbackBossNames={limit:'극한의 파수꾼',differentiate:'미분의 철갑수',graph:'그래프의 심연왕',integral:'적분의 수문장'};
+  /* 고른 수에 따라 판을 키운다. 셋만 고르면 짧게, 열둘을 고르면 총력전만큼.
+     대단원 8개일 때 체력 4200 · 시간 100초에 맞춰 눈금을 잡았다. */
+  function buildCustomConfig(picks){
+    const n=picks.length, lead=BOSS_V2_CONFIGS[picks[0]]||{};
+    const steps=n>=7?5:n>=4?4:3;
+    const hp=Math.round(1600+n*330), time=Math.round(34+n*8.5);
+    return {name:'내가 고른 보스전',theme:'unit',
+      art:lead.art||'../assets/bosses/infinity-gatekeeper.jpg',
+      alt:`고른 보스 ${n}종이 겹쳐진 합체 보스`,accent:lead.accent||'#8A5A2B',
+      hp,baseTime:time,minTime:Math.round(time*.7),baseDamage:230,
+      mechanic:'step-lock',lockLabel:'관문',lockSteps:steps,
+      tapDamage:Math.max(70,Math.round(hp/24)),finishMultiplier:3,
+      finishText:`${n}종 관통!`,breakText:'관문 재봉인 · 처음부터',
+      moodStart:`관문 ${steps}단계 · 0/${steps}`,defeatText:`${n}종 관통`,
+      unitOf:picks,gameId:'calculus-custom-boss',
+      intro:`고른 ${n}개 스킬이 뒤섞여 나옵니다. 관문을 ${steps}단계까지 끊지 않고 통과해야 본체에 닿습니다.`,
+      start:`${steps}문제를 연속으로 맞히면 마지막 한 방이 마무리 공격이 됩니다. 한 묶음 안에서 같은 스킬은 두 번 나오지 않으므로 약한 갈래가 있으면 반드시 걸립니다. 한 번이라도 틀리면 관문이 처음으로 돌아가고 시간 3초를 잃습니다.`};
+  }
+
+  function renderCustomPicker(preset){
+    const chosen=new Set(preset||[]);
+    const byGroup={};
+    bossableList.forEach(x=>{(byGroup[x.group]=byGroup[x.group]||[]).push(x)});
+    app.innerHTML=`<div class="cbp">
+      <style>
+        .cbp{max-width:980px;margin:0 auto;padding:26px 16px 120px}
+        .cbp h1{margin:0 0 6px;font:900 30px/1.2 "Noto Serif KR",serif;letter-spacing:-.05em}
+        .cbp .lead{margin:0 0 22px;color:#616a66;font-size:14px;line-height:1.8}
+        .cbp .cg{margin-bottom:24px}
+        .cbp .cg h2{display:flex;align-items:center;gap:9px;margin:0 0 10px;font-size:15px;font-weight:700}
+        .cbp .cg h2 i{width:10px;height:10px;border-radius:50%;flex:none}
+        .cbp .cg h2 button{margin-left:auto;padding:6px 11px;border:1px solid #d8d2c5;border-radius:8px;background:#fff;font:700 11.5px inherit;color:#616a66;cursor:pointer}
+        .cbp .cl{display:grid;grid-template-columns:repeat(auto-fill,minmax(226px,1fr));gap:9px}
+        .cbp .ci{display:flex;align-items:center;gap:11px;padding:11px 12px;border:1px solid #d8d2c5;border-radius:12px;background:#fffdf7;cursor:pointer;text-align:left}
+        .cbp .ci.on{border-color:#1f6b50;background:#dce9df}
+        .cbp .ci img{width:42px;height:42px;border-radius:50%;object-fit:cover;flex:none;background:#e6e1d4}
+        .cbp .ci b{display:block;font-size:13px;line-height:1.35}
+        .cbp .ci small{display:block;margin-top:2px;color:#616a66;font-size:11px;line-height:1.4}
+        .cbp .bar{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;align-items:center;gap:12px;
+          padding:14px clamp(14px,4vw,40px);background:rgba(255,253,247,.97);border-top:1px solid #d8d2c5;backdrop-filter:blur(10px)}
+        .cbp .bar .cnt{font:700 14px inherit}
+        .cbp .bar .cnt b{font-family:"IBM Plex Mono",monospace;color:#1f6b50;font-size:17px}
+        .cbp .bar .spec{color:#616a66;font-size:12px;line-height:1.6}
+        .cbp .bar .go{margin-left:auto;padding:14px 24px;border:0;border-radius:12px;background:#17231d;color:#fff;font:700 15px inherit;cursor:pointer}
+        .cbp .bar .go:disabled{background:#c3c9c5;cursor:default}
+        .cbp .bar .clr{padding:12px 15px;border:1px solid #17231d;border-radius:11px;background:#fff;font:700 13px inherit;cursor:pointer}
+        @media(max-width:620px){.cbp .bar{flex-wrap:wrap}.cbp .bar .go{width:100%;margin-left:0}}
+      </style>
+      <a href="index.html#skills" style="display:inline-block;margin-bottom:14px;font-size:13px;font-weight:700;color:#17231d">← 미적분Ⅰ 스킬 지도</a>
+      <h1>내가 고른 보스전</h1>
+      <p class="lead">싸우고 싶은 보스를 <b>${CUSTOM_MIN}개 이상</b> 고르세요. 고른 보스들이 한 판에 뒤섞여 나옵니다.<br>
+        고른 수가 많을수록 체력과 시간이 늘고, 연속으로 맞혀야 하는 관문도 길어집니다.</p>
+      ${Object.entries(byGroup).map(([g,items])=>`<section class="cg">
+        <h2><i style="background:${groups[g].color}"></i>${groups[g].name}<button type="button" data-all="${g}">이 단원 전부</button></h2>
+        <div class="cl">${items.map(x=>{
+          const c=BOSS_V2_CONFIGS[x.id]||{};
+          return `<button type="button" class="ci" data-pick="${x.id}">
+            ${c.art?`<img src="${c.art.replace('/bosses/','/bosses/thumbs/').replace(/\.(jpg|webp|png)$/,'.webp')}" alt="" loading="lazy">`:'<img alt="">'}
+            <span><b>${c.name||x.title}</b><small>${x.title}</small></span></button>`;
+        }).join('')}</div>
+      </section>`).join('')}
+      <div class="bar">
+        <span class="cnt"><b data-count>0</b>개 선택</span>
+        <span class="spec" data-spec>2개 이상 골라 주세요.</span>
+        <button type="button" class="clr" data-clear>전부 해제</button>
+        <button type="button" class="go" data-go disabled>이 조합으로 시작</button>
+      </div>
+    </div>`;
+
+    const sync=()=>{
+      const n=chosen.size, ok=n>=CUSTOM_MIN;
+      app.querySelectorAll('[data-pick]').forEach(b=>b.classList.toggle('on',chosen.has(b.dataset.pick)));
+      $('[data-count]').textContent=n;
+      const steps=n>=7?5:n>=4?4:3, hp=Math.round(1600+n*330), time=Math.round(34+n*8.5);
+      $('[data-spec]').textContent=ok?`체력 ${hp.toLocaleString('ko-KR')} · 제한시간 ${time}초 · 관문 ${steps}단계`
+        :`${CUSTOM_MIN}개 이상 골라 주세요.`;
+      $('[data-go]').disabled=!ok;
+    };
+    app.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{
+      const id=b.dataset.pick;
+      if(chosen.has(id))chosen.delete(id);
+      else if(chosen.size<CUSTOM_MAX)chosen.add(id);
+      sync();
+    });
+    app.querySelectorAll('[data-all]').forEach(b=>b.onclick=()=>{
+      const items=byGroup[b.dataset.all].map(x=>x.id);
+      const allOn=items.every(id=>chosen.has(id));
+      items.forEach(id=>{if(allOn)chosen.delete(id);else if(chosen.size<CUSTOM_MAX)chosen.add(id)});
+      sync();
+    });
+    $('[data-clear]').onclick=()=>{chosen.clear();sync()};
+    $('[data-go]').onclick=()=>{
+      const list=[...chosen];
+      try{localStorage.setItem(CUSTOM_KEY,list.join(','))}catch(e){}
+      location.search='?id=custom&pick='+encodeURIComponent(list.join(','));
+    };
+    sync();
+  }
+
+  if(skill.id==='custom'){
+    let picks=readPicks();
+    if(picks.length<CUSTOM_MIN){
+      let saved=[];
+      try{saved=(localStorage.getItem(CUSTOM_KEY)||'').split(',').filter(Boolean)}catch(e){}
+      renderCustomPicker(saved.filter(id=>bossableList.some(x=>x.id===id)));
+      return;
+    }
+    UNIT_MEMBERS.custom=picks;
+    BOSS_V2_CONFIGS.custom=buildCustomConfig(picks);
+  }
+
   const bossConfig=BOSS_V2_CONFIGS[skill.id]||null;
   const bossV2=!!bossConfig;
   /* 난이도를 고르면 그것이 곧 시작 PHASE 다(bossStartPhase 참고).

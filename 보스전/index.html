@@ -11,6 +11,12 @@
   <link rel="stylesheet" href="../jp-nav-2.css?v=4">
   <link rel="stylesheet" href="boss-hall.css?v=4">
   <script src="../jp-nav-2.js?v=14" data-jp-section="보스전" defer></script>
+  <style>
+    /* 직접 고르기 입구. boss-hall.css 를 건드리면 그 파일을 읽는 다른 쪽까지
+       캐시 버전을 올려야 해서 이 파일 안에만 둔다. */
+    .hero-jump-custom{margin-left:10px;border-color:currentColor}
+    @media(max-width:620px){.hero-jump-custom{margin:10px 0 0;display:inline-flex}}
+  </style>
   <script src="boss-catalog.js?v=18" defer></script>
   <script src="boss-hall.js?v=4" defer></script>
 </head>
@@ -23,6 +29,7 @@
         <div class="hero-rule"><span>제한시간</span><i>+</i><span>보스 HP</span><i>+</i><span>데미지</span><i>+</i><span>콤보</span></div>
         <p class="hero-description">세 문제를 연속으로 맞히는 훈련에서 끝나지 않습니다. 시간 안에 더 많은 문제를 해결하고, 정확도를 유지해 실제로 보스를 쓰러뜨립니다.</p>
         <a class="hero-jump" href="#roadmapTitle">보스 명단 바로가기 <span>↓</span></a>
+        <a class="hero-jump hero-jump-custom" href="../미적분1/미적분1_계산스킬.html?id=custom">보스를 직접 골라 싸우기 <span>⚔</span></a>
       </div>
       <div class="hero-core" aria-hidden="true"><span></span><b>JP</b><i></i></div>
     </section>
