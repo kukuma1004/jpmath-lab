@@ -72,6 +72,16 @@
 
   buildInjectedNavigation();
 
+  // Include the games room in both injected and pre-existing page menus.
+  const challengeLinks = document.querySelectorAll('.global-menu-nav .menu-group-links')[1];
+  if (challengeLinks && ![...challengeLinks.querySelectorAll('a')].some(a => a.href === siteHref('games/'))) {
+    const entry = document.createElement('a');
+    entry.href = siteHref('games/');
+    entry.innerHTML = '<strong>게임</strong><small>SEED · PC와 모바일에서 플레이</small>';
+    challengeLinks.append(entry);
+  }
+
+
   const menu = document.querySelector('[data-global-menu]');
   const openers = [...document.querySelectorAll('[data-menu-open], [data-menu-open-bottom]')];
   const closeButton = document.querySelector('[data-menu-close]');
