@@ -19,6 +19,7 @@
 @media(max-width:460px){.topbar{flex-wrap:wrap}.topbar h1{min-width:155px;font-size:15px}.topbar .size-chip{margin-left:auto}.turnbar .who small{font-size:10px;line-height:1.6}}
 
 /* Korean country names remain visible at every board scale. */
+.board{max-width:min(100%,680px)}
 .board .cell .cc,.board.sc2 .cell .cc,.board.sc3 .cell .cc{display:block;font-family:inherit;font-size:clamp(10px,calc(var(--cell)*.15),15px);font-weight:800;letter-spacing:-.04em;line-height:1.15;color:#243f35;overflow-wrap:anywhere;word-break:normal}
 .board .cell .currency{font:600 9px "IBM Plex Mono",monospace;color:#708077;line-height:1.1}
 .board .cell{gap:2px}.fxrow .cn small{color:var(--muted);font-size:10px}.fxrow .cn{font-size:12px}
