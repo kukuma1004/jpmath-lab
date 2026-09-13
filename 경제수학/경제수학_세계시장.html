@@ -244,6 +244,7 @@ button{font-family:inherit;cursor:pointer}
 .rbtns button{padding:15px;border:1px solid var(--ink);border-radius:12px;background:var(--white);font-size:14px;font-weight:700}
 .rbtns button.primary{background:var(--ink);color:#fff}
 </style>
+<link rel="stylesheet" href="board-depth.css?v=1">
 </head>
 <body>
 
@@ -861,7 +862,7 @@ function renderBoard(){
       el.className='cell'+(cell.owner!==null?' owned':'')+(i===herePos?' here':'');
       if(cell.owner!==null)el.style.borderColor=S.players[cell.owner].color;
       const drift=(S.rates[cell.ci]/S.base[cell.ci]-1)*100;
-      el.innerHTML=`<span class="flag">${co.f}</span><span class="cc">${co.code}</span><span class="pr">${man(cityValue(cell))}</span>`
+      el.innerHTML=`<span class="cc">${co.n}</span><span class="currency">${co.code}</span><span class="pr">${man(cityValue(cell))}</span>`
         +(cell.level?`<span class="lvl">+${cell.level}</span>`:'')
         +(Math.abs(drift)>=4?`<span class="up">${drift>0?'▲':'▼'}</span>`:'');
       el.title=`${co.city} · ${co.n}`;
@@ -887,14 +888,14 @@ function renderBoard(){
 
 function renderCenter(msg){
   const ctr=$('[data-center]');if(!ctr)return;
-  if(msg){ctr.innerHTML=msg;return}
+  if(msg){ctr.innerHTML=`<div class="center-summary event-summary">${msg}</div>`;return}
   const p=S.players[S.turn];
   const owned=S.board.filter(c=>c.type==='city'&&c.owner===p.id);
-  ctr.innerHTML=`<h3>${p.name} <span style="font-size:.55em;opacity:.65;font-weight:400">${tokenName(p.token)}</span></h3>
+  ctr.innerHTML=`<div class="center-summary"><h3>${p.name} <span style="font-size:.55em;opacity:.65;font-weight:400">${tokenName(p.token)}</span></h3>
     <p class="sub">현금</p><div class="big">${man(p.cash)}원</div>
     <p class="sub">총재산 ${man(totalAssets(p))}원 · 도시 ${owned.length}곳${p.deposit?` · 예금 ${man(p.deposit)}원`:''}</p>
     ${owned.length?`<div class="why">${owned.map(c=>`${COUNTRIES[c.ci].f} ${COUNTRIES[c.ci].city} ${man(cityValue(c))}`).join(' · ')}</div>`:'<div class="why">아직 가진 도시가 없습니다. 통화가 싸진 나라를 노려 보세요.</div>'}
-    ${Object.keys(p.fx).filter(k=>p.fx[k]>0).length?`<div class="why">💱 ${Object.keys(p.fx).filter(k=>p.fx[k]>0).map(k=>`${COUNTRIES[k].f} ${COUNTRIES[k].cur} ${fxProfit(p,k)>=0?'+':''}${fxProfit(p,k).toFixed(1)}%`).join(' · ')}</div>`:''}`;
+    ${Object.keys(p.fx).filter(k=>p.fx[k]>0).length?`<div class="why">💱 ${Object.keys(p.fx).filter(k=>p.fx[k]>0).map(k=>`${COUNTRIES[k].f} ${COUNTRIES[k].cur} ${fxProfit(p,k)>=0?'+':''}${fxProfit(p,k).toFixed(1)}%`).join(' · ')}</div>`:''}</div>`;
 }
 
 function renderPlayers(){
@@ -917,7 +918,7 @@ function renderFx(){
    .sort((a,b)=>b.ch-a.ch).forEach(({idx,ch})=>{
     const c=COUNTRIES[idx];
     const row=document.createElement('div');row.className='fxrow';
-    row.innerHTML=`<span>${c.f}</span><span class="cn">${c.cur}</span>
+    row.innerHTML=`<span>${c.f}</span><span class="cn">${c.n} <small>${c.cur}</small></span>
       <span class="rt">${local(S.rates[idx])}</span>
       <span class="ch ${ch>=0?'up':'down'}">${ch>=0?'+':''}${ch.toFixed(1)}%</span>`;
     row.title=`${c.n} · ${c.code}`;
@@ -1190,8 +1191,8 @@ function landBank(p){
   }
   setAct({
     title:'🏦 세계은행',
-    body:`현금 <b>${man(amount)}원</b>을 맡기면 남은 <b>${left}라운드</b> 동안 라운드마다 3%씩 복리로 불어납니다.<br>맡긴 돈은 게임이 끝날 때까지 <b>도시를 사는 데 쓸 수 없습니다.</b>`,
-    priceLine:`<div class="price-line"><span class="local">${man(future)}원</span><span class="krw">${man(amount)}원 × 1.07<sup>${left}</sup> — 끝날 때 받는 돈</span></div>`,
+    body:`현금 <b>${man(amount)}원</b>을 맡기면 남은 <b>${left}라운드</b> 동안 라운드마다 ${DEPOSIT_RATE*100}%씩 복리로 불어납니다.<br>맡긴 돈은 게임이 끝날 때까지 <b>도시를 사는 데 쓸 수 없습니다.</b>`,
+    priceLine:`<div class="price-line"><span class="local">${man(future)}원</span><span class="krw">${man(amount)}원 × ${1+DEPOSIT_RATE}<sup>${left}</sup> — 끝날 때 받는 돈</span></div>`,
     buttons:[
       {label:'맡기기',primary:true,disabled:amount<50,
        fn:()=>{p.cash-=amount;p.deposit+=amount;render();
