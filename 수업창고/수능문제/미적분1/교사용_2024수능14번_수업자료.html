@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow,noarchive"/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<title>2024 수능 14번 | 불연속 함수와 교점 개수 · 교사용</title>
+<script src="../../auth.js" data-classroom-protected></script>
+<link rel="stylesheet" href="../../../vendor/katex/katex.min.css"/>
+<link rel="stylesheet" href="../../../jp-math-typography.css?v=3"/>
+<link rel="stylesheet" href="../../../jp-dark.css?v=4"/>
+<link rel="stylesheet" href="../../../jp-polish.css?v=11"/>
+<script defer src="../../../vendor/katex/katex.min.js"></script>
+<script defer src="../../../jp-lab-dark.js?v=2"></script>
+<script defer src="../../../jp-deck.js"></script>
+<script defer src="../../../jp-polish.js?v=21"></script>
+<style>
+.teacher-em{font-size:clamp(28px,4vw,54px);font-weight:800;line-height:1.18;text-align:center;letter-spacing:-.05em}.answer-big{font-size:clamp(70px,12vw,150px);font-weight:900;color:#a95232;line-height:1;text-align:center}.compact-table td,.compact-table th{padding:9px 11px!important;text-align:center}
+.stair{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin:18px 0}.stair div{display:grid;place-items:center;gap:4px;min-height:92px;padding:10px;border:1px solid rgba(58,49,37,.14);border-radius:14px;background:#fff;text-align:center}.stair b{font:800 26px 'IBM Plex Mono',monospace;color:#2f6670}.stair small{font-size:11px;color:#6c6357}.stair .hot{border-color:rgba(169,82,50,.45);background:#fff4ed}.stair .hot b{color:#a95232}.stair .bad{border-style:dashed;background:#fbeeee}.stair .bad b{color:#a74444}
+.compare{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:stretch}.compare .case{padding:22px;border:1px solid rgba(58,49,37,.14);border-radius:19px;background:#fff}.compare .case h3{margin:12px 0 10px}.compare .versus{display:grid;place-items:center;color:#a95232;font:800 12px 'IBM Plex Mono',monospace}
+.tri{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.tcard{padding:19px;border:1px solid rgba(58,49,37,.14);border-radius:17px;background:#fff}.tcard.dead{opacity:.6;border-style:dashed}.tcard.live{border-color:rgba(71,116,84,.4);background:#f5faf6}.tcard h3{margin-bottom:9px}
+.note-strip{display:flex;align-items:flex-start;gap:13px;margin-top:18px;padding:15px 17px;border-left:4px solid #2f6670;border-radius:0 13px 13px 0;background:#eef6f5}.note-strip.warn{border-color:#a95232;background:#fff4ed}.note-strip .ic{flex:0 0 auto;color:#a95232;font:800 10px 'IBM Plex Mono',monospace}.note-strip p{margin:0}
+@media(max-width:720px){.compare,.tri{grid-template-columns:1fr}.compare .versus{min-height:18px}.stair{grid-template-columns:repeat(3,minmax(0,1fr))}}
+</style>
+</head>
+<body class="tpl-dark is-deck">
+<a class="jp-back-link teacher-back" href="../../">← 수업창고</a>
+<div class="deck">
+
+<section class="slide slide--title" data-title="문제와 만나기"><div class="s-body"><div class="title-layout">
+  <div><p class="eyebrow">2024학년도 수능 수학 14번 · 4점</p><h1 class="h1 anim-fade-up">교점을 세지 말고<br/><span class="am">g의 계단</span>을 그리자</h1><p class="lede">교점 개수 함수 g가 <b>머무는 구간</b>과 <b>바뀌는 순간</b>을 구별하고, “k가 하나”라는 조건을 포물선 최솟값 하나로 번역하는 수업입니다.</p><div class="pause">첫 90초는 말하지 않기</div></div>
+  <div class="card" style="margin-top:0"><div class="eq tight"><div class="eqrow"><span class="m md" data-k="f(x)=\begin{cases}2x^{3}-6x+1&(x\le2)\\a(x-2)(x-b)+9&(x\gt2)\end{cases}"></span></div></div><p><span class="m" data-k="g(t)"></span>: <span class="m" data-k="y=f(x)"></span>와 <span class="m" data-k="y=t"></span>의 교점 수 (<span class="m" data-k="a,b"></span> 자연수)</p><div class="eq tight"><div class="eqrow"><span class="m md" data-k="g(k)+\lim_{t\to k-}g(t)+\lim_{t\to k+}g(t)=9"></span></div></div><p>인 실수 <span class="m" data-k="k"></span>가 1개일 때</p><div class="eq tight hot"><div class="eqrow"><span class="m md am" data-k="(a+b)_{\max}=\;?"></span></div></div></div>
+</div></div><aside class="notes"><p><strong>권장 시간</strong> 45분 · 문제 읽기 4 / 조건의 뜻 7 / 왼쪽 조각 표 7 / 오른쪽 조각과 c 결정 13 / 검산 7 / 회수와 정리 7.</p><p><strong>학생용 짝 자료</strong>는 수능문제 &gt; 미적분1 &gt; 불연속 함수와 교점 개수 탐구실입니다. a, b, t 슬라이더와 g(t) 계단 그래프가 함께 움직입니다.</p><p>처음 90초 동안 “극한 세 개를 더한 식이 무엇을 묻는지”만 한 줄로 적게 하세요.</p></aside></section>
+
+<section class="slide" data-title="수업의 지도"><div class="s-head"><p class="eyebrow">전체 지도</p><h2 class="ct">네 개의 <span class="am">번역</span>을 통과한다</h2></div><div class="s-body"><div class="grid4 anim-stagger-list">
+  <div class="card accent"><span class="tag">GATE 1</span><h4>합 = 9</h4><p>일정한 구간에서는 합 = 3g → <b>g=3 구간 금지</b></p></div>
+  <div class="card accent"><span class="tag">GATE 2</span><h4>왼쪽 조각</h4><p>교점 수 1 · 2 · 3 · 2 · 0 (경계 −3, 5)</p></div>
+  <div class="card accent"><span class="tag">GATE 3</span><h4>오른쪽 조각</h4><p>빈 점 9, 최솟값 <span class="m" data-k="c"></span>가 <span class="m" data-k="-3"></span>에 정확히</p></div>
+  <div class="card accent"><span class="tag">GATE 4</span><h4>회수</h4><p><span class="m" data-k="a(b-2)^{2}=48"></span> → 후보 셋</p></div>
+</div><div class="card quote"><p><b>수업의 한 문장.</b> “k가 하나”는 <b class="am">g가 3으로 머무는 구간이 없다</b>는 뜻이고, 그 구간을 양쪽에서 막는 방법은 포물선 바닥을 −3에 맞추는 것뿐이다.</p></div></div><div class="s-ask"><p class="question">좌극한·우극한이 들어간 조건인데, 왜 g가 “일정한 곳”부터 봐야 할까?</p></div><aside class="notes"><p>대부분 불연속점(g가 바뀌는 점)만 계산하려 합니다. 일정한 구간이 오히려 “무수히 많은 k”를 만드는 위험 지대라는 반전을 먼저 보여 주세요.</p></aside></section>
+
+<section class="slide" data-title="GATE 1 · 합이 9"><div class="s-head"><p class="eyebrow">GATE 1</p><h2 class="ct">g가 머무는 곳에서는 <span class="am">합 = 3g</span></h2></div><div class="s-body"><div class="compare">
+  <div class="case"><span class="tag">g가 일정한 구간 안</span><h3><span class="m" data-k="g(k^-)=g(k)=g(k^+)"></span></h3><p>합은 <span class="m" data-k="3g(k)"></span>. <span class="m" data-k="g=3"></span>인 구간이 있으면 그 안의 <b>모든 k</b>가 조건을 만족 → k가 무수히 많다.</p></div><div class="versus">VS</div>
+  <div class="case"><span class="tag gr">g가 바뀌는 순간</span><h3>세 값이 다를 수 있음</h3><p>좌·우 계단 높이와 그 점의 값을 따로 더합니다. <b>답이 되는 k는 이런 점</b>이어야 합니다.</p></div>
+</div><div class="note-strip"><span class="ic">KEY</span><p>조건 = ① g=3인 구간이 없다 ② 바뀌는 점 중 합이 9인 곳이 딱 하나.</p></div></div><div class="s-ask"><p class="question">g가 1, 2, 3처럼 정수만 갖는데 합이 9가 되는 경우를 몇 가지 적어 볼 수 있을까?</p></div><aside class="notes"><p>(3,3,3) 외에 (1,3,5), (2,3,4), (4,1,4) 등 조합이 가능하다는 것을 적게 하면 “바뀌는 점”을 계산해야 하는 이유가 선명해집니다.</p></aside></section>
+
+<section class="slide" data-title="GATE 2 · 왼쪽 조각"><div class="s-head"><p class="eyebrow">GATE 2</p><h2 class="ct">고정된 삼차함수부터 <span class="am">표로</span> 정리한다</h2></div><div class="s-body"><div class="grid2">
+  <div class="card"><h4>극값과 끝점</h4><div class="eq tight"><div class="eqrow"><span class="m md" data-k="f'(x)=6(x+1)(x-1)"></span></div></div><p><span class="m" data-k="f(-1)=5,\;f(1)=-3,\;f(2)=5"></span></p></div>
+  <div class="card"><h4>접하는 곳의 인수분해</h4><p><span class="m" data-k="t=5"></span>: <span class="m" data-k="2(x+1)^{2}(x-2)=0"></span> → 점 2개<br/><span class="m" data-k="t=-3"></span>: <span class="m" data-k="2(x-1)^{2}(x+2)=0"></span> → 점 2개</p></div>
+</div><div class="stair"><div><small>t &lt; −3</small><b>1</b></div><div><small>t = −3</small><b>2</b></div><div class="bad"><small>−3 &lt; t &lt; 5</small><b>3</b></div><div><small>t = 5</small><b>2</b></div><div><small>t &gt; 5</small><b>0</b></div><div><small>(x ≤ 2만)</small><b>—</b></div></div><div class="note-strip warn"><span class="ic">ALERT</span><p>왼쪽만으로 <b>−3 &lt; t &lt; 5에서 3</b>. 오른쪽이 이 구간 전체에 교점을 보태야 합니다.</p></div></div><div class="s-ask"><p class="question">t=5에서 왼쪽 교점이 3개가 아니라 2개인 이유를 그래프로 설명해 보자.</p></div><aside class="notes"><p><strong>오개념</strong>: 끝점 x=2의 값 5를 놓쳐 t=5에서 1개로 세거나, 극대에 접하는 점을 2개로 셉니다. 인수분해 (x+1)²(x−2)로 “−1과 2 두 점”을 확인시키세요.</p></aside></section>
+
+<section class="slide" data-title="GATE 3 · 오른쪽 조각"><div class="s-head"><p class="eyebrow">GATE 3</p><h2 class="ct">x=2의 <span class="am">빈 점 9</span>와 포물선의 바닥 <span class="m am" data-k="c"></span></h2></div><div class="s-body"><div class="compare">
+  <div class="case"><span class="tag rd">b ≤ 2</span><h3>계속 증가</h3><p><span class="m" data-k="x\gt2"></span>에서 값은 9보다 큰 쪽뿐. −3 &lt; t &lt; 5에 교점을 못 보태 <b>g=3 구간</b>이 남아 탈락.</p></div><div class="versus">VS</div>
+  <div class="case"><span class="tag gr">b &gt; 2</span><h3>9에서 내려갔다 올라옴</h3><div class="eq tight"><div class="eqrow"><span class="m md" data-k="c=9-\frac{a(b-2)^{2}}{4}"></span></div></div><p>교점: <span class="m" data-k="c\lt t\lt9"></span> 2개, <span class="m" data-k="t=c"></span> 1개, <span class="m" data-k="t\ge9"></span> 1개</p></div>
+</div><div class="note-strip warn"><span class="ic">TRAP</span><p><span class="m" data-k="t=9"></span>에서 <span class="m" data-k="a(x-2)(x-b)=0"></span>의 해 중 <span class="m" data-k="x=2"></span>는 <b>오른쪽 조각에 없습니다</b>. 교점은 <span class="m" data-k="x=b"></span> 하나.</p></div></div><div class="s-ask"><p class="question">f(2)는 5일까, 9일까? 그래프에서 어느 점을 칠하고 어느 점을 비워야 할까?</p></div><aside class="notes"><p>칠판에 (2,5)는 채운 점, (2,9)는 빈 점으로 그리게 하세요. t=9에서 2개로 세는 실수가 가장 흔합니다. 학생용 실험실의 빈 원 표시를 함께 보여 주면 좋습니다.</p></aside></section>
+
+<section class="slide" data-title="c의 위치 결정"><div class="s-head"><p class="eyebrow">핵심</p><h2 class="ct">바닥이 위여도 아래여도 <span class="am">g=3 띠</span>가 생긴다</h2></div><div class="s-body"><div class="tri">
+  <div class="tcard dead"><h3><span class="tag rd">탈락</span><span class="m" data-k="c\gt-3"></span></h3><p><span class="m" data-k="-3\lt t\lt\min(c,5)"></span>: 왼쪽 3 + 오른쪽 0 = <b>3</b></p></div>
+  <div class="tcard dead"><h3><span class="tag rd">탈락</span><span class="m" data-k="c\lt-3"></span></h3><p><span class="m" data-k="c\lt t\lt-3"></span>: 왼쪽 1 + 오른쪽 2 = <b>3</b></p></div>
+  <div class="tcard live"><h3><span class="tag gr">생존</span><span class="m" data-k="c=-3"></span></h3><p>두 띠가 동시에 사라진다</p></div>
+</div><p class="teacher-em" style="margin-top:22px"><span class="m" data-k="9-\frac{a(b-2)^{2}}{4}=-3"></span></p></div><div class="s-ask"><p class="question">바닥을 −3보다 조금만 내리면 어느 띠에서 g=3이 생길까? 손으로 직선을 움직여 보자.</p></div><aside class="notes"><p>이 수업의 절정입니다. 한쪽 경우만 따지고 “c ≤ −3”이라고 결론 내는 학생이 많습니다. 학생용 실험실에서 b=5, a=4·5·6을 차례로 넣으면 붉은 띠가 위(−3 위쪽)와 아래(−3 아래쪽)에 번갈아 생기는 모습을 보여 줄 수 있습니다.</p></aside></section>
+
+<section class="slide" data-title="검산 · 계단표"><div class="s-head"><p class="eyebrow">검산</p><h2 class="ct"><span class="m am" data-k="c=-3"></span>이면 k는 <span class="am">정말 하나</span>인가</h2></div><div class="s-body"><div class="stair"><div><small>t &lt; −3</small><b>1</b></div><div class="hot"><small>t = −3</small><b>3</b></div><div><small>−3 &lt; t &lt; 5</small><b>5</b></div><div><small>t = 5</small><b>4</b></div><div><small>5 &lt; t &lt; 9</small><b>2</b></div><div><small>t ≥ 9</small><b>1</b></div></div><table class="tb compact-table"><tr><th>k</th><th>좌 + 값 + 우</th><th>합</th></tr><tr><td class="yes">−3</td><td>1 + 3 + 5</td><td class="yes">9 ✓</td></tr><tr><td>5</td><td>5 + 4 + 2</td><td>11</td></tr><tr><td>9</td><td>2 + 1 + 1</td><td>4</td></tr><tr><td>나머지</td><td>일정 구간 3g</td><td>3 · 15 · 6 · 3</td></tr></table></div><div class="s-ask"><p class="question">필요조건 c=−3을 찾은 뒤 이 검산을 생략하면 어떤 위험이 있을까?</p></div><aside class="notes"><p>필요조건과 충분조건의 구분을 짧게 짚으세요. c=−3에서 t=5 쪽 합이 우연히 9가 되었다면 답이 없어졌을 것입니다. 표 한 줄씩 학생이 채우게 하세요.</p></aside></section>
+
+<section class="slide" data-title="회수"><div class="s-head"><p class="eyebrow">회수</p><h2 class="ct">자연수 조건이 <span class="am">후보 셋</span>을 남긴다</h2></div><div class="s-body"><div class="eq hot"><div class="eqrow"><span class="m md" data-k="a(b-2)^{2}=48,\qquad b\ge3"></span></div></div><div class="tri">
+  <div class="tcard live"><h3><span class="m" data-k="(b-2)^{2}=1"></span></h3><p><span class="m" data-k="b=3,\;a=48"></span> → <b class="am">51</b></p></div>
+  <div class="tcard"><h3><span class="m" data-k="(b-2)^{2}=4"></span></h3><p><span class="m" data-k="b=4,\;a=12"></span> → 16</p></div>
+  <div class="tcard"><h3><span class="m" data-k="(b-2)^{2}=16"></span></h3><p><span class="m" data-k="b=6,\;a=3"></span> → 9</p></div>
+</div><div class="answer-big">51</div></div><div class="s-ask"><p class="question">48의 약수 중 제곱수를 빠짐없이 찾는 방법은?</p></div><aside class="notes"><p>정답은 ① 51. 48=2⁴·3이므로 제곱수 약수는 1, 4, 16뿐입니다. 선택지가 51~55로 촘촘해 계산 실수보다 “후보를 빠뜨렸는지”가 점수를 가릅니다.</p></aside></section>
+
+<section class="slide" data-title="오개념 점검"><div class="s-head"><p class="eyebrow">교사 체크</p><h2 class="ct">학생이 자주 멈추는 <span class="am">네 지점</span></h2></div><div class="s-body"><table class="tb compact-table"><tr><th>멈춤</th><th>학생 반응</th><th>되묻기</th></tr>
+  <tr><td>조건의 뜻</td><td>불연속점만 계산</td><td>“g가 일정한 곳에서 합은 얼마지?”</td></tr>
+  <tr><td>빈 점</td><td>t=9에서 오른쪽 2개</td><td>“x=2는 어느 식에 속하지?”</td></tr>
+  <tr><td>한쪽만 막기</td><td>c ≤ −3으로 결론</td><td>“c=−4면 −4와 −3 사이 g는?”</td></tr>
+  <tr><td>검산 생략</td><td>c=−3에서 바로 계산</td><td>“k=5, 9에서 합을 확인했나?”</td></tr>
+</table><div class="note-strip"><span class="ic">ORDER</span><p><b>뜻 번역 → 고정 조각 표 → 움직이는 조각 → 양쪽 막기 → 검산</b> 순서를 지키면 발문이 정답 전달로 바뀌지 않습니다.</p></div></div><div class="s-ask"><p class="question">우리 반에서는 네 지점 중 어디에서 가장 많이 멈출까?</p></div><aside class="notes"><p>한쪽만 막는 오류가 많다면 수직선에 −3을 찍고 c를 위·아래로 옮기며 “생기는 띠”를 색칠하는 활동을 추가하세요.</p></aside></section>
+
+<section class="slide" data-title="사고의 뼈대"><div class="s-head"><p class="eyebrow">수업의 결론</p><h2 class="ct">오늘 쓴 <span class="am">다섯 가지 사고</span></h2></div><div class="s-body"><div class="grid2 anim-stagger-list">
+  <div class="card accent"><h4>① 머무는 곳 보기</h4><p>일정 구간의 합은 3g. g=3 구간이 k를 무수히 만든다.</p></div><div class="card accent"><h4>② 고정 조각 먼저</h4><p>왼쪽 삼차함수의 교점 수 1·2·3·2·0을 표로 만들었다.</p></div><div class="card accent"><h4>③ 빈 점 지키기</h4><p>x=2는 왼쪽 조각. 오른쪽은 9로 다가갈 뿐이다.</p></div><div class="card accent"><h4>④ 양쪽에서 막기</h4><p>바닥이 위도 아래도 안 되니 정확히 −3.</p></div>
+</div><div class="card quote"><p><b>⑤ 검산 후 회수</b> — 계단표로 k가 하나임을 확인하고 a(b−2)²=48을 풀었다. <b class="am">답은 ① 51.</b></p></div></div><aside class="notes"><p>퇴장 질문: “합이 9 대신 7이었다면 어떤 계단 조합을 찾아야 할까?” 계산 없이 g=7/3 구간은 불가능하다는 점과 바뀌는 점의 조합만 말하게 하세요.</p></aside></section>
+
+</div>
+<div class="deck-chrome"><div class="chrome-left"><span class="idx"><b id="cNow">1</b> / <span id="cTot">10</span></span><span class="sep"></span><span class="chap" id="chapLabel"></span></div><div class="chrome-right"><div class="kbd-help">← → 이동 · N 교사 노트 · S 교사용 창 · F 전체화면 · O 한눈에 보기</div><div aria-label="슬라이드 조작" class="touch-nav"><button aria-label="이전 슬라이드" id="touchPrev" type="button">‹</button><button id="touchNotes" type="button">교사 노트</button><button aria-label="다음 슬라이드" id="touchNext" type="button">›</button></div></div></div>
+</body>
+</html>

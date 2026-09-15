@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow,noarchive"/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<title>2024 수능 수학 14번 | 불연속 함수와 교점 개수 탐구실</title>
+<link rel="stylesheet" href="../../vendor/katex/katex.min.css"/>
+<link rel="stylesheet" href="../../jp-dark.css?v=4"/>
+<link rel="stylesheet" href="../../jp-polish.css?v=11"/>
+<script defer src="../../vendor/katex/katex.min.js"></script>
+<script defer src="../../jp-lab-dark.js?v=2"></script>
+<script defer src="../../jp-polish.js?v=21"></script>
+<link rel="stylesheet" href="../../jp-nav-2.css?v=3"/>
+<script src="../../jp-nav-2.js?v=6" data-jp-section="수능·킬러 문제" defer></script>
+<style>
+.cnt-lab{margin:22px 0;border:1px solid rgba(47,102,112,.2);border-radius:24px;overflow:hidden;background:#fff}.cnt-lab-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:17px 20px;border-bottom:1px solid rgba(58,49,37,.12)}.cnt-lab-head h4{margin:0;font-size:18px}.cnt-lab-head span{color:#2f6670;font:700 10px 'IBM Plex Mono',monospace;letter-spacing:.08em}.cnt-lab-body{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(260px,.72fr)}.cnt-stage{display:grid;gap:8px;align-content:center;padding:16px;background:linear-gradient(145deg,#fbfaf6,#f4efe4)}.cnt-stage svg{display:block;width:100%;height:auto}.cnt-panel{padding:20px;border-left:1px solid rgba(58,49,37,.12)}.cnt-control{margin-bottom:14px}.cnt-control label{display:flex;justify-content:space-between;gap:12px;margin-bottom:6px;color:#5f574b;font-size:12px}.cnt-control label b{color:#a95232;font-family:'IBM Plex Mono',monospace}.cnt-control input{width:100%;accent-color:#a95232}.snap{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 12px}.snap button{padding:5px 9px;border:1px solid rgba(58,49,37,.2);border-radius:999px;background:#fff;font:700 11px 'IBM Plex Mono',monospace;color:#5f574b;cursor:pointer}.snap button:hover{border-color:#a95232;color:#a95232}.cnt-row{display:flex;justify-content:space-between;gap:12px;margin-top:8px;padding:9px 11px;border-radius:11px;background:#f6f2e9;font-size:12px}.cnt-row b{color:#2f6670;font-family:'IBM Plex Mono',monospace;text-align:right}.verdict{display:grid;place-items:center;min-height:74px;margin-top:12px;padding:10px;border-radius:15px;color:#fff;background:#8a3d3d;text-align:center}.verdict strong{display:block;font:700 19px 'Pretendard',sans-serif}.verdict span{font-size:11px;color:rgba(255,255,255,.8)}.verdict.ok{background:#477454;box-shadow:0 0 0 4px rgba(71,116,84,.12)}.verdict.mid{background:#6c6357}.cnt-hint{margin:10px 0 0;color:#776e61;font-size:11.5px;line-height:1.6}
+.prob .eqrow{overflow-x:auto}.choice{min-height:48px}.choice.chosen{border-color:#2f6670!important;background:#eef6f5!important;box-shadow:0 0 0 3px rgba(47,102,112,.1)}
+.gtable{width:100%;border-collapse:collapse;margin-top:14px;font-size:13px}.gtable th,.gtable td{padding:8px 6px;border-bottom:1px solid rgba(58,49,37,.12);text-align:center}.gtable td.hot{color:#a95232;font-weight:800}.gtable tr.key td{background:#fff3e8}
+.mini-answer{font-size:clamp(46px,8vw,84px);font-weight:800;color:#a95232;text-align:center;letter-spacing:-.06em}.reveal-note{margin-top:12px;color:#6b6256;font-size:13px;text-align:center}
+@media(max-width:800px){.cnt-lab-body{grid-template-columns:1fr}.cnt-panel{border-top:1px solid rgba(58,49,37,.12);border-left:0}.cnt-stage{padding:8px}}
+@media(max-width:650px){.cnt-row{flex-direction:column;align-items:flex-start}.cnt-row b{text-align:left}.gtable{font-size:11.5px}}
+</style>
+</head>
+<body class="tpl-dark is-page">
+
+<header>
+  <div class="hbar">
+    <h1>불연속 함수와 교점 개수 탐구실</h1>
+    <span class="src">2024학년도 수능 수학 <b>14번</b> · 4점</span>
+    <a class="back" href="../">← 수능 문제</a>
+  </div>
+  <nav id="nav"></nav>
+  <div class="pbar"><span id="pfill"></span></div>
+</header>
+
+<main>
+
+<!-- ══════════ STEP 1 ══════════ -->
+<section class="ch on" data-ch="0">
+  <p class="eyebrow">STEP 01 · 문제 만나기</p>
+  <h2 class="ct">교점 개수를 <span class="am">함수 g로 그려</span> 읽는 문제</h2>
+  <p class="lede">직선 <span class="m" data-k="y=t"></span>를 위아래로 움직이면 교점 개수 <span class="m" data-k="g(t)"></span>가 바뀝니다. 오늘은 <b>g가 바뀌는 순간</b>과 <b>g가 머무는 구간</b>을 구별하는 연습을 합니다.</p>
+  <div class="prob">
+    <div class="prob-head"><span class="yr">2024 수능</span><h4>수학 14번</h4><span class="pts">4점</span></div>
+    <div class="prob-body">
+      <div class="qtext">
+        <p>두 자연수 <span class="m" data-k="a,\,b"></span>에 대하여 함수 <span class="m" data-k="f(x)"></span>는</p>
+        <div class="eq"><div class="eqrow"><span class="m md" data-k="f(x)=\begin{cases}2x^{3}-6x+1 & (x\le2)\\[2pt] a(x-2)(x-b)+9 & (x\gt2)\end{cases}"></span></div></div>
+        <p>이다. 실수 <span class="m" data-k="t"></span>에 대하여 함수 <span class="m" data-k="y=f(x)"></span>의 그래프와 직선 <span class="m" data-k="y=t"></span>가 만나는 점의 개수를 <span class="m" data-k="g(t)"></span>라 하자.</p>
+        <div class="eq"><div class="eqrow"><span class="m md am" data-k="g(k)+\lim_{t\to k-}g(t)+\lim_{t\to k+}g(t)=9"></span></div></div>
+        <p>를 만족시키는 실수 <span class="m" data-k="k"></span>의 개수가 1이 되도록 하는 두 자연수 <span class="m" data-k="a,\,b"></span>의 순서쌍 <span class="m" data-k="(a,b)"></span>에 대하여 <span class="m am" data-k="a+b"></span>의 최댓값은?</p>
+      </div>
+      <div class="choices" data-q="first" data-ans="0" data-mode="record">
+        <button class="choice" data-i="0">① 51</button><button class="choice" data-i="1">② 52</button><button class="choice" data-i="2">③ 53</button><button class="choice" data-i="3">④ 54</button><button class="choice" data-i="4">⑤ 55</button>
+      </div>
+      <p class="hintline" style="margin-top:12px">처음 답은 기록만 해 두세요. 마지막에 다시 선택해 봅니다.</p>
+    </div>
+  </div>
+
+  <div class="prob">
+    <div class="prob-head"><span class="yr">첫 질문</span><h4>g가 k 근처에서 변하지 않는다면?</h4></div>
+    <div class="prob-body">
+      <div class="qtext"><p><span class="m" data-k="k"></span>를 포함한 어떤 구간에서 <span class="m" data-k="g(t)=3"></span>으로 일정하다고 합시다. 그 구간 안의 <span class="m" data-k="k"></span>는 조건을 만족할까요?</p></div>
+      <div class="choices" data-q="flat" data-ans="1">
+        <button class="choice" data-i="0">좌극한과 우극한이 없으니 만족하지 않는다</button>
+        <button class="choice" data-i="1"><span class="m" data-k="3+3+3=9"></span>이므로 구간 안의 모든 k가 만족한다</button>
+        <button class="choice" data-i="2">구간의 끝점 하나만 만족한다</button>
+      </div>
+      <div class="sol-btns">
+        <button class="b mute" data-sol="h1">힌트</button>
+        <button class="b cy gh" data-sol="l1">논리로 쓰기</button>
+      </div>
+      <div class="sol hintbox" id="h1"><h5>HINT</h5><p>값이 일정한 함수의 좌극한·우극한은 그 일정한 값입니다.</p></div>
+      <div class="sol logi" id="l1"><h5>논리</h5>
+        <div class="step">g가 k 근처에서 일정하면 세 값이 모두 <span class="m" data-k="g(k)"></span>이므로 합은 <span class="m" data-k="3g(k)"></span>.</div>
+        <div class="step"><span class="m" data-k="3g(k)=9"></span> ⇔ <span class="m" data-k="g(k)=3"></span>. 그런 구간이 있으면 <b>k가 무수히 많아집니다</b>.</div>
+        <div class="ans"><span class="lbl">번역</span>“k가 딱 하나” ⇒ <b class="am">g(t)=3인 구간이 있으면 안 된다</b>. 답이 될 k는 <b>g가 바뀌는 순간</b>에서 찾는다.</div>
+      </div>
+    </div>
+  </div>
+  <div class="chnav"><span class="sp"></span><button class="b" data-go="next">왼쪽 그래프 읽기 →</button></div>
+</section>
+
+<!-- ══════════ STEP 2 ══════════ -->
+<section class="ch" data-ch="1">
+  <p class="eyebrow">STEP 02 · 두 조각 읽기</p>
+  <h2 class="ct">왼쪽은 <span class="am">고정</span>, 오른쪽은 <span class="am">a, b에 따라</span> 움직인다</h2>
+  <p class="lede">왼쪽 삼차함수는 a, b와 상관없이 늘 같은 모양입니다. 먼저 왼쪽이 만드는 교점 개수를 표로 정리합니다.</p>
+
+  <div class="grid2">
+    <div class="card"><h4>왼쪽 <span class="m" data-k="x\le2"></span></h4><div class="eq tight"><div class="eqrow"><span class="m md" data-k="f'(x)=6x^{2}-6=6(x+1)(x-1)"></span></div></div><p>극댓값 <span class="m am" data-k="f(-1)=5"></span>, 극솟값 <span class="m am" data-k="f(1)=-3"></span>, 끝점 <span class="m am" data-k="f(2)=5"></span>.</p></div>
+    <div class="card"><h4>오른쪽 <span class="m" data-k="x\gt2"></span></h4><p>아래로 볼록한 포물선. <span class="m" data-k="x\to2+"></span>이면 <span class="m am" data-k="9"></span>로 가지만 <span class="m" data-k="x=2"></span>는 포함하지 않으므로 <b>빈 점</b>입니다.</p><div class="eq tight"><div class="eqrow"><span class="m md" data-k="f(2)=5\ne\lim_{x\to2+}f(x)=9"></span></div></div></div>
+  </div>
+
+  <div class="prob">
+    <div class="prob-head"><span class="yr">표 채우기</span><h4>왼쪽 조각과 직선 <span class="m" data-k="y=t"></span>의 교점 수</h4></div>
+    <div class="prob-body">
+      <table class="gtable">
+        <tr><th><span class="m" data-k="t\lt-3"></span></th><th><span class="m" data-k="t=-3"></span></th><th><span class="m" data-k="-3\lt t\lt5"></span></th><th><span class="m" data-k="t=5"></span></th><th><span class="m" data-k="t\gt5"></span></th></tr>
+        <tr><td>1</td><td>2</td><td class="hot">3</td><td>2</td><td>0</td></tr>
+      </table>
+      <div class="qtext" style="margin-top:16px"><p>왼쪽 조각만 있다면 조건을 만족하는 k는 몇 개일까요?</p></div>
+      <div class="choices" data-q="leftonly" data-ans="2">
+        <button class="choice" data-i="0">0개</button><button class="choice" data-i="1">1개</button><button class="choice" data-i="2">무수히 많다</button>
+      </div>
+      <div class="sol-btns"><button class="b cy gh" data-sol="l2">논리로 쓰기</button></div>
+      <div class="sol logi" id="l2"><h5>논리</h5>
+        <div class="step"><span class="m" data-k="-3\lt t\lt5"></span>에서 왼쪽만으로 교점이 3개입니다. 오른쪽이 이 구간에서 교점을 보태지 않으면 <span class="m" data-k="g=3"></span>인 구간이 생깁니다.</div>
+        <div class="ans"><span class="lbl">요구</span>오른쪽 포물선이 <b class="am"><span class="m" data-k="-3\lt t\lt5"></span> 전체에서 교점을 만들어야</b> 합니다.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cnt-lab">
+    <div class="cnt-lab-head"><h4>직선 <span class="m" data-k="y=t"></span>를 움직이며 g 세기</h4><span>MOVE · COUNT · SUM</span></div>
+    <div class="cnt-lab-body">
+      <div class="cnt-stage"><svg id="fSvg" viewBox="0 0 760 340" role="img" aria-label="함수 f의 그래프와 직선 y=t"></svg><svg id="gSvg" viewBox="0 0 760 150" role="img" aria-label="t에 따른 g(t)의 계단 그래프"></svg></div>
+      <div class="cnt-panel">
+        <div class="cnt-control"><label for="inA"><span>자연수 <span class="m" data-k="a"></span></span><b id="outA"></b></label><input id="inA" type="range" min="1" max="60" step="1" value="4"/></div>
+        <div class="cnt-control"><label for="inB"><span>자연수 <span class="m" data-k="b"></span></span><b id="outB"></b></label><input id="inB" type="range" min="1" max="10" step="1" value="5"/></div>
+        <div class="cnt-control"><label for="inT"><span>직선 <span class="m" data-k="y=t"></span></span><b id="outT"></b></label><input id="inT" type="range" min="-8" max="14" step="0.25" value="0"/></div>
+        <div class="snap" id="snap"></div>
+        <div class="cnt-row"><span>오른쪽 최솟값 <span class="m" data-k="c"></span></span><b id="outC"></b></div>
+        <div class="cnt-row"><span><span class="m" data-k="g(t^-),\,g(t),\,g(t^+)"></span></span><b id="outG"></b></div>
+        <div class="cnt-row"><span>합이 9인 k</span><b id="outK"></b></div>
+        <div class="verdict" id="verdict"><div><strong>—</strong><span></span></div></div>
+        <p class="cnt-hint">아래 계단 그래프에서 <b style="color:#a74444">붉은 구간</b>은 g=3이 계속되는 곳(k가 무수히 많음), 초록 고리는 합이 9인 k입니다.</p>
+      </div>
+    </div>
+  </div>
+  <div class="chnav"><button class="b mute" data-go="prev">← 이전</button><span class="sp"></span><button class="b" data-go="next">오른쪽 포물선의 역할 →</button></div>
+</section>
+
+<!-- ══════════ STEP 3 ══════════ -->
+<section class="ch" data-ch="2">
+  <p class="eyebrow">STEP 03 · 오른쪽 조각</p>
+  <h2 class="ct">포물선이 <span class="am">아래로 내려와야</span> 한다</h2>
+  <p class="lede">오른쪽 포물선의 꼭짓점은 <span class="m" data-k="x=\tfrac{2+b}{2}"></span>. <span class="m" data-k="b"></span>에 따라 모양이 둘로 나뉩니다.</p>
+
+  <div class="grid2">
+    <div class="card"><span class="tag rd">b ≤ 2</span><h4 style="margin-top:10px">꼭짓점이 <span class="m" data-k="x\le2"></span></h4><p><span class="m" data-k="x\gt2"></span>에서 계속 증가: 값은 9보다 큰 쪽뿐. <span class="m" data-k="-3\lt t\lt5"></span>에 교점을 보태지 못해 <b class="rd">g=3 구간</b>이 남습니다.</p></div>
+    <div class="card"><span class="tag gr">b &gt; 2</span><h4 style="margin-top:10px">9에서 내려갔다 올라옴</h4><div class="eq tight"><div class="eqrow"><span class="m md" data-k="c=f\!\left(\tfrac{2+b}{2}\right)=9-\frac{a(b-2)^{2}}{4}"></span></div></div><p><span class="m" data-k="c\lt t\lt9"></span>에서 교점 2개, <span class="m" data-k="t=c"></span>에서 1개, <span class="m" data-k="t=9"></span>에서는 <span class="m" data-k="x=b"></span> 하나.</p></div>
+  </div>
+
+  <div class="prob">
+    <div class="prob-head"><span class="yr">함정</span><h4><span class="m" data-k="t=9"></span>일 때 오른쪽 교점은 몇 개?</h4></div>
+    <div class="prob-body">
+      <div class="qtext"><p><span class="m" data-k="a(x-2)(x-b)+9=9"></span>의 해는 <span class="m" data-k="x=2,\;x=b"></span>입니다. <span class="m" data-k="b\gt2"></span>일 때 오른쪽 조각의 교점은?</p></div>
+      <div class="choices" data-q="nine" data-ans="0">
+        <button class="choice" data-i="0">1개 (<span class="m" data-k="x=2"></span>는 오른쪽 조각에 없다)</button>
+        <button class="choice" data-i="1">2개</button>
+        <button class="choice" data-i="2">0개</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="prob">
+    <div class="prob-head"><span class="yr">결정</span><h4>최솟값 <span class="m" data-k="c"></span>는 어디에 있어야 할까?</h4></div>
+    <div class="prob-body">
+      <div class="qtext"><p>왼쪽이 만든 교점 수(1, 2, 3, 2, 0)에 오른쪽이 보태는 교점 수를 더합니다. <b>g=3인 구간</b>이 하나도 없으려면?</p></div>
+      <div class="choices" data-q="cpos" data-ans="2">
+        <button class="choice" data-i="0"><span class="m" data-k="c\lt-3"></span></button>
+        <button class="choice" data-i="1"><span class="m" data-k="-3\lt c\lt5"></span></button>
+        <button class="choice" data-i="2"><span class="m" data-k="c=-3"></span></button>
+        <button class="choice" data-i="3"><span class="m" data-k="c\ge5"></span></button>
+      </div>
+      <div class="sol-btns">
+        <button class="b mute" data-sol="h3">힌트</button>
+        <button class="b gh" data-sol="i3">직관으로 보기</button>
+        <button class="b cy gh" data-sol="l3">논리로 쓰기</button>
+      </div>
+      <div class="sol hintbox" id="h3"><h5>HINT</h5><p>실험실에서 b=5로 두고 a를 4 → 5 → 6으로 바꿔 보세요. 붉은 구간이 어디에 생기나요?</p></div>
+      <div class="sol intu" id="i3"><h5>직관</h5>
+        <div class="step">포물선 바닥이 <b>−3보다 위</b>에 있으면, −3 바로 위 좁은 띠에서 오른쪽 교점이 0 → 왼쪽 3개만 남습니다.</div>
+        <div class="step">바닥이 <b>−3보다 아래</b>에 있으면, 바닥과 −3 사이 띠에서 왼쪽 1개 + 오른쪽 2개 = 3개가 됩니다.</div>
+        <div class="step">두 띠를 모두 없애는 방법은 <b class="am">바닥을 정확히 −3에 맞추는 것</b>뿐입니다.</div>
+      </div>
+      <div class="sol logi" id="l3"><h5>논리</h5>
+        <div class="step"><span class="m" data-k="c\ge5"></span> 또는 <span class="m" data-k="-3\lt c\lt5"></span>: <span class="m" data-k="-3\lt t\lt\min(c,5)"></span>에서 <span class="m" data-k="g=3+0=3"></span>. 불가.</div>
+        <div class="step"><span class="m" data-k="c\lt-3"></span>: <span class="m" data-k="c\lt t\lt-3"></span>에서 <span class="m" data-k="g=1+2=3"></span>. 불가.</div>
+        <div class="ans"><span class="lbl">결론</span><span class="m am" data-k="c=-3"></span></div>
+      </div>
+    </div>
+  </div>
+  <div class="chnav"><button class="b mute" data-go="prev">← 이전</button><span class="sp"></span><button class="b" data-go="next">k가 정말 하나인지 확인 →</button></div>
+</section>
+
+<!-- ══════════ STEP 4 ══════════ -->
+<section class="ch" data-ch="3">
+  <p class="eyebrow">STEP 04 · 검산</p>
+  <h2 class="ct"><span class="m am" data-k="c=-3"></span>일 때 <span class="am">g의 계단</span>을 모두 적기</h2>
+  <p class="lede">필요조건만 찾고 끝내면 안 됩니다. <span class="m" data-k="c=-3"></span>일 때 합이 9인 k가 <b>정말 하나</b>인지 확인합니다.</p>
+  <div class="prob">
+    <div class="prob-head"><span class="yr">계단표</span><h4>왼쪽 + 오른쪽 = g</h4></div>
+    <div class="prob-body">
+      <table class="gtable">
+        <tr><th><span class="m" data-k="t"></span></th><th>왼쪽</th><th>오른쪽</th><th><span class="m" data-k="g(t)"></span></th></tr>
+        <tr><td><span class="m" data-k="t\lt-3"></span></td><td>1</td><td>0</td><td>1</td></tr>
+        <tr class="key"><td><span class="m" data-k="t=-3"></span></td><td>2</td><td>1</td><td class="hot">3</td></tr>
+        <tr><td><span class="m" data-k="-3\lt t\lt5"></span></td><td>3</td><td>2</td><td>5</td></tr>
+        <tr><td><span class="m" data-k="t=5"></span></td><td>2</td><td>2</td><td>4</td></tr>
+        <tr><td><span class="m" data-k="5\lt t\lt9"></span></td><td>0</td><td>2</td><td>2</td></tr>
+        <tr><td><span class="m" data-k="t\ge9"></span></td><td>0</td><td>1</td><td>1</td></tr>
+      </table>
+      <div class="qtext" style="margin-top:16px"><p>합이 9가 되는 k는?</p></div>
+      <div class="choices" data-q="which" data-ans="0">
+        <button class="choice" data-i="0"><span class="m" data-k="k=-3"></span> 하나</button>
+        <button class="choice" data-i="1"><span class="m" data-k="k=5"></span> 하나</button>
+        <button class="choice" data-i="2"><span class="m" data-k="k=-3,\;5"></span> 두 개</button>
+      </div>
+      <div class="sol-btns"><button class="b cy gh" data-sol="l4">논리로 쓰기</button></div>
+      <div class="sol logi" id="l4"><h5>논리</h5>
+        <div class="step"><span class="m" data-k="k=-3"></span>: <span class="m" data-k="3+1+5=9"></span> ✓</div>
+        <div class="step"><span class="m" data-k="k=5"></span>: <span class="m" data-k="4+5+2=11"></span>, <span class="m" data-k="k=9"></span>: <span class="m" data-k="1+2+1=4"></span></div>
+        <div class="step">일정한 구간의 g는 1, 5, 2, 1 — 3인 구간이 없습니다.</div>
+        <div class="ans"><span class="lbl">확인</span><span class="m" data-k="c=-3"></span>이면 k는 <span class="m am" data-k="-3"></span> 하나. 필요충분.</div>
+      </div>
+    </div>
+  </div>
+  <div class="chnav"><button class="b mute" data-go="prev">← 이전</button><span class="sp"></span><button class="b" data-go="next">a+b의 최댓값 →</button></div>
+</section>
+
+<!-- ══════════ STEP 5 ══════════ -->
+<section class="ch" data-ch="4">
+  <p class="eyebrow">STEP 05 · 회수</p>
+  <h2 class="ct">자연수 조건이 <span class="am">후보를 셋</span>으로 줄인다</h2>
+  <div class="eq"><div class="eqrow"><span class="m md" data-k="9-\frac{a(b-2)^{2}}{4}=-3\quad\Longleftrightarrow\quad a(b-2)^{2}=48"></span></div></div>
+  <table class="gtable">
+    <tr><th><span class="m" data-k="(b-2)^{2}"></span></th><th><span class="m" data-k="b"></span></th><th><span class="m" data-k="a=48\div(b-2)^{2}"></span></th><th><span class="m" data-k="a+b"></span></th></tr>
+    <tr class="key"><td>1</td><td>3</td><td>48</td><td class="hot">51</td></tr>
+    <tr><td>4</td><td>4</td><td>12</td><td>16</td></tr>
+    <tr><td>16</td><td>6</td><td>3</td><td>9</td></tr>
+  </table>
+  <p class="hintline" style="margin-top:10px">48의 약수 중 제곱수는 1, 4, 16뿐입니다. <span class="m" data-k="b\gt2"></span>이므로 <span class="m" data-k="b-2\ge1"></span>.</p>
+
+  <div class="prob">
+    <div class="prob-head"><span class="yr">최종 선택</span><h4><span class="m" data-k="a+b"></span>의 최댓값</h4></div>
+    <div class="prob-body">
+      <div class="choices" data-q="final" data-ans="0">
+        <button class="choice" data-i="0">① 51</button><button class="choice" data-i="1">② 52</button><button class="choice" data-i="2">③ 53</button><button class="choice" data-i="3">④ 54</button><button class="choice" data-i="4">⑤ 55</button>
+      </div>
+      <div class="sol-btns"><button class="b gh" data-sol="finalSol">정답 확인</button></div>
+      <div class="sol intu" id="finalSol"><h5>마무리</h5><p class="mini-answer">51</p><p class="reveal-note">정답 ① · <span class="m" data-k="(a,b)=(48,3)"></span></p></div>
+    </div>
+  </div>
+
+  <div class="card quote pad"><h3>오늘 쓴 생각의 뼈대</h3><ul class="bul">
+    <li><b class="am">머무는 곳과 바뀌는 곳</b> — g가 일정한 구간에서는 합이 3g. 합이 9인 k가 하나이려면 g=3 구간이 없어야 한다.</li>
+    <li><b class="am">고정된 조각부터</b> — 왼쪽 삼차함수가 만드는 교점 수 1, 2, 3, 2, 0을 먼저 정리했다.</li>
+    <li><b class="am">빈 점 조심</b> — x=2에서 오른쪽 조각은 9로 다가가지만 그 점을 포함하지 않는다.</li>
+    <li><b class="am">양쪽에서 막기</b> — 바닥이 −3보다 위여도, 아래여도 g=3 띠가 생긴다. 그래서 정확히 −3.</li>
+    <li><b class="am">검산</b> — c=−3일 때 k=−3 하나뿐임을 계단표로 확인했다.</li>
+  </ul></div>
+  <div class="chnav"><button class="b mute" data-go="prev">← 이전</button><span class="sp"></span><button class="b gh" data-go="top">처음으로</button></div>
+</section>
+</main>
+
+<script>
+(function(){
+  'use strict';
+  var labels=['문제 만나기','두 조각 읽기','오른쪽 조각','검산','마지막 계산'];
+  var chs=[].slice.call(document.querySelectorAll('main > section.ch'));
+  var nav=document.getElementById('nav'),fill=document.getElementById('pfill'),cur=0;
+  labels.forEach(function(t,i){var b=document.createElement('button');b.className=i===0?'on':'';b.innerHTML='<span class="n">0'+(i+1)+'</span>'+t;b.addEventListener('click',function(){go(i);});nav.appendChild(b);});
+  var tabs=[].slice.call(nav.children);
+  function go(i){cur=Math.max(0,Math.min(chs.length-1,i));chs.forEach(function(s,j){s.classList.toggle('on',j===cur);});tabs.forEach(function(b,j){b.classList.toggle('on',j===cur);});fill.style.width=((cur+1)/chs.length*100)+'%';if(tabs[cur]&&tabs[cur].scrollIntoView)tabs[cur].scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});window.scrollTo({top:0,behavior:'smooth'});}go(0);
+  document.addEventListener('click',function(e){
+    var t=e.target.closest&&e.target.closest('[data-go]');if(t){var d=t.getAttribute('data-go');go(d==='next'?cur+1:d==='prev'?cur-1:0);return;}
+    var c=e.target.closest&&e.target.closest('.choice');if(c){var box=c.parentElement;if(box.getAttribute('data-mode')==='record'){box.querySelectorAll('.choice').forEach(function(x){x.classList.remove('chosen');});c.classList.add('chosen');return;}var ans=+box.getAttribute('data-ans'),ok=+c.getAttribute('data-i')===ans;box.querySelectorAll('.choice').forEach(function(x){x.classList.remove('right','wrong');});c.classList.add(ok?'right':'wrong');if(!ok){var right=box.querySelector('.choice[data-i="'+ans+'"]');setTimeout(function(){if(right)right.classList.add('right');},650);}return;}
+    var s=e.target.closest&&e.target.closest('[data-sol]');if(s){var el=document.getElementById(s.getAttribute('data-sol'));if(!el)return;var open=el.classList.toggle('on');s.style.opacity=open?'1':'';if(open&&window.JPDark)window.JPDark.texAll(el);}
+  });
+  document.addEventListener('keydown',function(e){if(/^(INPUT|TEXTAREA|BUTTON)$/.test(e.target.tagName||''))return;if(e.key==='ArrowRight')go(cur+1);if(e.key==='ArrowLeft')go(cur-1);});
+
+  /* ── 교점 개수 실험실 ──
+     왼쪽 2x^3-6x+1 (x<=2): 극대 f(-1)=5, 극소 f(1)=-3, f(2)=5
+     오른쪽 a(x-2)(x-b)+9 (x>2): b>2이면 최솟값 c=9-a(b-2)^2/4 */
+  var EPS=1e-9;
+  function near(u,v){return Math.abs(u-v)<EPS;}
+  function leftCount(t){if(t>5+EPS)return 0;if(near(t,5))return 2;if(t>-3+EPS)return 3;if(near(t,-3))return 2;return 1;}
+  function minC(a,b){return b>2?9-a*(b-2)*(b-2)/4:null;}
+  function rightCount(t,a,b){var c=minC(a,b);if(c===null)return t>9+EPS?1:0;if(t>9+EPS||near(t,9))return 1;if(t>c+EPS)return 2;if(near(t,c))return 1;return 0;}
+  function g(t,a,b){return leftCount(t)+rightCount(t,a,b);}
+  function breaks(a,b){var c=minC(a,b),list=[-3,5,9];if(c!==null)list.push(c);list.sort(function(x,y){return x-y;});return list.filter(function(v,i){return i===0||!near(v,list[i-1]);});}
+  function analyse(a,b){
+    var br=breaks(a,b),ext=[br[0]-100].concat(br,[br[br.length-1]+100]),ks=[],flat3=[];
+    br.forEach(function(k,i){var lo=(ext[i]+k)/2,hi=(k+ext[i+2])/2;if(g(k,a,b)+g(lo,a,b)+g(hi,a,b)===9)ks.push(k);});
+    for(var i=0;i+1<ext.length;i++){var m=(ext[i]+ext[i+1])/2;if(g(m,a,b)===3)flat3.push([ext[i],ext[i+1]]);}
+    return {br:br,ks:ks,flat3:flat3};
+  }
+  function fmt(x){var s=(Math.round(x*100)/100).toFixed(2).replace(/0+$/,'').replace(/\.$/,'');return s==='-0'?'0':s;}
+  var inA=document.getElementById('inA'),inB=document.getElementById('inB'),inT=document.getElementById('inT'),fSvg=document.getElementById('fSvg'),gSvg=document.getElementById('gSvg'),snap=document.getElementById('snap');
+  function setT(v){inT.value=v;inT.__exact=v;draw();}
+  function draw(){
+    var a=+inA.value,b=+inB.value,t=inT.__exact!==undefined&&Math.abs(inT.__exact-(+inT.value))<.2?inT.__exact:+inT.value;inT.__exact=undefined;
+    var c=minC(a,b),res=analyse(a,b);
+    document.getElementById('outA').textContent='a = '+a;document.getElementById('outB').textContent='b = '+b;document.getElementById('outT').textContent='t = '+fmt(t);
+    document.getElementById('outC').textContent=c===null?'없음 (b ≤ 2 · 계속 증가)':fmt(c);
+    var dt=.001;document.getElementById('outG').textContent=g(t-dt,a,b)+', '+g(t,a,b)+', '+g(t+dt,a,b)+'  → 합 '+(g(t-dt,a,b)+g(t,a,b)+g(t+dt,a,b));
+    var inf=res.flat3.length>0;document.getElementById('outK').textContent=inf?'무수히 많음':res.ks.length?res.ks.map(fmt).join(', ')+' ('+res.ks.length+'개)':'없음';
+    var v=document.getElementById('verdict');v.className='verdict'+(!inf&&res.ks.length===1?' ok':'');v.innerHTML='<div><strong>'+(inf?'g=3 구간이 있음':res.ks.length===1?'k가 딱 하나!':'k가 '+res.ks.length+'개')+'</strong><span>'+(!inf&&res.ks.length===1?'a+b = '+(a+b):inf?'그 구간의 k가 모두 조건을 만족':'조건 불만족')+'</span></div>';
+    snap.innerHTML=res.br.map(function(k){return '<button type="button" data-t="'+k+'">t = '+fmt(k)+'</button>';}).join('');
+    /* f 그래프 */
+    var W=760,H=340,L=36,R=14,T=14,B=26,xmin=-2.5,xmax=Math.max(7,b+2),ymin=-8,ymax=14,X=function(x){return L+(x-xmin)/(xmax-xmin)*(W-L-R);},Y=function(y){return T+(ymax-y)/(ymax-ymin)*(H-T-B);},s='';
+    for(var gx=Math.ceil(xmin);gx<=xmax;gx++){s+='<line x1="'+X(gx)+'" y1="'+T+'" x2="'+X(gx)+'" y2="'+(H-B)+'" stroke="rgba(58,49,37,.07)"/>';s+='<text x="'+X(gx)+'" y="'+(H-8)+'" text-anchor="middle" font-size="10" fill="#887e70" font-family="IBM Plex Mono">'+gx+'</text>';}
+    [-3,5,9].forEach(function(yv){s+='<line x1="'+L+'" y1="'+Y(yv)+'" x2="'+(W-R)+'" y2="'+Y(yv)+'" stroke="rgba(58,49,37,.16)" stroke-dasharray="3 5"/><text x="'+(L-4)+'" y="'+(Y(yv)+4)+'" text-anchor="end" font-size="10" fill="#887e70" font-family="IBM Plex Mono">'+yv+'</text>';});
+    s+='<line x1="'+L+'" y1="'+Y(0)+'" x2="'+(W-R)+'" y2="'+Y(0)+'" stroke="#807767" stroke-width="1.4"/><line x1="'+X(0)+'" y1="'+T+'" x2="'+X(0)+'" y2="'+(H-B)+'" stroke="#807767" stroke-width="1.2"/>';
+    s+='<clipPath id="fc"><rect x="'+L+'" y="'+T+'" width="'+(W-L-R)+'" height="'+(H-T-B)+'"/></clipPath><g clip-path="url(#fc)">';
+    var d='';for(var k=0;k<=260;k++){var x=xmin+(2-xmin)*k/260,y=2*x*x*x-6*x+1;d+=(k?'L':'M')+X(x).toFixed(1)+' '+Y(Math.max(ymin-5,Math.min(ymax+5,y))).toFixed(1);}
+    s+='<path d="'+d+'" fill="none" stroke="#2f6670" stroke-width="3"/>';
+    d='';for(k=1;k<=400;k++){x=2+(xmax-2)*k/400;y=a*(x-2)*(x-b)+9;d+=(k>1?'L':'M')+X(x).toFixed(1)+' '+Y(Math.max(ymin-5,Math.min(ymax+5,y))).toFixed(1);}
+    s+='<path d="'+d+'" fill="none" stroke="#a95232" stroke-width="3"/>';
+    s+='<line x1="'+L+'" y1="'+Y(t)+'" x2="'+(W-R)+'" y2="'+Y(t)+'" stroke="#c69a32" stroke-width="2.4"/></g>';
+    s+='<circle cx="'+X(2)+'" cy="'+Y(5)+'" r="5.5" fill="#2f6670"/><circle cx="'+X(2)+'" cy="'+Y(9)+'" r="6" fill="#fbfaf6" stroke="#a95232" stroke-width="2.5"/>';
+    if(c!==null&&c>=ymin)s+='<circle cx="'+X((2+b)/2)+'" cy="'+Y(c)+'" r="4" fill="#a95232"/><text x="'+(X((2+b)/2)+8)+'" y="'+(Y(c)+14)+'" font-size="11" fill="#a95232" font-family="IBM Plex Mono">c='+fmt(c)+'</text>';
+    if(c!==null&&c<ymin)s+='<text x="'+X((2+b)/2)+'" y="'+(H-B-6)+'" text-anchor="middle" font-size="11" fill="#a95232" font-family="IBM Plex Mono">↓ c='+fmt(c)+'</text>';
+    s+='<text x="'+(W-R-6)+'" y="'+(Y(t)-6)+'" text-anchor="end" font-size="12" fill="#8f6a18" font-weight="700">y = '+fmt(t)+' · g = '+g(t,a,b)+'</text>';
+    fSvg.innerHTML=s;
+    /* g 계단 */
+    var GW=760,GH=150,gl=36,gr=14,tmin=-8,tmax=14,TX=function(u){return gl+(u-tmin)/(tmax-tmin)*(GW-gl-gr);},GY=function(n){return 118-n*17;},q='';
+    for(var n=0;n<=6;n++)q+='<line x1="'+gl+'" y1="'+GY(n)+'" x2="'+(GW-gr)+'" y2="'+GY(n)+'" stroke="rgba(58,49,37,'+(n===3?'.3':'.07')+')"'+(n===3?' stroke-dasharray="4 4"':'')+'/><text x="'+(gl-6)+'" y="'+(GY(n)+4)+'" text-anchor="end" font-size="10" fill="#887e70" font-family="IBM Plex Mono">'+n+'</text>';
+    var edges=[tmin].concat(res.br.filter(function(u){return u>tmin&&u<tmax;}),[tmax]);
+    for(var i=0;i+1<edges.length;i++){var mid=(edges[i]+edges[i+1])/2,gv=g(mid,a,b);q+='<line x1="'+TX(edges[i])+'" y1="'+GY(gv)+'" x2="'+TX(edges[i+1])+'" y2="'+GY(gv)+'" stroke="'+(gv===3?'#a74444':'#2f6670')+'" stroke-width="'+(gv===3?5:3)+'"/>';}
+    res.br.forEach(function(u){if(u<tmin||u>tmax)return;var gv=g(u,a,b),hit=res.ks.some(function(k){return near(k,u);});q+='<circle cx="'+TX(u)+'" cy="'+GY(gv)+'" r="4.5" fill="#211d17"/><text x="'+TX(u)+'" y="140" text-anchor="middle" font-size="10" fill="#887e70" font-family="IBM Plex Mono">'+fmt(u)+'</text>';if(hit)q+='<circle cx="'+TX(u)+'" cy="'+GY(gv)+'" r="11" fill="none" stroke="#477454" stroke-width="3"/>';});
+    q+='<line x1="'+TX(Math.max(tmin,Math.min(tmax,t)))+'" y1="10" x2="'+TX(Math.max(tmin,Math.min(tmax,t)))+'" y2="126" stroke="#c69a32" stroke-width="2"/><text x="'+(gl+4)+'" y="12" font-size="11" fill="#2f6670" font-weight="700">g(t) 계단</text>';
+    gSvg.innerHTML=q;
+  }
+  snap.addEventListener('click',function(e){var bt=e.target.closest('[data-t]');if(bt)setT(+bt.getAttribute('data-t'));});
+  [inA,inB,inT].forEach(function(el){el.addEventListener('input',draw);});draw();
+})();
+</script>
+</body>
+</html>

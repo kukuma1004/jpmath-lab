@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow,noarchive"/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<title>2025 수능 21번 | 극한과 근의 사슬 · 교사용</title>
+<script src="../../auth.js" data-classroom-protected></script>
+<link rel="stylesheet" href="../../../vendor/katex/katex.min.css"/>
+<link rel="stylesheet" href="../../../jp-math-typography.css?v=3"/>
+<link rel="stylesheet" href="../../../jp-dark.css?v=4"/>
+<link rel="stylesheet" href="../../../jp-polish.css?v=11"/>
+<script defer src="../../../vendor/katex/katex.min.js"></script>
+<script defer src="../../../jp-lab-dark.js?v=2"></script>
+<script defer src="../../../jp-deck.js"></script>
+<script defer src="../../../jp-polish.js?v=21"></script>
+<style>
+.chain-strip{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin:24px 0}.chain-strip .node{display:grid;place-items:center;min-width:92px;min-height:66px;padding:10px 16px;border:1px solid rgba(58,49,37,.16);border-radius:16px;background:#fff;font:700 20px 'IBM Plex Mono',monospace}.chain-strip .node.fix{border:2px solid #a95232;color:#a95232;box-shadow:0 0 0 4px rgba(169,82,50,.1)}.chain-strip .move{color:#a95232;font:700 12px 'IBM Plex Mono',monospace}
+.teacher-em{font-size:clamp(28px,4vw,54px);font-weight:800;line-height:1.18;text-align:center;letter-spacing:-.05em}.answer-big{font-size:clamp(70px,12vw,150px);font-weight:900;color:#a95232;line-height:1;text-align:center}.compact-table td,.compact-table th{padding:10px 12px!important}
+.flow{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:stretch;margin:18px 0}.flow-box{display:grid;place-items:center;gap:8px;min-height:108px;padding:15px;border:1px solid rgba(58,49,37,.14);border-radius:16px;background:#fff;text-align:center}.flow-box:last-child{border-color:rgba(169,82,50,.35);background:#fff6ef}.flow-box b{font-size:12px}.flow-box .fb-text{font-size:17px}.flow .arrow{display:grid;place-items:center;color:#a95232;font-weight:800}
+.compare{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:stretch}.compare .case{padding:24px;border:1px solid rgba(58,49,37,.14);border-radius:19px;background:#fff}.compare .case h3{margin:14px 0 10px}.compare .versus{display:grid;place-items:center;color:#a95232;font:800 12px 'IBM Plex Mono',monospace}
+.tri{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.tcard{padding:19px;border:1px solid rgba(58,49,37,.14);border-radius:17px;background:#fff}.tcard.dead{opacity:.58;border-style:dashed}.tcard.live{border-color:rgba(71,116,84,.4);background:#f5faf6}.tcard h3{margin-bottom:9px}
+.note-strip{display:flex;align-items:flex-start;gap:13px;margin-top:18px;padding:15px 17px;border-left:4px solid #2f6670;border-radius:0 13px 13px 0;background:#eef6f5}.note-strip.warn{border-color:#a95232;background:#fff4ed}.note-strip .ic{flex:0 0 auto;color:#a95232;font:800 10px 'IBM Plex Mono',monospace}.note-strip p{margin:0}
+@media(max-width:720px){.flow,.compare,.tri{grid-template-columns:1fr}.flow .arrow,.compare .versus{min-height:18px}.chain-strip .node{min-width:70px}}
+</style>
+</head>
+<body class="tpl-dark is-deck">
+<a class="jp-back-link teacher-back" href="../../">← 수업창고</a>
+<div class="deck">
+
+<section class="slide slide--title" data-title="문제와 만나기"><div class="s-body"><div class="title-layout">
+  <div><p class="eyebrow">2025학년도 수능 수학 21번 · 4점</p><h1 class="h1 anim-fade-up">극한을 구하지 말고<br/><span class="am">근의 사슬</span>을 보자</h1><p class="lede">“모든 α에서 극한이 존재한다”를 <b>실근에 대한 규칙</b>으로 번역하고, 그 규칙을 반복해 실근을 하나로 좁히는 수업입니다.</p><div class="pause">첫 90초는 말하지 않기</div></div>
+  <div class="card" style="margin-top:0"><p>함수 <span class="m" data-k="f(x)=x^{3}+ax^{2}+bx+4"></span>가 다음 조건을 만족시키도록 하는 두 정수 <span class="m" data-k="a,b"></span>에 대하여 <span class="m" data-k="f(1)"></span>의 최댓값을 구하시오.</p><div class="card accent" style="margin-top:12px"><p>모든 실수 <span class="m" data-k="\alpha"></span>에 대하여</p><div class="eq tight"><div class="eqrow"><span class="m md" data-k="\lim_{x\to\alpha}\frac{f(2x+1)}{f(x)}"></span></div></div><p>의 값이 존재한다.</p></div><div class="eq tight hot"><div class="eqrow"><span class="m md am" data-k="f(1)_{\max}=\;?"></span></div></div></div>
+</div></div><aside class="notes"><p><strong>권장 시간</strong> 45분 · 문제 읽기 4 / 위험한 곳 찾기 6 / 조건 번역 8 / 근의 사슬 12 / f 결정과 경계 10 / 정리 5.</p><p><strong>학생용 짝 자료</strong>는 수능문제 &gt; 미적분1 &gt; 극한과 근의 사슬 탐구실입니다. 근의 사슬 실험실(α 슬라이더)과 p 조절 실험실이 들어 있습니다.</p><p>처음 90초 동안 “극한을 어디서부터 조사할지”만 표시하게 하세요. 식을 전개하기 시작한 학생은 멈추게 합니다.</p></aside></section>
+
+<section class="slide" data-title="수업의 지도"><div class="s-head"><p class="eyebrow">전체 지도</p><h2 class="ct">네 개의 <span class="am">번역</span>을 통과한다</h2></div><div class="s-body"><div class="grid4 anim-stagger-list">
+  <div class="card accent"><span class="tag">GATE 1</span><h4>위험한 곳</h4><p>모든 α → 분모가 0인 α, 곧 실근만</p></div>
+  <div class="card accent"><span class="tag">GATE 2</span><h4>규칙</h4><p>α가 실근이면 <span class="m" data-k="2\alpha+1"></span>도 실근</p></div>
+  <div class="card accent"><span class="tag">GATE 3</span><h4>사슬</h4><p>반복하면 근이 끝없이 → 실근은 <span class="m" data-k="-1"></span>뿐</p></div>
+  <div class="card accent"><span class="tag">GATE 4</span><h4>경계</h4><p>남은 이차식은 실근 없음, 판별식 0도 탈락</p></div>
+</div><div class="card quote"><p><b>수업의 한 문장.</b> “모든 α에서 극한이 존재”는 계산하라는 뜻이 아니라 <b class="am">실근이 스스로를 가리키는 규칙</b>을 찾으라는 뜻이다.</p></div></div><div class="s-ask"><p class="question">‘모든 실수 α’라는 말에 겁먹지 않으려면 무엇을 먼저 걸러 내야 할까?</p></div><aside class="notes"><p>“무한히 많은 α를 다 볼 수 없으니, 극한이 <em>당연히</em> 존재하는 α를 먼저 빼자”는 사고를 끌어내세요. 조건이 걸리는 곳이 유한 개로 줄어드는 순간이 이 문제의 첫 번째 돌파입니다.</p></aside></section>
+
+<section class="slide" data-title="GATE 1 · 위험한 곳"><div class="s-head"><p class="eyebrow">GATE 1</p><h2 class="ct">분모가 0이 아니면 <span class="am">아무 일도 일어나지 않는다</span></h2></div><div class="s-body"><div class="compare">
+  <div class="case"><span class="tag gr">안전</span><h3><span class="m" data-k="f(\alpha)\ne0"></span></h3><p>분자·분모 모두 연속. 극한은 <span class="m" data-k="\dfrac{f(2\alpha+1)}{f(\alpha)}"></span>로 그냥 존재합니다. 분자가 0이어도 값은 0.</p></div><div class="versus">VS</div>
+  <div class="case"><span class="tag rd">조사 대상</span><h3><span class="m" data-k="f(\alpha)=0"></span></h3><p>분모가 0으로 갑니다. 여기서만 극한이 깨질 수 있습니다. 조사할 α는 <b>많아야 3개</b>.</p></div>
+</div><div class="note-strip"><span class="ic">KEY</span><p>“모든 실수 α” 조건이 <b>실근에 대한 조건</b>으로 줄어듭니다.</p></div></div><div class="s-ask"><p class="question">분자 <span class="m" data-k="f(2\alpha+1)=0"></span>인 곳도 위험한 곳일까?</p></div><aside class="notes"><p><strong>오개념</strong>: 분자가 0인 곳도 극한이 이상해진다고 생각하는 학생이 있습니다. 0/3=0이 멀쩡한 값이라는 것을 짧게 확인하세요.</p></aside></section>
+
+<section class="slide" data-title="GATE 2 · 조건 번역"><div class="s-head"><p class="eyebrow">GATE 2</p><h2 class="ct">분모가 0이면 <span class="am">분자도 0</span>이어야 한다</h2></div><div class="s-body"><div class="flow"><div class="flow-box"><b>분모</b><span class="fb-text"><span class="m" data-k="f(x)\to0"></span></span></div><div class="arrow">+</div><div class="flow-box"><b>극한값 존재</b><span class="fb-text">유한한 값</span></div><div class="arrow">→</div><div class="flow-box"><b>분자</b><span class="fb-text"><span class="m am" data-k="f(2\alpha+1)=0"></span></span></div></div><div class="eq hot"><div class="eqrow"><span class="m md" data-k="f(\alpha)=0\quad\Longrightarrow\quad f(2\alpha+1)=0"></span></div></div><div class="card quote"><p>규칙에 이름을 붙입니다. <span class="m am" data-k="T(\alpha)=2\alpha+1"></span> — <b>실근에 T를 적용해도 실근</b>.</p></div></div><div class="s-ask"><p class="question">분자도 0이 되기만 하면 극한은 항상 존재할까?</p></div><aside class="notes"><p>상위권에는 “겹침 정도(중근)”까지 물어볼 수 있습니다. 엄밀하게는 분자가 분모만큼 이상 0이 되어야 합니다. 이 문제는 결국 실근이 −1 하나로 정해지고, 그 자리에서 분자·분모가 모두 (x+1) 한 번씩 0이 되어 극한 2가 존재하므로 따로 분기할 필요가 없다고 정리해 주세요.</p></aside></section>
+
+<section class="slide" data-title="GATE 3 · 근의 사슬"><div class="s-head"><p class="eyebrow">GATE 3</p><h2 class="ct">규칙을 반복하면 <span class="am">−1까지 거리가 두 배</span></h2></div><div class="s-body"><p class="teacher-em"><span class="m" data-k="T(\alpha)+1=2(\alpha+1)"></span></p><div class="chain-strip"><span class="node">0</span><span class="move">×2 거리</span><span class="node">1</span><span class="move">→</span><span class="node">3</span><span class="move">→</span><span class="node">7</span><span class="move">→</span><span class="node">15</span><span class="move">…</span></div><div class="chain-strip"><span class="node fix">−1</span><span class="move">→</span><span class="node fix">−1</span><span class="move">제자리</span></div><div class="card accent"><p>−1이 아닌 실근이 하나라도 있으면 서로 다른 실근이 끝없이 필요합니다. 삼차함수의 실근은 많아야 3개이므로 <b class="am">불가능</b>.</p></div></div><div class="s-ask"><p class="question">규칙 <span class="m" data-k="T"></span>가 “움직이지 않게 하는” 점은 어떻게 찾을까?</p></div><aside class="notes"><p>학생용 실험실에서 α 슬라이더를 움직이게 한 뒤 “사슬이 멈추는 점”을 찾게 하세요. 2α+1=α를 풀어 −1을 얻는 학생과, 거리 두 배 구조를 말하는 학생을 연결하면 좋습니다.</p></aside></section>
+
+<section class="slide" data-title="엄밀한 논증"><div class="s-head"><p class="eyebrow">논증 쓰기</p><h2 class="ct">가장 큰 근과 가장 작은 근으로 <span class="am">한 줄 증명</span></h2></div><div class="s-body"><div class="grid2">
+  <div class="card accent"><h4>가장 큰 실근 <span class="m" data-k="M"></span></h4><div class="eq tight"><div class="eqrow"><span class="m md" data-k="2M+1\le M\;\Longrightarrow\;M\le-1"></span></div></div><p><span class="m" data-k="2M+1"></span>도 실근인데 M이 가장 크니까.</p></div>
+  <div class="card accent"><h4>가장 작은 실근 <span class="m" data-k="m"></span></h4><div class="eq tight"><div class="eqrow"><span class="m md" data-k="2m+1\ge m\;\Longrightarrow\;m\ge-1"></span></div></div><p><span class="m" data-k="2m+1"></span>도 실근인데 m이 가장 작으니까.</p></div>
+</div><div class="eq hot"><div class="eqrow"><span class="m md am" data-k="-1\le m\le M\le-1\quad\Longrightarrow\quad\text{실근은 }x=-1\text{ 뿐}"></span></div></div></div><div class="s-ask"><p class="question">‘사슬이 끝없이 길어진다’는 직관을 왜 이렇게 바꿔 쓰면 더 좋을까?</p></div><aside class="notes"><p>직관(무한히 많은 근)은 설득력 있지만 서술형으로 쓰기 어렵습니다. 극단값(최댓값·최솟값)을 잡는 논증은 다른 문제에도 옮겨 쓸 수 있는 도구라는 점을 강조하세요. 삼차함수가 실근을 적어도 하나 가진다는 사실도 함께 말하게 합니다.</p></aside></section>
+
+<section class="slide" data-title="f 결정"><div class="s-head"><p class="eyebrow">GATE 4</p><h2 class="ct"><span class="m" data-k="-1"></span>로 인수분해하고 <span class="am">남은 이차식</span>을 본다</h2></div><div class="s-body"><div class="eq hot"><div class="eqrow"><span class="m md" data-k="f(x)=(x+1)(x^{2}+px+4)=x^{3}+(p+1)x^{2}+(p+4)x+4"></span></div></div><div class="grid2">
+  <div class="card"><h4>계수 대응</h4><p><span class="m" data-k="a=p+1,\;b=p+4"></span> — <span class="m" data-k="a,b"></span>가 정수 ⇔ <span class="m am" data-k="p"></span>가 정수</p></div>
+  <div class="card"><h4>실근 조건</h4><p><span class="m" data-k="x^{2}+px+4"></span>는 <b>실근을 하나도 가지면 안 된다</b> (−1도 불가: 상수항 4 ≠ 1이므로 <span class="m" data-k="(x+1)^3"></span> 불가)</p></div>
+</div><div class="eq tight"><div class="eqrow"><span class="m md am" data-k="p^{2}-16\lt0\;\Longrightarrow\;p\in\{-3,-2,-1,0,1,2,3\}"></span></div></div></div><div class="s-ask"><p class="question">이차식이 −1을 근으로 가지는 경우는 왜 따로 걱정하지 않아도 될까?</p></div><aside class="notes"><p>이차식이 −1을 근으로 가지면 1−p+4=0, p=5이고 이때 다른 근 −4가 생겨 탈락합니다. 또는 “(x+1)³이면 상수항이 1”이라는 관찰로 짧게 처리해도 됩니다.</p></aside></section>
+
+<section class="slide" data-title="경계의 함정"><div class="s-head"><p class="eyebrow">경계 확인</p><h2 class="ct">판별식 0인 <span class="m am" data-k="p=4"></span>는 왜 안 될까?</h2></div><div class="s-body"><div class="compare">
+  <div class="case"><span class="tag rd">탈락</span><h3><span class="m" data-k="p=4,\;f(1)=18"></span></h3><p><span class="m" data-k="(x+2)^{2}"></span> → 실근 <span class="m" data-k="-2"></span>. <span class="m" data-k="T(-2)=-3"></span>은 근이 아니므로 <span class="m" data-k="x=-2"></span>에서 극한이 존재하지 않습니다.</p></div><div class="versus">VS</div>
+  <div class="case"><span class="tag gr">생존</span><h3><span class="m" data-k="p=3,\;f(1)=16"></span></h3><p><span class="m" data-k="x^{2}+3x+4"></span>는 판별식 <span class="m" data-k="-7\lt0"></span>. 실근은 −1 하나.</p></div>
+</div><div class="note-strip warn"><span class="ic">TRAP</span><p>“중근이니까 괜찮다”, “판별식 ≤ 0”으로 쓰면 <b>18</b>로 틀립니다. 조건은 부호가 아니라 <b>근의 존재 자체</b>에 걸려 있습니다.</p></div></div><div class="s-ask"><p class="question">이 문제에서 판별식 조건에 등호가 들어가지 않는 이유를 한 문장으로 말해 보자.</p></div><aside class="notes"><p>극값·부호 문제에서 “중근은 괜찮다”는 경험이 오히려 함정이 됩니다. 이번 조건은 f의 실근 집합에 대한 조건이라 중근도 실근이라는 점을 분명히 하세요. p=−4(근 2 → 5)도 같은 이유로 탈락합니다.</p></aside></section>
+
+<section class="slide" data-title="마지막 계산"><div class="s-head"><p class="eyebrow">회수</p><h2 class="ct">구조가 끝난 뒤에만 계산한다</h2></div><div class="s-body"><div class="grid2">
+  <div class="card"><h4><span class="m" data-k="f(1)"></span></h4><div class="eq tight"><div class="eqrow"><span class="m md" data-k="f(1)=2(p+5)\;\xrightarrow{\;p=3\;}\;16"></span></div></div></div>
+  <div class="card"><h4>검산 · <span class="m" data-k="x\to-1"></span></h4><div class="eq tight"><div class="eqrow"><span class="m md" data-k="\frac{2(x+1)\,q(2x+1)}{(x+1)\,q(x)}\to\frac{2\,q(-1)}{q(-1)}=2"></span></div></div><p><span class="m" data-k="q(x)=x^{2}+3x+4,\;q(-1)=2"></span></p></div>
+</div><div class="answer-big">16</div><table class="tb compact-table"><tr><th>확인</th><th>결과</th></tr><tr><td>정수 계수</td><td class="yes"><span class="m" data-k="a=4,\;b=7"></span> ✓</td></tr><tr><td>실근</td><td class="yes"><span class="m" data-k="-1"></span> 하나 ✓</td></tr><tr><td>모든 α에서 극한</td><td class="yes"><span class="m" data-k="\alpha=-1"></span>에서 2, 나머지는 분모 ≠ 0 ✓</td></tr></table></div><div class="s-ask"><p class="question">가능한 정수쌍 <span class="m" data-k="(a,b)"></span>는 모두 몇 개였을까?</p></div><aside class="notes"><p>정답은 16 (a=4, b=7). 가능한 쌍은 p=−3~3의 7개입니다. 퇴장 전 확인 질문으로 쓰기 좋습니다.</p></aside></section>
+
+<section class="slide" data-title="오개념 점검"><div class="s-head"><p class="eyebrow">교사 체크</p><h2 class="ct">학생이 자주 멈추는 <span class="am">네 지점</span></h2></div><div class="s-body"><table class="tb compact-table"><tr><th>멈춤</th><th>학생 반응</th><th>되묻기</th></tr>
+  <tr><td>모든 α</td><td>극한식을 일반적으로 계산하려 함</td><td>“극한이 당연히 존재하는 α는 어디지?”</td></tr>
+  <tr><td>0/0 조건</td><td><span class="m" data-k="f(2\alpha+1)=0"></span>을 떠올리지 못함</td><td>“분모만 0으로 가면 분수는 어떻게 되지?”</td></tr>
+  <tr><td>사슬</td><td>근 α, 2α+1 두 개로 멈춤</td><td>“2α+1도 근이면, 그다음은?”</td></tr>
+  <tr><td>경계</td><td>판별식 ≤ 0으로 18</td><td>“p=4일 때 실근을 모두 적어 봐.”</td></tr>
+</table><div class="note-strip"><span class="ic">ORDER</span><p>설명보다 먼저 <b>걸러내기 → 번역 → 반복 → 경계 확인</b> 순서를 지키면 발문이 정답 전달로 바뀌지 않습니다.</p></div></div><div class="s-ask"><p class="question">우리 반에서는 네 지점 중 어디에서 가장 많이 멈출까?</p></div><aside class="notes"><p>사슬 단계에서 멈추는 학생이 많다면 수직선에 α=0을 찍고 규칙을 세 번 적용하게 하세요. 1, 3, 7이 나오면 대부분 스스로 “끝이 없다”를 말합니다.</p></aside></section>
+
+<section class="slide" data-title="사고의 뼈대"><div class="s-head"><p class="eyebrow">수업의 결론</p><h2 class="ct">오늘 쓴 <span class="am">다섯 가지 사고</span></h2></div><div class="s-body"><div class="grid2 anim-stagger-list">
+  <div class="card accent"><h4>① 걸러내기</h4><p>“모든 α”에서 조건이 실제로 걸리는 곳(분모 0)만 남겼다.</p></div><div class="card accent"><h4>② 번역하기</h4><p>극한 존재를 “근이면 2α+1도 근”이라는 규칙으로 바꿨다.</p></div><div class="card accent"><h4>③ 반복하기</h4><p>규칙을 되풀이해 −1까지 거리가 두 배씩 커지는 구조를 봤다.</p></div><div class="card accent"><h4>④ 극단 잡기</h4><p>가장 큰 근·가장 작은 근으로 실근이 −1뿐임을 증명했다.</p></div>
+</div><div class="card quote"><p><b>⑤ 경계 확인</b> — 판별식 0도 새 실근을 만든다. <b class="am">답은 16.</b></p></div></div><aside class="notes"><p>퇴장 질문: “2x+1 대신 2x−3이었다면 실근은 어디로 모일까?” 계산 없이 규칙이 멈추는 점(3)만 말하게 하세요.</p></aside></section>
+
+</div>
+<div class="deck-chrome"><div class="chrome-left"><span class="idx"><b id="cNow">1</b> / <span id="cTot">11</span></span><span class="sep"></span><span class="chap" id="chapLabel"></span></div><div class="chrome-right"><div class="kbd-help">← → 이동 · N 교사 노트 · S 교사용 창 · F 전체화면 · O 한눈에 보기</div><div aria-label="슬라이드 조작" class="touch-nav"><button aria-label="이전 슬라이드" id="touchPrev" type="button">‹</button><button id="touchNotes" type="button">교사 노트</button><button aria-label="다음 슬라이드" id="touchNext" type="button">›</button></div></div></div>
+</body>
+</html>
