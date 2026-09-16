@@ -386,7 +386,109 @@ window.JPKillerFigures = (function () {
     return () => { s.show(); draw(s.value) };
   }
 
-  const FIGURES = { k01, k02, k03, k04, k05, s01, s02, s03, s04 };
+  /* ── SET 03 ─────────────────────────────────────────────────────
+     짝 기출이 있는 두 문항. 기출에서 익힌 요령이 어디서 뒤집히는지를
+     손으로 확인하게 하는 판이다. */
+
+  /* T01 · 근이 근을 부르는 규칙 S(β)=(β+1)/2 */
+  function t01(host) {
+    const b = board(host, { xmin: -3.2, xmax: 4.2, ymin: -14, ymax: 14, height: 300 });
+    const out = readout(host);
+    let p = 0, start = 3;
+
+    function roots() {                               // (x-1)(x^2+px+1) 의 서로 다른 실근
+      const rs = [1], D = p * p - 4;
+      if (D === 0) rs.push(-p / 2);
+      else if (D > 0) rs.push((-p - Math.sqrt(D)) / 2, (-p + Math.sqrt(D)) / 2);
+      return rs.filter((v, i, a) => a.findIndex((w) => Math.abs(w - v) < 1e-9) === i).sort((u, v) => u - v);
+    }
+    function draw() {
+      const f = (x) => (x - 1) * (x * x + p * x + 1);
+      const rs = roots();
+      const broken = rs.filter((beta) => Math.abs(f((beta + 1) / 2)) > 1e-9);   // 분자가 0 이 아닌 위험한 자리
+      b.clear(); b.grid(1, 2); b.axes();
+      b.curve(f);
+      rs.forEach((beta) => {
+        const al = (beta + 1) / 2, bad = Math.abs(f(al)) > 1e-9;
+        b.dot(beta, 0, CURVE, 5);
+        if (Math.abs(beta - 1) > 1e-9) {
+          b.line(beta, -1.2, al, -1.2, bad ? HOT : COOL, [5, 3], 2);
+          b.dot(al, f(al), bad ? HOT : COOL, 5);
+          b.text(al, f(al) + (f(al) >= 0 ? 1.6 : -1.6), bad ? 'f≠0 → 극한 깨짐' : 'f=0', bad ? HOT : COOL);
+        }
+      });
+      // 반씩 다가서는 사슬
+      let x = start;
+      for (let i = 0; i < 7; i++) { b.dot(x, 11.5, i ? '#a78bfa' : '#f59e0b', i ? 3.5 : 5); x = (x + 1) / 2 }
+      b.line(1, 10.3, 1, 12.7, COOL, [], 2);
+      b.text(start, 13.2, 'β', '#b45309');
+      const f3 = f(3);
+      out.innerHTML = 'p = <b>' + p + '</b> · 실근 ' + rs.map((r) => r.toFixed(3)).join(', ')
+        + ' &nbsp;·&nbsp; 판별식 p²−4 = ' + (p * p - 4)
+        + (broken.length ? ' &nbsp;·&nbsp; <b style="color:#dc2626">탈락 — 극한이 깨지는 자리가 있다</b>'
+          : ' &nbsp;·&nbsp; <b style="color:#0e7490">조건을 만족한다</b> · f(3) = ' + f3)
+        + ' &nbsp;·&nbsp; 위쪽 점들: β 에서 시작해 규칙을 되풀이한 사슬 (1 까지 거리가 반씩)';
+    }
+    const sp = slider(host, { name: '이차식의 p', min: -4, max: 4, step: 1, value: 0, format: (v) => String(v) }, (v) => { p = v; draw() });
+    const ss = slider(host, { name: '사슬의 시작 β', min: -3, max: 4, step: 0.05, value: 3 }, (v) => { start = v; draw() });
+    return () => { p = sp.value; start = ss.value; sp.show(); ss.show(); draw() };
+  }
+
+  /* T02 · 교점 개수의 계단과 합 6 */
+  function t02(host) {
+    const L = (x) => 8 * x ** 3 - 24 * x * x + 20;
+    const b = board(host, { xmin: -1.8, xmax: 6.2, ymin: -14, ymax: 30, height: 310 });
+    const out = readout(host);
+    let a = 12, bb = 3, t = 10;
+
+    /* 왼쪽 교점: 증가 구간 (-∞,0] 에서 t≤20 이면 하나, 감소 구간 (0,1] 에서 4≤t<20 이면 하나 */
+    const left = (s) => (s <= 20 ? 1 : 0) + (s >= 4 && s < 20 ? 1 : 0);
+    const right = (s) => {
+      const A = a, B = -a * (1 + bb), C = a * bb + 16 - s, D = B * B - 4 * A * C;
+      if (D < -1e-9) return 0;
+      const rs = Math.abs(D) <= 1e-9 ? [-B / (2 * A)] : [(-B - Math.sqrt(D)) / (2 * A), (-B + Math.sqrt(D)) / (2 * A)];
+      return rs.filter((x) => x > 1 + 1e-9).length;
+    };
+    const g = (s) => left(s) + right(s);
+    const heights = () => {
+      const hs = [4, 16, 20];
+      if (bb > 1) hs.push(16 - a * (bb - 1) ** 2 / 4);
+      return [...new Set(hs)].sort((u, v) => u - v);
+    };
+    function verdict() {
+      const hs = heights();
+      const probes = [hs[0] - 1, ...hs.slice(0, -1).map((h, i) => (h + hs[i + 1]) / 2), hs[hs.length - 1] + 1];
+      if (probes.some((s) => g(s) === 2)) return { n: Infinity, ks: [] };
+      const ks = hs.filter((k, i) => g(probes[i]) + g(k) + g(probes[i + 1]) === 6);
+      return { n: ks.length, ks };
+    }
+    function draw() {
+      const c = bb > 1 ? 16 - a * (bb - 1) ** 2 / 4 : null;
+      b.clear(); b.grid(1, 5); b.axes();
+      b.ctx.save(); b.ctx.beginPath(); b.ctx.rect(0, 0, b.px(1), b.H); b.ctx.clip(); b.curve(L); b.ctx.restore();
+      b.ctx.save(); b.ctx.beginPath(); b.ctx.rect(b.px(1), 0, b.W - b.px(1), b.H); b.ctx.clip();
+      b.curve((x) => a * (x - 1) * (x - bb) + 16, COOL, 2.6); b.ctx.restore();
+      b.dot(1, 4, CURVE, 5);                          // 채운 점 (x=1 은 왼쪽)
+      b.ctx.fillStyle = '#fff'; b.ctx.strokeStyle = COOL; b.ctx.lineWidth = 2;   // 빈 점 (1,16)
+      b.ctx.beginPath(); b.ctx.arc(b.px(1), b.py(16), 5, 0, 7); b.ctx.fill(); b.ctx.stroke();
+      if (c !== null) b.hline(c, '#f59e0b', [2, 4]);
+      b.hline(4, '#cbd5e1', [3, 4]);
+      b.hline(t, HOT, [6, 4]);
+      const e = 1e-6, sum = g(t - e) + g(t) + g(t + e), v = verdict();
+      out.innerHTML = 'g(t−) · g(t) · g(t+) = ' + g(t - e) + ' · ' + g(t) + ' · ' + g(t + e)
+        + ' &nbsp;→ 합 <b>' + sum + '</b>'
+        + ' &nbsp;·&nbsp; 바닥 c = ' + (c === null ? '없음 (b=1)' : c.toFixed(2)) + ' (노란 점선, 회색은 4)'
+        + ' &nbsp;·&nbsp; 합이 6 인 k 의 개수: '
+        + (v.n === Infinity ? '<b style="color:#dc2626">무수히 많다 (g=2 인 구간)</b>'
+          : '<b style="color:' + (v.n === 1 ? '#0e7490' : '#dc2626') + '">' + v.n + '</b> (' + v.ks.map((k) => 'k=' + k).join(', ') + ')');
+    }
+    const sa = slider(host, { name: 'a', min: 1, max: 60, step: 1, value: 12, format: (v) => String(v) }, (v) => { a = v; draw() });
+    const sb = slider(host, { name: 'b', min: 1, max: 8, step: 1, value: 3, format: (v) => String(v) }, (v) => { bb = v; draw() });
+    const st = slider(host, { name: '직선 y=t', min: -12, max: 28, step: 0.25, value: 10, format: (v) => v.toFixed(2) }, (v) => { t = v; draw() });
+    return () => { a = sa.value; bb = sb.value; t = st.value; sa.show(); sb.show(); st.show(); draw() };
+  }
+
+  const FIGURES = { k01, k02, k03, k04, k05, s01, s02, s03, s04, t01, t02 };
   const CAPTION = {
     k01: 't 를 밀어 보세요. 현이 회전하면서 평행한 접선이 구간 안팎을 드나듭니다 — 개수가 바뀌는 것은 접점이 끝을 지날 때뿐입니다.',
     k02: 'y=t 를 위아래로 밀어 보세요. t 가 0 을 지날 때 곡선은 평평해지지만 교점의 개수는 그대로입니다. 바뀌는 곳은 −27 하나뿐입니다.',
@@ -396,7 +498,9 @@ window.JPKillerFigures = (function () {
     s01: '이음매 t 와 올림 a 를 각각 밀어 보세요. 붉은 세로선이 두 조각 사이에 벌어진 틈입니다. a 를 정해 놓고 t 를 밀면 틈이 닫히는 자리가 몇 군데인지 세어 볼 수 있습니다 — 그것이 N(a) 입니다.',
     s02: 'a 를 밀어 보세요. 대부분의 자리에서는 x=a 에서 뾰족하게 꺾입니다. 꺾이지 않는 자리는 f 가 x축에 닿는 곳뿐입니다.',
     s03: '점 A 를 위아래로 밀어 보세요. 대개 접선이 세 개인데, 딱 두 자리에서 두 개로 줄어듭니다. 그때 접점 두 개 중 하나가 중근입니다.',
-    s04: 't 를 밀어 보세요. 오른쪽 조각이 회색 가로선을 기준으로 뒤집힙니다. 대부분은 이음매에서 뾰족하게 꺾이고, 꺾이지 않는 자리는 셋뿐입니다.'
+    s04: 't 를 밀어 보세요. 오른쪽 조각이 회색 가로선을 기준으로 뒤집힙니다. 대부분은 이음매에서 뾰족하게 꺾이고, 꺾이지 않는 자리는 셋뿐입니다.',
+    t01: 'p 를 −4 부터 4 까지 바꿔 보세요. 1 이 아닌 실근 β 가 생기면 (β+1)/2 에서 분자가 0 이 아닌지 붉게 표시됩니다. 판별식이 0 인 p=2 와 p=−2 가 서로 다르게 끝나는 것을 보세요. 위쪽 점들은 β 에서 시작해 규칙을 되풀이한 사슬입니다.',
+    t02: 'a 와 b 를 바꾸면 오른쪽 포물선의 바닥 c(노란 점선)가 움직입니다. 바닥이 4 보다 높으면 g=2 인 구간이 생기고, 4 보다 낮으면 그 구간은 없지만 합이 6 인 k 가 둘이 됩니다. (48,2), (12,3), (3,5) 에서만 하나가 됩니다.'
   };
 
   return {

@@ -299,6 +299,111 @@ function cubicRoots(b, c, d) {
   say(near(f(6), 84), `S04 · 답 f(6)=${f(6)}`);
 }
 
+/* ── SET 03 ───────────────────────────────────────────────────────
+   최근 기출 두 개의 발상을 잇는 두 문항. 설계에서 한 추론(실근은 1 뿐,
+   바닥은 정확히 4)에 기대지 않고 정수쌍을 훑어 조건을 직접 확인한다.
+   훑는 폭은 수업 중 테스트가 몇 초 안에 끝나도록 줄였다 — 넓힌 전수 조사는
+   만들 때 따로 돌려 같은 결과를 얻었다 (T01 은 ±40, T02 는 a(b-1)^2<=400). */
+
+/* 최고차 계수 1 인 삼차 x^3+Ax^2+Bx+C 의 서로 다른 실근. 판별식으로 가르고 뉴턴법으로 다듬는다. */
+function cubicRealRoots(A, B, C) {
+  const f = (x) => ((x + A) * x + B) * x + C, df = (x) => (3 * x + 2 * A) * x + B;
+  const disc = 18 * A * B * C - 4 * A ** 3 * C + A * A * B * B - 4 * B ** 3 - 27 * C * C;
+  const scale = Math.max(1, Math.abs(A) ** 6, Math.abs(B) ** 3, Math.abs(C) ** 2);
+  const p = B - A * A / 3, q = 2 * A ** 3 / 27 - A * B / 3 + C, s = -A / 3;
+  let ys;
+  if (Math.abs(disc) <= 1e-9 * scale) ys = Math.abs(p) < 1e-12 ? [0] : [3 * q / p, -3 * q / (2 * p)];
+  else if (disc > 0) {
+    const m = 2 * Math.sqrt(-p / 3), th = Math.acos(Math.max(-1, Math.min(1, 3 * q / (p * m)))) / 3;
+    ys = [0, 1, 2].map((k) => m * Math.cos(th - 2 * Math.PI * k / 3));
+  } else {
+    const r = Math.sqrt(q * q / 4 + p ** 3 / 27);
+    ys = [Math.cbrt(-q / 2 + r) + Math.cbrt(-q / 2 - r)];
+  }
+  const out = [];
+  for (let x of ys.map((y) => y + s)) {
+    for (let i = 0; i < 30; i++) { const d = df(x); if (Math.abs(d) < 1e-14) break; const nx = x - f(x) / d; if (!Number.isFinite(nx)) break; x = nx }
+    if (!out.some((v) => Math.abs(v - x) < 1e-6)) out.push(x);
+  }
+  return out.sort((u, v) => u - v);
+}
+
+/* T01 · 반씩 다가서는 근 — f=x^3+ax^2+bx-1, 모든 α 에서 lim f(x)/f(2x-1) 존재 */
+{
+  // 극한은 숫자로 잰다. h 를 1/10 로 줄였을 때 한 값으로 모이면 존재, 크게 불어나면 발산.
+  const limitExists = (f, al) => {
+    const v = (h) => f(al + h) / f(2 * (al + h) - 1);
+    const big = [v(1e-2), v(-1e-2)], small = [v(1e-3), v(-1e-3)];
+    if ([...big, ...small].some((x) => !Number.isFinite(x))) return false;
+    if (Math.max(...small.map(Math.abs)) > 3 * Math.max(1, ...big.map(Math.abs))) return false;
+    return Math.abs(small[0] - small[1]) < 0.05 * Math.max(1, Math.abs(small[0]));
+  };
+  // 분모 f(2α-1) 이 0 인 α, 곧 실근 β 마다 α=(β+1)/2 만 위험하다
+  const ok = (a, b) => {
+    const f = (x) => ((x + a) * x + b) * x - 1;
+    return cubicRealRoots(a, b, -1).every((beta) => limitExists(f, (beta + 1) / 2));
+  };
+  const hits = [];
+  for (let a = -12; a <= 12; a++) for (let b = -12; b <= 12; b++) if (ok(a, b)) hits.push([a, b]);
+  say(JSON.stringify(hits) === JSON.stringify([[-3, 3], [-2, 2], [-1, 1], [0, 0]]),
+    `T01 · 조건을 만족하는 정수쌍은 넷 — (x-1)(x^2+px+1), p=-2,-1,0,1 (${hits.map((h) => '(' + h + ')').join(' ')})`);
+  say(ok(-3, 3) && !ok(1, -1),
+    'T01 · 판별식 0 인 두 경우가 갈린다 — (x-1)^3 은 살고 (x-1)(x+1)^2 은 죽는다');
+  say(!ok(-4, 4) && !ok(2, -2), 'T01 · 판별식이 양수인 p=-3, p=3 은 탈락');
+  const f3 = hits.map(([a, b]) => 27 + 9 * a + 3 * b - 1);
+  say(f3.reduce((u, v) => u + v, 0) === 68, `T01 · 답 = ${f3.join('+')} = ${f3.reduce((u, v) => u + v, 0)}`);
+  // 기출의 극단 논증이 닫히지 않는다는 풀이의 주장
+  const r = cubicRealRoots(-3, -1, 3), M = Math.max(...r), m = Math.min(...r);   // 근 -1, 1, 3
+  say((M + 1) / 2 <= M && (m + 1) / 2 >= m && m < 1 && M > 1,
+    'T01 · 가장 큰·작은 근 논증은 m≤1≤M 만 주고 근을 모으지 못한다 (근 -1,1,3 에서도 부등식이 성립)');
+  const lim = (g, al) => g(al + 1e-3) / g(2 * (al + 1e-3) - 1);
+  say(Math.abs(lim((x) => (x - 1) ** 3, 1) - 1 / 8) < 1e-6, 'T01 · (x-1)^3 이면 x=1 에서 극한값 1/8');
+}
+
+/* T02 · 합이 6인 자리가 하나 — 왼쪽 8x^3-24x^2+20 (x<=1), 오른쪽 a(x-1)(x-b)+16 (x>1) */
+{
+  const leftCount = (t) => cubicRealRoots(-3, 0, (20 - t) / 8).filter((x) => x <= 1 + 1e-9).length;
+  const rightCount = (a, b, t) => {
+    const A = a, B = -a * (1 + b), C = a * b + 16 - t, D = B * B - 4 * A * C;
+    if (D < -1e-9) return 0;
+    const rs = Math.abs(D) <= 1e-9 ? [-B / (2 * A)] : [(-B - Math.sqrt(D)) / (2 * A), (-B + Math.sqrt(D)) / (2 * A)];
+    return rs.filter((x) => x > 1 + 1e-9).length;
+  };
+  const g = (a, b, t) => leftCount(t) + rightCount(a, b, t);
+
+  // g 가 바뀌는 높이를 훑어서 모은다. 한 칸 안에 걸린 점은 1/4 단위 값으로 붙인다.
+  const jumpsOf = (a, b) => {
+    const lo = Math.min(-30, 16 - a * (b - 1) ** 2 / 4 - 3), hi = 30, step = 0.05, js = [];
+    let last = g(a, b, lo);
+    for (let t = lo; t < hi; t += step) { const cur = g(a, b, t + step); if (cur !== last) js.push(t + step / 2); last = cur }
+    return js.map((j) => { const r = Math.round(j * 4) / 4; return Math.abs(r - j) < step ? r : j })
+      .filter((v, i, arr) => arr.indexOf(v) === i);
+  };
+  const countK = (a, b) => {
+    const ts = jumpsOf(a, b);
+    const probes = [ts[0] - 1, ...ts.slice(0, -1).map((t, i) => (t + ts[i + 1]) / 2), ts[ts.length - 1] + 1];
+    if (probes.some((t) => g(a, b, t) === 2)) return Infinity;
+    return ts.filter((k, i) => g(a, b, probes[i]) + g(a, b, k) + g(a, b, probes[i + 1]) === 6).length;
+  };
+
+  say(JSON.stringify(jumpsOf(5, 4)) === JSON.stringify([4, 4.75, 16, 20]),
+    `T02 · g 가 바뀌는 높이는 끝점 4 · 바닥 c · 빈 점 16 · 극대 20 뿐 ((5,4) 에서 ${jumpsOf(5, 4).join(', ')})`);
+  // 왼쪽 계단표 1·2·2·1·0 이 풀이와 같은가
+  say([leftCount(0), leftCount(4), leftCount(10), leftCount(20), leftCount(25)].join('') === '12210',
+    'T02 · 왼쪽 조각의 교점 수 t<4:1, 4:2, (4,20):2, 20:1, t>20:0');
+  say(rightCount(12, 3, 16) === 1, 'T02 · t=16 에서 오른쪽 교점은 하나 — x=1 은 빈 점');
+
+  const hits = [];
+  for (let a = 1; a <= 100; a++) for (let b = 1; a * (b - 1) ** 2 <= 100; b++) if (countK(a, b) === 1) hits.push([a, b]);
+  say(JSON.stringify(hits) === JSON.stringify([[3, 5], [12, 3], [48, 2]]),
+    `T02 · k 가 하나인 쌍은 a(b-1)^2=48 인 셋뿐 (${hits.map((h) => '(' + h + ')').join(' ')})`);
+  say(hits.reduce((s, [a, b]) => s + a + b, 0) === 73, 'T02 · 답 = 50+15+8 = 73');
+  say(countK(16, 3) === 2 && countK(4, 3) === Infinity && countK(7, 1) === Infinity,
+    'T02 · 바닥 c<4 는 g=2 구간이 없는데도 k 가 둘, c>4 와 b=1 은 k 가 무수히 많다 — 막기는 한쪽뿐');
+  const s = (k) => g(12, 3, k - 1e-3) + g(12, 3, k) + g(12, 3, k + 1e-3);
+  say(s(4) === 8 && s(16) === 10 && s(20) === 6, `T02 · 바닥 4 에서 합: k=4→${s(4)}, 16→${s(16)}, 20→${s(20)}`);
+}
+
 for (const c of checks) if (!c.ok) console.log('  X ' + c.msg);
 assert.equal(checks.filter((c) => !c.ok).length, 0,
   '킬러문제의 수학이 맞지 않는다:\n' + checks.filter((c) => !c.ok).map((c) => '  ' + c.msg).join('\n'));
@@ -307,7 +412,8 @@ assert.equal(checks.filter((c) => !c.ok).length, 0,
 /* 세트마다 문항 번호가 1 부터 다시 시작하므로 세트 번호까지 함께 적는다. */
 const VERIFIED = {
   1: { 1: 9, 2: 125, 3: 27, 4: 8, 5: 9 },
-  2: { 1: 15, 2: 50, 3: 18, 4: 84 }
+  2: { 1: 15, 2: 50, 3: 18, 4: 84 },
+  3: { 1: 68, 2: 73 }
 };
 
 function loadSets(files, globalName) {
@@ -317,8 +423,8 @@ function loadSets(files, globalName) {
   assert.ok(Array.isArray(sets) && sets.length, `${globalName} 에 세트가 등록되지 않았다.`);
   return sets.slice().sort((a, b) => a.id - b.id);
 }
-const pubSets = loadSets(['AI킬러문제/문제.js', 'AI킬러문제/문제2.js'], 'JPKillerSets');
-const teaSets = loadSets(['수업창고/AI킬러문제/풀이.js', '수업창고/AI킬러문제/풀이2.js'], 'JPKillerSolutionSets');
+const pubSets = loadSets(['AI킬러문제/문제.js', 'AI킬러문제/문제2.js', 'AI킬러문제/문제3.js'], 'JPKillerSets');
+const teaSets = loadSets(['수업창고/AI킬러문제/풀이.js', '수업창고/AI킬러문제/풀이2.js', '수업창고/AI킬러문제/풀이3.js'], 'JPKillerSolutionSets');
 
 assert.equal(pubSets.length, teaSets.length, '공개용과 교사용의 세트 수가 다르다.');
 assert.equal(pubSets.length, Object.keys(VERIFIED).length, '검산해 둔 세트 수와 실제 세트 수가 다르다.');
@@ -328,7 +434,8 @@ for (const pub of pubSets) {
   const tea = teaSets.find((s) => s.id === pub.id);
   assert.ok(tea, `SET ${pub.id} 이 교사용에 없다.`);
   assert.equal(pub.problems.length, tea.problems.length, `SET ${pub.id} 의 문항 수가 다르다.`);
-  assert.ok(pub.problems.length >= 3, `SET ${pub.id} 은 문항이 셋은 넘어야 한다.`);
+  /* 세트는 두 문항부터 둔다. SET 03 은 짝 기출 둘에 하나씩이라 둘이다. */
+  assert.ok(pub.problems.length >= 2, `SET ${pub.id} 은 문항이 둘은 되어야 한다.`);
   assert.ok(pub.set && pub.headline && pub.blurb, `SET ${pub.id} 의 이름·소개가 비었다.`);
   const answers = VERIFIED[pub.id];
   assert.ok(answers, `SET ${pub.id} 의 답을 검산해 두지 않았다.`);
@@ -364,8 +471,11 @@ for (const pub of pubSets) {
          문항은 innerHTML 로 페이지에 꽂힌다. 그러면 브라우저가 '<c' 를 <c> 라는
          여는 태그로 읽고, 뒤따르는 문장을 통째로 그 태그의 속성으로 삼켜 버린다.
          SET 01 의 "0<c<t" 때문에 실제로 한 문장이 화면에서 사라졌다. \lt 를 쓴다.
-         교사용 본문에만 진짜 태그 <b> </b> <br> 이 있으므로 그것만 비켜간다. */
-      const rawLt = new RegExp('<(?!/b>|b>|b |br>)', 'g');
+         교사용 본문에만 진짜 태그 <b> </b> <br> 과 계단표(table) 가 있으므로
+         그것만 비켜간다. 공개용 문항에는 태그를 허락하지 않는다. */
+      const rawLt = label === '공개용'
+        ? new RegExp('<(?!/b>|b>|b |br>)', 'g')
+        : new RegExp('<(?!/?b>|b |br>|/?table[ >]|/?tr>|/?th>|/?td>)', 'g');
       for (const one of fields) {
         assert.doesNotMatch(one, rawLt,
           `${tag} ${label} 수식에 날 '<' 가 있다 — \\lt 로 바꿔야 한다: ${one.slice(0, 60)}`);
@@ -380,6 +490,11 @@ for (const pub of pubSets) {
     assert.ok(t.why && t.why.length > 30, `${tag} "왜 어려운가" 가 비었다.`);
     assert.ok(t.note && t.note.length > 40, `${tag} 수업 노트가 빈약하다.`);
     // 그래프를 움직여야 보이는 문항이므로 판이 하나씩 붙어 있어야 한다
+    if (t.pair) {
+      const target = path.join('수업창고/AI킬러문제', t.pair.href);
+      assert.ok(fs.existsSync(path.join(ROOT, target)), `${tag} 짝 기출 링크가 없는 파일을 가리킨다: ${target}`);
+      assert.match(path.normalize(target), /^수업창고/, `${tag} 짝 기출은 수업창고 안의 교사용 자료여야 한다.`);
+    }
     assert.ok(t.figure, `${tag} 에 붙일 그림이 정해져 있지 않다.`);
     assert.match(read('수업창고/AI킬러문제/그림.js'), new RegExp('function ' + t.figure + '\\('),
       `${tag} 이 부르는 그림 ${t.figure} 이 그림.js 에 없다.`);
@@ -412,7 +527,7 @@ for (const pub of pubSets) {
 }
 
 // ── 3) 풀이가 공개 쪽으로 새지 않는가 ─────────────────────────────
-for (const file of ['AI킬러문제/문제.js', 'AI킬러문제/문제2.js']) {
+for (const file of ['AI킬러문제/문제.js', 'AI킬러문제/문제2.js', 'AI킬러문제/문제3.js']) {
   const js = read(file);
   assert.doesNotMatch(js, /steps\s*:/, `${file} 에 풀이가 들어 있다.`);
   assert.doesNotMatch(js, /\bnote\s*:/, `${file} 에 수업 노트가 들어 있다.`);
@@ -421,7 +536,7 @@ for (const file of ['AI킬러문제/문제.js', 'AI킬러문제/문제2.js']) {
 for (const page of ['AI킬러문제/index.html', 'AI킬러문제/문제.html']) {
   const html = read(page);
   assert.doesNotMatch(html, /auth\.js/, `${page} 는 공개여야 한다.`);
-  for (const data of ['문제\\.js', '문제2\\.js']) {
+  for (const data of ['문제\\.js', '문제2\\.js', '문제3\\.js']) {
     assert.match(html, new RegExp(data), `${page} 가 ${data.replace('\\', '')} 를 불러와야 한다.`);
   }
 }
@@ -429,6 +544,7 @@ for (const page of ['수업창고/AI킬러문제/index.html', '수업창고/AI�
   const html = read(page);
   assert.match(html, /auth\.js/, `${page} 에 수업창고 잠금이 걸려야 한다.`);
   assert.match(html, /풀이2\.js/, `${page} 가 SET 02 풀이를 불러와야 한다.`);
+  assert.match(html, /풀이3\.js/, `${page} 가 SET 03 풀이를 불러와야 한다.`);
 }
 
 /* 기출과 섞이지 않아야 한다. 공개 목록은 서로 다른 자리에 있고,
