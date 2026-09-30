@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow,noarchive"/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<title>2023 수능 수학 22번 | 현과 평행한 접선 탐구실</title>
+<link rel="stylesheet" href="../../vendor/katex/katex.min.css"/>
+<link rel="stylesheet" href="../../jp-dark.css?v=6"/>
+<link rel="stylesheet" href="../../jp-polish.css?v=11"/>
+<script defer src="../../vendor/katex/katex.min.js"></script>
+<script defer src="../../jp-lab-dark.js?v=2"></script>
+<script defer src="../../jp-polish.js?v=21"></script>
+<link rel="stylesheet" href="../../jp-nav-2.css?v=3"/>
+<script src="../../jp-nav-2.js?v=6" data-jp-section="수능·킬러 문제" defer></script>
+<style>
+.cnt-lab{margin:22px 0;border:1px solid rgba(47,102,112,.2);border-radius:24px;overflow:hidden;background:#fff}.cnt-lab-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:17px 20px;border-bottom:1px solid rgba(58,49,37,.12)}.cnt-lab-head h4{margin:0;font-size:18px}.cnt-lab-head span{color:#2f6670;font:700 10px 'IBM Plex Mono',monospace;letter-spacing:.08em}.cnt-lab-body{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(260px,.72fr)}.cnt-stage{display:grid;gap:8px;align-content:center;padding:16px;background:linear-gradient(145deg,#fbfaf6,#f4efe4)}.cnt-stage svg{display:block;width:100%;height:auto}.cnt-panel{padding:20px;border-left:1px solid rgba(58,49,37,.12)}.cnt-control{margin-bottom:14px}.cnt-control label{display:flex;justify-content:space-between;gap:12px;margin-bottom:6px;color:#5f574b;font-size:12px}.cnt-control label b{color:#a95232;font-family:'IBM Plex Mono',monospace}.cnt-control input{width:100%;accent-color:#a95232}.snap{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 12px}.snap button{padding:5px 9px;border:1px solid rgba(58,49,37,.2);border-radius:999px;background:#fff;font:700 11px 'IBM Plex Mono',monospace;color:#5f574b;cursor:pointer}.snap button:hover{border-color:#a95232;color:#a95232}.snap button.on{border-color:#a95232;background:#fff4ed;color:#a95232}.cnt-row{display:flex;justify-content:space-between;gap:12px;margin-top:8px;padding:9px 11px;border-radius:11px;background:#f6f2e9;font-size:12px}.cnt-row b{color:#2f6670;font-family:'IBM Plex Mono',monospace;text-align:right}.cnt-row.hot b{color:#a95232}.verdict{display:grid;place-items:center;min-height:74px;margin-top:12px;padding:10px;border-radius:15px;color:#fff;background:#8a3d3d;text-align:center}.verdict strong{display:block;font:700 19px 'Pretendard',sans-serif}.verdict span{font-size:11px;color:rgba(255,255,255,.8)}.verdict.ok{background:#477454;box-shadow:0 0 0 4px rgba(71,116,84,.12)}.verdict.mid{background:#6c6357}.cnt-hint{margin:10px 0 0;color:#776e61;font-size:11.5px;line-height:1.6}
+.prob .eqrow{overflow-x:auto}.choice{min-height:48px}.choice.chosen{border-color:#2f6670!important;background:#eef6f5!important;box-shadow:0 0 0 3px rgba(47,102,112,.1)}
+.gtable{width:100%;border-collapse:collapse;margin-top:14px;font-size:13px}.gtable th,.gtable td{padding:8px 6px;border-bottom:1px solid rgba(58,49,37,.12);text-align:center}.gtable td.hot{color:#a95232;font-weight:800}.gtable tr.key td{background:#fff3e8}
+.mini-answer{font-size:clamp(46px,8vw,84px);font-weight:800;color:#a95232;text-align:center;letter-spacing:-.06em}.reveal-note{margin-top:12px;color:#6b6256;font-size:13px;text-align:center}
+.cond{margin:16px 0;padding:16px 18px;border:1.5px solid rgba(58,49,37,.25);border-radius:15px;background:#fdfcf8}.cond p{margin:8px 0;padding-left:26px;text-indent:-26px}
+@media(max-width:800px){.cnt-lab-body{grid-template-columns:1fr}.cnt-panel{border-top:1px solid rgba(58,49,37,.12);border-left:0}.cnt-stage{padding:8px}}
+@media(max-width:650px){.cnt-row{flex-direction:column;align-items:flex-start}.cnt-row b{text-align:left}.gtable{font-size:11.5px}}
+</style>
+</head>
+<body class="tpl-dark is-page">
+
+<header>
+  <div class="hbar">
+    <h1>현과 평행한 접선 탐구실</h1>
+    <span class="src">2023학년도 수능 수학 <b>22번</b> · 4점</span>
+    <a class="back" href="../">← 수능 문제</a>
+  </div>
+  <nav id="nav"></nav>
+  <div class="pbar"><span id="pfill"></span></div>
+</header>
+
+<main>
+
+<!-- ══════════ STEP 1 ══════════ -->
+<section class="ch on" data-ch="0">
+  <p class="eyebrow">STEP 01 · 문제 만나기</p>
+  <h2 class="ct">식으로 보면 낯설지만 <span class="am">그림으로 보면 아는 것</span></h2>
+  <p class="lede">조건 (가)는 계산해야 할 식이 아니라 <b>이미 배운 그림</b>입니다. 한 번 알아보면 <span class="m" data-k="g"></span>가 무엇을 가리키는 함수인지 바로 보입니다.</p>
+
+  <div class="prob">
+    <div class="prob-head"><span class="yr">2023 수능</span><h4>수학 22번</h4><span class="pts">4점</span></div>
+    <div class="prob-body">
+      <div class="qtext">
+        <p>최고차항의 계수가 1인 삼차함수 <span class="m" data-k="f(x)"></span>와 실수 전체의 집합에서 연속인 함수 <span class="m" data-k="g(x)"></span>가 다음 조건을 만족시킬 때, <span class="m am" data-k="f(4)"></span>의 값을 구하시오.</p>
+      </div>
+      <div class="cond">
+        <p>(가) 모든 실수 <span class="m" data-k="x"></span>에 대하여 <span class="m" data-k="f(x)=f(1)+(x-1)f'(g(x))"></span> 이다.</p>
+        <p>(나) 함수 <span class="m" data-k="g(x)"></span>의 최솟값은 <span class="m" data-k="\dfrac{5}{2}"></span> 이다.</p>
+        <p>(다) <span class="m" data-k="f(0)=-3,\quad f(g(1))=6"></span></p>
+      </div>
+      <p class="hintline">먼저 (가)를 <b>말로</b> 바꿔 봅시다. 식을 옮기면 <span class="m" data-k="\dfrac{f(x)-f(1)}{x-1}=f'(g(x))"></span> 입니다.</p>
+    </div>
+  </div>
+
+  <div class="prob">
+    <div class="prob-head"><span class="yr">첫 질문</span><h4>이 식이 말하는 그림은?</h4></div>
+    <div class="prob-body">
+      <div class="qtext"><p>왼쪽은 두 점 <span class="m" data-k="(1,f(1))"></span> 과 <span class="m" data-k="(x,f(x))"></span> 를 이은 <b>현의 기울기</b>입니다. 오른쪽은 <span class="m" data-k="x=g(x)"></span> 자리의 <b>접선의 기울기</b>죠.</p></div>
+      <div class="choices" data-q="mvt" data-ans="2">
+        <button class="choice" data-i="0">현의 길이가 <span class="m" data-k="g(x)"></span>와 같다</button>
+        <button class="choice" data-i="1"><span class="m" data-k="g(x)"></span>는 항상 <span class="m" data-k="x"></span>와 1 사이에 있다</button>
+        <button class="choice" data-i="2">현과 평행한 접선의 접점이 <span class="m" data-k="g(x)"></span> 이다</button>
+        <button class="choice" data-i="3"><span class="m" data-k="f"></span>가 일차함수라는 뜻이다</button>
+      </div>
+      <div class="sol-btns"><button class="b gh" data-sol="mvtSol">직관으로 보기</button></div>
+      <div class="sol intu" id="mvtSol">
+        <h5>직관</h5>
+        <div class="step">평균값정리의 그림 그대로입니다 — <b>현을 하나 그으면 그것과 나란한 접선이 어딘가에 있다.</b></div>
+        <div class="step">다만 평균값정리는 “있다”만 말하고 어디인지는 말해 주지 않습니다. 이 문제는 그 자리를 <span class="m am" data-k="g(x)"></span> 라 <b>이름 붙여</b> 함수로 다룹니다.</div>
+        <div class="step">주의 — 평균값정리는 접점이 두 점 <b>사이에</b> 있다고 하지만, 이 문제의 <span class="m" data-k="g"></span>는 “기울기가 같은 자리”이기만 하면 되므로 바깥일 수도 있습니다.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chnav"><span class="sp"></span><button class="b" data-go="next">현을 움직여 보기 →</button></div>
+</section>
+
+<!-- ══════════ STEP 2 ══════════ -->
+<section class="ch" data-ch="1">
+  <p class="eyebrow">STEP 02 · 현을 움직이다</p>
+  <h2 class="ct">나란한 접선은 <span class="am">언제나 둘</span>이다</h2>
+  <p class="lede">삼차함수의 도함수는 아래로 볼록한 포물선입니다. 그러니 기울기가 같은 자리는 <b>축을 사이에 두고 둘</b>씩 짝을 이룹니다. 현을 움직이며 확인해 보세요.</p>
+
+  <div class="cnt-lab">
+    <div class="cnt-lab-head"><h4>현 하나에 접선 둘</h4><span>MOVE · MATCH</span></div>
+    <div class="cnt-lab-body">
+      <div class="cnt-stage"><div id="lab1"></div></div>
+      <div class="cnt-panel">
+        <div class="cnt-control"><label><span>움직이는 점 <span class="m" data-k="x"></span></span><b id="x1v">3.00</b></label><input id="x1" type="range" min="-2" max="6" step="0.05" value="3"></div>
+        <div class="cnt-row"><span>현의 기울기</span><b id="r1a">—</b></div>
+        <div class="cnt-row"><span>나란한 접선의 접점 둘</span><b id="r1b">—</b></div>
+        <div class="cnt-row hot"><span>두 접점의 한가운데</span><b id="r1c">—</b></div>
+        <div class="verdict ok" id="v1box"><strong>—</strong><span>—</span></div>
+        <p class="cnt-hint">붉은 선이 현, 청록 선이 그와 나란한 두 접선입니다. 한가운데 값은 <span class="m" data-k="x"></span>를 아무리 움직여도 꿈쩍하지 않습니다.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="prob">
+    <div class="prob-head"><span class="yr">관찰</span><h4>두 접점의 한가운데가 늘 같은 이유는?</h4></div>
+    <div class="prob-body">
+      <div class="choices" data-q="axis" data-ans="1">
+        <button class="choice" data-i="0">우연이다</button>
+        <button class="choice" data-i="1"><span class="m" data-k="f'"></span>가 포물선이라 두 해가 <b>축에 대해 대칭</b>이기 때문</button>
+        <button class="choice" data-i="2">현이 항상 원점을 지나기 때문</button>
+      </div>
+      <div class="sol-btns"><button class="b gh" data-sol="axisSol">논리로 쓰기</button></div>
+      <div class="sol intu" id="axisSol">
+        <h5>논리</h5>
+        <div class="step"><span class="m" data-k="f(x)=x^{3}+ax^{2}+bx+c"></span> 라 하면 <span class="m" data-k="f'(y)=3y^{2}+2ay+b"></span> — 아래로 볼록한 포물선이고 축은 <span class="m am" data-k="y=-\dfrac{a}{3}"></span>.</div>
+        <div class="step">수평선 <span class="m" data-k="y=(\text{현의 기울기})"></span> 와의 교점은 축에서 같은 거리만큼 <b>양옆으로</b> 둘. 그래서 한가운데는 늘 축입니다.</div>
+        <div class="step">기억해 둘 것 — <span class="m" data-k="f'(p)=f'(q)"></span> 이면 <span class="m am" data-k="p+q=-\dfrac{2a}{3}"></span>, 곧 <span class="m" data-k="p"></span>와 <span class="m" data-k="q"></span>는 축에 대해 <b>서로를 비춘 점</b>입니다.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chnav"><button class="b mute" data-go="prev">← 이전</button><span class="sp"></span><button class="b" data-go="next">둘 중 어느 쪽인가 →</button></div>
+</section>
+
+<!-- ══════════ STEP 3 ══════════ -->
+<section class="ch" data-ch="2">
+  <p class="eyebrow">STEP 03 · 어느 가지를 고를까</p>
+  <h2 class="ct"><span class="am">연속</span>과 <span class="am">최솟값</span>이 가지를 정한다</h2>
+  <p class="lede">접점이 둘이니 <span class="m" data-k="g"></span>가 고를 길도 둘입니다. 위쪽(축보다 큰 쪽)과 아래쪽(축보다 작은 쪽). 두 길을 직접 그려 보세요.</p>
+
+  <div class="cnt-lab">
+    <div class="cnt-lab-head"><h4><span class="m" data-k="g"></span>의 두 가지</h4><span>SWITCH · LOOK</span></div>
+    <div class="cnt-lab-body">
+      <div class="cnt-stage"><div id="lab2"></div></div>
+      <div class="cnt-panel">
+        <div class="cnt-control"><label><span><span class="m" data-k="x^{2}"></span>의 계수 <span class="m" data-k="a"></span></span><b id="a2v">-6</b></label><input id="a2" type="range" min="-12" max="2" step="0.5" value="-6"></div>
+        <div class="snap"><button data-br="up" class="on">위쪽 가지</button><button data-br="down">아래쪽 가지</button></div>
+        <div class="cnt-row"><span><span class="m" data-k="f'"></span>의 축</span><b id="r2a">—</b></div>
+        <div class="cnt-row"><span>가장 완만한 현의 자리</span><b id="r2b">—</b></div>
+        <div class="cnt-row hot"><span><span class="m" data-k="g"></span>의 최솟값</span><b id="r2c">—</b></div>
+        <div class="verdict" id="v2box"><strong>—</strong><span>—</span></div>
+        <p class="cnt-hint">아래쪽 가지를 고르면 <span class="m" data-k="x"></span>가 커질수록 접점이 한없이 내려갑니다.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="prob">
+    <div class="prob-head"><span class="yr">판단</span><h4>(나)가 가지를 하나로 정한다</h4></div>
+    <div class="prob-body">
+      <div class="choices" data-q="branch" data-ans="0">
+        <button class="choice" data-i="0">위쪽 가지 — 아래쪽은 최솟값이 없다</button>
+        <button class="choice" data-i="1">아래쪽 가지 — 값이 작아야 최솟값이 있다</button>
+        <button class="choice" data-i="2">두 가지를 섞어 써도 된다</button>
+      </div>
+      <div class="sol-btns"><button class="b gh" data-sol="brSol">논리로 쓰기</button></div>
+      <div class="sol intu" id="brSol">
+        <h5>논리</h5>
+        <div class="step">멀리 갈수록 현은 가팔라지고, 그만큼 두 접점은 축에서 <b>양쪽으로 벌어집니다</b>. 아래쪽 접점은 한없이 내려가므로 최솟값이 없습니다.</div>
+        <div class="step">섞어 쓰려면 두 가지가 만나는 곳(두 접점이 겹치는 곳)에서 갈아타야 하는데, 그 뒤로는 다시 아래쪽으로 내려가 역시 최솟값이 없습니다.</div>
+        <div class="step">그러므로 <span class="m" data-k="g"></span>는 <b>위쪽 가지</b>이고, <span class="m" data-k="g"></span>의 최솟값은 <b>현이 가장 완만할 때</b> 생깁니다.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chnav"><button class="b mute" data-go="prev">← 이전</button><span class="sp"></span><button class="b" data-go="next">a를 정하러 →</button></div>
+</section>
+
+<!-- ══════════ STEP 4 ══════════ -->
+<section class="ch" data-ch="3">
+  <p class="eyebrow">STEP 04 · a를 정하고, g(1)은 비춰서</p>
+  <h2 class="ct">최솟값 <span class="am">5/2</span> 가 축을 붙잡는다</h2>
+
+  <div class="prob">
+    <div class="prob-head"><span class="yr">계산</span><h4>최솟값을 <span class="m" data-k="a"></span>로 쓰기</h4></div>
+    <div class="prob-body">
+      <div class="sol-btns"><button class="b gh" data-sol="aSol">계산 보기</button></div>
+      <div class="sol calc" id="aSol">
+        <h5>계산</h5>
+        <div class="step"><span class="m" data-k="f(x)-f(1)=(x-1)Q(x)"></span> 로 나누면 <span class="m" data-k="Q(x)=x^{2}+(a+1)x+(a+b+1)"></span> — 이것이 <b>현의 기울기</b>입니다.</div>
+        <div class="step">가장 완만한 현은 <span class="m" data-k="Q"></span>가 최소일 때, 곧 <span class="m" data-k="x=-\dfrac{a+1}{2}"></span> 에서입니다.</div>
+        <div class="step">그때 두 접점 사이의 거리를 구하면 축에서 <span class="m" data-k="\dfrac{|a+3|}{6}"></span> 만큼 떨어져 있습니다. 위쪽 가지이므로</div>
+        <div class="step"><span class="m md am" data-k="(g\text{의 최솟값})=-\frac{a}{3}+\frac{|a+3|}{6}=\frac{5}{2}"></span></div>
+        <div class="step"><span class="m" data-k="a\ge -3"></span> 이면 <span class="m" data-k="-\dfrac{a}{3}+\dfrac{a+3}{6}=-\dfrac{a}{6}+\dfrac12=\dfrac52"></span> 에서 <span class="m" data-k="a=-12"></span> — <span class="m" data-k="a\ge-3"></span> 과 어긋나 <b>탈락</b>.</div>
+        <div class="step"><span class="m" data-k="a\lt -3"></span> 이면 <span class="m" data-k="-\dfrac{a}{3}-\dfrac{a+3}{6}=-\dfrac{a}{2}-\dfrac12=\dfrac52"></span> 에서 <span class="m am" data-k="a=-6"></span> ✓ (<span class="m" data-k="-6\lt-3"></span>).</div>
+      </div>
+      <p class="hintline" style="margin-top:10px">축은 <span class="m" data-k="y=-\dfrac{a}{3}=2"></span>. 최솟값 <span class="m" data-k="\dfrac52"></span> 는 축보다 <span class="m" data-k="\dfrac12"></span> 만큼 위입니다.</p>
+    </div>
+  </div>
+
+  <div class="prob">
+    <div class="prob-head"><span class="yr">직관</span><h4><span class="m" data-k="g(1)"></span> 은 계산하지 않아도 된다</h4></div>
+    <div class="prob-body">
+      <div class="qtext"><p><span class="m" data-k="x=1"></span> 을 넣으면 현이 한 점으로 오그라듭니다. 그 극한에서 현의 기울기는 무엇이 될까요?</p></div>
+      <div class="choices" data-q="g1" data-ans="1">
+        <button class="choice" data-i="0"><span class="m" data-k="0"></span></button>
+        <button class="choice" data-i="1"><span class="m" data-k="f'(1)"></span></button>
+        <button class="choice" data-i="2"><span class="m" data-k="f(1)"></span></button>
+      </div>
+      <div class="sol-btns"><button class="b gh" data-sol="g1Sol">직관으로 보기</button></div>
+      <div class="sol intu" id="g1Sol">
+        <h5>직관</h5>
+        <div class="step">두 점이 겹치면 현은 그 점의 <b>접선</b>이 됩니다. 그러니 <span class="m" data-k="f'(g(1))=f'(1)"></span>.</div>
+        <div class="step">기울기가 같은 자리는 축에 대해 서로를 비춘 둘 — <span class="m" data-k="1"></span> 과 <span class="m" data-k="2\times 2-1=3"></span>. <span class="m" data-k="g"></span>는 위쪽 가지이므로</div>
+        <div class="step"><span class="m md am" data-k="g(1)=3"></span></div>
+        <div class="step">축 <span class="m" data-k="y=2"></span> 에 거울을 세우고 <span class="m" data-k="x=1"></span> 을 비추면 <span class="m" data-k="3"></span> — <b>계산이 아니라 반사</b>입니다.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chnav"><button class="b mute" data-go="prev">← 이전</button><span class="sp"></span><button class="b" data-go="next">마지막 계산 →</button></div>
+</section>
+
+<!-- ══════════ STEP 5 ══════════ -->
+<section class="ch" data-ch="4">
+  <p class="eyebrow">STEP 05 · 회수와 검산</p>
+  <h2 class="ct">구조가 끝난 뒤에만 <span class="am">계산</span>한다</h2>
+
+  <table class="gtable">
+    <tr><th>단계</th><th>얻은 것</th></tr>
+    <tr><td>(가)의 그림</td><td>현과 나란한 접선의 접점이 <span class="m" data-k="g(x)"></span></td></tr>
+    <tr><td>(나) 최솟값</td><td class="hot"><span class="m" data-k="a=-6"></span> — 축은 <span class="m" data-k="y=2"></span></td></tr>
+    <tr><td>반사</td><td><span class="m" data-k="g(1)=3"></span></td></tr>
+    <tr class="key"><td>(다)</td><td><span class="m" data-k="f(0)=-3\Rightarrow c=-3"></span>, <span class="m" data-k="f(3)=6\Rightarrow b=12"></span></td></tr>
+  </table>
+
+  <div class="prob">
+    <div class="prob-head"><span class="yr">마지막</span><h4><span class="m" data-k="f(4)"></span> 구하기</h4></div>
+    <div class="prob-body">
+      <div class="sol-btns"><button class="b gh" data-sol="finalSol">정답 확인</button></div>
+      <div class="sol intu" id="finalSol">
+        <h5>마무리</h5>
+        <div class="step"><span class="m" data-k="f(3)=27-54+3b-3=6"></span> 에서 <span class="m" data-k="b=12"></span>, 곧 <span class="m" data-k="f(x)=x^{3}-6x^{2}+12x-3"></span>.</div>
+        <div class="step"><span class="m" data-k="f(4)=64-96+48-3"></span></div>
+        <p class="mini-answer">13</p>
+        <p class="reveal-note"><span class="m" data-k="f(x)=(x-2)^{3}+5"></span> 로 묶으면 축이 <span class="m" data-k="x=2"></span> 라는 것이 한눈에 보입니다</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card quote pad"><h3>오늘 쓴 생각의 뼈대</h3><ul class="bul">
+    <li><b class="am">식을 그림으로</b> — <span class="m" data-k="\dfrac{f(x)-f(1)}{x-1}=f'(g(x))"></span> 는 “현과 나란한 접선”.</li>
+    <li><b class="am">둘씩 짝</b> — <span class="m" data-k="f'"></span>가 포물선이라 접점은 축에 대해 대칭인 둘.</li>
+    <li><b class="am">최솟값이 가지를 고른다</b> — 아래쪽 가지는 한없이 내려가 최솟값이 없다.</li>
+    <li><b class="am">반사로 읽기</b> — <span class="m" data-k="g(1)"></span> 은 <span class="m" data-k="x=1"></span> 을 축에 비춘 점.</li>
+    <li><b class="am">계산은 맨 끝에</b> — 구조가 다 정해진 뒤 <span class="m" data-k="b"></span> 하나만 구하면 끝.</li>
+  </ul></div>
+  <div class="chnav"><button class="b mute" data-go="prev">← 이전</button><span class="sp"></span><button class="b gh" data-go="top">처음으로</button></div>
+</section>
+</main>
+
+<script>
+(function(){
+  'use strict';
+  var labels=['문제 만나기','현을 움직이다','어느 가지','a와 반사','회수와 검산'];
+  var chs=[].slice.call(document.querySelectorAll('main > section.ch'));
+  var nav=document.getElementById('nav'),fill=document.getElementById('pfill'),cur=0;
+  labels.forEach(function(t,i){var b=document.createElement('button');b.className=i===0?'on':'';b.innerHTML='<span class="n">0'+(i+1)+'</span>'+t;b.addEventListener('click',function(){go(i);});nav.appendChild(b);});
+  var tabs=[].slice.call(nav.children);
+  function go(i){cur=Math.max(0,Math.min(chs.length-1,i));chs.forEach(function(s,j){s.classList.toggle('on',j===cur);});tabs.forEach(function(b,j){b.classList.toggle('on',j===cur);});fill.style.width=((cur+1)/chs.length*100)+'%';if(tabs[cur]&&tabs[cur].scrollIntoView)tabs[cur].scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});window.scrollTo({top:0,behavior:'smooth'});}go(0);
+  document.addEventListener('click',function(e){
+    var t=e.target.closest&&e.target.closest('[data-go]');if(t){var d=t.getAttribute('data-go');go(d==='next'?cur+1:d==='prev'?cur-1:0);return;}
+    var c=e.target.closest&&e.target.closest('.choice');if(c){var box=c.parentElement;if(box.getAttribute('data-mode')==='record'){box.querySelectorAll('.choice').forEach(function(x){x.classList.remove('chosen');});c.classList.add('chosen');return;}var ans=+box.getAttribute('data-ans'),ok=+c.getAttribute('data-i')===ans;box.querySelectorAll('.choice').forEach(function(x){x.classList.remove('right','wrong');});c.classList.add(ok?'right':'wrong');if(!ok){var right=box.querySelector('.choice[data-i="'+ans+'"]');setTimeout(function(){if(right)right.classList.add('right');},650);}return;}
+    var s=e.target.closest&&e.target.closest('[data-sol]');if(s){var el=document.getElementById(s.getAttribute('data-sol'));if(!el)return;var open=el.classList.toggle('on');s.style.opacity=open?'1':'';if(open&&window.JPDark)window.JPDark.texAll(el);}
+  });
+
+  /* ── 그림 도구 ─────────────────────────────────────────── */
+  function view(x0,x1,y0,y1,W,H){
+    return {x0:x0,x1:x1,y0:y0,y1:y1,W:W,H:H,
+      sx:function(x){return (x-x0)/(x1-x0)*W;},
+      sy:function(y){return H-(y-y0)/(y1-y0)*H;}};
+  }
+  function axes(v,stepX,stepY){
+    var s='<rect x="0" y="0" width="'+v.W+'" height="'+v.H+'" fill="#fbfaf6"/>',x,y;
+    for(x=Math.ceil(v.x0/stepX)*stepX;x<=v.x1;x+=stepX)s+='<line x1="'+v.sx(x).toFixed(1)+'" y1="0" x2="'+v.sx(x).toFixed(1)+'" y2="'+v.H+'" stroke="rgba(58,49,37,.08)"/>';
+    for(y=Math.ceil(v.y0/stepY)*stepY;y<=v.y1;y+=stepY)s+='<line x1="0" y1="'+v.sy(y).toFixed(1)+'" x2="'+v.W+'" y2="'+v.sy(y).toFixed(1)+'" stroke="rgba(58,49,37,.08)"/>';
+    if(v.y0<0&&v.y1>0)s+='<line x1="0" y1="'+v.sy(0).toFixed(1)+'" x2="'+v.W+'" y2="'+v.sy(0).toFixed(1)+'" stroke="#8b8378" stroke-width="1.2"/>';
+    if(v.x0<0&&v.x1>0)s+='<line x1="'+v.sx(0).toFixed(1)+'" y1="0" x2="'+v.sx(0).toFixed(1)+'" y2="'+v.H+'" stroke="#8b8378" stroke-width="1.2"/>';
+    return s;
+  }
+  function curve(v,f,a,b,color,w,dash){
+    var d='',on=false,i,x,y,n=220;
+    for(i=0;i<=n;i++){x=a+(b-a)*i/n;y=f(x);
+      if(!isFinite(y)||y<v.y0-60||y>v.y1+60){on=false;continue;}
+      d+=(on?'L':'M')+v.sx(x).toFixed(1)+' '+v.sy(y).toFixed(1)+' ';on=true;}
+    return '<path d="'+d+'" fill="none" stroke="'+color+'" stroke-width="'+(w||2.4)+'"'+(dash?' stroke-dasharray="'+dash+'"':'')+' stroke-linecap="round"/>';
+  }
+  function line(v,x1,y1,x2,y2,color,w,dash){
+    return '<line x1="'+v.sx(x1).toFixed(1)+'" y1="'+v.sy(y1).toFixed(1)+'" x2="'+v.sx(x2).toFixed(1)+'" y2="'+v.sy(y2).toFixed(1)+'" stroke="'+color+'" stroke-width="'+(w||2)+'"'+(dash?' stroke-dasharray="'+dash+'"':'')+'/>';
+  }
+  function thru(v,x0,y0,m,color,w,dash){       // 기울기 m 인 직선을 화면 끝까지
+    return line(v,v.x0,y0+m*(v.x0-x0),v.x1,y0+m*(v.x1-x0),color,w,dash);
+  }
+  function dot(v,x,y,color,open){
+    if(y<v.y0-2||y>v.y1+2)return '';
+    return open?'<circle cx="'+v.sx(x).toFixed(1)+'" cy="'+v.sy(y).toFixed(1)+'" r="4.6" fill="#fbfaf6" stroke="'+color+'" stroke-width="2"/>'
+               :'<circle cx="'+v.sx(x).toFixed(1)+'" cy="'+v.sy(y).toFixed(1)+'" r="4.6" fill="'+color+'"/>';
+  }
+  function tx(v,x,y,t,color,anchor){
+    return '<text x="'+v.sx(x).toFixed(1)+'" y="'+v.sy(y).toFixed(1)+'" fill="'+(color||'#5f574b')+'" font-size="12" font-family="IBM Plex Mono,monospace" text-anchor="'+(anchor||'middle')+'">'+t+'</text>';
+  }
+  function wrap(v,inner){return '<svg viewBox="0 0 '+v.W+' '+v.H+'" role="img">'+inner+'</svg>';}
+  var INK='#2f6670',HOT='#a95232',GREY='#9a9186';
+
+  // ── 실험실 1 · 현 하나에 접선 둘 (정답인 f 로 고정) ──────────
+  var A=-6,B=12,C=-3;
+  function f(x){return x*x*x+A*x*x+B*x+C;}
+  function df(y){return 3*y*y+2*A*y+B;}
+  var x1=document.getElementById('x1');
+  function lab1(){
+    var X=+x1.value;
+    document.getElementById('x1v').textContent=X.toFixed(2);
+    var V=view(-1.2,6.2,-14,34,560,340),s=axes(V,1,6);
+    s+=curve(V,f,-1.2,6.2,INK,2.6);
+    var slope,ok=Math.abs(X-1)>1e-6;
+    slope=ok?(f(X)-f(1))/(X-1):df(1);                 // 두 점이 겹치면 접선
+    // 현
+    s+=thru(V,1,f(1),slope,HOT,1.6,'6 5');
+    s+=line(V,1,f(1),X,f(X),HOT,2.6);
+    s+=dot(V,1,f(1),HOT);s+=dot(V,X,f(X),HOT);
+    // 기울기가 slope 인 접점 두 개 — 3y^2+2Ay+B=slope
+    var disc=4*A*A-12*(B-slope),p=null,q=null;
+    if(disc>=0){p=(-2*A-Math.sqrt(disc))/6;q=(-2*A+Math.sqrt(disc))/6;
+      [p,q].forEach(function(t){s+=thru(V,t,f(t),slope,INK,1.6,'3 4');s+=dot(V,t,f(t),INK);});
+    }
+    s+=line(V,2,V.y0,2,V.y1,GREY,1.2,'2 5');
+    s+=tx(V,2,-12,'축 y=2',GREY);
+    document.getElementById('lab1').innerHTML=wrap(V,s);
+    document.getElementById('r1a').textContent=slope.toFixed(3);
+    document.getElementById('r1b').textContent=(p===null)?'없음':(p.toFixed(3)+' , '+q.toFixed(3));
+    document.getElementById('r1c').textContent=(p===null)?'—':((p+q)/2).toFixed(3);
+    var box=document.getElementById('v1box');
+    box.className='verdict ok';
+    box.innerHTML='<strong>한가운데는 늘 2</strong><span>'+(ok?'현을 어디로 옮겨도 두 접점의 평균은 축 그대로':'두 점이 겹쳐 현이 접선이 되었습니다')+'</span>';
+  }
+  x1.addEventListener('input',lab1);
+
+  // ── 실험실 2 · g 의 두 가지 ────────────────────────────────
+  var a2=document.getElementById('a2'),branch='up';
+  function lab2(){
+    var a=+a2.value,bb=12,axis=-a/3;
+    document.getElementById('a2v').textContent=a.toFixed(1);
+    // Q(x)=x^2+(a+1)x+(a+bb+1), D(x)=(Q(x)-bb+a^2/3)/3, g=axis ± √D
+    var Q=function(x){return x*x+(a+1)*x+(a+bb+1);};
+    var D=function(x){return (Q(x)-bb+a*a/3)/3;};
+    var g=function(x){var d=D(x);if(d<0)return NaN;return axis+(branch==='up'?1:-1)*Math.sqrt(d);};
+    var xq=-(a+1)/2, gmin=axis+(branch==='up'?1:-1)*Math.sqrt(Math.max(0,D(xq)));
+    var V=view(-6,8,axis-9,axis+9,560,330),s=axes(V,2,3);
+    s+=line(V,V.x0,axis,V.x1,axis,GREY,1.4,'4 5');
+    s+=tx(V,V.x1-0.6,axis+0.5,'축',GREY,'end');
+    s+=curve(V,g,-6,8,branch==='up'?INK:HOT,2.8);
+    s+=dot(V,xq,g(xq),HOT);
+    s+=tx(V,xq,g(xq)+(branch==='up'?1.2:-1.8),branch==='up'?'가장 낮은 곳':'가장 높은 곳',HOT);
+    document.getElementById('lab2').innerHTML=wrap(V,s);
+    document.getElementById('r2a').textContent='y = '+axis.toFixed(3);
+    document.getElementById('r2b').textContent='x = '+xq.toFixed(3);
+    document.getElementById('r2c').textContent=(branch==='up')?gmin.toFixed(4):'없음 (한없이 내려감)';
+    var hit=(branch==='up')&&Math.abs(gmin-2.5)<1e-6,box=document.getElementById('v2box');
+    box.className='verdict '+(branch==='up'?(hit?'ok':'mid'):'');
+    box.innerHTML='<strong>'+(branch==='up'?(hit?'최솟값 5/2 — a = −6':'최솟값 '+gmin.toFixed(3)):'최솟값이 없다')+'</strong><span>'+
+      (branch==='up'?'a를 움직여 5/2 에 맞춰 보세요':'아래쪽 가지는 양끝에서 −∞ 로 갑니다')+'</span>';
+  }
+  a2.addEventListener('input',lab2);
+  document.querySelectorAll('[data-br]').forEach(function(b){b.addEventListener('click',function(){
+    branch=b.getAttribute('data-br');
+    document.querySelectorAll('[data-br]').forEach(function(x){x.classList.toggle('on',x===b);});
+    lab2();});});
+
+  function boot(){lab1();lab2();}
+  if(document.readyState!=='loading')boot();else document.addEventListener('DOMContentLoaded',boot);
+})();
+</script>
+</body>
+</html>
