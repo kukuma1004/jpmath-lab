@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>꺾이는 점에서 p가 메워준다 · 2020 수능 나형 20번 — JP Math Lab</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<link rel="stylesheet" href="jp-dark.css">
+<style>
+.lab-head{max-width:1060px;margin:0 auto;padding:34px 22px 8px}
+.lab-head .badge{display:inline-block;font-size:12px;letter-spacing:.14em;color:#0b0b10;background:linear-gradient(135deg,#ffd76a,#ff9d5c);border-radius:999px;padding:6px 14px;font-weight:800;margin-bottom:12px}
+.lab-head h1{font-size:clamp(26px,4.6vw,40px);margin:0 0 8px}
+.lab-head .sub{color:#9aa7c7;margin:0}
+.wrap{max-width:1060px;margin:0 auto;padding:18px 22px 60px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+.card{background:rgba(16,20,38,.72);border:1px solid rgba(124,92,255,.22);border-radius:18px;padding:22px;margin-bottom:18px;box-shadow:0 12px 40px rgba(0,0,0,.35)}
+.card h2{margin:0 0 4px;font-size:20px}
+.card h2 .step{display:inline-block;background:#7c5cff;color:#fff;font-size:12px;border-radius:8px;padding:3px 10px;margin-right:8px;vertical-align:middle}
+.card .kicker{color:#8b9bb8;font-size:13px;margin:0 0 12px}
+.card p{line-height:1.75;color:#dbe3f5}
+.card .math{overflow-x:auto;padding:6px 0}
+.card ul{padding-left:20px}.card li{line-height:1.75;color:#dbe3f5;margin:6px 0}
+.askbox{border:1px dashed rgba(124,92,255,.5);border-radius:14px;padding:14px 16px;margin:14px 0;background:rgba(124,92,255,.06)}
+.askbox .q{font-weight:700;margin:0 0 10px;color:#fff}
+.askbox label{display:block;padding:8px 10px;border-radius:10px;margin:6px 0;background:rgba(255,255,255,.03);cursor:pointer;border:1px solid transparent}
+.askbox label:hover{border-color:rgba(124,92,255,.4)}
+.askbox input{margin-right:8px}
+.askbox .fb{margin-top:10px;font-weight:700;display:none}
+.askbox .fb.ok{display:block;color:#7dffb0}
+.askbox .fb.no{display:block;color:#ff8f8f}
+.hint{margin:12px 0}
+.hint summary{cursor:pointer;color:#ffd76a;font-weight:700}
+.hint .hint-body{margin-top:8px;color:#c9d4ee;line-height:1.7}
+.problem-img{width:100%;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:#fff}
+.takeaways li{margin:8px 0;line-height:1.7;color:#dbe3f5}
+.side .card h3{margin:0 0 10px;font-size:16px;color:#ffd76a}
+.side .card p,.side .card li{font-size:14px;line-height:1.7;color:#c9d4ee}
+.side .card ul{padding-left:18px;margin:0}
+.note{font-size:13px;color:#8b9bb8}
+.lab-figure{background:#0d1122;border:1px solid rgba(124,92,255,.25);border-radius:14px;padding:14px;margin:14px 0}
+.lab-figure svg{width:100%;height:auto;display:block}
+.lab-ctl{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-top:10px}
+.lab-ctl .ctl{flex:1 1 200px}
+.lab-ctl label{font-size:13px;color:#9aa7c7;display:block;margin-bottom:4px}
+.lab-ctl input[type=range]{width:100%}
+.lab-ctl .val{color:#ffd76a;font-weight:800}
+.legend{font-size:13px;color:#9aa7c7;margin-top:8px}
+.legend span{display:inline-block;margin-right:14px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.readout{margin-top:10px;font-size:14px;line-height:1.9;color:#dbe3f5}
+.readout b{color:#7dffb0}
+.memo{width:100%;min-height:120px;background:#0d1122;border:1px solid rgba(124,92,255,.25);border-radius:12px;color:#dbe3f5;padding:12px;font-size:14px;line-height:1.7}
+.final{background:linear-gradient(135deg,rgba(124,92,255,.16),rgba(255,157,92,.10));border:1px solid rgba(255,215,106,.4)}
+.final .ans{font-size:15px;color:#9aa7c7}
+.final .ans b{font-size:40px;color:#ffd76a;margin:0 8px}
+.tag{display:inline-block;font-size:11px;color:#0b0b10;background:#7dffb0;border-radius:999px;padding:3px 10px;font-weight:800;margin-right:6px}
+table.truth{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}
+table.truth th,table.truth td{border:1px solid rgba(124,92,255,.3);padding:10px;text-align:center;color:#dbe3f5}
+table.truth th{background:rgba(124,92,255,.12);color:#ffd76a}
+table.truth td.t{color:#7dffb0;font-weight:800}
+table.truth td.f{color:#ff8f8f;font-weight:800}
+</style>
+</head>
+<body>
+<header class="lab-head">
+  <span class="badge">수학Ⅱ · 미분</span>
+  <h1>꺾이는 점에서 p가 메워준다</h1>
+  <p class="sub">2020학년도 수능 나형 20번 · 객관식 4점 · 정답 ②</p>
+</header>
+
+<div class="wrap">
+<div class="grid">
+<div class="col-main">
+
+  <section class="card">
+    <h2>원문제</h2>
+    <p class="kicker">실제 수능 문제지다. "나쁜 점"을 \(p(x)\)가 어떻게 메워주는지를 보는 문제다.</p>
+    <img class="problem-img" src="문제이미지/assets/2020수능나형20번.png" alt="2020학년도 수능 나형 20번 원문제">
+    <p class="note">* 원문제: 함수 \(f(x)=\begin{cases}-x&(x\le 0)\\x-1&(0&lt;x\le 2)\\2x-3&(x&gt;2)\end{cases}\)와 상수가 아닌 다항식 \(p(x)\)에 대하여 &lt;보기&gt;에서 옳은 것만을 있는 대로 고른 것은? [4점]<br>
+    &lt;보기&gt; ㄱ. 함수 \(\frac{p(x)}{f(x)}\)가 실수 전체의 집합에서 연속이면 \(p(0)=0\)이다.<br>
+    ㄴ. 함수 \(p(x)f(x)\)가 실수 전체의 집합에서 미분가능하면 \(p(2)=0\)이다.<br>
+    ㄷ. 함수 \(p(x)\{f(x)\}^2\)이 실수 전체의 집합에서 미분가능하면 \(p(x)\)는 \(x^2(x-2)^2\)으로 나누어떨어진다.<br>
+    ① ㄱ ② ㄱ, ㄴ ③ ㄱ, ㄷ ④ ㄴ, ㄷ ⑤ ㄱ, ㄴ, ㄷ</p>
+  </section>
+
+  <section class="card">
+    <h2>이 문제의 한 줄</h2>
+    <p>\(f(x)\)는 두 군데가 "나쁘다": \(x=0\)에서 <b>끊어지고</b>(불연속), \(x=2\)에서 <b>꺾인다</b>(미분불가). \(p(x)\)를 곱했을 때 전체가 매끄러워지려면, \(p\)가 나쁜 점을 <b>메워줘야</b> 한다. 그런데 <b>끊어진 점과 꺾인 점은 메워주는 방법이 다르다!</b> 이 차이가 ㄷ의 함정이다.</p>
+  </section>
+
+  <section class="card">
+    <h2><span class="step">STEP 1</span>\(f(x)\)의 "나쁜 점" 지도 그리기</h2>
+    <p class="kicker">그래프를 그려보자. 어디가 나쁜가?</p>
+    <ul>
+      <li><b>\(x=0\)</b>: \(f(0)=0\)이지만 \(\lim_{x\to 0^+}f(x)=-1\). <b>점프 불연속!</b> (끊어짐)</li>
+      <li><b>\(x=2\)</b>: \(f(2)=1\)로 연속이지만, 좌미분계수 1 ≠ 우미분계수 2. <b>꺾임!</b> (미분불가)</li>
+      <li><b>\(x=0,1\)</b>: \(f(x)=0\)인 점 (0이 되는 점).</li>
+    </ul>
+    <div class="askbox" data-ask="badpts">
+      <p class="q">Q1. \(f(x)\)가 "나쁜" 점과 그 종류는?</p>
+      <label><input type="radio" name="badpts" value="0"> ① \(x=0\)에서 불연속, \(x=2\)에서 미분불가</label>
+      <label><input type="radio" name="badpts" value="1"> ② \(x=0,2\) 모두에서 불연속</label>
+      <label><input type="radio" name="badpts" value="2"> ③ \(x=1\)에서 불연속</label>
+      <p class="fb" data-ok="1">정답! \(x=0\)은 끊어지고(점프), \(x=2\)는 꺾인다. 두 종류의 "나쁨"을 구별하는 것이 핵심이다.</p>
+      <p class="fb" data-ok="0">\(x=0\)에서 왼쪽 값(0)과 오른쪽 극한(-1)을 비교해보자. \(x=2\)에서는 함수값은 일치하는가? 미분계수는?</p>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="step">실험실</span>\(p(x)\)가 메워주는 모습</h2>
+    <p class="kicker">\(p(x)\)의 차수를 바꾸며 \(p(x)f(x)\)가 어떻게 매끄러워지는지 보자.</p>
+    <div class="lab-figure" data-mylab="patch">
+      <svg viewBox="0 0 600 340" role="img" aria-label="메워주기 실험"></svg>
+      <div class="lab-ctl">
+        <div class="ctl"><label>\(p(x)=x^k\) 의 \(k\) : <span class="val" data-kval>1</span></label><input type="range" min="0" max="3" step="1" value="1" data-k></div>
+        <div class="ctl"><label>보기: <span class="val" data-view>pf</span></label><select data-v><option value="pf">p(x)f(x)</option><option value="pf2">p(x)f(x)²</option></select></div>
+      </div>
+      <p class="legend"><span><i class="dot" style="background:#5b6b8c"></i>\(y=f(x)\)</span><span><i class="dot" style="background:#ffd76a"></i>\(y=p(x)f(x)\) 또는 \(y=p(x)f(x)^2\)</span></p>
+      <div class="readout" data-readout></div>
+    </div>
+    <p><span class="tag">관찰 1</span> \(k=0\) (\(p=1\)): \(f\)의 끊어짐과 꺾임이 그대로 보인다.</p>
+    <p><span class="tag">관찰 2</span> \(k=1\) (\(p=x\)): \(x=0\)의 끊어짐이 메워지기 시작한다. \(x=2\)는?</p>
+    <p><span class="tag">관찰 3</span> \(k=2\) (\(p=x^2\)): \(x=0\)이 완전히 매끄러워진다.</p>
+  </section>
+
+  <section class="card">
+    <h2><span class="step">STEP 2</span>ㄱ, ㄴ: 각 점에서 필요한 조건</h2>
+    <p class="kicker">나쁜 점을 메우려면 \(p\)가 0이 되어야 한다.</p>
+    <p><b>ㄱ.</b> \(\frac{p(x)}{f(x)}\)가 연속. \(f(0)=0\)이므로 분모가 0이다. 분자 \(p(0)\)도 0이 아니면 극한이 발산한다. 따라서 <b>\(p(0)=0\)</b>. (ㄱ 참)</p>
+    <p><b>ㄴ.</b> \(p(x)f(x)\)가 미분가능. \(x=2\)는 \(f\)의 꺾이는 점이다. 곱의 미분법:</p>
+    <div class="math">\[\begin{aligned} (pf)'(2^-) &= p'(2)f(2)+p(2)\cdot 1 \\ (pf)'(2^+) &= p'(2)f(2)+p(2)\cdot 2 \end{aligned}\]</div>
+    <p>같아지려면 \(p(2)=0\). (ㄴ 참)</p>
+    <div class="askbox" data-ask="needzero">
+      <p class="q">Q2. \(x=2\)에서 \((pf)'\)의 좌우가 같아지려면 왜 \(p(2)=0\)이어야 하는가?</p>
+      <label><input type="radio" name="needzero" value="0"> ① \(f(2)=0\)이기 때문</label>
+      <label><input type="radio" name="needzero" value="1"> ② \(f'\)의 좌우 값(1과 2)이 다르므로, 그 차이를 없애려면 \(p(2)\)가 0이어야 하기 때문</label>
+      <label><input type="radio" name="needzero" value="2"> ③ \(p'(2)=0\)이기 때문</label>
+      <p class="fb" data-ok="1">정답! \((pf)'(2^+)-(pf)'(2^-)=p(2)(2-1)=p(2)\). 이 차이가 0이 되려면 \(p(2)=0\).</p>
+      <p class="fb" data-ok="0">\((pf)'=p'f+pf'\)에서 \(f'\)의 점프(1→2)가 \(p(2)\)와 곱해진다. 점프를 없애려면?</p>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="step">STEP 3</span>ㄷ: 함정 — 끊어짐과 꺾임은 다르다!</h2>
+    <p class="kicker">이 문제의 클라이맥스. ㄷ이 왜 거짓인가?</p>
+    <p>ㄷ은 "\(p(x)\{f(x)\}^2\)이 미분가능하면 \(p(x)\)는 \(x^2(x-2)^2\)으로 나누어떨어진다"고 주장한다.</p>
+    <p><b>\(x=0\) (점프 불연속):</b> \(f^2\)도 점프한다 (0→1). \(q=pf^2\)가 미분가능(따라서 연속)하려면:</p>
+    <ul>
+      <li>연속: \(\lim_{0^-}q=0,\ \lim_{0^+}q=p(0)\) → \(p(0)=0\).</li>
+      <li>미분가능: \(q'(0^-)=0,\ q'(0^+)=p'(0)\) → \(p'(0)=0\).</li>
+      <li>따라서 <b>\(x^2\)이 필요</b>하다. ✓ (ㄷ의 \(x^2\) 부분은 맞다)</li>
+    </ul>
+    <p><b>\(x=2\) (꺾임, 연속):</b> \(f(2)=1\ne 0\). \(q=pf^2\)의 미분:</p>
+    <div class="math">\[q'(2^+)-q'(2^-) = p(2)\cdot\big[(f^2)'(2^+)-(f^2)'(2^-)\big]\]</div>
+    <p>\(p(2)=0\)이면 좌우 미분계수가 같아진다. <b>\((x-2)^1\)이면 충분</b>하고, \((x-2)^2\)까지는 필요 없다!</p>
+    <p>따라서 ㄷ의 "\(x^2(x-2)^2\)으로 나누어떨어진다"는 <b>거짓</b>이다. (\(x^2(x-2)\)까지만 보장된다.)</p>
+    <div class="askbox" data-ask="trap">
+      <p class="q">Q3. ㄷ이 거짓인 이유는?</p>
+      <label><input type="radio" name="trap" value="0"> ① \(x=0\)에서 \(x^2\)이 필요 없기 때문</label>
+      <label><input type="radio" name="trap" value="1"> ② \(x=2\)는 꺾인 점(연속)이라 \((x-2)^1\)이면 충분하고, \((x-2)^2\)까지는 필요 없기 때문</label>
+      <label><input type="radio" name="trap" value="2"> ③ \(p(x)\)가 상수가 아니기 때문</label>
+      <p class="fb" data-ok="1">정답! <b>점프(불연속)는 \(x^2\), 꺾임(미분불가)은 \((x-2)^1\).</b> 나쁜 점의 종류에 따라 메워주는 정도가 다르다. 이것이 이 문제의 함정이다.</p>
+      <p class="fb" data-ok="0">\(x=0\)은 \(f\)가 끊어지는 점, \(x=2\)는 \(f\)가 꺾이는 점이다. 각각 \(p\)가 몇 차로 0이 되어야 하는가?</p>
+    </div>
+    <table class="truth">
+      <tr><th>점</th><th>\(f\)의 상태</th><th>\(p\)에 필요한 것</th></tr>
+      <tr><td>\(x=0\)</td><td>점프 불연속</td><td class="t">\(x^2\)</td></tr>
+      <tr><td>\(x=2\)</td><td>꺾임 (연속)</td><td class="t">\((x-2)^1\)</td></tr>
+    </table>
+  </section>
+
+  <section class="card final">
+    <h2>정답 고르기</h2>
+    <p>ㄱ 참, ㄴ 참, ㄷ 거짓 → <b>② ㄱ, ㄴ</b></p>
+    <p class="ans">정답 <b>②</b></p>
+  </section>
+
+  <section class="card">
+    <h2>takeaways</h2>
+    <ul class="takeaways">
+      <li><b>나쁜 점의 지도를 그려라.</b> 불연속(끊어짐)과 미분불가(꺾임)를 구별하자.</li>
+      <li>\(p\)가 나쁜 점을 메워주려면 <b>그 점에서 0</b>이 되어야 한다.</li>
+      <li><b>점프는 \(x^2\), 꺾임은 \((x-a)^1\).</b> 나쁜 정도에 따라 메워주는 차수가 다르다.</li>
+      <li>보기는 하나씩이 아니라 <b>연결해서</b> 읽자. ㄱ,ㄴ,ㄷ이 같은 이야기를 한다.</li>
+    </ul>
+  </section>
+
+</div>
+<aside class="col-side side">
+  <section class="card">
+    <h3>한눈에 보는 구조</h3>
+    <ul>
+      <li>\(x=0\): 점프 불연속</li>
+      <li>\(x=2\): 꺾임 (연속)</li>
+      <li>ㄱ: \(p(0)=0\) ✓</li>
+      <li>ㄴ: \(p(2)=0\) ✓</li>
+      <li>ㄷ: \(x^2(x-2)^2\) ✗ (실제는 \(x^2(x-2)\))</li>
+      <li>정답 ②</li>
+    </ul>
+  </section>
+  <section class="card">
+    <h3>함정 체크</h3>
+    <ul>
+      <li>\(f(0)=0\)인데 \(p/f\)가 정의되는지 따지지 않기.</li>
+      <li>ㄷ에서 \(x=2\)도 \(x^2\)처럼 2차가 필요하다고 착각.</li>
+      <li>불연속과 미분불가를 같은 "나쁨"으로 취급.</li>
+    </ul>
+  </section>
+  <section class="card">
+    <h3>용어 정리</h3>
+    <ul>
+      <li><b>점프 불연속</b>: 좌우 극한이 다르거나 함숫값과 다름</li>
+      <li><b>꺾임</b>: 연속이지만 좌우 미분계수가 다름</li>
+      <li><b>나누어떨어진다</b>: \(p(x)=x^2(x-2)q(x)\) 꼴</li>
+    </ul>
+  </section>
+  <section class="card">
+    <h3>기록장</h3>
+    <textarea class="memo" placeholder="내가 발견한 구조를 한 줄로 적어보자."></textarea>
+  </section>
+</aside>
+</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  if (window.renderMathInElement) renderMathInElement(document.body, {delimiters:[{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}]});
+  document.querySelectorAll('.askbox').forEach(function(box){
+    box.querySelectorAll('input[type=radio]').forEach(function(r){
+      r.addEventListener('change', function(){
+        var ok = (r.value === '1');
+        box.querySelectorAll('.fb').forEach(function(f){ f.className = 'fb'; });
+        var target = box.querySelector('.fb[data-ok="'+(ok?'1':'0')+'"]');
+        if (target) target.className = 'fb ' + (ok ? 'ok' : 'no');
+      });
+    });
+  });
+  // ---- custom lab: patching ----
+  (function(){
+    var root = document.querySelector('[data-mylab="patch"]');
+    if(!root) return;
+    var svg = root.querySelector('svg');
+    var kS = root.querySelector('[data-k]'), vS = root.querySelector('[data-v]');
+    var kV = root.querySelector('[data-kval]');
+    var ro = root.querySelector('[data-readout]');
+    var W=600, H=340, pL=44, pR=16, pT=24, pB=44;
+    var xMin=-2.5, xMax=4.5, yMin=-3.5, yMax=3.5;
+    function X(x){ return pL + (x-xMin)/(xMax-xMin)*(W-pL-pR); }
+    function Y(y){ return pT + (yMax-y)/(yMax-yMin)*(H-pT-pB); }
+    function f(x){
+      if(x<=0) return -x;
+      if(x<=2) return x-1;
+      return 2*x-3;
+    }
+    function draw(){
+      var k=parseInt(kS.value), view=vS.value;
+      kV.textContent=k;
+      function p(x){ return Math.pow(x,k); }
+      function q(x){
+        var fv=f(x);
+        if(view==='pf') return p(x)*fv;
+        return p(x)*fv*fv;
+      }
+      var s='';
+      s+='<line x1="'+X(xMin)+'" y1="'+Y(0)+'" x2="'+X(xMax)+'" y2="'+Y(0)+'" stroke="#5b6b8c" stroke-width="1.2"/>';
+      s+='<line x1="'+X(0)+'" y1="'+Y(yMin)+'" x2="'+X(0)+'" y2="'+Y(yMax)+'" stroke="#3a4666" stroke-width="1"/>';
+      for(var x=Math.ceil(xMin); x<=xMax; x++){
+        s+='<text x="'+X(x)+'" y="'+(Y(0)+20)+'" fill="#8b9bb8" font-size="12" text-anchor="middle">'+x+'</text>';
+      }
+      // bad points
+      [0,2].forEach(function(bx){
+        s+='<line x1="'+X(bx)+'" y1="'+Y(yMin)+'" x2="'+X(bx)+'" y2="'+Y(yMax)+'" stroke="#ff8f8f" stroke-width="1" stroke-dasharray="4 4" opacity="0.6"/>';
+        s+='<text x="'+X(bx)+'" y="'+(Y(yMax)-6)+'" fill="#ff8f8f" font-size="12" text-anchor="middle">'+(bx===0?'점프':'꺾임')+'</text>';
+      });
+      function curve(fn, color, width){
+        var pts=[];
+        // draw in segments to show discontinuity
+        var segs=[[-2.5,0],[0.001,2],[2.001,4.5]];
+        var out='';
+        segs.forEach(function(sg){
+          var p2=[];
+          for(var px=sg[0]; px<=sg[1]; px+=0.02){
+            var v=fn(px);
+            if(v>yMin-1 && v<yMax+1) p2.push(X(px).toFixed(1)+','+Y(Math.max(yMin,Math.min(yMax,v))).toFixed(1));
+          }
+          if(p2.length>1) out+='<polyline points="'+p2.join(' ')+'" fill="none" stroke="'+color+'" stroke-width="'+width+'"/>';
+        });
+        return out;
+      }
+      s+=curve(f,'#5b6b8c',2);
+      s+=curve(q,'#ffd76a',3);
+      // markers at bad points for q
+      [0,2].forEach(function(bx){
+        try{
+          var qv=q(bx);
+          if(isFinite(qv) && qv>yMin && qv<yMax){
+            s+='<circle cx="'+X(bx)+'" cy="'+Y(qv)+'" r="7" fill="#7dffb0" stroke="#0b0b10" stroke-width="2"/>';
+          }
+        }catch(e){}
+      });
+      svg.innerHTML=s;
+      var pname = k===0?'1':(k===1?'x':(k===2?'x²':'x³'));
+      var qname = view==='pf' ? 'p(x)f(x)' : 'p(x)f(x)²';
+      var desc = 'p(x)='+pname+', '+qname+'의 그래프<br>';
+      if(k===0) desc += 'f의 끊어짐(x=0)과 꺾임(x=2)이 그대로 보인다.';
+      else if(k===1) desc += 'x=0의 점프가 메워지기 시작한다. x=2의 꺾임은?';
+      else if(k===2) desc += 'x=0이 매끄러워졌다! (x²의 힘)';
+      else desc += 'x=0, x=2 모두 매끄럽다. 하지만 ㄷ은 (x-2)²까지 요구한다!';
+      ro.innerHTML=desc;
+    }
+    kS.addEventListener('input', draw); vS.addEventListener('change', draw);
+    draw();
+  })();
+});
+</script>
+<script src="jp-lab-dark.js"></script>
+</body>
+</html>

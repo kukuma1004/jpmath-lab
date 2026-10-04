@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>움직인 거리 vs 이동한 위치 · 2022 수능 공통 14번 — JP Math Lab</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<link rel="stylesheet" href="jp-dark.css">
+<style>
+.lab-head{max-width:1060px;margin:0 auto;padding:34px 22px 8px}
+.lab-head .badge{display:inline-block;font-size:12px;letter-spacing:.14em;color:#0b0b10;background:linear-gradient(135deg,#ffd76a,#ff9d5c);border-radius:999px;padding:6px 14px;font-weight:800;margin-bottom:12px}
+.lab-head h1{font-size:clamp(26px,4.6vw,40px);margin:0 0 8px}
+.lab-head .sub{color:#9aa7c7;margin:0}
+.wrap{max-width:1060px;margin:0 auto;padding:18px 22px 60px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+.card{background:rgba(16,20,38,.72);border:1px solid rgba(124,92,255,.22);border-radius:18px;padding:22px;margin-bottom:18px;box-shadow:0 12px 40px rgba(0,0,0,.35)}
+.card h2{margin:0 0 4px;font-size:20px}
+.card h2 .step{display:inline-block;background:#7c5cff;color:#fff;font-size:12px;border-radius:8px;padding:3px 10px;margin-right:8px;vertical-align:middle}
+.card .kicker{color:#8b9bb8;font-size:13px;margin:0 0 12px}
+.card p{line-height:1.75;color:#dbe3f5}
+.card .math{overflow-x:auto;padding:6px 0}
+.card ul{padding-left:20px}.card li{line-height:1.75;color:#dbe3f5;margin:6px 0}
+.askbox{border:1px dashed rgba(124,92,255,.5);border-radius:14px;padding:14px 16px;margin:14px 0;background:rgba(124,92,255,.06)}
+.askbox .q{font-weight:700;margin:0 0 10px;color:#fff}
+.askbox label{display:block;padding:8px 10px;border-radius:10px;margin:6px 0;background:rgba(255,255,255,.03);cursor:pointer;border:1px solid transparent}
+.askbox label:hover{border-color:rgba(124,92,255,.4)}
+.askbox input{margin-right:8px}
+.askbox .fb{margin-top:10px;font-weight:700;display:none}
+.askbox .fb.ok{display:block;color:#7dffb0}
+.askbox .fb.no{display:block;color:#ff8f8f}
+.hint{margin:12px 0}
+.hint summary{cursor:pointer;color:#ffd76a;font-weight:700}
+.hint .hint-body{margin-top:8px;color:#c9d4ee;line-height:1.7}
+.problem-img{width:100%;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:#fff}
+.takeaways li{margin:8px 0;line-height:1.7;color:#dbe3f5}
+.side .card h3{margin:0 0 10px;font-size:16px;color:#ffd76a}
+.side .card p,.side .card li{font-size:14px;line-height:1.7;color:#c9d4ee}
+.side .card ul{padding-left:18px;margin:0}
+.note{font-size:13px;color:#8b9bb8}
+.lab-figure{background:#0d1122;border:1px solid rgba(124,92,255,.25);border-radius:14px;padding:14px;margin:14px 0}
+.lab-figure svg{width:100%;height:auto;display:block}
+.lab-ctl{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-top:10px}
+.lab-ctl .ctl{flex:1 1 200px}
+.lab-ctl label{font-size:13px;color:#9aa7c7;display:block;margin-bottom:4px}
+.lab-ctl input[type=range]{width:100%}
+.lab-ctl .val{color:#ffd76a;font-weight:800}
+.legend{font-size:13px;color:#9aa7c7;margin-top:8px}
+.legend span{display:inline-block;margin-right:14px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.readout{margin-top:10px;font-size:14px;line-height:1.9;color:#dbe3f5}
+.readout b{color:#7dffb0}
+.memo{width:100%;min-height:120px;background:#0d1122;border:1px solid rgba(124,92,255,.25);border-radius:12px;color:#dbe3f5;padding:12px;font-size:14px;line-height:1.7}
+.final{background:linear-gradient(135deg,rgba(124,92,255,.16),rgba(255,157,92,.10));border:1px solid rgba(255,215,106,.4)}
+.final .ans{font-size:15px;color:#9aa7c7}
+.final .ans b{font-size:40px;color:#ffd76a;margin:0 8px}
+.tag{display:inline-block;font-size:11px;color:#0b0b10;background:#7dffb0;border-radius:999px;padding:3px 10px;font-weight:800;margin-right:6px}
+</style>
+</head>
+<body>
+<header class="lab-head">
+  <span class="badge">수학Ⅱ · 적분</span>
+  <h1>움직인 거리 vs 이동한 위치</h1>
+  <p class="sub">2022학년도 수능 공통 14번 · 객관식 4점 · 정답 ③</p>
+</header>
+
+<div class="wrap">
+<div class="grid">
+<div class="col-main">
+
+  <section class="card">
+    <h2>원문제</h2>
+    <p class="kicker">실제 수능 문제지다. "속도의 적분"이 두 가지 얼굴을 가졌음을 보는 문제다.</p>
+    <img class="problem-img" src="문제이미지/assets/2022수능14번.png" alt="2022학년도 수능 공통 14번 원문제">
+    <p class="note">* 원문제: 수직선 위를 움직이는 점 P의 시각 \(t\)에서의 위치 \(x(t)\)가 두 상수 \(a,b\)에 대하여 \(x(t)=t(t-1)(at+b)\ (a\ne 0)\)이다. 점 P의 시각 \(t\)에서의 속도 \(v(t)\)가 \(\int_0^1|v(t)|dt=2\)를 만족시킬 때, &lt;보기&gt;에서 옳은 것만을 있는 대로 고른 것은? [4점]<br>
+    &lt;보기&gt; ㄱ. \(\int_0^1v(t)dt=0\) ㄴ. \(|x(t_1)|&gt;1\)인 \(t_1\)이 열린구간 \((0,1)\)에 존재한다. ㄷ. \(0\le t\le 1\)인 모든 \(t\)에 대하여 \(|x(t)|&lt;1\)이면 \(x(t_2)=0\)인 \(t_2\)가 열린구간 \((0,1)\)에 존재한다.<br>
+    ① ㄱ ② ㄱ, ㄴ ③ ㄱ, ㄷ ④ ㄴ, ㄷ ⑤ ㄱ, ㄴ, ㄷ</p>
+  </section>
+
+  <section class="card">
+    <h2>이 문제의 한 줄</h2>
+    <p>\(\int_0^1 v(t)\,dt\)는 <b>"위치의 변화"</b>(어디에서 어디로 갔나)이고, \(\int_0^1|v(t)|\,dt\)는 <b>"움직인 거리"</b>(얼마나 돌아다녔나)다. 둘이 다르면, 점 P는 <b>방향을 바꾼 것</b>이다. 이 한 줄이 보기 ㄴ, ㄷ의 열쇠다.</p>
+  </section>
+
+  <section class="card">
+    <h2><span class="step">STEP 1</span>ㄱ: 계산하지 말고 읽는다</h2>
+    <p class="kicker">미적분의 기본정리는 "계산하라"가 아니라 "읽으라"는 신호다.</p>
+    <div class="math">\[\int_0^1 v(t)\,dt = \int_0^1 x'(t)\,dt = x(1)-x(0)\]</div>
+    <p>\(x(t)=t(t-1)(at+b)\)에서 \(x(0)=0\), \(x(1)=1\cdot 0\cdot(a+b)=0\). 따라서:</p>
+    <div class="math">\[\int_0^1 v(t)\,dt = 0 - 0 = 0\]</div>
+    <p><b>ㄱ은 참.</b> \(v(t)\)를 미분해서 적분할 필요가 전혀 없다. 시작점과 끝점이 같으면 위치 변화는 0이다.</p>
+    <div class="askbox" data-ask="ftc">
+      <p class="q">Q1. \(\int_0^1 v(t)dt=0\)인 이유를 한 마디로?</p>
+      <label><input type="radio" name="ftc" value="0"> ① \(v(t)=0\)이기 때문</label>
+      <label><input type="radio" name="ftc" value="1"> ② \(x(1)=x(0)=0\)이므로 위치 변화가 0이기 때문</label>
+      <label><input type="radio" name="ftc" value="2"> ③ \(|v(t)|\)의 적분이 2이기 때문</label>
+      <p class="fb" data-ok="1">정답! 미적분의 기본정리: 속도의 적분은 위치의 변화다. 시작=끝이면 0이다.</p>
+      <p class="fb" data-ok="0">\(v(t)\)는 \(x(t)\)의 도함수다. \(\int_0^1 x'(t)dt\)는 무엇과 같은가?</p>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="step">STEP 2</span>방향을 바꿨다는 필연성</h2>
+    <p class="kicker">\(\int|v|=2\)와 \(\int v=0\)이 동시에 말하는 것.</p>
+    <p>만약 \(v(t)\ge 0\)이 항상 성립하면 \(\int_0^1|v(t)|dt=\int_0^1v(t)dt=0\)이 되어 조건 \(\int|v|=2\)에 모순. \(v(t)\le 0\)이 항상 성립해도 마찬가지다.</p>
+    <p>따라서 \(v(t)\)는 \((0,1)\)에서 <b>부호를 바꾼다</b>. 즉 점 P는 방향을 바꾸고, \(x(t)\)는 \((0,1)\) 안에서 <b>극대 또는 극소</b>를 갖는다.</p>
+    <div class="math">\[\int_0^1|v(t)|dt=2 \ne 0=\left|\int_0^1v(t)dt\right| \Longrightarrow v\text{는 부호를 바꾼다}\]</div>
+    <div class="askbox" data-ask="sign">
+      <p class="q">Q2. \(\int|v|=2\)이면서 \(\int v=0\)일 때, \(v\)에 대해 확실한 것은?</p>
+      <label><input type="radio" name="sign" value="0"> ① \(v(t)=0\)인 점이 존재한다</label>
+      <label><input type="radio" name="sign" value="1"> ② \(v(t)\)는 \((0,1)\)에서 양수와 음수를 모두 갖는다 (부호를 바꾼다)</label>
+      <label><input type="radio" name="sign" value="2"> ③ \(v(t)\)는 항상 양수다</label>
+      <p class="fb" data-ok="1">정답! 부호가 안 바뀌면 \(\int|v|=|\int v|\)가 되어 2=0이라는 모순이 생긴다.</p>
+      <p class="fb" data-ok="0">\(v\ge 0\)이면 \(|v|=v\)이므로 \(\int|v|=\int v=0\)이다. 조건과 맞는가?</p>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="step">실험실</span>점 P의 움직임을 눈으로</h2>
+    <p class="kicker">\(a,b\)를 움직이며 \(x(t)\)의 그래프와 "움직인 거리"를 관찰하자.</p>
+    <div class="lab-figure" data-mylab="motion">
+      <svg viewBox="0 0 600 340" role="img" aria-label="위치와 속도 실험"></svg>
+      <div class="lab-ctl">
+        <div class="ctl"><label>\(a\) (\(a\ne 0\)) : <span class="val" data-aval>2.0</span></label><input type="range" min="-4" max="4" step="0.1" value="2" data-a></div>
+        <div class="ctl"><label>\(b\) : <span class="val" data-bval>-1.0</span></label><input type="range" min="-4" max="4" step="0.1" value="-1" data-b></div>
+      </div>
+      <p class="legend"><span><i class="dot" style="background:#ffd76a"></i>\(y=x(t)\) (위치)</span><span><i class="dot" style="background:#4ad6ff"></i>\(y=v(t)\) (속도)</span></p>
+      <div class="readout" data-readout></div>
+    </div>
+    <p><span class="tag">관찰 1</span> \(x(0)=x(1)=0\)은 \(a,b\)와 무관하게 항상 성립한다. 그래서 \(\int_0^1v=0\)도 항상이다.</p>
+    <p><span class="tag">관찰 2</span> \(\int_0^1|v(t)|dt\) 값을 보자. 이 값이 2가 되려면 \(x(t)\)의 "혹"이 얼마나 커야 하는가?</p>
+    <p><span class="tag">관찰 3</span> \(v(t)\)가 부호를 바꾸는 점(속도 0)에서 \(x(t)\)는 극값을 갖는다. 방향 전환점이다.</p>
+  </section>
+
+  <section class="card">
+    <h2><span class="step">STEP 3</span>ㄷ: 대우로 읽는 조건문</h2>
+    <p class="kicker">"~이면"은 대우 "~가 아니면"으로 뒤집어보자.</p>
+    <p>ㄷ은 "\(P \Rightarrow Q\)" 꼴이다 (\(P\): \(|x(t)|&lt;1\), \(Q\): \((0,1)\) 안에 \(x\)의 근 존재). 대우는 "\(\lnot Q \Rightarrow \lnot P\)":</p>
+    <p><b>"\((0,1)\) 안에 \(x(t)=0\)인 점이 없으면, \(|x(t_0)|\ge 1\)인 \(t_0\)가 존재한다."</b></p>
+    <p>\(x(t)=t(t-1)(at+b)\)의 근은 \(t=0,1,-b/a\)다. \((0,1)\) 안에 근이 없다는 것은 \(-b/a\notin(0,1)\)이라는 뜻. 이때 \(x(t)\)는 \((0,1)\)에서 부호가 안 바뀌고, \(x(0)=x(1)=0\)이므로 <b>혹이 하나</b>인 모양이다 (올라갔다 내려오거나, 내려갔다 올라오거나).</p>
+    <p>혹이 하나면 움직인 거리는 \(2\times|\)극값\(|\)이다. 조건에서 움직인 거리가 2이므로:</p>
+    <div class="math">\[2\times|\text{극값}| = 2 \quad\Longrightarrow\quad |\text{극값}| = 1\]</div>
+    <p>즉 \(|x(t_0)|=1\)인 점이 존재한다. \(\lnot P\)가 성립한다. <b>ㄷ은 참.</b></p>
+    <div class="askbox" data-ask="contra">
+      <p class="q">Q3. ㄷ의 대우를 올바르게 쓴 것은?</p>
+      <label><input type="radio" name="contra" value="0"> ① \((0,1)\) 안에 근이 있으면 \(|x(t)|\ge 1\)인 점이 있다</label>
+      <label><input type="radio" name="contra" value="1"> ② \((0,1)\) 안에 근이 없으면 \(|x(t_0)|\ge 1\)인 \(t_0\)가 있다</label>
+      <label><input type="radio" name="contra" value="2"> ③ \(|x(t)|&lt;1\)이면 근이 없다</label>
+      <p class="fb" data-ok="1">정답! "\(P\Rightarrow Q\)"의 대우는 "\(\lnot Q\Rightarrow\lnot P\)"다. 조건문을 뒤집는 것이 이 문제의 열쇠다.</p>
+      <p class="fb" data-ok="0">\(P\): \(|x|&lt;1\), \(Q\): 근 존재. 대우는 "근이 없으면 \(|x|\ge 1\)인 점이 있다"다.</p>
+    </div>
+    <details class="hint"><summary>왜 "혹이 하나"인가?</summary><div class="hint-body">\(x(t)\)는 삼차함수라 극값을 최대 2개 갖는다. \((0,1)\) 안에 근이 없고 \(x(0)=x(1)=0\)이면, \(x\)는 \((0,1)\)에서 한쪽 부호만 갖는다. 시작과 끝이 0이므로 올라갔다 내려오는(또는 그 반대) 혹 하나 모양이다. 혹이 2개면 부호가 바뀌어 중간값정리에 의해 근이 생긴다.</div></details>
+  </section>
+
+  <section class="card">
+    <h2><span class="step">STEP 4</span>ㄴ: 반례 하나면 충분하다</h2>
+    <p class="kicker">"존재한다"는 전칭이 아니라 특칭. 깨뜨리려면 예시 하나.</p>
+    <p>ㄴ은 "모든 조건 만족 \((a,b)\)에 대해 \(|x(t_1)|&gt;1\)인 \(t_1\)이 존재한다"는 주장이다. 이를 반박하려면 <b>조건은 만족하지만 \(|x(t)|\le 1\)인 예시</b> 하나면 된다.</p>
+    <p>STEP 3에서 본 "혹 하나, 극값 \(=1\)"인 경우가 바로 그 예시다. 예컨대 극댓값이 정확히 1인 \((a,b)\)에서는 \(\int|v|=2\)를 만족하면서도 \(|x(t)|&gt;1\)인 점이 없다.</p>
+    <p><b>ㄴ은 거짓.</b></p>
+    <div class="askbox" data-ask="counter">
+      <p class="q">Q4. ㄴ이 거짓임을 보이는 방법은?</p>
+      <label><input type="radio" name="counter" value="0"> ① 모든 \((a,b)\)에 대해 \(|x|&gt;1\)임을 증명한다</label>
+      <label><input type="radio" name="counter" value="1"> ② 조건 \(\int|v|=2\)를 만족하면서 \(|x(t)|\le 1\)인 \((a,b)\) 예시를 하나 든다</label>
+      <label><input type="radio" name="counter" value="2"> ③ \(|x(t)|&gt;1\)인 \(t_1\)을 직접 구한다</label>
+      <p class="fb" data-ok="1">정답! "존재한다"는 주장을 깨뜨리려면 반례 하나면 충분하다. 혹의 높이가 정확히 1인 경우가 그 예시다.</p>
+      <p class="fb" data-ok="0">"모든 경우에 존재한다"를 부정하려면? 하나의 반례면 된다.</p>
+    </div>
+  </section>
+
+  <section class="card final">
+    <h2>정답 고르기</h2>
+    <p>ㄱ 참, ㄴ 거짓, ㄷ 참 → <b>③ ㄱ, ㄷ</b></p>
+    <p class="ans">정답 <b>③</b></p>
+  </section>
+
+  <section class="card">
+    <h2>takeaways</h2>
+    <ul class="takeaways">
+      <li><b>\(\int v\)는 위치 변화, \(\int|v|\)는 움직인 거리.</b> 둘이 다르면 방향을 바꾼 것이다.</li>
+      <li>미적분의 기본정리는 계산 도구가 아니라 <b>읽기 도구</b>다 (\(\int_0^1v=x(1)-x(0)\)).</li>
+      <li>조건문은 <b>대우</b>로 뒤집어보자. "근이 없으면"이 "혹이 하나"로 번역된다.</li>
+      <li>"존재한다"는 <b>반례 하나</b>로 깨뜨린다.</li>
+    </ul>
+  </section>
+
+</div>
+<aside class="col-side side">
+  <section class="card">
+    <h3>한눈에 보는 구조</h3>
+    <ul>
+      <li>\(\int_0^1v=x(1)-x(0)=0\) → ㄱ 참</li>
+      <li>\(\int|v|=2\ne 0\) → 방향 전환 필연</li>
+      <li>ㄷ: 대우 → 혹 하나 → 극값 1</li>
+      <li>ㄴ: 반례 (극값=1인 경우)</li>
+      <li>정답 ③</li>
+    </ul>
+  </section>
+  <section class="card">
+    <h3>함정 체크</h3>
+    <ul>
+      <li>\(\int|v|\)를 \(\left|\int v\right|\)로 착각 금지.</li>
+      <li>\(v(t)\)를 직접 미분·적분하려 들기. \(x(1)-x(0)\)이면 끝이다.</li>
+      <li>ㄷ을 직접 증명하려 하기. 대우가 훨씬 쉽다.</li>
+    </ul>
+  </section>
+  <section class="card">
+    <h3>용어 정리</h3>
+    <ul>
+      <li><b>위치 변화</b>: \(\int v = x(1)-x(0)\) (변위)</li>
+      <li><b>움직인 거리</b>: \(\int|v|\) (총 이동거리)</li>
+      <li><b>대우</b>: \(P\Rightarrow Q\)와 \(\lnot Q\Rightarrow\lnot P\)는 동치</li>
+    </ul>
+  </section>
+  <section class="card">
+    <h3>기록장</h3>
+    <textarea class="memo" placeholder="내가 발견한 구조를 한 줄로 적어보자."></textarea>
+  </section>
+</aside>
+</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  if (window.renderMathInElement) renderMathInElement(document.body, {delimiters:[{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}]});
+  document.querySelectorAll('.askbox').forEach(function(box){
+    box.querySelectorAll('input[type=radio]').forEach(function(r){
+      r.addEventListener('change', function(){
+        var ok = (r.value === '1');
+        box.querySelectorAll('.fb').forEach(function(f){ f.className = 'fb'; });
+        var target = box.querySelector('.fb[data-ok="'+(ok?'1':'0')+'"]');
+        if (target) target.className = 'fb ' + (ok ? 'ok' : 'no');
+      });
+    });
+  });
+  // ---- custom lab: motion ----
+  (function(){
+    var root = document.querySelector('[data-mylab="motion"]');
+    if(!root) return;
+    var svg = root.querySelector('svg');
+    var aS = root.querySelector('[data-a]'), bS = root.querySelector('[data-b]');
+    var aV = root.querySelector('[data-aval]'), bV = root.querySelector('[data-bval]');
+    var ro = root.querySelector('[data-readout]');
+    var W=600, H=340, pL=44, pR=16, pT=24, pB=44;
+    var xMin=-0.15, xMax=1.15, yMin=-2.2, yMax=2.2;
+    function X(x){ return pL + (x-xMin)/(xMax-xMin)*(W-pL-pR); }
+    function Y(y){ return pT + (yMax-y)/(yMax-yMin)*(H-pT-pB); }
+    function draw(){
+      var a=parseFloat(aS.value), b=parseFloat(bS.value);
+      if(Math.abs(a)<0.05) a = a<0?-0.05:0.05;
+      aV.textContent=parseFloat(aS.value).toFixed(1); bV.textContent=b.toFixed(1);
+      function x(t){ return t*(t-1)*(a*t+b); }
+      function v(t){ return 3*a*t*t + 2*(b-a)*t - b; }
+      var s='';
+      // axes
+      s+='<line x1="'+X(xMin)+'" y1="'+Y(0)+'" x2="'+X(xMax)+'" y2="'+Y(0)+'" stroke="#5b6b8c" stroke-width="1.2"/>';
+      s+='<line x1="'+X(0)+'" y1="'+Y(yMin)+'" x2="'+X(0)+'" y2="'+Y(yMax)+'" stroke="#3a4666" stroke-width="1"/>';
+      s+='<line x1="'+X(1)+'" y1="'+Y(yMin)+'" x2="'+X(1)+'" y2="'+Y(yMax)+'" stroke="#3a4666" stroke-width="1" stroke-dasharray="4 4"/>';
+      for(var t=0; t<=1.001; t+=0.25){
+        s+='<text x="'+X(t)+'" y="'+(Y(0)+20)+'" fill="#8b9bb8" font-size="12" text-anchor="middle">'+t.toFixed(2).replace(/0$/,'')+'</text>';
+      }
+      // |v| shaded area (top half)
+      var pts=[];
+      for(var px=0; px<=1; px+=0.01){
+        var vv=Math.abs(v(px));
+        if(vv<=4) pts.push(X(px).toFixed(1)+','+Y(vv).toFixed(1));
+      }
+      // x(t) curve
+      function curve(fn, color, width, dash){
+        var p2=[];
+        for(var px=xMin; px<=xMax; px+=0.008){
+          var val=fn(px);
+          if(val>yMin-0.5 && val<yMax+0.5) p2.push(X(px).toFixed(1)+','+Y(Math.max(yMin,Math.min(yMax,val))).toFixed(1));
+        }
+        return '<polyline points="'+p2.join(' ')+'" fill="none" stroke="'+color+'" stroke-width="'+width+'"'+(dash?' stroke-dasharray="6 4"':'')+'/>';
+      }
+      s+=curve(v,'#4ad6ff',2,true);
+      s+=curve(x,'#ffd76a',3,false);
+      // y=1, y=-1 lines
+      s+='<line x1="'+X(0)+'" y1="'+Y(1)+'" x2="'+X(1)+'" y2="'+Y(1)+'" stroke="#ff8f8f" stroke-width="1.2" stroke-dasharray="6 4"/>';
+      s+='<line x1="'+X(0)+'" y1="'+Y(-1)+'" x2="'+X(1)+'" y2="'+Y(-1)+'" stroke="#ff8f8f" stroke-width="1.2" stroke-dasharray="6 4"/>';
+      s+='<text x="'+(X(1)+6)+'" y="'+(Y(1)+4)+'" fill="#ff8f8f" font-size="12">1</text>';
+      s+='<text x="'+(X(1)+6)+'" y="'+(Y(-1)+4)+'" fill="#ff8f8f" font-size="12">-1</text>';
+      // x(0), x(1) markers
+      s+='<circle cx="'+X(0)+'" cy="'+Y(0)+'" r="6" fill="#7dffb0" stroke="#0b0b10" stroke-width="2"/>';
+      s+='<circle cx="'+X(1)+'" cy="'+Y(0)+'" r="6" fill="#7dffb0" stroke="#0b0b10" stroke-width="2"/>';
+      s+='<text x="'+X(0.5)+'" y="'+(Y(yMax)-8)+'" fill="#8b9bb8" font-size="12" text-anchor="middle">t: 0 → 1</text>';
+      svg.innerHTML=s;
+      // numerical integrals
+      var iv=0, iav=0, n=2000;
+      for(var i=0;i<n;i++){
+        var tt=(i+0.5)/n, w=1/n;
+        iv += v(tt)*w; iav += Math.abs(v(tt))*w;
+      }
+      // max |x|
+      var mx=0;
+      for(var j=0;j<=400;j++){ var xx=Math.abs(x(j/400)); if(xx>mx) mx=xx; }
+      ro.innerHTML='∫₀¹v(t)dt = <b>'+iv.toFixed(3)+'</b> (위치 변화) &nbsp;·&nbsp; ∫₀¹|v(t)|dt = <b>'+iav.toFixed(3)+'</b> (움직인 거리)<br>max|x(t)| = <b>'+mx.toFixed(3)+'</b>'+(Math.abs(iav-2)<0.05?' <span style="color:#7dffb0;font-weight:800;">← 조건 ∫|v|=2 근처!</span>':'');
+    }
+    aS.addEventListener('input', draw); bS.addEventListener('input', draw);
+    draw();
+  })();
+});
+</script>
+<script src="jp-lab-dark.js"></script>
+</body>
+</html>

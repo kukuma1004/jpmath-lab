@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>교사용 · 2022 수능 공통 14번 수업자료 — JP Math Lab</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<link rel="stylesheet" href="jp-dark.css">
+<style>
+.deck-head{max-width:1060px;margin:0 auto;padding:30px 22px 6px}
+.deck-head .badge{display:inline-block;font-size:12px;letter-spacing:.14em;color:#0b0b10;background:linear-gradient(135deg,#7dffb0,#4ad6ff);border-radius:999px;padding:6px 14px;font-weight:800;margin-bottom:10px}
+.deck-head h1{font-size:clamp(24px,4.4vw,36px);margin:0 0 6px}
+.deck-head .sub{color:#9aa7c7;margin:0 0 4px}
+.deck-head .meta{color:#8b9bb8;font-size:13px;margin:0}
+.deck{max-width:1060px;margin:0 auto;padding:16px 22px 40px}
+.slide{display:none;background:rgba(16,20,38,.78);border:1px solid rgba(125,255,176,.25);border-radius:20px;padding:28px;min-height:480px;box-shadow:0 12px 40px rgba(0,0,0,.35)}
+.slide.active{display:block}
+.slide .snum{display:inline-block;background:#7dffb0;color:#0b0b10;font-weight:800;font-size:12px;border-radius:8px;padding:4px 12px;margin-bottom:10px;letter-spacing:.1em}
+.slide h2{margin:0 0 14px;font-size:24px}
+.slide .cols{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:20px}
+@media(max-width:860px){.slide .cols{grid-template-columns:1fr}}
+.slide .main p,.slide .main li{line-height:1.8;color:#dbe3f5}
+.slide .main ul{padding-left:20px}
+.qa{background:rgba(125,255,176,.06);border:1px dashed rgba(125,255,176,.4);border-radius:12px;padding:12px 16px;margin:12px 0}
+.qa .q{font-weight:800;color:#7dffb0;margin:0 0 6px}
+.qa .a{margin:0;color:#c9d4ee}
+.warn{background:rgba(255,143,143,.06);border:1px dashed rgba(255,143,143,.4);border-radius:12px;padding:12px 16px;margin:12px 0}
+.warn .t{font-weight:800;color:#ff8f8f;margin:0 0 6px}
+.warn p{margin:0;color:#c9d4ee}
+.sidea{background:#0d1122;border:1px solid rgba(125,255,176,.2);border-radius:14px;padding:16px;height:fit-content}
+.sidea h4{margin:0 0 8px;color:#ffd76a;font-size:14px}
+.sidea p,.sidea li{font-size:13.5px;line-height:1.75;color:#c9d4ee}
+.sidea ul{padding-left:18px;margin:0}
+.nav{display:flex;justify-content:space-between;align-items:center;max-width:1060px;margin:0 auto;padding:0 22px 60px}
+.nav button{background:linear-gradient(135deg,#7dffb0,#4ad6ff);color:#0b0b10;border:none;border-radius:10px;padding:10px 22px;font-weight:800;cursor:pointer;font-size:14px}
+.nav button:disabled{opacity:.3;cursor:default}
+.nav .pg{color:#8b9bb8;font-size:14px}
+.mathline{overflow-x:auto;padding:6px 0}
+.cover-goals li{margin:10px 0;line-height:1.7;color:#dbe3f5}
+.time{font-size:13px;color:#0b0b10;background:#ffd76a;border-radius:999px;padding:3px 12px;font-weight:800;display:inline-block;margin-bottom:8px}
+.note{font-size:13px;color:#8b9bb8}
+</style>
+</head>
+<body>
+<header class="deck-head">
+  <span class="badge">교사용 · 수업자료</span>
+  <h1>2022 수능 공통 14번 — 움직인 거리 vs 이동한 위치</h1>
+  <p class="sub">수학Ⅱ · 적분 · 객관식 4점 · 정답 ③</p>
+  <p class="meta">50분 수업 덱 · 학생용 짝 자료: 「움직인 거리 vs 이동한 위치」 탐구실</p>
+</header>
+
+<div class="deck">
+
+  <section class="slide active">
+    <span class="snum">SLIDE 1 · 표지</span>
+    <h2>오늘의 문제: 2022 수능 공통 14번</h2>
+    <div class="cols">
+      <div class="main">
+        <p><b>학습 목표</b></p>
+        <ul class="cover-goals">
+          <li>\(\int v\)(위치 변화)와 \(\int|v|\)(움직인 거리)를 구별할 수 있다.</li>
+          <li>미적분의 기본정리를 <b>계산이 아니라 읽기</b>로 활용할 수 있다.</li>
+          <li>조건문을 <b>대우</b>로 뒤집어 증명할 수 있다.</li>
+        </ul>
+        <div class="qa"><p class="q">도입 발문</p><p class="a">"출발점으로 되돌아온 자동차의 주행거리계는 0을 가리킬까? 속도계의 적분은 두 가지다. 뭐가 다른 걸까?"</p></div>
+      </div>
+      <div class="sidea">
+        <h4><span class="time">0–5분</span></h4>
+        <p><b>교사 노트:</b> 일상적 비유(주행거리 vs 변위)로 시작하자. 학생들이 \(\int|v|\)와 \(|\int v|\)를 혼동한다는 것을 확인하는 것이 도입의 목표다.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <span class="snum">SLIDE 2 · 핵심 개념</span>
+    <h2>적분의 두 얼굴</h2>
+    <div class="cols">
+      <div class="main">
+        <div class="mathline">\[\int_0^1 v(t)dt = x(1)-x(0) \quad\text{(위치 변화)},\qquad \int_0^1|v(t)|dt \quad\text{(움직인 거리)}\]</div>
+        <ul>
+          <li>이 문제: \(x(0)=x(1)=0\) → 위치 변화 0, 움직인 거리 2.</li>
+          <li>위치 변화가 0인데 움직인 거리가 0이 아니면? <b>방향을 바꾼 것</b>이다.</li>
+        </ul>
+        <div class="qa"><p class="q">발문</p><p class="a">"\(\int|v|=|\int v|\)가 되려면 \(v\)가 어떤 조건을 만족해야 하는가?" → 부호가 안 바뀐다. 이 문제에서는?</p></div>
+        <div class="warn"><p class="t">오개념 주의</p><p>\(\int_0^1|v(t)|dt\)를 \(|\int_0^1v(t)dt|\)로 읽는 학생이 많다. 절댓값의 위치가 의미를 바꾼다.</p></div>
+      </div>
+      <div class="sidea">
+        <h4><span class="time">5–12분</span></h4>
+        <p><b>교사 노트:</b> 탐구실 실험실을 띄우자. \(a,b\)를 움직이며 \(\int v\)는 항상 0이지만 \(\int|v|\)는 변하는 것을 보여주자. "왜 그럴까?"를 학생들에게 묻는다.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <span class="snum">SLIDE 3 · ㄱ 판정</span>
+    <h2>ㄱ: 계산하지 말고 읽는다</h2>
+    <div class="cols">
+      <div class="main">
+        <div class="mathline">\[\int_0^1 v(t)dt = x(1)-x(0) = 0-0 = 0\]</div>
+        <p><b>ㄱ은 참.</b> \(v(t)=3at^2+2(b-a)t-b\)를 구해서 적분할 필요가 없다.</p>
+        <div class="qa"><p class="q">발문</p><p class="a">"\(v(t)\)를 미분해서 적분한 학생? 손 들어봐라. 사실 \(x(1)\)과 \(x(0)\)만 보면 되는데, 왜 계산하려 했을까?"</p></div>
+      </div>
+      <div class="sidea">
+        <h4><span class="time">12–18분</span></h4>
+        <p><b>교사 노트:</b> 이 문제의 첫 번째 메시지: <b>"미적분의 기본정리는 계산 도구가 아니라 읽기 도구다."</b> \(x(t)\)의 식에서 \(x(0),x(1)\)을 읽는 것으로 끝난다.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <span class="snum">SLIDE 4 · ㄷ 판정 ①</span>
+    <h2>ㄷ: 대우로 뒤집는다</h2>
+    <div class="cols">
+      <div class="main">
+        <p>ㄷ: "\( |x(t)|&lt;1\ (\forall t) \Rightarrow (0,1)\) 안에 \(x\)의 근 존재"</p>
+        <p>대우: "\((0,1)\) 안에 근이 없으면 \(|x(t_0)|\ge 1\)인 \(t_0\) 존재"</p>
+        <ul>
+          <li>\(x(t)=t(t-1)(at+b)\)의 근: \(0,1,-b/a\).</li>
+          <li>\((0,1)\) 안에 근이 없다는 것은 \(-b/a\notin(0,1)\).</li>
+          <li>이때 \(x\)는 \((0,1)\)에서 부호가 일정 → <b>혹이 하나</b>.</li>
+        </ul>
+        <div class="qa"><p class="q">발문</p><p class="a">"왜 혹이 하나인가? 혹이 2개면 무슨 일이 생기는가?" → 부호가 바뀌어 중간값정리로 근이 생긴다.</p></div>
+      </div>
+      <div class="sidea">
+        <h4><span class="time">18–28분</span></h4>
+        <p><b>교사 노트:</b> 대우를 쓰는 이유를 명확히 하자. 직접 증명은 "\( |x|&lt;1\)이면..."에서 시작해 막막하지만, 대우는 "근이 없으면"에서 시작해 그래프 모양이 바로 그려진다.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <span class="snum">SLIDE 5 · ㄷ 판정 ②</span>
+    <h2>혹 하나의 높이는 1이다</h2>
+    <div class="cols">
+      <div class="main">
+        <p>혹이 하나면: 올라갔다 내려오기 (또는 그 반대). 움직인 거리 = \(2\times|\)극값\(|\).</p>
+        <div class="mathline">\[2\times|\text{극값}| = \int_0^1|v(t)|dt = 2 \quad\Longrightarrow\quad |\text{극값}|=1\]</div>
+        <p>따라서 \(|x(t_0)|=1\)인 점이 존재한다. 대우가 성립하므로 <b>ㄷ은 참.</b></p>
+        <div class="warn"><p class="t">오개념 주의</p><p>"혹이 하나"를 증명 없이 단정하는 학생이 있다. 삼차함수의 극값 개수(최대 2개)와 근의 위치를 연결해야 한다.</p></div>
+      </div>
+      <div class="sidea">
+        <h4><span class="time">28–35분</span></h4>
+        <p><b>교사 노트:</b> "움직인 거리 = 2 × 혹의 높이"는 직관적으로明らか하지만, 엄밀히는 단조구간으로 나누어 적분해야 한다. 수업에서는 그래프로 납득시키고, 엄밀한 증명은 과제로.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <span class="snum">SLIDE 6 · ㄴ 판정</span>
+    <h2>ㄴ: 반례 하나면 충분하다</h2>
+    <div class="cols">
+      <div class="main">
+        <p>ㄴ: "모든 \((a,b)\)에 대해 \(|x(t_1)|&gt;1\)인 \(t_1\) 존재"</p>
+        <p>반례: <b>혹의 높이가 정확히 1</b>인 경우. 이때 \(\int|v|=2\)를 만족하면서 \(|x(t)|\le 1\)이다.</p>
+        <p><b>ㄴ은 거짓.</b></p>
+        <div class="qa"><p class="q">발문</p><p class="a">"ㄷ의 증명에서 본 '혹 하나, 극값 1'인 경우가 ㄴ의 반례가 된다. 왜?"</p></div>
+      </div>
+      <div class="sidea">
+        <h4><span class="time">35–42분</span></h4>
+        <p><b>교사 노트:</b> ㄴ과 ㄷ의 관계를 짚어주자. ㄷ의 증명 과정에서 등장한 경계 경우(극값=1)가 바로 ㄴ의 반례다. 두 보기가 하나의 논리로 연결된다.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <span class="snum">SLIDE 7 · 마무리</span>
+    <h2>정답 ③, 그리고 남는 것</h2>
+    <div class="cols">
+      <div class="main">
+        <p>ㄱ 참, ㄴ 거짓, ㄷ 참 → <b>③ ㄱ, ㄷ</b></p>
+        <p><b>오늘의 takeaways</b></p>
+        <ul>
+          <li>\(\int v\)는 위치 변화, \(\int|v|\)는 움직인 거리.</li>
+          <li>미적분의 기본정리는 읽기 도구다.</li>
+          <li>조건문은 대우로 뒤집어보자.</li>
+          <li>"존재한다"는 반례 하나로 깨뜨린다.</li>
+        </ul>
+      </div>
+      <div class="sidea">
+        <h4><span class="time">42–50분</span></h4>
+        <p><b>교사 노트:</b> 탐구실 기록장에 "내가 발견한 구조 한 줄"을 적게 하자.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <span class="snum">SLIDE 8 · 연계</span>
+    <h2>학생용 짝 자료</h2>
+    <div class="cols">
+      <div class="main">
+        <p>이 수업의 학생용 짝 자료는 <b>「움직인 거리 vs 이동한 위치」 탐구실</b>(2022 수능 공통 14번)이다.</p>
+        <ul>
+          <li>STEP 1–2: FTC로 ㄱ 판정, 방향 전환의 필연성</li>
+          <li>실험실: \(a,b\) 슬라이더로 \(x(t),v(t)\) 관찰</li>
+          <li>STEP 3–4: 대우로 ㄷ 증명, 반례로 ㄴ 반박</li>
+          <li>과제: 실험실에서 \(\int|v|=2\)가 되는 \((a,b)\)를 찾아 혹의 모양 확인하기</li>
+        </ul>
+      </div>
+      <div class="sidea">
+        <h4>다음 차시 예고</h4>
+        <p>객관식 킬러 ②: 2021 나형 20번 — "미분하면 깔끔해지는 적분".</p>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<nav class="nav">
+  <button id="prev">← 이전</button>
+  <span class="pg"><span id="cur">1</span> / 8</span>
+  <button id="next">다음 →</button>
+</nav>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  if (window.renderMathInElement) renderMathInElement(document.body, {delimiters:[{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}]});
+});
+</script>
+<script src="jp-deck.js"></script>
+</body>
+</html>

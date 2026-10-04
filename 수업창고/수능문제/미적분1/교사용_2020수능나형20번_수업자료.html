@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>교사용 · 2020 수능 나형 20번 수업자료 — JP Math Lab</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<link rel="stylesheet" href="jp-dark.css">
+<style>
+.deck-head{max-width:1060px;margin:0 auto;padding:30px 22px 6px}
+.deck-head .badge{display:inline-block;font-size:12px;letter-spacing:.14em;color:#0b0b10;background:linear-gradient(135deg,#7dffb0,#4ad6ff);border-radius:999px;padding:6px 14px;font-weight:800;margin-bottom:10px}
+.deck-head h1{font-size:clamp(24px,4.4vw,36px);margin:0 0 6px}
+.deck-head .sub{color:#9aa7c7;margin:0 0 4px}
+.deck-head .meta{color:#8b9bb8;font-size:13px;margin:0}
+.deck{max-width:1060px;margin:0 auto;padding:16px 22px 40px}
+.slide{display:none;background:rgba(16,20,38,.78);border:1px solid rgba(125,255,176,.25);border-radius:20px;padding:28px;min-height:480px;box-shadow:0 12px 40px rgba(0,0,0,.35)}
+.slide.active{display:block}
+.slide .snum{display:inline-block;background:#7dffb0;color:#0b0b10;font-weight:800;font-size:12px;border-radius:8px;padding:4px 12px;margin-bottom:10px;letter-spacing:.1em}
+.slide h2{margin:0 0 14px;font-size:24px}
+.slide .cols{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:20px}
+@media(max-width:860px){.slide .cols{grid-template-columns:1fr}}
+.slide .main p,.slide .main li{line-height:1.8;color:#dbe3f5}
+.slide .main ul{padding-left:20px}
+.qa{background:rgba(125,255,176,.06);border:1px dashed rgba(125,255,176,.4);border-radius:12px;padding:12px 16px;margin:12px 0}
+.qa .q{font-weight:800;color:#7dffb0;margin:0 0 6px}
+.qa .a{margin:0;color:#c9d4ee}
+.warn{background:rgba(255,143,143,.06);border:1px dashed rgba(255,143,143,.4);border-radius:12px;padding:12px 16px;margin:12px 0}
+.warn .t{font-weight:800;color:#ff8f8f;margin:0 0 6px}
+.warn p{margin:0;color:#c9d4ee}
+.sidea{background:#0d1122;border:1px solid rgba(125,255,176,.2);border-radius:14px;padding:16px;height:fit-content}
+.sidea h4{margin:0 0 8px;color:#ffd76a;font-size:14px}
+.sidea p,.sidea li{font-size:13.5px;line-height:1.75;color:#c9d4ee}
+.sidea ul{padding-left:18px;margin:0}
+.nav{display:flex;justify-content:space-between;align-items:center;max-width:1060px;margin:0 auto;padding:0 22px 60px}
+.nav button{background:linear-gradient(135deg,#7dffb0,#4ad6ff);color:#0b0b10;border:none;border-radius:10px;padding:10px 22px;font-weight:800;cursor:pointer;font-size:14px}
+.nav button:disabled{opacity:.3;cursor:default}
+.nav .pg{color:#8b9bb8;font-size:14px}
+.mathline{overflow-x:auto;padding:6px 0}
+.cover-goals li{margin:10px 0;line-height:1.7;color:#dbe3f5}
+.time{font-size:13px;color:#0b0b10;background:#ffd76a;border-radius:999px;padding:3px 12px;font-weight:800;display:inline-block;margin-bottom:8px}
+.note{font-size:13px;color:#8b9bb8}
+</style>
+</head>
+<body>
+<header class="deck-head">
+  <span class="badge">교사용 · 수업자료</span>
+  <h1>2020 수능 나형 20번 — 꺾이는 점에서 p가 메워준다</h1>
+  <p class="sub">수학Ⅱ · 미분 · 객관식 4점 · 정답 ②</p>
+  <p class="meta">50분 수업 덱 · 학생용 짝 자료: 「꺾이는 점에서 p가 메워준다」 탐구실</p>
+</header>
+
+<div class="deck">
+
+  <section class="slide active">
+    <span class="snum">SLIDE 1 · 표지</span>
+    <h2>오늘의 문제: 2020 수능 나형 20번</h2>
+    <div class="cols">
+      <div class="main">
+        <p><b>학습 목표</b></p>
+        <ul class="cover-goals">
+          <li>함수의 "나쁜 점"(불연속, 미분불가)을 그래프에서 찾을 수 있다.</li>
+          <li>\(p(x)\)가 나쁜 점을 메워주는 원리를 설명할 수 있다.</li>
+          <li><b>점프는 \(x^2\), 꺾임은 \((x-a)\)</b>라는 차이를 구별할 수 있다.</li>
+        </ul>
+        <div class="qa"><p class="q">도입 발문</p><p class="a">"이 \(f(x)\) 그래프를 그려보자. 어디가 '나쁜가'? 끊어지는 곳과 꺾이는 곳, 두 종류가 있다."</p></div>
+      </div>
+      <div class="sidea">
+        <h4><span class="time">0–5분</span></h4>
+        <p><b>교사 노트:</b> \(f(x)\)의 그래프를 학생들이 직접 그리게 하자. \(x=0\)의 점프와 \(x=2\)의 꺾임을 발견하는 것이 출발점이다.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <span class="snum">SLIDE 2 · 나쁜 점 지도</span>
+    <h2>두 종류의 "나쁨"</h2>
+    <div class="cols">
+      <div class="main">
+        <ul>
+          <li><b>\(x=0\)</b>: \(f(0)=0\), \(\lim_{x\to0^+}f(x)=-1\). <b>점프 불연속</b> (끊어짐).</li>
+          <li><b>\(x=2\)</b>: \(f(2)=1\) 연속, 좌미분 1 ≠ 우미분 2. <b>꺾임</b> (미분불가).</li>
+        </ul>
+        <div class="qa"><p class="q">발문</p><p class="a">"끊어짐과 꺾임, 뭐가 더 '나쁜가'? \(p(x)\)를 곱해서 메워주려면 각각 어떻게 해야 할까?"</p></div>
+        <div class="warn"><p class="t">오개념 주의</p><p>두 "나쁨"을 같은 것으로 취급하는 학생이 많다. 불연속(함숫값 문제)과 미분불가(기울기 문제)는 다른 차원이다.</p></div>
+      </div>
+      <div class="sidea">
+        <h4><span class="time">5–12분</span></h4>
+        <p><b>교사 노트:</b> 탐구실 실험실을 띄우자. \(p(x)=x^k\)의 \(k\)를 바꾸며 \(p(x)f(x)\)가 어떻게 변하는지 보여주자.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <span class="snum">SLIDE 3 · ㄱ, ㄴ 판정</span>
+    <h2>각 점에서 필요한 조건</h2>
+    <div class="cols">
+      <div class="main">
+        <p><b>ㄱ.</b> \(\frac{p}{f}\) 연속 → \(f(0)=0\)이므로 \(p(0)=0\)이어야 함. (ㄱ 참)</p>
+        <p><b>ㄴ.</b> \(pf\) 미분가능. \(x=2\)에서:</p>
+        <div class="mathline">\[(pf)'(2^+)-(pf)'(2^-)=p(2)(2-1)=p(2)=0\]</div>
+        <p>따라서 \(p(2)=0\). (ㄴ 참)</p>
+        <div class="qa"><p class="q">발문</p><p class="a">"\((pf)'\)의 점프가 \(p(2)\)와 \(f'\)의 점프의 곱이다. \(f'\)의 점프를 없앨 수 없으니 \(p(2)\)가 0이어야 한다."</p></div>
+      </div>
+      <div class="sidea">
+        <h4><span class="time">12–22분</span></h4>
+        <p><b>교사 노트:</b> 곱의 미분법 \((pf)'=p'f+pf'\)에서 \(f'\)의 불연속이 \(p\)와 곱해지는 구조를 강조하자.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <span class="snum">SLIDE 4 · ㄷ의 함정 ①</span>
+    <h2>\(x=0\): 점프는 \(x^2\)이 필요하다</h2>
+    <div class="cols">
+      <div class="main">
+        <p>\(q(x)=p(x)f(x)^2\). \(x=0\)에서 \(f^2\)도 점프한다 (0→1).</p>
+        <ul>
+          <li>연속: \(\lim_{0^-}q=0,\ \lim_{0^+}q=p(0)\) → \(p(0)=0\).</li>
+          <li>미분가능: \(q'(0^-)=0,\ q'(0^+)=p'(0)\) → \(p'(0)=0\).</li>
+        </ul>
+        <p>따라서 <b>\(x^2\mid p(x)\)</b>. (ㄷ의 \(x^2\) 부분은 맞다.)</p>
+        <div class="qa"><p class="q">발문</p><p class="a">"연속에는 \(p(0)=0\)이면 되는데, 왜 미분가능에는 \(p'(0)=0\)까지 필요한가?"</p></div>
+      </div>
+      <div class="sidea">
+        <h4><span class="time">22–32분</span></h4>
+        <p><b>교사 노트:</b> 점프 불연속을 메우려면 2단계가 필요하다: (1) 0으로 만들어 이어붙이고, (2) 기울기까지 맞춰 매끄럽게. 이것이 \(x^2\)의 의미다.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <span class="snum">SLIDE 5 · ㄷ의 함정 ②</span>
+    <h2>\(x=2\): 꺾임은 \((x-2)^1\)이면 충분!</h2>
+    <div class="cols">
+      <div class="main">
+        <p>\(x=2\)에서 \(f\)는 연속이고 \(f(2)=1\ne 0\).</p>
+        <div class="mathline">\[q'(2^+)-q'(2^-)=p(2)\cdot\big[(f^2)'(2^+)-(f^2)'(2^-)\big]\]</div>
+        <p>\(p(2)=0\)이면 좌우 미분계수가 같아진다. <b>\((x-2)^1\)이면 충분!</b></p>
+        <p>따라서 ㄷ의 "\(x^2(x-2)^2\)으로 나누어떨어진다"는 <b>거짓</b>이다.</p>
+        <div class="warn"><p class="t">핵심 통찰</p><p><b>점프(불연속)는 \(x^2\), 꺾임(미분불가)은 \((x-a)^1\).</b> 나쁜 정도에 따라 메워주는 차수가 다르다!</p></div>
+      </div>
+      <div class="sidea">
+        <h4><span class="time">32–40분</span></h4>
+        <p><b>교사 노트:</b> 이 슬라이드가 50분의 클라이맥스다. "\(x=0\)과 \(x=2\)는 다른 종류의 나쁨이다"를 학생들이 말하게 하자. 표로 정리하면 좋다.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <span class="snum">SLIDE 6 · 정리</span>
+    <h2>정답 ②, 그리고 남는 것</h2>
+    <div class="cols">
+      <div class="main">
+        <p>ㄱ 참, ㄴ 참, ㄷ 거짓 → <b>② ㄱ, ㄴ</b></p>
+        <table style="width:100%;border-collapse:collapse;margin:12px 0;font-size:14px">
+          <tr><th style="border:1px solid rgba(125,255,176,.3);padding:8px;color:#ffd76a">점</th><th style="border:1px solid rgba(125,255,176,.3);padding:8px;color:#ffd76a">\(f\)의 상태</th><th style="border:1px solid rgba(125,255,176,.3);padding:8px;color:#ffd76a">\(p\)에 필요</th></tr>
+          <tr><td style="border:1px solid rgba(125,255,176,.3);padding:8px;color:#dbe3f5;text-align:center">\(x=0\)</td><td style="border:1px solid rgba(125,255,176,.3);padding:8px;color:#dbe3f5;text-align:center">점프 불연속</td><td style="border:1px solid rgba(125,255,176,.3);padding:8px;color:#7dffb0;text-align:center">\(x^2\)</td></tr>
+          <tr><td style="border:1px solid rgba(125,255,176,.3);padding:8px;color:#dbe3f5;text-align:center">\(x=2\)</td><td style="border:1px solid rgba(125,255,176,.3);padding:8px;color:#dbe3f5;text-align:center">꺾임 (연속)</td><td style="border:1px solid rgba(125,255,176,.3);padding:8px;color:#7dffb0;text-align:center">\((x-2)^1\)</td></tr>
+        </table>
+      </div>
+      <div class="sidea">
+        <h4><span class="time">40–45분</span></h4>
+        <p><b>교사 노트:</b> 표를 학생 공책에 적게 하자. 이것이 이 차시의 핵심 정리다.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <span class="snum">SLIDE 7 · 마무리</span>
+    <h2>takeaways</h2>
+    <div class="cols">
+      <div class="main">
+        <ul>
+          <li>나쁜 점의 지도를 그려라 (불연속 vs 미분불가).</li>
+          <li>\(p\)가 메워주려면 그 점에서 0이 되어야 한다.</li>
+          <li>점프는 \(x^2\), 꺾임은 \((x-a)\).</li>
+          <li>보기는 연결해서 읽자.</li>
+        </ul>
+      </div>
+      <div class="sidea">
+        <h4><span class="time">45–50분</span></h4>
+        <p><b>교사 노트:</b> 탐구실 기록장에 한 줄 적기.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <span class="snum">SLIDE 8 · 연계</span>
+    <h2>학생용 짝 자료</h2>
+    <div class="cols">
+      <div class="main">
+        <p>이 수업의 학생용 짝 자료는 <b>「꺾이는 점에서 p가 메워준다」 탐구실</b>(2020 수능 나형 20번)이다.</p>
+        <ul>
+          <li>STEP 1–2: 나쁜 점 지도, ㄱㄴ 판정</li>
+          <li>실험실: \(p(x)=x^k\)로 메워주기 관찰</li>
+          <li>STEP 3: ㄷ의 함정 (점프 vs 꺾임)</li>
+          <li>과제: \(p(x)=x^2(x-2)\)일 때 \(p(x)f(x)^2\)의 그래프 그려보기</li>
+        </ul>
+      </div>
+      <div class="sidea">
+        <h4>시리즈 마무리</h4>
+        <p>객관식 킬러 3부작: ① 움직인 거리(2022-14) ② 미분되는 적분(2021-20) ③ 메워주는 p(2020-20). 공통점은 <b>"기호를 그래프로 번역한다"</b>는 것이다.</p>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<nav class="nav">
+  <button id="prev">← 이전</button>
+  <span class="pg"><span id="cur">1</span> / 8</span>
+  <button id="next">다음 →</button>
+</nav>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  if (window.renderMathInElement) renderMathInElement(document.body, {delimiters:[{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}]});
+});
+</script>
+<script src="jp-deck.js"></script>
+</body>
+</html>
