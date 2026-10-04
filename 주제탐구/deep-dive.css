@@ -24,7 +24,11 @@
 .sd-deep-entry.is-sample button:hover { background: #fff; border-color: #fff; }
 
 body.dd-open { overflow: hidden; }
-.dd-layer { position: fixed; inset: 0; z-index: 10000; }
+.dd-layer { position: fixed; inset: 0; z-index: 10040; }
+/* 10040인 이유: 전시 잠금 모드에서 .global-header가 z-index 10020,
+   .global-menu가 10030으로 올라온다(jp-nav-2.css). 모달이 그 아래면
+   상단의 × 닫기 버튼이 헤더에 가려 클릭이 막힌다. 토스트(10050)보다만
+   낮게 두어 알림은 모달 위에도 뜰 수 있게 한다. */
 .dd-layer[hidden] { display: none; }
 .dd-backdrop { position: absolute; inset: 0; background: rgba(13, 24, 20, .72); backdrop-filter: blur(10px); }
 .dd-dialog {
