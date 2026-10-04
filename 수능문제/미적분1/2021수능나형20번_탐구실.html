@@ -1,320 +1,347 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>미분하면 깔끔해지는 적분 · 2021 수능 나형 20번 — JP Math Lab</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
-<link rel="stylesheet" href="../../jp-dark.css">
-<style>
-body{margin:0;background:#0a0d18;color:#dbe3f5;font-family:'Pretendard','Noto Sans KR','Malgun Gothic',sans-serif;line-height:1.7;-webkit-font-smoothing:antialiased}
-a{color:#4ad6ff}
-h1,h2,h3{color:#fff}
-.lab-head{max-width:1060px;margin:0 auto;padding:34px 22px 8px}
-.lab-head .badge{display:inline-block;font-size:12px;letter-spacing:.14em;color:#0b0b10;background:linear-gradient(135deg,#ffd76a,#ff9d5c);border-radius:999px;padding:6px 14px;font-weight:800;margin-bottom:12px}
-.lab-head h1{font-size:clamp(26px,4.6vw,40px);margin:0 0 8px}
-.lab-head .sub{color:#9aa7c7;margin:0}
-.wrap{max-width:1060px;margin:0 auto;padding:18px 22px 60px}
-.grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px}
-@media(max-width:900px){.grid{grid-template-columns:1fr}}
-.card{background:rgba(16,20,38,.72);border:1px solid rgba(124,92,255,.22);border-radius:18px;padding:22px;margin-bottom:18px;box-shadow:0 12px 40px rgba(0,0,0,.35)}
-.card h2{margin:0 0 4px;font-size:20px}
-.card h2 .step{display:inline-block;background:#7c5cff;color:#fff;font-size:12px;border-radius:8px;padding:3px 10px;margin-right:8px;vertical-align:middle}
-.card .kicker{color:#8b9bb8;font-size:13px;margin:0 0 12px}
-.card p{line-height:1.75;color:#dbe3f5}
-.card .math{overflow-x:auto;padding:6px 0}
-.card ul{padding-left:20px}.card li{line-height:1.75;color:#dbe3f5;margin:6px 0}
-.askbox{border:1px dashed rgba(124,92,255,.5);border-radius:14px;padding:14px 16px;margin:14px 0;background:rgba(124,92,255,.06)}
-.askbox .q{font-weight:700;margin:0 0 10px;color:#fff}
-.askbox label{display:block;padding:8px 10px;border-radius:10px;margin:6px 0;background:rgba(255,255,255,.03);cursor:pointer;border:1px solid transparent}
-.askbox label:hover{border-color:rgba(124,92,255,.4)}
-.askbox input{margin-right:8px}
-.askbox .fb{margin-top:10px;font-weight:700;display:none}
-.askbox .fb.ok{display:block;color:#7dffb0}
-.askbox .fb.no{display:block;color:#ff8f8f}
-.hint{margin:12px 0}
-.hint summary{cursor:pointer;color:#ffd76a;font-weight:700}
-.hint .hint-body{margin-top:8px;color:#c9d4ee;line-height:1.7}
-.problem-img{width:100%;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:#fff}
-.takeaways li{margin:8px 0;line-height:1.7;color:#dbe3f5}
-.side .card h3{margin:0 0 10px;font-size:16px;color:#ffd76a}
-.side .card p,.side .card li{font-size:14px;line-height:1.7;color:#c9d4ee}
-.side .card ul{padding-left:18px;margin:0}
-.note{font-size:13px;color:#8b9bb8}
-.lab-figure{background:#0d1122;border:1px solid rgba(124,92,255,.25);border-radius:14px;padding:14px;margin:14px 0}
-.lab-figure svg{width:100%;height:auto;display:block}
-.lab-ctl{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-top:10px}
-.lab-ctl .ctl{flex:1 1 200px}
-.lab-ctl label{font-size:13px;color:#9aa7c7;display:block;margin-bottom:4px}
-.lab-ctl input[type=range]{width:100%}
-.lab-ctl .val{color:#ffd76a;font-weight:800}
-.legend{font-size:13px;color:#9aa7c7;margin-top:8px}
-.legend span{display:inline-block;margin-right:14px}
-.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:middle}
-.readout{margin-top:10px;font-size:14px;line-height:1.9;color:#dbe3f5}
-.readout b{color:#7dffb0}
-.readout .warn{color:#ff8f8f;font-weight:800}
-.memo{width:100%;min-height:120px;background:#0d1122;border:1px solid rgba(124,92,255,.25);border-radius:12px;color:#dbe3f5;padding:12px;font-size:14px;line-height:1.7}
-.final{background:linear-gradient(135deg,rgba(124,92,255,.16),rgba(255,157,92,.10));border:1px solid rgba(255,215,106,.4)}
-.final .ans{font-size:15px;color:#9aa7c7}
-.final .ans b{font-size:40px;color:#ffd76a;margin:0 8px}
-.tag{display:inline-block;font-size:11px;color:#0b0b10;background:#7dffb0;border-radius:999px;padding:3px 10px;font-weight:800;margin-right:6px}
-</style>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="noindex,nofollow,noarchive" name="robots"/>
+<link crossorigin="" href="https://cdn.jsdelivr.net" rel="preconnect"/>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;family=Noto+Serif+KR:wght@700;900&amp;display=swap" rel="stylesheet"/>
+<title>2021 수능 나형 20번 | 미분하면 깔끔해지는 적분</title>
+
+<!-- ── 공용 자산 ─────────────────────────────────────────────── -->
+<link rel="stylesheet" href="../../vendor/katex/katex.min.css"/>
+<link rel="stylesheet" href="../../jp-math-typography.css?v=3"/>
+<link rel="stylesheet" href="../../jp-lesson.css"/>
+<link rel="stylesheet" href="../../jp-explore.css"/>
+<script defer src="../../vendor/katex/katex.min.js"></script>
+<script defer src="../../jp-lab.js"></script>
+  <link rel="stylesheet" href="../../jp-polish.css?v=11">
+  <script src="../../jp-polish.js?v=21" defer></script>
+  <link rel="stylesheet" href="../../jp-nav-2.css?v=3">
+  <script src="../../jp-nav-2.js?v=6" data-jp-section="수능·킬러 문제" defer></script>
 </head>
-<body>
-<header class="lab-head">
-  <span class="badge">수학Ⅱ · 적분</span>
-  <h1>미분하면 깔끔해지는 적분</h1>
-  <p class="sub">2021학년도 수능 나형 20번 · 객관식 4점 · 정답 ④ (오답률 79.4%)</p>
+<body class="tpl-math-lesson tpl-explore">
+
+<header class="ex-top">
+  <div class="ex-brand"><a href="../">← 수능 문제</a><small>2021 수능 나형 20번 · 미분하면 깔끔해지는 적분</small></div>
+  <div class="ex-prog"><div class="ex-prog-bar"><i id="progFill"></i></div><span class="ex-prog-txt" id="progTxt">1 / 6</span></div>
 </header>
 
-<div class="wrap">
-<div class="grid">
-<div class="col-main">
+<div class="ex-layout">
+  <aside class="ex-rail">
+    <h3>탐구 경로</h3>
+    <nav class="ex-rail-nav" id="rail"></nav>
+    <p class="rail-tip">먼저 <b>내 생각을 고르고</b> 나서 그래프를 움직여 보세요.<br/>틀려도 괜찮습니다 — 틀린 곳에서 배웁니다.</p>
+  </aside>
 
-  <section class="card">
-    <h2>원문제</h2>
-    <p class="kicker">실제 수능 문제지다. 오답률 79.4%의 킬러. 적분을 미분하면 놀라운 일이 벌어진다.</p>
-    <img class="problem-img" src="문제이미지/assets/2021수능나형20번.png" alt="2021학년도 수능 나형 20번 원문제">
-    <p class="note">* 원문제: 실수 \(a(a&gt;1)\)에 대하여 함수 \(f(x)\)를 \(f(x)=(x+1)(x-1)(x-a)\)라 하자. 함수 \(g(x)=x^2\int_0^xf(t)dt-\int_0^xt^2f(t)dt\)가 오직 하나의 극값을 갖도록 하는 \(a\)의 최댓값은? [4점]<br>
-    ① \(\frac{9\sqrt2}{8}\) ② \(\frac{3\sqrt6}{4}\) ③ \(\frac{3\sqrt2}{2}\) ④ \(\sqrt6\) ⑤ \(2\sqrt2\)</p>
-  </section>
+  <main class="ex-main">
 
-  <section class="card">
-    <h2>이 문제의 한 줄</h2>
-    <p>\(g(x)\)를 미분하면 복잡한 적분이 <b>마법처럼 정리</b>된다: \(g'(x)=2x\int_0^xf(t)dt\). 그 후 "극값의 개수"는 "적분 \(\int_0^xf(t)dt\)가 부호를 몇 번 바꾸는가"의 문제로 바뀐다. 계산은 라이프니츠 법칙 한 번, 나머지는 그래프 읽기다.</p>
-  </section>
+<!-- ═══ SCENE 1 ═══════════════════════════════════════════════════ -->
+<section class="scene is-on" id="s1">
+<p class="scene-eyebrow">문제 읽기 · 2021 수능 나형 20번</p>
+<h2 class="scene-h2"><span class="accent">미분</span>하면 깔끔해지는 적분</h2>
+<p class="scene-lead">오답률 79.4%의 킬러입니다. <span class="kx" data-k="g(x)"></span>를 미분하면 복잡한 적분이 <b>마법처럼 정리</b>됩니다. 계산은 라이프니츠 법칙 한 번, 나머지는 그래프 읽기예요.</p>
+<div class="work">
+  <div class="figure"><img alt="2021학년도 수능 나형 20번 문제" src="문제이미지/assets/2021수능나형20번.png"/></div>
+  <div class="stack">
+    <div class="fx sm boxed" data-k="f(x)=(x+1)(x-1)(x-a)\quad(a\gt 1)"></div>
+    <div class="fx sm boxed" data-k="g(x)=x^2\int_0^xf(t)dt-\int_0^xt^2f(t)dt"></div>
+    <div class="note-strip"><span class="ic">물을 것</span><p><span class="kx" data-k="g"></span>가 <b>오직 하나의 극값</b>을 갖도록 하는 <span class="kx" data-k="a"></span>의 <b>최댓값</b></p></div>
+  </div>
+</div>
+<div class="scene-nav"><span class="sp"></span><button class="nbtn go" data-go="next">g′(x) 구하러 가기 →</button></div>
+</section>
 
-  <section class="card">
-    <h2><span class="step">STEP 1</span>\(g'(x)\)를 구한다 — 상쇄의 마법</h2>
-    <p class="kicker">적분의 미분(라이프니츠 법칙)을 쓰는 순간.</p>
-    <div class="math">\[\begin{aligned} \frac{d}{dx}\left[x^2\int_0^xf(t)dt\right] &= 2x\int_0^xf(t)dt + x^2f(x) \\ \frac{d}{dx}\left[\int_0^xt^2f(t)dt\right] &= x^2f(x) \end{aligned}\]</div>
-    <p>빼면 \(x^2f(x)\)가 <b>상쇄</b>된다!</p>
-    <div class="math">\[g'(x) = 2x\int_0^xf(t)dt\]</div>
-    <div class="askbox" data-ask="leibniz">
-      <p class="q">Q1. \(g'(x)\)에서 \(x^2f(x)\) 항이 사라지는 이유는?</p>
-      <label><input type="radio" name="leibniz" value="0"> ① \(f(x)=0\)이기 때문</label>
-      <label><input type="radio" name="leibniz" value="1"> ② 두 적분을 미분할 때 같은 항 \(x^2f(x)\)가 생겨 서로 상쇄되기 때문</label>
-      <label><input type="radio" name="leibniz" value="2"> ③ \(a&gt;1\)이기 때문</label>
-      <p class="fb" data-ok="1">정답! \(\frac{d}{dx}\int_0^x t^2f(t)dt = x^2f(x)\)가 두 항에서 모두 나와 지워진다. 문제 설계자가 의도한 상쇄다.</p>
-      <p class="fb" data-ok="0">\(\frac{d}{dx}\int_0^x t^2f(t)dt\)를 구해보자. 무엇이 나오는가?</p>
+<!-- ═══ SCENE 2 ═══════════════════════════════════════════════════ -->
+<section class="scene" id="s2">
+<p class="scene-eyebrow">STEP 1 · g′(x) 구하기</p>
+<h2 class="scene-h2"><span class="accent">상쇄</span>의 마법</h2>
+<p class="scene-lead">적분의 미분(라이프니츠 법칙)을 쓰는 순간입니다.</p>
+<div class="work">
+  <div class="stack">
+    <div class="fx sm boxed" data-k="\dfrac{d}{dx}\left[x^2\int_0^xf(t)dt\right]=2x\int_0^xf(t)dt+x^2f(x)"></div>
+    <div class="fx sm boxed" data-k="\dfrac{d}{dx}\left[\int_0^xt^2f(t)dt\right]=x^2f(x)"></div>
+    <p>빼면 <span class="kx" data-k="x^2f(x)"></span>가 <b>상쇄</b>됩니다!</p>
+    <div class="fx boxed hot" data-k="g'(x)=2x\int_0^xf(t)dt"></div>
+  </div>
+  <div class="askbox">
+    <p class="askq"><span class="kx" data-k="g'(x)"></span>에서 <span class="kx" data-k="x^2f(x)"></span> 항이 사라지는 이유는?</p>
+    <div class="opts">
+      <button class="opt"><span class="kx" data-k="f(x)=0"></span>이기 때문</button>
+      <button class="opt" data-correct="1">두 적분을 미분할 때 같은 항 <span class="kx" data-k="x^2f(x)"></span>가 생겨 서로 상쇄되기 때문</button>
+      <button class="opt"><span class="kx" data-k="a\gt 1"></span>이기 때문</button>
     </div>
-  </section>
+    <div class="optfb" data-ok="정답! d/dx ∫₀ˣ t²f(t)dt = x²f(x)가 두 항에서 모두 나와 지워집니다. 문제 설계자가 의도한 상쇄예요." data-no="d/dx ∫₀ˣ t²f(t)dt를 구해 보세요. 무엇이 나오나요?"></div>
+    <div class="note-strip warn"><span class="ic">주의</span><p><span class="kx" data-k="\int_0^x t^2f(t)dt"></span>를 미분할 때 <span class="kx" data-k="2tf(t)+t^2f'(t)"></span>로 착각하지 마세요. 적분 변수는 <span class="kx" data-k="t"></span>, 미분 변수는 <span class="kx" data-k="x"></span>입니다.</p></div>
+  </div>
+</div>
+<div class="scene-nav"><button class="nbtn" data-go="prev">← 이전</button><span class="sp"></span><button class="nbtn go" data-go="next">부호 분석으로 →</button></div>
+</section>
 
-  <section class="card">
-    <h2><span class="step">STEP 2</span>극값은 \(g'\)의 부호 변화</h2>
-    <p class="kicker">\(F(x)=\int_0^xf(t)dt\)라 두자.</p>
-    <div class="math">\[g'(x) = 2xF(x), \quad F(x)=\int_0^x(t^2-1)(t-a)dt\]</div>
-    <p>\(F(x)\)를 계산하면:</p>
-    <div class="math">\[F(x)=\frac{x^4}{4}-\frac{ax^3}{3}-\frac{x^2}{2}+ax = x\left(\frac{x^3}{4}-\frac{ax^2}{3}-\frac{x}{2}+a\right)\]</div>
-    <p>\(H(x)=\frac{x^3}{4}-\frac{ax^2}{3}-\frac{x}{2}+a\)라 두면:</p>
-    <div class="math">\[g'(x) = 2x^2H(x)\]</div>
-    <p>\(2x^2\ge 0\)이므로 ( \(x=0\) 제외), <b>\(g'\)의 부호 = \(H(x)\)의 부호</b>다!</p>
-    <p>따라서 \(g\)의 극값은 <b>\(H(x)\)가 부호를 바꾸는 점</b>에서만 생긴다. (\(x=0\)에서는 \(g'\approx 2ax^2\ge 0\)이라 부호가 안 바뀐다.)</p>
-    <div class="askbox" data-ask="signh">
-      <p class="q">Q2. \(x=0\)이 \(g\)의 극값이 아닌 이유는?</p>
-      <label><input type="radio" name="signh" value="0"> ① \(g'(0)\ne 0\)이기 때문</label>
-      <label><input type="radio" name="signh" value="1"> ② \(g'(x)\approx 2ax^2\ge 0\)이라 \(x=0\) 전후에서 부호가 바뀌지 않기 때문</label>
-      <label><input type="radio" name="signh" value="2"> ③ \(H(0)=0\)이기 때문</label>
-      <p class="fb" data-ok="1">정답! \(g'(0)=0\)이지만 부호가 안 바뀌면 극값이 아니다. "\(g'=0\)"과 "극값"은 다르다!</p>
-      <p class="fb" data-ok="0">\(x=0\) 근처에서 \(F(x)\approx ax\)이므로 \(g'(x)\approx 2ax^2\)다. 부호가 바뀌는가?</p>
+<!-- ═══ SCENE 3 ═══════════════════════════════════════════════════ -->
+<section class="scene" id="s3">
+<p class="scene-eyebrow">STEP 2 · 극값은 g′의 부호 변화</p>
+<h2 class="scene-h2"><span class="accent">부호</span>는 <span class="kx" data-k="H"></span>가 결정한다</h2>
+<p class="scene-lead"><span class="kx" data-k="F(x)=\int_0^xf(t)dt"></span>라 두면, 복잡한 식이 하나의 핵심으로 압축됩니다.</p>
+<div class="work">
+  <div class="stack">
+    <div class="fx sm boxed" data-k="F(x)=\frac{x^4}{4}-\frac{ax^3}{3}-\frac{x^2}{2}+ax=x\left(\frac{x^3}{4}-\frac{ax^2}{3}-\frac{x}{2}+a\right)"></div>
+    <p><span class="kx" data-k="H(x)=\dfrac{x^3}{4}-\dfrac{ax^2}{3}-\dfrac{x}{2}+a"></span>라 두면:</p>
+    <div class="fx boxed hot" data-k="g'(x)=2x^2H(x)"></div>
+    <p><span class="kx" data-k="2x^2\ge 0"></span>이므로 (<span class="kx" data-k="x=0"></span> 제외), <b><span class="kx" data-k="g'"></span>의 부호 = <span class="kx" data-k="H(x)"></span>의 부호</b>입니다!</p>
+    <p>따라서 <span class="kx" data-k="g"></span>의 극값은 <b><span class="kx" data-k="H(x)"></span>가 부호를 바꾸는 점</b>에서만 생깁니다. (<span class="kx" data-k="x=0"></span>에서는 <span class="kx" data-k="g'\approx 2ax^2\ge 0"></span>이라 부호가 안 바뀝니다.)</p>
+  </div>
+  <div class="askbox">
+    <p class="askq"><span class="kx" data-k="x=0"></span>이 <span class="kx" data-k="g"></span>의 극값이 <b>아닌</b> 이유는?</p>
+    <div class="opts">
+      <button class="opt"><span class="kx" data-k="g'(0)\ne 0"></span>이기 때문</button>
+      <button class="opt" data-correct="1"><span class="kx" data-k="g'(x)\approx 2ax^2\ge 0"></span>이라 <span class="kx" data-k="x=0"></span> 전후에서 부호가 바뀌지 않기 때문</button>
+      <button class="opt"><span class="kx" data-k="H(0)=0"></span>이기 때문</button>
     </div>
-  </section>
+    <div class="optfb" data-ok="정답! g′(0)=0이지만 부호가 안 바뀌면 극값이 아닙니다. g′=0과 극값은 달라요!" data-no="x=0 근처에서 F(x)≈ax이므로 g′(x)≈2ax²입니다. 부호가 바뀌나요?"></div>
+    <div class="note-strip warn"><span class="ic">함정</span><p>"<span class="kx" data-k="g'=0"></span>이면 극값"이라는 착각을 버리세요. <b>극값은 부호 변화</b>입니다.</p></div>
+  </div>
+</div>
+<div class="scene-nav"><button class="nbtn" data-go="prev">← 이전</button><span class="sp"></span><button class="nbtn go" data-go="next">실험실로 →</button></div>
+</section>
 
-  <section class="card">
-    <h2><span class="step">실험실</span>\(H(x)\)의 부호 변화를 눈으로</h2>
-    <p class="kicker">\(a\) 슬라이더를 움직이며 \(H(x)\)가 부호를 몇 번 바꾸는지 세어보자.</p>
-    <div class="lab-figure" data-mylab="signchange">
-      <svg viewBox="0 0 600 340" role="img" aria-label="부호 변화 실험"></svg>
-      <div class="lab-ctl">
-        <div class="ctl"><label>\(a\) (\(a&gt;1\)) : <span class="val" data-aval>2.45</span></label><input type="range" min="1.1" max="3.2" step="0.01" value="2.45" data-a></div>
+<!-- ═══ SCENE 4 ═══════════════════════════════════════════════════ -->
+<section class="scene" id="s4">
+<p class="scene-eyebrow">실험실 · 직접 움직이기</p>
+<h2 class="scene-h2"><span class="kx" data-k="H(x)"></span>의 부호 변화를 <span class="accent">눈으로</span></h2>
+<p class="scene-lead"><span class="kx" data-k="a"></span> 슬라이더를 움직이며 <span class="kx" data-k="H(x)"></span>가 부호를 몇 번 바꾸는지 세어 봅시다.</p>
+<div class="work">
+  <div class="lab" data-lab="sign21">
+    <div class="lab-stage"><svg class="lab-svg" viewBox="0 0 600 340" role="img" aria-label="부호 변화 실험"></svg></div>
+    <div class="lab-side">
+      <div class="sl">
+        <div class="sl-top"><span><span class="kx" data-k="a"></span> (<span class="kx" data-k="a\gt 1"></span>)</span><span class="sl-val" data-aval>2.45</span></div>
+        <input type="range" min="1.1" max="3.2" step="0.01" value="2.45" data-a/>
+        <div class="sl-hint"><span class="kx" data-k="\sqrt6\approx 2.449"></span> 근처를 천천히 지나가 보세요</div>
       </div>
-      <p class="legend"><span><i class="dot" style="background:#ffd76a"></i>\(y=H(x)\)</span><span><i class="dot" style="background:#7dffb0"></i>부호가 바뀌는 점 (g의 극값)</span></p>
-      <div class="readout" data-readout></div>
+      <div class="verdict" data-readout><span class="vmark">?</span><div class="vtext">슬라이더를 움직여 보세요<small>부호 변화 횟수가 표시됩니다</small></div></div>
     </div>
-    <p><span class="tag">관찰 1</span> \(a\)가 작을 때는 \(H(x)\)가 부호를 1번만 바꾼다 → \(g\)의 극값 1개.</p>
-    <p><span class="tag">관찰 2</span> \(a\)를 키우면 어느 순간 \(H(x)\)가 \(x\)축에 <b>접한다</b> (중근). 바로 그때가 경계!</p>
-    <p><span class="tag">관찰 3</span> \(a\)를 더 키우면 부호 변화가 3번이 된다 → \(g\)의 극값 3개.</p>
-  </section>
+  </div>
+  <div class="stack">
+    <div class="try"><b>관찰</b><p><span class="kx" data-k="a"></span>가 작을 때는 부호 변화 1번 → 극값 1개. <span class="kx" data-k="a"></span>를 키우면 어느 순간 <span class="kx" data-k="H(x)"></span>가 <span class="kx" data-k="x"></span>축에 <b>접합니다</b> (중근). 바로 그때가 경계! 더 키우면 부호 변화 3번 → 극값 3개.</p></div>
+  </div>
+</div>
+<div class="scene-nav"><button class="nbtn" data-go="prev">← 이전</button><span class="sp"></span><button class="nbtn go" data-go="next">경계 구하러 가기 →</button></div>
+</section>
 
-  <section class="card">
-    <h2><span class="step">STEP 3</span>경계: \(H(x)\)가 접하는 순간</h2>
-    <p class="kicker">"오직 하나의 극값"에서 "3개의 극값"으로 바뀌는 경계.</p>
-    <p>\(H(x)\)는 최고차항이 양수인 삼차함수다. 부호 변화가 1번에서 3번으로 바뀌는 경계에서는 \(H(x)\)가 \(x\)축에 <b>접한다</b> (중근을 갖는다).</p>
-    <p>중근 \(r\)에서는 \(H(r)=0\)이면서 \(H'(r)=0\)이다:</p>
-    <div class="math">\[\begin{cases} \frac{r^3}{4}-\frac{ar^2}{3}-\frac{r}{2}+a = 0 \\ \frac{3r^2}{4}-\frac{2ar}{3}-\frac12 = 0 \end{cases}\]</div>
-    <p>두 식을 연립하면 \((r^2-1)(r^2-6)=0\)을 얻는다. \(a&gt;1\)이므로:</p>
-    <div class="math">\[r=\sqrt6,\quad a=\sqrt6\]</div>
-    <details class="hint"><summary>연립 풀이 확인하기</summary><div class="hint-body">
-    둘째 식에서 \(a=\frac{9r^2-6}{8r}\). 이를 첫째 식에 대입하고 정리하면 \(r^4-7r^2+6=0\), 즉 \((r^2-1)(r^2-6)=0\).<br>
-    \(r^2=1\)이면 \(a=\pm\frac38\)로 \(a&gt;1\)에 모순. \(r^2=6\)이면 \(a=\frac{6}{r}\). \(r=\sqrt6\)일 때 \(a=\sqrt6\) ( \(r=-\sqrt6\)은 \(a=-\sqrt6\)으로 탈락).
-    </div></details>
-    <div class="askbox" data-ask="double">
-      <p class="q">Q3. \(a=\sqrt6\)일 때 \(H(x)\)의 모습은?</p>
-      <label><input type="radio" name="double" value="0"> ① 서로 다른 3개의 실근</label>
-      <label><input type="radio" name="double" value="1"> ② \(x=\sqrt6\)에서 중근 (접함), 다른 한 실근은 \(x=-\frac{2\sqrt6}{3}\)</label>
-      <label><input type="radio" name="double" value="2"> ③ 실근이 없음</label>
-      <p class="fb" data-ok="1">정답! \(H(x)=\frac{(x-\sqrt6)^2(x+2\sqrt6/3)}{4}\). 중근에서는 부호가 안 바뀌므로 부호 변화는 1번뿐이다.</p>
-      <p class="fb" data-ok="0">실험실에서 \(a\)를 \(\sqrt6\approx 2.449\)에 맞춰보자. \(H(x)\)가 \(x\)축에 접하는가?</p>
+<!-- ═══ SCENE 5 ═══════════════════════════════════════════════════ -->
+<section class="scene" id="s5">
+<p class="scene-eyebrow">STEP 3 · 경계 구하기</p>
+<h2 class="scene-h2">경계: <span class="kx" data-k="H(x)"></span>가 <span class="accent">접하는</span> 순간</h2>
+<p class="scene-lead">"오직 하나의 극값"에서 "3개의 극값"으로 바뀌는 경계입니다.</p>
+<div class="work">
+  <div class="stack">
+    <p><span class="kx" data-k="H(x)"></span>는 최고차항이 양수인 삼차함수입니다. 부호 변화가 1번에서 3번으로 바뀌는 경계에서는 <span class="kx" data-k="H(x)"></span>가 <span class="kx" data-k="x"></span>축에 <b>접합니다</b> (중근을 갖습니다).</p>
+    <p>중근 <span class="kx" data-k="r"></span>에서는 <span class="kx" data-k="H(r)=0"></span>이면서 <span class="kx" data-k="H'(r)=0"></span>입니다:</p>
+    <div class="fx sm boxed" data-k="\begin{cases}\dfrac{r^3}{4}-\dfrac{ar^2}{3}-\dfrac{r}{2}+a=0\\[6pt]\dfrac{3r^2}{4}-\dfrac{2ar}{3}-\dfrac12=0\end{cases}"></div>
+    <p>두 식을 연립하면 <span class="kx" data-k="(r^2-1)(r^2-6)=0"></span>을 얻습니다. <span class="kx" data-k="a\gt 1"></span>이므로:</p>
+    <div class="fx boxed hot" data-k="r=\sqrt6,\qquad a=\sqrt6"></div>
+  </div>
+  <div class="askbox">
+    <p class="askq"><span class="kx" data-k="a=\sqrt6"></span>일 때 <span class="kx" data-k="H(x)"></span>의 모습은?</p>
+    <div class="opts">
+      <button class="opt">서로 다른 3개의 실근</button>
+      <button class="opt" data-correct="1"><span class="kx" data-k="x=\sqrt6"></span>에서 중근 (접함), 다른 한 실근은 <span class="kx" data-k="x=-\dfrac{2\sqrt6}{3}"></span></button>
+      <button class="opt">실근이 없음</button>
     </div>
-  </section>
-
-  <section class="card">
-    <h2><span class="step">STEP 4</span>최댓값 확정</h2>
-    <p class="kicker">\(a=\sqrt6\)이 경계임을 확인한다.</p>
-    <p>\(a=\sqrt6\)일 때:</p>
-    <div class="math">\[H(x)=\frac{(x-\sqrt6)^2\left(x+\frac{2\sqrt6}{3}\right)}{4}\]</div>
-    <ul>
-      <li>\(x=-\frac{2\sqrt6}{3}\)에서만 부호가 바뀐다 (음→양).</li>
-      <li>\(x=\sqrt6\) (중근)에서는 접하기만 하고 부호가 안 바뀐다.</li>
-      <li>따라서 \(g'\)의 부호 변화는 1번 → \(g\)의 극값은 <b>오직 1개</b> ✓</li>
-    </ul>
-    <p>\(a&gt;\sqrt6\)이면 중근이 두 개의 실근으로 갈라져 부호 변화가 3번이 된다. 따라서 "오직 하나의 극값"을 갖는 \(a\)의 최댓값은:</p>
-    <div class="math">\[a_{\max} = \sqrt6\]</div>
-  </section>
-
-  <section class="card final">
-    <h2>정답 고르기</h2>
-    <p>보기: ① \(\frac{9\sqrt2}{8}\) ② \(\frac{3\sqrt6}{4}\) ③ \(\frac{3\sqrt2}{2}\) ④ \(\sqrt6\) ⑤ \(2\sqrt2\)</p>
-    <p class="ans">정답 <b>④</b></p>
-  </section>
-
-  <section class="card">
-    <h2>takeaways</h2>
-    <ul class="takeaways">
-      <li><b>적분을 미분하면 상쇄가 일어난다.</b> 라이프니츠 법칙을 두려워하지 말자.</li>
-      <li>"\(g'=0\)"과 "극값"은 다르다. <b>부호 변화</b>를 봐야 한다.</li>
-      <li>\(2x^2\ge 0\)이므로 \(g'\)의 부호는 \(H(x)\)가 결정한다. 복잡한 식을 <b>부호를 결정하는 핵심</b>으로 압축하자.</li>
-      <li>"개수가 바뀌는 경계"는 <b>접하는 순간(중근)</b>이다.</li>
-    </ul>
-  </section>
-
+    <div class="optfb" data-ok="정답! 중근에서는 부호가 안 바뀌므로 부호 변화는 1번뿐입니다." data-no="실험실에서 a를 √6≈2.449에 맞춰 보세요. H(x)가 x축에 접하나요?"></div>
+    <div class="hintrow"><button class="hbtn" data-open="h1">연립 풀이 확인하기</button></div>
+    <div class="hint" data-key="h1"><p>둘째 식에서 <span class="kx" data-k="a=\dfrac{9r^2-6}{8r}"></span>. 이를 첫째 식에 대입하고 정리하면 <span class="kx" data-k="r^4-7r^2+6=0"></span>, 즉 <span class="kx" data-k="(r^2-1)(r^2-6)=0"></span>.</p><p><span class="kx" data-k="r^2=1"></span>이면 <span class="kx" data-k="a=\pm\dfrac38"></span>로 <span class="kx" data-k="a\gt 1"></span>에 모순. <span class="kx" data-k="r^2=6"></span>이면 <span class="kx" data-k="a=\dfrac{6}{r}"></span>. <span class="kx" data-k="r=\sqrt6"></span>일 때 <span class="kx" data-k="a=\sqrt6"></span> (<span class="kx" data-k="r=-\sqrt6"></span>은 <span class="kx" data-k="a=-\sqrt6"></span>으로 탈락).</p></div>
+  </div>
 </div>
-<aside class="col-side side">
-  <section class="card">
-    <h3>한눈에 보는 구조</h3>
+<div class="scene-nav"><button class="nbtn" data-go="prev">← 이전</button><span class="sp"></span><button class="nbtn go" data-go="next">최댓값 확정 →</button></div>
+</section>
+
+<!-- ═══ SCENE 6 ═══════════════════════════════════════════════════ -->
+<section class="scene" id="s6">
+<p class="scene-eyebrow">STEP 4 · 최댓값 확정 + 정답</p>
+<h2 class="scene-h2"><span class="kx" data-k="a_{\max}=\sqrt6"></span></h2>
+<p class="scene-lead"><span class="kx" data-k="a=\sqrt6"></span>이 경계임을 확인합니다.</p>
+<div class="work">
+  <div class="stack">
+    <div class="fx sm boxed" data-k="H(x)=\frac{(x-\sqrt6)^2\left(x+\frac{2\sqrt6}{3}\right)}{4}"></div>
     <ul>
-      <li>\(g'(x)=2x\int_0^xf(t)dt\) (상쇄!)</li>
-      <li>\(=2x^2H(x)\), 부호는 \(H\)가 결정</li>
-      <li>극값 ⟺ \(H\)의 부호 변화</li>
-      <li>경계: \(H\)가 접함 (중근)</li>
-      <li>\(a_{\max}=\sqrt6\)</li>
+      <li><span class="kx" data-k="x=-\dfrac{2\sqrt6}{3}"></span>에서만 부호가 바뀝니다 (음→양).</li>
+      <li><span class="kx" data-k="x=\sqrt6"></span> (중근)에서는 접하기만 하고 부호가 안 바뀝니다.</li>
+      <li>따라서 <span class="kx" data-k="g'"></span>의 부호 변화는 1번 → <span class="kx" data-k="g"></span>의 극값은 <b>오직 1개</b> ✓</li>
     </ul>
-  </section>
-  <section class="card">
-    <h3>함정 체크</h3>
-    <ul>
-      <li>\(g'(x)\)를 구하지 않고 \(g(x)\)를 직접 적분하려 들기.</li>
-      <li>\(x=0\)에서 \(g'=0\)이므로 극값이라고 착각.</li>
-      <li>\(H(x)\)의 중근에서 부호가 안 바뀜을 놓치기.</li>
-    </ul>
-  </section>
-  <section class="card">
-    <h3>용어 정리</h3>
-    <ul>
-      <li><b>라이프니츠 법칙</b>: \(\frac{d}{dx}\int_0^xF(t)dt=F(x)\)</li>
-      <li><b>극값</b>: \(g'\)의 부호가 바뀌는 점</li>
-      <li><b>중근</b>: 접하는 근, 부호가 안 바뀜</li>
-    </ul>
-  </section>
-  <section class="card">
-    <h3>기록장</h3>
-    <textarea class="memo" placeholder="내가 발견한 구조를 한 줄로 적어보자."></textarea>
-  </section>
-</aside>
+    <p><span class="kx" data-k="a\gt\sqrt6"></span>이면 중근이 두 개의 실근으로 갈라져 부호 변화가 3번이 됩니다.</p>
+    <div class="fx sm boxed" data-k="\text{보기: ① }\frac{9\sqrt2}{8}\ \text{ ② }\frac{3\sqrt6}{4}\ \text{ ③ }\frac{3\sqrt2}{2}\ \text{ ④ }\sqrt6\ \text{ ⑤ }2\sqrt2"></div>
+    <p class="answer-big">④</p>
+  </div>
 </div>
+<div class="stack" style="margin-top:34px">
+<div class="takeaways">
+  <div class="takeaway"><b>상쇄</b><span>적분을 미분하면 상쇄가 일어납니다. 라이프니츠 법칙을 두려워하지 마세요.</span></div>
+  <div class="takeaway"><b>부호</b><span>"<span class="kx" data-k="g'=0"></span>"과 "극값"은 다릅니다. <b>부호 변화</b>를 봐야 합니다.</span></div>
+  <div class="takeaway"><b>압축</b><span>복잡한 식을 <b>부호를 결정하는 핵심</b>으로 압축하세요 (<span class="kx" data-k="2x^2H(x)\to H"></span>).</span></div>
+  <div class="takeaway"><b>경계</b><span>"개수가 바뀌는 경계"는 <b>접하는 순간(중근)</b>입니다.</span></div>
+</div>
+</div>
+<div class="scene-nav"><button class="nbtn" data-go="prev">← 이전</button><span class="sp"></span><button class="nbtn" data-go="restart">처음부터 다시</button></div>
+</section>
+
+  </main>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function(){
-  if (window.renderMathInElement) renderMathInElement(document.body, {delimiters:[{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}]});
-  document.querySelectorAll('.askbox').forEach(function(box){
-    box.querySelectorAll('input[type=radio]').forEach(function(r){
-      r.addEventListener('change', function(){
-        var ok = (r.value === '1');
-        box.querySelectorAll('.fb').forEach(function(f){ f.className = 'fb'; });
-        var target = box.querySelector('.fb[data-ok="'+(ok?'1':'0')+'"]');
-        if (target) target.className = 'fb ' + (ok ? 'ok' : 'no');
-      });
-    });
+(function () {
+  'use strict';
+  var LABELS = ['문제 읽기','g′의 상쇄','부호가 핵심','실험실','경계: 중근','정답 ④'];
+  var scenes = [].slice.call(document.querySelectorAll('.ex-main .scene'));
+  var rail = document.getElementById('rail');
+  var fill = document.getElementById('progFill');
+  var ptxt = document.getElementById('progTxt');
+  var seen = {0:1};
+  var cur = 0;
+
+  LABELS.forEach(function (label, i) {
+    var b = document.createElement('button');
+    b.className = 'rail-item' + (i === 0 ? ' active' : '');
+    b.innerHTML = '<i><span>' + (i + 1) + '</span></i><b>' + label + '</b>';
+    b.addEventListener('click', function () { go(i); });
+    rail.appendChild(b);
   });
-  // ---- custom lab: sign changes of H ----
-  (function(){
-    var root = document.querySelector('[data-mylab="signchange"]');
-    if(!root) return;
-    var svg = root.querySelector('svg');
+  var items = [].slice.call(rail.children);
+
+  function go(i) {
+    cur = Math.max(0, Math.min(scenes.length - 1, i));
+    seen[cur] = 1;
+    scenes.forEach(function (s, j) { s.classList.toggle('is-on', j === cur); });
+    items.forEach(function (b, j) {
+      b.classList.toggle('active', j === cur);
+      b.classList.toggle('done', j !== cur && !!seen[j]);
+    });
+    fill.style.width = ((cur + 1) / scenes.length * 100) + '%';
+    ptxt.textContent = (cur + 1) + ' / ' + scenes.length;
+    var t = items[cur];
+    if (t && t.scrollIntoView && window.matchMedia('(max-width:1000px)').matches) {
+      t.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  go(0);
+
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest ? e.target.closest('[data-go]') : null;
+    if (t) {
+      var d = t.getAttribute('data-go');
+      go(d === 'next' ? cur + 1 : d === 'prev' ? cur - 1 : 0);
+      return;
+    }
+    var opt = e.target.closest ? e.target.closest('.opt') : null;
+    if (opt) {
+      var box = opt.closest('.askbox');
+      var ok = opt.hasAttribute('data-correct');
+      box.querySelectorAll('.opt').forEach(function (o) {
+        o.classList.remove('pick-ok', 'pick-no');
+        if (ok) o.classList.add('locked');
+      });
+      opt.classList.add(ok ? 'pick-ok' : 'pick-no');
+      var fb = box.querySelector('.optfb');
+      if (fb) {
+        fb.className = 'optfb on ' + (ok ? 'ok' : 'no');
+        fb.innerHTML = fb.getAttribute(ok ? 'data-ok' : 'data-no') || '';
+      }
+      if (window.JPLab) window.JPLab.renderAll(box);
+      return;
+    }
+    var hb = e.target.closest ? e.target.closest('.hbtn') : null;
+    if (hb) {
+      var scope = hb.closest('.askbox');
+      var key = hb.getAttribute('data-open');
+      var body = scope.querySelector('.hint[data-key="' + key + '"]');
+      if (!body) return;
+      var open = body.classList.toggle('on');
+      hb.classList.toggle('is-open', open);
+      if (open && window.JPLab) window.JPLab.renderAll(body);
+    }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (/^(INPUT|TEXTAREA|BUTTON)$/.test((e.target.tagName || ''))) return;
+    if (e.key === 'ArrowRight') go(cur + 1);
+    if (e.key === 'ArrowLeft') go(cur - 1);
+  });
+
+  /* ── custom lab: sign changes of H ──────────────────────────── */
+  function labSign(root) {
+    var svg = root.querySelector('svg.lab-svg');
     var aS = root.querySelector('[data-a]');
     var aV = root.querySelector('[data-aval]');
     var ro = root.querySelector('[data-readout]');
-    var W=600, H=340, pL=44, pR=16, pT=24, pB=44;
-    var xMin=-3.2, xMax=4.2, yMin=-4, yMax=6;
-    function X(x){ return pL + (x-xMin)/(xMax-xMin)*(W-pL-pR); }
-    function Y(y){ return pT + (yMax-y)/(yMax-yMin)*(H-pT-pB); }
-    function draw(){
-      var a=parseFloat(aS.value);
-      aV.textContent=a.toFixed(2);
-      function H(x){ return x*x*x/4 - a*x*x/3 - x/2 + a; }
-      var s='';
-      s+='<line x1="'+X(xMin)+'" y1="'+Y(0)+'" x2="'+X(xMax)+'" y2="'+Y(0)+'" stroke="#5b6b8c" stroke-width="1.5"/>';
-      s+='<line x1="'+X(0)+'" y1="'+Y(yMin)+'" x2="'+X(0)+'" y2="'+Y(yMax)+'" stroke="#3a4666" stroke-width="1"/>';
-      for(var x=Math.ceil(xMin); x<=xMax; x++){
-        s+='<text x="'+X(x)+'" y="'+(Y(0)+20)+'" fill="#8b9bb8" font-size="12" text-anchor="middle">'+x+'</text>';
+    if (!svg || !aS) return;
+    var W = 600, Hh = 340, pL = 44, pR = 16, pT = 24, pB = 44;
+    var xMin = -3.2, xMax = 4.2, yMin = -4, yMax = 6;
+    function X(x) { return pL + (x - xMin) / (xMax - xMin) * (W - pL - pR); }
+    function Y(y) { return pT + (yMax - y) / (yMax - yMin) * (Hh - pT - pB); }
+    var C = { axis: '#8b909b', grid: '#d8d4c8', h: '#1b3a6b', dot: '#1b3a6b', touch: '#9d2b2b', txt: '#4c515c' };
+    function draw() {
+      var a = parseFloat(aS.value);
+      aV.textContent = a.toFixed(2);
+      function H(x) { return x * x * x / 4 - a * x * x / 3 - x / 2 + a; }
+      var s = '';
+      s += '<line x1="' + X(xMin) + '" y1="' + Y(0) + '" x2="' + X(xMax) + '" y2="' + Y(0) + '" stroke="' + C.axis + '" stroke-width="1.5"/>';
+      s += '<line x1="' + X(0) + '" y1="' + Y(yMin) + '" x2="' + X(0) + '" y2="' + Y(yMax) + '" stroke="' + C.grid + '" stroke-width="1"/>';
+      for (var x = Math.ceil(xMin); x <= xMax; x++) {
+        s += '<text x="' + X(x) + '" y="' + (Y(0) + 20) + '" fill="' + C.txt + '" font-size="12" text-anchor="middle">' + x + '</text>';
       }
-      // H curve
-      var pts=[];
-      for(var px=xMin; px<=xMax; px+=0.02){
-        var v=H(px);
-        if(v>yMin-1 && v<yMax+1) pts.push(X(px).toFixed(1)+','+Y(Math.max(yMin,Math.min(yMax,v))).toFixed(1));
+      var pts = [];
+      for (var px = xMin; px <= xMax; px += 0.02) {
+        var v = H(px);
+        if (v > yMin - 1 && v < yMax + 1) pts.push(X(px).toFixed(1) + ',' + Y(Math.max(yMin, Math.min(yMax, v))).toFixed(1));
       }
-      s+='<polyline points="'+pts.join(' ')+'" fill="none" stroke="#ffd76a" stroke-width="2.5"/>';
-      s+='<text x="'+(W-pR-4)+'" y="'+(pT+16)+'" fill="#ffd76a" font-size="13" text-anchor="end">y=H(x)</text>';
-      // find sign changes (simple roots)
-      var roots=[], prevX=xMin, prevV=H(xMin);
-      for(var qx=xMin+0.02; qx<=xMax; qx+=0.02){
-        var qv=H(qx);
-        if(prevV*qv<0){
-          // bisection
-          var lo=prevX, hi=qx;
-          for(var it=0;it<30;it++){ var mid=(lo+hi)/2; if(H(lo)*H(mid)<=0) hi=mid; else lo=mid; }
-          roots.push((lo+hi)/2);
+      s += '<polyline points="' + pts.join(' ') + '" fill="none" stroke="' + C.h + '" stroke-width="2.5"/>';
+      s += '<text x="' + (W - pR - 4) + '" y="' + (pT + 16) + '" fill="' + C.h + '" font-size="13" text-anchor="end" font-weight="700">y = H(x)</text>';
+      var roots = [], prevX = xMin, prevV = H(xMin);
+      for (var qx = xMin + 0.02; qx <= xMax; qx += 0.02) {
+        var qv = H(qx);
+        if (prevV * qv < 0) {
+          var lo = prevX, hi = qx;
+          for (var it = 0; it < 30; it++) { var mid = (lo + hi) / 2; if (H(lo) * H(mid) <= 0) hi = mid; else lo = mid; }
+          roots.push((lo + hi) / 2);
         }
-        prevX=qx; prevV=qv;
+        prevX = qx; prevV = qv;
       }
-      // check for double root (touch): local min/max near zero
-      var touch=null;
-      // find critical points of H
-      // H'(x) = 3x^2/4 - 2ax/3 - 1/2 = 0 → 9x^2-8ax-6=0
-      var disc=64*a*a+216, sq=Math.sqrt(disc);
-      var c1=(8*a+sq)/18, c2=(8*a-sq)/18;
-      [c1,c2].forEach(function(cp){
-        if(cp>xMin && cp<xMax && Math.abs(H(cp))<0.08) touch=cp;
+      var touch = null;
+      var disc = 64 * a * a + 216, sq = Math.sqrt(disc);
+      var c1 = (8 * a + sq) / 18, c2 = (8 * a - sq) / 18;
+      [c1, c2].forEach(function (cp) {
+        if (cp > xMin && cp < xMax && Math.abs(H(cp)) < 0.08) touch = cp;
       });
-      roots.forEach(function(rv){
-        s+='<circle cx="'+X(rv)+'" cy="'+Y(0)+'" r="8" fill="#7dffb0" stroke="#0b0b10" stroke-width="2"/>';
-        s+='<text x="'+X(rv)+'" y="'+(Y(0)-14)+'" fill="#7dffb0" font-size="12" text-anchor="middle">'+rv.toFixed(2)+'</text>';
+      roots.forEach(function (rv) {
+        s += '<circle cx="' + X(rv) + '" cy="' + Y(0) + '" r="8" fill="' + C.dot + '" stroke="#fff" stroke-width="2"/>';
+        s += '<text x="' + X(rv) + '" y="' + (Y(0) - 14) + '" fill="' + C.dot + '" font-size="12" text-anchor="middle" font-weight="700">' + rv.toFixed(2) + '</text>';
       });
-      if(touch!==null && roots.length<2){
-        s+='<circle cx="'+X(touch)+'" cy="'+Y(0)+'" r="10" fill="none" stroke="#ff8f8f" stroke-width="2.5"/>';
-        s+='<text x="'+X(touch)+'" y="'+(Y(0)+32)+'" fill="#ff8f8f" font-size="12" text-anchor="middle">접함! (중근)</text>';
+      if (touch !== null && roots.length < 2) {
+        s += '<circle cx="' + X(touch) + '" cy="' + Y(0) + '" r="10" fill="none" stroke="' + C.touch + '" stroke-width="2.5"/>';
+        s += '<text x="' + X(touch) + '" y="' + (Y(0) + 34) + '" fill="' + C.touch + '" font-size="12" text-anchor="middle" font-weight="700">접함! (중근)</text>';
       }
-      svg.innerHTML=s;
-      var n = roots.length + (touch!==null?0:0);
-      // count sign changes: simple roots + (touch doesn't change sign)
-      var msg = 'H(x)의 부호 변화: <b>'+roots.length+'번</b> → g의 극값: <b>'+roots.length+'개</b>';
-      if(touch!==null){
-        msg += '<br><span class="warn">x≈'+touch.toFixed(2)+'에서 접함 (중근, 부호 변화 없음)</span>';
-      }
-      if(Math.abs(a-Math.sqrt(6))<0.02){
-        msg += '<br><b>★ a≈√6: 경계! 여기서 극값 개수가 바뀐다.</b>';
-      }
-      ro.innerHTML=msg;
+      svg.innerHTML = s;
+      var isBoundary = Math.abs(a - Math.sqrt(6)) < 0.02;
+      ro.className = 'verdict' + (isBoundary ? ' ok' : (roots.length === 1 ? '' : ' no'));
+      var html = '<span class="vmark">' + roots.length + '</span><div class="vtext">H(x)의 부호 변화: ' + roots.length + '번 → g의 극값: ' + roots.length + '개';
+      if (touch !== null) html += '<small>x≈' + touch.toFixed(2) + '에서 접함 (중근, 부호 변화 없음)</small>';
+      if (isBoundary) html += '<small>★ a≈√6: 경계! 여기서 극값 개수가 바뀝니다.</small>';
+      html += '</div>';
+      ro.innerHTML = html;
     }
     aS.addEventListener('input', draw);
     draw();
-  })();
-});
+  }
+
+  function bootCustom() {
+    document.querySelectorAll('[data-lab="sign21"]').forEach(labSign);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootCustom);
+  else bootCustom();
+})();
 </script>
 </body>
 </html>

@@ -1,229 +1,104 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>교사용 · 2021 수능 나형 20번 수업자료 — JP Math Lab</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
-<link rel="stylesheet" href="../../../jp-dark.css">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow,noarchive"/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<title>2021 수능 나형 20번 | 미분하면 깔끔해지는 적분 · 교사용</title>
+<link rel="stylesheet" href="../../../vendor/katex/katex.min.css"/>
+<link rel="stylesheet" href="../../../jp-math-typography.css?v=3"/>
+<link rel="stylesheet" href="../../../jp-dark.css?v=6"/>
+<link rel="stylesheet" href="../../../jp-polish.css?v=11"/>
+<link rel="stylesheet" href="../../../jp-deck-polish.css"/>
+<script defer src="../../../vendor/katex/katex.min.js"></script>
+<script defer src="../../../jp-lab-dark.js?v=2"></script>
+<script defer src="../../../jp-deck.js"></script>
+<script defer src="../../../jp-polish.js?v=21"></script>
 <style>
-body{margin:0;background:#0a0d18;color:#dbe3f5;font-family:'Pretendard','Noto Sans KR','Malgun Gothic',sans-serif;line-height:1.7;-webkit-font-smoothing:antialiased}
-a{color:#4ad6ff}
-h1,h2,h3{color:#fff}
-.deck-head{max-width:1060px;margin:0 auto;padding:30px 22px 6px}
-.deck-head .badge{display:inline-block;font-size:12px;letter-spacing:.14em;color:#0b0b10;background:linear-gradient(135deg,#7dffb0,#4ad6ff);border-radius:999px;padding:6px 14px;font-weight:800;margin-bottom:10px}
-.deck-head h1{font-size:clamp(24px,4.4vw,36px);margin:0 0 6px}
-.deck-head .sub{color:#9aa7c7;margin:0 0 4px}
-.deck-head .meta{color:#8b9bb8;font-size:13px;margin:0}
-.deck{max-width:1060px;margin:0 auto;padding:16px 22px 40px}
-.slide{display:none;background:rgba(16,20,38,.78);border:1px solid rgba(125,255,176,.25);border-radius:20px;padding:28px;min-height:480px;box-shadow:0 12px 40px rgba(0,0,0,.35)}
-.slide.active{display:block}
-.slide .snum{display:inline-block;background:#7dffb0;color:#0b0b10;font-weight:800;font-size:12px;border-radius:8px;padding:4px 12px;margin-bottom:10px;letter-spacing:.1em}
-.slide h2{margin:0 0 14px;font-size:24px}
-.slide .cols{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:20px}
-@media(max-width:860px){.slide .cols{grid-template-columns:1fr}}
-.slide .main p,.slide .main li{line-height:1.8;color:#dbe3f5}
-.slide .main ul{padding-left:20px}
-.qa{background:rgba(125,255,176,.06);border:1px dashed rgba(125,255,176,.4);border-radius:12px;padding:12px 16px;margin:12px 0}
-.qa .q{font-weight:800;color:#7dffb0;margin:0 0 6px}
-.qa .a{margin:0;color:#c9d4ee}
-.warn{background:rgba(255,143,143,.06);border:1px dashed rgba(255,143,143,.4);border-radius:12px;padding:12px 16px;margin:12px 0}
-.warn .t{font-weight:800;color:#ff8f8f;margin:0 0 6px}
-.warn p{margin:0;color:#c9d4ee}
-.sidea{background:#0d1122;border:1px solid rgba(125,255,176,.2);border-radius:14px;padding:16px;height:fit-content}
-.sidea h4{margin:0 0 8px;color:#ffd76a;font-size:14px}
-.sidea p,.sidea li{font-size:13.5px;line-height:1.75;color:#c9d4ee}
-.sidea ul{padding-left:18px;margin:0}
-.nav{display:flex;justify-content:space-between;align-items:center;max-width:1060px;margin:0 auto;padding:0 22px 60px}
-.nav button{background:linear-gradient(135deg,#7dffb0,#4ad6ff);color:#0b0b10;border:none;border-radius:10px;padding:10px 22px;font-weight:800;cursor:pointer;font-size:14px}
-.nav button:disabled{opacity:.3;cursor:default}
-.nav .pg{color:#8b9bb8;font-size:14px}
-.mathline{overflow-x:auto;padding:6px 0}
-.cover-goals li{margin:10px 0;line-height:1.7;color:#dbe3f5}
-.time{font-size:13px;color:#0b0b10;background:#ffd76a;border-radius:999px;padding:3px 12px;font-weight:800;display:inline-block;margin-bottom:8px}
-.note{font-size:13px;color:#8b9bb8}
+.take4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.answer-big{font-size:clamp(70px,12vw,150px);font-weight:900;color:#a95232;line-height:1;text-align:center}
+@media(max-width:720px){.take4{grid-template-columns:1fr}}
 </style>
 </head>
-<body>
-<header class="deck-head">
-  <span class="badge">교사용 · 수업자료</span>
-  <h1>2021 수능 나형 20번 — 미분하면 깔끔해지는 적분</h1>
-  <p class="sub">수학Ⅱ · 적분 · 객관식 4점 · 정답 ④ (오답률 79.4%)</p>
-  <p class="meta">50분 수업 덱 · 학생용 짝 자료: 「미분하면 깔끔해지는 적분」 탐구실</p>
-</header>
-
+<body class="tpl-dark is-deck">
+<a class="jp-back-link teacher-back" href="../../">← 수업창고</a>
 <div class="deck">
 
-  <section class="slide active">
-    <span class="snum">SLIDE 1 · 표지</span>
-    <h2>오늘의 문제: 2021 수능 나형 20번</h2>
-    <div class="cols">
-      <div class="main">
-        <p><b>학습 목표</b></p>
-        <ul class="cover-goals">
-          <li>적분으로 정의된 함수를 <b>라이프니츠 법칙</b>으로 미분할 수 있다.</li>
-          <li>"\(g'=0\)"과 "극값"을 구별하고, <b>부호 변화</b>로 극값을 판정할 수 있다.</li>
-          <li>"개수가 바뀌는 경계"는 <b>접하는 순간(중근)</b>임을 이해한다.</li>
-        </ul>
-        <div class="qa"><p class="q">도입 발문</p><p class="a">"이 문제는 오답률 79.4%다. 그런데 \(g(x)\)를 미분하는 순간, 문제가 완전히 다른 얼굴을 보여준다. 무엇이 상쇄되는지 보자."</p></div>
-      </div>
-      <div class="sidea">
-        <h4><span class="time">0–5분</span></h4>
-        <p><b>교사 노트:</b> 오답률을 먼저 공개하자. "왜 어려웠을까?"를 묻고, 학생들이 \(g(x)\)를 직접 적분하려 드는 것을 확인한다. 그 다음 "미분부터 해보자"로 전환.</p>
-      </div>
-    </div>
-  </section>
+<section class="slide slide--title" data-title="표지"><div class="s-body"><div class="title-layout">
+  <div><p class="eyebrow">2021학년도 수능 나형 20번 · 객관식 4점 · 정답 ④ · 오답률 79.4%</p><h1 class="h1 anim-fade-up">미분하면<br/><span class="am">깔끔해지는</span> 적분</h1><p class="lede">적분으로 정의된 함수를 미분하면 상쇄가 일어나고, "극값의 개수"는 "부호를 몇 번 바꾸는가"의 문제로 바뀝니다.</p><div class="pause">오답률 79.4% — 왜 어려웠을까?</div></div>
+  <div class="card" style="margin-top:0"><h3>학습 목표</h3><ul>
+    <li>적분으로 정의된 함수를 <b>라이프니츠 법칙</b>으로 미분할 수 있다.</li>
+    <li>"<span class="m" data-k="g'=0"></span>"과 "극값"을 구별하고, <b>부호 변화</b>로 극값을 판정할 수 있다.</li>
+    <li>"개수가 바뀌는 경계"는 <b>접하는 순간(중근)</b>임을 이해한다.</li>
+  </ul></div>
+</div></div><div class="s-ask"><p class="question">이 문제는 오답률 79.4%다. 그런데 <span class="m" data-k="g(x)"></span>를 미분하는 순간, 문제가 완전히 다른 얼굴을 보여준다. 무엇이 상쇄되는지 보자.</p></div><aside class="notes"><p><strong>0–5분.</strong> 오답률을 먼저 공개하자. "왜 어려웠을까?"를 묻고, 학생들이 <span class="m" data-k="g(x)"></span>를 직접 적분하려 드는 것을 확인한다. 그 다음 "미분부터 해보자"로 전환.</p></aside></section>
 
-  <section class="slide">
-    <span class="snum">SLIDE 2 · 마법의 상쇄</span>
-    <h2>\(g'(x)=2x\int_0^xf(t)dt\)</h2>
-    <div class="cols">
-      <div class="main">
-        <div class="mathline">\[\frac{d}{dx}\left[x^2\int_0^xf(t)dt\right]=2x\int_0^xf(t)dt+x^2f(x)\]</div>
-        <div class="mathline">\[\frac{d}{dx}\left[\int_0^xt^2f(t)dt\right]=x^2f(x)\]</div>
-        <p>빼면 \(x^2f(x)\)가 지워진다. 문제 설계자가 심어둔 상쇄다.</p>
-        <div class="qa"><p class="q">발문</p><p class="a">"\(g(x)\)를 직접 구하려던 학생? 이제 \(g'(x)\)만 보면 된다. 무엇이 남았는가?"</p></div>
-        <div class="warn"><p class="t">오개념 주의</p><p>\(\int_0^x t^2f(t)dt\)를 미분할 때 \(2tf(t)+t^2f'(t)\)로 착각하는 학생이 있다. 적분 변수는 \(t\), 미분 변수는 \(x\)다.</p></div>
-      </div>
-      <div class="sidea">
-        <h4><span class="time">5–13분</span></h4>
-        <p><b>교사 노트:</b> 라이프니츠 법칙 \(\frac{d}{dx}\int_0^xF(t)dt=F(x)\)를 칠판에 쓰고, \(x^2\)이 곱해진 경우(곱의 미분법)까지 확장하자. 상쇄가 일어나는 순간 학생들의 표정을 보자.</p>
-      </div>
-    </div>
-  </section>
+<section class="slide" data-title="마법의 상쇄"><div class="s-head"><p class="eyebrow">마법의 상쇄</p><h2 class="ct"><span class="m" data-k="g'(x)=2x\int_0^xf(t)\,dt"></span></h2></div><div class="s-body">
+<div class="eq"><div class="eqrow"><span class="m md" data-k="\frac{d}{dx}\left[x^2\int_0^xf(t)\,dt\right]=2x\int_0^xf(t)\,dt+x^2f(x)"></span></div></div>
+<div class="eq"><div class="eqrow"><span class="m md" data-k="\frac{d}{dx}\left[\int_0^xt^2f(t)\,dt\right]=x^2f(x)"></span></div></div>
+<p>빼면 <span class="m" data-k="x^2f(x)"></span>가 지워진다. 문제 설계자가 심어둔 상쇄다.</p>
+<div class="note-strip warn"><span class="ic">TRAP</span><p><span class="m" data-k="\int_0^x t^2f(t)\,dt"></span>를 미분할 때 <span class="m" data-k="2tf(t)+t^2f'(t)"></span>로 착각하는 학생이 있다. 적분 변수는 <span class="m" data-k="t"></span>, 미분 변수는 <span class="m" data-k="x"></span>다.</p></div>
+</div><div class="s-ask"><p class="question"><span class="m" data-k="g(x)"></span>를 직접 구하려던 학생? 이제 <span class="m" data-k="g'(x)"></span>만 보면 된다. 무엇이 남았는가?</p></div><aside class="notes"><p><strong>5–13분.</strong> 라이프니츠 법칙 <span class="m" data-k="\frac{d}{dx}\int_0^xF(t)\,dt=F(x)"></span>를 칠판에 쓰고, <span class="m" data-k="x^2"></span>이 곱해진 경우(곱의 미분법)까지 확장하자. 상쇄가 일어나는 순간 학생들의 표정을 보자.</p></aside></section>
 
-  <section class="slide">
-    <span class="snum">SLIDE 3 · 부호가 핵심</span>
-    <h2>\(g'(x)=2x^2H(x)\) — 부호는 \(H\)가 결정</h2>
-    <div class="cols">
-      <div class="main">
-        <div class="mathline">\[F(x)=\int_0^xf(t)dt=xH(x),\quad H(x)=\frac{x^3}{4}-\frac{ax^2}{3}-\frac{x}{2}+a\]</div>
-        <div class="mathline">\[g'(x)=2xF(x)=2x^2H(x)\]</div>
-        <ul>
-          <li>\(2x^2\ge 0\)이므로 \(g'\)의 부호 = \(H(x)\)의 부호.</li>
-          <li>\(x=0\)에서는 \(g'\approx 2ax^2\ge 0\) → 부호 변화 없음 → <b>극값 아님!</b></li>
-        </ul>
-        <div class="qa"><p class="q">발문</p><p class="a"> "\(g'(0)=0\)이므로 \(x=0\)은 극값이다." 참인가 거짓인가? 왜?"</p></div>
-      </div>
-      <div class="sidea">
-        <h4><span class="time">13–22분</span></h4>
-        <p><b>교사 노트:</b> "\(g'=0\) ⟺ 극값"이라는 오개념을 여기서 깨뜨리자. \(y=x^3\)의 \(x=0\)을 예로 들자. <b>극값은 부호 변화</b>다.</p>
-      </div>
-    </div>
-  </section>
+<section class="slide" data-title="부호가 핵심"><div class="s-head"><p class="eyebrow">부호가 핵심</p><h2 class="ct">부호는 <span class="am"><span class="m" data-k="H"></span>가 결정</span>한다</h2></div><div class="s-body">
+<div class="eq"><div class="eqrow"><span class="m md" data-k="F(x)=\int_0^xf(t)\,dt=xH(x),\quad H(x)=\frac{x^3}{4}-\frac{ax^2}{3}-\frac{x}{2}+a"></span></div></div>
+<div class="eq"><div class="eqrow"><span class="m md am" data-k="g'(x)=2xF(x)=2x^2H(x)"></span></div></div>
+<ul>
+  <li><span class="m" data-k="2x^2\ge 0"></span>이므로 <span class="m" data-k="g'"></span>의 부호 = <span class="m" data-k="H(x)"></span>의 부호.</li>
+  <li><span class="m" data-k="x=0"></span>에서는 <span class="m" data-k="g'\approx 2ax^2\ge 0"></span> → 부호 변화 없음 → <b>극값 아님!</b></li>
+</ul>
+<div class="note-strip warn"><span class="ic">TRAP</span><p>"<span class="m" data-k="g'=0"></span> ⟺ 극값"이라는 오개념을 여기서 깨뜨리자. <span class="m" data-k="y=x^3"></span>의 <span class="m" data-k="x=0"></span>을 예로 들자. <b>극값은 부호 변화</b>다.</p></div>
+</div><div class="s-ask"><p class="question">"<span class="m" data-k="g'(0)=0"></span>이므로 <span class="m" data-k="x=0"></span>은 극값이다." 참인가 거짓인가? 왜?</p></div><aside class="notes"><p><strong>13–22분.</strong> 발문의 답: 거짓. <span class="m" data-k="g'(0)=0"></span>이지만 부호가 바뀌지 않으므로 극값이 아니다.</p></aside></section>
 
-  <section class="slide">
-    <span class="snum">SLIDE 4 · 실험</span>
-    <h2>\(H(x)\)의 부호 변화를 세어보자</h2>
-    <div class="cols">
-      <div class="main">
-        <p>탐구실 실험실에서 \(a\)를 움직여보자:</p>
-        <ul>
-          <li>\(a\) 작음 → \(H\)의 부호 변화 1번 → \(g\)의 극값 1개.</li>
-          <li>\(a=\sqrt6\) 근처 → \(H\)가 \(x\)축에 <b>접함</b>.</li>
-          <li>\(a\) 큼 → 부호 변화 3번 → 극값 3개.</li>
-        </ul>
-        <div class="qa"><p class="q">발문</p><p class="a">"극값 개수가 바뀌는 순간, \(H(x)\)의 그래프는 어떻게 생겼는가?" → \(x\)축에 접한다.</p></div>
-      </div>
-      <div class="sidea">
-        <h4><span class="time">22–30분</span></h4>
-        <p><b>교사 노트:</b> 학생들이 직접 슬라이더를 움직이며 경계를 발견하게 하자. "접하는 순간"이라는 말을 학생 입에서 나오게 하는 것이 목표다.</p>
-      </div>
-    </div>
-  </section>
+<section class="slide" data-title="실험"><div class="s-head"><p class="eyebrow">실험</p><h2 class="ct"><span class="m" data-k="H(x)"></span>의 부호 변화를 <span class="am">세어보자</span></h2></div><div class="s-body">
+<p>탐구실 실험실에서 <span class="m" data-k="a"></span>를 움직여보자:</p>
+<div class="tri">
+  <div class="tcard"><span class="tag"><span class="m" data-k="a"></span> 작음</span><h3>부호 변화 1번</h3><p><span class="m" data-k="g"></span>의 극값 1개.</p></div>
+  <div class="tcard live"><span class="tag"><span class="m" data-k="a=\sqrt6"></span> 근처</span><h3><span class="m" data-k="H"></span>가 <span class="m" data-k="x"></span>축에 <b>접함</b></h3><p>경계!</p></div>
+  <div class="tcard"><span class="tag"><span class="m" data-k="a"></span> 큼</span><h3>부호 변화 3번</h3><p>극값 3개.</p></div>
+</div>
+</div><div class="s-ask"><p class="question">극값 개수가 바뀌는 순간, <span class="m" data-k="H(x)"></span>의 그래프는 어떻게 생겼는가?</p></div><aside class="notes"><p><strong>22–30분.</strong> 학생들이 직접 슬라이더를 움직이며 경계를 발견하게 하자. "접하는 순간"이라는 말을 학생 입에서 나오게 하는 것이 목표다.</p><p>발문의 답: <span class="m" data-k="x"></span>축에 접한다.</p></aside></section>
 
-  <section class="slide">
-    <span class="snum">SLIDE 5 · 경계 구하기</span>
-    <h2>중근: \(H(r)=H'(r)=0\)</h2>
-    <div class="cols">
-      <div class="main">
-        <div class="mathline">\[\begin{cases} \frac{r^3}{4}-\frac{ar^2}{3}-\frac{r}{2}+a=0 \\ \frac{3r^2}{4}-\frac{2ar}{3}-\frac12=0 \end{cases} \Longrightarrow (r^2-1)(r^2-6)=0\]</div>
-        <p>\(a&gt;1\)이므로 \(r=\sqrt6,\ a=\sqrt6\).</p>
-        <div class="mathline">\[H(x)=\frac{(x-\sqrt6)^2\left(x+\frac{2\sqrt6}{3}\right)}{4}\]</div>
-        <p>중근 \(x=\sqrt6\)에서는 부호가 안 바뀌고, \(x=-\frac{2\sqrt6}{3}\)에서만 부호가 바뀐다. → 극값 1개 ✓</p>
-      </div>
-      <div class="sidea">
-        <h4><span class="time">30–40분</span></h4>
-        <p><b>교사 노트:</b> 연립 풀이는 계산이 길다. "중근이면 두 식이 동시에 0"이라는 아이디어만 짚고, 계산은 학생들에게 맡기거나 힌트를 주자. 핵심은 <b>경계=접함</b>이라는 구조다.</p>
-      </div>
-    </div>
-  </section>
+<section class="slide" data-title="경계 구하기"><div class="s-head"><p class="eyebrow">경계 구하기</p><h2 class="ct">중근: <span class="am"><span class="m" data-k="H(r)=H'(r)=0"></span></span></h2></div><div class="s-body">
+<div class="eq"><div class="eqrow"><span class="m md" data-k="\begin{cases} \dfrac{r^3}{4}-\dfrac{ar^2}{3}-\dfrac{r}{2}+a=0 \\[4pt] \dfrac{3r^2}{4}-\dfrac{2ar}{3}-\dfrac12=0 \end{cases} \Longrightarrow (r^2-1)(r^2-6)=0"></span></div></div>
+<p><span class="m" data-k="a&gt;1"></span>이므로 <span class="m" data-k="r=\sqrt6,\ a=\sqrt6"></span>.</p>
+<div class="eq"><div class="eqrow"><span class="m md am" data-k="H(x)=\frac{(x-\sqrt6)^2\left(x+\frac{2\sqrt6}{3}\right)}{4}"></span></div></div>
+<p>중근 <span class="m" data-k="x=\sqrt6"></span>에서는 부호가 안 바뀌고, <span class="m" data-k="x=-\frac{2\sqrt6}{3}"></span>에서만 부호가 바뀐다. → 극값 1개 ✓</p>
+</div><div class="s-ask"><p class="question">중근에서는 왜 부호가 바뀌지 않을까?</p></div><aside class="notes"><p><strong>30–40분.</strong> 연립 풀이는 계산이 길다. "중근이면 두 식이 동시에 0"이라는 아이디어만 짚고, 계산은 학생들에게 맡기거나 힌트를 주자. 핵심은 <b>경계=접함</b>이라는 구조다.</p><p>발문의 답: <span class="m" data-k="(x-\sqrt6)^2\ge 0"></span>이라 양쪽에서 부호가 같다.</p></aside></section>
 
-  <section class="slide">
-    <span class="snum">SLIDE 6 · 최댓값 확정</span>
-    <h2>\(a_{\max}=\sqrt6\)</h2>
-    <div class="cols">
-      <div class="main">
-        <ul>
-          <li>\(a&lt;\sqrt6\): \(H\)의 부호 변화 1번 → 극값 1개.</li>
-          <li>\(a=\sqrt6\): 중근, 부호 변화 1번 → 극값 1개.</li>
-          <li>\(a&gt;\sqrt6\): 부호 변화 3번 → 극값 3개.</li>
-        </ul>
-        <p>따라서 "오직 하나의 극값"을 갖는 \(a\)의 최댓값은 \(\sqrt6\). <b>정답 ④.</b></p>
-        <div class="warn"><p class="t">오개념 주의</p><p>"최댓값"을 "최솟값"으로 읽는 실수. \(a\)가 커지면 극값이 늘어나므로, 1개를 유지하는 가장 큰 \(a\)가 답이다.</p></div>
-      </div>
-      <div class="sidea">
-        <h4><span class="time">40–45분</span></h4>
-        <p><b>교사 노트:</b> \(a\)가 커질 때 극값 개수가 1→3으로 바뀌는 것을 실험실에서 다시 확인시키자. "경계값이 답"이라는 패턴을 인식시키자.</p>
-      </div>
-    </div>
-  </section>
+<section class="slide" data-title="최댓값 확정"><div class="s-head"><p class="eyebrow">최댓값 확정</p><h2 class="ct"><span class="m" data-k="a_{\max}=\sqrt6"></span></h2></div><div class="s-body">
+<div class="tri">
+  <div class="tcard"><span class="tag"><span class="m" data-k="a&lt;\sqrt6"></span></span><h3>부호 변화 1번</h3><p>극값 1개.</p></div>
+  <div class="tcard live"><span class="tag"><span class="m" data-k="a=\sqrt6"></span></span><h3>중근</h3><p>부호 변화 1번 → 극값 1개.</p></div>
+  <div class="tcard dead"><span class="tag"><span class="m" data-k="a&gt;\sqrt6"></span></span><h3>부호 변화 3번</h3><p>극값 3개.</p></div>
+</div>
+<p>따라서 "오직 하나의 극값"을 갖는 <span class="m" data-k="a"></span>의 최댓값은 <span class="m" data-k="\sqrt6"></span>. <b>정답 ④.</b></p>
+<div class="note-strip warn"><span class="ic">TRAP</span><p>"최댓값"을 "최솟값"으로 읽는 실수. <span class="m" data-k="a"></span>가 커지면 극값이 늘어나므로, 1개를 유지하는 가장 큰 <span class="m" data-k="a"></span>가 답이다.</p></div>
+</div><div class="s-ask"><p class="question">왜 "최댓값"인가? <span class="m" data-k="a"></span>가 작을 때는 왜 답이 안 되는가?</p></div><aside class="notes"><p><strong>40–45분.</strong> <span class="m" data-k="a"></span>가 커질 때 극값 개수가 1→3으로 바뀌는 것을 실험실에서 다시 확인시키자. "경계값이 답"이라는 패턴을 인식시키자.</p></aside></section>
 
-  <section class="slide">
-    <span class="snum">SLIDE 7 · 마무리</span>
-    <h2>정답 ④, 그리고 남는 것</h2>
-    <div class="cols">
-      <div class="main">
-        <p><b>오늘의 takeaways</b></p>
-        <ul>
-          <li>적분을 미분하면 상쇄가 일어난다.</li>
-          <li>극값은 \(g'=0\)이 아니라 <b>부호 변화</b>다.</li>
-          <li>복잡한 식은 <b>부호를 결정하는 핵심</b>으로 압축하자 (\(2x^2H(x)\) → \(H\)).</li>
-          <li>개수가 바뀌는 경계는 <b>접하는 순간</b>이다.</li>
-        </ul>
-      </div>
-      <div class="sidea">
-        <h4><span class="time">45–50분</span></h4>
-        <p><b>교사 노트:</b> 탐구실 기록장에 한 줄 적기.</p>
-      </div>
-    </div>
-  </section>
+<section class="slide" data-title="마무리"><div class="s-head"><p class="eyebrow">마무리</p><h2 class="ct">정답 ④, 그리고 남는 것</h2></div><div class="s-body">
+<p class="answer-big">④</p>
+<div class="take4">
+  <div class="card accent"><span class="tag">①</span><p>적분을 미분하면 <b>상쇄</b>가 일어난다.</p></div>
+  <div class="card accent"><span class="tag">②</span><p>극값은 <span class="m" data-k="g'=0"></span>이 아니라 <b>부호 변화</b>다.</p></div>
+  <div class="card accent"><span class="tag">③</span><p>복잡한 식은 <b>부호를 결정하는 핵심</b>으로 압축하자.</p></div>
+  <div class="card accent"><span class="tag">④</span><p>개수가 바뀌는 경계는 <b>접하는 순간</b>이다.</p></div>
+</div>
+</div><div class="s-ask"><p class="question">이 문제의 풀이에서 "계산"은 어디까지 필요했고, "눈"은 어디서 쓰였을까?</p></div><aside class="notes"><p><strong>45–50분.</strong> 탐구실 기록장에 한 줄 적기.</p></aside></section>
 
-  <section class="slide">
-    <span class="snum">SLIDE 8 · 연계</span>
-    <h2>학생용 짝 자료</h2>
-    <div class="cols">
-      <div class="main">
-        <p>이 수업의 학생용 짝 자료는 <b>「미분하면 깔끔해지는 적분」 탐구실</b>(2021 수능 나형 20번)이다.</p>
-        <ul>
-          <li>STEP 1–2: 라이프니츠 법칙으로 \(g'(x)\) 구하기, 부호 분석</li>
-          <li>실험실: \(a\) 슬라이더로 \(H(x)\)의 부호 변화 관찰</li>
-          <li>STEP 3–4: 중근으로 경계 구하기, \(a_{\max}=\sqrt6\)</li>
-          <li>과제: \(a=3\)일 때 \(g\)의 극값이 3개임을 \(H(x)\) 그래프로 확인하기</li>
-        </ul>
-      </div>
-      <div class="sidea">
-        <h4>다음 차시 예고</h4>
-        <p>객관식 킬러 ③: 2020 나형 20번 — "꺾이는 점에서 \(p\)가 메워준다".</p>
-      </div>
-    </div>
-  </section>
+<section class="slide" data-title="연계"><div class="s-head"><p class="eyebrow">연계</p><h2 class="ct">학생용 <span class="am">짝 자료</span></h2></div><div class="s-body">
+<div class="card"><h3>「미분하면 깔끔해지는 적분」 탐구실 <span class="mono">(2021 수능 나형 20번)</span></h3><ul>
+  <li>STEP 1–2: 라이프니츠 법칙으로 <span class="m" data-k="g'(x)"></span> 구하기, 부호 분석</li>
+  <li>실험실: <span class="m" data-k="a"></span> 슬라이더로 <span class="m" data-k="H(x)"></span>의 부호 변화 관찰</li>
+  <li>STEP 3–4: 중근으로 경계 구하기, <span class="m" data-k="a_{\max}=\sqrt6"></span></li>
+  <li>과제: <span class="m" data-k="a=3"></span>일 때 <span class="m" data-k="g"></span>의 극값이 3개임을 <span class="m" data-k="H(x)"></span> 그래프로 확인하기</li>
+</ul></div>
+<div class="note-strip"><span class="ic">NEXT</span><p>객관식 킬러 ③: 2020 나형 20번 — "꺾이는 점에서 <span class="m" data-k="p"></span>가 메워준다".</p></div>
+</div><aside class="notes"><p>다음 차시 예고로 마무리.</p></aside></section>
 
 </div>
-
-<nav class="nav">
-  <button id="prev">← 이전</button>
-  <span class="pg"><span id="cur">1</span> / 8</span>
-  <button id="next">다음 →</button>
-</nav>
-
-<script>
-document.addEventListener('DOMContentLoaded', function(){
-  if (window.renderMathInElement) renderMathInElement(document.body, {delimiters:[{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}]});
-});
-</script>
-<script src="../../../jp-deck.js"></script>
 </body>
 </html>
