@@ -42,7 +42,12 @@ body {
   animation: none !important;
 }
 .exhibition-locked body { overflow: auto; height: auto; }
-.exhibition-locked body > :not(.public-hold):not(main) { display: none !important; }
+.exhibition-locked body > :not(.public-hold):not(main):not(.dd-layer) { display: none !important; }
+/* 깊이 탐구 모달(.dd-layer)은 JS가 body에 붙이는 오버레이다. 전시 잠금의
+   의도는 학생 작품을 가리는 것이지 씨앗 탐구 흐름을 막는 게 아니라서,
+   모달까지 숨기면 '깊이 탐구 열어보기' 버튼이 먹통처럼 보인다. 예외 처리한다.
+   닫힌 상태에서는 deep-dive.css의 .dd-layer[hidden]{display:none}이 그대로
+   숨기므로 잠금 우회가 아니다. */
 /* 전시 잠금은 학생 작품을 가리는 장치다. 탐구 씨앗은 교사가 쓴 주제 목록이라
    가릴 것이 없고, 오히려 학생이 주제를 고르러 오는 곳이다. 씨앗밭만 통과시킨다. */
 .exhibition-locked main > :not(.seed-field) { display: none !important; }
