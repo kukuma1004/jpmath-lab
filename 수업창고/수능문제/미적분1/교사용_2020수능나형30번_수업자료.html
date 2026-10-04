@@ -1,225 +1,56 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>교사용 · 2020 수능 나형 30번 수업자료 — JP Math Lab</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
-<link rel="stylesheet" href="jp-dark.css">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow,noarchive"/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<title>2020 수능 나형 30번 | 근의 개수는 그래프의 만남 · 교사용</title>
+<script src="../../auth.js" data-classroom-protected></script>
+<link rel="stylesheet" href="../../../vendor/katex/katex.min.css"/>
+<link rel="stylesheet" href="../../../jp-math-typography.css?v=3"/>
+<link rel="stylesheet" href="../../../jp-dark.css?v=6"/>
+<link rel="stylesheet" href="../../../jp-polish.css?v=11"/>
+<script defer src="../../../vendor/katex/katex.min.js"></script>
+<script defer src="../../../jp-lab-dark.js?v=2"></script>
+<script defer src="../../../jp-deck.js"></script>
+<script defer src="../../../jp-polish.js?v=21"></script>
 <style>
-.deck-head{max-width:1060px;margin:0 auto;padding:30px 22px 6px}
-.deck-head .badge{display:inline-block;font-size:12px;letter-spacing:.14em;color:#0b0b10;background:linear-gradient(135deg,#7dffb0,#4ad6ff);border-radius:999px;padding:6px 14px;font-weight:800;margin-bottom:10px}
-.deck-head h1{font-size:clamp(24px,4.4vw,36px);margin:0 0 6px}
-.deck-head .sub{color:#9aa7c7;margin:0 0 4px}
-.deck-head .meta{color:#8b9bb8;font-size:13px;margin:0}
-.deck{max-width:1060px;margin:0 auto;padding:16px 22px 40px}
-.slide{display:none;background:rgba(16,20,38,.78);border:1px solid rgba(125,255,176,.25);border-radius:20px;padding:28px;min-height:480px;box-shadow:0 12px 40px rgba(0,0,0,.35)}
-.slide.active{display:block}
-.slide .snum{display:inline-block;background:#7dffb0;color:#0b0b10;font-weight:800;font-size:12px;border-radius:8px;padding:4px 12px;margin-bottom:10px;letter-spacing:.1em}
-.slide h2{margin:0 0 14px;font-size:24px}
-.slide .cols{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:20px}
-@media(max-width:860px){.slide .cols{grid-template-columns:1fr}}
-.slide .main p,.slide .main li{line-height:1.8;color:#dbe3f5}
-.slide .main ul{padding-left:20px}
-.qa{background:rgba(125,255,176,.06);border:1px dashed rgba(125,255,176,.4);border-radius:12px;padding:12px 16px;margin:12px 0}
-.qa .q{font-weight:800;color:#7dffb0;margin:0 0 6px}
-.qa .a{margin:0;color:#c9d4ee}
-.warn{background:rgba(255,143,143,.06);border:1px dashed rgba(255,143,143,.4);border-radius:12px;padding:12px 16px;margin:12px 0}
-.warn .t{font-weight:800;color:#ff8f8f;margin:0 0 6px}
-.warn p{margin:0;color:#c9d4ee}
-.sidea{background:#0d1122;border:1px solid rgba(125,255,176,.2);border-radius:14px;padding:16px;height:fit-content}
-.sidea h4{margin:0 0 8px;color:#ffd76a;font-size:14px}
-.sidea p,.sidea li{font-size:13.5px;line-height:1.75;color:#c9d4ee}
-.sidea ul{padding-left:18px;margin:0}
-.nav{display:flex;justify-content:space-between;align-items:center;max-width:1060px;margin:0 auto;padding:0 22px 60px}
-.nav button{background:linear-gradient(135deg,#7dffb0,#4ad6ff);color:#0b0b10;border:none;border-radius:10px;padding:10px 22px;font-weight:800;cursor:pointer;font-size:14px}
-.nav button:disabled{opacity:.3;cursor:default}
-.nav .pg{color:#8b9bb8;font-size:14px}
-.mathline{overflow-x:auto;padding:6px 0}
-.cover-goals li{margin:10px 0;line-height:1.7;color:#dbe3f5}
-.time{font-size:13px;color:#0b0b10;background:#ffd76a;border-radius:999px;padding:3px 12px;font-weight:800;display:inline-block;margin-bottom:8px}
-.note{font-size:13px;color:#8b9bb8}
+.teacher-em{font-size:clamp(28px,4vw,54px);font-weight:800;line-height:1.18;text-align:center;letter-spacing:-.05em}.answer-big{font-size:clamp(70px,12vw,150px);font-weight:900;color:#a95232;line-height:1;text-align:center}.compact-table td,.compact-table th{padding:9px 11px!important;text-align:center}
+.compare{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:stretch}.compare .case{padding:22px;border:1px solid rgba(58,49,37,.14);border-radius:19px;background:#fff}.compare .case h3{margin:12px 0 10px}.compare .versus{display:grid;place-items:center;color:#a95232;font:800 12px 'IBM Plex Mono',monospace}
+.tri{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.tcard{padding:19px;border:1px solid rgba(58,49,37,.14);border-radius:17px;background:#fff}.tcard.dead{opacity:.62;border-style:dashed}.tcard.live{border-color:rgba(71,116,84,.4);background:#f5faf6}.tcard h3{margin-bottom:9px}
+.note-strip{display:flex;align-items:flex-start;gap:13px;margin-top:18px;padding:15px 17px;border-left:4px solid #2f6670;border-radius:0 13px 13px 0;background:#eef6f5}.note-strip.warn{border-color:#a95232;background:#fff4ed}.note-strip .ic{flex:0 0 auto;color:#a95232;font:800 10px 'IBM Plex Mono',monospace}.note-strip p{margin:0}
+.bogi-box{padding:18px 22px;border:1.5px solid rgba(58,49,37,.28);border-radius:16px;background:#fdfcf8}.bogi-box p{margin:9px 0;padding-left:24px;text-indent:-24px}
+@media(max-width:720px){.compare,.tri{grid-template-columns:1fr}.compare .versus{min-height:18px}}
 </style>
 </head>
-<body>
-<header class="deck-head">
-  <span class="badge">교사용 · 수업자료</span>
-  <h1>2020 수능 나형 30번 — 근의 개수는 그래프의 만남</h1>
-  <p class="sub">수학Ⅱ · 미분 · 단답형 4점 · 정답 51</p>
-  <p class="meta">50분 수업 덱 · 학생용 짝 자료: 「근의 개수는 그래프의 만남이다」 탐구실</p>
-</header>
-
+<body class="tpl-dark is-deck">
+<a class="jp-back-link teacher-back" href="../../">← 수업창고</a>
 <div class="deck">
 
-  <section class="slide active">
-    <span class="snum">SLIDE 1 · 표지</span>
-    <h2>오늘의 문제: 2020 수능 나형 30번</h2>
-    <div class="cols">
-      <div class="main">
-        <p><b>학습 목표</b></p>
-        <ul class="cover-goals">
-          <li>"방정식의 근의 개수"를 <b>두 그래프의 교점 개수</b>로 번역할 수 있다.</li>
-          <li>삼차방정식의 "서로 다른 실근 2개"가 <b>중근(접함)</b>을 뜻함을 설명할 수 있다.</li>
-          <li>경우 나누기에서 <b>모순으로 경우를 쳐내는</b> 논증을 할 수 있다.</li>
-        </ul>
-        <div class="qa"><p class="q">도입 발문</p><p class="a">"방정식 \(f(x)-x=0\)의 근이 뭘까? 이걸 그래프로 그리면 뭐가 보이는가?" → \(y=f(x)\)와 \(y=x\)의 교점.</p></div>
-      </div>
-      <div class="sidea">
-        <h4><span class="time">0–5분</span></h4>
-        <p><b>교사 노트:</b> 이 문제는 "번역"의 문제다. \(f(x)-x=0\)을 \(y=f(x)\)와 \(y=x\)의 만남으로 읽는 순간, (가)(나)는 "두 직선에 각각 접한다"는 기하학적 장면이 된다. 도입 5분을 번역에 올인하자.</p>
-      </div>
-    </div>
-  </section>
+<section class="slide slide--title" data-title="문제와 만나기"><div class="s-body"><div class="title-layout">
+  <div><p class="eyebrow">2020학년도 수능 수학 나형 30번 · 4점</p><h1 class="h1 anim-fade-up">근의 개수는<br/><span class="am">그래프의 만남</span>이다</h1><p class="lede">"서로 다른 실근이 2개"를 <b>"접한다"</b>로 번역하는 수업입니다. 번역이 끝나면 남는 일은 경우 나누기뿐이고, 네 경우 중 셋은 계산 없이 모순으로 죽습니다.</p><div class="pause">첫 90초는 말하지 않기</div></div>
+  <div class="card" style="margin-top:0"><p>최고차 양수의 삼차 <span class="m" data-k="f"></span></p><p class="mono">(가) <span class="m" data-k="f(x)-x=0"></span> 의 서로 다른 실근 2개<br/>(나) <span class="m" data-k="f(x)+x=0"></span> 의 서로 다른 실근 2개</p><p class="mono"><span class="m" data-k="f(0)=0,\ f'(1)=1"></span></p><div class="eq tight"><div class="eqrow"><span class="m md am" data-k="f(3)=\;?"></span></div></div></div>
+</div></div><aside class="notes"><p><strong>권장 시간</strong> 45분 · 문제 읽기 4 / 번역 10 / 공통근과 경우 나누기 15 / 계수 확정 8 / 정리 8.</p><p><strong>학생용 짝 자료</strong>는 수능문제 &gt; 미적분1 &gt; 근의 개수는 그래프의 만남 입니다. 가로선을 밀어 교점의 수를 세는 판과, 접하는 곡선 위에서 a 를 움직여 f′(1)=1 을 찾는 판이 들어 있습니다.</p><p>처음 90초 동안 "서로 다른 실근이 2개라는 건 어떤 모양일까?"만 그림으로 그리게 하세요. 판별식을 먼저 쓰려는 학생은 멈추게 합니다.</p></aside></section>
 
-  <section class="slide">
-    <span class="snum">SLIDE 2 · 번역</span>
-    <h2>"실근 2개" = "한 점에서 접한다"</h2>
-    <div class="cols">
-      <div class="main">
-        <ul>
-          <li>(가): \(f(x)-x=0\) (삼차) 의 서로 다른 실근 2개 → 중근 존재 → <b>\(y=f(x)\)와 \(y=x\)가 접한다</b>.</li>
-          <li>(나): \(f(x)+x=0\) (삼차) 의 서로 다른 실근 2개 → <b>\(y=f(x)\)와 \(y=-x\)가 접한다</b>.</li>
-        </ul>
-        <div class="qa"><p class="q">발문</p><p class="a">"삼차방정식의 근이 (중복 포함) 3개인데, 서로 다른 게 2개라면? → 하나는 겹쳤다(중근). 중근인 점에서 그래프는?"</p></div>
-        <div class="warn"><p class="t">오개념 주의</p><p>"근이 2개"를 이차방정식으로 착각하는 학생이 있다. \(f(x)-x\)는 삼차식임을 확인시키자.</p></div>
-      </div>
-      <div class="sidea">
-        <h4><span class="time">5–12분</span></h4>
-        <p><b>교사 노트:</b> 삼차함수의 그래프 개형(극대·극소)과 \(x\)축의 만남 경우의 수(1개/2개/3개)를 칠판에 그려보게 하자. "2개"가 나오는 경우는 오직 <b>극값이 0인 경우(접함)</b>뿐임을 시각적으로 굳힌다.</p>
-      </div>
-    </div>
-  </section>
+<section class="slide" data-title="수업의 지도"><div class="s-head"><p class="eyebrow">전체 지도</p><h2 class="ct">네 개의 <span class="am">번역</span>을 통과한다</h2></div><div class="s-body"><div class="grid4 anim-stagger-list"><div class="card accent"><span class="tag">GATE 1</span><h4>번역</h4><p>실근 2개 ⟺ <b>접한다</b> (중근 하나)</p></div><div class="card accent"><span class="tag">GATE 2</span><h4>공통근</h4><p><span class="m" data-k="f(0)=0"></span> → <span class="m" data-k="x=0"></span> 이 두 방정식의 근</p></div><div class="card accent"><span class="tag">GATE 3</span><h4>경우 나누기</h4><p>네 조합 중 (A, B′) 만 생존 → <span class="m" data-k="c=1,\ b^{2}=8a"></span></p></div><div class="card accent"><span class="tag">GATE 4</span><h4>계수</h4><p><span class="m" data-k="f'(1)=1"></span> → <span class="m" data-k="a=\tfrac{32}{9},\ b=-\tfrac{16}{3}"></span></p></div></div><div class="card quote"><p><b>수업의 한 문장.</b> 삼차방정식의 서로 다른 실근이 정확히 2개이면 <b class="am">그래프가 접한다.</b> 그러니 곡선은 y=x 와 y=−x 에 각각 한 번씩 접한다.</p></div></div><div class="s-ask"><p class="question">삼차방정식의 서로 다른 실근이 정확히 2개일 때 그래프는 어떤 모양일까?</p></div><aside class="notes"><p>가로선을 삼차곡선에 대고 밀어 보이면 학생이 스스로 "극대나 극소에 걸릴 때 2개" 라고 말합니다. 그 말이 곧 "접한다" 입니다.</p></aside></section>
 
-  <section class="slide">
-    <span class="snum">SLIDE 3 · 실마리</span>
-    <h2>\(f(0)=0\) — \(x=0\)은 공통근이다</h2>
-    <div class="cols">
-      <div class="main">
-        <div class="mathline">\[\begin{aligned} f(x)-x &= x\big(ax^2+bx+(c-1)\big) \\ f(x)+x &= x\big(ax^2+bx+(c+1)\big) \end{aligned}\]</div>
-        <ul>
-          <li>점 \((0,0)\)은 \(y=f(x)\), \(y=x\), \(y=-x\) 세 그래프의 공통점.</li>
-          <li>"서로 다른 실근 2개"가 되려면: <b>\(x=0\)이 중근</b>이거나, <b>뒤의 이차식이 중근</b>을 가져야.</li>
-        </ul>
-        <div class="qa"><p class="q">발문</p><p class="a">"\(x\)를 묶어내면 뭐가 보이는가? \(x=0\) 말고 남은 근은 어디에서 오는가?"</p></div>
-      </div>
-      <div class="sidea">
-        <h4><span class="time">12–20분</span></h4>
-        <p><b>교사 노트:</b> 인수분해는 이 문제의 기술적 열쇠다. \(f(0)=0\)을 보고 \(x\)를 묶어내는 발상이 안 되면, 삼차식의 판별식이라는 수렁에 빠진다. "0이 근이네? 그럼 \(x\)로 묶이지 않을까?"를 학생 입에서 나오게 하자.</p>
-      </div>
-    </div>
-  </section>
+<section class="slide" data-title="GATE 1 · 번역"><div class="s-head"><p class="eyebrow">GATE 1</p><h2 class="ct">실근 <span class="am">2개</span> = <span class="am">접한다</span></h2></div><div class="s-body"><div class="compare"><div class="case"><span class="tag">식으로 읽으면</span><h3>판별식?</h3><p>삼차 판별식은 길다. 그리고 "2개"를 판별식으로 쓰면 =0 인 경우만 남는다.</p></div><div class="versus">VS</div><div class="case"><span class="tag gr">그림으로 읽으면</span><h3>접한다</h3><p><span class="m" data-k="f(x)-x=0"></span> ⟺ 곡선 <span class="m" data-k="y=f(x)"></span> 와 직선 <span class="m" data-k="y=x"></span> 의 교점. 서로 다른 교점 2개 = <b>접하는 점 하나 + 만나는 점 하나.</b></p></div></div><div class="note-strip"><span class="ic">KEY</span><p>가로선을 위아래로 밀면 교점은 3 → 2 → 1. 2개가 되는 순간은 극대·극소에 걸릴 때, 곧 접할 때뿐입니다.</p></div></div><div class="s-ask"><p class="question">실근이 2개일 때 그 중 하나가 반드시 중근인 이유는?</p></div><aside class="notes"><p>삼차방정식의 근은 겹쳐 세면 3개이고 서로 다른 것이 2개이니, 하나가 두 번 센 것입니다.</p></aside></section>
 
-  <section class="slide">
-    <span class="snum">SLIDE 4 · 핵심</span>
-    <h2>경우 나누기 — 모순으로 쳐내기</h2>
-    <div class="cols">
-      <div class="main">
-        <ul>
-          <li>(가): [A] \(c=1\) (\(x=0\) 중근) 또는 [B] \(b^2=4a(c-1)\) (이차식 중근)</li>
-          <li>(나): [A'] \(c=-1\) 또는 [B'] \(b^2=4a(c+1)\)</li>
-          <li>(A,A'): \(c\) 모순 → 탈락. (B,A'): \(b^2=-8a&lt;0\) → 탈락. (B,B'): \(-1=1\) 모순 → 탈락.</li>
-          <li><b>유일 생존: (A, B')</b> → \(c=1,\ b^2=8a\).</li>
-        </ul>
-        <div class="qa"><p class="q">발문</p><p class="a">"4가지 조합 중 3개를 계산 없이 버렸다. 각각의 탈락 이유를 말로 설명해봐라."</p></div>
-        <div class="warn"><p class="t">오개념 주의</p><p>\(b\ne 0\) 조건을 빼먹으면 나중에 \(-b/a=0\)인 경우(근이 1개)가 슬쩍 들어온다. "서로 다른 실근 2개"의 정의를 끝까지 들고 가자.</p></div>
-      </div>
-      <div class="sidea">
-        <h4><span class="time">20–30분</span></h4>
-        <p><b>교사 노트:</b> 이 슬라이드가 50분의 심장이다. 경우 나누기를 <b>표</b>로 정리하고, 탈락 이유를 학생들이 말하게 하자. "계산하기 전에 논리로 쳐낸다"는 것이 이 문제의 메시지다. 탐구실 실험실(\(y=-x\)에 접하는 순간 찾기)을 함께 띄우면 효과적이다.</p>
-      </div>
-    </div>
-  </section>
+<section class="slide" data-title="GATE 2 · 공통근"><div class="s-head"><p class="eyebrow">GATE 2</p><h2 class="ct"><span class="m" data-k="x=0"></span> 은 두 방정식의 <span class="am">공통근</span></h2></div><div class="s-body"><div class="eq"><div class="eqrow"><span class="m md" data-k="f(x)\mp x=x\big(ax^{2}+bx+(c\mp1)\big)\qquad(f(0)=0)"></span></div></div><div class="note-strip"><span class="ic">KEY</span><p>원점은 곡선 위에도, 직선 <span class="m" data-k="y=x"></span> 위에도, <span class="m" data-k="y=-x"></span> 위에도 있습니다. 그림으로 보면 세 개가 원점에서 만나는 것입니다.</p></div></div><div class="s-ask"><p class="question">인수분해로 얻은 이차식 <span class="m" data-k="ax^{2}+bx+(c\mp1)"></span> 은 무엇을 담당할까?</p></div><aside class="notes"><p>0 이외의 근을 담당합니다. 서로 다른 실근의 총 수를 이차식의 판별식과 0 이 중근인지 여부로 나눠 셉니다.</p></aside></section>
 
-  <section class="slide">
-    <span class="snum">SLIDE 5 · 확정</span>
-    <h2>\(f'(1)=1\) → \(a=\frac{32}{9}\)</h2>
-    <div class="cols">
-      <div class="main">
-        <div class="mathline">\[f'(1)=3a+2b+1=1\ \Rightarrow\ b=-\frac{3a}{2}\]</div>
-        <p>\(b^2=8a\)에 대입: \(\frac94a^2=8a\), \(a&gt;0\)이므로 \(a=\frac{32}{9},\ b=-\frac{16}{3}\).</p>
-        <div class="mathline">\[f(x)=\frac{32}{9}x^3-\frac{16}{3}x^2+x\]</div>
-        <p><b>검산</b> (접하는 점): \(f(x)-x=\frac{16}{9}x^2(2x-3)\) → 원점에서 \(y=x\)에 접함 ✓. \(f(x)+x=\frac29x(4x-3)^2\) → \(\left(\frac34,-\frac34\right)\)에서 \(y=-x\)에 접함 ✓.</p>
-      </div>
-      <div class="sidea">
-        <h4><span class="time">30–38분</span></h4>
-        <p><b>교사 노트:</b> 검산은 선택이 아니라 필수다. "우리가 찾은 \(f\)가 정말 (가)(나)를 만족하는가?"를 확인하는 습관이, 경우 나누기 문제의 마지막 안전장치다.</p>
-      </div>
-    </div>
-  </section>
+<section class="slide" data-title="GATE 3 · 경우 나누기"><div class="s-head"><p class="eyebrow">GATE 3</p><h2 class="ct">네 조합 중 <span class="am">셋</span>은 계산 없이 죽는다</h2></div><div class="s-body"><table class="tbl compact-table"><tr><th>조합</th><th>무슨 일</th><th>판정</th></tr><tr><td>A, A′</td><td><span class="m" data-k="c=1"></span> 이면서 <span class="m" data-k="c=-1"></span></td><td>불가능</td></tr><tr><td>B, B′</td><td><span class="m" data-k="-1=1"></span></td><td>불가능</td></tr><tr><td>B, A′</td><td><span class="m" data-k="b^{2}=-8a\lt0"></span></td><td>불가능</td></tr><tr><td>A, B′</td><td><span class="m" data-k="c=1,\ b^{2}=8a"></span></td><td><b class="am">생존</b></td></tr></table><div class="note-strip warn"><span class="ic">TRAP</span><p>경우를 나누지 않고 삼차 판별식으로 덤비는 학생이 있습니다. 식이 매우 길어져 끝까지 가지 못합니다. 경우 나누기가 이 문제의 심장이라고 알려 주세요.</p></div></div><div class="s-ask"><p class="question">네 조합 중 가장 먼저 죽는 것은?</p></div><aside class="notes"><p>A, A′ 입니다. c 가 1 이면서 −1 일 수는 없으니까요. 학생에게 "계산 없이 죽는 순서" 를 매기게 하면 재미있습니다.</p></aside></section>
 
-  <section class="slide">
-    <span class="snum">SLIDE 6 · 기하학적 마무리</span>
-    <h2>그림으로 다시 보기</h2>
-    <div class="cols">
-      <div class="main">
-        <ul>
-          <li>\(y=f(x)\)는 원점 \((0,0)\)에서 직선 \(y=x\)에 접한다.</li>
-          <li>점 \(\left(\frac34,-\frac34\right)\)에서 직선 \(y=-x\)에 접한다.</li>
-          <li>두 접선이 원점에서 수직으로 만난다 (\(y=x\)와 \(y=-x\)는 수직!).</li>
-        </ul>
-        <div class="qa"><p class="q">발문</p><p class="a">"두 접선 \(y=x\)와 \(y=-x\)는 어떤 관계인가? 우연일까?" → 수직. 이 문제의 숨은 아름다움이다.</p></div>
-      </div>
-      <div class="sidea">
-        <h4><span class="time">38–44분</span></h4>
-        <p><b>교사 노트:</b> 여유가 되면 탐구실 실험실에서 \(a=32/9,\ b=-16/3\)으로 맞추고 두 접점을 보여주자. "대수로 찾은 답이 기하학적으로 이렇게 보인다"는 감동을 주는 것이 이 차시의 보너스다.</p>
-      </div>
-    </div>
-  </section>
+<section class="slide" data-title="GATE 4 · 계수"><div class="s-head"><p class="eyebrow">GATE 4</p><h2 class="ct">기울기 조건이 <span class="am">하나</span>를 고른다</h2></div><div class="s-body"><div class="eq"><div class="eqrow"><span class="m md am" data-k="f'(1)=3a+2b+1=1\;\Longrightarrow\;b=-\tfrac{3a}{2},\qquad b^{2}=8a\;\Longrightarrow\;a=\tfrac{32}{9},\ b=-\tfrac{16}{3}"></span></div></div><div class="note-strip"><span class="ic">KEY</span><p>검산 · <span class="m" data-k="f(x)-x=\tfrac{16}{9}x^{2}(2x-3)"></span> 은 <span class="m" data-k="x=0"></span> 중근, <span class="m" data-k="f(x)+x=\tfrac29x(4x-3)^{2}"></span> 은 <span class="m" data-k="x=\tfrac34"></span> 중근 — 접함이 모두 확인됩니다.</p></div></div><div class="s-ask"><p class="question">검산에서 인수분해된 모양은 무엇을 보여 주나?</p></div><aside class="notes"><p>중근이 어디에 있는지를 곧바로 보여 줍니다. 제곱 인수가 접하는 점입니다.</p></aside></section>
 
-  <section class="slide">
-    <span class="snum">SLIDE 7 · 마무리</span>
-    <h2>정답 51, 그리고 남는 것</h2>
-    <div class="cols">
-      <div class="main">
-        <div class="mathline">\[f(3)=\frac{32}{9}\cdot 27-\frac{16}{3}\cdot 9+3=96-48+3=51\]</div>
-        <p><b>오늘의 takeaways</b></p>
-        <ul>
-          <li>"방정식의 근의 개수"는 "두 그래프의 교점 개수"로 번역하라.</li>
-          <li>삼차방정식의 서로 다른 실근 2개 ⟺ 중근 ⟺ 접한다.</li>
-          <li>경우 나누기는 모순으로 쳐내는 것이 먼저, 계산은 나중.</li>
-        </ul>
-      </div>
-      <div class="sidea">
-        <h4><span class="time">44–50분</span></h4>
-        <p><b>교사 노트:</b> 탐구실 기록장에 "내가 발견한 구조 한 줄"을 적게 하자. 예: "근의 개수는 그래프의 만남이다."</p>
-      </div>
-    </div>
-  </section>
+<section class="slide" data-title="회수"><div class="s-head"><p class="eyebrow">회수</p><h2 class="ct"><span class="am">51</span></h2></div><div class="s-body"><table class="tbl compact-table"><tr><th>단계</th><th>식</th></tr><tr><td>번역</td><td>실근 2개 ⟺ 접함</td></tr><tr><td>공통근</td><td><span class="m" data-k="x=0"></span></td></tr><tr><td>경우</td><td><span class="m" data-k="c=1,\ b^{2}=8a"></span></td></tr><tr><td>계수</td><td><span class="m" data-k="a=\tfrac{32}{9},\ b=-\tfrac{16}{3}"></span></td></tr></table><p class="answer-big">51</p><p class="mono" style="text-align:center"><span class="m" data-k="f(3)=96-48+3=51"></span></p></div><div class="s-ask"><p class="question">계산은 몇 번이나 했나?</p></div><aside class="notes"><p>기울기 조건 한 번과 마지막 대입 한 번뿐입니다.</p></aside></section>
 
-  <section class="slide">
-    <span class="snum">SLIDE 8 · 연계</span>
-    <h2>학생용 짝 자료</h2>
-    <div class="cols">
-      <div class="main">
-        <p>이 수업의 학생용 짝 자료는 <b>「근의 개수는 그래프의 만남이다」 탐구실</b>(2020 수능 나형 30번)이다.</p>
-        <ul>
-          <li>STEP 1–3: 번역 → 인수분해 → 경우 나누기 (표로 정리)</li>
-          <li>실험실: \(a,b\) 슬라이더로 \(y=-x\)에 접하는 순간(\(b^2=8a\)) 발견</li>
-          <li>과제: \(f(x)=\frac{32}{9}x^3-\frac{16}{3}x^2+x\)의 그래프를 그리고 두 접선 \(y=x,\ y=-x\)와의 관계를 확인해보기</li>
-        </ul>
-      </div>
-      <div class="sidea">
-        <h4>시리즈 마무리</h4>
-        <p>"개수를 세는 함수" 3부작: ① 창문(2022-22) ② 절댓값의 미분가능성(2021-30) ③ 근의 개수=만남(2020-30). 세 문제의 공통점은 <b>"대수를 그래프로 번역한다"</b>는 것이다.</p>
-      </div>
-    </div>
-  </section>
+<section class="slide" data-title="교사 체크"><div class="s-head"><p class="eyebrow">교사 체크</p><h2 class="ct">학생이 자주 <span class="am">멈추는 네 지점</span></h2></div><div class="s-body"><table class="tbl compact-table"><tr><th>멈춤</th><th>학생 반응</th><th>되묻기</th></tr><tr><td>번역</td><td>"2개" 를 "근이 2개" 로만 읽음</td><td>"겹치면 몇 개로 세었지?"</td></tr><tr><td>공통근</td><td>인수분해를 못 함</td><td>"f(0)=0 이면 어떤 인수가 생기지?"</td></tr><tr><td>경우</td><td>삼차 판별식으로 덤빔</td><td>"0 이 중근인 경우와 아닌 경우로 나눠 볼까?"</td></tr><tr><td>부호</td><td><span class="m" data-k="b^{2}\lt0"></span> 을 못 알아봄</td><td>"a 가 양수라는 조건을 썼나?"</td></tr></table></div><div class="s-ask"><p class="question">우리 반에서는 네 지점 중 어디에서 가장 많이 멈출까?</p></div><aside class="notes"><p>대개 경우 나누기입니다. 표를 먼저 그려 주면 쉽게 풀립니다.</p></aside></section>
+
+<section class="slide" data-title="수업의 결론"><div class="s-head"><p class="eyebrow">수업의 결론</p><h2 class="ct">오늘 쓴 <span class="am">네 가지 사고</span></h2></div><div class="s-body"><div class="grid4 anim-stagger-list"><div class="card accent"><span class="tag">①</span><h4>방정식 → 그래프</h4><p>근의 수 = 교점의 수</p></div><div class="card accent"><span class="tag">②</span><h4>2개 → 접한다</h4><p>중근 하나</p></div><div class="card accent"><span class="tag">③</span><h4>공통근</h4><p>f(0)=0 이 주는 인수</p></div><div class="card accent"><span class="tag">④</span><h4>모순으로 쳐내기</h4><p>셋은 계산 없이 죽는다</p></div></div><div class="card quote"><p>답은 <b class="am">51</b>.</p><p class="mono">퇴장 질문: “(가)만 있고 (나)가 없다면 f 는 몇 개나 정해질까?”</p></div></div><div class="s-ask"><p class="question">(나)가 없으면 f 는 어떻게 될까?</p></div><aside class="notes"><p>미지수가 모자라 하나로 정해지지 않습니다. 두 번째 접함이 b²=8a 라는 식을 하나 더 주기 때문에 정해진다는 점을 짚어 주세요.</p></aside></section>
 
 </div>
-
-<nav class="nav">
-  <button id="prev">← 이전</button>
-  <span class="pg"><span id="cur">1</span> / 8</span>
-  <button id="next">다음 →</button>
-</nav>
-
-<script>
-document.addEventListener('DOMContentLoaded', function(){
-  if (window.renderMathInElement) renderMathInElement(document.body, {delimiters:[{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}]});
-});
-</script>
-<script src="jp-deck.js"></script>
 </body>
 </html>

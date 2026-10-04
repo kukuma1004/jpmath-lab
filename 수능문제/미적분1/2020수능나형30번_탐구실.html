@@ -1,323 +1,216 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>근의 개수는 그래프의 만남 — 2020 수능 나형 30번 — JP Math Lab</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
-<link rel="stylesheet" href="jp-dark.css">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow,noarchive"/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<title>2020 수능 수학 나형 30번 | 근의 개수는 그래프의 만남</title>
+<link rel="stylesheet" href="../../vendor/katex/katex.min.css"/>
+<link rel="stylesheet" href="../../jp-dark.css?v=6"/>
+<link rel="stylesheet" href="../../jp-polish.css?v=11"/>
+<script defer src="../../vendor/katex/katex.min.js"></script>
+<script defer src="../../jp-lab-dark.js?v=2"></script>
+<script defer src="../../jp-polish.js?v=21"></script>
+<link rel="stylesheet" href="../../jp-nav-2.css?v=3"/>
+<script src="../../jp-nav-2.js?v=6" data-jp-section="수능·킬러 문제" defer></script>
 <style>
-.lab-head{max-width:1060px;margin:0 auto;padding:34px 22px 8px}
-.lab-head .badge{display:inline-block;font-size:12px;letter-spacing:.14em;color:#0b0b10;background:linear-gradient(135deg,#ffd76a,#ff9d5c);border-radius:999px;padding:6px 14px;font-weight:800;margin-bottom:12px}
-.lab-head h1{font-size:clamp(26px,4.6vw,40px);margin:0 0 8px}
-.lab-head .sub{color:#9aa7c7;margin:0}
-.wrap{max-width:1060px;margin:0 auto;padding:18px 22px 60px}
-.grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px}
-@media(max-width:900px){.grid{grid-template-columns:1fr}}
-.card{background:rgba(16,20,38,.72);border:1px solid rgba(124,92,255,.22);border-radius:18px;padding:22px;margin-bottom:18px;box-shadow:0 12px 40px rgba(0,0,0,.35)}
-.card h2{margin:0 0 4px;font-size:20px}
-.card h2 .step{display:inline-block;background:#7c5cff;color:#fff;font-size:12px;border-radius:8px;padding:3px 10px;margin-right:8px;vertical-align:middle}
-.card .kicker{color:#8b9bb8;font-size:13px;margin:0 0 12px}
-.card p{line-height:1.75;color:#dbe3f5}
-.card .math{overflow-x:auto;padding:6px 0}
-.card ul{padding-left:20px}.card li{line-height:1.75;color:#dbe3f5;margin:6px 0}
-.askbox{border:1px dashed rgba(124,92,255,.5);border-radius:14px;padding:14px 16px;margin:14px 0;background:rgba(124,92,255,.06)}
-.askbox .q{font-weight:700;margin:0 0 10px;color:#fff}
-.askbox label{display:block;padding:8px 10px;border-radius:10px;margin:6px 0;background:rgba(255,255,255,.03);cursor:pointer;border:1px solid transparent}
-.askbox label:hover{border-color:rgba(124,92,255,.4)}
-.askbox input{margin-right:8px}
-.askbox .fb{margin-top:10px;font-weight:700;display:none}
-.askbox .fb.ok{display:block;color:#7dffb0}
-.askbox .fb.no{display:block;color:#ff8f8f}
-.hint{margin:12px 0}
-.hint summary{cursor:pointer;color:#ffd76a;font-weight:700}
-.hint .hint-body{margin-top:8px;color:#c9d4ee;line-height:1.7}
-.problem-img{width:100%;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:#fff}
-.takeaways li{margin:8px 0;line-height:1.7;color:#dbe3f5}
-.side .card h3{margin:0 0 10px;font-size:16px;color:#ffd76a}
-.side .card p,.side .card li{font-size:14px;line-height:1.7;color:#c9d4ee}
-.side .card ul{padding-left:18px;margin:0}
-.note{font-size:13px;color:#8b9bb8}
-.lab-figure{background:#0d1122;border:1px solid rgba(124,92,255,.25);border-radius:14px;padding:14px;margin:14px 0}
-.lab-figure svg{width:100%;height:auto;display:block}
-.lab-ctl{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-top:10px}
-.lab-ctl .ctl{flex:1 1 200px}
-.lab-ctl label{font-size:13px;color:#9aa7c7;display:block;margin-bottom:4px}
-.lab-ctl input[type=range]{width:100%}
-.lab-ctl .val{color:#ffd76a;font-weight:800}
-.legend{font-size:13px;color:#9aa7c7;margin-top:8px}
-.legend span{display:inline-block;margin-right:14px}
-.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:middle}
-.counter{margin-top:10px;font-size:15px;color:#dbe3f5}
-.counter b{font-size:28px;color:#7dffb0;margin:0 6px}
-.counter .hit{color:#7dffb0;font-weight:800}
-.memo{width:100%;min-height:120px;background:#0d1122;border:1px solid rgba(124,92,255,.25);border-radius:12px;color:#dbe3f5;padding:12px;font-size:14px;line-height:1.7}
-.final{background:linear-gradient(135deg,rgba(124,92,255,.16),rgba(255,157,92,.10));border:1px solid rgba(255,215,106,.4)}
-.final .ans{font-size:15px;color:#9aa7c7}
-.final .ans b{font-size:40px;color:#ffd76a;margin:0 8px}
-.tag{display:inline-block;font-size:11px;color:#0b0b10;background:#7dffb0;border-radius:999px;padding:3px 10px;font-weight:800;margin-right:6px}
-table.case{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}
-table.case th,table.case td{border:1px solid rgba(124,92,255,.3);padding:10px;text-align:center;color:#dbe3f5}
-table.case th{background:rgba(124,92,255,.12);color:#ffd76a}
-table.case td.bad{color:#ff8f8f}
-table.case td.good{color:#7dffb0;font-weight:800}
-</style>
+.cnt-lab{margin:22px 0;border:1px solid rgba(47,102,112,.2);border-radius:24px;overflow:hidden;background:#fff}.cnt-lab-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:17px 20px;border-bottom:1px solid rgba(58,49,37,.12)}.cnt-lab-head h4{margin:0;font-size:18px}.cnt-lab-head span{color:#2f6670;font:700 10px 'IBM Plex Mono',monospace;letter-spacing:.08em}.cnt-lab-body{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(260px,.72fr)}.cnt-stage{display:grid;gap:8px;align-content:center;padding:16px;background:linear-gradient(145deg,#fbfaf6,#f4efe4)}.cnt-stage svg{display:block;width:100%;height:auto}.cnt-panel{padding:20px;border-left:1px solid rgba(58,49,37,.12)}.cnt-control{margin-bottom:14px}.cnt-control label{display:flex;justify-content:space-between;gap:12px;margin-bottom:6px;color:#5f574b;font-size:12px}.cnt-control label b{color:#a95232;font-family:'IBM Plex Mono',monospace}.cnt-control input{width:100%;accent-color:#a95232}.snap{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 12px}.snap button{padding:5px 9px;border:1px solid rgba(58,49,37,.2);border-radius:999px;background:#fff;font:700 11px 'IBM Plex Mono',monospace;color:#5f574b;cursor:pointer}.snap button:hover{border-color:#a95232;color:#a95232}.cnt-row{display:flex;justify-content:space-between;gap:12px;margin-top:8px;padding:9px 11px;border-radius:11px;background:#f6f2e9;font-size:12px}.cnt-row b{color:#2f6670;font-family:'IBM Plex Mono',monospace;text-align:right}.cnt-row.hot b{color:#a95232}.verdict{display:grid;place-items:center;min-height:74px;margin-top:12px;padding:10px;border-radius:15px;color:#fff;background:#8a3d3d;text-align:center}.verdict strong{display:block;font:700 19px 'Pretendard',sans-serif}.verdict span{font-size:11px;color:rgba(255,255,255,.8)}.verdict.ok{background:#477454;box-shadow:0 0 0 4px rgba(71,116,84,.12)}.verdict.mid{background:#6c6357}.cnt-hint{margin:10px 0 0;color:#776e61;font-size:11.5px;line-height:1.6}
+.prob .eqrow{overflow-x:auto}.choice{min-height:48px}.choice.chosen{border-color:#2f6670!important;background:#eef6f5!important;box-shadow:0 0 0 3px rgba(47,102,112,.1)}
+.gtable{width:100%;border-collapse:collapse;margin-top:14px;font-size:13px}.gtable th,.gtable td{padding:8px 6px;border-bottom:1px solid rgba(58,49,37,.12);text-align:center}.gtable td.hot{color:#a95232;font-weight:800}.gtable tr.key td{background:#fff3e8}
+.mini-answer{font-size:clamp(46px,8vw,84px);font-weight:800;color:#a95232;text-align:center;letter-spacing:-.06em}.reveal-note{margin-top:12px;color:#6b6256;font-size:13px;text-align:center}
+.bogi{margin:18px 0;padding:18px 20px;border:1.5px solid rgba(58,49,37,.3);border-radius:16px;background:#fdfcf8}.bogi h5{margin:0 0 12px;color:#2f6670;font:700 12px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-align:center}.bogi p{margin:9px 0;padding-left:22px;text-indent:-22px}.bogi p b{color:#a95232}
+@media(max-width:800px){.cnt-lab-body{grid-template-columns:1fr}.cnt-panel{border-top:1px solid rgba(58,49,37,.12);border-left:0}.cnt-stage{padding:8px}}
+@media(max-width:650px){.cnt-row{flex-direction:column;align-items:flex-start}.cnt-row b{text-align:left}.gtable{font-size:11.5px}}
+.cond{margin:16px 0;padding:16px 18px;border:1.5px solid rgba(58,49,37,.25);border-radius:15px;background:#fdfcf8}.cond p{margin:8px 0;padding-left:26px;text-indent:-26px}.ansrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:16px 0}.ansrow input{width:150px;padding:11px 14px;border:1.5px solid rgba(58,49,37,.28);border-radius:12px;font:700 18px IBM Plex Mono,monospace;background:#fff}.ansrow input:focus{outline:none;border-color:#2f6670;box-shadow:0 0 0 3px rgba(47,102,112,.12)}.ansrow .res{font-weight:700;font-size:14px}.ansrow .res.ok{color:#477454}.ansrow .res.no{color:#a95232}.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:14px 0}.opts span{padding:8px 10px;border:1px solid rgba(58,49,37,.14);border-radius:11px;background:#fdfcf8;font-size:15px}</style>
 </head>
-<body>
-<header class="lab-head">
-  <span class="badge">수학Ⅱ · 미분</span>
-  <h1>근의 개수는 그래프의 만남이다</h1>
-  <p class="sub">2020학년도 수능 나형 30번 · 단답형 4점 · 정답 51</p>
+<body class="tpl-dark is-page">
+
+<header>
+  <div class="hbar">
+    <h1>근의 개수는 그래프의 만남</h1>
+    <span class="src">2020학년도 수능 수학 <b>나형 30번</b> · 4점</span>
+    <a class="back" href="../">← 수능 문제</a>
+  </div>
+  <nav id="nav"></nav>
+  <div class="pbar"><span id="pfill"></span></div>
 </header>
 
-<div class="wrap">
-<div class="grid">
-<div class="col-main">
+<main>
 
-  <section class="card">
-    <h2>원문제</h2>
-    <p class="kicker">실제 수능 문제지다. "서로 다른 실근의 개수"라는 말을 그래프로 번역하는 문제다.</p>
-    <img class="problem-img" src="문제이미지/assets/2020수능나형30번.png" alt="2020학년도 수능 나형 30번 원문제">
-    <p class="note">* 원문제: 최고차항의 계수가 양수인 삼차함수 \(f(x)\)가 다음 조건을 만족시킨다. (가) 방정식 \(f(x)-x=0\)의 서로 다른 실근의 개수는 2이다. (나) 방정식 \(f(x)+x=0\)의 서로 다른 실근의 개수는 2이다. \(f(0)=0,\ f'(1)=1\)일 때, \(f(3)\)의 값을 구하시오. [4점]</p>
-  </section>
+<!-- ══════════ STEP 1 ══════════ -->
+<section class="ch on" data-ch="0">
+  <p class="eyebrow">STEP 01 · 문제 만나기</p>
+  <h2 class="ct">근의 개수는 <span class="am">그래프의 만남</span>이다</h2>
+<p class="lede">"<span class="m" data-k="f(x)-x=0"></span> 의 실근" 은 식이 아니라 그림으로 읽을 말입니다. 곡선 <span class="m" data-k="y=f(x)"></span> 와 직선 <span class="m" data-k="y=x"></span> 가 <b>만나는 점</b>이 바로 그 근입니다.</p><div class="prob"><div class="prob-head"><span class="yr">2020 수능</span><h4>나형 30번</h4><span class="pts">4점</span></div><div class="prob-body"><div class="qtext"><p>최고차항의 계수가 양수인 삼차함수 <span class="m" data-k="f(x)"></span> 가 다음 조건을 만족시킨다.</p></div><div class="cond">
+<p>(가) 방정식 <span class="m" data-k="f(x)-x=0"></span> 의 서로 다른 실근의 개수는 <span class="m" data-k="2"></span> 이다.</p>
+<p>(나) 방정식 <span class="m" data-k="f(x)+x=0"></span> 의 서로 다른 실근의 개수는 <span class="m" data-k="2"></span> 이다.</p></div><div class="qtext"><p><span class="m" data-k="f(0)=0,\ f'(1)=1"></span> 일 때, <span class="m am" data-k="f(3)"></span> 의 값을 구하시오.</p></div><div class="ansrow"><input id="ansIn" type="text" inputmode="numeric" autocomplete="off" placeholder="답" aria-label="답"><button class="b" id="ansBtn">확인</button><span class="res" id="ansOut" role="status"></span></div></div></div><div class="prob"><div class="prob-head"><span class="yr">첫 질문</span><h4>삼차방정식의 서로 다른 실근이 <b>정확히 2개</b>이면?</h4></div><div class="prob-body"><div class="qtext">삼차방정식의 근은 겹쳐 세면 3개입니다. 그런데 서로 다른 것이 2개뿐이라면 어떤 모양일까요?</div><div class="choices" data-q="two" data-ans="1"><button class="choice" data-i="0">x축과 세 점에서 만난다</button><button class="choice" data-i="1">한 점에서 접하고 다른 한 점에서 만난다</button><button class="choice" data-i="2">한 점에서만 만난다</button></div><div class="sol-btns"><button class="b gh" data-sol="twoSol">직관으로 보기</button></div><div class="sol intu" id="twoSol"><h5>직관</h5><div class="step">근 3개 중 서로 다른 것이 2개이니 하나는 <b>겹친 근(중근)</b>입니다.</div><div class="step">중근은 그래프가 직선에 <b>접하는 곳</b>입니다. 접하는 곳 하나, 만나는 곳 하나 — 그래서 서로 다른 교점이 2개.</div></div></div></div>
+  <div class="chnav"><span class="sp"></span><button class="b" data-go="next">직선을 밀어 보기 →</button></div>
+</section>
 
-  <section class="card">
-    <h2>이 문제의 한 줄</h2>
-    <p>"방정식 \(f(x)-x=0\)의 근"은 "<b>곡선 \(y=f(x)\)와 직선 \(y=x\)의 교점</b>"이다. 삼차방정식이 <b>서로 다른 실근을 2개</b> 가진다는 것은, 세 근 중 하나가 겹쳤다(중근)는 뜻이고, 그래프로는 <b>두 그래프가 한 점에서 접한다</b>는 뜻이다. 이 번역이 문제의 전부다.</p>
-  </section>
+<!-- ══════════ STEP 2 ══════════ -->
+<section class="ch" data-ch="1">
+  <p class="eyebrow">STEP 02 · 접한다</p>
+  <h2 class="ct">가로선을 밀면 <span class="am">딱 두 번</span>만 교점이 2개가 된다</h2>
+<p class="lede">삼차곡선 <span class="m" data-k="y=x^{3}-3x"></span> 에 가로선 <span class="m" data-k="y=c"></span> 를 대고 위아래로 밀어 보세요. 교점의 수가 3 → 2 → 1 로 바뀌는 순간이 있습니다.</p><div class="cnt-lab"><div class="cnt-lab-head"><h4>가로선과 삼차곡선</h4><span>MOVE · COUNT</span></div><div class="cnt-lab-body"><div class="cnt-stage"><div id="lab1"></div></div><div class="cnt-panel"><div class="cnt-control"><label><span>가로선의 높이 c</span><b id="c1v">0.6</b></label><input id="c1" type="range" min="-3.4" max="3.4" step="0.1" value="0.6"></div><div class="snap"><button data-c="-2">c = −2</button><button data-c="0">c = 0</button><button data-c="2">c = 2</button></div><div class="cnt-row hot"><span>서로 다른 교점의 수</span><b id="r1a">—</b></div><div class="verdict" id="v1box"><strong>—</strong><span>—</span></div><p class="cnt-hint">교점이 정확히 2개일 때 곡선은 어디에서 가로선에 닿나요? 그 점이 "접하는 점"입니다.</p></div></div></div><p class="hintline" style="margin-top:10px">교점이 2개인 순간은 <b>극대·극소에 가로선이 걸릴 때</b>뿐입니다. 곧 서로 다른 실근 2개 ⟺ 접한다 ⟺ 중근.</p>
+  <div class="chnav"><button class="b mute" data-go="prev">← 이전</button><span class="sp"></span><button class="b" data-go="next">공통근 x=0 →</button></div>
+</section>
 
-  <section class="card">
-    <h2><span class="step">STEP 1</span>"실근 2개" = "접한다"</h2>
-    <p class="kicker">대수적 조건을 기하학적 장면으로.</p>
-    <p>\(f(x)-x=0\)은 최고차항이 양수인 <b>삼차방정식</b>이다. 삼차방정식의 서로 다른 실근이 2개라는 것은:</p>
-    <ul>
-      <li>근이 3개(중복 포함)인데 서로 다른 것이 2개 → <b>하나는 중근</b>이다.</li>
-      <li>중근인 점에서는 \(y=f(x)-x\)의 그래프가 \(x\)축에 <b>접한다</b>.</li>
-      <li>즉, 곡선 \(y=f(x)\)와 직선 \(y=x\)가 <b>한 점에서 접한다</b> (다른 한 점에서는 만남).</li>
-    </ul>
-    <p>마찬가지로 (나)는 "<b>곡선 \(y=f(x)\)와 직선 \(y=-x\)가 한 점에서 접한다</b>"는 뜻이다.</p>
-    <div class="askbox" data-ask="touch">
-      <p class="q">Q1. 최고차항이 양수인 삼차방정식이 "서로 다른 실근을 2개" 가질 때, 그래프의 모습은?</p>
-      <label><input type="radio" name="touch" value="0"> ① \(x\)축과 세 점에서 만남</label>
-      <label><input type="radio" name="touch" value="1"> ② 한 점에서 접하고 다른 한 점에서 만남</label>
-      <label><input type="radio" name="touch" value="2"> ③ 한 점에서만 접하고 끝나 만남 없음</label>
-      <p class="fb" data-ok="1">정답! 중근(접함) 하나 + 단일근(만남) 하나 = 서로 다른 실근 2개다.</p>
-      <p class="fb" data-ok="0">삼차방정식의 근은 (중복 포함) 3개다. 서로 다른 것이 2개라면, 중복되는 구조는?</p>
-    </div>
-  </section>
+<!-- ══════════ STEP 3 ══════════ -->
+<section class="ch" data-ch="2">
+  <p class="eyebrow">STEP 03 · 공통근과 경우 나누기</p>
+  <h2 class="ct">경우를 <span class="am">모순으로 쳐낸다</span></h2>
+<p class="lede"><span class="m" data-k="f(0)=0"></span> 이므로 곡선은 원점을 지나고, 원점은 직선 <span class="m" data-k="y=x"></span> 와 <span class="m" data-k="y=-x"></span> 에도 모두 있습니다. 즉 <b><span class="m" data-k="x=0"></span> 은 두 방정식의 공통근</b>입니다.</p><div class="eq"><div class="eqrow"><span class="m md" data-k="f(x)=ax^{3}+bx^{2}+cx\ (a\gt0):\qquad f(x)\mp x=x\big(ax^{2}+bx+(c\mp1)\big)"></span></div></div><table class="gtable"><tr><th></th><th>(가) <span class="m" data-k="f-x=0"></span></th><th>(나) <span class="m" data-k="f+x=0"></span></th></tr><tr><td>A : <span class="m" data-k="x=0"></span> 이 중근</td><td><span class="m" data-k="c=1"></span> (단 <span class="m" data-k="b\neq0"></span>)</td><td><span class="m" data-k="c=-1"></span> (단 <span class="m" data-k="b\neq0"></span>)</td></tr><tr><td>B : 이차식이 중근</td><td><span class="m" data-k="b^{2}=4a(c-1)"></span></td><td><span class="m" data-k="b^{2}=4a(c+1)"></span></td></tr></table><p class="hintline">서로 다른 실근이 2개가 되는 길은 이 둘뿐입니다 — 0 이 중근이거나, 나머지 이차식이 중근이거나. 네 조합을 하나씩 따져 봅시다.</p><table class="gtable"><tr><th>조합 (가),(나)</th><th>무슨 일이 생기나</th><th>판정</th></tr><tr><td>A, A′</td><td><span class="m" data-k="c=1"></span> 이면서 <span class="m" data-k="c=-1"></span></td><td>불가능</td></tr><tr><td>B, B′</td><td><span class="m" data-k="4a(c-1)=4a(c+1)"></span> ⟹ <span class="m" data-k="-1=1"></span></td><td>불가능</td></tr><tr><td>B, A′</td><td><span class="m" data-k="c=-1"></span> 이면 <span class="m" data-k="b^{2}=4a(-2)=-8a\lt0"></span></td><td>불가능 (<span class="m" data-k="a\gt0"></span>)</td></tr><tr class="key"><td>A, B′</td><td><span class="m" data-k="c=1"></span>, <span class="m" data-k="b^{2}=4a(1+1)=8a"></span></td><td class="hot">살아남는다</td></tr></table><div class="prob"><div class="prob-head"><span class="yr">판단</span><h4>(B, A′) 가 불가능한 결정적 이유는?</h4></div><div class="prob-body"><div class="choices" data-q="dead" data-ans="1"><button class="choice" data-i="0"><span class="m" data-k="c"></span> 가 두 값을 가져야 해서</button><button class="choice" data-i="1"><span class="m" data-k="b^{2}=-8a\lt0"></span> 이 되어 실수 <span class="m" data-k="b"></span> 가 없어서</button><button class="choice" data-i="2"><span class="m" data-k="a\gt0"></span> 조건에 어긋나서</button></div><div class="sol-btns"><button class="b gh" data-sol="deadSol">직관으로 보기</button></div><div class="sol intu" id="deadSol"><h5>직관</h5><div class="step">(B)는 <span class="m" data-k="b^{2}=4a(c-1)"></span>, (A′)는 <span class="m" data-k="c=-1"></span> 을 요구합니다. 대입하면 <span class="m" data-k="b^{2}=-8a"></span>. <span class="m" data-k="a\gt0"></span> 이니 우변이 <b>음수</b>라 제곱이 음수가 될 수 없습니다.</div></div></div></div><div class="card quote pad"><h3>그림으로 읽으면</h3><p>곡선은 직선 <span class="m" data-k="y=x"></span> 와 <b>원점에서 접하고</b>(<span class="m" data-k="c=1"></span>), 직선 <span class="m" data-k="y=-x"></span> 와는 <b>다른 점에서 접합니다</b>(<span class="m" data-k="b^{2}=8a"></span>). 접하는 점이 서로 다른 두 곳입니다.</p></div>
+  <div class="chnav"><button class="b mute" data-go="prev">← 이전</button><span class="sp"></span><button class="b" data-go="next">a, b 를 맞춰 보기 →</button></div>
+</section>
 
-  <section class="card">
-    <h2><span class="step">STEP 2</span>\(f(0)=0\) — 공통근 \(x=0\)</h2>
-    <p class="kicker">인수분해의 실마리.</p>
-    <p>\(f(0)=0\)이므로 점 \((0,0)\)은 곡선 \(y=f(x)\) 위의 점이다. 그런데 \((0,0)\)은 직선 \(y=x\) 위에도, \(y=-x\) 위에도 있다!</p>
-    <p>\(f(x)=ax^3+bx^2+cx+d\) (\(a&gt;0\))라 두면 \(f(0)=0\)에서 \(d=0\). 인수분해하면:</p>
-    <div class="math">\[\begin{aligned} f(x)-x &= x\big(ax^2+bx+(c-1)\big) \\ f(x)+x &= x\big(ax^2+bx+(c+1)\big) \end{aligned}\]</div>
-    <p><b>\(x=0\)은 두 방정식의 공통근</b>이다. "서로 다른 실근 2개"가 되려면, \(x=0\)이 <b>중근</b>이거나, 뒤의 <b>이차식이 중근</b>을 가져야 한다.</p>
-    <div class="askbox" data-ask="factor">
-      <p class="q">Q2. \(f(x)-x=0\)이 서로 다른 실근을 2개 가지려면? (단, \(x=0\)은 항상 근)</p>
-      <label><input type="radio" name="factor" value="0"> ① \(x=0\)이 중근 (\(c=1\))</label>
-      <label><input type="radio" name="factor" value="1"> ② \(ax^2+bx+(c-1)=0\)이 중근 (판별식 0)</label>
-      <label><input type="radio" name="factor" value="2"> ③ ① 또는 ②</label>
-      <p class="fb" data-ok="1">정답! \(x=0\)이 중근이면 근은 \(\{0, -\frac{b}{a}\}\) 2개. 이차식이 중근이면 근은 \(\{0, \text{중근}\}\) 2개. 둘 중 하나다.</p>
-      <p class="fb" data-ok="0">\(x=0\) 말고 남은 근은 이차식 \(ax^2+bx+(c-1)=0\)에서 나온다. 서로 다른 실근이 총 2개가 되는 경우를 세어보자.</p>
-    </div>
-  </section>
+<!-- ══════════ STEP 4 ══════════ -->
+<section class="ch" data-ch="3">
+  <p class="eyebrow">STEP 04 · f′(1) = 1</p>
+  <h2 class="ct">접하는 곡선 위에서 <span class="am">기울기</span> 조건이 하나를 고른다</h2>
+<p class="lede"><span class="m" data-k="c=1"></span> 이므로 <span class="m" data-k="f(x)=ax^{3}+bx^{2}+x"></span>. 아래는 <span class="m" data-k="y=-x"></span> 에 접하도록 <span class="m" data-k="b=-\sqrt{8a}"></span> 로 묶어 둔 곡선입니다. <span class="m" data-k="a"></span> 를 움직이며 <span class="m" data-k="f'(1)=1"></span> 이 되는 곳을 찾아 보세요.</p><div class="cnt-lab"><div class="cnt-lab-head"><h4>접하는 곡선 위에서 a 찾기</h4><span>MOVE · FIND</span></div><div class="cnt-lab-body"><div class="cnt-stage"><div id="lab2"></div></div><div class="cnt-panel"><div class="cnt-control"><label><span>삼차항의 계수 a</span><b id="a2v">2.00</b></label><input id="a2" type="range" min="0.5" max="6" step="any" value="2"></div><div class="cnt-control"><label><span>접함에서 벗어나는 정도 δ (b에 더함)</span><b id="d2v">0.00</b></label><input id="d2" type="range" min="-1" max="1" step="0.05" value="0"></div><div class="snap"><button data-sa="3.5555555555555554">f′(1)=1 인 a</button><button data-sd="0">δ = 0 (접함)</button></div><div class="cnt-row"><span>f(x)+x=0 의 서로 다른 실근</span><b id="r2a">—</b></div><div class="cnt-row hot"><span>f′(1) = 3a + 2b + 1</span><b id="r2b">—</b></div><div class="cnt-row hot"><span>f(3)</span><b id="r2c">—</b></div><div class="verdict" id="v2box"><strong>—</strong><span>—</span></div><p class="cnt-hint">δ 를 0 에서 벗어나게 해 보세요 — 곡선이 y=−x 에서 떨어지거나 파고들어 교점이 1개나 3개가 됩니다.</p></div></div></div><div class="sol-btns"><button class="b gh" data-sol="abCalc">계산 보기</button></div><div class="sol calc" id="abCalc"><h5>계산</h5><div class="step"><span class="m" data-k="f'(x)=3ax^{2}+2bx+1"></span> 이므로 <span class="m" data-k="f'(1)=3a+2b+1=1"></span> ⟹ <span class="m am" data-k="b=-\tfrac{3a}{2}"></span></div><div class="step"><span class="m" data-k="b^{2}=8a"></span> 에 대입: <span class="m" data-k="\tfrac94a^{2}=8a"></span>, <span class="m" data-k="a\gt0"></span> 이므로 <span class="m md am" data-k="a=\tfrac{32}{9},\quad b=-\tfrac{16}{3}."></span></div><div class="step">검산 · <span class="m" data-k="f(x)-x=\tfrac{16}{9}x^{2}(2x-3)"></span>: <span class="m" data-k="x=0"></span> 중근 ✓ · <span class="m" data-k="f(x)+x=\tfrac29x(4x-3)^{2}"></span>: <span class="m" data-k="x=\tfrac34"></span> 중근 ✓</div></div>
+  <div class="chnav"><button class="b mute" data-go="prev">← 이전</button><span class="sp"></span><button class="b" data-go="next">f(3) 구하기 →</button></div>
+</section>
 
-  <section class="card">
-    <h2><span class="step">STEP 3</span>경우 나누기 — 살아남는 조합은 하나</h2>
-    <p class="kicker">논리로 경우를 쳐내는 것이 이 문제의 심장이다.</p>
-    <table class="case">
-      <tr><th></th><th>(가) \(f(x)-x=0\)</th><th>(나) \(f(x)+x=0\)</th></tr>
-      <tr><th>A안: \(x=0\)이 중근</th><td>\(c=1\) (\(b\ne 0\))</td><td>\(c=-1\) (\(b\ne 0\))</td></tr>
-      <tr><th>B안: 이차식이 중근</th><td>\(b^2=4a(c-1)\)</td><td>\(b^2=4a(c+1)\)</td></tr>
-    </table>
-    <p>\(c\)는 \(1\)과 \(-1\)을 동시에 만족할 수 없다. 조합을 따져보자:</p>
-    <ul>
-      <li>(A, A'): \(c=1\)이면서 \(c=-1\) → <span class="bad">불가능</span></li>
-      <li>(B, A'): \(c=-1\)이면 \(b^2=4a(c-1)=-8a&lt;0\) (\(a&gt;0\)) → <span class="bad">불가능</span></li>
-      <li>(B, B'): \(4a(c-1)=4a(c+1)\) → \(-1=1\) → <span class="bad">불가능</span></li>
-      <li>(A, B'): \(c=1\), \(b^2=4a(c+1)=8a\) → <span class="hit">유일하게 생존!</span></li>
-    </ul>
-    <div class="math">\[c=1,\quad b^2=8a\ (b\ne 0)\]</div>
-    <p class="note">* 기하학적 의미: 곡선 \(y=f(x)\)는 직선 \(y=x\)와 <b>원점 \((0,0)\)에서 접하고</b>, 직선 \(y=-x\)와는 <b>다른 점 \(\left(-\frac{b}{2a}, \frac{b}{2a}\right)\)에서 접한다</b>.</p>
-    <div class="askbox" data-ask="elim">
-      <p class="q">Q3. (B, A') 조합이 불가능한 이유는?</p>
-      <label><input type="radio" name="elim" value="0"> ① \(c\)가 두 값을 가져야 해서</label>
-      <label><input type="radio" name="elim" value="1"> ② \(b^2=-8a&lt;0\)이 되어 실수 \(b\)가 존재하지 않아서</label>
-      <label><input type="radio" name="elim" value="2"> ③ \(a&gt;0\) 조건에 위배되어서</label>
-      <p class="fb" data-ok="1">정답! (B)는 \(b^2=4a(c-1)\), (A')는 \(c=-1\)을 요구하므로 \(b^2=-8a\). \(a&gt;0\)이면 우변이 음수라 실수 \(b\)가 없다.</p>
-      <p class="fb" data-ok="0">각 안이 요구하는 \(c\) 값을 대입해서 \(b^2\)의 부호를 확인해보자.</p>
-    </div>
-  </section>
-
-  <section class="card">
-    <h2><span class="step">실험실</span>\(y=-x\)에 접하는 순간을 찾아라</h2>
-    <p class="kicker">STEP 3에서 \(c=1\)이 확정됐다. 이제 \(f(x)=ax^3+bx^2+x\)에서 \(a,b\)를 움직이며 \(y=-x\)와 접하는 순간을 찾아보자.</p>
-    <div class="lab-figure" data-mylab="tangent">
-      <svg viewBox="0 0 600 320" role="img" aria-label="접선 실험"></svg>
-      <div class="lab-ctl">
-        <div class="ctl"><label>\(a\) (양수) : <span class="val" data-aval>3.56</span></label><input type="range" min="0.5" max="6" step="0.01" value="3.56" data-a></div>
-        <div class="ctl"><label>\(b\) : <span class="val" data-bval>-5.33</span></label><input type="range" min="-8" max="1" step="0.01" value="-5.33" data-b></div>
-      </div>
-      <p class="legend"><span><i class="dot" style="background:#ffd76a"></i>\(y=f(x)=ax^3+bx^2+x\)</span><span><i class="dot" style="background:#4ad6ff"></i>\(y=x\) (원점에서 접함)</span><span><i class="dot" style="background:#ff8f8f"></i>\(y=-x\)</span></p>
-      <div class="counter">\(f(x)+x=0\)의 서로 다른 실근 개수: <b data-n>2</b> <span data-msg></span></div>
-    </div>
-    <p><span class="tag">관찰 1</span> \(y=x\)는 \(a,b\)를 어떻게 움직여도 항상 원점에서 \(f\)와 접한다 (\(c=1\)의 힘).</p>
-    <p><span class="tag">관찰 2</span> \(b\)를 움직여보자. \(f(x)+x=0\)의 실근 개수가 1→2→3으로 바뀐다. 개수가 <b>정확히 2</b>가 되는 순간, 곡선이 \(y=-x\)에 접한다!</p>
-    <p><span class="tag">관찰 3</span> 접하는 순간의 \((a,b)\)에서 \(b^2\)과 \(8a\)를 비교해보자. (STEP 3의 결론과 일치한다.)</p>
-  </section>
-
-  <section class="card">
-    <h2><span class="step">STEP 4</span>\(f'(1)=1\)로 계수 확정</h2>
-    <p class="kicker">마지막 숫자 조건.</p>
-    <p>\(f'(x)=3ax^2+2bx+1\)에서:</p>
-    <div class="math">\[f'(1)=3a+2b+1=1\ \Longrightarrow\ 3a+2b=0\ \Longrightarrow\ b=-\frac{3a}{2}\]</div>
-    <p>\(b^2=8a\)에 대입: \(\frac{9}{4}a^2=8a\). \(a&gt;0\)이므로:</p>
-    <div class="math">\[a=\frac{32}{9},\quad b=-\frac{16}{3}\]</div>
-    <div class="math">\[f(x)=\frac{32}{9}x^3-\frac{16}{3}x^2+x\]</div>
-    <details class="hint"><summary>검산 (접하는 점 확인)</summary><div class="hint-body">
-    \(f(x)-x=\frac{16}{9}x^2(2x-3)\): \(x=0\)에서 중근 → \(y=x\)와 원점에서 접함 ✓<br>
-    \(f(x)+x=\frac{2}{9}x(4x-3)^2\): \(x=\frac34\)에서 중근 → \(y=-x\)와 점 \(\left(\frac34,-\frac34\right)\)에서 접함 ✓
-    </div></details>
-  </section>
-
-  <section class="card final">
-    <h2>마지막 계산</h2>
-    <div class="math">\[f(3)=\frac{32}{9}\cdot 27-\frac{16}{3}\cdot 9+3=96-48+3=51\]</div>
-    <p class="ans">정답 <b>51</b></p>
-  </section>
-
-  <section class="card">
-    <h2>takeaways</h2>
-    <ul class="takeaways">
-      <li><b>"방정식의 근의 개수"는 "두 그래프의 교점 개수"</b>로 번역하라. \(f(x)-x=0\) ⟺ \(y=f(x)\)와 \(y=x\)의 만남.</li>
-      <li>삼차방정식의 서로 다른 실근이 2개 ⟺ <b>중근</b> ⟺ <b>접한다</b>.</li>
-      <li>\(f(0)=0\)은 "\(x=0\)이 공통근"이라는 인수분해의 실마리다.</li>
-      <li>경우 나누기에서 <b>모순으로 쳐내기</b>가 핵심. 계산은 \(f'(1)=1\) 한 번뿐이다.</li>
-    </ul>
-  </section>
-
-</div>
-<aside class="col-side side">
-  <section class="card">
-    <h3>한눈에 보는 구조</h3>
-    <ul>
-      <li>근 2개 ⟺ 접한다 (중근)</li>
-      <li>\(f(0)=0\) → \(x=0\) 공통근</li>
-      <li>경우: (A,B')만 생존</li>
-      <li>\(c=1,\ b^2=8a\)</li>
-      <li>\(f'(1)=1\) → \(a=\frac{32}{9}\)</li>
-      <li>\(f(3)=51\)</li>
-    </ul>
-  </section>
-  <section class="card">
-    <h3>함정 체크</h3>
-    <ul>
-      <li>"서로 다른 실근 2개"를 "근이 2개"로만 읽고 중근을 놓치기.</li>
-      <li>\(f(x)-x\)를 인수분해하지 않고 삼차식 판별식으로 덤비기.</li>
-      <li>경우 나누기에서 (B,B')의 모순을 못 보고 계산에 매달리기.</li>
-    </ul>
-  </section>
-  <section class="card">
-    <h3>용어 정리</h3>
-    <ul>
-      <li><b>서로 다른 실근</b>: 중복을 제외하고 센 실수 근</li>
-      <li><b>중근</b>: 그래프가 \(x\)축(또는 다른 그래프)에 접하는 근</li>
-      <li><b>판별식</b>: 이차식의 중근 조건 \(b^2-4ac=0\)</li>
-    </ul>
-  </section>
-  <section class="card">
-    <h3>기록장</h3>
-    <textarea class="memo" placeholder="내가 발견한 구조를 한 줄로 적어보자."></textarea>
-  </section>
-</aside>
-</div>
-</div>
+<!-- ══════════ STEP 5 ══════════ -->
+<section class="ch" data-ch="4">
+  <p class="eyebrow">STEP 05 · 회수와 검산</p>
+  <h2 class="ct">경우를 쳐낸 뒤에야 <span class="am">계산</span>한다</h2>
+<table class="gtable"><tr><th>단계</th><th>얻은 것</th></tr><tr><td>번역</td><td>서로 다른 실근 2개 ⟺ 접한다 ⟺ 중근</td></tr><tr><td>공통근</td><td><span class="m" data-k="f(0)=0"></span> → <span class="m" data-k="x=0"></span> 이 두 방정식의 공통근</td></tr><tr class="key"><td>경우 나누기</td><td class="hot">(A, B′) 만 생존 → <span class="m" data-k="c=1,\ b^{2}=8a"></span></td></tr><tr><td>기울기</td><td><span class="m" data-k="f'(1)=1"></span> → <span class="m" data-k="a=\tfrac{32}{9},\ b=-\tfrac{16}{3}"></span></td></tr></table><div class="prob"><div class="prob-head"><span class="yr">마지막</span><h4><span class="m" data-k="f(3)"></span> 구하기</h4></div><div class="prob-body"><div class="sol-btns"><button class="b gh" data-sol="finalSol">정답 확인</button></div><div class="sol intu" id="finalSol"><h5>마무리</h5><div class="step"><span class="m" data-k="f(x)=\tfrac{32}{9}x^{3}-\tfrac{16}{3}x^{2}+x"></span></div><div class="step"><span class="m" data-k="f(3)=\tfrac{32}{9}\cdot27-\tfrac{16}{3}\cdot9+3=96-48+3"></span></div><p class="mini-answer">51</p><p class="reveal-note">그림으로 읽으면 · 원점에서 <span class="m" data-k="y=x"></span> 에 접하고 <span class="m" data-k="\left(\tfrac34,-\tfrac34\right)"></span> 에서 <span class="m" data-k="y=-x"></span> 에 접합니다</p></div></div></div><div class="card quote pad"><h3>오늘 쓴 생각의 뼈대</h3><ul class="bul"><li><b class="am">근의 개수는 교점의 수</b> — 방정식을 곡선과 직선의 만남으로 번역한다.</li><li><b class="am">2개이면 접한다</b> — 삼차에서 서로 다른 실근이 정확히 2개 ⟺ 중근.</li><li><b class="am">공통근</b> — <span class="m" data-k="f(0)=0"></span> 은 두 방정식에 같은 근 <span class="m" data-k="x=0"></span> 을 준다.</li><li><b class="am">모순으로 쳐내기</b> — 네 조합 중 셋은 계산 없이 죽는다.</li></ul></div>
+  <div class="chnav"><button class="b mute" data-go="prev">← 이전</button><span class="sp"></span><button class="b gh" data-go="top">처음으로</button></div>
+</section>
+</main>
 
 <script>
-document.addEventListener('DOMContentLoaded', function(){
-  if (window.renderMathInElement) renderMathInElement(document.body, {delimiters:[{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}]});
-  document.querySelectorAll('.askbox').forEach(function(box){
-    box.querySelectorAll('input[type=radio]').forEach(function(r){
-      r.addEventListener('change', function(){
-        var ok = (r.value === '1');
-        box.querySelectorAll('.fb').forEach(function(f){ f.className = 'fb'; });
-        var target = box.querySelector('.fb[data-ok="'+(ok?'1':'0')+'"]');
-        if (target) target.className = 'fb ' + (ok ? 'ok' : 'no');
-      });
-    });
+(function(){
+  'use strict';
+  var labels=["문제 만나기","2개 = 접함","경우 나누기","a, b 맞추기","회수"];
+  var chs=[].slice.call(document.querySelectorAll('main > section.ch'));
+  var nav=document.getElementById('nav'),fill=document.getElementById('pfill'),cur=0;
+  labels.forEach(function(t,i){var b=document.createElement('button');b.className=i===0?'on':'';b.innerHTML='<span class="n">0'+(i+1)+'</span>'+t;b.addEventListener('click',function(){go(i);});nav.appendChild(b);});
+  var tabs=[].slice.call(nav.children);
+  function go(i){cur=Math.max(0,Math.min(chs.length-1,i));chs.forEach(function(s,j){s.classList.toggle('on',j===cur);});tabs.forEach(function(b,j){b.classList.toggle('on',j===cur);});fill.style.width=((cur+1)/chs.length*100)+'%';if(tabs[cur]&&tabs[cur].scrollIntoView)tabs[cur].scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});window.scrollTo({top:0,behavior:'smooth'});}go(0);
+  document.addEventListener('click',function(e){
+    var t=e.target.closest&&e.target.closest('[data-go]');if(t){var d=t.getAttribute('data-go');go(d==='next'?cur+1:d==='prev'?cur-1:0);return;}
+    var c=e.target.closest&&e.target.closest('.choice');if(c){var box=c.parentElement;if(box.getAttribute('data-mode')==='record'){box.querySelectorAll('.choice').forEach(function(x){x.classList.remove('chosen');});c.classList.add('chosen');return;}var ans=+box.getAttribute('data-ans'),ok=+c.getAttribute('data-i')===ans;box.querySelectorAll('.choice').forEach(function(x){x.classList.remove('right','wrong');});c.classList.add(ok?'right':'wrong');if(!ok){var right=box.querySelector('.choice[data-i="'+ans+'"]');setTimeout(function(){if(right)right.classList.add('right');},650);}return;}
+    var s=e.target.closest&&e.target.closest('[data-sol]');if(s){var el=document.getElementById(s.getAttribute('data-sol'));if(!el)return;var open=el.classList.toggle('on');s.style.opacity=open?'1':'';if(open&&window.JPDark)window.JPDark.texAll(el);}
   });
-  // ---- custom lab: tangent to y=-x ----
-  (function(){
-    var root = document.querySelector('[data-mylab="tangent"]');
-    if(!root) return;
-    var svg = root.querySelector('svg');
-    var aS = root.querySelector('[data-a]'), bS = root.querySelector('[data-b]');
-    var aV = root.querySelector('[data-aval]'), bV = root.querySelector('[data-bval]');
-    var nO = root.querySelector('[data-n]'), mO = root.querySelector('[data-msg]');
-    var W=600, H=320, pL=36, pR=16, pT=20, pB=40;
-    var xMin=-1.2, xMax=2.2, yMin=-2.6, yMax=2.6;
-    function X(x){ return pL + (x-xMin)/(xMax-xMin)*(W-pL-pR); }
-    function Y(y){ return pT + (yMax-y)/(yMax-yMin)*(H-pT-pB); }
-    function draw(){
-      var a=parseFloat(aS.value), b=parseFloat(bS.value);
-      aV.textContent=a.toFixed(2); bV.textContent=b.toFixed(2);
-      function f(x){ return a*x*x*x + b*x*x + x; }
-      var s='';
-      s+='<line x1="'+X(xMin)+'" y1="'+Y(0)+'" x2="'+X(xMax)+'" y2="'+Y(0)+'" stroke="#5b6b8c" stroke-width="1"/>';
-      s+='<line x1="'+X(0)+'" y1="'+Y(yMin)+'" x2="'+X(0)+'" y2="'+Y(yMax)+'" stroke="#5b6b8c" stroke-width="1"/>';
-      for(var x=Math.ceil(xMin); x<=xMax; x++){
-        s+='<text x="'+X(x)+'" y="'+(Y(0)+20)+'" fill="#8b9bb8" font-size="12" text-anchor="middle">'+x+'</text>';
-      }
-      function curve(fn, color, width, dash){
-        var pts=[];
-        for(var px=xMin; px<=xMax; px+=0.02){
-          var v=fn(px), sy=Y(v);
-          if(sy>=pT-2 && sy<=H-pB+2) pts.push(X(px).toFixed(1)+','+sy.toFixed(1));
-        }
-        return '<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+color+'" stroke-width="'+width+'"'+(dash?' stroke-dasharray="6 4"':'')+'/>';
-      }
-      s+=curve(function(x){return x;},'#4ad6ff',2,true);
-      s+=curve(function(x){return -x;},'#ff8f8f',2,true);
-      s+=curve(f,'#ffd76a',3,false);
-      // intersections of f with y=-x: solve f(x)+x=0 → x(ax²+bx+2)=0
-      // roots: 0, and roots of ax²+bx+2=0
-      var D = b*b - 8*a, roots=[0], desc='';
-      if(D > 1e-9){
-        var r1=(-b-Math.sqrt(D))/(2*a), r2=(-b+Math.sqrt(D))/(2*a);
-        roots.push(r1,r2);
-        desc='세 점에서 만남';
-      } else if(D < -1e-9){
-        desc='원점에서만 만남';
-      } else {
-        var r0=-b/(2*a);
-        roots.push(r0);
-        desc='<span class="hit">한 점에서 접함! (중근)</span>';
-      }
-      var uniq = roots.filter(function(v,i){ return roots.every(function(w,j){ return j>=i || Math.abs(w-v)>1e-6; }); });
-      uniq.forEach(function(rv){
-        if(rv>=xMin && rv<=xMax){
-          s+='<circle cx="'+X(rv)+'" cy="'+Y(-rv)+'" r="7" fill="#7dffb0" stroke="#0b0b10" stroke-width="2"/>';
-        }
-      });
-      // tangent point marker when D≈0
-      if(Math.abs(D) <= 1e-9){
-        var tx=-b/(2*a);
-        if(tx>=xMin&&tx<=xMax){
-          s+='<text x="'+X(tx)+'" y="'+(Y(-tx)-14)+'" fill="#7dffb0" font-size="13" text-anchor="middle">접점 ('+tx.toFixed(2)+', '+(-tx).toFixed(2)+')</text>';
-        }
-      }
-      svg.innerHTML=s;
-      nO.textContent = uniq.length;
-      mO.innerHTML = desc;
-    }
-    aS.addEventListener('input', draw); bS.addEventListener('input', draw);
-    draw();
-  })();
-});
+
+  /* ── 그림 도구 ────────────────────────────────────────────────
+     좌표를 화면에 옮겨 주는 것만 한다. 가로세로 배율이 달라도
+     "어디서 끊기고 어디로 튀는지" 는 그대로 보인다. */
+  function view(x0,x1,y0,y1,W,H){
+    return {x0:x0,x1:x1,y0:y0,y1:y1,W:W,H:H,
+      sx:function(x){return (x-x0)/(x1-x0)*W;},
+      sy:function(y){return H-(y-y0)/(y1-y0)*H;}};
+  }
+  function axes(v,stepX,stepY){
+    var s='<rect x="0" y="0" width="'+v.W+'" height="'+v.H+'" fill="#fbfaf6"/>',x,y;
+    for(x=Math.ceil(v.x0/stepX)*stepX;x<=v.x1;x+=stepX)s+='<line x1="'+v.sx(x).toFixed(1)+'" y1="0" x2="'+v.sx(x).toFixed(1)+'" y2="'+v.H+'" stroke="rgba(58,49,37,.08)"/>';
+    for(y=Math.ceil(v.y0/stepY)*stepY;y<=v.y1;y+=stepY)s+='<line x1="0" y1="'+v.sy(y).toFixed(1)+'" x2="'+v.W+'" y2="'+v.sy(y).toFixed(1)+'" stroke="rgba(58,49,37,.08)"/>';
+    if(v.y0<0&&v.y1>0)s+='<line x1="0" y1="'+v.sy(0).toFixed(1)+'" x2="'+v.W+'" y2="'+v.sy(0).toFixed(1)+'" stroke="#8b8378" stroke-width="1.2"/>';
+    if(v.x0<0&&v.x1>0)s+='<line x1="'+v.sx(0).toFixed(1)+'" y1="0" x2="'+v.sx(0).toFixed(1)+'" y2="'+v.H+'" stroke="#8b8378" stroke-width="1.2"/>';
+    return s;
+  }
+  function curve(v,f,a,b,color,w,dash){
+    var d='',on=false,i,x,y,n=200;
+    for(i=0;i<=n;i++){x=a+(b-a)*i/n;y=f(x);
+      if(!isFinite(y)||y<v.y0-40||y>v.y1+40){on=false;continue;}
+      d+=(on?'L':'M')+v.sx(x).toFixed(1)+' '+v.sy(y).toFixed(1)+' ';on=true;}
+    return '<path d="'+d+'" fill="none" stroke="'+color+'" stroke-width="'+(w||2.4)+'"'+(dash?' stroke-dasharray="'+dash+'"':'')+' stroke-linecap="round"/>';
+  }
+  function dot(v,x,y,color,open){
+    if(y<v.y0||y>v.y1)return '';
+    return open?'<circle cx="'+v.sx(x).toFixed(1)+'" cy="'+v.sy(y).toFixed(1)+'" r="4.6" fill="#fbfaf6" stroke="'+color+'" stroke-width="2"/>'
+               :'<circle cx="'+v.sx(x).toFixed(1)+'" cy="'+v.sy(y).toFixed(1)+'" r="4.6" fill="'+color+'"/>';
+  }
+  function tx(v,x,y,t,color,anchor){
+    return '<text x="'+v.sx(x).toFixed(1)+'" y="'+v.sy(y).toFixed(1)+'" fill="'+(color||'#5f574b')+'" font-size="12" font-family="IBM Plex Mono,monospace" text-anchor="'+(anchor||'middle')+'">'+t+'</text>';
+  }
+  function wrap(v,inner){return '<svg viewBox="0 0 '+v.W+' '+v.H+'" role="img">'+inner+'</svg>';}
+
+  var INK='#2f6670',HOT='#a95232',GREY='#9a9186';
+
+
+  /* 선분·기울기 직선·넓이 칠하기 — 열두 쪽이 함께 쓴다 */
+  function line(v,x1,y1,x2,y2,color,w,dash){
+    return '<line x1="'+v.sx(x1).toFixed(1)+'" y1="'+v.sy(y1).toFixed(1)+'" x2="'+v.sx(x2).toFixed(1)+'" y2="'+v.sy(y2).toFixed(1)+'" stroke="'+color+'" stroke-width="'+(w||2)+'"'+(dash?' stroke-dasharray="'+dash+'"':'')+'/>';
+  }
+  function thru(v,x0,y0,m,color,w,dash){
+    return line(v,v.x0,y0+m*(v.x0-x0),v.x1,y0+m*(v.x1-x0),color,w,dash);
+  }
+  function shade(v,f,a,b,color,base){
+    var d='M'+v.sx(a).toFixed(1)+' '+v.sy(base||0).toFixed(1),i,n=160,x;
+    for(i=0;i<=n;i++){x=a+(b-a)*i/n;d+=' L'+v.sx(x).toFixed(1)+' '+v.sy(f(x)).toFixed(1);}
+    d+=' L'+v.sx(b).toFixed(1)+' '+v.sy(base||0).toFixed(1)+' Z';
+    return '<path d="'+d+'" fill="'+color+'" stroke="none"/>';
+  }
+
+  var HOT_='#a95232';
+
+  (function(){var b=document.getElementById('ansBtn'),i=document.getElementById('ansIn'),o=document.getElementById('ansOut');if(!b)return;
+    function chk(){var v=String(i.value).trim().replace(/[−–—]/g,'-').replace(/\s/g,'');if(!v){o.className='res';o.textContent='답을 적어 주세요.';return;}
+      var ok=Number(v)===51;o.className='res '+(ok?'ok':'no');o.textContent=ok?'맞았습니다':'다시 확인해 보세요';}
+    b.addEventListener('click',chk);i.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();chk();}});})();
+
+  var c1=document.getElementById('c1');
+  function lab1(){
+    var c=+c1.value;document.getElementById('c1v').textContent=c.toFixed(1);
+    function f(x){return x*x*x-3*x;}
+    var V=view(-2.6,2.6,-4.4,4.4,560,330),s=axes(V,1,1);
+    s+=curve(V,f,-2.6,2.6,INK,3);
+    s+=line(V,V.x0,c,V.x1,c,HOT,2.2);
+    // 교점의 수 : x^3-3x-c=0 → 판별식 108-27c^2
+    var D=108-27*c*c,n,xs=[],i;
+    if(Math.abs(D)<1e-9){n=2;}else if(D>0){n=3;}else{n=1;}
+    // 교점의 위치를 수치로 찾는다 (부호 변화 + 접점)
+    var prev=f(-2.6)-c,x;
+    for(x=-2.6+0.002;x<=2.6;x+=0.002){var cur=f(x)-c;if(prev*cur<0)xs.push(x);prev=cur;}
+    if(n===2){var t=c>0?-1:1;xs=[]; xs.push(t); xs.push(c>0?2:-2);}
+    xs.forEach(function(r){s+=dot(V,r,c,n===2&&Math.abs(Math.abs(r)-1)<1e-6?'#477454':HOT);});
+    document.getElementById('lab1').innerHTML=wrap(V,s);
+    document.getElementById('r1a').textContent=n+' 개';
+    var box=document.getElementById('v1box');
+    box.className='verdict '+(n===2?'ok':'');
+    box.innerHTML=n===2?'<strong>교점 2개 — 접한다</strong><span>극대 또는 극소에 가로선이 걸렸습니다 (중근)</span>':(n===3?'<strong>교점 3개</strong><span>세 점에서 만납니다</span>':'<strong>교점 1개</strong><span>한 점에서만 만납니다</span>');
+  }
+  c1.addEventListener('input',lab1);
+  document.querySelectorAll('[data-c]').forEach(function(b){b.addEventListener('click',function(){c1.value=b.getAttribute('data-c');lab1();});});
+
+  var a2=document.getElementById('a2'),d2=document.getElementById('d2');
+  function lab2(){
+    var a=+a2.value,dl=+d2.value,b=-Math.sqrt(8*a)+dl;
+    document.getElementById('a2v').textContent=a.toFixed(2);document.getElementById('d2v').textContent=dl.toFixed(2);
+    function f(x){return a*x*x*x+b*x*x+x;}
+    var V=view(-0.45,1.7,-2.3,2.7,560,330),s=axes(V,0.5,1);
+    s+=thru(V,0,0,1,'#2f6670',1.6,'6 5')+thru(V,0,0,-1,HOT,1.6,'6 5');
+    s+=tx(V,1.6,1.85,'y = x','#2f6670','end')+tx(V,1.6,-1.95,'y = −x',HOT,'end');
+    s+=curve(V,f,-0.45,1.7,INK,3);
+    var D=b*b-8*a,tangent=Math.abs(D)<1e-9;
+    // f+x = x(ax²+bx+2) 의 서로 다른 실근
+    var n=1+(D>1e-9?2:(tangent?1:0));
+    s+=dot(V,0,0,'#2f6670');
+    if(D>1e-9){[(-b-Math.sqrt(D))/(2*a),(-b+Math.sqrt(D))/(2*a)].forEach(function(r){s+=dot(V,r,-r,HOT);});}
+    else if(tangent){var xt=-b/(2*a);s+=dot(V,xt,-xt,'#477454');s+=tx(V,xt,-xt-0.35,'접점',  '#477454');}
+    document.getElementById('lab2').innerHTML=wrap(V,s);
+    var f1=3*a+2*b+1,f3=27*a+9*b+3;
+    document.getElementById('r2a').textContent=n+' 개'+(tangent?'  (접한다)':'');
+    document.getElementById('r2b').textContent=f1.toFixed(3);
+    document.getElementById('r2c').textContent=f3.toFixed(2);
+    var box=document.getElementById('v2box'),good=tangent&&Math.abs(f1-1)<0.02;
+    box.className='verdict '+(good?'ok':(tangent?'mid':''));
+    box.innerHTML=good?'<strong>f′(1)=1 · f(3) = '+f3.toFixed(1)+'</strong><span>a = 32/9, b = −16/3 에서 두 접함이 모두 성립</span>'
+      :(tangent?'<strong>y=−x 에 접한다</strong><span>이제 f′(1)=1 이 되도록 a 를 움직이세요</span>':'<strong>접하지 않는다 ('+n+'개)</strong><span>δ 를 0 으로 돌려 보세요</span>');
+  }
+  [a2,d2].forEach(function(el){el.addEventListener('input',lab2);});
+  document.querySelectorAll('[data-sa]').forEach(function(b){b.addEventListener('click',function(){a2.value=b.getAttribute('data-sa');lab2();});});
+  document.querySelectorAll('[data-sd]').forEach(function(b){b.addEventListener('click',function(){d2.value=b.getAttribute('data-sd');lab2();});});
+
+  function boot(){lab1();lab2();}
+  if(document.readyState!=='loading')boot();else document.addEventListener('DOMContentLoaded',boot);
+})();
 </script>
-<script src="jp-lab-dark.js"></script>
 </body>
 </html>

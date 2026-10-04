@@ -1,292 +1,202 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>접하면 미분가능 — 2021 수능 나형 30번 — JP Math Lab</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
-<link rel="stylesheet" href="jp-dark.css">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow,noarchive"/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<title>2021 수능 수학 나형 30번 | 접하면 미분가능, 뚫으면 꺾인다</title>
+<link rel="stylesheet" href="../../vendor/katex/katex.min.css"/>
+<link rel="stylesheet" href="../../jp-dark.css?v=6"/>
+<link rel="stylesheet" href="../../jp-polish.css?v=11"/>
+<script defer src="../../vendor/katex/katex.min.js"></script>
+<script defer src="../../jp-lab-dark.js?v=2"></script>
+<script defer src="../../jp-polish.js?v=21"></script>
+<link rel="stylesheet" href="../../jp-nav-2.css?v=3"/>
+<script src="../../jp-nav-2.js?v=6" data-jp-section="수능·킬러 문제" defer></script>
 <style>
-.lab-head{max-width:1060px;margin:0 auto;padding:34px 22px 8px}
-.lab-head .badge{display:inline-block;font-size:12px;letter-spacing:.14em;color:#0b0b10;background:linear-gradient(135deg,#ffd76a,#ff9d5c);border-radius:999px;padding:6px 14px;font-weight:800;margin-bottom:12px}
-.lab-head h1{font-size:clamp(26px,4.6vw,40px);margin:0 0 8px}
-.lab-head .sub{color:#9aa7c7;margin:0}
-.wrap{max-width:1060px;margin:0 auto;padding:18px 22px 60px}
-.grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px}
-@media(max-width:900px){.grid{grid-template-columns:1fr}}
-.card{background:rgba(16,20,38,.72);border:1px solid rgba(124,92,255,.22);border-radius:18px;padding:22px;margin-bottom:18px;box-shadow:0 12px 40px rgba(0,0,0,.35)}
-.card h2{margin:0 0 4px;font-size:20px}
-.card h2 .step{display:inline-block;background:#7c5cff;color:#fff;font-size:12px;border-radius:8px;padding:3px 10px;margin-right:8px;vertical-align:middle}
-.card .kicker{color:#8b9bb8;font-size:13px;margin:0 0 12px}
-.card p{line-height:1.75;color:#dbe3f5}
-.card .math{overflow-x:auto;padding:6px 0}
-.card ul{padding-left:20px}.card li{line-height:1.75;color:#dbe3f5;margin:6px 0}
-.askbox{border:1px dashed rgba(124,92,255,.5);border-radius:14px;padding:14px 16px;margin:14px 0;background:rgba(124,92,255,.06)}
-.askbox .q{font-weight:700;margin:0 0 10px;color:#fff}
-.askbox label{display:block;padding:8px 10px;border-radius:10px;margin:6px 0;background:rgba(255,255,255,.03);cursor:pointer;border:1px solid transparent}
-.askbox label:hover{border-color:rgba(124,92,255,.4)}
-.askbox input{margin-right:8px}
-.askbox .fb{margin-top:10px;font-weight:700;display:none}
-.askbox .fb.ok{display:block;color:#7dffb0}
-.askbox .fb.no{display:block;color:#ff8f8f}
-.hint{margin:12px 0}
-.hint summary{cursor:pointer;color:#ffd76a;font-weight:700}
-.hint .hint-body{margin-top:8px;color:#c9d4ee;line-height:1.7}
-.problem-img{width:100%;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:#fff}
-.takeaways li{margin:8px 0;line-height:1.7;color:#dbe3f5}
-.side .card h3{margin:0 0 10px;font-size:16px;color:#ffd76a}
-.side .card p,.side .card li{font-size:14px;line-height:1.7;color:#c9d4ee}
-.side .card ul{padding-left:18px;margin:0}
-.note{font-size:13px;color:#8b9bb8}
-.lab-figure{background:#0d1122;border:1px solid rgba(124,92,255,.25);border-radius:14px;padding:14px;margin:14px 0}
-.lab-figure svg{width:100%;height:auto;display:block}
-.lab-ctl{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-top:10px}
-.lab-ctl .ctl{flex:1 1 200px}
-.lab-ctl label{font-size:13px;color:#9aa7c7;display:block;margin-bottom:4px}
-.lab-ctl input[type=range]{width:100%}
-.lab-ctl .val{color:#ffd76a;font-weight:800}
-.legend{font-size:13px;color:#9aa7c7;margin-top:8px}
-.legend span{display:inline-block;margin-right:14px}
-.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:middle}
-.verdict{margin-top:10px;font-size:15px;line-height:1.8}
-.verdict .bad{color:#ff8f8f;font-weight:800}
-.verdict .good{color:#7dffb0;font-weight:800}
-.memo{width:100%;min-height:120px;background:#0d1122;border:1px solid rgba(124,92,255,.25);border-radius:12px;color:#dbe3f5;padding:12px;font-size:14px;line-height:1.7}
-.final{background:linear-gradient(135deg,rgba(124,92,255,.16),rgba(255,157,92,.10));border:1px solid rgba(255,215,106,.4)}
-.final .ans{font-size:15px;color:#9aa7c7}
-.final .ans b{font-size:40px;color:#ffd76a;margin:0 8px}
-.tag{display:inline-block;font-size:11px;color:#0b0b10;background:#7dffb0;border-radius:999px;padding:3px 10px;font-weight:800;margin-right:6px}
-</style>
+.cnt-lab{margin:22px 0;border:1px solid rgba(47,102,112,.2);border-radius:24px;overflow:hidden;background:#fff}.cnt-lab-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:17px 20px;border-bottom:1px solid rgba(58,49,37,.12)}.cnt-lab-head h4{margin:0;font-size:18px}.cnt-lab-head span{color:#2f6670;font:700 10px 'IBM Plex Mono',monospace;letter-spacing:.08em}.cnt-lab-body{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(260px,.72fr)}.cnt-stage{display:grid;gap:8px;align-content:center;padding:16px;background:linear-gradient(145deg,#fbfaf6,#f4efe4)}.cnt-stage svg{display:block;width:100%;height:auto}.cnt-panel{padding:20px;border-left:1px solid rgba(58,49,37,.12)}.cnt-control{margin-bottom:14px}.cnt-control label{display:flex;justify-content:space-between;gap:12px;margin-bottom:6px;color:#5f574b;font-size:12px}.cnt-control label b{color:#a95232;font-family:'IBM Plex Mono',monospace}.cnt-control input{width:100%;accent-color:#a95232}.snap{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 12px}.snap button{padding:5px 9px;border:1px solid rgba(58,49,37,.2);border-radius:999px;background:#fff;font:700 11px 'IBM Plex Mono',monospace;color:#5f574b;cursor:pointer}.snap button:hover{border-color:#a95232;color:#a95232}.cnt-row{display:flex;justify-content:space-between;gap:12px;margin-top:8px;padding:9px 11px;border-radius:11px;background:#f6f2e9;font-size:12px}.cnt-row b{color:#2f6670;font-family:'IBM Plex Mono',monospace;text-align:right}.cnt-row.hot b{color:#a95232}.verdict{display:grid;place-items:center;min-height:74px;margin-top:12px;padding:10px;border-radius:15px;color:#fff;background:#8a3d3d;text-align:center}.verdict strong{display:block;font:700 19px 'Pretendard',sans-serif}.verdict span{font-size:11px;color:rgba(255,255,255,.8)}.verdict.ok{background:#477454;box-shadow:0 0 0 4px rgba(71,116,84,.12)}.verdict.mid{background:#6c6357}.cnt-hint{margin:10px 0 0;color:#776e61;font-size:11.5px;line-height:1.6}
+.prob .eqrow{overflow-x:auto}.choice{min-height:48px}.choice.chosen{border-color:#2f6670!important;background:#eef6f5!important;box-shadow:0 0 0 3px rgba(47,102,112,.1)}
+.gtable{width:100%;border-collapse:collapse;margin-top:14px;font-size:13px}.gtable th,.gtable td{padding:8px 6px;border-bottom:1px solid rgba(58,49,37,.12);text-align:center}.gtable td.hot{color:#a95232;font-weight:800}.gtable tr.key td{background:#fff3e8}
+.mini-answer{font-size:clamp(46px,8vw,84px);font-weight:800;color:#a95232;text-align:center;letter-spacing:-.06em}.reveal-note{margin-top:12px;color:#6b6256;font-size:13px;text-align:center}
+.bogi{margin:18px 0;padding:18px 20px;border:1.5px solid rgba(58,49,37,.3);border-radius:16px;background:#fdfcf8}.bogi h5{margin:0 0 12px;color:#2f6670;font:700 12px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-align:center}.bogi p{margin:9px 0;padding-left:22px;text-indent:-22px}.bogi p b{color:#a95232}
+@media(max-width:800px){.cnt-lab-body{grid-template-columns:1fr}.cnt-panel{border-top:1px solid rgba(58,49,37,.12);border-left:0}.cnt-stage{padding:8px}}
+@media(max-width:650px){.cnt-row{flex-direction:column;align-items:flex-start}.cnt-row b{text-align:left}.gtable{font-size:11.5px}}
+.cond{margin:16px 0;padding:16px 18px;border:1.5px solid rgba(58,49,37,.25);border-radius:15px;background:#fdfcf8}.cond p{margin:8px 0;padding-left:26px;text-indent:-26px}.ansrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:16px 0}.ansrow input{width:150px;padding:11px 14px;border:1.5px solid rgba(58,49,37,.28);border-radius:12px;font:700 18px IBM Plex Mono,monospace;background:#fff}.ansrow input:focus{outline:none;border-color:#2f6670;box-shadow:0 0 0 3px rgba(47,102,112,.12)}.ansrow .res{font-weight:700;font-size:14px}.ansrow .res.ok{color:#477454}.ansrow .res.no{color:#a95232}.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:14px 0}.opts span{padding:8px 10px;border:1px solid rgba(58,49,37,.14);border-radius:11px;background:#fdfcf8;font-size:15px}</style>
 </head>
-<body>
-<header class="lab-head">
-  <span class="badge">수학Ⅱ · 미분</span>
-  <h1>접하면 미분가능, 뚫으면 꺾인다</h1>
-  <p class="sub">2021학년도 수능 나형 30번 · 단답형 4점 · 정답 39</p>
+<body class="tpl-dark is-page">
+
+<header>
+  <div class="hbar">
+    <h1>접하면 미분가능, 뚫으면 꺾인다</h1>
+    <span class="src">2021학년도 수능 수학 <b>나형 30번</b> · 4점</span>
+    <a class="back" href="../">← 수능 문제</a>
+  </div>
+  <nav id="nav"></nav>
+  <div class="pbar"><span id="pfill"></span></div>
 </header>
 
-<div class="wrap">
-<div class="grid">
-<div class="col-main">
+<main>
 
-  <section class="card">
-    <h2>원문제</h2>
-    <p class="kicker">실제 수능 문제지다. 절댓값과 미분가능성이 만나는 지점을 보자.</p>
-    <img class="problem-img" src="문제이미지/assets/2021수능나형30번.png" alt="2021학년도 수능 나형 30번 원문제">
-    <p class="note">* 원문제: 함수 \(f(x)\)는 최고차항의 계수가 1인 삼차함수이고, 함수 \(g(x)\)는 일차함수이다. 함수 \(h(x)\)를 \(h(x)=\begin{cases}|f(x)-g(x)|&(x&lt;1)\\f(x)+g(x)&(x\ge 1)\end{cases}\)이라 하자. 함수 \(h(x)\)가 실수 전체의 집합에서 미분가능하고, \(h(0)=0,\ h(2)=5\)일 때, \(h(4)\)의 값을 구하시오. [4점]</p>
-  </section>
+<!-- ══════════ STEP 1 ══════════ -->
+<section class="ch on" data-ch="0">
+  <p class="eyebrow">STEP 01 · 문제 만나기</p>
+  <h2 class="ct">절댓값이 있는데 <span class="am">미분가능</span>이어야 한다</h2>
+<p class="lede">절댓값은 0이 되는 곳에서 꺾이기 쉽습니다. 그런데 이 문제는 <span class="m" data-k="h"></span> 가 <b>어디서나 매끄럽다</b>고 합니다. 꺾이지 않으려면 어떤 일이 일어나야 할까요?</p><div class="prob"><div class="prob-head"><span class="yr">2021 수능</span><h4>나형 30번</h4><span class="pts">4점</span></div><div class="prob-body"><div class="qtext"><p>함수 <span class="m" data-k="f(x)"></span> 는 최고차항의 계수가 1인 삼차함수이고, 함수 <span class="m" data-k="g(x)"></span> 는 일차함수이다. 함수 <span class="m" data-k="h(x)"></span> 를</p><div class="eq"><div class="eqrow"><span class="m md" data-k="h(x)=\begin{cases}|f(x)-g(x)| &amp; (x\lt 1)\\ f(x)+g(x) &amp; (x\ge 1)\end{cases}"></span></div></div><p>이라 하자. 함수 <span class="m" data-k="h(x)"></span> 가 실수 전체의 집합에서 미분가능하고, <span class="m" data-k="h(0)=0,\ h(2)=5"></span> 일 때, <span class="m am" data-k="h(4)"></span> 의 값을 구하시오.</p></div><div class="ansrow"><input id="ansIn" type="text" inputmode="numeric" autocomplete="off" placeholder="답" aria-label="답"><button class="b" id="ansBtn">확인</button><span class="res" id="ansOut" role="status"></span></div></div></div><div class="prob"><div class="prob-head"><span class="yr">첫 질문</span><h4>두 함수를 하나로 묶자</h4></div><div class="prob-body"><div class="qtext"><span class="m" data-k="p(x)=f(x)-g(x)"></span> 로 두면 <span class="m" data-k="p"></span> 는 몇 차이고 최고차항의 계수는?</div><div class="choices" data-q="deg" data-ans="1"><button class="choice" data-i="0">2차, 계수 1</button><button class="choice" data-i="1">3차, 계수 1</button><button class="choice" data-i="2">3차, 계수 2</button></div><div class="sol-btns"><button class="b gh" data-sol="degSol">직관으로 보기</button></div><div class="sol intu" id="degSol"><h5>직관</h5><div class="step">삼차에서 일차를 빼도 <b><span class="m" data-k="x^{3}"></span> 항은 그대로</b>입니다. 일차함수는 삼차 항에 손댈 수 없으니까요.</div><div class="step">그리고 <span class="m" data-k="x\ge1"></span> 에서는 <span class="m" data-k="f+g=(f-g)+2g=p+2g"></span> 입니다. 이제 <span class="m" data-k="h"></span> 는 <b><span class="m" data-k="|p|"></span> 와 <span class="m" data-k="p+2g"></span></b> 두 조각을 이어붙인 함수입니다.</div></div></div></div>
+  <div class="chnav"><span class="sp"></span><button class="b" data-go="next">꺾이는 이유 보기 →</button></div>
+</section>
 
-  <section class="card">
-    <h2>이 문제의 한 줄</h2>
-    <p>절댓값 \(|\ |\)는 0이 되는 점에서 꺾인다. 그런데 \(h\)는 <b>실수 전체에서 미분가능</b>해야 한다. 꺾이지 않으려면 어떻게 해야 할까? 답: <b>0이 되는 점에서 그래프가 \(x\)축에 '접해야' 한다</b> — 즉 중근이어야 한다. 이 한 줄이 문제의 80%다.</p>
-  </section>
+<!-- ══════════ STEP 2 ══════════ -->
+<section class="ch" data-ch="1">
+  <p class="eyebrow">STEP 02 · 단근과 중근</p>
+  <h2 class="ct">뚫으면 <span class="am">꺾이고</span>, 접하면 <span class="am">매끄럽다</span></h2>
+<p class="lede"><span class="m" data-k="x=r"></span> 에서 <span class="m" data-k="p"></span> 가 x축을 <b>뚫고</b> 지나가면 절댓값이 그래프를 접어 올려 뾰족한 꼭짓점이 생깁니다. 반대로 <b>접하기만</b> 하면 접어 올려도 이어지는 곡선이 매끄럽습니다.</p><div class="cnt-lab"><div class="cnt-lab-head"><h4>단근과 중근 비교</h4><span>MOVE · COMPARE</span></div><div class="cnt-lab-body"><div class="cnt-stage"><div id="lab1"></div></div><div class="cnt-panel"><div class="cnt-control"><label><span>근의 위치 r</span><b id="r1v">0.50</b></label><input id="r1" type="range" min="-1.5" max="2.2" step="0.05" value="0.5"></div><div class="cnt-row hot"><span>단근 |p| 의 좌·우 기울기</span><b id="r1a">—</b></div><div class="cnt-row hot"><span>중근 |q| 의 좌·우 기울기</span><b id="r1b">—</b></div><div class="verdict" id="v1box"><strong>—</strong><span>—</span></div><p class="cnt-hint">붉은 곡선 |p|, p=(x−r)(x−2.5) 는 x=r 에서 뾰족합니다. 초록 곡선 |q|, q=(x−r)²(x−2.5) 는 매끄럽습니다. r 을 움직여도 이 차이는 안 변합니다.</p></div></div></div><div class="prob"><div class="prob-head"><span class="yr">판단</span><h4><span class="m" data-k="p(0)=0"></span> 이고 <span class="m" data-k="|p|"></span> 가 <span class="m" data-k="x=0"></span> 에서 미분가능하려면?</h4></div><div class="prob-body"><div class="qtext"><span class="m" data-k="h(0)=0"></span> 이고 <span class="m" data-k="0\lt1"></span> 이므로 <span class="m" data-k="h(0)=|p(0)|=0"></span>, 곧 <span class="m" data-k="p(0)=0"></span>. 그런데 <span class="m" data-k="x=0"></span> 은 <span class="m" data-k="x\lt1"></span> 쪽, 즉 <b>절댓값이 씌워진 조각</b> 안에 있습니다.</div><div class="choices" data-q="root0" data-ans="1"><button class="choice" data-i="0">단근이어야 한다</button><button class="choice" data-i="1">중근이어야 한다</button><button class="choice" data-i="2">상관없다</button></div><div class="sol-btns"><button class="b gh" data-sol="root0Sol">직관으로 보기</button></div><div class="sol intu" id="root0Sol"><h5>직관</h5><div class="step">실험실의 붉은 곡선(단근)은 항상 꺾였습니다. 꺾이지 않는 것은 초록(중근) 뿐입니다.</div><div class="step">그래서 <span class="m" data-k="x=0"></span> 은 <span class="m" data-k="p"></span> 의 <b>중근</b>이고, 최고차 1인 삼차이니 <span class="m md am" data-k="p(x)=x^{2}(x-k)"></span></div><div class="step">나머지 근 <span class="m" data-k="k"></span> 가 <span class="m" data-k="k\lt1"></span> 이면 그것도 절댓값 조각 안의 단근이라 꺾입니다. 따라서 <span class="m am" data-k="k\ge1"></span>. (<span class="m" data-k="k=1"></span> 이면 경계 위라 구간 안에 들지 않습니다.)</div></div></div></div>
+  <div class="chnav"><button class="b mute" data-go="prev">← 이전</button><span class="sp"></span><button class="b" data-go="next">x=1에서 이어붙이기 →</button></div>
+</section>
 
-  <section class="card">
-    <h2><span class="step">STEP 1</span>\(p(x)=f(x)-g(x)\)로 두자</h2>
-    <p class="kicker">두 함수를 하나로 묶는 것이 시작이다.</p>
-    <p>\(f\)는 삼차(최고차항 1), \(g\)는 일차이므로 \(p(x)=f(x)-g(x)\)는 <b>최고차항이 1인 삼차함수</b>다.</p>
-    <div class="math">\[h(x)=\begin{cases}|p(x)|&(x&lt;1)\\p(x)+2g(x)&(x\ge 1)\end{cases}\]</div>
-    <p>(\(x\ge 1\)에서는 \(f+g=(f-g)+2g=p+2g\)다.)</p>
-    <p>\(h(0)=0\)이고 \(0&lt;1\)이므로 \(|p(0)|=0\), 즉:</p>
-    <div class="math">\[p(0)=0\]</div>
-    <div class="askbox" data-ask="pdeg">
-      <p class="q">Q1. \(p(x)\)의 차수와 최고차항의 계수는?</p>
-      <label><input type="radio" name="pdeg" value="0"> ① 2차, 계수 1</label>
-      <label><input type="radio" name="pdeg" value="1"> ② 3차, 계수 1</label>
-      <label><input type="radio" name="pdeg" value="2"> ③ 3차, 계수 2</label>
-      <p class="fb" data-ok="1">정답! 삼차 − 일차 = 삼차. 최고차항은 \(f\)의 \(x^3\) 그대로다.</p>
-      <p class="fb" data-ok="0">\(f\)의 최고차항에서 \(g\)의 최고차항을 빼보자. 일차함수는 \(x^3\) 항에 영향을 못 준다.</p>
-    </div>
-  </section>
+<!-- ══════════ STEP 3 ══════════ -->
+<section class="ch" data-ch="2">
+  <p class="eyebrow">STEP 03 · x=1</p>
+  <h2 class="ct">조각의 경계에서는 <span class="am">값</span>과 <span class="am">기울기</span>를 맞춘다</h2>
+<p class="lede"><span class="m" data-k="x\lt1"></span> 쪽은 <span class="m" data-k="|p|"></span>, <span class="m" data-k="x\ge1"></span> 쪽은 <span class="m" data-k="p+2g"></span> 입니다. 두 조각이 <span class="m" data-k="x=1"></span> 에서 <b>같은 높이</b>로 만나고 <b>같은 기울기</b>로 이어져야 합니다.</p><table class="gtable"><tr><th></th><th>왼쪽 (<span class="m" data-k="x\lt1"></span>) <span class="m" data-k="|p|=x^{2}(k-x)"></span></th><th>오른쪽 (<span class="m" data-k="x\ge1"></span>) <span class="m" data-k="p+2g"></span></th></tr><tr><td>값 (<span class="m" data-k="x=1"></span>)</td><td><span class="m" data-k="k-1"></span></td><td><span class="m" data-k="(1-k)+2g(1)"></span></td></tr><tr><td>기울기</td><td class="hot"><span class="m" data-k="2k-3"></span></td><td class="hot"><span class="m" data-k="(3-2k)+2g'(1)"></span></td></tr></table><div class="sol-btns"><button class="b gh" data-sol="joinCalc">계산 보기</button></div><div class="sol calc" id="joinCalc"><h5>계산</h5><div class="step">값이 같다: <span class="m" data-k="k-1=(1-k)+2g(1)"></span> ⟹ <span class="m am" data-k="g(1)=k-1"></span></div><div class="step">기울기가 같다: <span class="m" data-k="2k-3=(3-2k)+2g'(1)"></span> ⟹ <span class="m am" data-k="g'(1)=2k-3"></span></div><div class="step"><span class="m" data-k="g"></span> 는 일차함수이니 한 점과 기울기로 정해집니다: <span class="m md" data-k="g(x)=(2k-3)(x-1)+(k-1)=(2k-3)x+(2-k)."></span></div></div><div class="prob"><div class="prob-head"><span class="yr">판단</span><h4><span class="m" data-k="h(2)"></span> 를 계산할 때 어느 조각을 쓸까?</h4></div><div class="prob-body"><div class="choices" data-q="piece" data-ans="1"><button class="choice" data-i="0"><span class="m" data-k="|p(2)|"></span></button><button class="choice" data-i="1"><span class="m" data-k="p(2)+2g(2)"></span></button><button class="choice" data-i="2"><span class="m" data-k="p(2)"></span></button></div><div class="sol-btns"><button class="b gh" data-sol="pieceSol">직관으로 보기</button></div><div class="sol intu" id="pieceSol"><h5>직관</h5><div class="step"><span class="m" data-k="2\ge1"></span> 이므로 <b>오른쪽 조각</b> <span class="m" data-k="f+g=p+2g"></span> 입니다. 어느 조각인지부터 판단하는 것이 조각함수의 기본기입니다.</div></div></div></div>
+  <div class="chnav"><button class="b mute" data-go="prev">← 이전</button><span class="sp"></span><button class="b" data-go="next">k 를 정하러 →</button></div>
+</section>
 
-  <section class="card">
-    <h2><span class="step">실험실</span>단근은 꺾이고, 중근은 매끄럽다</h2>
-    <p class="kicker">\(r\) 슬라이더를 움직이며 \(x=r\)에서의 모습을 관찰하자.</p>
-    <div class="lab-figure" data-mylab="cusp">
-      <svg viewBox="0 0 600 320" role="img" aria-label="단근과 중근의 절댓값 비교"></svg>
-      <div class="lab-ctl">
-        <div class="ctl"><label>근의 위치 \(r\) : <span class="val" data-rval>0.0</span></label><input type="range" min="-1" max="1.5" step="0.1" value="0" data-r></div>
-      </div>
-      <p class="legend"><span><i class="dot" style="background:#ff8f8f"></i>\(|p(x)|\), \(p(x)=(x-r)(x-2.5)\) (단근)</span><span><i class="dot" style="background:#7dffb0"></i>\(|q(x)|\), \(q(x)=(x-r)^2(x-2.5)\) (중근)</span></p>
-      <div class="verdict" data-verdict></div>
-    </div>
-    <p><span class="tag">관찰 1</span> 빨간 곡선(\(|p|\))은 \(x=r\)에서 항상 <b>뾰족하게 꺾인다</b>. \(p\)가 0을 <b>뚫고</b> 지나가기 때문이다.</p>
-    <p><span class="tag">관찰 2</span> 초록 곡선(\(|q|\))은 \(x=r\)에서 <b>매끄럽다</b>. \(q\)가 0에서 <b>접하고</b> 돌아가기 때문이다.</p>
-    <p><span class="tag">관찰 3</span> \(r\)을 움직여도 이 차이는 안 변한다. 꺾임 vs 매끄러움은 <b>근의 차수</b>가 결정한다.</p>
-  </section>
+<!-- ══════════ STEP 4 ══════════ -->
+<section class="ch" data-ch="3">
+  <p class="eyebrow">STEP 04 · h(2)=5</p>
+  <h2 class="ct">숫자 조건 하나가 <span class="am">k</span> 를 정한다</h2>
+<p class="lede">이제 <span class="m" data-k="h"></span> 는 <span class="m" data-k="k"></span> 하나로 정해졌습니다. <span class="m" data-k="k"></span> 를 움직여 <span class="m" data-k="h(2)=5"></span> 가 되는 곳을 찾아 보세요. 어느 <span class="m" data-k="k"></span> 에서도 <span class="m" data-k="x=1"></span> 은 매끄럽게 이어져 있습니다.</p><div class="cnt-lab"><div class="cnt-lab-head"><h4>k 를 움직여 h 를 맞추기</h4><span>MOVE · FIND</span></div><div class="cnt-lab-body"><div class="cnt-stage"><div id="lab2"></div></div><div class="cnt-panel"><div class="cnt-control"><label><span>상수 k (≥ 1)</span><b id="k2v">2.00</b></label><input id="k2" type="range" min="1" max="4" step="0.05" value="2"></div><div class="snap"><button data-k="1.5">k = 1.5</button><button data-k="2.5">k = 2.5</button><button data-k="3.5">k = 3.5</button></div><div class="cnt-row"><span>x=1 의 좌·우 기울기</span><b id="r2a">—</b></div><div class="cnt-row hot"><span>h(2)  (목표 5)</span><b id="r2b">—</b></div><div class="cnt-row hot"><span>h(4)</span><b id="r2c">—</b></div><div class="verdict" id="v2box"><strong>—</strong><span>—</span></div><p class="cnt-hint">h 를 정의 그대로(x<1 이면 |f−g|, x≥1 이면 f+g) 만들어 그렸습니다. 기울기는 수치로 잰 값입니다.</p></div></div></div><div class="sol-btns"><button class="b gh" data-sol="kCalc">계산 보기</button></div><div class="sol calc" id="kCalc"><h5>계산</h5><div class="step"><span class="m" data-k="p(2)=4(2-k)=8-4k"></span>, <span class="m" data-k="g(2)=(2k-3)\cdot2+(2-k)=3k-4"></span></div><div class="step"><span class="m" data-k="h(2)=p(2)+2g(2)=(8-4k)+2(3k-4)=2k=5"></span> ⟹ <span class="m md am" data-k="k=\tfrac52\ (\gt1\ \checkmark)"></span></div></div>
+  <div class="chnav"><button class="b mute" data-go="prev">← 이전</button><span class="sp"></span><button class="b" data-go="next">h(4) 구하기 →</button></div>
+</section>
 
-  <section class="card">
-    <h2><span class="step">STEP 2</span>\(x&lt;1\)에서 \(|p(x)|\)가 미분가능하려면</h2>
-    <p class="kicker">실험실의 발견을 문제에 적용한다.</p>
-    <p>\(h\)는 실수 전체에서 미분가능해야 하므로, 특히 구간 \((-\infty,1)\)에서 \(|p(x)|\)가 미분가능해야 한다.</p>
-    <p>실험실에서 본 대로, \(|p(x)|\)가 \(p(x)=0\)인 점에서 미분가능하려면 그 점이 <b>중근</b>(접하는 점)이어야 한다. 단근(뚫는 점)에서는 반드시 꺾인다.</p>
-    <p>STEP 1에서 \(p(0)=0\)을 얻었다. \(0&lt;1\)이므로, \(x=0\)은 \(|p|\)의 미분가능 구간 안에 있다. 따라서:</p>
-    <div class="math">\[x=0\text{은 }p(x)\text{의 중근이다.}\quad\Longrightarrow\quad p(x)=x^2(x-k)\ (\text{어떤 실수 }k)\]</div>
-    <p class="note">* \(p\)의 근은 \(0\)(이중)과 \(k\)(단일)다. 만약 \(k&lt;1\)이면 \(x=k\)는 \((-\infty,1)\) 안의 단근이 되어 \(|p|\)가 꺾인다. 따라서 \(k\ge 1\)이어야 한다. (\(k=1\)이면 단근이 경계 \(x=1\)에 있어 \((-\infty,1)\) 안에는 없다.)</p>
-    <div class="askbox" data-ask="mult">
-      <p class="q">Q2. \(p(0)=0\)인데 \(|p(x)|\)가 \(x=0\)에서 미분가능하려면, \(x=0\)은 \(p\)의 어떤 근이어야 하는가?</p>
-      <label><input type="radio" name="mult" value="0"> ① 단일근 (그래프가 \(x\)축을 뚫고 지나감)</label>
-      <label><input type="radio" name="mult" value="1"> ② 중근 (그래프가 \(x\)축에 접함)</label>
-      <label><input type="radio" name="mult" value="2"> ③ 상관없다</label>
-      <p class="fb" data-ok="1">정답! 뚫으면 꺾이고, 접하면 매끄럽다. 실험실의 초록 곡선을 떠올리자.</p>
-      <p class="fb" data-ok="0">실험실로 돌아가자. 빨간 곡선(단근)은 \(x=r\)에서 어떻게 되는가?</p>
-    </div>
-  </section>
-
-  <section class="card">
-    <h2><span class="step">STEP 3</span>\(x=1\)에서 이어붙이기</h2>
-    <p class="kicker">조각함수의 경계에서는 연속+미분가능 두 개를 본다.</p>
-    <p>\(k\ge 1\)이므로 \(p(1)=1-k\le 0\). 연속 조건 \(|p(1)|=f(1)+g(1)\)에서:</p>
-    <div class="math">\[|p(1)|=k-1,\quad f(1)+g(1)=p(1)+2g(1)=(1-k)+2g(1)\]</div>
-    <div class="math">\[\therefore\ g(1)=k-1\]</div>
-    <p>미분가능 조건 (좌미분계수 = 우미분계수):</p>
-    <ul>
-      <li>\(x&lt;1\): \(x-k&lt;0\)이므로 \(h(x)=|x^2(x-k)|=x^2(k-x)\). \(h'(x)=2x(k-x)-x^2\)에서 \(h'(1^-)=2k-3\).</li>
-      <li>\(x\ge 1\): \(h(x)=f(x)+g(x)\)이므로 \(h'(1^+)=f'(1)+g'(1)\). \(f=p+g\)에서 \(f'(1)=p'(1)+g'(1)=(3-2k)+g'(1)\).</li>
-    </ul>
-    <div class="math">\[2k-3=(3-2k)+2g'(1)\ \Longrightarrow\ g'(1)=2k-3\]</div>
-    <p>\(g\)는 일차함수이므로 기울기가 \(2k-3\)으로 일정하고 \(g(1)=k-1\):</p>
-    <div class="math">\[g(x)=(2k-3)x+(2-k)\]</div>
-    <details class="hint"><summary>\(g(x)\) 식 유도 확인하기</summary><div class="hint-body">\(g(x)=g'(1)(x-1)+g(1)=(2k-3)(x-1)+(k-1)=(2k-3)x-(2k-3)+(k-1)=(2k-3)x+(2-k)\).</div></details>
-  </section>
-
-  <section class="card">
-    <h2><span class="step">STEP 4</span>\(h(2)=5\)로 \(k\) 확정</h2>
-    <p class="kicker">남은 숫자 조건을 쓴다.</p>
-    <p>\(2\ge 1\)이므로 \(h(2)=f(2)+g(2)=p(2)+2g(2)\):</p>
-    <div class="math">\[\begin{aligned} p(2)&=4(2-k)=8-4k \\ g(2)&=(2k-3)\cdot 2+(2-k)=3k-4 \\ h(2)&=(8-4k)+2(3k-4)=2k=5 \end{aligned}\]</div>
-    <div class="math">\[\therefore\ k=\frac52\ (>1\ \checkmark)\]</div>
-    <p>\(k\ge 1\)이라는 가정이 성립함을 확인했다. (\(k=1\)이었다면 \(h(2)=2\)가 되어 탈락.)</p>
-    <div class="askbox" data-ask="kval">
-      <p class="q">Q3. \(h(2)=5\)에서 \(k\)를 구하는 계산의 핵심은?</p>
-      <label><input type="radio" name="kval" value="0"> ① \(h(2)=|p(2)|\)로 둔다</label>
-      <label><input type="radio" name="kval" value="1"> ② \(2\ge 1\)이므로 \(h(2)=f(2)+g(2)=p(2)+2g(2)\)로 둔다</label>
-      <label><input type="radio" name="kval" value="2"> ③ \(h(2)=p(2)\)로 둔다</label>
-      <p class="fb" data-ok="1">정답! \(x=2\)는 \(x\ge 1\) 조각에 속한다. 어느 조각인지 먼저 판단하는 것이 이 문제의 기본기다.</p>
-      <p class="fb" data-ok="0">\(h(x)\)의 정의를 다시 보자. \(x=2\)는 어느 경우(\(x&lt;1\) / \(x\ge 1\))에 들어가는가?</p>
-    </div>
-  </section>
-
-  <section class="card final">
-    <h2>마지막 계산</h2>
-    <p>\(k=\frac52\)이므로 \(p(x)=x^2\left(x-\frac52\right)\), \(g(x)=2x-\frac12\).</p>
-    <div class="math">\[\begin{aligned} h(4)&=f(4)+g(4)=p(4)+2g(4) \\ &=16\left(4-\frac52\right)+2\left(8-\frac12\right)=24+15=39 \end{aligned}\]</div>
-    <p class="ans">정답 <b>39</b></p>
-  </section>
-
-  <section class="card">
-    <h2>takeaways</h2>
-    <ul class="takeaways">
-      <li><b>절댓값이 미분가능하려면 0인 점에서 접해야 한다</b> (중근). 뚫으면 무조건 꺾인다.</li>
-      <li>조각함수는 <b>어느 조각인지 먼저 판단</b>하고 식을 쓴다 (\(h(2)\), \(h(4)\)는 \(x\ge 1\) 조각).</li>
-      <li>\(x\ge 1\) 구간에서는 절댓값을 안 씌우므로, 거기에 있는 \(p\)의 근(여기서는 \(x=\frac52\))은 미분가능성에 영향을 안 준다.</li>
-      <li>미정계수(\(k\))를 먼저 문자로 두고, 숫자 조건으로 나중에 확정하는 순서가 깔끔하다.</li>
-    </ul>
-  </section>
-
-</div>
-<aside class="col-side side">
-  <section class="card">
-    <h3>한눈에 보는 구조</h3>
-    <ul>
-      <li>\(p(x)=f(x)-g(x)\) (삼차, 계수 1)</li>
-      <li>\(h(0)=0\Rightarrow p(0)=0\)</li>
-      <li>\(|p|\) 미분가능 \(\Rightarrow\) 0은 중근</li>
-      <li>\(p(x)=x^2(x-k),\ k\ge 1\)</li>
-      <li>\(x=1\) 이어붙이기 \(\Rightarrow\) \(g(x)=(2k-3)x+(2-k)\)</li>
-      <li>\(h(2)=5\Rightarrow k=\frac52\)</li>
-      <li>\(h(4)=39\)</li>
-    </ul>
-  </section>
-  <section class="card">
-    <h3>함정 체크</h3>
-    <ul>
-      <li>\(|p(1)|=f(1)+g(1)\)에서 절댓값을 풀 때 \(k\ge 1\)을 써야 부호가 정해진다.</li>
-      <li>\(h(2)\)를 \(|p(2)|\)로 착각 금지. \(2\ge 1\)이다.</li>
-      <li>\(x=\frac52\)는 \(p\)의 단근이지만 \(x\ge 1\) 구간이라 문제없다.</li>
-    </ul>
-  </section>
-  <section class="card">
-    <h3>용어 정리</h3>
-    <ul>
-      <li><b>중근</b>: 그래프가 \(x\)축에 접하는 근 (짝수 차수)</li>
-      <li><b>미분가능</b>: 그 점에서 접선이 하나로 정해짐 (꺾임 없음)</li>
-      <li><b>이어붙이기</b>: 조각 경계에서 함수값과 미분계수 일치</li>
-    </ul>
-  </section>
-  <section class="card">
-    <h3>기록장</h3>
-    <textarea class="memo" placeholder="내가 발견한 구조를 한 줄로 적어보자."></textarea>
-  </section>
-</aside>
-</div>
-</div>
+<!-- ══════════ STEP 5 ══════════ -->
+<section class="ch" data-ch="4">
+  <p class="eyebrow">STEP 05 · 회수와 검산</p>
+  <h2 class="ct">구조가 끝난 뒤에만 <span class="am">계산</span>한다</h2>
+<table class="gtable"><tr><th>단계</th><th>얻은 것</th></tr><tr><td>묶기</td><td><span class="m" data-k="p=f-g"></span>: 삼차, 최고차 1 · <span class="m" data-k="p(0)=0"></span></td></tr><tr><td>매끄러움</td><td class="hot"><span class="m" data-k="x=0"></span> 은 중근 → <span class="m" data-k="p=x^{2}(x-k),\ k\ge1"></span></td></tr><tr><td>이어붙이기</td><td><span class="m" data-k="g(x)=(2k-3)x+(2-k)"></span></td></tr><tr class="key"><td>숫자 조건</td><td class="hot"><span class="m" data-k="h(2)=2k=5"></span> → <span class="m" data-k="k=\tfrac52"></span></td></tr></table><div class="prob"><div class="prob-head"><span class="yr">마지막</span><h4><span class="m" data-k="h(4)"></span> 구하기</h4></div><div class="prob-body"><div class="sol-btns"><button class="b gh" data-sol="finalSol">정답 확인</button></div><div class="sol intu" id="finalSol"><h5>마무리</h5><div class="step"><span class="m" data-k="p(x)=x^{2}\left(x-\tfrac52\right),\quad g(x)=2x-\tfrac12"></span></div><div class="step"><span class="m" data-k="h(4)=p(4)+2g(4)=16\cdot\tfrac32+2\cdot\tfrac{15}{2}=24+15"></span></div><p class="mini-answer">39</p><p class="reveal-note">검산 · <span class="m" data-k="x=\tfrac52"></span> 는 <span class="m" data-k="p"></span> 의 단근이지만 <span class="m" data-k="x\ge1"></span> 쪽이라 미분가능성에 영향을 주지 않습니다</p></div></div></div><div class="card quote pad"><h3>오늘 쓴 생각의 뼈대</h3><ul class="bul"><li><b class="am">뚫음과 접함</b> — 절댓값은 단근에서 꺾이고 중근에서 매끄럽다.</li><li><b class="am">어느 조각인가</b> — 값을 구하기 전에 <span class="m" data-k="x"></span> 가 어느 조각에 속하는지부터.</li><li><b class="am">경계는 값과 기울기</b> — 이어붙이는 점에서 둘 다 맞춘다.</li><li><b class="am">문자 먼저, 숫자 나중</b> — 미정계수 <span class="m" data-k="k"></span> 를 문자로 두고 마지막 숫자 조건으로 정한다.</li></ul></div>
+  <div class="chnav"><button class="b mute" data-go="prev">← 이전</button><span class="sp"></span><button class="b gh" data-go="top">처음으로</button></div>
+</section>
+</main>
 
 <script>
-document.addEventListener('DOMContentLoaded', function(){
-  if (window.renderMathInElement) renderMathInElement(document.body, {delimiters:[{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}]});
-  document.querySelectorAll('.askbox').forEach(function(box){
-    box.querySelectorAll('input[type=radio]').forEach(function(r){
-      r.addEventListener('change', function(){
-        var ok = (r.value === '1');
-        box.querySelectorAll('.fb').forEach(function(f){ f.className = 'fb'; });
-        var target = box.querySelector('.fb[data-ok="'+(ok?'1':'0')+'"]');
-        if (target) target.className = 'fb ' + (ok ? 'ok' : 'no');
-      });
-    });
+(function(){
+  'use strict';
+  var labels=["문제 만나기","뚫음 vs 접함","이어붙이기","k 정하기","회수"];
+  var chs=[].slice.call(document.querySelectorAll('main > section.ch'));
+  var nav=document.getElementById('nav'),fill=document.getElementById('pfill'),cur=0;
+  labels.forEach(function(t,i){var b=document.createElement('button');b.className=i===0?'on':'';b.innerHTML='<span class="n">0'+(i+1)+'</span>'+t;b.addEventListener('click',function(){go(i);});nav.appendChild(b);});
+  var tabs=[].slice.call(nav.children);
+  function go(i){cur=Math.max(0,Math.min(chs.length-1,i));chs.forEach(function(s,j){s.classList.toggle('on',j===cur);});tabs.forEach(function(b,j){b.classList.toggle('on',j===cur);});fill.style.width=((cur+1)/chs.length*100)+'%';if(tabs[cur]&&tabs[cur].scrollIntoView)tabs[cur].scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});window.scrollTo({top:0,behavior:'smooth'});}go(0);
+  document.addEventListener('click',function(e){
+    var t=e.target.closest&&e.target.closest('[data-go]');if(t){var d=t.getAttribute('data-go');go(d==='next'?cur+1:d==='prev'?cur-1:0);return;}
+    var c=e.target.closest&&e.target.closest('.choice');if(c){var box=c.parentElement;if(box.getAttribute('data-mode')==='record'){box.querySelectorAll('.choice').forEach(function(x){x.classList.remove('chosen');});c.classList.add('chosen');return;}var ans=+box.getAttribute('data-ans'),ok=+c.getAttribute('data-i')===ans;box.querySelectorAll('.choice').forEach(function(x){x.classList.remove('right','wrong');});c.classList.add(ok?'right':'wrong');if(!ok){var right=box.querySelector('.choice[data-i="'+ans+'"]');setTimeout(function(){if(right)right.classList.add('right');},650);}return;}
+    var s=e.target.closest&&e.target.closest('[data-sol]');if(s){var el=document.getElementById(s.getAttribute('data-sol'));if(!el)return;var open=el.classList.toggle('on');s.style.opacity=open?'1':'';if(open&&window.JPDark)window.JPDark.texAll(el);}
   });
-  // ---- custom lab: cusp vs smooth ----
-  (function(){
-    var root = document.querySelector('[data-mylab="cusp"]');
-    if(!root) return;
-    var svg = root.querySelector('svg');
-    var rS = root.querySelector('[data-r]'), rV = root.querySelector('[data-rval]');
-    var verdict = root.querySelector('[data-verdict]');
-    var W=600, H=320, pL=36, pR=16, pT=20, pB=40;
-    var xMin=-1.8, xMax=3.6, yMin=-4, yMax=8;
-    function X(x){ return pL + (x-xMin)/(xMax-xMin)*(W-pL-pR); }
-    function Y(y){ return pT + (yMax-y)/(yMax-yMin)*(H-pT-pB); }
-    function draw(){
-      var r=parseFloat(rS.value);
-      rV.textContent=r.toFixed(1);
-      function p(x){ return (x-r)*(x-2.5); }
-      function q(x){ return (x-r)*(x-r)*(x-2.5); }
-      var s='';
-      // grid axes
-      s+='<line x1="'+X(xMin)+'" y1="'+Y(0)+'" x2="'+X(xMax)+'" y2="'+Y(0)+'" stroke="#5b6b8c" stroke-width="1.5"/>';
-      s+='<line x1="'+X(0)+'" y1="'+Y(yMin)+'" x2="'+X(0)+'" y2="'+Y(yMax)+'" stroke="#3a4666" stroke-width="1"/>';
-      for(var x=Math.ceil(xMin); x<=xMax; x++){
-        s+='<text x="'+X(x)+'" y="'+(Y(0)+20)+'" fill="#8b9bb8" font-size="12" text-anchor="middle">'+x+'</text>';
-      }
-      // originals (dashed gray)
-      function poly(fn, color, width, dash){
-        var pts=[];
-        for(var px=xMin; px<=xMax; px+=0.04){
-          var v=fn(px), sy=Y(v);
-          if(sy>=pT-2 && sy<=H-pB+2) pts.push(X(px).toFixed(1)+','+sy.toFixed(1));
-        }
-        return '<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+color+'" stroke-width="'+width+'" '+(dash?'stroke-dasharray="5 4" opacity="0.5"':'')+'/>';
-      }
-      s+=poly(p,'#5b6b8c',1.5,true);
-      s+=poly(q,'#5b6b8c',1.5,true);
-      // |p| red, |q| green
-      s+=poly(function(x){return Math.abs(p(x));},'#ff8f8f',3,false);
-      s+=poly(function(x){return Math.abs(q(x));},'#7dffb0',3,false);
-      // marker at x=r
-      s+='<line x1="'+X(r)+'" y1="'+Y(yMin)+'" x2="'+X(r)+'" y2="'+Y(yMax)+'" stroke="#ffd76a" stroke-width="1.5" stroke-dasharray="6 4"/>';
-      s+='<text x="'+X(r)+'" y="'+(Y(yMax)+2)+'" fill="#ffd76a" font-size="13" text-anchor="middle">x=r='+r.toFixed(1)+'</text>';
-      // zoom circle at cusp point
-      s+='<circle cx="'+X(r)+'" cy="'+Y(0)+'" r="9" fill="none" stroke="#ffd76a" stroke-width="2"/>';
-      svg.innerHTML=s;
-      verdict.innerHTML='<span class="bad">|p| (빨강)</span>: x=r에서 뾰족하게 꺾임 → 미분 불가능 (단근이 0을 뚫음)<br><span class="good">|q| (초록)</span>: x=r에서 매끄러움 → 미분 가능 (중근이 0에 접함)';
-    }
-    rS.addEventListener('input', draw);
-    draw();
-  })();
-});
+
+  /* ── 그림 도구 ────────────────────────────────────────────────
+     좌표를 화면에 옮겨 주는 것만 한다. 가로세로 배율이 달라도
+     "어디서 끊기고 어디로 튀는지" 는 그대로 보인다. */
+  function view(x0,x1,y0,y1,W,H){
+    return {x0:x0,x1:x1,y0:y0,y1:y1,W:W,H:H,
+      sx:function(x){return (x-x0)/(x1-x0)*W;},
+      sy:function(y){return H-(y-y0)/(y1-y0)*H;}};
+  }
+  function axes(v,stepX,stepY){
+    var s='<rect x="0" y="0" width="'+v.W+'" height="'+v.H+'" fill="#fbfaf6"/>',x,y;
+    for(x=Math.ceil(v.x0/stepX)*stepX;x<=v.x1;x+=stepX)s+='<line x1="'+v.sx(x).toFixed(1)+'" y1="0" x2="'+v.sx(x).toFixed(1)+'" y2="'+v.H+'" stroke="rgba(58,49,37,.08)"/>';
+    for(y=Math.ceil(v.y0/stepY)*stepY;y<=v.y1;y+=stepY)s+='<line x1="0" y1="'+v.sy(y).toFixed(1)+'" x2="'+v.W+'" y2="'+v.sy(y).toFixed(1)+'" stroke="rgba(58,49,37,.08)"/>';
+    if(v.y0<0&&v.y1>0)s+='<line x1="0" y1="'+v.sy(0).toFixed(1)+'" x2="'+v.W+'" y2="'+v.sy(0).toFixed(1)+'" stroke="#8b8378" stroke-width="1.2"/>';
+    if(v.x0<0&&v.x1>0)s+='<line x1="'+v.sx(0).toFixed(1)+'" y1="0" x2="'+v.sx(0).toFixed(1)+'" y2="'+v.H+'" stroke="#8b8378" stroke-width="1.2"/>';
+    return s;
+  }
+  function curve(v,f,a,b,color,w,dash){
+    var d='',on=false,i,x,y,n=200;
+    for(i=0;i<=n;i++){x=a+(b-a)*i/n;y=f(x);
+      if(!isFinite(y)||y<v.y0-40||y>v.y1+40){on=false;continue;}
+      d+=(on?'L':'M')+v.sx(x).toFixed(1)+' '+v.sy(y).toFixed(1)+' ';on=true;}
+    return '<path d="'+d+'" fill="none" stroke="'+color+'" stroke-width="'+(w||2.4)+'"'+(dash?' stroke-dasharray="'+dash+'"':'')+' stroke-linecap="round"/>';
+  }
+  function dot(v,x,y,color,open){
+    if(y<v.y0||y>v.y1)return '';
+    return open?'<circle cx="'+v.sx(x).toFixed(1)+'" cy="'+v.sy(y).toFixed(1)+'" r="4.6" fill="#fbfaf6" stroke="'+color+'" stroke-width="2"/>'
+               :'<circle cx="'+v.sx(x).toFixed(1)+'" cy="'+v.sy(y).toFixed(1)+'" r="4.6" fill="'+color+'"/>';
+  }
+  function tx(v,x,y,t,color,anchor){
+    return '<text x="'+v.sx(x).toFixed(1)+'" y="'+v.sy(y).toFixed(1)+'" fill="'+(color||'#5f574b')+'" font-size="12" font-family="IBM Plex Mono,monospace" text-anchor="'+(anchor||'middle')+'">'+t+'</text>';
+  }
+  function wrap(v,inner){return '<svg viewBox="0 0 '+v.W+' '+v.H+'" role="img">'+inner+'</svg>';}
+
+  var INK='#2f6670',HOT='#a95232',GREY='#9a9186';
+
+
+  /* 선분·기울기 직선·넓이 칠하기 — 열두 쪽이 함께 쓴다 */
+  function line(v,x1,y1,x2,y2,color,w,dash){
+    return '<line x1="'+v.sx(x1).toFixed(1)+'" y1="'+v.sy(y1).toFixed(1)+'" x2="'+v.sx(x2).toFixed(1)+'" y2="'+v.sy(y2).toFixed(1)+'" stroke="'+color+'" stroke-width="'+(w||2)+'"'+(dash?' stroke-dasharray="'+dash+'"':'')+'/>';
+  }
+  function thru(v,x0,y0,m,color,w,dash){
+    return line(v,v.x0,y0+m*(v.x0-x0),v.x1,y0+m*(v.x1-x0),color,w,dash);
+  }
+  function shade(v,f,a,b,color,base){
+    var d='M'+v.sx(a).toFixed(1)+' '+v.sy(base||0).toFixed(1),i,n=160,x;
+    for(i=0;i<=n;i++){x=a+(b-a)*i/n;d+=' L'+v.sx(x).toFixed(1)+' '+v.sy(f(x)).toFixed(1);}
+    d+=' L'+v.sx(b).toFixed(1)+' '+v.sy(base||0).toFixed(1)+' Z';
+    return '<path d="'+d+'" fill="'+color+'" stroke="none"/>';
+  }
+
+  var HOT_='#a95232';
+
+  (function(){var b=document.getElementById('ansBtn'),i=document.getElementById('ansIn'),o=document.getElementById('ansOut');if(!b)return;
+    function chk(){var v=String(i.value).trim().replace(/[−–—]/g,'-').replace(/\s/g,'');if(!v){o.className='res';o.textContent='답을 적어 주세요.';return;}
+      var ok=Number(v)===39;o.className='res '+(ok?'ok':'no');o.textContent=ok?'맞았습니다':'다시 확인해 보세요';}
+    b.addEventListener('click',chk);i.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();chk();}});})();
+
+  var r1=document.getElementById('r1');
+  function lab1(){
+    var r=+r1.value;document.getElementById('r1v').textContent=r.toFixed(2);
+    function P(x){return (x-r)*(x-2.5);} function Q(x){return (x-r)*(x-r)*(x-2.5);}
+    var V=view(-2,4,-1.2,9,560,330),s=axes(V,1,2);
+    function slopes(F){var e=1e-4;return [(Math.abs(F(r))-Math.abs(F(r-e)))/e,(Math.abs(F(r+e))-Math.abs(F(r)))/e];}
+    s+=curve(V,function(x){return Math.abs(P(x));},-2,4,HOT,3);
+    s+=curve(V,function(x){return Math.abs(Q(x));},-2,4,'#477454',3);
+    s+=dot(V,r,0,HOT)+line(V,r,V.y0,r,V.y1,GREY,1.2,'3 5')+tx(V,r,-0.9,'x = r',GREY);
+    var sp=slopes(P),sq=slopes(Q);
+    document.getElementById('lab1').innerHTML=wrap(V,s);
+    document.getElementById('r1a').textContent=sp[0].toFixed(2)+' , '+sp[1].toFixed(2)+'  → 꺾임';
+    document.getElementById('r1b').textContent=sq[0].toFixed(2)+' , '+sq[1].toFixed(2)+'  → 매끄러움';
+    var box=document.getElementById('v1box');box.className='verdict ok';
+    box.innerHTML='<strong>단근은 꺾이고 중근은 매끄럽다</strong><span>r 을 움직여도 이 차이는 그대로입니다</span>';
+  }
+  r1.addEventListener('input',lab1);
+
+  var k2=document.getElementById('k2');
+  function lab2(){
+    var k=+k2.value;document.getElementById('k2v').textContent=k.toFixed(2);
+    function p(x){return x*x*(x-k);} function g(x){return (2*k-3)*x+(2-k);} function f(x){return p(x)+g(x);}
+    function h(x){return x<1?Math.abs(f(x)-g(x)):f(x)+g(x);}
+    var V=view(-1.2,4.6,-4,46,560,330),s=axes(V,1,10);
+    s+=curve(V,h,-1.2,0.9999,INK,3)+curve(V,h,1,4.6,INK,3);
+    s+=line(V,1,V.y0,1,V.y1,GREY,1.2,'3 5')+tx(V,1,-2.5,'x = 1',GREY);
+    s+=dot(V,0,h(0),'#477454')+dot(V,2,h(2),HOT)+dot(V,4,h(4),HOT);
+    s+=line(V,V.x0,5,V.x1,5,HOT,1.1,'5 5')+tx(V,4.5,6.6,'h = 5',HOT,'end');
+    s+=tx(V,2,h(2)+3.2,'h(2)',HOT)+tx(V,4,h(4)+3.2,'h(4)',HOT);
+    document.getElementById('lab2').innerHTML=wrap(V,s);
+    var e=1e-5,L=(h(1)-h(1-e))/e,R=(h(1+e)-h(1))/e;
+    document.getElementById('r2a').textContent=L.toFixed(3)+' , '+R.toFixed(3);
+    document.getElementById('r2b').textContent=h(2).toFixed(3);
+    document.getElementById('r2c').textContent=h(4).toFixed(3);
+    var hit=Math.abs(h(2)-5)<0.06,box=document.getElementById('v2box');
+    box.className='verdict '+(hit?'ok':'');
+    box.innerHTML=hit?'<strong>h(2) = 5 — 맞았다</strong><span>이때 h(4) = '+h(4).toFixed(1)+'</span>':'<strong>h(2) = '+h(2).toFixed(2)+'</strong><span>5 가 되도록 k 를 움직여 보세요 (h(2)=2k)</span>';
+  }
+  k2.addEventListener('input',lab2);
+  document.querySelectorAll('[data-k]').forEach(function(b){b.addEventListener('click',function(){k2.value=b.getAttribute('data-k');lab2();});});
+
+  function boot(){lab1();lab2();}
+  if(document.readyState!=='loading')boot();else document.addEventListener('DOMContentLoaded',boot);
+})();
 </script>
-<script src="jp-lab-dark.js"></script>
 </body>
 </html>

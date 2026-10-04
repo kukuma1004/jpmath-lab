@@ -1,340 +1,237 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>창문으로 근 세기 · 2022 수능 공통 22번 — JP Math Lab</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
-<link rel="stylesheet" href="jp-dark.css">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow,noarchive"/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<title>2022 수능 수학 22번 | 창문으로 근 세기</title>
+<link rel="stylesheet" href="../../vendor/katex/katex.min.css"/>
+<link rel="stylesheet" href="../../jp-dark.css?v=6"/>
+<link rel="stylesheet" href="../../jp-polish.css?v=11"/>
+<script defer src="../../vendor/katex/katex.min.js"></script>
+<script defer src="../../jp-lab-dark.js?v=2"></script>
+<script defer src="../../jp-polish.js?v=21"></script>
+<link rel="stylesheet" href="../../jp-nav-2.css?v=3"/>
+<script src="../../jp-nav-2.js?v=6" data-jp-section="수능·킬러 문제" defer></script>
 <style>
-.lab-head{max-width:1060px;margin:0 auto;padding:34px 22px 8px}
-.lab-head .badge{display:inline-block;font-size:12px;letter-spacing:.14em;color:#0b0b10;background:linear-gradient(135deg,#ffd76a,#ff9d5c);border-radius:999px;padding:6px 14px;font-weight:800;margin-bottom:12px}
-.lab-head h1{font-size:clamp(26px,4.6vw,40px);margin:0 0 8px}
-.lab-head .sub{color:#9aa7c7;margin:0}
-.wrap{max-width:1060px;margin:0 auto;padding:18px 22px 60px}
-.grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px}
-@media(max-width:900px){.grid{grid-template-columns:1fr}}
-.card{background:rgba(16,20,38,.72);border:1px solid rgba(124,92,255,.22);border-radius:18px;padding:22px;margin-bottom:18px;box-shadow:0 12px 40px rgba(0,0,0,.35)}
-.card h2{margin:0 0 4px;font-size:20px}
-.card h2 .step{display:inline-block;background:#7c5cff;color:#fff;font-size:12px;border-radius:8px;padding:3px 10px;margin-right:8px;vertical-align:middle}
-.card .kicker{color:#8b9bb8;font-size:13px;margin:0 0 12px}
-.card p{line-height:1.75;color:#dbe3f5}
-.card .math{overflow-x:auto;padding:6px 0}
-.askbox{border:1px dashed rgba(124,92,255,.5);border-radius:14px;padding:14px 16px;margin:14px 0;background:rgba(124,92,255,.06)}
-.askbox .q{font-weight:700;margin:0 0 10px;color:#fff}
-.askbox label{display:block;padding:8px 10px;border-radius:10px;margin:6px 0;background:rgba(255,255,255,.03);cursor:pointer;border:1px solid transparent}
-.askbox label:hover{border-color:rgba(124,92,255,.4)}
-.askbox input{margin-right:8px}
-.askbox .fb{margin-top:10px;font-weight:700;display:none}
-.askbox .fb.ok{display:block;color:#7dffb0}
-.askbox .fb.no{display:block;color:#ff8f8f}
-.hint{margin:12px 0}
-.hint summary{cursor:pointer;color:#ffd76a;font-weight:700}
-.hint .hint-body{margin-top:8px;color:#c9d4ee;line-height:1.7}
-.answer{margin:12px 0;border:1px solid rgba(125,255,176,.35);border-radius:12px;padding:10px 14px;background:rgba(125,255,176,.05)}
-.answer summary{cursor:pointer;color:#7dffb0;font-weight:700}
-.answer .answer-body{margin-top:8px;color:#dbe3f5;line-height:1.75}
-.problem-img{width:100%;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:#fff}
-.takeaways li{margin:8px 0;line-height:1.7;color:#dbe3f5}
-.side .card h3{margin:0 0 10px;font-size:16px;color:#ffd76a}
-.side .card p,.side .card li{font-size:14px;line-height:1.7;color:#c9d4ee}
-.side .card ul{padding-left:18px;margin:0}
-.note{font-size:13px;color:#8b9bb8}
-.lab-figure{background:#0d1122;border:1px solid rgba(124,92,255,.25);border-radius:14px;padding:14px;margin:14px 0}
-.lab-figure svg{width:100%;height:auto;display:block}
-.lab-ctl{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-top:10px}
-.lab-ctl .ctl{flex:1 1 200px}
-.lab-ctl label{font-size:13px;color:#9aa7c7;display:block;margin-bottom:4px}
-.lab-ctl input[type=range]{width:100%}
-.lab-ctl .val{color:#ffd76a;font-weight:800}
-.gnum{font-size:15px;color:#9aa7c7}
-.gnum b{font-size:34px;color:#7dffb0;margin:0 6px}
-.btn{display:inline-block;background:linear-gradient(135deg,#7c5cff,#4a2fd6);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-weight:800;cursor:pointer;font-size:14px}
-.btn:hover{filter:brightness(1.12)}
-.checkout{margin-top:10px;font-size:14px;line-height:1.8;color:#dbe3f5}
-.checkout .bad{color:#ff8f8f;font-weight:800}
-.checkout .good{color:#7dffb0;font-weight:800}
-.memo{width:100%;min-height:120px;background:#0d1122;border:1px solid rgba(124,92,255,.25);border-radius:12px;color:#dbe3f5;padding:12px;font-size:14px;line-height:1.7}
-.final{background:linear-gradient(135deg,rgba(124,92,255,.16),rgba(255,157,92,.10));border:1px solid rgba(255,215,106,.4)}
-.final .ans{font-size:15px;color:#9aa7c7}
-.final .ans b{font-size:40px;color:#ffd76a;margin:0 8px}
-.tag{display:inline-block;font-size:11px;color:#0b0b10;background:#7dffb0;border-radius:999px;padding:3px 10px;font-weight:800;margin-right:6px}
-</style>
+.cnt-lab{margin:22px 0;border:1px solid rgba(47,102,112,.2);border-radius:24px;overflow:hidden;background:#fff}.cnt-lab-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:17px 20px;border-bottom:1px solid rgba(58,49,37,.12)}.cnt-lab-head h4{margin:0;font-size:18px}.cnt-lab-head span{color:#2f6670;font:700 10px 'IBM Plex Mono',monospace;letter-spacing:.08em}.cnt-lab-body{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(260px,.72fr)}.cnt-stage{display:grid;gap:8px;align-content:center;padding:16px;background:linear-gradient(145deg,#fbfaf6,#f4efe4)}.cnt-stage svg{display:block;width:100%;height:auto}.cnt-panel{padding:20px;border-left:1px solid rgba(58,49,37,.12)}.cnt-control{margin-bottom:14px}.cnt-control label{display:flex;justify-content:space-between;gap:12px;margin-bottom:6px;color:#5f574b;font-size:12px}.cnt-control label b{color:#a95232;font-family:'IBM Plex Mono',monospace}.cnt-control input{width:100%;accent-color:#a95232}.snap{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 12px}.snap button{padding:5px 9px;border:1px solid rgba(58,49,37,.2);border-radius:999px;background:#fff;font:700 11px 'IBM Plex Mono',monospace;color:#5f574b;cursor:pointer}.snap button:hover{border-color:#a95232;color:#a95232}.cnt-row{display:flex;justify-content:space-between;gap:12px;margin-top:8px;padding:9px 11px;border-radius:11px;background:#f6f2e9;font-size:12px}.cnt-row b{color:#2f6670;font-family:'IBM Plex Mono',monospace;text-align:right}.cnt-row.hot b{color:#a95232}.verdict{display:grid;place-items:center;min-height:74px;margin-top:12px;padding:10px;border-radius:15px;color:#fff;background:#8a3d3d;text-align:center}.verdict strong{display:block;font:700 19px 'Pretendard',sans-serif}.verdict span{font-size:11px;color:rgba(255,255,255,.8)}.verdict.ok{background:#477454;box-shadow:0 0 0 4px rgba(71,116,84,.12)}.verdict.mid{background:#6c6357}.cnt-hint{margin:10px 0 0;color:#776e61;font-size:11.5px;line-height:1.6}
+.prob .eqrow{overflow-x:auto}.choice{min-height:48px}.choice.chosen{border-color:#2f6670!important;background:#eef6f5!important;box-shadow:0 0 0 3px rgba(47,102,112,.1)}
+.gtable{width:100%;border-collapse:collapse;margin-top:14px;font-size:13px}.gtable th,.gtable td{padding:8px 6px;border-bottom:1px solid rgba(58,49,37,.12);text-align:center}.gtable td.hot{color:#a95232;font-weight:800}.gtable tr.key td{background:#fff3e8}
+.mini-answer{font-size:clamp(46px,8vw,84px);font-weight:800;color:#a95232;text-align:center;letter-spacing:-.06em}.reveal-note{margin-top:12px;color:#6b6256;font-size:13px;text-align:center}
+.bogi{margin:18px 0;padding:18px 20px;border:1.5px solid rgba(58,49,37,.3);border-radius:16px;background:#fdfcf8}.bogi h5{margin:0 0 12px;color:#2f6670;font:700 12px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-align:center}.bogi p{margin:9px 0;padding-left:22px;text-indent:-22px}.bogi p b{color:#a95232}
+@media(max-width:800px){.cnt-lab-body{grid-template-columns:1fr}.cnt-panel{border-top:1px solid rgba(58,49,37,.12);border-left:0}.cnt-stage{padding:8px}}
+@media(max-width:650px){.cnt-row{flex-direction:column;align-items:flex-start}.cnt-row b{text-align:left}.gtable{font-size:11.5px}}
+.cond{margin:16px 0;padding:16px 18px;border:1.5px solid rgba(58,49,37,.25);border-radius:15px;background:#fdfcf8}.cond p{margin:8px 0;padding-left:26px;text-indent:-26px}.ansrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:16px 0}.ansrow input{width:150px;padding:11px 14px;border:1.5px solid rgba(58,49,37,.28);border-radius:12px;font:700 18px IBM Plex Mono,monospace;background:#fff}.ansrow input:focus{outline:none;border-color:#2f6670;box-shadow:0 0 0 3px rgba(47,102,112,.12)}.ansrow .res{font-weight:700;font-size:14px}.ansrow .res.ok{color:#477454}.ansrow .res.no{color:#a95232}.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:14px 0}.opts span{padding:8px 10px;border:1px solid rgba(58,49,37,.14);border-radius:11px;background:#fdfcf8;font-size:15px}</style>
 </head>
-<body>
-<header class="lab-head">
-  <span class="badge">수학Ⅱ · 미분</span>
-  <h1>창문으로 근 세기</h1>
-  <p class="sub">2022학년도 수능 공통 22번 · 단답형 4점 · 정답 9</p>
+<body class="tpl-dark is-page">
+
+<header>
+  <div class="hbar">
+    <h1>창문으로 근 세기</h1>
+    <span class="src">2022학년도 수능 수학 <b>22번</b> · 4점</span>
+    <a class="back" href="../">← 수능 문제</a>
+  </div>
+  <nav id="nav"></nav>
+  <div class="pbar"><span id="pfill"></span></div>
 </header>
 
-<div class="wrap">
-<div class="grid">
-<div class="col-main">
+<main>
 
-  <section class="card">
-    <h2>원문제</h2>
-    <p class="kicker">아래가 실제 수능 문제지다. 조건을 있는 그대로 읽어보자.</p>
-    <img class="problem-img" src="문제이미지/assets/2022수능22번.png" alt="2022학년도 수능 공통 22번 원문제">
-    <p class="note">* 원문제: 최고차항의 계수가 \(\frac12\)인 삼차함수 \(f(x)\)와 실수 \(t\)에 대하여 방정식 \(f'(x)=0\)이 닫힌구간 \([t,t+2]\)에서 갖는 실근의 개수를 \(g(t)\)라 할 때, 함수 \(g(t)\)는 다음 조건을 만족시킨다. (가) 모든 실수 \(a\)에 대하여 \(\displaystyle\lim_{t\to a^+}g(t)+\lim_{t\to a^-}g(t)\le 2\)이다. (나) \(g(f(1))=g(f(4))=2,\ g(f(0))=1\). \(f(5)\)의 값을 구하시오. [4점]</p>
-  </section>
+<!-- ══════════ STEP 1 ══════════ -->
+<section class="ch on" data-ch="0">
+  <p class="eyebrow">STEP 01 · 문제 만나기</p>
+  <h2 class="ct"><span class="am">창문</span>을 밀며 근을 센다</h2>
+<p class="lede"><span class="m" data-k="g(t)"></span> 는 이름이 낯설 뿐, 하는 일은 하나입니다. <b>길이 2짜리 창문</b>을 수직선 위에서 밀면서 <span class="m" data-k="f'(x)=0"></span> 의 근이 창문 안에 몇 개 들어왔는지 세는 것.</p><div class="prob"><div class="prob-head"><span class="yr">2022 수능</span><h4>수학 22번</h4><span class="pts">4점</span></div><div class="prob-body"><div class="qtext"><p>최고차항의 계수가 <span class="m" data-k="\tfrac12"></span> 인 삼차함수 <span class="m" data-k="f(x)"></span> 와 실수 <span class="m" data-k="t"></span> 에 대하여 방정식 <span class="m" data-k="f'(x)=0"></span> 이 닫힌구간 <span class="m" data-k="[t,\ t+2]"></span> 에서 갖는 실근의 개수를 <span class="m" data-k="g(t)"></span> 라 할 때, 함수 <span class="m" data-k="g(t)"></span> 는 다음 조건을 만족시킨다.</p></div><div class="cond">
+<p>(가) 모든 실수 <span class="m" data-k="a"></span> 에 대하여 <span class="m" data-k="\displaystyle\lim_{t\to a+}g(t)+\lim_{t\to a-}g(t)\le 2"></span> 이다.</p>
+<p>(나) <span class="m" data-k="g(f(1))=g(f(4))=2,\quad g(f(0))=1"></span></p></div><div class="qtext"><p><span class="m" data-k="f(5)"></span> 의 값을 구하시오.</p></div><div class="ansrow"><input id="ansIn" type="text" inputmode="numeric" autocomplete="off" placeholder="답" aria-label="답"><button class="b" id="ansBtn">확인</button><span class="res" id="ansOut" role="status"></span></div></div></div><div class="prob"><div class="prob-head"><span class="yr">첫 질문</span><h4><span class="m" data-k="g(t)"></span> 가 가질 수 있는 값은?</h4></div><div class="prob-body"><div class="qtext"><span class="m" data-k="f(x)"></span> 가 삼차함수이면 <span class="m" data-k="f'(x)"></span> 는 몇 차 함수이고, 그 방정식의 실근은 최대 몇 개일까요?</div><div class="choices" data-q="vals" data-ans="1"><button class="choice" data-i="0"><span class="m" data-k="0,\ 1,\ 2,\ 3"></span></button><button class="choice" data-i="1"><span class="m" data-k="0,\ 1,\ 2"></span></button><button class="choice" data-i="2"><span class="m" data-k="0,\ 1"></span></button></div><div class="sol-btns"><button class="b gh" data-sol="valsSol">직관으로 보기</button></div><div class="sol intu" id="valsSol"><h5>직관</h5><div class="step"><span class="m" data-k="f'(x)"></span> 는 이차식(위로 볼록하지 않고 <b>아래로 볼록</b> — 최고차항 <span class="m" data-k="\tfrac32"></span> 가 양수)이라 실근은 최대 <span class="m" data-k="2"></span> 개.</div><div class="step">그러니 창문이 담을 수 있는 근은 <span class="m" data-k="0"></span>, <span class="m" data-k="1"></span>, <span class="m" data-k="2"></span> 개뿐입니다. 두 근을 <span class="m" data-k="\alpha\le\beta"></span> 라 부르기로 합시다.</div></div></div></div>
+  <div class="chnav"><span class="sp"></span><button class="b" data-go="next">창문 밀어 보기 →</button></div>
+</section>
 
-  <section class="card">
-    <h2>이 문제의 한 줄</h2>
-    <p>길이 \(2\)짜리 창문 \([t,t+2]\)를 좌우로 밀면서, 이차방정식 \(f'(x)=0\)의 근이 창문 안에 몇 개 들어오는지 센다. 조건 (가)는 <b>"창문이 근 두 개를 한꺼번에 담는 순간이, 구간이 아니라 점 하나로만 일어나야 한다"</b>는 뜻이다. 이 한 줄을 잡으면 문제는 그래프 놀이가 된다.</p>
-  </section>
+<!-- ══════════ STEP 2 ══════════ -->
+<section class="ch" data-ch="1">
+  <p class="eyebrow">STEP 02 · 창문 밀기</p>
+  <h2 class="ct">창문이 근을 <span class="am">삼켰다 뱉을 때</span>마다 g가 뛴다</h2>
+<p class="lede">두 근 <span class="m" data-k="\alpha=0"></span> 과 <span class="m" data-k="\beta=d"></span> 를 놓고 창문 <span class="m" data-k="[t,t+2]"></span> 를 움직여 봅니다. 아래 계단이 <span class="m" data-k="g(t)"></span> 입니다. <b>붉은 점</b>은 조건 (가)를 어기는 자리예요.</p><div class="cnt-lab"><div class="cnt-lab-head"><h4>창문 밀어 보기</h4><span>MOVE · COUNT</span></div><div class="cnt-lab-body"><div class="cnt-stage"><div id="lab1"></div></div><div class="cnt-panel"><div class="cnt-control"><label><span>두 근 사이의 거리 d</span><b id="d1v">1.50</b></label><input id="d1" type="range" min="0.5" max="4" step="0.25" value="1.5"></div><div class="cnt-control"><label><span>창문의 왼쪽 끝 t</span><b id="t1v">0.50</b></label><input id="t1" type="range" min="-3" max="4.5" step="0.05" value="0.5"></div><div class="snap"><button data-d="1.5">d = 1.5</button><button data-d="2">d = 2</button><button data-d="3">d = 3</button></div><div class="cnt-row"><span>창문 안의 근 g(t)</span><b id="r1a">—</b></div><div class="cnt-row hot"><span>(가)를 어기는 점의 수</span><b id="r1b">—</b></div><div class="cnt-row"><span>g = 2 인 t 의 모임</span><b id="r1c">—</b></div><div class="verdict" id="v1box"><strong>—</strong><span>—</span></div><p class="cnt-hint">윗줄은 수직선 위의 창문, 아랫줄은 g(t)의 계단입니다. d 를 2 로 맞춰 보세요.</p></div></div></div><div class="prob"><div class="prob-head"><span class="yr">관찰</span><h4>붉은 점이 사라지는 d는?</h4></div><div class="prob-body"><div class="choices" data-q="dq" data-ans="1"><button class="choice" data-i="0"><span class="m" data-k="d\lt 2"></span></button><button class="choice" data-i="1"><span class="m" data-k="d\ge 2"></span></button><button class="choice" data-i="2">언제나 어긴다</button></div><div class="sol-btns"><button class="b gh" data-sol="dqSol">직관으로 보기</button></div><div class="sol intu" id="dqSol"><h5>직관</h5><div class="step"><span class="m" data-k="d\lt 2"></span> 이면 창문이 근 둘을 <b>한꺼번에</b> 담는 구간(<span class="m" data-k="\beta-2\le t\le\alpha"></span>)이 생깁니다. 그 구간의 오른쪽 끝 <span class="m" data-k="t=\alpha"></span> 에서는 왼쪽 극한 2, 오른쪽 극한 1 — 합이 3. (왼쪽 끝 <span class="m" data-k="t=\beta-2"></span> 에서도 거꾸로 1 + 2 = 3 입니다.)</div><div class="step"><span class="m" data-k="d\ge 2"></span> 이면 근 둘이 창문에 같이 들어올 일이 없거나 한 점에서만 일어나 합이 2를 넘지 않습니다.</div></div></div></div>
+  <div class="chnav"><button class="b mute" data-go="prev">← 이전</button><span class="sp"></span><button class="b" data-go="next">(가)와 (나)를 읽기 →</button></div>
+</section>
 
-  <section class="card">
-    <h2><span class="step">STEP 1</span>\(g(t)\)는 '창문 안에 든 근의 개수'</h2>
-    <p class="kicker">기호를 그림으로 번역하는 것부터.</p>
-    <p>\(f(x)\)는 삼차함수(최고차항 \(\frac12\))이므로, \(f'(x)\)는 <b>위로 볼록한 이차함수</b>다. 방정식 \(f'(x)=0\)의 실근을 \(\alpha \le \beta\)라 하자. (실근이 없을 수도, 중근 하나일 수도 있다.)</p>
-    <p>그러면 \(g(t)\)는 이렇게 읽힌다:</p>
-    <div class="math">\[g(t)=\text{닫힌구간 }[t,t+2]\text{ 안에 들어온 근 }(\alpha,\beta)\text{의 개수}\]</div>
-    <p>\(t\)가 움직이면 길이 \(2\)인 창문이 수직선 위를 미끄러지고, \(g(t)\)는 그 창문이 <b>지금</b> 담고 있는 근의 개수를 센다.</p>
-    <div class="askbox" data-ask="gvals">
-      <p class="q">Q1. \(g(t)\)가 가질 수 있는 값은?</p>
-      <label><input type="radio" name="gvals" value="0"> ① \(0, 1, 2, 3\)</label>
-      <label><input type="radio" name="gvals" value="1"> ② \(0, 1, 2\)</label>
-      <label><input type="radio" name="gvals" value="2"> ③ \(0, 1\)</label>
-      <p class="fb" data-ok="1">정답! \(f'(x)=0\)은 이차방정식이라 근이 최대 2개다. \(g(t)\)는 0, 1, 2 중 하나다.</p>
-      <p class="fb" data-ok="0">다시 생각해보자. \(f'(x)=0\)은 몇 차 방정식인가? 근이 최대 몇 개인가?</p>
-    </div>
-    <details class="hint"><summary>힌트</summary><div class="hint-body">\(f(x)\)가 삼차함수이면 \(f'(x)\)는 이차함수다. 이차방정식의 (서로 다른) 실근은 최대 2개.</div></details>
-  </section>
+<!-- ══════════ STEP 3 ══════════ -->
+<section class="ch" data-ch="2">
+  <p class="eyebrow">STEP 03 · 조건 읽기</p>
+  <h2 class="ct">간격은 <span class="am">정확히 2</span>, 그리고 g=2는 <span class="am">한 점</span>에서만</h2>
+<p class="lede">(가)는 간격이 <span class="m" data-k="\ge 2"></span> 라고 말하고, (나)는 <span class="m" data-k="g=2"></span> 가 실제로 일어나야 한다고 말합니다. 두 말을 합치면 간격이 정확히 정해집니다.</p><div class="prob"><div class="prob-head"><span class="yr">(가)</span><h4>간격에 대해 무엇을 알려 주나?</h4></div><div class="prob-body"><div class="choices" data-q="gap1" data-ans="0"><button class="choice" data-i="0"><span class="m" data-k="\beta-\alpha\ge 2"></span></button><button class="choice" data-i="1"><span class="m" data-k="\beta-\alpha\le 2"></span></button><button class="choice" data-i="2"><span class="m" data-k="\beta-\alpha=1"></span></button></div><div class="sol-btns"><button class="b gh" data-sol="gap1Sol">논리로 쓰기</button></div><div class="sol calc" id="gap1Sol"><h5>논리</h5><div class="step">간격이 <span class="m" data-k="2"></span> 보다 작으면 <span class="m" data-k="g=2"></span> 인 <span class="m" data-k="t"></span> 가 구간 <span class="m" data-k="[\beta-2,\ \alpha]"></span> 을 이룹니다. 그 오른쪽 끝 <span class="m" data-k="t=\alpha"></span> 에서 <span class="m" data-k="2+1=3\gt 2"></span> — (가)에 어긋납니다.</div><div class="step">그러므로 <span class="m am" data-k="\beta-\alpha\ge 2"></span> (근이 둘일 때).</div></div></div></div><div class="prob"><div class="prob-head"><span class="yr">(나)</span><h4><span class="m" data-k="g(f(1))=2"></span> 는 무엇을 말하나?</h4></div><div class="prob-body"><div class="choices" data-q="gap2" data-ans="2"><button class="choice" data-i="0"><span class="m" data-k="f(1)=0"></span></button><button class="choice" data-i="1">근이 하나뿐이다</button><button class="choice" data-i="2">간격이 2 이하이다 — 창문이 근 둘을 실제로 담을 수 있다</button></div><div class="sol-btns"><button class="b gh" data-sol="gap2Sol">논리로 쓰기</button></div><div class="sol calc" id="gap2Sol"><h5>논리</h5><div class="step"><span class="m" data-k="g=2"></span> 가 되려면 창문 안에 <span class="m" data-k="\alpha"></span> 와 <span class="m" data-k="\beta"></span> 가 둘 다 들어와야 하니 <span class="m" data-k="\beta-\alpha\le 2"></span>.</div><div class="step">(가)의 <span class="m" data-k="\ge 2"></span> 와 합치면 <span class="m md am" data-k="\beta-\alpha=2"></span></div><div class="step">이때 창문 <span class="m" data-k="[t,t+2]"></span> 가 두 근을 모두 담는 것은 <b><span class="m" data-k="t=\alpha"></span> 한 점뿐</b>입니다 (<span class="m" data-k="t\le\alpha"></span> 이고 <span class="m" data-k="t+2\ge\alpha+2"></span>). 즉 <span class="m am" data-k="g(t)=2\iff t=\alpha"></span></div><div class="step">그러니 <span class="m" data-k="g(f(1))=2"></span> 와 <span class="m" data-k="g(f(4))=2"></span> 는 <b><span class="m am" data-k="f(1)=f(4)=\alpha"></span></b> 를 뜻합니다.</div></div></div></div>
+  <div class="chnav"><button class="b mute" data-go="prev">← 이전</button><span class="sp"></span><button class="b" data-go="next">α 를 정하러 →</button></div>
+</section>
 
-  <section class="card">
-    <h2><span class="step">실험실</span>창문 밀어보기</h2>
-    <p class="kicker">슬라이더를 직접 움직여보자. \(t\)는 창문의 왼쪽 끝, \(d\)는 두 근 사이의 거리다.</p>
-    <div class="lab-figure" data-mylab="window">
-      <svg viewBox="0 0 600 300" role="img" aria-label="창문과 근 실험"></svg>
-      <div class="lab-ctl">
-        <div class="ctl"><label>창문 위치 \(t\) : <span class="val" data-tval>0.0</span></label><input type="range" min="-2" max="5" step="0.1" value="0" data-t></div>
-        <div class="ctl"><label>두 근 사이 거리 \(d\) : <span class="val" data-dval>2.0</span></label><input type="range" min="0.5" max="3" step="0.1" value="2" data-d></div>
-      </div>
-      <p class="gnum">창문 \([t,t+2]\) 안의 근의 개수 \(g(t) =\) <b data-g>0</b></p>
-      <p><button class="btn" data-check>(가) 검사하기</button></p>
-      <div class="checkout" data-checkout><span class="note">(가) 검사는 "모든 점에서 좌극한+우극한 ≤ 2"가 성립하는지, \(g(t)\)가 바뀌는 지점들에서 확인한다.</span></div>
-    </div>
-    <p><span class="tag">관찰 1</span> \(t\)를 천천히 움직여보자. 창문이 근을 하나씩 삼키고 뱉을 때마다 \(g(t)\)가 \(0\to1\to2\to1\to0\)으로 바뀐다.</p>
-    <p><span class="tag">관찰 2</span> \(d\)를 \(1.5\)로 줄이고 <b>(가) 검사하기</b>를 눌러보자. 어디에서 위반이 뜨는가? 그 지점이 바로 다음 STEP의 핵심이다.</p>
-  </section>
+<!-- ══════════ STEP 4 ══════════ -->
+<section class="ch" data-ch="3">
+  <p class="eyebrow">STEP 04 · 후보를 세우고 하나로</p>
+  <h2 class="ct">후보는 <span class="am">둘</span>, 마지막 조건이 하나를 <span class="am">죽인다</span></h2>
+<p class="lede">이제야 식을 씁니다. <span class="m" data-k="f'(x)=\tfrac32(x-\alpha)(x-\alpha-2)"></span> 이므로 <span class="m" data-k="f"></span> 는 <span class="m" data-k="\alpha"></span> 하나로 정해지고, <span class="m" data-k="f(4)=f(1)"></span> 이 <span class="m" data-k="\alpha"></span> 의 이차방정식을 줍니다.</p><div class="sol-btns"><button class="b gh" data-sol="alphaCalc">계산 보기</button></div><div class="sol calc" id="alphaCalc"><h5>계산</h5><div class="step"><span class="m" data-k="f(x)=\tfrac12x^3+Ax^2+Bx+C"></span> 에서 근과 계수의 관계로 <span class="m" data-k="A=-\tfrac{3(\alpha+1)}{2},\ B=\tfrac32\alpha(\alpha+2)"></span>.</div><div class="step"><span class="m" data-k="f(4)-f(1)=0"></span>: <span class="m md" data-k="\tfrac{63}{2}+15A+3B=0\;\Longrightarrow\;\alpha^{2}-3\alpha+2=0"></span> 곧 <span class="m am" data-k="\alpha=1"></span> 또는 <span class="m am" data-k="\alpha=2"></span>.</div><div class="step"><span class="m" data-k="f(1)=\alpha"></span> 로 상수항 <span class="m" data-k="C"></span> 를 정합니다. <span class="m" data-k="\alpha=1"></span>: <span class="m" data-k="C=-1"></span>, <span class="m" data-k="\alpha=2"></span>: <span class="m" data-k="C=-6"></span>.</div></div><div class="cnt-lab"><div class="cnt-lab-head"><h4>후보 둘을 비교하기</h4><span>SWITCH · CHECK</span></div><div class="cnt-lab-body"><div class="cnt-stage"><div id="lab2"></div></div><div class="cnt-panel"><div class="snap"><button data-al="1">α = 1</button><button data-al="2">α = 2</button></div><div class="cnt-row"><span>f′ 의 근 (α, α+2)</span><b id="r2a">—</b></div><div class="cnt-row"><span>f(1), f(4)</span><b id="r2b">—</b></div><div class="cnt-row"><span>f(0) = C</span><b id="r2c">—</b></div><div class="cnt-row hot"><span>창문 [f(0), f(0)+2] 안의 근 = g(f(0))</span><b id="r2d">—</b></div><div class="verdict" id="v2box"><strong>—</strong><span>—</span></div><p class="cnt-hint">푸른 창문은 y 값 f(0) 에서 시작하는 길이 2의 구간입니다. f′ 의 근(초록 점)이 몇 개 들어오나 보세요.</p></div></div></div><div class="prob"><div class="prob-head"><span class="yr">판단</span><h4><span class="m" data-k="\alpha=2"></span> 는 왜 탈락하나?</h4></div><div class="prob-body"><div class="choices" data-q="dead" data-ans="1"><button class="choice" data-i="0"><span class="m" data-k="f(4)=f(1)"></span> 을 못 맞춰서</button><button class="choice" data-i="1"><span class="m" data-k="g(f(0))=0"></span> 이라 (나)의 마지막 조각 <span class="m" data-k="g(f(0))=1"></span> 이 깨져서</button><button class="choice" data-i="2">(가)를 못 맞춰서</button></div><div class="sol-btns"><button class="b gh" data-sol="deadSol">직관으로 보기</button></div><div class="sol intu" id="deadSol"><h5>직관</h5><div class="step"><span class="m" data-k="\alpha=2"></span> 이면 <span class="m" data-k="f(0)=-6"></span>. 창문 <span class="m" data-k="[-6,-4]"></span> 에는 <span class="m" data-k="f'"></span> 의 근 <span class="m" data-k="2,4"></span> 가 하나도 없어 <span class="m" data-k="g(-6)=0"></span>.</div><div class="step"><span class="m" data-k="\alpha=1"></span> 이면 <span class="m" data-k="f(0)=-1"></span>. 창문 <span class="m" data-k="[-1,1]"></span> 에 근 <span class="m" data-k="1"></span> 이 있어 <span class="m" data-k="g(-1)=1"></span> ✓.</div></div></div></div>
+  <div class="chnav"><button class="b mute" data-go="prev">← 이전</button><span class="sp"></span><button class="b" data-go="next">f(5) 구하기 →</button></div>
+</section>
 
-  <section class="card">
-    <h2><span class="step">STEP 2</span>(가): "\(2\)를 세는 순간"이 구간이면 안 된다</h2>
-    <p class="kicker">조건 (가)는 점프 지점에서의 좌극한·우극한 이야기다.</p>
-    <p>\(g(t)=2\)가 되려면 창문 \([t,t+2]\) 안에 근 \(\alpha,\beta\)가 <b>둘 다</b> 들어와야 한다. 만약 두 근 사이 거리 \(\beta-\alpha\)가 \(2\)보다 작으면 어떻게 될까?</p>
-    <p>창문 길이가 \(2\)이므로, \(t\)가 구간 \([\beta-2,\ \alpha]\)에 있는 동안은 두 근이 항상 함께 들어온다. 즉 <b>\(g(t)=2\)인 \(t\)가 구간으로 존재</b>한다.</p>
-    <p>이 구간의 오른쪽 끝 \(t=\alpha\)를 보자.</p>
-    <ul>
-      <li>왼쪽에서 오면(\(t\to\alpha^-\)): 창문 안에 근 2개 → 좌극한 \(=2\)</li>
-      <li>오른쪽에서 오면(\(t\to\alpha^+\)): \(\alpha\)는 창문 밖으로 나가고 \(\beta\)만 남음 → 우극한 \(=1\)</li>
-    </ul>
-    <p>합이 \(2+1=3>2\). <b>조건 (가) 위반!</b> 따라서 \(\beta-\alpha<2\)는 불가능하다.</p>
-    <div class="math">\[\beta-\alpha \ge 2 \quad\text{(두 실근이 존재한다면)}\]</div>
-    <p class="note">* 근이 1개 이하(중근 하나 또는 실근 없음)라면 \(g(t)\le 1\)이라 (가)는 자동으로 만족된다. 하지만 뒤에서 보듯 (나)가 \(g=2\)를 요구하므로, 결국 두 근이 정확히 거리 \(2\)여야 한다.</p>
-    <div class="askbox" data-ask="gajump">
-      <p class="q">Q2. \(\beta-\alpha<2\)일 때 (가)를 위반하는 지점은?</p>
-      <label><input type="radio" name="gajump" value="0"> ① \(t=\beta-2\) (\(g=2\)인 구간의 왼쪽 끝)</label>
-      <label><input type="radio" name="gajump" value="1"> ② \(t=\alpha\) (\(g=2\)인 구간의 오른쪽 끝)</label>
-      <label><input type="radio" name="gajump" value="2"> ③ \(t=\beta\)</label>
-      <p class="fb" data-ok="1">정답! \(t=\alpha\)에서 좌극한 2, 우극한 1 → 합 3. 실험실에서 \(d=1.5\)로 검사하면 바로 확인된다.</p>
-      <p class="fb" data-ok="0">실험실에서 \(d\)를 1.5로 하고 (가) 검사를 눌러보자. 어느 점에서 합이 3이 뜨는가?</p>
-    </div>
-  </section>
-
-  <section class="card">
-    <h2><span class="step">STEP 3</span>\(g(t)=2\)는 점 하나에서만 일어난다</h2>
-    <p class="kicker">(나)가 요구하는 "\(2\)"의 정체를 밝힌다.</p>
-    <p>(나)는 \(g(f(1))=2\)를 요구한다. 그런데 \(\beta-\alpha>2\)이면 창문 길이 \(2\) 안에 두 근이 절대 함께 못 들어오므로 \(g(t)\le 1\)이다. 모순. 따라서:</p>
-    <div class="math">\[\beta-\alpha = 2 \quad\text{(정확히!)}\]</div>
-    <p>두 근이 정확히 \(2\)만큼 떨어져 있으면, 창문 \([t,t+2]\)가 두 근을 동시에 담는 경우는 <b>\(t=\alpha\) 하나뿐</b>이다. (\(t\le\alpha\)이고 \(\alpha+2\le t+2\)이려면 \(t=\alpha\).)</p>
-    <div class="math">\[g(t)=2 \iff t=\alpha\]</div>
-    <p>이제 (나)를 읽자: \(g(f(1))=2\)이므로 \(f(1)=\alpha\). 마찬가지로 \(g(f(4))=2\)이므로 \(f(4)=\alpha\).</p>
-    <div class="math">\[f(1)=f(4)=\alpha\]</div>
-    <div class="askbox" data-ask="talpha">
-      <p class="q">Q3. \(\beta-\alpha=2\)일 때 \(g(t)=2\)인 \(t\)는?</p>
-      <label><input type="radio" name="talpha" value="0"> ① \(t=\alpha\) 하나뿐</label>
-      <label><input type="radio" name="talpha" value="1"> ② \(t\in[\alpha-2,\alpha]\) 구간 전체</label>
-      <label><input type="radio" name="talpha" value="2"> ③ \(t=\alpha\)와 \(t=\beta\) 두 점</label>
-      <p class="fb" data-ok="1">정답! 창문이 두 근을 꽉 채워 담는 위치는 \(t=\alpha\) 하나뿐이다. 그래서 \(f(1)\)과 \(f(4)\)는 둘 다 \(\alpha\)와 같다.</p>
-      <p class="fb" data-ok="0">창문 \([t,t+2]\) 안에 \(\alpha\)와 \(\alpha+2\)가 둘 다 들어오려면? \(t\le\alpha\)이면서 \(t\ge\alpha\)이어야 한다.</p>
-    </div>
-  </section>
-
-  <section class="card">
-    <h2><span class="step">STEP 4</span>\(\alpha\) 후보 찾기 (유일한 계산 구간)</h2>
-    <p class="kicker">이제야 식을 전개한다. 그것도 이차방정식 하나.</p>
-    <p>\(f(x)=\frac12x^3+ax^2+bx+c\)라 두자. \(f'(x)=\frac32x^2+2ax+b\)의 두 근이 \(\alpha,\ \alpha+2\)이므로 근과 계수의 관계에서:</p>
-    <div class="math">\[\begin{aligned} \alpha+(\alpha+2)&=-\frac{2a}{3/2}=-\frac{4a}{3} \\ \alpha(\alpha+2)&=\frac{b}{3/2}=\frac{2b}{3} \end{aligned}\]</div>
-    <p>한편 \(f(4)=f(1)\)에서:</p>
-    <div class="math">\[f(4)-f(1)=\frac{63}{2}+15a+3b=0\]</div>
-    <p>위 두 식을 대입하면 \(\alpha\)에 대한 이차방정식 \(\alpha^2-3\alpha+2=0\)을 얻는다.</p>
-    <div class="math">\[\alpha=1\ \text{또는}\ \alpha=2\]</div>
-    <details class="hint"><summary>계산 과정 확인하기</summary><div class="hint-body">\(a=-\frac{3(\alpha+1)}{2},\ b=\frac{3\alpha(\alpha+2)}{2}\)를 \(5a+b=-\frac{21}{2}\)에 대입하면 \(\frac{3\alpha^2-9\alpha-15}{2}=-\frac{21}{2}\), 즉 \(3\alpha^2-9\alpha+6=0\). 양변을 3으로 나누면 \(\alpha^2-3\alpha+2=0=(\alpha-1)(\alpha-2)\).</div></details>
-  </section>
-
-  <section class="card">
-    <h2><span class="step">STEP 5</span>\(c\) 확정 — 가짜 후보 탈락</h2>
-    <p class="kicker">마지막 조건 \(g(f(0))=1\)이 진짜를 가려낸다.</p>
-    <p>\(f(1)=\alpha\)를 이용하자.</p>
-    <ul>
-      <li><b>\(\alpha=1\)</b>일 때: \(a=-3,\ b=\frac92\). \(f(1)=\frac12-3+\frac92+c=2+c=1\)이므로 \(c=-1\). \(f(0)=-1\)이고, 창문 \([-1,1]\) 안에 \(f'\)의 근 \(\{1,3\}\) 중 \(1\)만 들어오므로 \(g(-1)=1\) ✓</li>
-      <li><b>\(\alpha=2\)</b>일 때: \(a=-\frac92,\ b=12\). \(f(1)=\frac12-\frac92+12+c=8+c=2\)이므로 \(c=-6\). 그런데 \(g(-6)=0\ne 1\). <b>탈락!</b></li>
-    </ul>
-    <div class="askbox" data-ask="celim">
-      <p class="q">Q4. \(\alpha=2\)가 탈락하는 결정적 이유는?</p>
-      <label><input type="radio" name="celim" value="0"> ① \(f(4)=f(1)\)을 만족하지 못한다</label>
-      <label><input type="radio" name="celim" value="1"> ② \(g(f(0))=1\)을 만족하지 못한다 (\(g(-6)=0\))</label>
-      <label><input type="radio" name="celim" value="2"> ③ 조건 (가)를 만족하지 못한다</label>
-      <p class="fb" data-ok="1">정답! \(\alpha=2\)도 \(f(4)=f(1)\)은 만족하지만, \(c=-6\)이 되면 \(g(f(0))=g(-6)=0\)이라 (나)의 마지막 조각이 깨진다.</p>
-      <p class="fb" data-ok="0">\(\alpha=2\)일 때 \(c\)를 구해보고, \(g(c)\)가 정말 1인지 창문으로 확인해보자.</p>
-    </div>
-  </section>
-
-  <section class="card final">
-    <h2>마지막 계산</h2>
-    <p>\(f(x)=\frac12x^3-3x^2+\frac92x-1\)이 확정됐다. 구하는 것은 \(f(5)\):</p>
-    <div class="math">\[f(5)=\frac{125}{2}-75+\frac{45}{2}-1=85-76=9\]</div>
-    <p class="ans">정답 <b>9</b></p>
-  </section>
-
-  <section class="card">
-    <h2>takeaways</h2>
-    <ul class="takeaways">
-      <li><b>"개수를 세는 함수"</b>는 구간(창문)으로 번역하라. \(g(t)\)의 정의역이 \(t\)라는 것만 봐도 그래프가 그려진다.</li>
-      <li>극한 조건은 <b>점프 지점의 좌극한·우극한</b>을 보라는 신호다. "모든 \(a\)에 대하여"는 "예외 없이"라는 뜻.</li>
-      <li>\(g(t)=2\)인 \(t\)가 <b>유일</b>하다는 것이 \(f(1)\)과 \(f(4)\)를 한 점 \(\alpha\)로 묶는 열쇠다.</li>
-      <li>진짜 계산은 이차방정식 하나(\(\alpha^2-3\alpha+2=0\))와 상수 \(c\) 하나뿐. 나머지는 전부 구조 읽기다.</li>
-    </ul>
-  </section>
-
-</div>
-<aside class="col-side side">
-  <section class="card">
-    <h3>한눈에 보는 구조</h3>
-    <ul>
-      <li>\(f'\)의 근 \(\alpha\le\beta\), 창문 \([t,t+2]\)</li>
-      <li>(가) → \(\beta-\alpha=2\) (정확히)</li>
-      <li>\(g(t)=2\iff t=\alpha\)</li>
-      <li>(나) → \(f(1)=f(4)=\alpha\)</li>
-      <li>\(\alpha=1\) (후보 2는 탈락)</li>
-      <li>\(f(5)=9\)</li>
-    </ul>
-  </section>
-  <section class="card">
-    <h3>함정 체크</h3>
-    <ul>
-      <li>(가)는 "모든 \(t\)에서 \(g(t)\le 2\)"가 아니라 <b>좌극한+우극한</b>의 이야기다.</li>
-      <li>\(\beta-\alpha\ge 2\)에서 \(\ge\)를 \(=\)로 좁히는 건 (나)의 \(g=2\)다.</li>
-      <li>\(\alpha=2\) 후보를 끝까지 들고 가면 \(g(f(0))=1\)에서 걸러진다.</li>
-    </ul>
-  </section>
-  <section class="card">
-    <h3>용어 정리</h3>
-    <ul>
-      <li><b>실근의 개수</b>: 서로 다른 실수 근의 개수 (중근은 1개로 셈)</li>
-      <li><b>닫힌구간</b> \([t,t+2]\): 양 끝점을 포함</li>
-      <li><b>좌극한·우극한</b>: 점프 지점에서의 왼쪽/오른쪽 극한</li>
-    </ul>
-  </section>
-  <section class="card">
-    <h3>기록장</h3>
-    <textarea class="memo" placeholder="내가 발견한 구조를 한 줄로 적어보자."></textarea>
-  </section>
-</aside>
-</div>
-</div>
+<!-- ══════════ STEP 5 ══════════ -->
+<section class="ch" data-ch="4">
+  <p class="eyebrow">STEP 05 · 회수와 검산</p>
+  <h2 class="ct">구조가 끝난 뒤에만 <span class="am">계산</span>한다</h2>
+<table class="gtable"><tr><th>단계</th><th>얻은 것</th></tr><tr><td>창문</td><td><span class="m" data-k="g(t)"></span> 는 <span class="m" data-k="[t,t+2]"></span> 안의 근의 수</td></tr><tr><td>(가)와 (나)</td><td class="hot"><span class="m" data-k="\beta-\alpha=2"></span>, <span class="m" data-k="g=2\iff t=\alpha"></span></td></tr><tr><td>(나)</td><td><span class="m" data-k="f(1)=f(4)=\alpha"></span> → <span class="m" data-k="\alpha=1\ \text{또는}\ 2"></span></td></tr><tr class="key"><td>마지막 조각</td><td class="hot"><span class="m" data-k="g(f(0))=1"></span> 이 <span class="m" data-k="\alpha=1"></span> 만 남긴다</td></tr></table><div class="prob"><div class="prob-head"><span class="yr">마지막</span><h4><span class="m" data-k="f(5)"></span> 구하기</h4></div><div class="prob-body"><div class="sol-btns"><button class="b gh" data-sol="finalSol">정답 확인</button></div><div class="sol intu" id="finalSol"><h5>마무리</h5><div class="step"><span class="m" data-k="f(x)=\tfrac12x^{3}-3x^{2}+\tfrac92x-1"></span></div><div class="step"><span class="m" data-k="f(5)=\tfrac{125}{2}-75+\tfrac{45}{2}-1"></span></div><p class="mini-answer">9</p><p class="reveal-note">검산 · <span class="m" data-k="f(1)=1,\ f(4)=1,\ f(0)=-1"></span> 이고 <span class="m" data-k="f'"></span> 의 근은 <span class="m" data-k="1,3"></span></p></div></div></div><div class="card quote pad"><h3>오늘 쓴 생각의 뼈대</h3><ul class="bul"><li><b class="am">세는 함수는 창문으로</b> — <span class="m" data-k="g(t)"></span> 는 구간이 미끄러지며 담는 개수.</li><li><b class="am">극한의 합은 점프를 본다</b> — (가)는 g가 뛰는 점에서 왼쪽·오른쪽을 더한 값.</li><li><b class="am">한 점에서만 g=2</b> — 그래서 <span class="m" data-k="f(1)"></span> 과 <span class="m" data-k="f(4)"></span> 가 같은 값 <span class="m" data-k="\alpha"></span> 로 묶인다.</li><li><b class="am">계산은 맨 끝에</b> — 이차방정식 하나와 상수항 하나.</li></ul></div>
+  <div class="chnav"><button class="b mute" data-go="prev">← 이전</button><span class="sp"></span><button class="b gh" data-go="top">처음으로</button></div>
+</section>
+</main>
 
 <script>
-document.addEventListener('DOMContentLoaded', function(){
-  if (window.renderMathInElement) renderMathInElement(document.body, {delimiters:[{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}]});
-  document.querySelectorAll('.askbox').forEach(function(box){
-    var name = box.getAttribute('data-ask');
-    box.querySelectorAll('input[type=radio]').forEach(function(r){
-      r.addEventListener('change', function(){
-        var ok = (r.value === '1');
-        box.querySelectorAll('.fb').forEach(function(f){ f.className = 'fb'; });
-        var target = box.querySelector('.fb[data-ok="'+(ok?'1':'0')+'"]');
-        if (target) target.className = 'fb ' + (ok ? 'ok' : 'no');
-      });
-    });
+(function(){
+  'use strict';
+  var labels=["문제 만나기","창문 밀기","(가)와 (나)","α 와 c","회수"];
+  var chs=[].slice.call(document.querySelectorAll('main > section.ch'));
+  var nav=document.getElementById('nav'),fill=document.getElementById('pfill'),cur=0;
+  labels.forEach(function(t,i){var b=document.createElement('button');b.className=i===0?'on':'';b.innerHTML='<span class="n">0'+(i+1)+'</span>'+t;b.addEventListener('click',function(){go(i);});nav.appendChild(b);});
+  var tabs=[].slice.call(nav.children);
+  function go(i){cur=Math.max(0,Math.min(chs.length-1,i));chs.forEach(function(s,j){s.classList.toggle('on',j===cur);});tabs.forEach(function(b,j){b.classList.toggle('on',j===cur);});fill.style.width=((cur+1)/chs.length*100)+'%';if(tabs[cur]&&tabs[cur].scrollIntoView)tabs[cur].scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});window.scrollTo({top:0,behavior:'smooth'});}go(0);
+  document.addEventListener('click',function(e){
+    var t=e.target.closest&&e.target.closest('[data-go]');if(t){var d=t.getAttribute('data-go');go(d==='next'?cur+1:d==='prev'?cur-1:0);return;}
+    var c=e.target.closest&&e.target.closest('.choice');if(c){var box=c.parentElement;if(box.getAttribute('data-mode')==='record'){box.querySelectorAll('.choice').forEach(function(x){x.classList.remove('chosen');});c.classList.add('chosen');return;}var ans=+box.getAttribute('data-ans'),ok=+c.getAttribute('data-i')===ans;box.querySelectorAll('.choice').forEach(function(x){x.classList.remove('right','wrong');});c.classList.add(ok?'right':'wrong');if(!ok){var right=box.querySelector('.choice[data-i="'+ans+'"]');setTimeout(function(){if(right)right.classList.add('right');},650);}return;}
+    var s=e.target.closest&&e.target.closest('[data-sol]');if(s){var el=document.getElementById(s.getAttribute('data-sol'));if(!el)return;var open=el.classList.toggle('on');s.style.opacity=open?'1':'';if(open&&window.JPDark)window.JPDark.texAll(el);}
   });
-  // ---- custom lab: sliding window ----
-  (function(){
-    var root = document.querySelector('[data-mylab="window"]');
-    if(!root) return;
-    var svg = root.querySelector('svg');
-    var tS = root.querySelector('[data-t]'), dS = root.querySelector('[data-d]');
-    var tV = root.querySelector('[data-tval]'), dV = root.querySelector('[data-dval]');
-    var gO = root.querySelector('[data-g]');
-    var cB = root.querySelector('[data-check]'), cO = root.querySelector('[data-checkout]');
-    var W=600, H=300, pL=36, pR=16, pT=34, pB=44;
-    var xMin=-1.6, xMax=6.6;
-    function X(x){ return pL + (x-xMin)/(xMax-xMin)*(W-pL-pR); }
-    var yAxis = H-pB;
-    function Y(v){ return yAxis - v*1.35; } // v: math y (up positive)
-    function roots(){ var d=parseFloat(dS.value); return [1, 1+d]; }
-    function gcount(t){
-      var r=roots(), c=0;
-      if(r[0]>=t-1e-9 && r[0]<=t+2+1e-9) c++;
-      if(r[1]>=t-1e-9 && r[1]<=t+2+1e-9) c++;
-      return c;
-    }
-    function draw(){
-      var t=parseFloat(tS.value), d=parseFloat(dS.value), r=roots();
-      tV.textContent=t.toFixed(1); dV.textContent=d.toFixed(1);
-      gO.textContent=gcount(t);
-      var s='';
-      // window
-      s+='<rect x="'+X(t)+'" y="'+pT+'" width="'+(X(t+2)-X(t))+'" height="'+(yAxis-pT)+'" fill="rgba(124,92,255,.13)" stroke="#7c5cff" stroke-width="1.5" stroke-dasharray="6 4" rx="6"/>';
-      s+='<text x="'+X(t+1)+'" y="'+(pT+18)+'" fill="#b9a8ff" font-size="13" text-anchor="middle">[t, t+2]</text>';
-      // x axis
-      s+='<line x1="'+X(xMin)+'" y1="'+yAxis+'" x2="'+X(xMax)+'" y2="'+yAxis+'" stroke="#5b6b8c" stroke-width="1.5"/>';
-      for(var x=Math.ceil(xMin); x<=xMax; x++){
-        s+='<line x1="'+X(x)+'" y1="'+yAxis+'" x2="'+X(x)+'" y2="'+(yAxis+6)+'" stroke="#5b6b8c" stroke-width="1"/>';
-        s+='<text x="'+X(x)+'" y="'+(yAxis+22)+'" fill="#8b9bb8" font-size="12" text-anchor="middle">'+x+'</text>';
-      }
-      // parabola y=k(x-r1)(x-r2), vertex depth 62
-      var r1=r[0], r2=r[1], mid=(r1+r2)/2, depth=62;
-      var k=4*depth/(d*d);
-      var pts=[];
-      for(var px=xMin; px<=xMax; px+=0.06){
-        var v=k*(px-r1)*(px-r2), sy=Y(-v);
-        if(sy>pT-4 && sy<H) pts.push(X(px).toFixed(1)+','+Math.min(sy,H-2).toFixed(1));
-      }
-      s+='<polyline points="'+pts.join(' ')+'" fill="none" stroke="#ffd76a" stroke-width="2.5"/>';
-      s+='<text x="'+(W-pR-4)+'" y="'+(pT+16)+'" fill="#ffd76a" font-size="13" text-anchor="end">y = f\'(x)</text>';
-      // roots
-      [r1,r2].forEach(function(rv,i){
-        var inWin = (rv>=t-1e-9 && rv<=t+2+1e-9);
-        s+='<circle cx="'+X(rv)+'" cy="'+yAxis+'" r="8" fill="'+(inWin?'#7dffb0':'#3a4666')+'" stroke="'+(inWin?'#7dffb0':'#8b9bb8')+'" stroke-width="2"/>';
-        s+='<text x="'+X(rv)+'" y="'+(yAxis-14)+'" fill="#dbe3f5" font-size="13" text-anchor="middle">'+(i===0?'α':'β')+'='+rv.toFixed(1)+'</text>';
-      });
-      // t marker
-      s+='<line x1="'+X(t)+'" y1="'+yAxis+'" x2="'+X(t)+'" y2="'+(yAxis+12)+'" stroke="#7c5cff" stroke-width="3"/>';
-      s+='<text x="'+X(t)+'" y="'+(yAxis+30)+'" fill="#b9a8ff" font-size="12" text-anchor="middle">t</text>';
-      svg.innerHTML=s;
-    }
-    cB.addEventListener('click', function(){
-      var d=parseFloat(dS.value), r1=1, r2=1+d, eps=1e-3;
-      function g(tt){ var c=0; if(r1>=tt&&r1<=tt+2)c++; if(r2>=tt&&r2<=tt+2)c++; return c; }
-      var pts=[r1-2,r1,r2-2,r2].filter(function(v,i,a){ return a.indexOf(v)===i; }).sort(function(a,b){return a-b;});
-      var ok=true, html='<div style="margin-top:6px">';
-      pts.forEach(function(sv){
-        var Lm=g(sv-eps), Rp=g(sv+eps), sum=Lm+Rp, bad=sum>2;
-        if(bad) ok=false;
-        html+='<div>t = '+sv.toFixed(1)+' : 좌극한 '+Lm+' + 우극한 '+Rp+' = '+sum+(bad?' <span class="bad">← 위반!</span>':' <span class="good">✓</span>')+'</div>';
-      });
-      html='</div>';
-      cO.innerHTML=(ok?'<div class="good">(가) 만족 — 모든 점에서 좌극한+우극한 ≤ 2</div>':'<div class="bad">(가) 위반 — 합이 3인 점이 있다!</div>')+html;
+
+  /* ── 그림 도구 ────────────────────────────────────────────────
+     좌표를 화면에 옮겨 주는 것만 한다. 가로세로 배율이 달라도
+     "어디서 끊기고 어디로 튀는지" 는 그대로 보인다. */
+  function view(x0,x1,y0,y1,W,H){
+    return {x0:x0,x1:x1,y0:y0,y1:y1,W:W,H:H,
+      sx:function(x){return (x-x0)/(x1-x0)*W;},
+      sy:function(y){return H-(y-y0)/(y1-y0)*H;}};
+  }
+  function axes(v,stepX,stepY){
+    var s='<rect x="0" y="0" width="'+v.W+'" height="'+v.H+'" fill="#fbfaf6"/>',x,y;
+    for(x=Math.ceil(v.x0/stepX)*stepX;x<=v.x1;x+=stepX)s+='<line x1="'+v.sx(x).toFixed(1)+'" y1="0" x2="'+v.sx(x).toFixed(1)+'" y2="'+v.H+'" stroke="rgba(58,49,37,.08)"/>';
+    for(y=Math.ceil(v.y0/stepY)*stepY;y<=v.y1;y+=stepY)s+='<line x1="0" y1="'+v.sy(y).toFixed(1)+'" x2="'+v.W+'" y2="'+v.sy(y).toFixed(1)+'" stroke="rgba(58,49,37,.08)"/>';
+    if(v.y0<0&&v.y1>0)s+='<line x1="0" y1="'+v.sy(0).toFixed(1)+'" x2="'+v.W+'" y2="'+v.sy(0).toFixed(1)+'" stroke="#8b8378" stroke-width="1.2"/>';
+    if(v.x0<0&&v.x1>0)s+='<line x1="'+v.sx(0).toFixed(1)+'" y1="0" x2="'+v.sx(0).toFixed(1)+'" y2="'+v.H+'" stroke="#8b8378" stroke-width="1.2"/>';
+    return s;
+  }
+  function curve(v,f,a,b,color,w,dash){
+    var d='',on=false,i,x,y,n=200;
+    for(i=0;i<=n;i++){x=a+(b-a)*i/n;y=f(x);
+      if(!isFinite(y)||y<v.y0-40||y>v.y1+40){on=false;continue;}
+      d+=(on?'L':'M')+v.sx(x).toFixed(1)+' '+v.sy(y).toFixed(1)+' ';on=true;}
+    return '<path d="'+d+'" fill="none" stroke="'+color+'" stroke-width="'+(w||2.4)+'"'+(dash?' stroke-dasharray="'+dash+'"':'')+' stroke-linecap="round"/>';
+  }
+  function dot(v,x,y,color,open){
+    if(y<v.y0||y>v.y1)return '';
+    return open?'<circle cx="'+v.sx(x).toFixed(1)+'" cy="'+v.sy(y).toFixed(1)+'" r="4.6" fill="#fbfaf6" stroke="'+color+'" stroke-width="2"/>'
+               :'<circle cx="'+v.sx(x).toFixed(1)+'" cy="'+v.sy(y).toFixed(1)+'" r="4.6" fill="'+color+'"/>';
+  }
+  function tx(v,x,y,t,color,anchor){
+    return '<text x="'+v.sx(x).toFixed(1)+'" y="'+v.sy(y).toFixed(1)+'" fill="'+(color||'#5f574b')+'" font-size="12" font-family="IBM Plex Mono,monospace" text-anchor="'+(anchor||'middle')+'">'+t+'</text>';
+  }
+  function wrap(v,inner){return '<svg viewBox="0 0 '+v.W+' '+v.H+'" role="img">'+inner+'</svg>';}
+
+  var INK='#2f6670',HOT='#a95232',GREY='#9a9186';
+
+
+  /* 선분·기울기 직선·넓이 칠하기 — 열두 쪽이 함께 쓴다 */
+  function line(v,x1,y1,x2,y2,color,w,dash){
+    return '<line x1="'+v.sx(x1).toFixed(1)+'" y1="'+v.sy(y1).toFixed(1)+'" x2="'+v.sx(x2).toFixed(1)+'" y2="'+v.sy(y2).toFixed(1)+'" stroke="'+color+'" stroke-width="'+(w||2)+'"'+(dash?' stroke-dasharray="'+dash+'"':'')+'/>';
+  }
+  function thru(v,x0,y0,m,color,w,dash){
+    return line(v,v.x0,y0+m*(v.x0-x0),v.x1,y0+m*(v.x1-x0),color,w,dash);
+  }
+  function shade(v,f,a,b,color,base){
+    var d='M'+v.sx(a).toFixed(1)+' '+v.sy(base||0).toFixed(1),i,n=160,x;
+    for(i=0;i<=n;i++){x=a+(b-a)*i/n;d+=' L'+v.sx(x).toFixed(1)+' '+v.sy(f(x)).toFixed(1);}
+    d+=' L'+v.sx(b).toFixed(1)+' '+v.sy(base||0).toFixed(1)+' Z';
+    return '<path d="'+d+'" fill="'+color+'" stroke="none"/>';
+  }
+
+  var HOT_='#a95232';
+
+  (function(){var b=document.getElementById('ansBtn'),i=document.getElementById('ansIn'),o=document.getElementById('ansOut');if(!b)return;
+    function chk(){var v=String(i.value).trim().replace(/[−–—]/g,'-').replace(/\s/g,'');if(!v){o.className='res';o.textContent='답을 적어 주세요.';return;}
+      var ok=Number(v)===9;o.className='res '+(ok?'ok':'no');o.textContent=ok?'맞았습니다':'다시 확인해 보세요';}
+    b.addEventListener('click',chk);i.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();chk();}});})();
+
+  /* f' 의 근은 α=0, β=d. g(t) = [t,t+2] 안의 근의 수 (닫힌구간) */
+  function gAt(t,roots){var c=0,i;for(i=0;i<roots.length;i++){if(roots[i]>=t-1e-9&&roots[i]<=t+2+1e-9)c++;}return c;}
+  var d1=document.getElementById('d1'),t1=document.getElementById('t1');
+  function lab1(){
+    var d=+d1.value,t=+t1.value,roots=[0,d];
+    document.getElementById('d1v').textContent=d.toFixed(2);
+    document.getElementById('t1v').textContent=t.toFixed(2);
+    var W=560,H=360,V=view(-3.4,5.2,0,3.4,W,170),s=axes(V,1,1);
+    // 위: 수직선 + 창문
+    s='<rect x="0" y="0" width="'+W+'" height="'+H+'" fill="#fbfaf6"/>';
+    var Vt=view(-3.4,5.2,0,1,W,110),i,x;
+    for(x=-3;x<=5;x++){s+=line(Vt,x,0.38,x,0.46,'#8b8378',1)+tx(Vt,x,0.18,String(x),GREY);}
+    s+=line(Vt,-3.4,0.42,5.2,0.42,'#8b8378',1.4);
+    s+='<rect x="'+Vt.sx(t).toFixed(1)+'" y="'+(Vt.sy(0.8)).toFixed(1)+'" width="'+(Vt.sx(t+2)-Vt.sx(t)).toFixed(1)+'" height="'+(Vt.sy(0.2)-Vt.sy(0.8)).toFixed(1)+'" fill="rgba(47,102,112,.15)" stroke="'+INK+'" stroke-width="2" rx="6"/>';
+    roots.forEach(function(r,k){var inside=r>=t-1e-9&&r<=t+2+1e-9;s+='<circle cx="'+Vt.sx(r).toFixed(1)+'" cy="'+Vt.sy(0.42).toFixed(1)+'" r="7" fill="'+(inside?'#477454':'#fbfaf6')+'" stroke="#477454" stroke-width="2.4"/>';
+      s+=tx(Vt,r,0.9,k===0?'α':'β','#477454');});
+    // 아래: g 의 계단
+    var Vg=view(-3.4,5.2,-0.3,2.6,W,200),off=130;
+    var body=axes(Vg,1,1),jumps=[],tt,viol=0,pts=[];
+    var evs=[];roots.forEach(function(r){evs.push(r);evs.push(r-2);});evs.sort(function(a,b){return a-b;});
+    // 구간별 계단을 그린다 (연속점 사이는 상수)
+    var xs=[-3.4].concat(evs.filter(function(e){return e>-3.4&&e<5.2;})).concat([5.2]);
+    for(i=0;i<xs.length-1;i++){var mid=(xs[i]+xs[i+1])/2,gv=gAt(mid,roots);
+      body+=line(Vg,xs[i],gv,xs[i+1],gv,INK,3);}
+    evs.forEach(function(e){
+      if(e<-3.4||e>5.2)return;
+      var L=gAt(e-1e-6,roots),R=gAt(e+1e-6,roots),gv=gAt(e,roots),bad=(L+R>2);
+      if(bad)viol++;
+      body+=dot(Vg,e,gv,bad?HOT:INK);
+      /* 위반 점이 둘이면 라벨이 겹친다 — 앞 점은 오른쪽 끝에 맞춰 왼쪽으로, 뒤 점은 왼쪽 끝에 맞춰 오른쪽으로 */
+      if(bad)body+=tx(Vg,e,gv+0.42,L+'+'+R+'='+(L+R),HOT,viol%2===1?'end':'start');
     });
-    tS.addEventListener('input', draw); dS.addEventListener('input', draw);
-    draw();
-  })();
-});
+    body+=line(Vg,t,-0.3,t,2.6,'#2f6670',1.4,'3 4')+dot(Vg,t,gAt(t,roots),'#2f6670');
+    body+=tx(Vg,-3.2,2.35,'g(t)',GREY,'start');
+    s+='<g transform="translate(0,'+off+')">'+body+'</g>';
+    document.getElementById('lab1').innerHTML='<svg viewBox="0 0 '+W+' '+(H+10)+'" role="img">'+s+'</svg>';
+    var twos=[];if(d<=2+1e-9)twos.push(d<2-1e-9?'t ∈ ['+(d-2).toFixed(2)+', 0]':'t = 0 한 점');else twos.push('없음');
+    document.getElementById('r1a').textContent=gAt(t,roots)+' 개';
+    document.getElementById('r1b').textContent=viol+' 곳';
+    document.getElementById('r1c').textContent=twos[0];
+    var box=document.getElementById('v1box');
+    box.className='verdict '+(viol===0?(d<=2+1e-9?'ok':'mid'):'');
+    box.innerHTML=viol>0?'<strong>(가) 위반 '+viol+'곳</strong><span>창문이 근 둘을 구간으로 담는 순간이 있습니다</span>'
+      :(Math.abs(d-2)<1e-9?'<strong>(가)·(나) 모두 가능</strong><span>g=2 가 t=0 한 점에서만 일어납니다</span>'
+        :'<strong>(가)는 통과</strong><span>하지만 g=2 가 아예 일어나지 않아 (나)를 못 맞춥니다</span>');
+  }
+  [d1,t1].forEach(function(el){el.addEventListener('input',lab1);});
+  document.querySelectorAll('[data-d]').forEach(function(b){b.addEventListener('click',function(){d1.value=b.getAttribute('data-d');lab1();});});
+
+  var cand=1;
+  function lab2(){
+    var al=cand,A=-1.5*(al+1),B=1.5*al*(al+2),C=al===1?-1:-6;
+    function f(x){return x*x*x/2+A*x*x+B*x+C;}
+    var roots=[al,al+2],c0=f(0),gc=gAt(c0,roots);
+    var V=view(-1.5,6.5,-8.5,11,560,330),s=axes(V,1,2);
+    s+=curve(V,f,-1.5,6.5,INK,3);
+    s+=line(V,V.x0,al,V.x1,al,HOT,1.3,'5 5')+tx(V,6.4,al+0.6,'y = α = '+al,HOT,'end');
+    s+=dot(V,1,f(1),HOT)+dot(V,4,f(4),HOT);
+    s+=tx(V,1,f(1)+1.1,'f(1)',HOT)+tx(V,4,f(4)+1.1,'f(4)',HOT);
+    roots.forEach(function(r){s+=dot(V,r,0,'#477454');});
+    // 창문 [f(0), f(0)+2] 을 세로축 옆에 그린다
+    s+='<rect x="'+(V.sx(-0.25)).toFixed(1)+'" y="'+V.sy(c0+2).toFixed(1)+'" width="22" height="'+(V.sy(c0)-V.sy(c0+2)).toFixed(1)+'" fill="rgba(47,102,112,.25)" stroke="'+INK+'" stroke-width="2"/>';
+    s+=tx(V,0.5,c0-0.8,'창문 [f(0), f(0)+2]',INK,'start');
+    document.getElementById('lab2').innerHTML=wrap(V,s);
+    document.getElementById('r2a').textContent=al+', '+(al+2);
+    document.getElementById('r2b').textContent=f(1).toFixed(2)+', '+f(4).toFixed(2);
+    document.getElementById('r2c').textContent=c0.toFixed(2);
+    document.getElementById('r2d').textContent=gc+' 개  → '+(gc===1?'조건 g=1 ✓':'조건 g=1 ✗');
+    var box=document.getElementById('v2box');
+    box.className='verdict '+(gc===1?'ok':'');
+    box.innerHTML=gc===1?'<strong>α = 1 : 살아남는다</strong><span>f(5) = 9</span>':'<strong>α = 2 : 탈락</strong><span>창문 ['+c0.toFixed(0)+', '+(c0+2).toFixed(0)+'] 안에 근이 없다</span>';
+  }
+  document.querySelectorAll('[data-al]').forEach(function(b){b.addEventListener('click',function(){cand=+b.getAttribute('data-al');document.querySelectorAll('[data-al]').forEach(function(x){x.classList.toggle('on',x===b);});lab2();});});
+
+  function boot(){lab1();lab2();}
+  if(document.readyState!=='loading')boot();else document.addEventListener('DOMContentLoaded',boot);
+})();
 </script>
-<script src="jp-lab-dark.js"></script>
 </body>
 </html>

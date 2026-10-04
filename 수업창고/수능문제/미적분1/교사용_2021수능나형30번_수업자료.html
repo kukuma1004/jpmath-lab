@@ -1,228 +1,56 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>교사용 · 2021 수능 나형 30번 수업자료 — JP Math Lab</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
-<link rel="stylesheet" href="jp-dark.css">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow,noarchive"/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<title>2021 수능 나형 30번 | 접하면 미분가능, 뚫으면 꺾인다 · 교사용</title>
+<script src="../../auth.js" data-classroom-protected></script>
+<link rel="stylesheet" href="../../../vendor/katex/katex.min.css"/>
+<link rel="stylesheet" href="../../../jp-math-typography.css?v=3"/>
+<link rel="stylesheet" href="../../../jp-dark.css?v=6"/>
+<link rel="stylesheet" href="../../../jp-polish.css?v=11"/>
+<script defer src="../../../vendor/katex/katex.min.js"></script>
+<script defer src="../../../jp-lab-dark.js?v=2"></script>
+<script defer src="../../../jp-deck.js"></script>
+<script defer src="../../../jp-polish.js?v=21"></script>
 <style>
-.deck-head{max-width:1060px;margin:0 auto;padding:30px 22px 6px}
-.deck-head .badge{display:inline-block;font-size:12px;letter-spacing:.14em;color:#0b0b10;background:linear-gradient(135deg,#7dffb0,#4ad6ff);border-radius:999px;padding:6px 14px;font-weight:800;margin-bottom:10px}
-.deck-head h1{font-size:clamp(24px,4.4vw,36px);margin:0 0 6px}
-.deck-head .sub{color:#9aa7c7;margin:0 0 4px}
-.deck-head .meta{color:#8b9bb8;font-size:13px;margin:0}
-.deck{max-width:1060px;margin:0 auto;padding:16px 22px 40px}
-.slide{display:none;background:rgba(16,20,38,.78);border:1px solid rgba(125,255,176,.25);border-radius:20px;padding:28px;min-height:480px;box-shadow:0 12px 40px rgba(0,0,0,.35)}
-.slide.active{display:block}
-.slide .snum{display:inline-block;background:#7dffb0;color:#0b0b10;font-weight:800;font-size:12px;border-radius:8px;padding:4px 12px;margin-bottom:10px;letter-spacing:.1em}
-.slide h2{margin:0 0 14px;font-size:24px}
-.slide .cols{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:20px}
-@media(max-width:860px){.slide .cols{grid-template-columns:1fr}}
-.slide .main p,.slide .main li{line-height:1.8;color:#dbe3f5}
-.slide .main ul{padding-left:20px}
-.qa{background:rgba(125,255,176,.06);border:1px dashed rgba(125,255,176,.4);border-radius:12px;padding:12px 16px;margin:12px 0}
-.qa .q{font-weight:800;color:#7dffb0;margin:0 0 6px}
-.qa .a{margin:0;color:#c9d4ee}
-.warn{background:rgba(255,143,143,.06);border:1px dashed rgba(255,143,143,.4);border-radius:12px;padding:12px 16px;margin:12px 0}
-.warn .t{font-weight:800;color:#ff8f8f;margin:0 0 6px}
-.warn p{margin:0;color:#c9d4ee}
-.sidea{background:#0d1122;border:1px solid rgba(125,255,176,.2);border-radius:14px;padding:16px;height:fit-content}
-.sidea h4{margin:0 0 8px;color:#ffd76a;font-size:14px}
-.sidea p,.sidea li{font-size:13.5px;line-height:1.75;color:#c9d4ee}
-.sidea ul{padding-left:18px;margin:0}
-.nav{display:flex;justify-content:space-between;align-items:center;max-width:1060px;margin:0 auto;padding:0 22px 60px}
-.nav button{background:linear-gradient(135deg,#7dffb0,#4ad6ff);color:#0b0b10;border:none;border-radius:10px;padding:10px 22px;font-weight:800;cursor:pointer;font-size:14px}
-.nav button:disabled{opacity:.3;cursor:default}
-.nav .pg{color:#8b9bb8;font-size:14px}
-.mathline{overflow-x:auto;padding:6px 0}
-.cover-goals li{margin:10px 0;line-height:1.7;color:#dbe3f5}
-.time{font-size:13px;color:#0b0b10;background:#ffd76a;border-radius:999px;padding:3px 12px;font-weight:800;display:inline-block;margin-bottom:8px}
-.note{font-size:13px;color:#8b9bb8}
+.teacher-em{font-size:clamp(28px,4vw,54px);font-weight:800;line-height:1.18;text-align:center;letter-spacing:-.05em}.answer-big{font-size:clamp(70px,12vw,150px);font-weight:900;color:#a95232;line-height:1;text-align:center}.compact-table td,.compact-table th{padding:9px 11px!important;text-align:center}
+.compare{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:stretch}.compare .case{padding:22px;border:1px solid rgba(58,49,37,.14);border-radius:19px;background:#fff}.compare .case h3{margin:12px 0 10px}.compare .versus{display:grid;place-items:center;color:#a95232;font:800 12px 'IBM Plex Mono',monospace}
+.tri{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.tcard{padding:19px;border:1px solid rgba(58,49,37,.14);border-radius:17px;background:#fff}.tcard.dead{opacity:.62;border-style:dashed}.tcard.live{border-color:rgba(71,116,84,.4);background:#f5faf6}.tcard h3{margin-bottom:9px}
+.note-strip{display:flex;align-items:flex-start;gap:13px;margin-top:18px;padding:15px 17px;border-left:4px solid #2f6670;border-radius:0 13px 13px 0;background:#eef6f5}.note-strip.warn{border-color:#a95232;background:#fff4ed}.note-strip .ic{flex:0 0 auto;color:#a95232;font:800 10px 'IBM Plex Mono',monospace}.note-strip p{margin:0}
+.bogi-box{padding:18px 22px;border:1.5px solid rgba(58,49,37,.28);border-radius:16px;background:#fdfcf8}.bogi-box p{margin:9px 0;padding-left:24px;text-indent:-24px}
+@media(max-width:720px){.compare,.tri{grid-template-columns:1fr}.compare .versus{min-height:18px}}
 </style>
 </head>
-<body>
-<header class="deck-head">
-  <span class="badge">교사용 · 수업자료</span>
-  <h1>2021 수능 나형 30번 — 접하면 미분가능</h1>
-  <p class="sub">수학Ⅱ · 미분 · 단답형 4점 · 정답 39</p>
-  <p class="meta">50분 수업 덱 · 학생용 짝 자료: 「접하면 미분가능, 뚫으면 꺾인다」 탐구실</p>
-</header>
-
+<body class="tpl-dark is-deck">
+<a class="jp-back-link teacher-back" href="../../">← 수업창고</a>
 <div class="deck">
 
-  <section class="slide active">
-    <span class="snum">SLIDE 1 · 표지</span>
-    <h2>오늘의 문제: 2021 수능 나형 30번</h2>
-    <div class="cols">
-      <div class="main">
-        <p><b>학습 목표</b></p>
-        <ul class="cover-goals">
-          <li>절댓값이 미분가능하려면 0인 점에서 <b>접해야(중근)</b> 함을 그래프로 설명할 수 있다.</li>
-          <li>\(p(x)=f(x)-g(x)\)로 묶어 \(h\)를 다시 쓰고, 조각 경계 \(x=1\)에서 이어붙이기를 할 수 있다.</li>
-          <li>미정계수 \(k\)를 문자로 두고 숫자 조건으로 확정하는 순서를 체득한다.</li>
-        </ul>
-        <div class="qa"><p class="q">도입 발문</p><p class="a"> "\(y=|x|\)는 \(x=0\)에서 미분가능한가? 그럼 \(y=|x^2|\)은? \(y=|x^3|\)은? 뭐가 다른 걸까?"</p></div>
-      </div>
-      <div class="sidea">
-        <h4><span class="time">0–5분</span></h4>
-        <p><b>교사 노트:</b> 도입의 세 함수 \(|x|, |x^2|, |x^3|\)이 이 차시의 씨앗이다. 학생들이 "0에서 접하면 된다"를 말로 하기 전에, 그래프를 그리게 하자. 탐구실 실험실이 바로 이 장면의 디지털 버전이다.</p>
-      </div>
-    </div>
-  </section>
+<section class="slide slide--title" data-title="문제와 만나기"><div class="s-body"><div class="title-layout">
+  <div><p class="eyebrow">2021학년도 수능 수학 나형 30번 · 4점</p><h1 class="h1 anim-fade-up">뚫으면 <span class="am">꺾이고</span>,<br/>접하면 <span class="am">매끄럽다</span></h1><p class="lede">절댓값이 있는데도 미분가능하다는 말을 <b>"그 점에서 접해야 한다"</b>로 번역하는 수업입니다. 한 줄이 문제의 8할이고, 나머지는 조각의 경계에서 값과 기울기를 맞추는 일입니다.</p><div class="pause">첫 90초는 말하지 않기</div></div>
+  <div class="card" style="margin-top:0"><p><span class="m" data-k="f"></span>: 최고차 1의 삼차, <span class="m" data-k="g"></span>: 일차</p><div class="eq tight"><div class="eqrow"><span class="m md" data-k="h=\begin{cases}|f-g| &amp; (x\lt1)\\ f+g &amp; (x\ge1)\end{cases}"></span></div></div><p class="mono"><span class="m" data-k="h"></span> 미분가능 · <span class="m" data-k="h(0)=0,\ h(2)=5"></span></p><div class="eq tight"><div class="eqrow"><span class="m md am" data-k="h(4)=\;?"></span></div></div></div>
+</div></div><aside class="notes"><p><strong>권장 시간</strong> 50분 · 문제 읽기 4 / 묶기 5 / 뚫음과 접함 10 / 이어붙이기 15 / k 와 회수 11 / 정리 5.</p><p><strong>학생용 짝 자료</strong>는 수능문제 &gt; 미적분1 &gt; 접하면 미분가능, 뚫으면 꺾인다 입니다. 단근과 중근을 나란히 그려 꺾임을 보는 판과, k 를 움직이며 h 를 정의 그대로 만들어 h(2)=5 를 찾는 판이 들어 있습니다.</p><p>처음 90초 동안 "절댓값이 꺾이지 않으려면 어떤 일이 일어나야 하지?"만 한 줄로 적게 하세요. f와 g를 따로 구하려 식을 세우는 학생은 멈추게 합니다.</p></aside></section>
 
-  <section class="slide">
-    <span class="snum">SLIDE 2 · 오늘의 한 줄</span>
-    <h2>"뚫으면 꺾이고, 접하면 매끄럽다"</h2>
-    <div class="cols">
-      <div class="main">
-        <ul>
-          <li>\(|p(x)|\)가 \(p(x_0)=0\)인 점에서 미분가능 ⟺ \(p'(x_0)=0\) (중근, 접함).</li>
-          <li>단근(뚫고 지남)에서는 좌우 미분계수의 부호가 달라져 반드시 꺾인다.</li>
-        </ul>
-        <div class="qa"><p class="q">발문</p><p class="a">"탐구실 실험실에서 \(r\)을 움직여봐라. 빨간 곡선(\(|p|\), 단근)은 \(x=r\)에서 어떻게 되는가? 초록 곡선(\(|q|\), 중근)은?"</p></div>
-        <div class="warn"><p class="t">오개념 주의</p><p>"절댓값은 무조건 0에서 미분 불가능"이라는 섣부른 일반화를 경계. \(|x^2|\)은 0에서 미분가능하다. 핵심은 <b>0인 점에서의 접함 여부</b>다.</p></div>
-      </div>
-      <div class="sidea">
-        <h4><span class="time">5–13분</span></h4>
-        <p><b>교사 노트:</b> 이 원리를 "증명"하려 들지 말고 <b>관찰</b>로 굳히자. 실험실의 빨강/초록 비교가 끝나면, 학생들에게 "그래서 이 문제에서 \(|f(x)-g(x)|\)가 미분가능하려면?"이라고 묻고 STEP 2로 넘긴다.</p>
-      </div>
-    </div>
-  </section>
+<section class="slide" data-title="수업의 지도"><div class="s-head"><p class="eyebrow">전체 지도</p><h2 class="ct">네 개의 <span class="am">번역</span>을 통과한다</h2></div><div class="s-body"><div class="grid4 anim-stagger-list"><div class="card accent"><span class="tag">GATE 1</span><h4>묶기</h4><p><span class="m" data-k="p=f-g"></span> : 삼차, 계수 1. <span class="m" data-k="x\ge1"></span> 에서는 <span class="m" data-k="p+2g"></span></p></div><div class="card accent"><span class="tag">GATE 2</span><h4>접함</h4><p><span class="m" data-k="|p|"></span> 가 매끄러우려면 그 점이 <b>중근</b> → <span class="m" data-k="p=x^{2}(x-k)"></span></p></div><div class="card accent"><span class="tag">GATE 3</span><h4>이어붙이기</h4><p>x=1 에서 값·기울기 일치 → <span class="m" data-k="g(x)=(2k-3)x+(2-k)"></span></p></div><div class="card accent"><span class="tag">GATE 4</span><h4>숫자 조건</h4><p><span class="m" data-k="h(2)=2k=5"></span> → <span class="m" data-k="k=\tfrac52"></span></p></div></div><div class="card quote"><p><b>수업의 한 문장.</b> |p|가 매끄러우려면 <b class="am">그 점에서 p가 x축에 접해야</b> 한다. 뚫고 지나가면 어떤 경우에도 꺾인다.</p></div></div><div class="s-ask"><p class="question">절댓값 그래프가 꺾이는 이유를 한 장면으로 말하면?</p></div><aside class="notes"><p>"x축 아래 부분을 위로 접어 올린다" 를 학생이 손으로 그리게 하세요. 뚫는 곳에서는 접은 선이 꺾이고, 접하는 곳에서는 접을 부분이 없습니다.</p></aside></section>
 
-  <section class="slide">
-    <span class="snum">SLIDE 3 · 묶기</span>
-    <h2>\(p(x)=f(x)-g(x)\)로 두면 문제가 보인다</h2>
-    <div class="cols">
-      <div class="main">
-        <div class="mathline">\[h(x)=\begin{cases}|p(x)|&(x&lt;1)\\p(x)+2g(x)&(x\ge 1)\end{cases}\quad (p\text{는 삼차, 최고차항 }1)\]</div>
-        <ul>
-          <li>\(h(0)=0,\ 0&lt;1\) → \(|p(0)|=0\) → <b>\(p(0)=0\)</b>.</li>
-          <li>\(x=0\)은 \((-\infty,1)\) 안의 점. \(|p|\)가 여기서 미분가능하려면 \(0\)은 <b>중근</b>:</li>
-        </ul>
-        <div class="mathline">\[p(x)=x^2(x-k)\quad(\text{어떤 실수 }k)\]</div>
-        <div class="qa"><p class="q">발문</p><p class="a">"\(p\)의 근은 \(0\)(이중)과 \(k\)(단일)다. 만약 \(k&lt;1\)이면 무슨 일이 생기는가?" → \(x=k\)는 \((-\infty,1)\) 안의 단근 → \(|p|\)가 꺾임. 따라서 \(k\ge 1\).</p></div>
-      </div>
-      <div class="sidea">
-        <h4><span class="time">13–22분</span></h4>
-        <p><b>교사 노트:</b> "\(p\)로 묶는다"는 발상이 안 떠오르는 학생에게는: "\(h\)의 정의에 \(f(x)-g(x)\)와 \(f(x)+g(x)\)가 둘 다 나온다. 공통 덩어리를 뽑아내면?"이라고 힌트. \(k\ge 1\) 논증은 <b>단근의 위치</b>를 따지는 것으로, 이 문제의 숨은 1점이다.</p>
-      </div>
-    </div>
-  </section>
+<section class="slide" data-title="GATE 1 · 묶기"><div class="s-head"><p class="eyebrow">GATE 1</p><h2 class="ct">둘을 <span class="am">p 하나</span>로 묶는다</h2></div><div class="s-body"><div class="compare"><div class="case"><span class="tag gr">x < 1</span><h3><span class="m" data-k="|p|"></span></h3><p><span class="m" data-k="|f-g|=|p|"></span> — 절댓값이 씌워진 조각.</p></div><div class="versus">VS</div><div class="case"><span class="tag">x ≥ 1</span><h3><span class="m" data-k="p+2g"></span></h3><p><span class="m" data-k="f+g=(f-g)+2g"></span> — 절댓값이 없는 조각.</p></div></div><div class="note-strip"><span class="ic">KEY</span><p><span class="m" data-k="h(0)=0"></span> 이고 <span class="m" data-k="0\lt1"></span> 이므로 <span class="m" data-k="|p(0)|=0"></span>, 곧 <span class="m" data-k="p(0)=0"></span>. 조각을 판단하는 한 줄이 이후 모든 계산의 토대입니다.</p></div></div><div class="s-ask"><p class="question"><span class="m" data-k="f-g"></span> 의 차수와 최고차항은?</p></div><aside class="notes"><p>삼차 − 일차 = 삼차. 이 한 줄을 건너뛰는 학생이 많으니 꼭 말하게 하세요.</p></aside></section>
 
-  <section class="slide">
-    <span class="snum">SLIDE 4 · 이어붙이기</span>
-    <h2>\(x=1\) 경계: 연속 + 미분가능</h2>
-    <div class="cols">
-      <div class="main">
-        <ul>
-          <li><b>연속</b>: \(|p(1)|=f(1)+g(1)\). \(k\ge 1\)이므로 \(|p(1)|=k-1\), \(f(1)+g(1)=(1-k)+2g(1)\) → <b>\(g(1)=k-1\)</b>.</li>
-          <li><b>미분가능</b>: \(x&lt;1\)에서 \(h(x)=x^2(k-x)\) → \(h'(1^-)=2k-3\). \(x\ge 1\)에서 \(h'(1^+)=(3-2k)+2g'(1)\) → <b>\(g'(1)=2k-3\)</b>.</li>
-        </ul>
-        <div class="mathline">\[g(x)=(2k-3)x+(2-k)\]</div>
-        <div class="warn"><p class="t">오개념 주의</p><p>\(|p(1)|\)의 부호를 풀 때 \(k\ge 1\)을 쓰는 것을 잊는 학생이 많다. "왜 \(|1-k|=k-1\)인가?"를 반드시 묻자.</p></div>
-      </div>
-      <div class="sidea">
-        <h4><span class="time">22–32분</span></h4>
-        <p><b>교사 노트:</b> 이어붙이기는 수학Ⅱ의 단골 기술이다. "경계에서는 함수값 일치, 미분계수 일치"를 기계적으로 외우지 말고, <b>그래프가 끊기지 않고 꺾이지 않게</b> 붙인다는 이미지로 가르치자.</p>
-      </div>
-    </div>
-  </section>
+<section class="slide" data-title="GATE 2 · 접함"><div class="s-head"><p class="eyebrow">GATE 2</p><h2 class="ct"><span class="m" data-k="|p|"></span> 가 매끄러운 곳은 <span class="am">접하는 곳</span></h2></div><div class="s-body"><div class="compare"><div class="case"><span class="tag">단근 (뚫는다)</span><h3>꺾인다</h3><p>접어 올리면 꼭짓점이 생긴다. 좌·우 기울기가 서로 반대.</p></div><div class="versus">VS</div><div class="case"><span class="tag gr">중근 (접한다)</span><h3>매끄럽다</h3><p>접을 부분이 없어 이어진다. 좌·우 기울기가 같다 (0).</p></div></div><div class="note-strip"><span class="ic">KEY</span><p><span class="m" data-k="x=0"></span> 은 절댓값이 씌워진 조각 안의 점이니 중근이어야 합니다. 그러면 <span class="m" data-k="p=x^{2}(x-k)"></span>.</p></div><div class="note-strip warn"><span class="ic">TRAP</span><p><span class="m" data-k="k\lt1"></span> 이면 <span class="m" data-k="x=k"></span> 도 절댓값 조각 안의 단근이라 꺾입니다. 그래서 <b><span class="m" data-k="k\ge1"></span></b>. 이 조건을 빠뜨리고 부호를 못 정하는 학생이 많습니다.</p></div></div><div class="s-ask"><p class="question"><span class="m" data-k="x=k"></span> 가 어느 영역에 있어야 안전할까?</p></div><aside class="notes"><p><span class="m" data-k="x\ge1"></span> 쪽에는 절댓값이 없으므로 그곳의 단근은 문제가 되지 않습니다. 그림에서 x=1 의 오른쪽을 손으로 가리게 하세요.</p></aside></section>
 
-  <section class="slide">
-    <span class="snum">SLIDE 5 · 확정</span>
-    <h2>\(h(2)=5\) → \(k=\frac52\)</h2>
-    <div class="cols">
-      <div class="main">
-        <p>\(2\ge 1\)이므로 \(h(2)=f(2)+g(2)=p(2)+2g(2)\):</p>
-        <div class="mathline">\[h(2)=(8-4k)+2(3k-4)=2k=5\ \Longrightarrow\ k=\frac52\]</div>
-        <ul>
-          <li>\(k=\frac52&gt;1\) → 처음의 가정(\(k\ge 1\))과 일치 ✓ (자기 정합성 확인!)</li>
-          <li>만약 \(k=1\)이었다면 \(h(2)=2\)가 되어 탈락 — 숫자 조건이 가정을 검증한다.</li>
-        </ul>
-        <div class="qa"><p class="q">발문</p><p class="a">"\(k\)를 구했는데, 처음에 세웠던 가정(\(k\ge 1\))과 맞아떨어지는가? 안 맞았다면 어떻게 해야 하는가?"</p></div>
-      </div>
-      <div class="sidea">
-        <h4><span class="time">32–40분</span></h4>
-        <p><b>교사 노트:</b> "가정을 세우고 → 계산하고 → 가정과 대조한다"는 흐름을 명시적으로 짚어주자. 많은 학생이 가정을 세운 뒤 검증하는 것을 잊는다. 이 문제에서는 \(k=\frac52\)가 \(k\ge 1\)을 만족하므로 통과.</p>
-      </div>
-    </div>
-  </section>
+<section class="slide" data-title="GATE 3 · 이어붙이기"><div class="s-head"><p class="eyebrow">GATE 3</p><h2 class="ct">경계에서 <span class="am">값</span>과 <span class="am">기울기</span>를 맞춘다</h2></div><div class="s-body"><table class="tbl compact-table"><tr><th></th><th>왼쪽 <span class="m" data-k="x^{2}(k-x)"></span></th><th>오른쪽 <span class="m" data-k="p+2g"></span></th></tr><tr><td>값 (x=1)</td><td><span class="m" data-k="k-1"></span></td><td><span class="m" data-k="(1-k)+2g(1)"></span></td></tr><tr><td>기울기</td><td><span class="m" data-k="2k-3"></span></td><td><span class="m" data-k="(3-2k)+2g'(1)"></span></td></tr></table><div class="eq"><div class="eqrow"><span class="m md am" data-k="g(1)=k-1,\quad g'(1)=2k-3\;\Longrightarrow\; g(x)=(2k-3)x+(2-k)"></span></div></div><div class="note-strip"><span class="ic">KEY</span><p><span class="m" data-k="g"></span> 는 일차함수라 한 점과 기울기로 완전히 정해집니다. 미지수가 <span class="m" data-k="k"></span> 하나로 줄어드는 순간입니다.</p></div></div><div class="s-ask"><p class="question">미분가능 조건은 몇 개의 식을 주었나?</p></div><aside class="notes"><p>값 하나, 기울기 하나, 모두 두 개입니다. 연속만 맞추고 기울기를 잊는 학생이 있습니다.</p></aside></section>
 
-  <section class="slide">
-    <span class="snum">SLIDE 6 · 함정 정리</span>
-    <h2>어디에서 틀리는가</h2>
-    <div class="cols">
-      <div class="main">
-        <ul>
-          <li><b>함정 1</b>: \(h(2)\)를 \(|p(2)|\)로 계산. → \(2\ge 1\)이므로 \(f+g\) 조각이다.</li>
-          <li><b>함정 2</b>: \(x=\frac52\)가 \(p\)의 단근인데 "미분가능?"이라고 당황. → \(x\ge 1\) 구간에서는 절댓값을 안 씌우므로 무관하다.</li>
-          <li><b>함정 3</b>: \(|p(1)|\)을 풀 때 \(k\)의 범위(\(k\ge 1\))를 안 쓰고 부호를 틀림.</li>
-        </ul>
-        <div class="qa"><p class="q">발문</p><p class="a">"\(p(x)=x^2(x-\frac52)\)의 그래프를 그려보자. \(x&lt;1\)에서는 어떻게 생겼고, \(x\ge 1\)에서는 \(h\)가 어떻게 이어지는가?"</p></div>
-      </div>
-      <div class="sidea">
-        <h4><span class="time">40–45분</span></h4>
-        <p><b>교사 노트:</b> 함정 2는 오히려 좋은 토론 거리다. "\(p\)의 단근이 \(x\ge 1\)에 있으면 왜 괜찮은가?" — \(h\)의 정의역을 조각별로 다시 읽게 하자.</p>
-      </div>
-    </div>
-  </section>
+<section class="slide" data-title="GATE 4 · k"><div class="s-head"><p class="eyebrow">GATE 4</p><h2 class="ct">숫자 조건은 <span class="am">마지막</span>에 쓴다</h2></div><div class="s-body"><div class="eq"><div class="eqrow"><span class="m md am" data-k="h(2)=p(2)+2g(2)=(8-4k)+2(3k-4)=2k=5\;\Longrightarrow\;k=\tfrac52"></span></div></div><div class="note-strip"><span class="ic">KEY</span><p><span class="m" data-k="k=\tfrac52\gt1"></span> 이므로 가정과 모순이 없습니다. 만약 <span class="m" data-k="k=1"></span> 이었다면 <span class="m" data-k="h(2)=2"></span> 가 되어 탈락했을 것입니다.</p></div><div class="note-strip warn"><span class="ic">TRAP</span><p><span class="m" data-k="h(2)=|p(2)|"></span> 로 쓰는 실수가 흔합니다. <span class="m" data-k="2\ge1"></span> 이므로 <b>오른쪽 조각</b>입니다.</p></div></div><div class="s-ask"><p class="question">h(2)를 구하는 데 어느 조각을 쓰는가?</p></div><aside class="notes"><p>오른쪽 조각 <span class="m" data-k="p+2g"></span>. 조각을 판단하는 습관을 한 번 더 확인합니다.</p></aside></section>
 
-  <section class="slide">
-    <span class="snum">SLIDE 7 · 마무리</span>
-    <h2>정답 39, 그리고 남는 것</h2>
-    <div class="cols">
-      <div class="main">
-        <div class="mathline">\[h(4)=p(4)+2g(4)=16\left(\frac32\right)+2\left(\frac{15}{2}\right)=24+15=39\]</div>
-        <p><b>오늘의 takeaways</b></p>
-        <ul>
-          <li>절댓값이 미분가능 ⟺ 0인 점에서 접한다(중근).</li>
-          <li>조각함수는 어느 조각인지 먼저 판단한다.</li>
-          <li>미정계수는 문자로 두고 숫자 조건으로 확정한다.</li>
-          <li>가정은 계산 뒤에 반드시 검증한다.</li>
-        </ul>
-      </div>
-      <div class="sidea">
-        <h4><span class="time">45–50분</span></h4>
-        <p><b>교사 노트:</b> 탐구실 기록장에 "내가 발견한 구조 한 줄"을 적게 하자. 예: "절댓값은 접해야 미분가능하다."</p>
-      </div>
-    </div>
-  </section>
+<section class="slide" data-title="회수"><div class="s-head"><p class="eyebrow">회수</p><h2 class="ct"><span class="am">39</span></h2></div><div class="s-body"><table class="tbl compact-table"><tr><th>단계</th><th>식</th></tr><tr><td>묶기</td><td><span class="m" data-k="p(0)=0"></span></td></tr><tr><td>접함</td><td><span class="m" data-k="p=x^{2}(x-k)"></span></td></tr><tr><td>이어붙이기</td><td><span class="m" data-k="g=(2k-3)x+(2-k)"></span></td></tr><tr><td>숫자</td><td><span class="m" data-k="k=\tfrac52"></span></td></tr></table><p class="answer-big">39</p><p class="mono" style="text-align:center"><span class="m" data-k="h(4)=16\cdot\tfrac32+2\cdot\tfrac{15}{2}=24+15"></span></p><div class="note-strip"><span class="ic">검산</span><p><span class="m" data-k="x=\tfrac52"></span> 는 <span class="m" data-k="p"></span> 의 단근이지만 <span class="m" data-k="x\ge1"></span> 쪽이라 미분가능성에 영향이 없습니다.</p></div></div><div class="s-ask"><p class="question">마지막까지 풀지 않아도 되는 방정식은 몇 개였나?</p></div><aside class="notes"><p>미지수 <span class="m" data-k="k"></span> 하나를 위한 식 하나, 그것이 전부입니다.</p></aside></section>
 
-  <section class="slide">
-    <span class="snum">SLIDE 8 · 연계</span>
-    <h2>학생용 짝 자료</h2>
-    <div class="cols">
-      <div class="main">
-        <p>이 수업의 학생용 짝 자료는 <b>「접하면 미분가능, 뚫으면 꺾인다」 탐구실</b>(2021 수능 나형 30번)이다.</p>
-        <ul>
-          <li>STEP 1–2: 실험실에서 단근/중근의 \(|\ |\) 비교 → \(p(x)=x^2(x-k)\)</li>
-          <li>STEP 3–4: \(x=1\) 이어붙이기 → \(h(2)=5\)로 \(k\) 확정</li>
-          <li>과제: \(p(x)=x^2(x-\frac52)\)의 그래프를 그리고, \(h(x)\)의 그래프(\(x&lt;1\)에서는 \(|p|\), \(x\ge 1\)에서는 \(f+g\))를 이어 그려보기</li>
-        </ul>
-      </div>
-      <div class="sidea">
-        <h4>다음 차시 예고</h4>
-        <p>"개수를 세는 함수" 시리즈 ③: 2020 나형 30번 — "근의 개수"를 "그래프의 만남"으로 번역한다.</p>
-      </div>
-    </div>
-  </section>
+<section class="slide" data-title="교사 체크"><div class="s-head"><p class="eyebrow">교사 체크</p><h2 class="ct">학생이 자주 <span class="am">멈추는 네 지점</span></h2></div><div class="s-body"><table class="tbl compact-table"><tr><th>멈춤</th><th>학생 반응</th><th>되묻기</th></tr><tr><td>묶기</td><td><span class="m" data-k="f"></span> 와 <span class="m" data-k="g"></span> 를 따로 구하려 함</td><td>"둘이 항상 같이 나오는 꼴이 있지 않나?"</td></tr><tr><td>접함</td><td>절댓값은 늘 꺾인다고 함</td><td>"p 가 접하면 접어 올린 그래프는?"</td></tr><tr><td>경계</td><td>연속만 맞춤</td><td>"미분가능이니 기울기는?"</td></tr><tr><td>조각</td><td><span class="m" data-k="h(2)"></span> 에 절댓값을 씀</td><td>"2 는 어느 쪽이었지?"</td></tr></table></div><div class="s-ask"><p class="question">우리 반에서는 네 지점 중 어디에서 가장 많이 멈출까?</p></div><aside class="notes"><p>대개 경계(값과 기울기)입니다. 연속과 미분가능의 차이를 이 문제로 한 번 더 확인하세요.</p></aside></section>
+
+<section class="slide" data-title="수업의 결론"><div class="s-head"><p class="eyebrow">수업의 결론</p><h2 class="ct">오늘 쓴 <span class="am">네 가지 사고</span></h2></div><div class="s-body"><div class="grid4 anim-stagger-list"><div class="card accent"><span class="tag">①</span><h4>묶기</h4><p>f−g = p</p></div><div class="card accent"><span class="tag">②</span><h4>접함</h4><p>절댓값이 매끄러우려면 중근</p></div><div class="card accent"><span class="tag">③</span><h4>경계</h4><p>값과 기울기</p></div><div class="card accent"><span class="tag">④</span><h4>조각 판단</h4><p>어느 쪽인지 먼저</p></div></div><div class="card quote"><p>답은 <b class="am">39</b>.</p><p class="mono">퇴장 질문: “경계가 x=1 이 아니라 x=2 였다면 무엇이 달라질까?”</p></div></div><div class="s-ask"><p class="question">경계를 옮기면 k 의 조건은 어떻게 바뀔까?</p></div><aside class="notes"><p><span class="m" data-k="k\ge2"></span> 가 됩니다. 절댓값이 씌워지는 영역이 넓어져 단근이 들어올 수 없는 범위가 달라집니다.</p></aside></section>
 
 </div>
-
-<nav class="nav">
-  <button id="prev">← 이전</button>
-  <span class="pg"><span id="cur">1</span> / 8</span>
-  <button id="next">다음 →</button>
-</nav>
-
-<script>
-document.addEventListener('DOMContentLoaded', function(){
-  if (window.renderMathInElement) renderMathInElement(document.body, {delimiters:[{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}]});
-});
-</script>
-<script src="jp-deck.js"></script>
 </body>
 </html>

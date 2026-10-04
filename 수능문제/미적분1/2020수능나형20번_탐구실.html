@@ -2,379 +2,190 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8"/>
-<meta content="width=device-width,initial-scale=1" name="viewport"/>
-<meta content="noindex,nofollow,noarchive" name="robots"/>
-<link crossorigin="" href="https://cdn.jsdelivr.net" rel="preconnect"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow,noarchive"/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;family=Noto+Serif+KR:wght@700;900&amp;display=swap" rel="stylesheet"/>
-<title>2020 수능 나형 20번 | 꺾이는 점에서 p가 메워준다</title>
-
-<!-- ── 공용 자산 ─────────────────────────────────────────────── -->
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<title>2020 수능 수학 나형 20번 | 꺾이는 점에서 p가 메워준다</title>
 <link rel="stylesheet" href="../../vendor/katex/katex.min.css"/>
-<link rel="stylesheet" href="../../jp-math-typography.css?v=3"/>
-<link rel="stylesheet" href="../../jp-lesson.css"/>
-<link rel="stylesheet" href="../../jp-explore.css"/>
+<link rel="stylesheet" href="../../jp-dark.css?v=6"/>
+<link rel="stylesheet" href="../../jp-polish.css?v=11"/>
 <script defer src="../../vendor/katex/katex.min.js"></script>
-<script defer src="../../jp-lab.js"></script>
-  <link rel="stylesheet" href="../../jp-polish.css?v=11">
-  <script src="../../jp-polish.js?v=21" defer></script>
-  <link rel="stylesheet" href="../../jp-nav-2.css?v=3">
-  <script src="../../jp-nav-2.js?v=6" data-jp-section="수능·킬러 문제" defer></script>
+<script defer src="../../jp-lab-dark.js?v=2"></script>
+<script defer src="../../jp-polish.js?v=21"></script>
+<link rel="stylesheet" href="../../jp-nav-2.css?v=3"/>
+<script src="../../jp-nav-2.js?v=6" data-jp-section="수능·킬러 문제" defer></script>
+<style>
+.cnt-lab{margin:22px 0;border:1px solid rgba(47,102,112,.2);border-radius:24px;overflow:hidden;background:#fff}.cnt-lab-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:17px 20px;border-bottom:1px solid rgba(58,49,37,.12)}.cnt-lab-head h4{margin:0;font-size:18px}.cnt-lab-head span{color:#2f6670;font:700 10px 'IBM Plex Mono',monospace;letter-spacing:.08em}.cnt-lab-body{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(260px,.72fr)}.cnt-stage{display:grid;gap:8px;align-content:center;padding:16px;background:linear-gradient(145deg,#fbfaf6,#f4efe4)}.cnt-stage svg{display:block;width:100%;height:auto}.cnt-panel{padding:20px;border-left:1px solid rgba(58,49,37,.12)}.cnt-control{margin-bottom:14px}.cnt-control label{display:flex;justify-content:space-between;gap:12px;margin-bottom:6px;color:#5f574b;font-size:12px}.cnt-control label b{color:#a95232;font-family:'IBM Plex Mono',monospace}.cnt-control input{width:100%;accent-color:#a95232}.snap{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 12px}.snap button{padding:5px 9px;border:1px solid rgba(58,49,37,.2);border-radius:999px;background:#fff;font:700 11px 'IBM Plex Mono',monospace;color:#5f574b;cursor:pointer}.snap button:hover{border-color:#a95232;color:#a95232}.cnt-row{display:flex;justify-content:space-between;gap:12px;margin-top:8px;padding:9px 11px;border-radius:11px;background:#f6f2e9;font-size:12px}.cnt-row b{color:#2f6670;font-family:'IBM Plex Mono',monospace;text-align:right}.cnt-row.hot b{color:#a95232}.verdict{display:grid;place-items:center;min-height:74px;margin-top:12px;padding:10px;border-radius:15px;color:#fff;background:#8a3d3d;text-align:center}.verdict strong{display:block;font:700 19px 'Pretendard',sans-serif}.verdict span{font-size:11px;color:rgba(255,255,255,.8)}.verdict.ok{background:#477454;box-shadow:0 0 0 4px rgba(71,116,84,.12)}.verdict.mid{background:#6c6357}.cnt-hint{margin:10px 0 0;color:#776e61;font-size:11.5px;line-height:1.6}
+.prob .eqrow{overflow-x:auto}.choice{min-height:48px}.choice.chosen{border-color:#2f6670!important;background:#eef6f5!important;box-shadow:0 0 0 3px rgba(47,102,112,.1)}
+.gtable{width:100%;border-collapse:collapse;margin-top:14px;font-size:13px}.gtable th,.gtable td{padding:8px 6px;border-bottom:1px solid rgba(58,49,37,.12);text-align:center}.gtable td.hot{color:#a95232;font-weight:800}.gtable tr.key td{background:#fff3e8}
+.mini-answer{font-size:clamp(46px,8vw,84px);font-weight:800;color:#a95232;text-align:center;letter-spacing:-.06em}.reveal-note{margin-top:12px;color:#6b6256;font-size:13px;text-align:center}
+.bogi{margin:18px 0;padding:18px 20px;border:1.5px solid rgba(58,49,37,.3);border-radius:16px;background:#fdfcf8}.bogi h5{margin:0 0 12px;color:#2f6670;font:700 12px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-align:center}.bogi p{margin:9px 0;padding-left:22px;text-indent:-22px}.bogi p b{color:#a95232}
+@media(max-width:800px){.cnt-lab-body{grid-template-columns:1fr}.cnt-panel{border-top:1px solid rgba(58,49,37,.12);border-left:0}.cnt-stage{padding:8px}}
+@media(max-width:650px){.cnt-row{flex-direction:column;align-items:flex-start}.cnt-row b{text-align:left}.gtable{font-size:11.5px}}
+.cond{margin:16px 0;padding:16px 18px;border:1.5px solid rgba(58,49,37,.25);border-radius:15px;background:#fdfcf8}.cond p{margin:8px 0;padding-left:26px;text-indent:-26px}.ansrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:16px 0}.ansrow input{width:150px;padding:11px 14px;border:1.5px solid rgba(58,49,37,.28);border-radius:12px;font:700 18px IBM Plex Mono,monospace;background:#fff}.ansrow input:focus{outline:none;border-color:#2f6670;box-shadow:0 0 0 3px rgba(47,102,112,.12)}.ansrow .res{font-weight:700;font-size:14px}.ansrow .res.ok{color:#477454}.ansrow .res.no{color:#a95232}.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:14px 0}.opts span{padding:8px 10px;border:1px solid rgba(58,49,37,.14);border-radius:11px;background:#fdfcf8;font-size:15px}</style>
 </head>
-<body class="tpl-math-lesson tpl-explore">
+<body class="tpl-dark is-page">
 
-<header class="ex-top">
-  <div class="ex-brand"><a href="../">← 수능 문제</a><small>2020 수능 나형 20번 · 꺾이는 점에서 p가 메워준다</small></div>
-  <div class="ex-prog"><div class="ex-prog-bar"><i id="progFill"></i></div><span class="ex-prog-txt" id="progTxt">1 / 6</span></div>
+<header>
+  <div class="hbar">
+    <h1>꺾이는 점에서 p가 메워준다</h1>
+    <span class="src">2020학년도 수능 수학 <b>나형 20번</b> · 4점</span>
+    <a class="back" href="../">← 수능 문제</a>
+  </div>
+  <nav id="nav"></nav>
+  <div class="pbar"><span id="pfill"></span></div>
 </header>
 
-<div class="ex-layout">
-  <aside class="ex-rail">
-    <h3>탐구 경로</h3>
-    <nav class="ex-rail-nav" id="rail"></nav>
-    <p class="rail-tip">먼저 <b>내 생각을 고르고</b> 나서 그래프를 움직여 보세요.<br/>틀려도 괜찮습니다 — 틀린 곳에서 배웁니다.</p>
-  </aside>
+<main>
 
-  <main class="ex-main">
-
-<!-- ═══ SCENE 1 ═══════════════════════════════════════════════════ -->
-<section class="scene is-on" id="s1">
-<p class="scene-eyebrow">문제 읽기 · 2020 수능 나형 20번</p>
-<h2 class="scene-h2"><span class="accent">꺾이는 점</span>에서 <span class="kx" data-k="p"></span>가 메워준다</h2>
-<p class="scene-lead"><span class="kx" data-k="f(x)"></span>는 두 군데가 "나쁩니다": <span class="kx" data-k="x=0"></span>에서 <b>끊어지고</b>(불연속), <span class="kx" data-k="x=2"></span>에서 <b>꺾입니다</b>(미분불가). <span class="kx" data-k="p(x)"></span>를 곱했을 때 전체가 매끄러워지려면, <span class="kx" data-k="p"></span>가 나쁜 점을 <b>메워줘야</b> 합니다. 그런데 <b>끊어진 점과 꺾인 점은 메워주는 방법이 다릅니다!</b> 이 차이가 ㄷ의 함정이에요.</p>
-<div class="work">
-  <div class="figure"><img alt="2020학년도 수능 나형 20번 문제" src="문제이미지/assets/2020수능나형20번.png"/></div>
-  <div class="stack">
-    <div class="fx sm boxed" data-k="f(x)=\begin{cases}-x&(x\le 0)\\x-1&(0\lt x\le 2)\\2x-3&(x\gt 2)\end{cases}"></div>
-    <div class="note-strip"><span class="ic">보기</span><p>ㄱ. <span class="kx" data-k="\dfrac{p(x)}{f(x)}"></span> 연속 <span class="kx" data-k="\Rightarrow"></span> <span class="kx" data-k="p(0)=0"></span> &nbsp; ㄴ. <span class="kx" data-k="p(x)f(x)"></span> 미분가능 <span class="kx" data-k="\Rightarrow"></span> <span class="kx" data-k="p(2)=0"></span> &nbsp; ㄷ. <span class="kx" data-k="p(x)\{f(x)\}^2"></span> 미분가능 <span class="kx" data-k="\Rightarrow"></span> <span class="kx" data-k="x^2(x-2)^2\mid p(x)"></span></p></div>
-  </div>
-</div>
-<div class="scene-nav"><span class="sp"></span><button class="nbtn go" data-go="next">나쁜 점 지도 그리기 →</button></div>
+<!-- ══════════ STEP 1 ══════════ -->
+<section class="ch on" data-ch="0">
+  <p class="eyebrow">STEP 01 · 문제 만나기</p>
+  <h2 class="ct"><span class="am">나쁜 점</span>을 먼저 찾고, 곱해서 <span class="am">눌러 메운다</span></h2>
+<p class="lede"><span class="m" data-k="f"></span> 는 두 군데가 매끄럽지 않습니다. <span class="m" data-k="p(x)"></span> 를 곱하는 일은 그 나쁜 점에서 값을 <b>0 쪽으로 눌러서</b> 상처를 메우는 일입니다.</p><div class="prob"><div class="prob-head"><span class="yr">2020 수능</span><h4>나형 20번</h4><span class="pts">4점</span></div><div class="prob-body"><div class="qtext"><p>함수 <span class="m" data-k="f(x)"></span> 를</p><div class="eq"><div class="eqrow"><span class="m md" data-k="f(x)=\begin{cases}-x &amp; (x\le 0)\\ x-1 &amp; (0\lt x\le 2)\\ 2x-3 &amp; (x\gt 2)\end{cases}"></span></div></div><p>라 하자. 상수가 아닌 다항식 <span class="m" data-k="p(x)"></span> 에 대하여 &lt;보기&gt;에서 옳은 것만을 있는 대로 고른 것은?</p></div><div class="bogi"><h5>&lt; 보 기 &gt;</h5>
+<p>ㄱ. 함수 <span class="m" data-k="p(x)f(x)"></span> 가 실수 전체의 집합에서 연속이면 <span class="m" data-k="p(0)=0"></span> 이다.</p>
+<p>ㄴ. 함수 <span class="m" data-k="p(x)f(x)"></span> 가 실수 전체의 집합에서 미분가능하면 <span class="m" data-k="p(2)=0"></span> 이다.</p>
+<p>ㄷ. 함수 <span class="m" data-k="p(x)\{f(x)\}^{2}"></span> 이 실수 전체의 집합에서 미분가능하면 <span class="m" data-k="p(x)"></span> 는 <span class="m" data-k="x^{2}(x-2)^{2}"></span> 으로 나누어떨어진다.</p></div><div class="choices" data-q="first" data-ans="1" data-mode="record"><button class="choice" data-i="0">① ㄱ</button><button class="choice" data-i="1">② ㄱ, ㄴ</button><button class="choice" data-i="2">③ ㄱ, ㄷ</button><button class="choice" data-i="3">④ ㄴ, ㄷ</button><button class="choice" data-i="4">⑤ ㄱ, ㄴ, ㄷ</button></div><p class="hintline" style="margin-top:10px">처음 답은 기록만 해 두세요. 마지막에 다시 선택해 봅니다.</p></div></div><div class="prob"><div class="prob-head"><span class="yr">첫 질문</span><h4><span class="m" data-k="f"></span> 의 나쁜 점은 어디에 어떤 모양으로 있나?</h4></div><div class="prob-body"><div class="choices" data-q="bad" data-ans="0"><button class="choice" data-i="0"><span class="m" data-k="x=0"></span> 에서 끊어짐(점프), <span class="m" data-k="x=2"></span> 에서 꺾임</button><button class="choice" data-i="1">두 곳 모두 끊어짐</button><button class="choice" data-i="2"><span class="m" data-k="x=2"></span> 에서만 문제가 있다</button></div><div class="sol-btns"><button class="b gh" data-sol="badSol">직관으로 보기</button></div><div class="sol intu" id="badSol"><h5>직관</h5><div class="step"><span class="m" data-k="x=0"></span>: 왼쪽에서 오면 <span class="m" data-k="0"></span>, 오른쪽에서 오면 <span class="m" data-k="-1"></span> 로 가는데 값은 <span class="m" data-k="f(0)=0"></span>. <b>높이가 어긋난 점프(불연속)</b>입니다.</div><div class="step"><span class="m" data-k="x=2"></span>: 왼쪽 값 <span class="m" data-k="2-1=1"></span>, 오른쪽 값 <span class="m" data-k="4-3=1"></span> 로 이어지지만 기울기가 <span class="m" data-k="1"></span> 에서 <span class="m" data-k="2"></span> 로 바뀝니다. <b>이어지지만 꺾이는 점(미분불가)</b>입니다.</div><div class="step">메우는 방법이 달라야 합니다 — 점프는 높이 차를, 꺾임은 기울기 차를 눌러 없애야 하니까요.</div></div></div></div>
+  <div class="chnav"><span class="sp"></span><button class="b" data-go="next">곱해서 메우기 →</button></div>
 </section>
 
-<!-- ═══ SCENE 2 ═══════════════════════════════════════════════════ -->
-<section class="scene" id="s2">
-<p class="scene-eyebrow">STEP 1 · 나쁜 점 지도</p>
-<h2 class="scene-h2"><span class="kx" data-k="f(x)"></span>의 <span class="accent">"나쁜 점"</span> 지도 그리기</h2>
-<p class="scene-lead">그래프를 그려 봅시다. 어디가 나쁜가요?</p>
-<div class="work">
-  <div class="stack">
-    <div class="grid g3">
-      <div class="card hot"><strong><span class="kx" data-k="x=0"></span></strong><p><span class="kx" data-k="f(0)=0"></span>이지만 <span class="kx" data-k="\lim_{x\to 0^+}f(x)=-1"></span>. <b class="neg">점프 불연속!</b> (끊어짐)</p></div>
-      <div class="card hot"><strong><span class="kx" data-k="x=2"></span></strong><p><span class="kx" data-k="f(2)=1"></span>로 연속이지만, 좌미분계수 1 ≠ 우미분계수 2. <b class="neg">꺾임!</b> (미분불가)</p></div>
-      <div class="card"><strong>0이 되는 점</strong><p><span class="kx" data-k="x=0,1"></span>에서 <span class="kx" data-k="f(x)=0"></span></p></div>
-    </div>
-  </div>
-  <div class="askbox">
-    <p class="askq"><span class="kx" data-k="f(x)"></span>가 "나쁜" 점과 그 종류는?</p>
-    <div class="opts">
-      <button class="opt" data-correct="1"><span class="kx" data-k="x=0"></span>에서 불연속, <span class="kx" data-k="x=2"></span>에서 미분불가</button>
-      <button class="opt"><span class="kx" data-k="x=0,2"></span> 모두에서 불연속</button>
-      <button class="opt"><span class="kx" data-k="x=1"></span>에서 불연속</button>
-    </div>
-    <div class="optfb" data-ok="정답! x=0은 끊어지고(점프), x=2는 꺾입니다. 두 종류의 나쁨을 구별하는 것이 핵심이에요." data-no="x=0에서 왼쪽 값(0)과 오른쪽 극한(-1)을 비교해 보세요. x=2에서는 함수값은 일치하나요? 미분계수는요?"></div>
-  </div>
-</div>
-<div class="scene-nav"><button class="nbtn" data-go="prev">← 이전</button><span class="sp"></span><button class="nbtn go" data-go="next">실험실로 →</button></div>
+<!-- ══════════ STEP 2 ══════════ -->
+<section class="ch" data-ch="1">
+  <p class="eyebrow">STEP 02 · ㄱ과 ㄴ</p>
+  <h2 class="ct"><span class="am">p f</span> 가 매끄러워지려면 어디서 0이 돼야 하나</h2>
+<p class="lede">아래에서 <span class="m" data-k="p(x)=(x+3)\,x^{a}(x-2)^{b}"></span> 의 겹수를 바꿔 보세요. 왼쪽은 <span class="m" data-k="x=0"></span> 근처, 오른쪽은 <span class="m" data-k="x=2"></span> 근처를 <b>확대한 그림</b>입니다. 두 점에서 각각 <span class="m" data-k="p f"></span> 가 이어지는지, 매끄러운지 판정이 뜹니다.</p><div class="cnt-lab"><div class="cnt-lab-head"><h4>곱해서 메우기 · p × f</h4><span>MOVE · FILL</span></div><div class="cnt-lab-body"><div class="cnt-stage"><div id="lab1"></div></div><div class="cnt-panel"><div class="cnt-control"><label><span>x=0 에서 p 의 겹수 a</span><b id="a1v">0</b></label><input id="a1" type="range" min="0" max="3" step="1" value="0"></div><div class="cnt-control"><label><span>x=2 에서 p 의 겹수 b</span><b id="b1v">0</b></label><input id="b1" type="range" min="0" max="3" step="1" value="0"></div><div class="snap"><button data-ab="0,0">곱하지 않음</button><button data-ab="1,0">a=1</button><button data-ab="2,0">a=2</button><button data-ab="2,1">a=2, b=1</button></div><div class="cnt-row hot"><span>x = 0 (점프)</span><b id="r1a">—</b></div><div class="cnt-row hot"><span>x = 2 (꺾임)</span><b id="r1b">—</b></div><div class="verdict" id="v1box"><strong>—</strong><span>—</span></div><p class="cnt-hint">채운 점이 그 자리의 값입니다. 왼쪽·오른쪽 곡선이 같은 높이로 만나고 기울기도 같아야 "매끄럽다"입니다.</p></div></div></div><div class="prob"><div class="prob-head"><span class="yr">ㄱ</span><h4><span class="m" data-k="p f"></span> 가 연속이려면?</h4></div><div class="prob-body"><div class="choices" data-q="gaq" data-ans="0"><button class="choice" data-i="0"><span class="m" data-k="p(0)=0"></span></button><button class="choice" data-i="1"><span class="m" data-k="p(2)=0"></span></button><button class="choice" data-i="2"><span class="m" data-k="p(0)=p(2)=0"></span></button></div><div class="sol-btns"><button class="b gh" data-sol="gaSol">직관으로 보기</button></div><div class="sol intu" id="gaSol"><h5>직관</h5><div class="step">연속을 막는 것은 <b>점프</b>(<span class="m" data-k="x=0"></span>)뿐입니다. <span class="m" data-k="x=2"></span> 는 이미 이어져 있으니 건드릴 필요가 없습니다.</div><div class="step"><span class="m" data-k="x=0"></span> 의 오른쪽에서 <span class="m" data-k="pf\to-p(0)"></span>, 값은 <span class="m" data-k="0"></span>. 둘이 같으려면 <span class="m am" data-k="p(0)=0"></span> — <b>ㄱ은 참.</b> 인수 한 겹(<span class="m" data-k="x"></span>)이면 충분합니다.</div></div></div></div><div class="prob"><div class="prob-head"><span class="yr">ㄴ</span><h4><span class="m" data-k="p f"></span> 가 미분가능이면 <span class="m" data-k="p(2)=0"></span> 인가?</h4></div><div class="prob-body"><div class="choices" data-q="nuq" data-ans="0"><button class="choice" data-i="0">반드시 <span class="m" data-k="p(2)=0"></span> 이다</button><button class="choice" data-i="1"><span class="m" data-k="p(2)\neq0"></span> 이어도 된다</button></div><div class="sol-btns"><button class="b gh" data-sol="nuSol">논리로 쓰기</button></div><div class="sol calc" id="nuSol"><h5>논리</h5><div class="step"><span class="m" data-k="x=2"></span> 에서 <span class="m" data-k="(pf)'=p'f+pf'"></span>. 좌우의 <span class="m" data-k="p'f=p'(2)\cdot1"></span> 은 같고 차이는 <span class="m" data-k="p(2)\,f'"></span>: 왼쪽 <span class="m" data-k="p(2)\cdot1"></span>, 오른쪽 <span class="m" data-k="p(2)\cdot2"></span>.</div><div class="step">같아지려면 <span class="m" data-k="p(2)=2p(2)"></span>, 곧 <span class="m am" data-k="p(2)=0"></span>. <b>ㄴ은 참.</b> 꺾임은 한 겹이면 눌려 사라집니다.</div></div></div></div>
+  <div class="chnav"><button class="b mute" data-go="prev">← 이전</button><span class="sp"></span><button class="b" data-go="next">ㄷ 살펴보기 →</button></div>
 </section>
 
-<!-- ═══ SCENE 3 ═══════════════════════════════════════════════════ -->
-<section class="scene" id="s3">
-<p class="scene-eyebrow">실험실 · 직접 움직이기</p>
-<h2 class="scene-h2"><span class="kx" data-k="p(x)"></span>가 <span class="accent">메워주는</span> 모습</h2>
-<p class="scene-lead"><span class="kx" data-k="p(x)"></span>의 차수를 바꾸며 <span class="kx" data-k="p(x)f(x)"></span>가 어떻게 매끄러워지는지 봅시다.</p>
-<div class="work">
-  <div class="lab" data-lab="patch20">
-    <div class="lab-stage"><svg class="lab-svg" viewBox="0 0 600 340" role="img" aria-label="메워주기 실험"></svg></div>
-    <div class="lab-side">
-      <div class="sl">
-        <div class="sl-top"><span><span class="kx" data-k="p(x)=x^k"></span> 의 <span class="kx" data-k="k"></span></span><span class="sl-val" data-kval>1</span></div>
-        <div class="seg" data-kseg>
-          <button aria-pressed="false" data-k="0"><em>k</em>=0</button>
-          <button aria-pressed="true" data-k="1"><em>k</em>=1</button>
-          <button aria-pressed="false" data-k="2"><em>k</em>=2</button>
-          <button aria-pressed="false" data-k="3"><em>k</em>=3</button>
-        </div>
-      </div>
-      <div class="sl">
-        <div class="sl-top"><span>보기</span></div>
-        <div class="seg" data-vseg>
-          <button aria-pressed="true" data-v="pf"><em>p</em>(<em>x</em>)<em>f</em>(<em>x</em>)</button>
-          <button aria-pressed="false" data-v="pf2"><em>p</em>(<em>x</em>)<em>f</em>(<em>x</em>)²</button>
-        </div>
-      </div>
-      <div class="verdict" data-readout><span class="vmark">?</span><div class="vtext">k를 바꿔 보세요<small>그래프가 어떻게 매끄러워지는지 관찰</small></div></div>
-    </div>
-  </div>
-  <div class="stack">
-    <div class="try"><b>관찰</b><p><span class="kx" data-k="k=0"></span> (<span class="kx" data-k="p=1"></span>): <span class="kx" data-k="f"></span>의 끊어짐과 꺾임이 그대로 보입니다. <span class="kx" data-k="k=1"></span> (<span class="kx" data-k="p=x"></span>): <span class="kx" data-k="x=0"></span>의 끊어짐이 메워지기 시작합니다. <span class="kx" data-k="k=2"></span> (<span class="kx" data-k="p=x^2"></span>): <span class="kx" data-k="x=0"></span>이 완전히 매끄러워집니다.</p></div>
-  </div>
-</div>
-<div class="scene-nav"><button class="nbtn" data-go="prev">← 이전</button><span class="sp"></span><button class="nbtn go" data-go="next">ㄱ·ㄴ 판정으로 →</button></div>
+<!-- ══════════ STEP 3 ══════════ -->
+<section class="ch" data-ch="2">
+  <p class="eyebrow">STEP 03 · ㄷ</p>
+  <h2 class="ct"><span class="am">f의 제곱</span>이어도 꺾임은 <span class="am">한 겹</span>이면 충분하다</h2>
+<p class="lede">이제 <span class="m" data-k="p\,f^{2}"></span> 을 봅니다. <span class="m" data-k="f^{2}"></span> 는 <span class="m" data-k="x=0"></span> 에서 <b>0 → 1</b> 로 뛰고, <span class="m" data-k="x=2"></span> 에서 <b>기울기가 2 → 4</b> 로 꺾입니다. 같은 실험을 해 보세요.</p><div class="cnt-lab"><div class="cnt-lab-head"><h4>곱해서 메우기 · p × f²</h4><span>MOVE · FILL</span></div><div class="cnt-lab-body"><div class="cnt-stage"><div id="lab2"></div></div><div class="cnt-panel"><div class="cnt-control"><label><span>x=0 에서 p 의 겹수 a</span><b id="a2v">1</b></label><input id="a2" type="range" min="0" max="3" step="1" value="1"></div><div class="cnt-control"><label><span>x=2 에서 p 의 겹수 b</span><b id="b2v">1</b></label><input id="b2" type="range" min="0" max="3" step="1" value="1"></div><div class="snap"><button data-ab2="1,1">a=1, b=1</button><button data-ab2="2,1">a=2, b=1</button><button data-ab2="2,2">a=2, b=2</button></div><div class="cnt-row hot"><span>x = 0 (점프)</span><b id="r2a">—</b></div><div class="cnt-row hot"><span>x = 2 (꺾임)</span><b id="r2b">—</b></div><div class="verdict" id="v2box"><strong>—</strong><span>—</span></div><p class="cnt-hint">a=2, b=1 이면 매끄럽습니다. 그런데 이때 p 는 x²(x−2)² 으로 나누어떨어지나요?</p></div></div></div><div class="prob"><div class="prob-head"><span class="yr">ㄷ</span><h4><span class="m" data-k="p\,f^{2}"></span> 이 미분가능하면 <span class="m" data-k="x^{2}(x-2)^{2}"></span> 으로 나누어떨어지는가?</h4></div><div class="prob-body"><div class="choices" data-q="dq" data-ans="1"><button class="choice" data-i="0">그렇다 — <span class="m" data-k="x=0"></span> 도 <span class="m" data-k="x=2"></span> 도 두 겹이 필요하다</button><button class="choice" data-i="1">아니다 — <span class="m" data-k="x=2"></span> 는 한 겹이면 충분하다</button><button class="choice" data-i="2">알 수 없다</button></div><div class="sol-btns"><button class="b gh" data-sol="dSol">논리로 쓰기</button></div><div class="sol calc" id="dSol"><h5>논리</h5><div class="step"><span class="m" data-k="x=2"></span> 에서 <span class="m" data-k="(pf^{2})'=p'f^{2}+p\,(f^{2})'"></span>. <span class="m" data-k="f(2)=1"></span> 이고 <span class="m" data-k="(f^{2})'=2ff'"></span> 는 좌 <span class="m" data-k="2"></span>, 우 <span class="m" data-k="4"></span>. 차이는 <span class="m" data-k="p(2)\times(2\text{ vs }4)"></span> 뿐이라 <b><span class="m" data-k="p(2)=0"></span> 하나면 사라집니다.</b></div><div class="step"><span class="m" data-k="x=0"></span> 에서는 점프(0→1)를 매끄럽게 하려면 <span class="m" data-k="p(0)=p'(0)=0"></span>, 곧 <b><span class="m" data-k="x^{2}"></span> 두 겹</b>이 필요합니다.</div><div class="step">그러므로 필요한 것은 <span class="m" data-k="x^{2}(x-2)"></span> 까지. 반례 <span class="m am" data-k="p(x)=x^{2}(x-2)"></span> 는 <span class="m" data-k="p\,f^{2}"></span> 을 매끄럽게 하지만 <span class="m" data-k="(x-2)^{2}"></span> 으로 나누어떨어지지 않습니다. <b>ㄷ은 거짓.</b></div></div></div></div>
+  <div class="chnav"><button class="b mute" data-go="prev">← 이전</button><span class="sp"></span><button class="b" data-go="next">답 고르기 →</button></div>
 </section>
 
-<!-- ═══ SCENE 4 ═══════════════════════════════════════════════════ -->
-<section class="scene" id="s4">
-<p class="scene-eyebrow">STEP 2 · ㄱ, ㄴ 판정</p>
-<h2 class="scene-h2">각 점에서 <span class="accent">필요한 조건</span></h2>
-<p class="scene-lead">나쁜 점을 메우려면 <span class="kx" data-k="p"></span>가 0이 되어야 합니다.</p>
-<div class="work">
-  <div class="stack">
-    <p><b>ㄱ.</b> <span class="kx" data-k="\dfrac{p(x)}{f(x)}"></span>가 연속. <span class="kx" data-k="f(0)=0"></span>이므로 분모가 0입니다. 분자 <span class="kx" data-k="p(0)"></span>도 0이 아니면 극한이 발산합니다. 따라서 <b><span class="kx" data-k="p(0)=0"></span></b>. (ㄱ 참)</p>
-    <p><b>ㄴ.</b> <span class="kx" data-k="p(x)f(x)"></span>가 미분가능. <span class="kx" data-k="x=2"></span>는 <span class="kx" data-k="f"></span>의 꺾이는 점입니다. 곱의 미분법:</p>
-    <div class="fx sm boxed" data-k="\begin{aligned}(pf)'(2^-)&=p'(2)f(2)+p(2)\cdot 1\\(pf)'(2^+)&=p'(2)f(2)+p(2)\cdot 2\end{aligned}"></div>
-    <p>같아지려면 <span class="kx" data-k="p(2)=0"></span>. (ㄴ 참)</p>
-  </div>
-  <div class="askbox">
-    <p class="askq"><span class="kx" data-k="x=2"></span>에서 <span class="kx" data-k="(pf)'"></span>의 좌우가 같아지려면 왜 <span class="kx" data-k="p(2)=0"></span>이어야 하는가?</p>
-    <div class="opts">
-      <button class="opt"><span class="kx" data-k="f(2)=0"></span>이기 때문</button>
-      <button class="opt" data-correct="1"><span class="kx" data-k="f'"></span>의 좌우 값(1과 2)이 다르므로, 그 차이를 없애려면 <span class="kx" data-k="p(2)"></span>가 0이어야 하기 때문</button>
-      <button class="opt"><span class="kx" data-k="p'(2)=0"></span>이기 때문</button>
-    </div>
-    <div class="optfb" data-ok="정답! (pf)′(2⁺)−(pf)′(2⁻)=p(2)(2−1)=p(2). 이 차이가 0이 되려면 p(2)=0이에요." data-no="(pf)′=p′f+pf′에서 f′의 점프(1→2)가 p(2)와 곱해집니다. 점프를 없애려면?"></div>
-  </div>
-</div>
-<div class="scene-nav"><button class="nbtn" data-go="prev">← 이전</button><span class="sp"></span><button class="nbtn go" data-go="next">ㄷ의 함정으로 →</button></div>
+<!-- ══════════ STEP 4 ══════════ -->
+<section class="ch" data-ch="3">
+  <p class="eyebrow">STEP 04 · 회수와 검산</p>
+  <h2 class="ct">나쁜 정도를 <span class="am">겹수</span>로 센다</h2>
+<table class="gtable"><tr><th>나쁜 점</th><th><span class="m" data-k="pf"></span> 연속</th><th><span class="m" data-k="pf"></span> 미분가능</th><th><span class="m" data-k="pf^{2}"></span> 미분가능</th></tr><tr><td><span class="m" data-k="x=0"></span> 점프</td><td class="hot"><span class="m" data-k="x"></span> 한 겹</td><td class="hot"><span class="m" data-k="x^{2}"></span> 두 겹</td><td class="hot"><span class="m" data-k="x^{2}"></span> 두 겹</td></tr><tr><td><span class="m" data-k="x=2"></span> 꺾임</td><td>필요 없음</td><td class="hot"><span class="m" data-k="x-2"></span> 한 겹</td><td class="hot"><span class="m" data-k="x-2"></span> 한 겹</td></tr></table><table class="gtable"><tr><th>보기</th><th>판정</th><th>근거 한 줄</th></tr><tr class="key"><td>ㄱ</td><td class="hot">참</td><td>점프를 메우려면 <span class="m" data-k="p(0)=0"></span></td></tr><tr class="key"><td>ㄴ</td><td class="hot">참</td><td>꺾임을 메우려면 <span class="m" data-k="p(2)=0"></span></td></tr><tr><td>ㄷ</td><td>거짓</td><td>꺾임은 한 겹: <span class="m" data-k="p=x^{2}(x-2)"></span> 가 반례</td></tr></table><div class="prob"><div class="prob-head"><span class="yr">최종 선택</span><h4>옳은 것만을 있는 대로 고르면?</h4></div><div class="prob-body"><div class="choices" data-q="final" data-ans="1"><button class="choice" data-i="0">① ㄱ</button><button class="choice" data-i="1">② ㄱ, ㄴ</button><button class="choice" data-i="2">③ ㄱ, ㄷ</button><button class="choice" data-i="3">④ ㄴ, ㄷ</button><button class="choice" data-i="4">⑤ ㄱ, ㄴ, ㄷ</button></div><div class="sol-btns"><button class="b gh" data-sol="finalSol">정답 확인</button></div><div class="sol intu" id="finalSol"><h5>마무리</h5><p class="mini-answer">ㄱ, ㄴ</p><p class="reveal-note">정답 ② · ㄷ 은 <span class="m" data-k="(x-2)^{2}"></span> 가 아니라 <span class="m" data-k="(x-2)"></span> 한 겹이면 충분합니다</p></div></div></div><div class="card quote pad"><h3>오늘 쓴 생각의 뼈대</h3><ul class="bul"><li><b class="am">나쁜 점 지도</b> — 점프(불연속)와 꺾임(미분불가)을 먼저 구별한다.</li><li><b class="am">눌러 메운다</b> — 곱하는 함수가 그 점에서 0 이 되어 상처를 지운다.</li><li><b class="am">겹수가 정도를 말한다</b> — 점프는 연속에 한 겹·매끄러움에 두 겹, 꺾임은 한 겹.</li><li><b class="am">보기끼리 이어 읽기</b> — ㄱ·ㄴ·ㄷ이 같은 이야기의 세 단계다.</li></ul></div>
+  <div class="chnav"><button class="b mute" data-go="prev">← 이전</button><span class="sp"></span><button class="b gh" data-go="top">처음으로</button></div>
 </section>
-
-<!-- ═══ SCENE 5 ═══════════════════════════════════════════════════ -->
-<section class="scene" id="s5">
-<p class="scene-eyebrow">STEP 3 · ㄷ 판정</p>
-<h2 class="scene-h2">ㄷ의 함정 — <span class="accent">끊어짐</span>과 <span class="accent">꺾임</span>은 다르다!</h2>
-<p class="scene-lead">이 문제의 클라이맥스. ㄷ이 왜 거짓인가요?</p>
-<div class="work">
-  <div class="stack">
-    <p>ㄷ은 "<span class="kx" data-k="p(x)\{f(x)\}^2"></span>이 미분가능하면 <span class="kx" data-k="p(x)"></span>는 <span class="kx" data-k="x^2(x-2)^2"></span>으로 나누어떨어진다"고 주장합니다.</p>
-    <p><b><span class="kx" data-k="x=0"></span> (점프 불연속):</b> <span class="kx" data-k="f^2"></span>도 점프합니다 (0→1). <span class="kx" data-k="q=pf^2"></span>가 미분가능(따라서 연속)하려면:</p>
-    <ul>
-      <li>연속: <span class="kx" data-k="\lim_{0^-}q=0,\ \lim_{0^+}q=p(0)"></span> → <span class="kx" data-k="p(0)=0"></span>.</li>
-      <li>미분가능: <span class="kx" data-k="q'(0^-)=0,\ q'(0^+)=p'(0)"></span> → <span class="kx" data-k="p'(0)=0"></span>.</li>
-      <li>따라서 <b><span class="kx" data-k="x^2"></span>이 필요</b>합니다. ✓ (ㄷ의 <span class="kx" data-k="x^2"></span> 부분은 맞습니다)</li>
-    </ul>
-    <p><b><span class="kx" data-k="x=2"></span> (꺾임, 연속):</b> <span class="kx" data-k="f(2)=1\ne 0"></span>. <span class="kx" data-k="q=pf^2"></span>의 미분:</p>
-    <div class="fx sm boxed" data-k="q'(2^+)-q'(2^-)=p(2)\cdot\big[(f^2)'(2^+)-(f^2)'(2^-)\big]"></div>
-    <p><span class="kx" data-k="p(2)=0"></span>이면 좌우 미분계수가 같아집니다. <b><span class="kx" data-k="(x-2)^1"></span>이면 충분</b>하고, <span class="kx" data-k="(x-2)^2"></span>까지는 필요 없습니다!</p>
-    <p>따라서 ㄷ의 "<span class="kx" data-k="x^2(x-2)^2"></span>으로 나누어떨어진다"는 <b class="neg">거짓</b>입니다. (<span class="kx" data-k="x^2(x-2)"></span>까지만 보장됩니다.)</p>
-    <div class="grid g2">
-      <div class="card hot"><strong><span class="kx" data-k="x=0"></span>: 점프 불연속</strong><p><span class="kx" data-k="p"></span>에 필요한 것: <b><span class="kx" data-k="x^2"></span></b></p></div>
-      <div class="card hot"><strong><span class="kx" data-k="x=2"></span>: 꺾임 (연속)</strong><p><span class="kx" data-k="p"></span>에 필요한 것: <b><span class="kx" data-k="(x-2)^1"></span></b></p></div>
-    </div>
-  </div>
-  <div class="askbox">
-    <p class="askq">ㄷ이 거짓인 이유는?</p>
-    <div class="opts">
-      <button class="opt"><span class="kx" data-k="x=0"></span>에서 <span class="kx" data-k="x^2"></span>이 필요 없기 때문</button>
-      <button class="opt" data-correct="1"><span class="kx" data-k="x=2"></span>는 꺾인 점(연속)이라 <span class="kx" data-k="(x-2)^1"></span>이면 충분하고, <span class="kx" data-k="(x-2)^2"></span>까지는 필요 없기 때문</button>
-      <button class="opt"><span class="kx" data-k="p(x)"></span>가 상수가 아니기 때문</button>
-    </div>
-    <div class="optfb" data-ok="정답! 점프(불연속)는 x², 꺾임(미분불가)은 (x−2)¹. 나쁜 점의 종류에 따라 메워주는 정도가 달라요. 이것이 이 문제의 함정입니다." data-no="x=0은 f가 끊어지는 점, x=2는 f가 꺾이는 점입니다. 각각 p가 몇 차로 0이 되어야 하나요?"></div>
-  </div>
-</div>
-<div class="scene-nav"><button class="nbtn" data-go="prev">← 이전</button><span class="sp"></span><button class="nbtn go" data-go="next">정답 확인 →</button></div>
-</section>
-
-<!-- ═══ SCENE 6 ═══════════════════════════════════════════════════ -->
-<section class="scene" id="s6">
-<p class="scene-eyebrow">정답 + 정리</p>
-<h2 class="scene-h2">정답 <span class="accent">②</span>, 그리고 남는 것</h2>
-<p class="scene-lead">ㄱ 참, ㄴ 참, ㄷ 거짓 → <b>② ㄱ, ㄴ</b></p>
-<div class="work">
-  <div class="stack">
-    <p class="answer-big">②</p>
-  </div>
-</div>
-<div class="stack" style="margin-top:34px">
-<div class="takeaways">
-  <div class="takeaway"><b>지도</b><span><b>나쁜 점의 지도</b>를 그려라. 불연속(끊어짐)과 미분불가(꺾임)를 구별하자.</span></div>
-  <div class="takeaway"><b>메우기</b><span><span class="kx" data-k="p"></span>가 나쁜 점을 메워주려면 <b>그 점에서 0</b>이 되어야 한다.</span></div>
-  <div class="takeaway"><b>차수</b><span><b>점프는 <span class="kx" data-k="x^2"></span>, 꺾임은 <span class="kx" data-k="(x-a)"></span>.</b> 나쁜 정도에 따라 메워주는 차수가 다르다.</span></div>
-  <div class="takeaway"><b>연결</b><span>보기는 하나씩이 아니라 <b>연결해서</b> 읽자. ㄱ,ㄴ,ㄷ이 같은 이야기를 한다.</span></div>
-</div>
-</div>
-<div class="scene-nav"><button class="nbtn" data-go="prev">← 이전</button><span class="sp"></span><button class="nbtn" data-go="restart">처음부터 다시</button></div>
-</section>
-
-  </main>
-</div>
+</main>
 
 <script>
-(function () {
+(function(){
   'use strict';
-  var LABELS = ['문제 읽기','나쁜 점 지도','실험실','ㄱ·ㄴ 판정','ㄷ의 함정','정답 ②'];
-  var scenes = [].slice.call(document.querySelectorAll('.ex-main .scene'));
-  var rail = document.getElementById('rail');
-  var fill = document.getElementById('progFill');
-  var ptxt = document.getElementById('progTxt');
-  var seen = {0:1};
-  var cur = 0;
-
-  LABELS.forEach(function (label, i) {
-    var b = document.createElement('button');
-    b.className = 'rail-item' + (i === 0 ? ' active' : '');
-    b.innerHTML = '<i><span>' + (i + 1) + '</span></i><b>' + label + '</b>';
-    b.addEventListener('click', function () { go(i); });
-    rail.appendChild(b);
-  });
-  var items = [].slice.call(rail.children);
-
-  function go(i) {
-    cur = Math.max(0, Math.min(scenes.length - 1, i));
-    seen[cur] = 1;
-    scenes.forEach(function (s, j) { s.classList.toggle('is-on', j === cur); });
-    items.forEach(function (b, j) {
-      b.classList.toggle('active', j === cur);
-      b.classList.toggle('done', j !== cur && !!seen[j]);
-    });
-    fill.style.width = ((cur + 1) / scenes.length * 100) + '%';
-    ptxt.textContent = (cur + 1) + ' / ' + scenes.length;
-    var t = items[cur];
-    if (t && t.scrollIntoView && window.matchMedia('(max-width:1000px)').matches) {
-      t.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-  go(0);
-
-  document.addEventListener('click', function (e) {
-    var t = e.target.closest ? e.target.closest('[data-go]') : null;
-    if (t) {
-      var d = t.getAttribute('data-go');
-      go(d === 'next' ? cur + 1 : d === 'prev' ? cur - 1 : 0);
-      return;
-    }
-    var opt = e.target.closest ? e.target.closest('.opt') : null;
-    if (opt) {
-      var box = opt.closest('.askbox');
-      var ok = opt.hasAttribute('data-correct');
-      box.querySelectorAll('.opt').forEach(function (o) {
-        o.classList.remove('pick-ok', 'pick-no');
-        if (ok) o.classList.add('locked');
-      });
-      opt.classList.add(ok ? 'pick-ok' : 'pick-no');
-      var fb = box.querySelector('.optfb');
-      if (fb) {
-        fb.className = 'optfb on ' + (ok ? 'ok' : 'no');
-        fb.innerHTML = fb.getAttribute(ok ? 'data-ok' : 'data-no') || '';
-      }
-      if (window.JPLab) window.JPLab.renderAll(box);
-      return;
-    }
-    var hb = e.target.closest ? e.target.closest('.hbtn') : null;
-    if (hb) {
-      var scope = hb.closest('.askbox');
-      var key = hb.getAttribute('data-open');
-      var body = scope.querySelector('.hint[data-key="' + key + '"]');
-      if (!body) return;
-      var open = body.classList.toggle('on');
-      hb.classList.toggle('is-open', open);
-      if (open && window.JPLab) window.JPLab.renderAll(body);
-    }
-    /* seg buttons (실험실) */
-    var sg = e.target.closest ? e.target.closest('.seg button') : null;
-    if (sg) {
-      var seg = sg.closest('.seg');
-      seg.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
-      sg.setAttribute('aria-pressed', 'true');
-      var ev = new Event('jp-seg-change', { bubbles: true });
-      seg.dispatchEvent(ev);
-    }
+  var labels=["문제 만나기","ㄱ·ㄴ","ㄷ 반례","회수"];
+  var chs=[].slice.call(document.querySelectorAll('main > section.ch'));
+  var nav=document.getElementById('nav'),fill=document.getElementById('pfill'),cur=0;
+  labels.forEach(function(t,i){var b=document.createElement('button');b.className=i===0?'on':'';b.innerHTML='<span class="n">0'+(i+1)+'</span>'+t;b.addEventListener('click',function(){go(i);});nav.appendChild(b);});
+  var tabs=[].slice.call(nav.children);
+  function go(i){cur=Math.max(0,Math.min(chs.length-1,i));chs.forEach(function(s,j){s.classList.toggle('on',j===cur);});tabs.forEach(function(b,j){b.classList.toggle('on',j===cur);});fill.style.width=((cur+1)/chs.length*100)+'%';if(tabs[cur]&&tabs[cur].scrollIntoView)tabs[cur].scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});window.scrollTo({top:0,behavior:'smooth'});}go(0);
+  document.addEventListener('click',function(e){
+    var t=e.target.closest&&e.target.closest('[data-go]');if(t){var d=t.getAttribute('data-go');go(d==='next'?cur+1:d==='prev'?cur-1:0);return;}
+    var c=e.target.closest&&e.target.closest('.choice');if(c){var box=c.parentElement;if(box.getAttribute('data-mode')==='record'){box.querySelectorAll('.choice').forEach(function(x){x.classList.remove('chosen');});c.classList.add('chosen');return;}var ans=+box.getAttribute('data-ans'),ok=+c.getAttribute('data-i')===ans;box.querySelectorAll('.choice').forEach(function(x){x.classList.remove('right','wrong');});c.classList.add(ok?'right':'wrong');if(!ok){var right=box.querySelector('.choice[data-i="'+ans+'"]');setTimeout(function(){if(right)right.classList.add('right');},650);}return;}
+    var s=e.target.closest&&e.target.closest('[data-sol]');if(s){var el=document.getElementById(s.getAttribute('data-sol'));if(!el)return;var open=el.classList.toggle('on');s.style.opacity=open?'1':'';if(open&&window.JPDark)window.JPDark.texAll(el);}
   });
 
-  document.addEventListener('keydown', function (e) {
-    if (/^(INPUT|TEXTAREA|BUTTON)$/.test((e.target.tagName || ''))) return;
-    if (e.key === 'ArrowRight') go(cur + 1);
-    if (e.key === 'ArrowLeft') go(cur - 1);
-  });
+  /* ── 그림 도구 ────────────────────────────────────────────────
+     좌표를 화면에 옮겨 주는 것만 한다. 가로세로 배율이 달라도
+     "어디서 끊기고 어디로 튀는지" 는 그대로 보인다. */
+  function view(x0,x1,y0,y1,W,H){
+    return {x0:x0,x1:x1,y0:y0,y1:y1,W:W,H:H,
+      sx:function(x){return (x-x0)/(x1-x0)*W;},
+      sy:function(y){return H-(y-y0)/(y1-y0)*H;}};
+  }
+  function axes(v,stepX,stepY){
+    var s='<rect x="0" y="0" width="'+v.W+'" height="'+v.H+'" fill="#fbfaf6"/>',x,y;
+    for(x=Math.ceil(v.x0/stepX)*stepX;x<=v.x1;x+=stepX)s+='<line x1="'+v.sx(x).toFixed(1)+'" y1="0" x2="'+v.sx(x).toFixed(1)+'" y2="'+v.H+'" stroke="rgba(58,49,37,.08)"/>';
+    for(y=Math.ceil(v.y0/stepY)*stepY;y<=v.y1;y+=stepY)s+='<line x1="0" y1="'+v.sy(y).toFixed(1)+'" x2="'+v.W+'" y2="'+v.sy(y).toFixed(1)+'" stroke="rgba(58,49,37,.08)"/>';
+    if(v.y0<0&&v.y1>0)s+='<line x1="0" y1="'+v.sy(0).toFixed(1)+'" x2="'+v.W+'" y2="'+v.sy(0).toFixed(1)+'" stroke="#8b8378" stroke-width="1.2"/>';
+    if(v.x0<0&&v.x1>0)s+='<line x1="'+v.sx(0).toFixed(1)+'" y1="0" x2="'+v.sx(0).toFixed(1)+'" y2="'+v.H+'" stroke="#8b8378" stroke-width="1.2"/>';
+    return s;
+  }
+  function curve(v,f,a,b,color,w,dash){
+    var d='',on=false,i,x,y,n=200;
+    for(i=0;i<=n;i++){x=a+(b-a)*i/n;y=f(x);
+      if(!isFinite(y)||y<v.y0-40||y>v.y1+40){on=false;continue;}
+      d+=(on?'L':'M')+v.sx(x).toFixed(1)+' '+v.sy(y).toFixed(1)+' ';on=true;}
+    return '<path d="'+d+'" fill="none" stroke="'+color+'" stroke-width="'+(w||2.4)+'"'+(dash?' stroke-dasharray="'+dash+'"':'')+' stroke-linecap="round"/>';
+  }
+  function dot(v,x,y,color,open){
+    if(y<v.y0||y>v.y1)return '';
+    return open?'<circle cx="'+v.sx(x).toFixed(1)+'" cy="'+v.sy(y).toFixed(1)+'" r="4.6" fill="#fbfaf6" stroke="'+color+'" stroke-width="2"/>'
+               :'<circle cx="'+v.sx(x).toFixed(1)+'" cy="'+v.sy(y).toFixed(1)+'" r="4.6" fill="'+color+'"/>';
+  }
+  function tx(v,x,y,t,color,anchor){
+    return '<text x="'+v.sx(x).toFixed(1)+'" y="'+v.sy(y).toFixed(1)+'" fill="'+(color||'#5f574b')+'" font-size="12" font-family="IBM Plex Mono,monospace" text-anchor="'+(anchor||'middle')+'">'+t+'</text>';
+  }
+  function wrap(v,inner){return '<svg viewBox="0 0 '+v.W+' '+v.H+'" role="img">'+inner+'</svg>';}
 
-  /* ── custom lab: patching ───────────────────────────────────── */
-  function labPatch(root) {
-    var svg = root.querySelector('svg.lab-svg');
-    var kSeg = root.querySelector('[data-kseg]'), vSeg = root.querySelector('[data-vseg]');
-    var kV = root.querySelector('[data-kval]');
-    var ro = root.querySelector('[data-readout]');
-    if (!svg || !kSeg) return;
-    var W = 600, Hh = 340, pL = 44, pR = 16, pT = 24, pB = 44;
-    var xMin = -2.5, xMax = 4.5, yMin = -3.5, yMax = 3.5;
-    function X(x) { return pL + (x - xMin) / (xMax - xMin) * (W - pL - pR); }
-    function Y(y) { return pT + (yMax - y) / (yMax - yMin) * (Hh - pT - pB); }
-    var C = { axis: '#8b909b', grid: '#d8d4c8', f: '#8b909b', q: '#1b3a6b', band: '#9d2b2b', dot: '#1b3a6b', txt: '#4c515c' };
-    function f(x) {
-      if (x <= 0) return -x;
-      if (x <= 2) return x - 1;
-      return 2 * x - 3;
-    }
-    var k = 1, view = 'pf';
-    function draw() {
-      kV.textContent = k;
-      function p(x) { return Math.pow(x, k); }
-      function q(x) {
-        var fv = f(x);
-        return view === 'pf' ? p(x) * fv : p(x) * fv * fv;
-      }
-      var s = '';
-      s += '<line x1="' + X(xMin) + '" y1="' + Y(0) + '" x2="' + X(xMax) + '" y2="' + Y(0) + '" stroke="' + C.axis + '" stroke-width="1.2"/>';
-      s += '<line x1="' + X(0) + '" y1="' + Y(yMin) + '" x2="' + X(0) + '" y2="' + Y(yMax) + '" stroke="' + C.grid + '" stroke-width="1"/>';
-      for (var x = Math.ceil(xMin); x <= xMax; x++) {
-        s += '<text x="' + X(x) + '" y="' + (Y(0) + 20) + '" fill="' + C.txt + '" font-size="12" text-anchor="middle">' + x + '</text>';
-      }
-      [0, 2].forEach(function (bx) {
-        s += '<line x1="' + X(bx) + '" y1="' + Y(yMin) + '" x2="' + X(bx) + '" y2="' + Y(yMax) + '" stroke="' + C.band + '" stroke-width="1" stroke-dasharray="4 4" opacity="0.55"/>';
-        s += '<text x="' + X(bx) + '" y="' + (Y(yMax) - 6) + '" fill="' + C.band + '" font-size="12" text-anchor="middle" font-weight="700">' + (bx === 0 ? '점프' : '꺾임') + '</text>';
-      });
-      function curve(fn, color, width) {
-        var segs = [[-2.5, 0], [0.001, 2], [2.001, 4.5]];
-        var out = '';
-        segs.forEach(function (sg) {
-          var p2 = [];
-          for (var px = sg[0]; px <= sg[1]; px += 0.02) {
-            var v = fn(px);
-            if (v > yMin - 1 && v < yMax + 1) p2.push(X(px).toFixed(1) + ',' + Y(Math.max(yMin, Math.min(yMax, v))).toFixed(1));
-          }
-          if (p2.length > 1) out += '<polyline points="' + p2.join(' ') + '" fill="none" stroke="' + color + '" stroke-width="' + width + '"/>';
-        });
-        return out;
-      }
-      s += curve(f, C.f, 2);
-      s += curve(q, C.q, 3);
-      [0, 2].forEach(function (bx) {
-        try {
-          var qv = q(bx);
-          if (isFinite(qv) && qv > yMin && qv < yMax) {
-            s += '<circle cx="' + X(bx) + '" cy="' + Y(qv) + '" r="7" fill="' + C.dot + '" stroke="#fff" stroke-width="2"/>';
-          }
-        } catch (e) {}
-      });
-      s += '<text x="' + (W - pR - 4) + '" y="' + (pT + 14) + '" fill="' + C.q + '" font-size="13" text-anchor="end" font-weight="700">' + (view === 'pf' ? 'y = p(x)f(x)' : 'y = p(x)f(x)²') + '</text>';
-      svg.innerHTML = s;
-      var pname = k === 0 ? '1' : (k === 1 ? 'x' : (k === 2 ? 'x²' : 'x³'));
-      var qname = view === 'pf' ? 'p(x)f(x)' : 'p(x)f(x)²';
-      var desc;
-      if (k === 0) desc = 'f의 끊어짐(x=0)과 꺾임(x=2)이 그대로 보입니다.';
-      else if (k === 1) desc = 'x=0의 점프가 메워지기 시작합니다. x=2의 꺾임은?';
-      else if (k === 2) desc = 'x=0이 매끄러워졌습니다! (x²의 힘)';
-      else desc = 'x=0, x=2 모두 매끄럽습니다. 하지만 ㄷ은 (x−2)²까지 요구합니다!';
-      ro.className = 'verdict' + (k >= 2 ? ' ok' : '');
-      ro.innerHTML = '<span class="vmark">' + pname + '</span><div class="vtext">p(x)=' + pname + ', ' + qname + '의 그래프<small>' + desc + '</small></div>';
-    }
-    kSeg.addEventListener('jp-seg-change', function () {
-      var b = kSeg.querySelector('[aria-pressed="true"]');
-      k = parseInt(b.getAttribute('data-k'), 10);
-      draw();
-    });
-    vSeg.addEventListener('jp-seg-change', function () {
-      var b = vSeg.querySelector('[aria-pressed="true"]');
-      view = b.getAttribute('data-v');
-      draw();
-    });
-    draw();
+  var INK='#2f6670',HOT='#a95232',GREY='#9a9186';
+
+
+  /* 선분·기울기 직선·넓이 칠하기 — 열두 쪽이 함께 쓴다 */
+  function line(v,x1,y1,x2,y2,color,w,dash){
+    return '<line x1="'+v.sx(x1).toFixed(1)+'" y1="'+v.sy(y1).toFixed(1)+'" x2="'+v.sx(x2).toFixed(1)+'" y2="'+v.sy(y2).toFixed(1)+'" stroke="'+color+'" stroke-width="'+(w||2)+'"'+(dash?' stroke-dasharray="'+dash+'"':'')+'/>';
+  }
+  function thru(v,x0,y0,m,color,w,dash){
+    return line(v,v.x0,y0+m*(v.x0-x0),v.x1,y0+m*(v.x1-x0),color,w,dash);
+  }
+  function shade(v,f,a,b,color,base){
+    var d='M'+v.sx(a).toFixed(1)+' '+v.sy(base||0).toFixed(1),i,n=160,x;
+    for(i=0;i<=n;i++){x=a+(b-a)*i/n;d+=' L'+v.sx(x).toFixed(1)+' '+v.sy(f(x)).toFixed(1);}
+    d+=' L'+v.sx(b).toFixed(1)+' '+v.sy(base||0).toFixed(1)+' Z';
+    return '<path d="'+d+'" fill="'+color+'" stroke="none"/>';
   }
 
-  function bootCustom() {
-    document.querySelectorAll('[data-lab="patch20"]').forEach(labPatch);
+  var HOT_='#a95232';
+
+
+  function F(x){return x<=0?-x:(x<=2?x-1:2*x-3);}
+  function mk(a,b,e){return function(x){return (x+3)*Math.pow(x,a)*Math.pow(x-2,b)*Math.pow(F(x),e);};}
+  function judge(G,c){
+    /* 연속 판정의 간격. 1e-7 로 두었더니 값이 큰 곳(기울기 수십)에서 d×기울기 가 허용치 1e-5 를 넘어
+       이어진 점을 "끊어진다" 고 잘못 판정했다 (p×f², a=2, b=0 의 x=2). */
+    var d=1e-9,val=G(c),L=G(c-d),R=G(c+d),cont=Math.abs(L-val)<1e-5&&Math.abs(R-val)<1e-5;
+    var h=1e-5,sl=(val-G(c-h))/h,sr=(G(c+h)-val)/h,smooth=cont&&Math.abs(sl-sr)<2e-3*(1+Math.abs(sl)+Math.abs(sr));
+    return {cont:cont,smooth:smooth,L:L,R:R,val:val,sl:sl,sr:sr};
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootCustom);
-  else bootCustom();
+  function panel(G,c,width){
+    var w=0.6,V=view(c-w,c+w,-1,1,width,300),i,n=120,x,lo=Infinity,hi=-Infinity;
+    for(i=0;i<=n;i++){x=c-w+2*w*i/n;if(Math.abs(x-c)<1e-9)continue;var y=G(x);lo=Math.min(lo,y);hi=Math.max(hi,y);}
+    lo=Math.min(lo,G(c));hi=Math.max(hi,G(c));
+    var pad=(hi-lo)*0.2+0.05;V=view(c-w,c+w,lo-pad,hi+pad,width,300);
+    var s=axes(V,0.25,(hi-lo)/4>0?Math.max((hi-lo)/4,0.01):1);
+    s+=curve(V,G,c-w,c-1e-6,INK,3)+curve(V,G,c+1e-6,c+w,INK,3);
+    s+=line(V,c,V.y0,c,V.y1,GREY,1.1,'3 5');
+    var j=judge(G,c);
+    s+=dot(V,c,j.L,HOT,true)+dot(V,c,j.R,HOT,true)+dot(V,c,j.val,INK);
+    s+=tx(V,c,V.y0+(V.y1-V.y0)*0.05,'x = '+c,GREY);
+    return {svg:s,j:j};
+  }
+  function render(n,a,b,e){
+    var G=mk(a,b,e),p0=panel(G,0,270),p2=panel(G,2,270);
+    document.getElementById('lab'+n).innerHTML='<svg viewBox="0 0 560 300" role="img"><g>'+p0.svg+'</g><g transform="translate(290,0)">'+p2.svg+'</g></svg>';
+    function txt(j){return (j.cont?'이어진다':'끊어진다')+' · '+(j.smooth?'매끄럽다':(j.cont?'꺾인다':'—'));}
+    document.getElementById('r'+n+'a').textContent=txt(p0.j);
+    document.getElementById('r'+n+'b').textContent=txt(p2.j);
+    var box=document.getElementById('v'+n+'box'),all=p0.j.smooth&&p2.j.smooth;
+    box.className='verdict '+(all?'ok':(p0.j.cont&&p2.j.cont?'mid':''));
+    box.innerHTML=all?'<strong>모든 점에서 매끄럽다 — 미분가능</strong><span>p = (x+3)x^'+a+'(x−2)^'+b+'</span>'
+      :(p0.j.cont&&p2.j.cont?'<strong>연속이지만 꺾인 곳이 있다</strong><span>어느 점이 문제인지 판정을 보세요</span>':'<strong>끊어진 곳이 있다</strong><span>점프를 먼저 메워야 합니다</span>');
+  }
+  var a1=document.getElementById('a1'),b1=document.getElementById('b1'),a2=document.getElementById('a2'),b2=document.getElementById('b2');
+  function lab1(){document.getElementById('a1v').textContent=a1.value;document.getElementById('b1v').textContent=b1.value;render(1,+a1.value,+b1.value,1);}
+  function lab2(){document.getElementById('a2v').textContent=a2.value;document.getElementById('b2v').textContent=b2.value;render(2,+a2.value,+b2.value,2);}
+  [a1,b1].forEach(function(el){el.addEventListener('input',lab1);});[a2,b2].forEach(function(el){el.addEventListener('input',lab2);});
+  document.querySelectorAll('[data-ab]').forEach(function(b){b.addEventListener('click',function(){var p=b.getAttribute('data-ab').split(',');a1.value=p[0];b1.value=p[1];lab1();});});
+  document.querySelectorAll('[data-ab2]').forEach(function(b){b.addEventListener('click',function(){var p=b.getAttribute('data-ab2').split(',');a2.value=p[0];b2.value=p[1];lab2();});});
+
+  function boot(){lab1();lab2();}
+  if(document.readyState!=='loading')boot();else document.addEventListener('DOMContentLoaded',boot);
 })();
 </script>
 </body>

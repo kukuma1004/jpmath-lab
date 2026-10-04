@@ -6,98 +6,50 @@
 <meta name="robots" content="noindex,nofollow,noarchive"/>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <title>2021 수능 나형 20번 | 미분하면 깔끔해지는 적분 · 교사용</title>
+<script src="../../auth.js" data-classroom-protected></script>
 <link rel="stylesheet" href="../../../vendor/katex/katex.min.css"/>
 <link rel="stylesheet" href="../../../jp-math-typography.css?v=3"/>
 <link rel="stylesheet" href="../../../jp-dark.css?v=6"/>
 <link rel="stylesheet" href="../../../jp-polish.css?v=11"/>
-<link rel="stylesheet" href="../../../jp-deck-polish.css"/>
 <script defer src="../../../vendor/katex/katex.min.js"></script>
 <script defer src="../../../jp-lab-dark.js?v=2"></script>
 <script defer src="../../../jp-deck.js"></script>
 <script defer src="../../../jp-polish.js?v=21"></script>
 <style>
-.take4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-.answer-big{font-size:clamp(70px,12vw,150px);font-weight:900;color:#a95232;line-height:1;text-align:center}
-@media(max-width:720px){.take4{grid-template-columns:1fr}}
+.teacher-em{font-size:clamp(28px,4vw,54px);font-weight:800;line-height:1.18;text-align:center;letter-spacing:-.05em}.answer-big{font-size:clamp(70px,12vw,150px);font-weight:900;color:#a95232;line-height:1;text-align:center}.compact-table td,.compact-table th{padding:9px 11px!important;text-align:center}
+.compare{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:stretch}.compare .case{padding:22px;border:1px solid rgba(58,49,37,.14);border-radius:19px;background:#fff}.compare .case h3{margin:12px 0 10px}.compare .versus{display:grid;place-items:center;color:#a95232;font:800 12px 'IBM Plex Mono',monospace}
+.tri{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.tcard{padding:19px;border:1px solid rgba(58,49,37,.14);border-radius:17px;background:#fff}.tcard.dead{opacity:.62;border-style:dashed}.tcard.live{border-color:rgba(71,116,84,.4);background:#f5faf6}.tcard h3{margin-bottom:9px}
+.note-strip{display:flex;align-items:flex-start;gap:13px;margin-top:18px;padding:15px 17px;border-left:4px solid #2f6670;border-radius:0 13px 13px 0;background:#eef6f5}.note-strip.warn{border-color:#a95232;background:#fff4ed}.note-strip .ic{flex:0 0 auto;color:#a95232;font:800 10px 'IBM Plex Mono',monospace}.note-strip p{margin:0}
+.bogi-box{padding:18px 22px;border:1.5px solid rgba(58,49,37,.28);border-radius:16px;background:#fdfcf8}.bogi-box p{margin:9px 0;padding-left:24px;text-indent:-24px}
+@media(max-width:720px){.compare,.tri{grid-template-columns:1fr}.compare .versus{min-height:18px}}
 </style>
 </head>
 <body class="tpl-dark is-deck">
 <a class="jp-back-link teacher-back" href="../../">← 수업창고</a>
 <div class="deck">
 
-<section class="slide slide--title" data-title="표지"><div class="s-body"><div class="title-layout">
-  <div><p class="eyebrow">2021학년도 수능 나형 20번 · 객관식 4점 · 정답 ④ · 오답률 79.4%</p><h1 class="h1 anim-fade-up">미분하면<br/><span class="am">깔끔해지는</span> 적분</h1><p class="lede">적분으로 정의된 함수를 미분하면 상쇄가 일어나고, "극값의 개수"는 "부호를 몇 번 바꾸는가"의 문제로 바뀝니다.</p><div class="pause">오답률 79.4% — 왜 어려웠을까?</div></div>
-  <div class="card" style="margin-top:0"><h3>학습 목표</h3><ul>
-    <li>적분으로 정의된 함수를 <b>라이프니츠 법칙</b>으로 미분할 수 있다.</li>
-    <li>"<span class="m" data-k="g'=0"></span>"과 "극값"을 구별하고, <b>부호 변화</b>로 극값을 판정할 수 있다.</li>
-    <li>"개수가 바뀌는 경계"는 <b>접하는 순간(중근)</b>임을 이해한다.</li>
-  </ul></div>
-</div></div><div class="s-ask"><p class="question">이 문제는 오답률 79.4%다. 그런데 <span class="m" data-k="g(x)"></span>를 미분하는 순간, 문제가 완전히 다른 얼굴을 보여준다. 무엇이 상쇄되는지 보자.</p></div><aside class="notes"><p><strong>0–5분.</strong> 오답률을 먼저 공개하자. "왜 어려웠을까?"를 묻고, 학생들이 <span class="m" data-k="g(x)"></span>를 직접 적분하려 드는 것을 확인한다. 그 다음 "미분부터 해보자"로 전환.</p></aside></section>
+<section class="slide slide--title" data-title="문제와 만나기"><div class="s-body"><div class="title-layout">
+  <div><p class="eyebrow">2021학년도 수능 수학 나형 20번 · 4점</p><h1 class="h1 anim-fade-up">복잡한 적분은<br/><span class="am">누적 넓이</span>로 읽는다</h1><p class="lede">미분하면 같은 항이 지워지고 <span class="m" data-k="g'=2xF"></span> 만 남습니다. 남은 질문은 "<span class="m" data-k="F"></span> 가 x축을 몇 번 뚫는가" — <b>골짜기 바닥 하나</b>가 답을 정합니다.</p><div class="pause">첫 90초는 말하지 않기</div></div>
+  <div class="card" style="margin-top:0"><p><span class="m" data-k="f(x)=(x+1)(x-1)(x-a),\ a\gt1"></span></p><div class="eq tight"><div class="eqrow"><span class="m md" data-k="g(x)=x^{2}\int_{0}^{x}f-\int_{0}^{x}t^{2}f"></span></div></div><p class="mono"><span class="m" data-k="g"></span> 가 오직 하나의 극값을 갖도록 하는 <span class="m" data-k="a"></span> 의 최댓값은?</p></div>
+</div></div><aside class="notes"><p><strong>권장 시간</strong> 45분 · 문제 읽기 4 / 미분과 상쇄 8 / 누적 넓이 12 / 경계 12 / 정리 9.</p><p><strong>학생용 짝 자료</strong>는 수능문제 &gt; 미적분1 &gt; 미분하면 깔끔해지는 적분 입니다. a 와 넓이를 재는 끝 x 를 따로 움직여 f 의 쓸고 간 넓이(위)와 누적 F(아래)를 한 화면에서 보는 판이 들어 있습니다. F 가 x축을 뚫는 곳이 곧 극값의 자리입니다.</p><p>처음 90초 동안 "적분이 둘이면 미분하면 어떻게 될까?"만 적게 하세요. f 를 전개해 적분부터 하려는 학생은 멈추게 합니다.</p></aside></section>
 
-<section class="slide" data-title="마법의 상쇄"><div class="s-head"><p class="eyebrow">마법의 상쇄</p><h2 class="ct"><span class="m" data-k="g'(x)=2x\int_0^xf(t)\,dt"></span></h2></div><div class="s-body">
-<div class="eq"><div class="eqrow"><span class="m md" data-k="\frac{d}{dx}\left[x^2\int_0^xf(t)\,dt\right]=2x\int_0^xf(t)\,dt+x^2f(x)"></span></div></div>
-<div class="eq"><div class="eqrow"><span class="m md" data-k="\frac{d}{dx}\left[\int_0^xt^2f(t)\,dt\right]=x^2f(x)"></span></div></div>
-<p>빼면 <span class="m" data-k="x^2f(x)"></span>가 지워진다. 문제 설계자가 심어둔 상쇄다.</p>
-<div class="note-strip warn"><span class="ic">TRAP</span><p><span class="m" data-k="\int_0^x t^2f(t)\,dt"></span>를 미분할 때 <span class="m" data-k="2tf(t)+t^2f'(t)"></span>로 착각하는 학생이 있다. 적분 변수는 <span class="m" data-k="t"></span>, 미분 변수는 <span class="m" data-k="x"></span>다.</p></div>
-</div><div class="s-ask"><p class="question"><span class="m" data-k="g(x)"></span>를 직접 구하려던 학생? 이제 <span class="m" data-k="g'(x)"></span>만 보면 된다. 무엇이 남았는가?</p></div><aside class="notes"><p><strong>5–13분.</strong> 라이프니츠 법칙 <span class="m" data-k="\frac{d}{dx}\int_0^xF(t)\,dt=F(x)"></span>를 칠판에 쓰고, <span class="m" data-k="x^2"></span>이 곱해진 경우(곱의 미분법)까지 확장하자. 상쇄가 일어나는 순간 학생들의 표정을 보자.</p></aside></section>
+<section class="slide" data-title="수업의 지도"><div class="s-head"><p class="eyebrow">전체 지도</p><h2 class="ct">네 개의 <span class="am">번역</span>을 통과한다</h2></div><div class="s-body"><div class="grid4 anim-stagger-list"><div class="card accent"><span class="tag">GATE 1</span><h4>상쇄</h4><p><span class="m" data-k="x^{2}f(x)"></span> 가 +/− 로 지워져 <span class="m" data-k="g'=2xF"></span></p></div><div class="card accent"><span class="tag">GATE 2</span><h4>누적 넓이</h4><p><span class="m" data-k="F=\int_0^x f"></span> · 극값은 <span class="m" data-k="F"></span> 의 부호 변화</p></div><div class="card accent"><span class="tag">GATE 3</span><h4>왼쪽·오른쪽</h4><p>왼쪽은 늘 하나 · 오른쪽은 골짜기 <span class="m" data-k="F(a)"></span></p></div><div class="card accent"><span class="tag">GATE 4</span><h4>경계</h4><p><span class="m" data-k="F(a)\ge0"></span> ⟹ <span class="m" data-k="a\le\sqrt6"></span></p></div></div><div class="card quote"><p><b>수업의 한 문장.</b> 극값은 <b class="am">누적 넓이 F가 x축을 뚫는 곳</b>이고, 오른쪽에서 뚫느냐 마느냐는 <b class="am">골짜기 바닥 F(a)</b>의 부호가 정한다.</p></div></div><div class="s-ask"><p class="question"><span class="m" data-k="g'(0)=0"></span> 인데 왜 <span class="m" data-k="x=0"></span> 은 극값이 아닐까?</p></div><aside class="notes"><p><span class="m" data-k="F\approx ax"></span> 를 학생이 직접 말하게 하세요. <span class="m" data-k="f(0)=a\gt0"></span> 이므로 <span class="m" data-k="0"></span> 근처에서 <span class="m" data-k="F"></span> 는 기울기 <span class="m" data-k="a"></span> 인 직선처럼 행동합니다.</p></aside></section>
 
-<section class="slide" data-title="부호가 핵심"><div class="s-head"><p class="eyebrow">부호가 핵심</p><h2 class="ct">부호는 <span class="am"><span class="m" data-k="H"></span>가 결정</span>한다</h2></div><div class="s-body">
-<div class="eq"><div class="eqrow"><span class="m md" data-k="F(x)=\int_0^xf(t)\,dt=xH(x),\quad H(x)=\frac{x^3}{4}-\frac{ax^2}{3}-\frac{x}{2}+a"></span></div></div>
-<div class="eq"><div class="eqrow"><span class="m md am" data-k="g'(x)=2xF(x)=2x^2H(x)"></span></div></div>
-<ul>
-  <li><span class="m" data-k="2x^2\ge 0"></span>이므로 <span class="m" data-k="g'"></span>의 부호 = <span class="m" data-k="H(x)"></span>의 부호.</li>
-  <li><span class="m" data-k="x=0"></span>에서는 <span class="m" data-k="g'\approx 2ax^2\ge 0"></span> → 부호 변화 없음 → <b>극값 아님!</b></li>
-</ul>
-<div class="note-strip warn"><span class="ic">TRAP</span><p>"<span class="m" data-k="g'=0"></span> ⟺ 극값"이라는 오개념을 여기서 깨뜨리자. <span class="m" data-k="y=x^3"></span>의 <span class="m" data-k="x=0"></span>을 예로 들자. <b>극값은 부호 변화</b>다.</p></div>
-</div><div class="s-ask"><p class="question">"<span class="m" data-k="g'(0)=0"></span>이므로 <span class="m" data-k="x=0"></span>은 극값이다." 참인가 거짓인가? 왜?</p></div><aside class="notes"><p><strong>13–22분.</strong> 발문의 답: 거짓. <span class="m" data-k="g'(0)=0"></span>이지만 부호가 바뀌지 않으므로 극값이 아니다.</p></aside></section>
+<section class="slide" data-title="GATE 1 · 상쇄"><div class="s-head"><p class="eyebrow">GATE 1</p><h2 class="ct">같은 항이 <span class="am">+와 −</span>로 나타난다</h2></div><div class="s-body"><div class="compare"><div class="case"><span class="tag gr">곱의 미분</span><h3><span class="m" data-k="2xF+x^{2}f"></span></h3><p><span class="m" data-k="x^{2}\int_{0}^{x}f"></span> 를 미분.</p></div><div class="versus">VS</div><div class="case"><span class="tag">적분의 미분</span><h3><span class="m" data-k="-\,x^{2}f"></span></h3><p><span class="m" data-k="\int_{0}^{x}t^{2}f"></span> 를 미분하면 <span class="m" data-k="x^{2}f(x)"></span>, 앞에 −.</p></div></div><div class="eq"><div class="eqrow"><span class="m md am" data-k="g'(x)=2x\int_{0}^{x}f(t)\,dt=2x\,F(x)"></span></div></div><div class="note-strip warn"><span class="ic">TRAP</span><p><span class="m" data-k="t^{2}"></span> 를 미분 변수로 착각하는 학생이 있습니다. 적분 변수는 <span class="m" data-k="t"></span>, 미분 변수는 <span class="m" data-k="x"></span> — 적분 안의 <span class="m" data-k="t"></span> 는 상수 취급 후 위끝에 <span class="m" data-k="x"></span> 를 넣습니다.</p></div></div><div class="s-ask"><p class="question"><span class="m" data-k="x^{2}f(x)"></span> 가 사라지는 이유를 한 문장으로?</p></div><aside class="notes"><p>"하나는 곱의 미분에서, 하나는 적분의 미분에서 똑같은 항이 나와 서로 지워진다" 를 학생 입으로 말하게 하세요.</p></aside></section>
 
-<section class="slide" data-title="실험"><div class="s-head"><p class="eyebrow">실험</p><h2 class="ct"><span class="m" data-k="H(x)"></span>의 부호 변화를 <span class="am">세어보자</span></h2></div><div class="s-body">
-<p>탐구실 실험실에서 <span class="m" data-k="a"></span>를 움직여보자:</p>
-<div class="tri">
-  <div class="tcard"><span class="tag"><span class="m" data-k="a"></span> 작음</span><h3>부호 변화 1번</h3><p><span class="m" data-k="g"></span>의 극값 1개.</p></div>
-  <div class="tcard live"><span class="tag"><span class="m" data-k="a=\sqrt6"></span> 근처</span><h3><span class="m" data-k="H"></span>가 <span class="m" data-k="x"></span>축에 <b>접함</b></h3><p>경계!</p></div>
-  <div class="tcard"><span class="tag"><span class="m" data-k="a"></span> 큼</span><h3>부호 변화 3번</h3><p>극값 3개.</p></div>
-</div>
-</div><div class="s-ask"><p class="question">극값 개수가 바뀌는 순간, <span class="m" data-k="H(x)"></span>의 그래프는 어떻게 생겼는가?</p></div><aside class="notes"><p><strong>22–30분.</strong> 학생들이 직접 슬라이더를 움직이며 경계를 발견하게 하자. "접하는 순간"이라는 말을 학생 입에서 나오게 하는 것이 목표다.</p><p>발문의 답: <span class="m" data-k="x"></span>축에 접한다.</p></aside></section>
+<section class="slide" data-title="GATE 2 · 누적 넓이"><div class="s-head"><p class="eyebrow">GATE 2</p><h2 class="ct"><span class="m" data-k="g'"></span> 의 부호는 <span class="am">F</span>가 정한다</h2></div><div class="s-body"><div class="compare"><div class="case"><span class="tag gr">0 에서</span><h3><span class="m" data-k="F\approx ax"></span></h3><p><span class="m" data-k="f(0)=a\gt0"></span> 이므로 <span class="m" data-k="g'\approx 2ax^{2}"></span> — 양쪽 모두 양수. <b>극값 아님.</b></p></div><div class="versus">VS</div><div class="case"><span class="tag">0 이 아닌 곳</span><h3><span class="m" data-k="F=0"></span></h3><p><span class="m" data-k="F"></span> 가 부호를 바꾸는 곳에서만 <span class="m" data-k="g'"></span> 가 부호를 바꾼다.</p></div></div><div class="note-strip"><span class="ic">KEY</span><p>극값의 개수 = <span class="m" data-k="F"></span> 가 x축을 <b>뚫는</b> 횟수 (0 제외). "닿기만 하는" 점은 세지 않습니다. 이 구별이 경계 사례를 정확히 판가름합니다.</p></div></div><div class="s-ask"><p class="question"><span class="m" data-k="g'(x)=0"></span> 인 점은 모두 극값일까?</p></div><aside class="notes"><p>x=0이 반례입니다. 실험실에서 x 슬라이더를 0 근처로 움직여 F 곡선이 원점을 지나는 모양을 보여 주세요.</p></aside></section>
 
-<section class="slide" data-title="경계 구하기"><div class="s-head"><p class="eyebrow">경계 구하기</p><h2 class="ct">중근: <span class="am"><span class="m" data-k="H(r)=H'(r)=0"></span></span></h2></div><div class="s-body">
-<div class="eq"><div class="eqrow"><span class="m md" data-k="\begin{cases} \dfrac{r^3}{4}-\dfrac{ar^2}{3}-\dfrac{r}{2}+a=0 \\[4pt] \dfrac{3r^2}{4}-\dfrac{2ar}{3}-\dfrac12=0 \end{cases} \Longrightarrow (r^2-1)(r^2-6)=0"></span></div></div>
-<p><span class="m" data-k="a&gt;1"></span>이므로 <span class="m" data-k="r=\sqrt6,\ a=\sqrt6"></span>.</p>
-<div class="eq"><div class="eqrow"><span class="m md am" data-k="H(x)=\frac{(x-\sqrt6)^2\left(x+\frac{2\sqrt6}{3}\right)}{4}"></span></div></div>
-<p>중근 <span class="m" data-k="x=\sqrt6"></span>에서는 부호가 안 바뀌고, <span class="m" data-k="x=-\frac{2\sqrt6}{3}"></span>에서만 부호가 바뀐다. → 극값 1개 ✓</p>
-</div><div class="s-ask"><p class="question">중근에서는 왜 부호가 바뀌지 않을까?</p></div><aside class="notes"><p><strong>30–40분.</strong> 연립 풀이는 계산이 길다. "중근이면 두 식이 동시에 0"이라는 아이디어만 짚고, 계산은 학생들에게 맡기거나 힌트를 주자. 핵심은 <b>경계=접함</b>이라는 구조다.</p><p>발문의 답: <span class="m" data-k="(x-\sqrt6)^2\ge 0"></span>이라 양쪽에서 부호가 같다.</p></aside></section>
+<section class="slide" data-title="GATE 3 · 왼쪽·오른쪽"><div class="s-head"><p class="eyebrow">GATE 3</p><h2 class="ct">왼쪽 <span class="am">하나</span> + 오른쪽 <span class="am">0 또는 2</span></h2></div><div class="s-body"><table class="tbl compact-table"><tr><th>구간</th><th><span class="m" data-k="f"></span></th><th><span class="m" data-k="F"></span></th></tr><tr><td><span class="m" data-k="x\lt-1"></span></td><td>−</td><td>내려감 (왼쪽 끝은 +∞)</td></tr><tr><td><span class="m" data-k="-1\lt x\lt1"></span></td><td>+</td><td>올라감 — <span class="m" data-k="F(0)=0"></span> 통과</td></tr><tr><td><span class="m" data-k="1\lt x\lt a"></span></td><td>−</td><td>내려감 → <span class="m" data-k="x=a"></span> 에서 <b class="am">골짜기</b></td></tr><tr><td><span class="m" data-k="x\gt a"></span></td><td>+</td><td>다시 올라감 (+∞)</td></tr></table><div class="note-strip"><span class="ic">KEY</span><p>왼쪽은 "음수에서 양수로 가는 단조 두 토막" 이라 부호 변화가 <b>정확히 한 번</b>. 오른쪽은 골짜기 바닥이 x축 아래면 2번, 위나 접하면 0번입니다.</p></div></div><div class="s-ask"><p class="question">오른쪽에서 부호가 정확히 한 번만 바뀌는 경우는 있을까?</p></div><aside class="notes"><p>없습니다. 홀수 번이 되려면 골짜기가 x축을 한 번만 뚫어야 하는데, 올라가고 내려오는 모양이라 뚫는 횟수는 짝수입니다. 이런 짝수성을 학생이 스스로 말하게 하면 좋은 신호입니다.</p></aside></section>
 
-<section class="slide" data-title="최댓값 확정"><div class="s-head"><p class="eyebrow">최댓값 확정</p><h2 class="ct"><span class="m" data-k="a_{\max}=\sqrt6"></span></h2></div><div class="s-body">
-<div class="tri">
-  <div class="tcard"><span class="tag"><span class="m" data-k="a&lt;\sqrt6"></span></span><h3>부호 변화 1번</h3><p>극값 1개.</p></div>
-  <div class="tcard live"><span class="tag"><span class="m" data-k="a=\sqrt6"></span></span><h3>중근</h3><p>부호 변화 1번 → 극값 1개.</p></div>
-  <div class="tcard dead"><span class="tag"><span class="m" data-k="a&gt;\sqrt6"></span></span><h3>부호 변화 3번</h3><p>극값 3개.</p></div>
-</div>
-<p>따라서 "오직 하나의 극값"을 갖는 <span class="m" data-k="a"></span>의 최댓값은 <span class="m" data-k="\sqrt6"></span>. <b>정답 ④.</b></p>
-<div class="note-strip warn"><span class="ic">TRAP</span><p>"최댓값"을 "최솟값"으로 읽는 실수. <span class="m" data-k="a"></span>가 커지면 극값이 늘어나므로, 1개를 유지하는 가장 큰 <span class="m" data-k="a"></span>가 답이다.</p></div>
-</div><div class="s-ask"><p class="question">왜 "최댓값"인가? <span class="m" data-k="a"></span>가 작을 때는 왜 답이 안 되는가?</p></div><aside class="notes"><p><strong>40–45분.</strong> <span class="m" data-k="a"></span>가 커질 때 극값 개수가 1→3으로 바뀌는 것을 실험실에서 다시 확인시키자. "경계값이 답"이라는 패턴을 인식시키자.</p></aside></section>
+<section class="slide" data-title="GATE 4 · 경계"><div class="s-head"><p class="eyebrow">GATE 4</p><h2 class="ct">골짜기 바닥 <span class="m" data-k="F(a)"></span> 한 점이 경계를 정한다</h2></div><div class="s-body"><div class="eq"><div class="eqrow"><span class="m md am" data-k="F(a)=-\frac{a^{4}}{12}+\frac{a^{2}}{2}=\frac{a^{2}}{12}\,(6-a^{2})\ge0\;\Longrightarrow\;1\lt a\le\sqrt6"></span></div></div><div class="note-strip"><span class="ic">KEY</span><p>이중근 연립 풀이(<span class="m" data-k="h=0,\ h'=0"></span>)도 같은 답이지만 식이 훨씬 깁니다. 누적 넓이로 읽으면 <b>바닥 한 점</b>만 계산하면 끝납니다.</p></div><div class="note-strip warn"><span class="ic">TRAP</span><p><span class="m" data-k="F(a)=0"></span> (등호) 를 빼고 <span class="m" data-k="a\lt\sqrt6"></span> 이라 쓰면 최댓값이 없어집니다. 닿기만 하면 부호가 안 바뀌어 극값이 하나이므로 <b>등호가 들어갑니다</b>.</p></div></div><div class="s-ask"><p class="question"><span class="m" data-k="a=\sqrt6"></span> 에서 극값은 몇 개일까?</p></div><aside class="notes"><p>정확히 하나입니다. 골짜기가 x축에 닿기만 하고 뚫지 않기 때문입니다. 실험실의 a = √6 버튼으로 확인해 보세요.</p></aside></section>
 
-<section class="slide" data-title="마무리"><div class="s-head"><p class="eyebrow">마무리</p><h2 class="ct">정답 ④, 그리고 남는 것</h2></div><div class="s-body">
-<p class="answer-big">④</p>
-<div class="take4">
-  <div class="card accent"><span class="tag">①</span><p>적분을 미분하면 <b>상쇄</b>가 일어난다.</p></div>
-  <div class="card accent"><span class="tag">②</span><p>극값은 <span class="m" data-k="g'=0"></span>이 아니라 <b>부호 변화</b>다.</p></div>
-  <div class="card accent"><span class="tag">③</span><p>복잡한 식은 <b>부호를 결정하는 핵심</b>으로 압축하자.</p></div>
-  <div class="card accent"><span class="tag">④</span><p>개수가 바뀌는 경계는 <b>접하는 순간</b>이다.</p></div>
-</div>
-</div><div class="s-ask"><p class="question">이 문제의 풀이에서 "계산"은 어디까지 필요했고, "눈"은 어디서 쓰였을까?</p></div><aside class="notes"><p><strong>45–50분.</strong> 탐구실 기록장에 한 줄 적기.</p></aside></section>
+<section class="slide" data-title="회수"><div class="s-head"><p class="eyebrow">회수</p><h2 class="ct">바닥 한 점, 그리고 <span class="am">④</span></h2></div><div class="s-body"><table class="tbl compact-table"><tr><th>단계</th><th>식</th></tr><tr><td>미분</td><td><span class="m" data-k="g'=2xF(x)"></span></td></tr><tr><td>0</td><td><span class="m" data-k="F\approx ax"></span> → 극값 아님</td></tr><tr><td>왼쪽</td><td>부호 변화 한 번 → 극값 1</td></tr><tr><td>오른쪽</td><td><span class="m" data-k="F(a)\ge0"></span> 이면 0개</td></tr><tr><td>경계</td><td><span class="m" data-k="a\le\sqrt6"></span></td></tr></table><p class="answer-big">④</p><p class="mono" style="text-align:center"><span class="m" data-k="\sqrt6"></span></p></div><div class="s-ask"><p class="question">이 문제에서 <span class="m" data-k="f"></span> 를 직접 적분해 본 적이 있었나?</p></div><aside class="notes"><p><span class="m" data-k="F(a)"></span> 를 구할 때 한 번 썼습니다. 그것도 "x=a 하나"에 대해서만입니다.</p></aside></section>
 
-<section class="slide" data-title="연계"><div class="s-head"><p class="eyebrow">연계</p><h2 class="ct">학생용 <span class="am">짝 자료</span></h2></div><div class="s-body">
-<div class="card"><h3>「미분하면 깔끔해지는 적분」 탐구실 <span class="mono">(2021 수능 나형 20번)</span></h3><ul>
-  <li>STEP 1–2: 라이프니츠 법칙으로 <span class="m" data-k="g'(x)"></span> 구하기, 부호 분석</li>
-  <li>실험실: <span class="m" data-k="a"></span> 슬라이더로 <span class="m" data-k="H(x)"></span>의 부호 변화 관찰</li>
-  <li>STEP 3–4: 중근으로 경계 구하기, <span class="m" data-k="a_{\max}=\sqrt6"></span></li>
-  <li>과제: <span class="m" data-k="a=3"></span>일 때 <span class="m" data-k="g"></span>의 극값이 3개임을 <span class="m" data-k="H(x)"></span> 그래프로 확인하기</li>
-</ul></div>
-<div class="note-strip"><span class="ic">NEXT</span><p>객관식 킬러 ③: 2020 나형 20번 — "꺾이는 점에서 <span class="m" data-k="p"></span>가 메워준다".</p></div>
-</div><aside class="notes"><p>다음 차시 예고로 마무리.</p></aside></section>
+<section class="slide" data-title="교사 체크"><div class="s-head"><p class="eyebrow">교사 체크</p><h2 class="ct">학생이 자주 <span class="am">멈추는 네 지점</span></h2></div><div class="s-body"><table class="tbl compact-table"><tr><th>멈춤</th><th>학생 반응</th><th>되묻기</th></tr><tr><td>미분</td><td><span class="m" data-k="x^{2}f(x)"></span> 가 남는다고 함</td><td>"뒤의 적분 앞에 −가 있었지?"</td></tr><tr><td>0</td><td><span class="m" data-k="x=0"></span> 을 극값으로 셈</td><td>"g′ 의 부호가 0 양쪽에서 바뀌나?"</td></tr><tr><td>오른쪽</td><td><span class="m" data-k="F=0"></span> 의 근을 직접 구함</td><td>"뚫는 횟수만 알면 되지 않을까?"</td></tr><tr><td>경계</td><td><span class="m" data-k="a\lt\sqrt6"></span> 로 답함</td><td>"a=√6 에서 극값 몇 개?"</td></tr></table></div><div class="s-ask"><p class="question">우리 반에서는 네 지점 중 어디에서 가장 많이 멈출까?</p></div><aside class="notes"><p>대개 x=0 입니다. g′(0)=0 이면 극값이라는 오개념이 깊습니다.</p></aside></section>
+
+<section class="slide" data-title="수업의 결론"><div class="s-head"><p class="eyebrow">수업의 결론</p><h2 class="ct">오늘 쓴 <span class="am">네 가지 사고</span></h2></div><div class="s-body"><div class="grid4 anim-stagger-list"><div class="card accent"><span class="tag">①</span><h4>지워지는 항 찾기</h4><p>미분 전에 상쇄부터</p></div><div class="card accent"><span class="tag">②</span><h4>누적 넓이</h4><p>F = 쓸고 간 넓이</p></div><div class="card accent"><span class="tag">③</span><h4>0 은 함정</h4><p>g′=0 이어도 부호가 안 바뀌면 극값 아님</p></div><div class="card accent"><span class="tag">④</span><h4>바닥 한 점</h4><p>F(a) 의 부호가 경계</p></div></div><div class="card quote"><p>답은 <b class="am">④ √6</b>.</p><p class="mono">퇴장 질문: “f 가 (x+1)(x−1)(x+a) 였다면 오른쪽 골짜기는 어디로 갈까?”</p></div></div><div class="s-ask"><p class="question">부호를 바꾸면 골짜기가 어디로 옮겨 갈까?</p></div><aside class="notes"><p>왼쪽으로 대칭이동합니다. 문제의 구조가 x → −x 로 거울상이 되어 왼쪽에 골짜기가 생깁니다.</p></aside></section>
 
 </div>
 </body>

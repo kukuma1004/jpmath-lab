@@ -1,230 +1,56 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>교사용 · 2022 수능 공통 22번 수업자료 — JP Math Lab</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
-<link rel="stylesheet" href="jp-dark.css">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow,noarchive"/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<title>2022 수능 22번 | 창문으로 근 세기 · 교사용</title>
+<script src="../../auth.js" data-classroom-protected></script>
+<link rel="stylesheet" href="../../../vendor/katex/katex.min.css"/>
+<link rel="stylesheet" href="../../../jp-math-typography.css?v=3"/>
+<link rel="stylesheet" href="../../../jp-dark.css?v=6"/>
+<link rel="stylesheet" href="../../../jp-polish.css?v=11"/>
+<script defer src="../../../vendor/katex/katex.min.js"></script>
+<script defer src="../../../jp-lab-dark.js?v=2"></script>
+<script defer src="../../../jp-deck.js"></script>
+<script defer src="../../../jp-polish.js?v=21"></script>
 <style>
-.deck-head{max-width:1060px;margin:0 auto;padding:30px 22px 6px}
-.deck-head .badge{display:inline-block;font-size:12px;letter-spacing:.14em;color:#0b0b10;background:linear-gradient(135deg,#7dffb0,#4ad6ff);border-radius:999px;padding:6px 14px;font-weight:800;margin-bottom:10px}
-.deck-head h1{font-size:clamp(24px,4.4vw,36px);margin:0 0 6px}
-.deck-head .sub{color:#9aa7c7;margin:0 0 4px}
-.deck-head .meta{color:#8b9bb8;font-size:13px;margin:0}
-.deck{max-width:1060px;margin:0 auto;padding:16px 22px 40px}
-.slide{display:none;background:rgba(16,20,38,.78);border:1px solid rgba(125,255,176,.25);border-radius:20px;padding:28px;min-height:480px;box-shadow:0 12px 40px rgba(0,0,0,.35)}
-.slide.active{display:block}
-.slide .snum{display:inline-block;background:#7dffb0;color:#0b0b10;font-weight:800;font-size:12px;border-radius:8px;padding:4px 12px;margin-bottom:10px;letter-spacing:.1em}
-.slide h2{margin:0 0 14px;font-size:24px}
-.slide .cols{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:20px}
-@media(max-width:860px){.slide .cols{grid-template-columns:1fr}}
-.slide .main p,.slide .main li{line-height:1.8;color:#dbe3f5}
-.slide .main ul{padding-left:20px}
-.qa{background:rgba(125,255,176,.06);border:1px dashed rgba(125,255,176,.4);border-radius:12px;padding:12px 16px;margin:12px 0}
-.qa .q{font-weight:800;color:#7dffb0;margin:0 0 6px}
-.qa .a{margin:0;color:#c9d4ee}
-.warn{background:rgba(255,143,143,.06);border:1px dashed rgba(255,143,143,.4);border-radius:12px;padding:12px 16px;margin:12px 0}
-.warn .t{font-weight:800;color:#ff8f8f;margin:0 0 6px}
-.warn p{margin:0;color:#c9d4ee}
-.sidea{background:#0d1122;border:1px solid rgba(125,255,176,.2);border-radius:14px;padding:16px;height:fit-content}
-.sidea h4{margin:0 0 8px;color:#ffd76a;font-size:14px}
-.sidea p,.sidea li{font-size:13.5px;line-height:1.75;color:#c9d4ee}
-.sidea ul{padding-left:18px;margin:0}
-.nav{display:flex;justify-content:space-between;align-items:center;max-width:1060px;margin:0 auto;padding:0 22px 60px}
-.nav button{background:linear-gradient(135deg,#7dffb0,#4ad6ff);color:#0b0b10;border:none;border-radius:10px;padding:10px 22px;font-weight:800;cursor:pointer;font-size:14px}
-.nav button:disabled{opacity:.3;cursor:default}
-.nav .pg{color:#8b9bb8;font-size:14px}
-.mathline{overflow-x:auto;padding:6px 0}
-.cover-goals li{margin:10px 0;line-height:1.7;color:#dbe3f5}
-.time{font-size:13px;color:#0b0b10;background:#ffd76a;border-radius:999px;padding:3px 12px;font-weight:800;display:inline-block;margin-bottom:8px}
+.teacher-em{font-size:clamp(28px,4vw,54px);font-weight:800;line-height:1.18;text-align:center;letter-spacing:-.05em}.answer-big{font-size:clamp(70px,12vw,150px);font-weight:900;color:#a95232;line-height:1;text-align:center}.compact-table td,.compact-table th{padding:9px 11px!important;text-align:center}
+.compare{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:stretch}.compare .case{padding:22px;border:1px solid rgba(58,49,37,.14);border-radius:19px;background:#fff}.compare .case h3{margin:12px 0 10px}.compare .versus{display:grid;place-items:center;color:#a95232;font:800 12px 'IBM Plex Mono',monospace}
+.tri{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.tcard{padding:19px;border:1px solid rgba(58,49,37,.14);border-radius:17px;background:#fff}.tcard.dead{opacity:.62;border-style:dashed}.tcard.live{border-color:rgba(71,116,84,.4);background:#f5faf6}.tcard h3{margin-bottom:9px}
+.note-strip{display:flex;align-items:flex-start;gap:13px;margin-top:18px;padding:15px 17px;border-left:4px solid #2f6670;border-radius:0 13px 13px 0;background:#eef6f5}.note-strip.warn{border-color:#a95232;background:#fff4ed}.note-strip .ic{flex:0 0 auto;color:#a95232;font:800 10px 'IBM Plex Mono',monospace}.note-strip p{margin:0}
+.bogi-box{padding:18px 22px;border:1.5px solid rgba(58,49,37,.28);border-radius:16px;background:#fdfcf8}.bogi-box p{margin:9px 0;padding-left:24px;text-indent:-24px}
+@media(max-width:720px){.compare,.tri{grid-template-columns:1fr}.compare .versus{min-height:18px}}
 </style>
 </head>
-<body>
-<header class="deck-head">
-  <span class="badge">교사용 · 수업자료</span>
-  <h1>2022 수능 공통 22번 — 창문으로 근 세기</h1>
-  <p class="sub">수학Ⅱ · 미분 · 단답형 4점 · 정답 9</p>
-  <p class="meta">50분 수업 덱 · 학생용 짝 자료: 「창문으로 근 세기」 탐구실</p>
-</header>
-
+<body class="tpl-dark is-deck">
+<a class="jp-back-link teacher-back" href="../../">← 수업창고</a>
 <div class="deck">
 
-  <section class="slide active">
-    <span class="snum">SLIDE 1 · 표지</span>
-    <h2>오늘의 문제: 2022 수능 공통 22번</h2>
-    <div class="cols">
-      <div class="main">
-        <p><b>학습 목표</b></p>
-        <ul class="cover-goals">
-          <li>"개수를 세는 함수"를 <b>구간(창문)의 움직임</b>으로 번역할 수 있다.</li>
-          <li>극한 조건 (가)를 <b>점프 지점의 좌극한·우극한</b>으로 읽고, \(f'\)의 두 근 사이 거리를 확정할 수 있다.</li>
-          <li>\(g(t)=2\)인 \(t\)가 유일하다는 사실로 \(f(1)=f(4)\)를 묶어낼 수 있다.</li>
-        </ul>
-        <div class="qa"><p class="q">도입 발문</p><p class="a">"\(g(t)\)는 \(t\)의 함수다. \(t\)가 변하면 뭐가 변하는 걸까? 식을 보지 말고, \([t,t+2]\)라는 구간이 어떻게 움직이는지 상상해보자."</p></div>
-      </div>
-      <div class="sidea">
-        <h4><span class="time">0–5분</span></h4>
-        <p><b>교사 노트:</b> 이 문제의 진입 장벽은 기호다. \(g(t)\)의 정의를 "창문 안에 든 근의 개수"로 번역하는 순간, 문제는 그래프 놀이가 된다. 도입에서 식 전개를 허용하지 말고, 반드시 그림부터 그리게 하자.</p>
-      </div>
-    </div>
-  </section>
+<section class="slide slide--title" data-title="문제와 만나기"><div class="s-body"><div class="title-layout">
+  <div><p class="eyebrow">2022학년도 수능 수학 22번 · 4점</p><h1 class="h1 anim-fade-up">개수를 세는 함수는<br/><span class="am">창문</span>을 밀어 읽는다</h1><p class="lede"><span class="m" data-k="g(t)"></span> 라는 낯선 이름을 <b>길이 2의 창문</b>으로 번역하는 수업입니다. 조건 (가)는 계산할 식이 아니라 "창문이 근 둘을 구간으로 담으면 안 된다"는 그림입니다.</p><div class="pause">첫 90초는 말하지 않기</div></div>
+  <div class="card" style="margin-top:0"><p>삼차함수(최고차항 <span class="m" data-k="\tfrac12"></span>) <span class="m" data-k="f"></span>, <span class="m" data-k="g(t)"></span>: <span class="m" data-k="[t,t+2]"></span> 에서 <span class="m" data-k="f'(x)=0"></span> 의 실근의 수</p><p class="mono">(가) <span class="m" data-k="\lim_{t\to a+}g+\lim_{t\to a-}g\le2"></span><br/>(나) <span class="m" data-k="g(f(1))=g(f(4))=2,\ g(f(0))=1"></span></p><div class="eq tight"><div class="eqrow"><span class="m md am" data-k="f(5)=\;?"></span></div></div></div>
+</div></div><aside class="notes"><p><strong>권장 시간</strong> 50분 · 문제 읽기 5 / 창문으로 번역 10 / (가) 10 / (나) 10 / 후보와 탈락 10 / 정리 5.</p><p><strong>학생용 짝 자료</strong>는 수능문제 &gt; 미적분1 &gt; 창문으로 근 세기 입니다. 창문 밀기 판(두 근의 거리와 창문 위치를 따로 움직이고 g의 계단과 (가) 위반 지점이 함께 보임)과 후보 비교 판이 들어 있습니다.</p><p>처음 90초 동안 "g(t)가 무엇을 센다는 거지?"만 한 줄로 적게 하세요. f를 구하려 식을 쓰는 학생은 멈추게 합니다.</p></aside></section>
 
-  <section class="slide">
-    <span class="snum">SLIDE 2 · 오늘의 한 줄</span>
-    <h2>"세는 함수"는 구간으로 번역하라</h2>
-    <div class="cols">
-      <div class="main">
-        <div class="mathline">\[g(t)=\text{닫힌구간 }[t,t+2]\text{ 안에 들어온 }f'(x)=0\text{의 근의 개수}\]</div>
-        <ul>
-          <li>\(f(x)\) 삼차 → \(f'(x)\)는 위로 볼록한 이차함수. 근 \(\alpha\le\beta\) (0개·1개·중근 가능).</li>
-          <li>\(t\)가 움직이면 길이 \(2\)인 창문이 미끄러진다. \(g(t)\in\{0,1,2\}\).</li>
-        </ul>
-        <div class="qa"><p class="q">발문</p><p class="a">"\(g(t)\)가 가질 수 있는 값은? 왜 3은 안 되는가?" → \(f'(x)=0\)이 이차방정식이므로 근이 최대 2개.</p></div>
-        <div class="warn"><p class="t">오개념 주의</p><p>"실근의 개수"를 중근일 때 2개로 세는 학생이 있다. 서로 다른 실근의 개수임을 못 박자.</p></div>
-      </div>
-      <div class="sidea">
-        <h4><span class="time">5–12분</span></h4>
-        <p><b>교사 노트:</b> 학생용 탐구실의 <b>실험실(창문 밀어보기)</b>를 함께 띄우자. \(t\) 슬라이더를 움직이며 \(g(t)\)가 \(0\to1\to2\to1\to0\)으로 바뀌는 것을 직접 보게 하는 것이 이 차시의 엔진이다.</p>
-      </div>
-    </div>
-  </section>
+<section class="slide" data-title="수업의 지도"><div class="s-head"><p class="eyebrow">전체 지도</p><h2 class="ct">네 개의 <span class="am">번역</span>을 통과한다</h2></div><div class="s-body"><div class="grid4 anim-stagger-list"><div class="card accent"><span class="tag">GATE 1</span><h4>창문</h4><p><span class="m" data-k="g(t)"></span> = 길이 2 구간 안의 <span class="m" data-k="f'"></span> 의 근의 수</p></div><div class="card accent"><span class="tag">GATE 2</span><h4>(가)</h4><p>창문이 근 둘을 <b>구간으로</b> 담으면 합 3 → <span class="m" data-k="\beta-\alpha\ge2"></span></p></div><div class="card accent"><span class="tag">GATE 3</span><h4>(나)</h4><p><span class="m" data-k="g=2"></span> 는 한 점 <span class="m" data-k="t=\alpha"></span> → <span class="m" data-k="f(1)=f(4)=\alpha"></span></p></div><div class="card accent"><span class="tag">GATE 4</span><h4>후보</h4><p><span class="m" data-k="\alpha=1,2"></span> 중 <span class="m" data-k="g(f(0))=1"></span> 이 고른다</p></div></div><div class="card quote"><p><b>수업의 한 문장.</b> 조건 (가)는 <b class="am">g가 2인 곳이 구간이 아니라 점 하나여야 한다</b>는 말이고, 그 점이 f(1)과 f(4)를 한 값으로 묶는다.</p></div></div><div class="s-ask"><p class="question">"모든 a에 대하여 좌극한 + 우극한 ≤ 2" 를 그림으로 말하면?</p></div><aside class="notes"><p>계단 그래프에 점프를 그려 놓고 왼쪽 높이와 오른쪽 높이를 더하게 하세요. 합이 3이 되는 점을 학생이 찾으면 (가)는 끝난 겁니다.</p></aside></section>
 
-  <section class="slide">
-    <span class="snum">SLIDE 3 · 핵심 ①</span>
-    <h2>(가): "\(2\)를 세는 순간"이 구간이면 안 된다</h2>
-    <div class="cols">
-      <div class="main">
-        <p>만약 \(\beta-\alpha&lt;2\)라면, \(t\in[\beta-2,\alpha]\) 구간에서 \(g(t)=2\)다. 이 구간의 오른쪽 끝 \(t=\alpha\)에서:</p>
-        <ul>
-          <li>좌극한: 창문 안에 근 2개 → \(2\)</li>
-          <li>우극한: \(\alpha\)가 창문 밖으로 → \(1\)</li>
-          <li>합 \(=3&gt;2\) → <b>(가) 위반!</b></li>
-        </ul>
-        <div class="mathline">\[\therefore\ \beta-\alpha\ge 2\quad\text{(두 실근이 존재한다면)}\]</div>
-        <div class="qa"><p class="q">발문</p><p class="a">"실험실에서 \(d\)를 1.5로 하고 (가) 검사를 눌러보자. 어디에서 합이 3이 뜨는가? 왜 하필 그 점인가?"</p></div>
-      </div>
-      <div class="sidea">
-        <h4><span class="time">12–22분</span></h4>
-        <p><b>교사 노트:</b> 핵심 통찰은 <b>"\(g(t)=2\)인 \(t\)가 구간으로 존재하면, 그 구간의 끝점에서 좌우 극한의 합이 3이 된다"</b>는 것이다. 학생들이 직접 실험실에서 \(d\)를 바꿔가며 발견하게 하자. 교사가 먼저 말하지 말 것.</p>
-        <ul><li>근이 1개 이하면 \(g\le 1\)이라 (가) 자동 만족 — 나중에 (나)로 걸러짐을 예고.</li></ul>
-      </div>
-    </div>
-  </section>
+<section class="slide" data-title="GATE 1 · 창문"><div class="s-head"><p class="eyebrow">GATE 1</p><h2 class="ct"><span class="m" data-k="g(t)"></span> 는 <span class="am">창문 안의 근의 수</span></h2></div><div class="s-body"><div class="compare"><div class="case"><span class="tag">식으로 읽으면</span><h3>낯설다</h3><p><span class="m" data-k="f'(x)=0"></span> 이 <span class="m" data-k="[t,t+2]"></span> 에서 갖는 실근의 개수.</p></div><div class="versus">VS</div><div class="case"><span class="tag gr">그림으로 읽으면</span><h3>창문을 민다</h3><p>수직선 위에 근 <span class="m" data-k="\alpha,\beta"></span> 를 놓고 길이 2의 창문을 밀며 개수를 센다.</p></div></div><div class="note-strip"><span class="ic">KEY</span><p><span class="m" data-k="g"></span> 는 0, 1, 2 만 가질 수 있습니다. 이차방정식의 실근은 최대 둘이니까요. 이 한 줄이 이후의 모든 경우 나눔을 짧게 만듭니다.</p></div></div><div class="s-ask"><p class="question"><span class="m" data-k="g(t)"></span> 를 한마디로 하면?</p></div><aside class="notes"><p>"창문 안에 든 근의 수" 라고 학생이 말하면 성공입니다. 창문 비유를 교사가 먼저 주지 말고 그림부터 그리게 하세요.</p></aside></section>
 
-  <section class="slide">
-    <span class="snum">SLIDE 4 · 핵심 ②</span>
-    <h2>\(g(t)=2\)는 점 하나에서만 — 그래서 \(f(1)=f(4)\)</h2>
-    <div class="cols">
-      <div class="main">
-        <ul>
-          <li>(나)는 \(g(f(1))=2\)를 요구. \(\beta-\alpha&gt;2\)이면 \(g\le 1\)이라 불가능. 따라서 <b>\(\beta-\alpha=2\) (정확히!)</b></li>
-          <li>두 근이 정확히 \(2\)만큼 떨어지면, 창문이 두 근을 동시에 담는 경우는 \(t=\alpha\) 하나뿐: \[g(t)=2\iff t=\alpha\]</li>
-          <li>\(g(f(1))=g(f(4))=2\)이므로: \[f(1)=f(4)=\alpha\]</li>
-        </ul>
-        <div class="qa"><p class="q">발문</p><p class="a">"\(g(t)=2\)인 \(t\)가 왜 하나뿐인지, 창문 그림으로 설명해봐라." → \(t\le\alpha\)이면서 \(\alpha+2\le t+2\)이려면 \(t=\alpha\).</p></div>
-        <div class="warn"><p class="t">오개념 주의</p><p>\(\beta-\alpha\ge 2\)에서 \(\ge\)를 \(=\)로 좁히는 근거가 (나)의 "\(g=2\)가 존재한다"임을 명확히. (가)만으로는 \(\ge\)까지만 나온다.</p></div>
-      </div>
-      <div class="sidea">
-        <h4><span class="time">22–30분</span></h4>
-        <p><b>교사 노트:</b> 이 슬라이드가 문제의 클라이맥스다. "두 개의 서로 다른 입력 \(f(1), f(4)\)가 같은 출력 \(\alpha\)를 가진다"는 구조를 학생 스스로 말하게 하자. 여기서부터는 식 계산이 허용된다.</p>
-      </div>
-    </div>
-  </section>
+<section class="slide" data-title="GATE 2 · (가)"><div class="s-head"><p class="eyebrow">GATE 2</p><h2 class="ct">창문이 근 둘을 <span class="am">구간으로</span> 담으면 안 된다</h2></div><div class="s-body"><div class="compare"><div class="case"><span class="tag">거리 < 2</span><h3>g=2 가 구간</h3><p>근 둘이 한꺼번에 들어오는 <span class="m" data-k="t"></span> 의 구간이 생기고, 그 오른쪽 끝에서 왼쪽 2 + 오른쪽 1 = <b>3</b>.</p></div><div class="versus">VS</div><div class="case"><span class="tag gr">거리 ≥ 2</span><h3>(가) 통과</h3><p>g=2 가 구간이 되지 않습니다. 정확히 2이면 한 점에서만.</p></div></div><div class="note-strip"><span class="ic">KEY</span><p>(가)는 "모든 점에서 g가 뛰는 폭의 합이 2 이하"입니다. 뛰는 점에서만 확인하면 되고, 확인할 점은 <span class="m" data-k="\alpha-2,\ \alpha,\ \beta-2,\ \beta"></span> 네 곳뿐입니다.</p></div><div class="note-strip warn"><span class="ic">TRAP</span><p>(가)를 "모든 <span class="m" data-k="t"></span> 에서 <span class="m" data-k="g(t)\le2"></span>" 로 읽는 학생이 있습니다. 그 조건이라면 이미 자동으로 참이라 아무것도 알려 주지 못합니다. 극한 두 개의 <b>합</b>이라는 점을 짚으세요.</p></div></div><div class="s-ask"><p class="question">d를 1.5로 놓으면 어느 점에서 합이 3이 될까?</p></div><aside class="notes"><p>학생용 실험실에서 d=1.5로 맞추면 붉은 점이 바로 뜹니다. 그 위치(t=0)가 <span class="m" data-k="\alpha"></span> 라는 것을 짚으세요.</p></aside></section>
 
-  <section class="slide">
-    <span class="snum">SLIDE 5 · 계산</span>
-    <h2>\(\alpha\) 후보: 이차방정식 하나면 끝</h2>
-    <div class="cols">
-      <div class="main">
-        <p>\(f(x)=\frac12x^3+ax^2+bx+c\), \(f'(x)=\frac32x^2+2ax+b\)의 근이 \(\alpha,\alpha+2\):</p>
-        <div class="mathline">\[\alpha+(\alpha+2)=-\frac{4a}{3},\quad \alpha(\alpha+2)=\frac{2b}{3}\]</div>
-        <p>\(f(4)=f(1)\)에서 \(\frac{63}{2}+15a+3b=0\). 대입하면:</p>
-        <div class="mathline">\[\alpha^2-3\alpha+2=0\ \Longrightarrow\ \alpha=1\text{ 또는 }2\]</div>
-        <div class="qa"><p class="q">발문</p><p class="a">"지금까지 한 것 중 '계산'다운 계산은 여기 하나뿐이다. 나머지는 전부 무엇을 한 건가?" → 구조 읽기, 조건 번역.</p></div>
-      </div>
-      <div class="sidea">
-        <h4><span class="time">30–38분</span></h4>
-        <p><b>교사 노트:</b> 계산 과정을 칠판에 길게 쓰지 말고, "근과 계수 + \(f(4)-f(1)=0\)"이라는 설계만 짚고 학생들에게 맡기자. 이 문제의 메시지는 <b>"계산은 마지막에, 그것도 최소로"</b>다.</p>
-      </div>
-    </div>
-  </section>
+<section class="slide" data-title="GATE 3 · (나)"><div class="s-head"><p class="eyebrow">GATE 3</p><h2 class="ct"><span class="m" data-k="g=2"></span> 는 <span class="am">한 점</span>에서만</h2></div><div class="s-body"><div class="tri"><div class="tcard"><span class="tag">(가)</span><h3><span class="m" data-k="\beta-\alpha\ge2"></span></h3><p>근이 둘일 때 간격의 하한.</p></div><div class="tcard live"><span class="tag">(나)</span><h3><span class="m" data-k="g(f(1))=2"></span></h3><p>g=2 가 실제로 일어나야 하니 <span class="m" data-k="\beta-\alpha\le2"></span>.</p></div><div class="tcard"><span class="tag">합치면</span><h3><span class="m" data-k="\beta-\alpha=2"></span></h3><p>창문이 두 근을 모두 담는 <span class="m" data-k="t"></span> 는 <span class="m" data-k="t=\alpha"></span> <b>하나뿐</b>.</p></div></div><div class="note-strip"><span class="ic">KEY</span><p>그래서 <span class="m" data-k="f(1)"></span> 과 <span class="m" data-k="f(4)"></span> 는 <span class="m" data-k="g"></span> 의 <b>입력값</b>으로서 같은 <span class="m" data-k="\alpha"></span> 여야 합니다. 함수값과 근의 위치를 같은 문자로 쓰는 데서 오는 혼동을 미리 막아 주세요.</p></div></div><div class="s-ask"><p class="question"><span class="m" data-k="f(1)"></span> 은 y값인데 왜 x좌표 <span class="m" data-k="\alpha"></span> 와 같다는 걸까?</p></div><aside class="notes"><p><span class="m" data-k="g"></span> 의 입력은 <span class="m" data-k="t"></span> 이고, 여기서는 그 <span class="m" data-k="t"></span> 가 <span class="m" data-k="f(1)"></span> 이라는 값입니다. y축 위의 숫자를 <span class="m" data-k="t"></span> 축에 옮겨 쓴다고 말해 주세요.</p></aside></section>
 
-  <section class="slide">
-    <span class="snum">SLIDE 6 · 함정</span>
-    <h2>가짜 후보 탈락: \(g(f(0))=1\)이 가려낸다</h2>
-    <div class="cols">
-      <div class="main">
-        <ul>
-          <li><b>\(\alpha=1\)</b>: \(a=-3,\ b=\frac92\). \(f(1)=2+c=1\Rightarrow c=-1\). 창문 \([-1,1]\)에 근 \(\{1,3\}\) 중 \(1\)만 → \(g(-1)=1\) ✓</li>
-          <li><b>\(\alpha=2\)</b>: \(a=-\frac92,\ b=12\). \(f(1)=8+c=2\Rightarrow c=-6\). 그런데 \(g(-6)=0\ne 1\) → <b>탈락!</b></li>
-        </ul>
-        <div class="qa"><p class="q">발문</p><p class="a">"\(\alpha=2\)도 \(f(4)=f(1)\)은 만족하는데, 왜 버려지는가? 조건 (나)를 처음부터 끝까지 다시 읽어보자."</p></div>
-        <div class="warn"><p class="t">오개념 주의</p><p>후보가 2개 나왔을 때 하나를 고르는 기준은 항상 "아직 안 쓴 조건"이다. 이 문제에서는 \(g(f(0))=1\).</p></div>
-      </div>
-      <div class="sidea">
-        <h4><span class="time">38–44분</span></h4>
-        <p><b>교사 노트:</b> 많은 학생이 \(\alpha=1\)을 구하고 바로 \(f(5)\)를 계산하려 든다. "조건을 다 썼는가?"를 묻는 습관을 여기서 심어주자. \(\alpha=2\) 탈락은 이 문제의 두 번째 함정이다.</p>
-      </div>
-    </div>
-  </section>
+<section class="slide" data-title="GATE 4 · 후보와 탈락"><div class="s-head"><p class="eyebrow">GATE 4</p><h2 class="ct">후보는 <span class="am">둘</span>, 마지막 조건이 하나를 죽인다</h2></div><div class="s-body"><table class="tbl compact-table"><tr><th></th><th><span class="m" data-k="\alpha=1"></span></th><th><span class="m" data-k="\alpha=2"></span></th></tr><tr><td><span class="m" data-k="f"></span></td><td><span class="m" data-k="\tfrac12x^3-3x^2+\tfrac92x-1"></span></td><td><span class="m" data-k="\tfrac12x^3-\tfrac92x^2+12x-6"></span></td></tr><tr><td><span class="m" data-k="f(1),\ f(4)"></span></td><td><span class="m" data-k="1,\ 1"></span></td><td><span class="m" data-k="2,\ 2"></span></td></tr><tr><td><span class="m" data-k="f(0)"></span></td><td><span class="m" data-k="-1"></span></td><td><span class="m" data-k="-6"></span></td></tr><tr><td><span class="m" data-k="g(f(0))"></span></td><td><b class="am">1 ✓</b></td><td>0 ✗ (창문 <span class="m" data-k="[-6,-4]"></span> 에 근이 없다)</td></tr></table><div class="note-strip warn"><span class="ic">TRAP</span><p><span class="m" data-k="\alpha=2"></span> 도 <span class="m" data-k="f(4)=f(1)"></span> 은 맞습니다. 끝까지 들고 가다 마지막 조각에서야 걸러지는 후보입니다.</p></div></div><div class="s-ask"><p class="question"><span class="m" data-k="\alpha=2"></span> 를 끝까지 들고 가면 어디서 걸릴까?</p></div><aside class="notes"><p>g(f(0))=1 에서 걸립니다. (나)의 세 조각을 한꺼번에 쓰지 않고 앞의 둘로 후보를 만든 뒤 마지막으로 거르는 순서를 지키게 하세요.</p></aside></section>
 
-  <section class="slide">
-    <span class="snum">SLIDE 7 · 마무리</span>
-    <h2>정답 9, 그리고 남는 것</h2>
-    <div class="cols">
-      <div class="main">
-        <div class="mathline">\[f(x)=\frac12x^3-3x^2+\frac92x-1,\quad f(5)=9\]</div>
-        <p><b>오늘의 takeaways (학생과 함께 읽기)</b></p>
-        <ul>
-          <li>"개수를 세는 함수"는 구간(창문)으로 번역하라.</li>
-          <li>극한 조건은 점프 지점의 좌극한·우극한을 보라는 신호다.</li>
-          <li>\(g(t)=2\)인 \(t\)의 유일성이 \(f(1),f(4)\)를 묶는다.</li>
-          <li>진짜 계산은 이차방정식 하나와 상수 하나뿐.</li>
-        </ul>
-      </div>
-      <div class="sidea">
-        <h4><span class="time">44–50분</span></h4>
-        <p><b>교사 노트:</b> 마지막 2분은 학생용 탐구실의 <b>기록장</b>에 "내가 발견한 구조 한 줄"을 적게 하자. 다음 시간에 서로의 한 줄을 비교하면 복습이 된다.</p>
-      </div>
-    </div>
-  </section>
+<section class="slide" data-title="회수"><div class="s-head"><p class="eyebrow">회수</p><h2 class="ct">이차방정식 하나, 상수항 하나</h2></div><div class="s-body"><table class="tbl compact-table"><tr><th>단계</th><th>식</th></tr><tr><td>근과 계수</td><td><span class="m" data-k="A=-\tfrac{3(\alpha+1)}{2},\ B=\tfrac32\alpha(\alpha+2)"></span></td></tr><tr><td><span class="m" data-k="f(4)=f(1)"></span></td><td><span class="m" data-k="\alpha^2-3\alpha+2=0"></span></td></tr><tr><td>상수항</td><td><span class="m" data-k="f(1)=\alpha=1"></span> → <span class="m" data-k="C=-1"></span></td></tr></table><p class="answer-big">9</p><p class="mono" style="text-align:center"><span class="m" data-k="f(5)=\tfrac{125}{2}-75+\tfrac{45}{2}-1=9"></span></p><div class="note-strip"><span class="ic">검산</span><p><span class="m" data-k="f'(x)=\tfrac32(x-1)(x-3)"></span> — 근의 간격이 정확히 2.</p></div></div><div class="s-ask"><p class="question">실제로 푼 방정식은 몇 개였나?</p></div><aside class="notes"><p>이차방정식 하나뿐입니다. 나머지는 모두 구조 읽기였습니다.</p></aside></section>
 
-  <section class="slide">
-    <span class="snum">SLIDE 8 · 연계</span>
-    <h2>학생용 짝 자료</h2>
-    <div class="cols">
-      <div class="main">
-        <p>이 수업의 학생용 짝 자료는 <b>「창문으로 근 세기」 탐구실</b>(2022 수능 공통 22번)이다.</p>
-        <ul>
-          <li>STEP 1–2: 창문 실험실에서 \(t, d\) 슬라이더로 \(g(t)\)와 조건 (가)를 직접 발견</li>
-          <li>STEP 3–5: \(g(t)=2\iff t=\alpha\) → \(\alpha\) 후보 → 가짜 탈락</li>
-          <li>과제: 실험실에서 \(d=2.5\)일 때 (가)는 만족하는지, (나)는 왜 안 되는지 확인해보기</li>
-        </ul>
-        <p class="note">* 탐구실의 (가) 검사 버튼은 "모든 점에서 좌극한+우극한 ≤ 2"를 점프 지점들에서 확인한다.</p>
-      </div>
-      <div class="sidea">
-        <h4>다음 차시 예고</h4>
-        <p>"개수를 세는 함수" 시리즈 ②: 2021 나형 30번 — 절댓값이 미분가능하려면 "접해야" 한다.</p>
-      </div>
-    </div>
-  </section>
+<section class="slide" data-title="교사 체크"><div class="s-head"><p class="eyebrow">교사 체크</p><h2 class="ct">학생이 자주 <span class="am">멈추는 네 지점</span></h2></div><div class="s-body"><table class="tbl compact-table"><tr><th>멈춤</th><th>학생 반응</th><th>되묻기</th></tr><tr><td>g 읽기</td><td><span class="m" data-k="g(t)"></span> 를 식으로 구하려 함</td><td>"창문을 그려 볼까?"</td></tr><tr><td>(가)</td><td><span class="m" data-k="g\le2"></span> 로 읽음</td><td>"극한 두 개를 더한 값이야."</td></tr><tr><td>(나)</td><td><span class="m" data-k="f(1)"></span> 을 <span class="m" data-k="\alpha"></span> 로 못 옮김</td><td>"g의 입력이 무엇이었지?"</td></tr><tr><td>후보</td><td><span class="m" data-k="\alpha=2"></span> 를 버리지 못함</td><td>"g(f(0))를 확인했나?"</td></tr></table></div><div class="s-ask"><p class="question">우리 반에서는 네 지점 중 어디에서 가장 많이 멈출까?</p></div><aside class="notes"><p>대개 (가)입니다. 극한 두 개의 합이라는 것을 놓칩니다.</p></aside></section>
+
+<section class="slide" data-title="수업의 결론"><div class="s-head"><p class="eyebrow">수업의 결론</p><h2 class="ct">오늘 쓴 <span class="am">네 가지 사고</span></h2></div><div class="s-body"><div class="grid4 anim-stagger-list"><div class="card accent"><span class="tag">①</span><h4>세는 함수는 창문</h4><p>g(t) = 구간이 담은 개수</p></div><div class="card accent"><span class="tag">②</span><h4>점프를 읽는 극한</h4><p>(가) = 점프 폭의 합</p></div><div class="card accent"><span class="tag">③</span><h4>한 점에서만</h4><p>g=2 가 점이면 f(1)=f(4)</p></div><div class="card accent"><span class="tag">④</span><h4>후보를 끝까지</h4><p>마지막 조건에서 거른다</p></div></div><div class="card quote"><p>답은 <b class="am">9</b>.</p><p class="mono">퇴장 질문: “창문의 길이가 2가 아니라 3이었다면 근의 간격은?”</p></div></div><div class="s-ask"><p class="question">창문 길이가 3이면 간격은 얼마가 될까?</p></div><aside class="notes"><p>같은 논리로 간격이 3입니다. 길이 <span class="m" data-k="L"></span> 이면 간격 <span class="m" data-k="L"></span>.</p></aside></section>
 
 </div>
-
-<nav class="nav">
-  <button id="prev">← 이전</button>
-  <span class="pg"><span id="cur">1</span> / 8</span>
-  <button id="next">다음 →</button>
-</nav>
-
-<script>
-document.addEventListener('DOMContentLoaded', function(){
-  if (window.renderMathInElement) renderMathInElement(document.body, {delimiters:[{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}]});
-});
-</script>
-<script src="jp-deck.js"></script>
 </body>
 </html>

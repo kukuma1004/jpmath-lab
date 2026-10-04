@@ -6,99 +6,48 @@
 <meta name="robots" content="noindex,nofollow,noarchive"/>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <title>2020 수능 나형 20번 | 꺾이는 점에서 p가 메워준다 · 교사용</title>
+<script src="../../auth.js" data-classroom-protected></script>
 <link rel="stylesheet" href="../../../vendor/katex/katex.min.css"/>
 <link rel="stylesheet" href="../../../jp-math-typography.css?v=3"/>
 <link rel="stylesheet" href="../../../jp-dark.css?v=6"/>
 <link rel="stylesheet" href="../../../jp-polish.css?v=11"/>
-<link rel="stylesheet" href="../../../jp-deck-polish.css"/>
 <script defer src="../../../vendor/katex/katex.min.js"></script>
 <script defer src="../../../jp-lab-dark.js?v=2"></script>
 <script defer src="../../../jp-deck.js"></script>
 <script defer src="../../../jp-polish.js?v=21"></script>
 <style>
-.take4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-.answer-big{font-size:clamp(70px,12vw,150px);font-weight:900;color:#a95232;line-height:1;text-align:center}
-.compare{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:stretch}
-.compare .versus{display:grid;place-items:center;color:#a95232;font:800 12px 'IBM Plex Mono',monospace}
-@media(max-width:720px){.take4,.compare{grid-template-columns:1fr}.compare .versus{min-height:18px}}
+.teacher-em{font-size:clamp(28px,4vw,54px);font-weight:800;line-height:1.18;text-align:center;letter-spacing:-.05em}.answer-big{font-size:clamp(70px,12vw,150px);font-weight:900;color:#a95232;line-height:1;text-align:center}.compact-table td,.compact-table th{padding:9px 11px!important;text-align:center}
+.compare{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:stretch}.compare .case{padding:22px;border:1px solid rgba(58,49,37,.14);border-radius:19px;background:#fff}.compare .case h3{margin:12px 0 10px}.compare .versus{display:grid;place-items:center;color:#a95232;font:800 12px 'IBM Plex Mono',monospace}
+.tri{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.tcard{padding:19px;border:1px solid rgba(58,49,37,.14);border-radius:17px;background:#fff}.tcard.dead{opacity:.62;border-style:dashed}.tcard.live{border-color:rgba(71,116,84,.4);background:#f5faf6}.tcard h3{margin-bottom:9px}
+.note-strip{display:flex;align-items:flex-start;gap:13px;margin-top:18px;padding:15px 17px;border-left:4px solid #2f6670;border-radius:0 13px 13px 0;background:#eef6f5}.note-strip.warn{border-color:#a95232;background:#fff4ed}.note-strip .ic{flex:0 0 auto;color:#a95232;font:800 10px 'IBM Plex Mono',monospace}.note-strip p{margin:0}
+.bogi-box{padding:18px 22px;border:1.5px solid rgba(58,49,37,.28);border-radius:16px;background:#fdfcf8}.bogi-box p{margin:9px 0;padding-left:24px;text-indent:-24px}
+@media(max-width:720px){.compare,.tri{grid-template-columns:1fr}.compare .versus{min-height:18px}}
 </style>
 </head>
 <body class="tpl-dark is-deck">
 <a class="jp-back-link teacher-back" href="../../">← 수업창고</a>
 <div class="deck">
 
-<section class="slide slide--title" data-title="표지"><div class="s-body"><div class="title-layout">
-  <div><p class="eyebrow">2020학년도 수능 나형 20번 · 객관식 4점 · 정답 ②</p><h1 class="h1 anim-fade-up">꺾이는 점에서<br/><span class="am"><span class="m" data-k="p"></span>가 메워준다</span></h1><p class="lede">함수의 "나쁜 점"을 그래프에서 찾고, <span class="m" data-k="p(x)"></span>가 그 점을 메워주는 원리를 봅니다. <b>끊어짐과 꺾임은 메워주는 방법이 다릅니다.</b></p><div class="pause">이 그래프, 어디가 "나쁜가"?</div></div>
-  <div class="card" style="margin-top:0"><h3>학습 목표</h3><ul>
-    <li>함수의 "나쁜 점"(불연속, 미분불가)을 그래프에서 찾을 수 있다.</li>
-    <li><span class="m" data-k="p(x)"></span>가 나쁜 점을 메워주는 원리를 설명할 수 있다.</li>
-    <li><b>점프는 <span class="m" data-k="x^2"></span>, 꺾임은 <span class="m" data-k="(x-a)"></span></b>라는 차이를 구별할 수 있다.</li>
-  </ul></div>
-</div></div><div class="s-ask"><p class="question">이 <span class="m" data-k="f(x)"></span> 그래프를 그려보자. 어디가 '나쁜가'? 끊어지는 곳과 꺾이는 곳, 두 종류가 있다.</p></div><aside class="notes"><p><strong>0–5분.</strong> <span class="m" data-k="f(x)"></span>의 그래프를 학생들이 직접 그리게 하자. <span class="m" data-k="x=0"></span>의 점프와 <span class="m" data-k="x=2"></span>의 꺾임을 발견하는 것이 출발점이다.</p></aside></section>
+<section class="slide slide--title" data-title="문제와 만나기"><div class="s-body"><div class="title-layout">
+  <div><p class="eyebrow">2020학년도 수능 수학 나형 20번 · 4점</p><h1 class="h1 anim-fade-up">곱해서 <span class="am">눌러 메운다</span>,<br/>점프는 두 겹 꺾임은 한 겹</h1><p class="lede"><span class="m" data-k="p(x)"></span> 를 곱하는 일을 "나쁜 점에서 값을 0 으로 눌러 상처를 지우는 일"로 읽는 수업입니다. 점프(불연속)와 꺾임(미분불가)은 <b>눌러야 하는 겹수가 다릅니다.</b> 이 구별이 ㄷ의 함정입니다.</p><div class="pause">첫 90초는 말하지 않기</div></div>
+  <div class="card" style="margin-top:0"><p><span class="m" data-k="f"></span>: <span class="m" data-k="x\le0"></span> 에서 <span class="m" data-k="-x"></span>, <span class="m" data-k="0\lt x\le2"></span> 에서 <span class="m" data-k="x-1"></span>, <span class="m" data-k="x\gt2"></span> 에서 <span class="m" data-k="2x-3"></span></p><p class="mono">ㄱ <span class="m" data-k="pf"></span> 연속 ⟹ <span class="m" data-k="p(0)=0"></span><br/>ㄴ <span class="m" data-k="pf"></span> 미분가능 ⟹ <span class="m" data-k="p(2)=0"></span><br/>ㄷ <span class="m" data-k="pf^{2}"></span> 미분가능 ⟹ <span class="m" data-k="x^{2}(x-2)^{2}\mid p"></span></p></div>
+</div></div><aside class="notes"><p><strong>권장 시간</strong> 45분 · 문제 읽기 4 / 나쁜 점 지도 8 / ㄱ·ㄴ 13 / ㄷ 13 / 정리 7.</p><p><strong>학생용 짝 자료</strong>는 수능문제 &gt; 미적분1 &gt; 꺾이는 점에서 p가 메워준다 입니다. p 의 겹수를 두 점에서 따로 바꾸며 확대된 두 그림으로 이어짐·매끄러움을 판정하는 판이 두 개(p×f, p×f²) 들어 있습니다.</p><p>처음 90초 동안 "f 의 어디가 어떻게 나쁜가?"만 그림으로 그려 보게 하세요. 곱의 미분법을 바로 쓰려는 학생은 멈추게 합니다.</p></aside></section>
 
-<section class="slide" data-title="나쁜 점 지도"><div class="s-head"><p class="eyebrow">나쁜 점 지도</p><h2 class="ct">두 종류의 <span class="am">"나쁨"</span></h2></div><div class="s-body">
-<div class="compare">
-  <div class="card"><span class="tag"><span class="m" data-k="x=0"></span></span><h3>점프 불연속</h3><p><span class="m" data-k="f(0)=0"></span>, <span class="m" data-k="\lim_{x\to0^+}f(x)=-1"></span>.<br/><b>끊어짐.</b></p></div>
-  <div class="versus">VS</div>
-  <div class="card"><span class="tag gr"><span class="m" data-k="x=2"></span></span><h3>꺾임</h3><p><span class="m" data-k="f(2)=1"></span> 연속, 좌미분 1 ≠ 우미분 2.<br/><b>미분불가.</b></p></div>
-</div>
-<div class="note-strip warn"><span class="ic">TRAP</span><p>두 "나쁨"을 같은 것으로 취급하는 학생이 많다. 불연속(함숫값 문제)과 미분불가(기울기 문제)는 <b>다른 차원</b>이다.</p></div>
-</div><div class="s-ask"><p class="question">끊어짐과 꺾임, 뭐가 더 '나쁜가'? <span class="m" data-k="p(x)"></span>를 곱해서 메워주려면 각각 어떻게 해야 할까?</p></div><aside class="notes"><p><strong>5–12분.</strong> 탐구실 실험실을 띄우자. <span class="m" data-k="p(x)=x^k"></span>의 <span class="m" data-k="k"></span>를 바꾸며 <span class="m" data-k="p(x)f(x)"></span>가 어떻게 변하는지 보여주자.</p></aside></section>
+<section class="slide" data-title="수업의 지도"><div class="s-head"><p class="eyebrow">전체 지도</p><h2 class="ct">네 개의 <span class="am">번역</span>을 통과한다</h2></div><div class="s-body"><div class="grid4 anim-stagger-list"><div class="card accent"><span class="tag">GATE 1</span><h4>나쁜 점 지도</h4><p><span class="m" data-k="x=0"></span> 점프 · <span class="m" data-k="x=2"></span> 꺾임</p></div><div class="card accent"><span class="tag">GATE 2</span><h4>ㄱ</h4><p>점프를 눌러 이어붙임 → <span class="m" data-k="p(0)=0"></span></p></div><div class="card accent"><span class="tag">GATE 3</span><h4>ㄴ</h4><p>꺾임을 눌러 지움 → <span class="m" data-k="p(2)=0"></span></p></div><div class="card accent"><span class="tag">GATE 4</span><h4>ㄷ</h4><p>꺾임은 한 겹이면 충분 → <span class="m" data-k="p=x^{2}(x-2)"></span> 가 반례</p></div></div><div class="card quote"><p><b>수업의 한 문장.</b> 점프를 매끄럽게 하는 데는 <b class="am">두 겹</b>, 꺾임을 지우는 데는 <b class="am">한 겹</b>이면 된다. 그래서 ㄷ의 <code>(x−2)²</code>는 지나치다.</p></div></div><div class="s-ask"><p class="question">f 의 "나쁨"은 두 군데가 같은 종류일까?</p></div><aside class="notes"><p>점프는 높이가 어긋난 것, 꺾임은 기울기가 어긋난 것입니다. 두 문장을 칠판에 나란히 쓰고 시작하세요.</p></aside></section>
 
-<section class="slide" data-title="ㄱ, ㄴ 판정"><div class="s-head"><p class="eyebrow">ㄱ, ㄴ 판정</p><h2 class="ct">각 점에서 <span class="am">필요한 조건</span></h2></div><div class="s-body">
-<div class="compare">
-  <div class="card"><span class="tag gr">ㄱ · 참</span><h3><span class="m" data-k="\frac{p}{f}"></span> 연속</h3><p><span class="m" data-k="f(0)=0"></span>이므로 <span class="m" data-k="p(0)=0"></span>이어야 함.</p></div>
-  <div class="versus">·</div>
-  <div class="card"><span class="tag">ㄴ · 참</span><h3><span class="m" data-k="pf"></span> 미분가능</h3><p><span class="m" data-k="x=2"></span>에서 <span class="m" data-k="(pf)'(2^+)-(pf)'(2^-)=p(2)"></span> → <span class="m" data-k="p(2)=0"></span>.</p></div>
-</div>
-<div class="eq"><div class="eqrow"><span class="m md" data-k="(pf)'(2^+)-(pf)'(2^-)=p(2)(2-1)=p(2)=0"></span></div></div>
-</div><div class="s-ask"><p class="question">"<span class="m" data-k="(pf)'"></span>의 점프가 <span class="m" data-k="p(2)"></span>와 <span class="m" data-k="f'"></span>의 점프의 곱이다." 무슨 뜻일까?</p></div><aside class="notes"><p><strong>12–22분.</strong> 곱의 미분법 <span class="m" data-k="(pf)'=p'f+pf'"></span>에서 <span class="m" data-k="f'"></span>의 불연속이 <span class="m" data-k="p"></span>와 곱해지는 구조를 강조하자.</p><p>발문의 답: <span class="m" data-k="f'"></span>의 점프(1→2)를 없앨 수 없으니 <span class="m" data-k="p(2)"></span>가 0이어야 한다.</p></aside></section>
+<section class="slide" data-title="나쁜 점 지도"><div class="s-head"><p class="eyebrow">GATE 1</p><h2 class="ct"><span class="m" data-k="f"></span> 의 <span class="am">두 가지 나쁨</span></h2></div><div class="s-body"><div class="compare"><div class="case"><span class="tag">x = 0</span><h3>점프 (불연속)</h3><p>왼쪽 0, 오른쪽 −1, 값 0 — <b>높이</b>가 어긋남.</p></div><div class="versus">VS</div><div class="case"><span class="tag gr">x = 2</span><h3>꺾임 (미분불가)</h3><p>왼쪽 1, 오른쪽 1로 이어지지만 기울기 1 → 2 — <b>기울기</b>가 어긋남.</p></div></div><div class="note-strip"><span class="ic">KEY</span><p>"곱해서 메운다" = 그 점에서 값을 0으로 눌러 어긋남을 지운다. 어긋남의 종류(높이 / 기울기)에 따라 눌러야 하는 정도가 다릅니다.</p></div></div><div class="s-ask"><p class="question">높이가 어긋난 것과 기울기가 어긋난 것은 어느 쪽이 더 심각한가?</p></div><aside class="notes"><p>높이가 어긋난 쪽이 더 심각합니다. 기울기를 논하기 전에 이어져 있어야 하기 때문입니다.</p></aside></section>
 
-<section class="slide" data-title="ㄷ의 함정 ①"><div class="s-head"><p class="eyebrow">ㄷ의 함정 ①</p><h2 class="ct"><span class="m" data-k="x=0"></span>: 점프는 <span class="am"><span class="m" data-k="x^2"></span>이 필요</span>하다</h2></div><div class="s-body">
-<p><span class="m" data-k="q(x)=p(x)f(x)^2"></span>. <span class="m" data-k="x=0"></span>에서 <span class="m" data-k="f^2"></span>도 점프한다 (0→1).</p>
-<ul>
-  <li>연속: <span class="m" data-k="\lim_{0^-}q=0,\ \lim_{0^+}q=p(0)"></span> → <span class="m" data-k="p(0)=0"></span>.</li>
-  <li>미분가능: <span class="m" data-k="q'(0^-)=0,\ q'(0^+)=p'(0)"></span> → <span class="m" data-k="p'(0)=0"></span>.</li>
-</ul>
-<p>따라서 <b><span class="m" data-k="x^2\mid p(x)"></span></b>. (ㄷ의 <span class="m" data-k="x^2"></span> 부분은 맞다.)</p>
-</div><div class="s-ask"><p class="question">연속에는 <span class="m" data-k="p(0)=0"></span>이면 되는데, 왜 미분가능에는 <span class="m" data-k="p'(0)=0"></span>까지 필요한가?</p></div><aside class="notes"><p><strong>22–32분.</strong> 점프 불연속을 메우려면 2단계가 필요하다: (1) 0으로 만들어 이어붙이고, (2) 기울기까지 맞춰 매끄럽게. 이것이 <span class="m" data-k="x^2"></span>의 의미다.</p></aside></section>
+<section class="slide" data-title="ㄱ · ㄴ"><div class="s-head"><p class="eyebrow">GATE 2</p><h2 class="ct">점프는 <span class="am">x</span> 한 겹으로 이어붙고, 꺾임은 <span class="am">x−2</span> 한 겹으로 지워진다</h2></div><div class="s-body"><table class="tbl compact-table"><tr><th>보기</th><th>무엇을 메우나</th><th>필요한 것</th></tr><tr><td>ㄱ</td><td>점프를 이어붙임 (연속)</td><td><span class="m" data-k="p(0)=0"></span></td></tr><tr><td>ㄴ</td><td>꺾임을 지움 (미분가능)</td><td><span class="m" data-k="p(2)=0"></span></td></tr></table><div class="note-strip"><span class="ic">KEY</span><p>ㄴ에서 <span class="m" data-k="x=0"></span> 쪽은 이미 미분가능을 요구하므로 점프를 완전히 메워야 합니다. 하지만 ㄴ이 묻는 것은 <span class="m" data-k="p(2)=0"></span> 뿐이니, 질문과 요구를 구별해서 읽게 하세요.</p></div></div><div class="s-ask"><p class="question">ㄴ이 참이라는 근거로 <span class="m" data-k="x=0"></span> 쪽 조건은 필요 없는가?</p></div><aside class="notes"><p>필요 없습니다. ㄴ은 "p(2)=0" 이라는 결론만 묻습니다. 다른 점에 대한 조건은 이 결론과 무관합니다.</p></aside></section>
 
-<section class="slide" data-title="ㄷ의 함정 ②"><div class="s-head"><p class="eyebrow">ㄷ의 함정 ②</p><h2 class="ct"><span class="m" data-k="x=2"></span>: 꺾임은 <span class="am"><span class="m" data-k="(x-2)"></span>이면 충분!</span></h2></div><div class="s-body">
-<p><span class="m" data-k="x=2"></span>에서 <span class="m" data-k="f"></span>는 연속이고 <span class="m" data-k="f(2)=1\ne 0"></span>.</p>
-<div class="eq"><div class="eqrow"><span class="m md am" data-k="q'(2^+)-q'(2^-)=p(2)\cdot\big[(f^2)'(2^+)-(f^2)'(2^-)\big]"></span></div></div>
-<p><span class="m" data-k="p(2)=0"></span>이면 좌우 미분계수가 같아진다. <b><span class="m" data-k="(x-2)"></span>이면 충분!</b></p>
-<p>따라서 ㄷ의 "<span class="m" data-k="x^2(x-2)^2"></span>으로 나누어떨어진다"는 <b>거짓</b>이다.</p>
-<div class="note-strip"><span class="ic">KEY</span><p><b>점프(불연속)는 <span class="m" data-k="x^2"></span>, 꺾임(미분불가)은 <span class="m" data-k="(x-a)"></span>.</b> 나쁜 정도에 따라 메워주는 차수가 다르다!</p></div>
-</div><div class="s-ask"><p class="question"><span class="m" data-k="x=0"></span>과 <span class="m" data-k="x=2"></span>는 왜 다른 차수가 필요한가?</p></div><aside class="notes"><p><strong>32–40분.</strong> 이 슬라이드가 50분의 클라이맥스다. "<span class="m" data-k="x=0"></span>과 <span class="m" data-k="x=2"></span>는 다른 종류의 나쁨이다"를 학생들이 말하게 하자. 표로 정리하면 좋다.</p></aside></section>
+<section class="slide" data-title="ㄷ · 반례"><div class="s-head"><p class="eyebrow">GATE 3</p><h2 class="ct">f 의 제곱이어도 꺾임은 <span class="am">한 겹</span></h2></div><div class="s-body"><div class="compare"><div class="case"><span class="tag">x = 0 (점프 0→1)</span><h3>두 겹 필요</h3><p><span class="m" data-k="p(0)=p'(0)=0"></span> — <span class="m" data-k="x^{2}"></span>.</p></div><div class="versus">VS</div><div class="case"><span class="tag gr">x = 2 (꺾임 2→4)</span><h3>한 겹이면 충분</h3><p><span class="m" data-k="p(2)=0"></span> 하나로 <span class="m" data-k="p\times\text{기울기 차}"></span> 가 사라진다.</p></div></div><div class="note-strip warn"><span class="ic">TRAP</span><p>"제곱이니까 꺾임도 두 겹" 이라는 직감이 함정입니다. 반례 <span class="m" data-k="p=x^{2}(x-2)"></span> 를 실험실에서 만들어 보이세요 — a=2, b=1 에서 모든 점이 매끄럽습니다.</p></div></div><div class="s-ask"><p class="question"><span class="m" data-k="(x-2)^{2}"></span> 가 정말 필요했던 적이 한 번이라도 있었나?</p></div><aside class="notes"><p>없습니다. 이 한 문장이 ㄷ의 오답을 가르는 열쇠입니다.</p></aside></section>
 
-<section class="slide" data-title="정리"><div class="s-head"><p class="eyebrow">정리</p><h2 class="ct">정답 ②, 그리고 남는 것</h2></div><div class="s-body">
-<p class="mono" style="text-align:center">ㄱ 참, ㄴ 참, ㄷ 거짓</p>
-<p class="answer-big">②</p>
-<table class="tbl compact-table"><tr><th>점</th><th><span class="m" data-k="f"></span>의 상태</th><th><span class="m" data-k="p"></span>에 필요</th></tr>
-<tr><td><span class="m" data-k="x=0"></span></td><td>점프 불연속</td><td><b class="am"><span class="m" data-k="x^2"></span></b></td></tr>
-<tr><td><span class="m" data-k="x=2"></span></td><td>꺾임 (연속)</td><td><b class="am"><span class="m" data-k="(x-2)"></span></b></td></tr></table>
-</div><div class="s-ask"><p class="question">이 표를 외우지 않고 유도할 수 있을까? 각 칸의 근거는?</p></div><aside class="notes"><p><strong>40–45분.</strong> 표를 학생 공책에 적게 하자. 이것이 이 차시의 핵심 정리다.</p></aside></section>
+<section class="slide" data-title="회수"><div class="s-head"><p class="eyebrow">회수</p><h2 class="ct">나쁜 정도를 <span class="am">겹수</span>로 센다</h2></div><div class="s-body"><table class="tbl compact-table"><tr><th>나쁜 점</th><th><span class="m" data-k="pf"></span> 연속</th><th><span class="m" data-k="pf"></span> 미분가능</th><th><span class="m" data-k="pf^{2}"></span> 미분가능</th></tr><tr><td><span class="m" data-k="x=0"></span> 점프</td><td><span class="m" data-k="x"></span> 한 겹</td><td><span class="m" data-k="x^{2}"></span> 두 겹</td><td><span class="m" data-k="x^{2}"></span> 두 겹</td></tr><tr><td><span class="m" data-k="x=2"></span> 꺾임</td><td>필요 없음</td><td><span class="m" data-k="x-2"></span> 한 겹</td><td><span class="m" data-k="x-2"></span> 한 겹</td></tr></table><p class="answer-big">②</p><p class="mono" style="text-align:center">ㄱ, ㄴ</p></div><div class="s-ask"><p class="question">표에서 두 행의 차이를 한 문장으로?</p></div><aside class="notes"><p>점프는 한 겹 더 필요합니다. 점프를 매끄럽게 하려면 높이와 기울기를 둘 다 맞춰야 하니까요.</p></aside></section>
 
-<section class="slide" data-title="마무리"><div class="s-head"><p class="eyebrow">마무리</p><h2 class="ct">오늘의 <span class="am">takeaways</span></h2></div><div class="s-body">
-<div class="take4">
-  <div class="card accent"><span class="tag">①</span><p>나쁜 점의 <b>지도</b>를 그려라 (불연속 vs 미분불가).</p></div>
-  <div class="card accent"><span class="tag">②</span><p><span class="m" data-k="p"></span>가 메워주려면 그 점에서 <b>0</b>이 되어야 한다.</p></div>
-  <div class="card accent"><span class="tag">③</span><p>점프는 <span class="m" data-k="x^2"></span>, 꺾임은 <span class="m" data-k="(x-a)"></span>.</p></div>
-  <div class="card accent"><span class="tag">④</span><p>보기는 <b>연결해서</b> 읽자.</p></div>
-</div>
-</div><div class="s-ask"><p class="question">ㄱ, ㄴ, ㄷ이 사실은 같은 이야기를 하고 있다. 무엇일까?</p></div><aside class="notes"><p><strong>45–50분.</strong> 탐구실 기록장에 한 줄 적기.</p><p>발문의 답: "나쁜 점을 <span class="m" data-k="p"></span>가 어떻게 메워주는가"라는 하나의 이야기.</p></aside></section>
+<section class="slide" data-title="교사 체크"><div class="s-head"><p class="eyebrow">교사 체크</p><h2 class="ct">학생이 자주 <span class="am">멈추는 네 지점</span></h2></div><div class="s-body"><table class="tbl compact-table"><tr><th>멈춤</th><th>학생 반응</th><th>되묻기</th></tr><tr><td>나쁜 점</td><td>불연속과 미분불가를 한 덩어리로 봄</td><td>"높이가 어긋났나, 기울기가 어긋났나?"</td></tr><tr><td>ㄱ</td><td><span class="m" data-k="p(2)=0"></span> 까지 요구함</td><td>"x=2 는 이미 이어져 있었지?"</td></tr><tr><td>ㄴ</td><td>곱의 미분을 길게 전개</td><td>"좌우 차이가 남는 항만 보자."</td></tr><tr><td>ㄷ</td><td><span class="m" data-k="(x-2)^{2}"></span> 가 필요하다고 봄</td><td>"반례 p=x²(x−2) 를 만들어 볼까?"</td></tr></table></div><div class="s-ask"><p class="question">우리 반에서는 네 지점 중 어디에서 가장 많이 멈출까?</p></div><aside class="notes"><p>대개 ㄷ입니다. 실험실에서 a=2, b=1을 직접 눌러 보게 하세요.</p></aside></section>
 
-<section class="slide" data-title="연계"><div class="s-head"><p class="eyebrow">연계</p><h2 class="ct">학생용 <span class="am">짝 자료</span></h2></div><div class="s-body">
-<div class="card"><h3>「꺾이는 점에서 p가 메워준다」 탐구실 <span class="mono">(2020 수능 나형 20번)</span></h3><ul>
-  <li>STEP 1–2: 나쁜 점 지도, ㄱㄴ 판정</li>
-  <li>실험실: <span class="m" data-k="p(x)=x^k"></span>로 메워주기 관찰</li>
-  <li>STEP 3: ㄷ의 함정 (점프 vs 꺾임)</li>
-  <li>과제: <span class="m" data-k="p(x)=x^2(x-2)"></span>일 때 <span class="m" data-k="p(x)f(x)^2"></span>의 그래프 그려보기</li>
-</ul></div>
-<div class="note-strip"><span class="ic">SERIES</span><p>객관식 킬러 3부작: ① 움직인 거리(2022-14) ② 미분되는 적분(2021-20) ③ 메워주는 <span class="m" data-k="p"></span>(2020-20). 공통점은 <b>"기호를 그래프로 번역한다"</b>는 것이다.</p></div>
-</div><aside class="notes"><p>시리즈 마무리.</p></aside></section>
+<section class="slide" data-title="수업의 결론"><div class="s-head"><p class="eyebrow">수업의 결론</p><h2 class="ct">오늘 쓴 <span class="am">네 가지 사고</span></h2></div><div class="s-body"><div class="grid4 anim-stagger-list"><div class="card accent"><span class="tag">①</span><h4>나쁜 점 지도</h4><p>높이 vs 기울기</p></div><div class="card accent"><span class="tag">②</span><h4>눌러 메우기</h4><p>곱이 0 으로 지운다</p></div><div class="card accent"><span class="tag">③</span><h4>겹수</h4><p>점프 두 겹 · 꺾임 한 겹</p></div><div class="card accent"><span class="tag">④</span><h4>반례</h4><p>제곱이어도 한 겹</p></div></div><div class="card quote"><p>답은 <b class="am">② ㄱ, ㄴ</b>.</p><p class="mono">퇴장 질문: “f 의 세제곱이면 점프에는 몇 겹이 필요할까?”</p></div></div><div class="s-ask"><p class="question">f³ 에서 점프(0→−1)를 매끄럽게 하려면?</p></div><aside class="notes"><p>여전히 높이와 기울기를 맞추면 되니 두 겹입니다. 겹수가 커진다고 필요한 겹수가 늘지는 않습니다.</p></aside></section>
 
 </div>
 </body>

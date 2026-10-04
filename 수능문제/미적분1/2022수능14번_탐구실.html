@@ -2,346 +2,226 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8"/>
-<meta content="width=device-width,initial-scale=1" name="viewport"/>
-<meta content="noindex,nofollow,noarchive" name="robots"/>
-<link crossorigin="" href="https://cdn.jsdelivr.net" rel="preconnect"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow,noarchive"/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;family=Noto+Serif+KR:wght@700;900&amp;display=swap" rel="stylesheet"/>
-<title>2022 수능 공통 14번 | 움직인 거리 vs 이동한 위치</title>
-
-<!-- ── 공용 자산 ─────────────────────────────────────────────── -->
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<title>2022 수능 수학 14번 | 움직인 거리 vs 이동한 위치</title>
 <link rel="stylesheet" href="../../vendor/katex/katex.min.css"/>
-<link rel="stylesheet" href="../../jp-math-typography.css?v=3"/>
-<link rel="stylesheet" href="../../jp-lesson.css"/>
-<link rel="stylesheet" href="../../jp-explore.css"/>
+<link rel="stylesheet" href="../../jp-dark.css?v=6"/>
+<link rel="stylesheet" href="../../jp-polish.css?v=11"/>
 <script defer src="../../vendor/katex/katex.min.js"></script>
-<script defer src="../../jp-lab.js"></script>
-  <link rel="stylesheet" href="../../jp-polish.css?v=11">
-  <script src="../../jp-polish.js?v=21" defer></script>
-  <link rel="stylesheet" href="../../jp-nav-2.css?v=3">
-  <script src="../../jp-nav-2.js?v=6" data-jp-section="수능·킬러 문제" defer></script>
+<script defer src="../../jp-lab-dark.js?v=2"></script>
+<script defer src="../../jp-polish.js?v=21"></script>
+<link rel="stylesheet" href="../../jp-nav-2.css?v=3"/>
+<script src="../../jp-nav-2.js?v=6" data-jp-section="수능·킬러 문제" defer></script>
+<style>
+.cnt-lab{margin:22px 0;border:1px solid rgba(47,102,112,.2);border-radius:24px;overflow:hidden;background:#fff}.cnt-lab-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:17px 20px;border-bottom:1px solid rgba(58,49,37,.12)}.cnt-lab-head h4{margin:0;font-size:18px}.cnt-lab-head span{color:#2f6670;font:700 10px 'IBM Plex Mono',monospace;letter-spacing:.08em}.cnt-lab-body{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(260px,.72fr)}.cnt-stage{display:grid;gap:8px;align-content:center;padding:16px;background:linear-gradient(145deg,#fbfaf6,#f4efe4)}.cnt-stage svg{display:block;width:100%;height:auto}.cnt-panel{padding:20px;border-left:1px solid rgba(58,49,37,.12)}.cnt-control{margin-bottom:14px}.cnt-control label{display:flex;justify-content:space-between;gap:12px;margin-bottom:6px;color:#5f574b;font-size:12px}.cnt-control label b{color:#a95232;font-family:'IBM Plex Mono',monospace}.cnt-control input{width:100%;accent-color:#a95232}.snap{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 12px}.snap button{padding:5px 9px;border:1px solid rgba(58,49,37,.2);border-radius:999px;background:#fff;font:700 11px 'IBM Plex Mono',monospace;color:#5f574b;cursor:pointer}.snap button:hover{border-color:#a95232;color:#a95232}.cnt-row{display:flex;justify-content:space-between;gap:12px;margin-top:8px;padding:9px 11px;border-radius:11px;background:#f6f2e9;font-size:12px}.cnt-row b{color:#2f6670;font-family:'IBM Plex Mono',monospace;text-align:right}.cnt-row.hot b{color:#a95232}.verdict{display:grid;place-items:center;min-height:74px;margin-top:12px;padding:10px;border-radius:15px;color:#fff;background:#8a3d3d;text-align:center}.verdict strong{display:block;font:700 19px 'Pretendard',sans-serif}.verdict span{font-size:11px;color:rgba(255,255,255,.8)}.verdict.ok{background:#477454;box-shadow:0 0 0 4px rgba(71,116,84,.12)}.verdict.mid{background:#6c6357}.cnt-hint{margin:10px 0 0;color:#776e61;font-size:11.5px;line-height:1.6}
+.prob .eqrow{overflow-x:auto}.choice{min-height:48px}.choice.chosen{border-color:#2f6670!important;background:#eef6f5!important;box-shadow:0 0 0 3px rgba(47,102,112,.1)}
+.gtable{width:100%;border-collapse:collapse;margin-top:14px;font-size:13px}.gtable th,.gtable td{padding:8px 6px;border-bottom:1px solid rgba(58,49,37,.12);text-align:center}.gtable td.hot{color:#a95232;font-weight:800}.gtable tr.key td{background:#fff3e8}
+.mini-answer{font-size:clamp(46px,8vw,84px);font-weight:800;color:#a95232;text-align:center;letter-spacing:-.06em}.reveal-note{margin-top:12px;color:#6b6256;font-size:13px;text-align:center}
+.bogi{margin:18px 0;padding:18px 20px;border:1.5px solid rgba(58,49,37,.3);border-radius:16px;background:#fdfcf8}.bogi h5{margin:0 0 12px;color:#2f6670;font:700 12px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-align:center}.bogi p{margin:9px 0;padding-left:22px;text-indent:-22px}.bogi p b{color:#a95232}
+@media(max-width:800px){.cnt-lab-body{grid-template-columns:1fr}.cnt-panel{border-top:1px solid rgba(58,49,37,.12);border-left:0}.cnt-stage{padding:8px}}
+@media(max-width:650px){.cnt-row{flex-direction:column;align-items:flex-start}.cnt-row b{text-align:left}.gtable{font-size:11.5px}}
+.cond{margin:16px 0;padding:16px 18px;border:1.5px solid rgba(58,49,37,.25);border-radius:15px;background:#fdfcf8}.cond p{margin:8px 0;padding-left:26px;text-indent:-26px}.ansrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:16px 0}.ansrow input{width:150px;padding:11px 14px;border:1.5px solid rgba(58,49,37,.28);border-radius:12px;font:700 18px IBM Plex Mono,monospace;background:#fff}.ansrow input:focus{outline:none;border-color:#2f6670;box-shadow:0 0 0 3px rgba(47,102,112,.12)}.ansrow .res{font-weight:700;font-size:14px}.ansrow .res.ok{color:#477454}.ansrow .res.no{color:#a95232}.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:14px 0}.opts span{padding:8px 10px;border:1px solid rgba(58,49,37,.14);border-radius:11px;background:#fdfcf8;font-size:15px}</style>
 </head>
-<body class="tpl-math-lesson tpl-explore">
+<body class="tpl-dark is-page">
 
-<header class="ex-top">
-  <div class="ex-brand"><a href="../">← 수능 문제</a><small>2022 수능 공통 14번 · 움직인 거리 vs 이동한 위치</small></div>
-  <div class="ex-prog"><div class="ex-prog-bar"><i id="progFill"></i></div><span class="ex-prog-txt" id="progTxt">1 / 6</span></div>
+<header>
+  <div class="hbar">
+    <h1>움직인 거리 vs 이동한 위치</h1>
+    <span class="src">2022학년도 수능 수학 <b>14번</b> · 4점</span>
+    <a class="back" href="../">← 수능 문제</a>
+  </div>
+  <nav id="nav"></nav>
+  <div class="pbar"><span id="pfill"></span></div>
 </header>
 
-<div class="ex-layout">
-  <aside class="ex-rail">
-    <h3>탐구 경로</h3>
-    <nav class="ex-rail-nav" id="rail"></nav>
-    <p class="rail-tip">먼저 <b>내 생각을 고르고</b> 나서 그래프를 움직여 보세요.<br/>틀려도 괜찮습니다 — 틀린 곳에서 배웁니다.</p>
-  </aside>
+<main>
 
-  <main class="ex-main">
-
-<!-- ═══ SCENE 1 ═══════════════════════════════════════════════════ -->
-<section class="scene is-on" id="s1">
-<p class="scene-eyebrow">문제 읽기 · 2022 수능 공통 14번</p>
-<h2 class="scene-h2"><span class="accent">움직인 거리</span> vs <span class="accent">이동한 위치</span></h2>
-<p class="scene-lead"><span class="kx" data-k="\int_0^1 v(t)\,dt"></span>는 <b>"위치의 변화"</b>(어디에서 어디로 갔나)이고, <span class="kx" data-k="\int_0^1\lvert v(t)\rvert\,dt"></span>는 <b>"움직인 거리"</b>(얼마나 돌아다녔나)입니다. 둘이 다르면, 점 P는 <b>방향을 바꾼 것</b>입니다. 이 한 줄이 보기 ㄴ, ㄷ의 열쇠예요.</p>
-<div class="work">
-  <div class="figure"><img alt="2022학년도 수능 공통 14번 문제" src="문제이미지/assets/2022수능14번.png"/></div>
-  <div class="stack">
-    <div class="fx sm boxed" data-k="x(t)=t(t-1)(at+b)\quad(a\ne 0),\qquad \int_0^1\lvert v(t)\rvert\,dt=2"></div>
-    <div class="note-strip"><span class="ic">보기</span><p>ㄱ. <span class="kx" data-k="\int_0^1v(t)dt=0"></span> &nbsp; ㄴ. <span class="kx" data-k="\lvert x(t_1)\rvert\gt 1"></span>인 <span class="kx" data-k="t_1\in(0,1)"></span> 존재 &nbsp; ㄷ. <span class="kx" data-k="\lvert x(t)\rvert\lt 1\ (\forall t)"></span>이면 <span class="kx" data-k="x(t_2)=0"></span>인 <span class="kx" data-k="t_2\in(0,1)"></span> 존재</p></div>
-  </div>
-</div>
-<div class="scene-nav"><span class="sp"></span><button class="nbtn go" data-go="next">ㄱ 판정하러 가기 →</button></div>
+<!-- ══════════ STEP 1 ══════════ -->
+<section class="ch on" data-ch="0">
+  <p class="eyebrow">STEP 01 · 문제 만나기</p>
+  <h2 class="ct">걸어간 <span class="am">거리</span>와 옮겨 간 <span class="am">위치</span>는 다르다</h2>
+<p class="lede">속도를 그냥 적분하면 <b>위치의 변화</b>, 절댓값을 씌워 적분하면 <b>걸어 다닌 거리</b>입니다. 이 문제는 두 값이 어긋나는 순간에 대한 이야기입니다.</p><div class="prob"><div class="prob-head"><span class="yr">2022 수능</span><h4>수학 14번</h4><span class="pts">4점</span></div><div class="prob-body"><div class="qtext"><p>수직선 위를 움직이는 점 P의 시각 <span class="m" data-k="t"></span>에서의 위치 <span class="m" data-k="x(t)"></span>가 두 상수 <span class="m" data-k="a,\ b"></span>에 대하여</p><div class="eq"><div class="eqrow"><span class="m md" data-k="x(t)=t(t-1)(at+b)\qquad(a\neq 0)"></span></div></div><p>이다. 점 P의 시각 <span class="m" data-k="t"></span>에서의 속도 <span class="m" data-k="v(t)"></span>가 <span class="m am" data-k="\displaystyle\int_{0}^{1}|v(t)|\,dt=2"></span> 를 만족시킬 때, &lt;보기&gt;에서 옳은 것만을 있는 대로 고른 것은?</p></div><div class="bogi"><h5>&lt; 보 기 &gt;</h5>
+<p>ㄱ. <span class="m" data-k="\displaystyle\int_{0}^{1}v(t)\,dt=0"></span></p>
+<p>ㄴ. <span class="m" data-k="|x(t_1)|\gt 1"></span> 인 <span class="m" data-k="t_1"></span>이 열린구간 <span class="m" data-k="(0,1)"></span>에 존재한다.</p>
+<p>ㄷ. <span class="m" data-k="0\le t\le 1"></span> 인 모든 <span class="m" data-k="t"></span>에 대하여 <span class="m" data-k="|x(t)|\lt 1"></span> 이면 <span class="m" data-k="x(t_2)=0"></span> 인 <span class="m" data-k="t_2"></span>가 열린구간 <span class="m" data-k="(0,1)"></span>에 존재한다.</p></div><div class="choices" data-q="first" data-ans="2" data-mode="record"><button class="choice" data-i="0">① ㄱ</button><button class="choice" data-i="1">② ㄱ, ㄴ</button><button class="choice" data-i="2">③ ㄱ, ㄷ</button><button class="choice" data-i="3">④ ㄴ, ㄷ</button><button class="choice" data-i="4">⑤ ㄱ, ㄴ, ㄷ</button></div><p class="hintline" style="margin-top:10px">처음 답은 기록만 해 두세요. 마지막에 다시 선택해 봅니다.</p></div></div><div class="prob"><div class="prob-head"><span class="yr">첫 질문</span><h4>집 앞에서 출발해 한 바퀴 돌고 제자리로 돌아왔다</h4></div><div class="prob-body"><div class="qtext">만보기에는 <span class="m" data-k="2"></span> km가 찍혔는데 출발점과 도착점은 같습니다. 이때 <span class="m" data-k="\int v\,dt"></span> 와 <span class="m" data-k="\int |v|\,dt"></span> 은 각각 무엇을 말하나요?</div><div class="choices" data-q="walk" data-ans="1"><button class="choice" data-i="0"><span class="m" data-k="\int v=2,\ \int|v|=0"></span></button><button class="choice" data-i="1"><span class="m" data-k="\int v=0,\ \int|v|=2"></span></button><button class="choice" data-i="2"><span class="m" data-k="\int v=2,\ \int|v|=2"></span></button></div><div class="sol-btns"><button class="b gh" data-sol="walkSol">직관으로 보기</button></div><div class="sol intu" id="walkSol"><h5>직관</h5><div class="step"><span class="m" data-k="\int v\,dt"></span> 는 <b>도착한 곳 − 출발한 곳</b>입니다. 제자리로 돌아왔으니 <span class="m" data-k="0"></span>.</div><div class="step"><span class="m" data-k="\int|v|\,dt"></span> 는 <b>걸음 수</b>입니다. 방향과 상관없이 쌓이므로 <span class="m" data-k="2"></span>.</div><div class="step">두 값이 다르다는 것 자체가 <b>방향을 바꿨다</b>는 증거입니다.</div></div></div></div>
+  <div class="chnav"><span class="sp"></span><button class="b" data-go="next">ㄱ부터 판정하기 →</button></div>
 </section>
 
-<!-- ═══ SCENE 2 ═══════════════════════════════════════════════════ -->
-<section class="scene" id="s2">
-<p class="scene-eyebrow">STEP 1 · ㄱ 판정</p>
-<h2 class="scene-h2">ㄱ: <span class="accent">계산하지 말고</span> 읽는다</h2>
-<p class="scene-lead">미적분의 기본정리는 "계산하라"가 아니라 "읽으라"는 신호입니다.</p>
-<div class="work">
-  <div class="stack">
-    <div class="fx boxed" data-k="\int_0^1 v(t)\,dt=\int_0^1 x'(t)\,dt=x(1)-x(0)"></div>
-    <p><span class="kx" data-k="x(t)=t(t-1)(at+b)"></span>에서 <span class="kx" data-k="x(0)=0"></span>, <span class="kx" data-k="x(1)=1\cdot 0\cdot(a+b)=0"></span>. 따라서:</p>
-    <div class="fx boxed hot" data-k="\int_0^1 v(t)\,dt=0-0=0"></div>
-    <p><b>ㄱ은 참.</b> <span class="kx" data-k="v(t)"></span>를 미분해서 적분할 필요가 전혀 없습니다. 시작점과 끝점이 같으면 위치 변화는 0입니다.</p>
-  </div>
-  <div class="askbox">
-    <p class="askq"><span class="kx" data-k="\int_0^1 v(t)dt=0"></span>인 이유를 한 마디로?</p>
-    <div class="opts">
-      <button class="opt"><span class="kx" data-k="v(t)=0"></span>이기 때문</button>
-      <button class="opt" data-correct="1"><span class="kx" data-k="x(1)=x(0)=0"></span>이므로 위치 변화가 0이기 때문</button>
-      <button class="opt"><span class="kx" data-k="\lvert v(t)\rvert"></span>의 적분이 2이기 때문</button>
-    </div>
-    <div class="optfb" data-ok="정답! 미적분의 기본정리: 속도의 적분은 위치의 변화입니다. 시작=끝이면 0이죠." data-no="v(t)는 x(t)의 도함수입니다. ∫₀¹ x′(t)dt는 무엇과 같은가요?"></div>
-  </div>
-</div>
-<div class="scene-nav"><button class="nbtn" data-go="prev">← 이전</button><span class="sp"></span><button class="nbtn go" data-go="next">방향 전환의 필연성 →</button></div>
+<!-- ══════════ STEP 2 ══════════ -->
+<section class="ch" data-ch="1">
+  <p class="eyebrow">STEP 02 · ㄱ</p>
+  <h2 class="ct">계산하지 말고 <span class="am">읽는다</span></h2>
+<p class="lede"><span class="m" data-k="x(t)=t(t-1)(at+b)"></span> 는 <span class="m" data-k="t=0"></span> 과 <span class="m" data-k="t=1"></span> 에서 둘 다 <span class="m" data-k="0"></span> 입니다. 출발점과 도착점이 같다는 뜻이죠. 아래에서 <span class="m" data-k="a,b"></span> 의 모양을 바꿔 보세요. <b>걸어 다닌 거리가 늘 2</b>가 되도록 크기는 알아서 맞춰 줍니다.</p><div class="cnt-lab"><div class="cnt-lab-head"><h4>점 P의 길 따라가기</h4><span>MOVE · SEE</span></div><div class="cnt-lab-body"><div class="cnt-stage"><div id="lab1"></div></div><div class="cnt-panel"><div class="cnt-control"><label><span>모양 (각도)</span><b id="th1v">60°</b></label><input id="th1" type="range" min="1" max="179" step="1" value="60"></div><div class="snap"><button data-set="60">왕복형</button><button data-set="160">0을 지나는 형</button><button data-set="135">경계</button></div><div class="cnt-row"><span>위치의 변화 ∫v</span><b id="r1a">—</b></div><div class="cnt-row"><span>걸은 거리 ∫|v|</span><b id="r1b">—</b></div><div class="cnt-row hot"><span>가장 먼 곳 |x|</span><b id="r1c">—</b></div><div class="cnt-row"><span>(0,1) 안에서 0을 지나나</span><b id="r1d">—</b></div><div class="verdict" id="v1box"><strong>—</strong><span>—</span></div><p class="cnt-hint">붉은 점선은 |x|=1 입니다. 점 P가 한 번도 이 선을 넘지 못하는 것이 보이나요?</p></div></div></div><div class="prob"><div class="prob-head"><span class="yr">ㄱ</span><h4><span class="m" data-k="\int_{0}^{1}v\,dt=0"></span> 인가?</h4></div><div class="prob-body"><div class="qtext"><span class="m" data-k="\int_{0}^{1}v\,dt"></span> 는 <span class="m" data-k="x(1)-x(0)"></span> 입니다. 미분해서 적분할 필요가 없습니다.</div><div class="sol-btns"><button class="b gh" data-sol="gaSol">계산 보기</button></div><div class="sol calc" id="gaSol"><h5>계산</h5><div class="step">미적분의 기본정리: <span class="m" data-k="\int_{0}^{1}v\,dt=x(1)-x(0)"></span></div><div class="step"><span class="m" data-k="x(0)=0"></span>, <span class="m" data-k="x(1)=0"></span> 이므로 <span class="m am" data-k="\int_{0}^{1}v\,dt=0"></span> — <span class="m" data-k="a,b"></span>와 상관없이 참.</div><div class="step"><b>ㄱ은 참.</b> <span class="m" data-k="\int|v|=2"></span> 라는 조건은 쓰지도 않았습니다.</div></div></div></div>
+  <div class="chnav"><button class="b mute" data-go="prev">← 이전</button><span class="sp"></span><button class="b" data-go="next">ㄴ 판정하기 →</button></div>
 </section>
 
-<!-- ═══ SCENE 3 ═══════════════════════════════════════════════════ -->
-<section class="scene" id="s3">
-<p class="scene-eyebrow">STEP 2 · 방향을 바꿨다는 필연성</p>
-<h2 class="scene-h2"><span class="kx" data-k="\int\lvert v\rvert=2"></span>와 <span class="kx" data-k="\int v=0"></span>이 동시에 말하는 것</h2>
-<p class="scene-lead">위치 변화는 0인데 움직인 거리가 2라면, 한 가지 결론밖에 없습니다.</p>
-<div class="work">
-  <div class="stack">
-    <p>만약 <span class="kx" data-k="v(t)\ge 0"></span>이 항상 성립하면 <span class="kx" data-k="\int_0^1\lvert v(t)\rvert dt=\int_0^1v(t)dt=0"></span>이 되어 조건 <span class="kx" data-k="\int\lvert v\rvert=2"></span>에 모순. <span class="kx" data-k="v(t)\le 0"></span>이 항상 성립해도 마찬가지입니다.</p>
-    <p>따라서 <span class="kx" data-k="v(t)"></span>는 <span class="kx" data-k="(0,1)"></span>에서 <b>부호를 바꿉니다</b>. 즉 점 P는 방향을 바꾸고, <span class="kx" data-k="x(t)"></span>는 <span class="kx" data-k="(0,1)"></span> 안에서 <b>극대 또는 극소</b>를 갖습니다.</p>
-    <div class="fx sm boxed" data-k="\int_0^1\lvert v(t)\rvert dt=2\ne 0=\left\lvert\int_0^1v(t)dt\right\rvert\ \Longrightarrow\ v\text{는 부호를 바꾼다}"></div>
-  </div>
-  <div class="askbox">
-    <p class="askq"><span class="kx" data-k="\int\lvert v\rvert=2"></span>이면서 <span class="kx" data-k="\int v=0"></span>일 때, <span class="kx" data-k="v"></span>에 대해 확실한 것은?</p>
-    <div class="opts">
-      <button class="opt"><span class="kx" data-k="v(t)=0"></span>인 점이 존재한다</button>
-      <button class="opt" data-correct="1"><span class="kx" data-k="v(t)"></span>는 <span class="kx" data-k="(0,1)"></span>에서 양수와 음수를 모두 갖는다 (부호를 바꾼다)</button>
-      <button class="opt"><span class="kx" data-k="v(t)"></span>는 항상 양수다</button>
-    </div>
-    <div class="optfb" data-ok="정답! 부호가 안 바뀌면 ∫|v|=|∫v|가 되어 2=0이라는 모순이 생깁니다." data-no="v≥0이면 |v|=v이므로 ∫|v|=∫v=0입니다. 조건과 맞나요?"></div>
-  </div>
-</div>
-<div class="scene-nav"><button class="nbtn" data-go="prev">← 이전</button><span class="sp"></span><button class="nbtn go" data-go="next">실험실로 →</button></div>
+<!-- ══════════ STEP 3 ══════════ -->
+<section class="ch" data-ch="2">
+  <p class="eyebrow">STEP 03 · ㄴ</p>
+  <h2 class="ct">돌아오는 사람이 가장 멀리 갈 수 있는 곳은 <span class="am">총 거리의 절반</span></h2>
+<p class="lede">총 2를 걸었고 제자리로 돌아왔다면, 가장 먼 곳은 얼마까지 갈 수 있을까요? 실험실에서 보았듯이 <b>한 번도 1을 넘지 못했습니다.</b></p><div class="prob"><div class="prob-head"><span class="yr">ㄴ</span><h4><span class="m" data-k="|x(t_1)|\gt 1"></span> 인 <span class="m" data-k="t_1"></span> 이 있는가?</h4></div><div class="prob-body"><div class="qtext">갔다가 돌아오는 길이 똑같이 걸어야 하니, 가장 먼 곳까지의 거리는 총 거리의 얼마를 넘을 수 없을까요?</div><div class="choices" data-q="half" data-ans="1"><button class="choice" data-i="0">전부 (총 거리 2까지 갈 수 있다)</button><button class="choice" data-i="1">절반 (총 거리의 <span class="m" data-k="\tfrac12"></span> = 1)</button><button class="choice" data-i="2">3분의 1</button></div><div class="sol-btns"><button class="b gh" data-sol="halfSol">직관으로 보기</button></div><div class="sol intu" id="halfSol"><h5>직관</h5><div class="step">출발점에서 가장 먼 곳까지 <b>가는 거리</b>와 거기서 도착점까지 <b>돌아오는 거리</b>는 둘 다 걸음 수에 들어갑니다.</div><div class="step">출발점과 도착점이 같으니 두 거리는 적어도 <span class="m" data-k="|x|"></span> 씩 — 합하면 <span class="m" data-k="2|x|\le 2"></span>, 곧 <span class="m am" data-k="|x(t)|\le 1"></span>.</div><div class="step">1을 <b>넘는</b> 곳은 없습니다. 같을 수는 있어요. 그래서 ㄴ은 거짓입니다.</div></div><div class="sol-btns"><button class="b gh" data-sol="halfCalc">논리로 쓰기</button></div><div class="sol calc" id="halfCalc"><h5>논리</h5><div class="step"><span class="m" data-k="x(0)=0"></span> 이므로 <span class="m" data-k="|x(t)|=\left|\int_{0}^{t}v\right|\le\int_{0}^{t}|v|"></span></div><div class="step"><span class="m" data-k="x(1)=0"></span> 이므로 <span class="m" data-k="|x(t)|=\left|\int_{t}^{1}v\right|\le\int_{t}^{1}|v|"></span></div><div class="step">두 식을 더하면 <span class="m md" data-k="2|x(t)|\le\int_{0}^{1}|v|\,dt=2\;\Longrightarrow\;|x(t)|\le 1."></span> <b><span class="m" data-k="|x|\gt 1"></span> 인 시각은 없습니다 → ㄴ 거짓.</b></div></div></div></div>
+  <div class="chnav"><button class="b mute" data-go="prev">← 이전</button><span class="sp"></span><button class="b" data-go="next">ㄷ 판정하기 →</button></div>
 </section>
 
-<!-- ═══ SCENE 4 ═══════════════════════════════════════════════════ -->
-<section class="scene" id="s4">
-<p class="scene-eyebrow">실험실 · 직접 움직이기</p>
-<h2 class="scene-h2">점 P의 움직임을 <span class="accent">눈으로</span></h2>
-<p class="scene-lead"><span class="kx" data-k="a,b"></span>를 움직이며 <span class="kx" data-k="x(t)"></span>의 그래프와 "움직인 거리"를 관찰해 봅시다.</p>
-<div class="work">
-  <div class="lab" data-lab="motion14">
-    <div class="lab-stage"><svg class="lab-svg" viewBox="0 0 600 340" role="img" aria-label="위치와 속도 실험"></svg></div>
-    <div class="lab-side">
-      <div class="sl">
-        <div class="sl-top"><span><span class="kx" data-k="a"></span> (<span class="kx" data-k="a\ne 0"></span>)</span><span class="sl-val" data-aval>2.0</span></div>
-        <input type="range" min="-4" max="4" step="0.1" value="2" data-a/>
-      </div>
-      <div class="sl">
-        <div class="sl-top"><span><span class="kx" data-k="b"></span></span><span class="sl-val" data-bval>-1.0</span></div>
-        <input type="range" min="-4" max="4" step="0.1" value="-1" data-b/>
-      </div>
-      <div class="verdict" data-readout><span class="vmark">?</span><div class="vtext">슬라이더를 움직여 보세요<small>∫v와 ∫|v|의 값이 표시됩니다</small></div></div>
-    </div>
-  </div>
-  <div class="stack">
-    <div class="try"><b>관찰</b><p><span class="kx" data-k="x(0)=x(1)=0"></span>은 <span class="kx" data-k="a,b"></span>와 무관하게 항상 성립합니다. 그래서 <span class="kx" data-k="\int_0^1v=0"></span>도 항상입니다. <span class="kx" data-k="\int_0^1\lvert v(t)\rvert dt"></span> 값을 보세요 — 이 값이 2가 되려면 <span class="kx" data-k="x(t)"></span>의 "혹"이 얼마나 커야 할까요?</p></div>
-    <div class="note-strip"><span class="ic">확인</span><p><span class="kx" data-k="v(t)"></span>가 부호를 바꾸는 점(속도 0)에서 <span class="kx" data-k="x(t)"></span>는 극값을 갖습니다. 방향 전환점이죠.</p></div>
-  </div>
-</div>
-<div class="scene-nav"><button class="nbtn" data-go="prev">← 이전</button><span class="sp"></span><button class="nbtn go" data-go="next">ㄷ 증명하러 가기 →</button></div>
+<!-- ══════════ STEP 4 ══════════ -->
+<section class="ch" data-ch="3">
+  <p class="eyebrow">STEP 04 · ㄷ</p>
+  <h2 class="ct">0을 한 번도 안 지나면 <span class="am">정확히 한 번 왕복</span>한다</h2>
+<p class="lede">ㄷ은 "<span class="m" data-k="|x|\lt 1"></span> 이면 0을 지난다" 입니다. 뒤집으면 <b>"0을 한 번도 안 지나면 어디선가 |x|가 1에 닿는다"</b> — 이것이 대우입니다.</p><div class="cnt-lab"><div class="cnt-lab-head"><h4>모양마다 가장 먼 곳</h4><span>MOVE · COMPARE</span></div><div class="cnt-lab-body"><div class="cnt-stage"><div id="lab2"></div></div><div class="cnt-panel"><div class="cnt-control"><label><span>모양 (각도)</span><b id="th2v">100°</b></label><input id="th2" type="range" min="1" max="179" step="1" value="100"></div><div class="snap"><button data-set2="100">왕복형</button><button data-set2="150">0을 지나는 형</button></div><div class="cnt-row hot"><span>이 모양에서 가장 먼 곳</span><b id="r2a">—</b></div><div class="cnt-row"><span>(0,1) 안에서 0을 지나나</span><b id="r2b">—</b></div><div class="verdict" id="v2box"><strong>—</strong><span>—</span></div><p class="cnt-hint">곡선이 모양(각도)마다 가장 먼 곳을 보여 줍니다. 평평한 구간은 정확히 1, 내려간 구간은 1보다 작습니다.</p></div></div></div><div class="prob"><div class="prob-head"><span class="yr">ㄷ</span><h4>대우를 읽어 보자</h4></div><div class="prob-body"><div class="qtext"><span class="m" data-k="x(0)=x(1)=0"></span> 인 삼차함수 <span class="m" data-k="x(t)"></span> 가 <span class="m" data-k="(0,1)"></span> 에서 0을 한 번도 지나지 않으면, 점 P는 그 사이에 방향을 몇 번 바꿀까요?</div><div class="choices" data-q="turn" data-ans="1"><button class="choice" data-i="0">한 번도 안 바꾼다</button><button class="choice" data-i="1">정확히 한 번 (갔다가 돌아온다)</button><button class="choice" data-i="2">두 번</button></div><div class="sol-btns"><button class="b gh" data-sol="turnSol">직관으로 보기</button></div><div class="sol intu" id="turnSol"><h5>직관</h5><div class="step">한쪽 부호로만 움직이고 시작·끝이 0이니, 어느 방향으로든 <b>한 번 갔다가 돌아오는</b> 길입니다. 삼차함수는 그 사이에 방향을 두 번 바꿀 수 없습니다.</div><div class="step">그러면 걸은 거리는 <b>가장 먼 곳의 두 배</b>입니다 (갈 때 + 올 때).</div><div class="step">조건 <span class="m" data-k="\int|v|=2"></span> 에서 <span class="m am" data-k="\text{가장 먼 곳}=1"></span> — 어디선가 <span class="m" data-k="|x|=1"></span> 에 닿으니 "모든 t에서 <span class="m" data-k="|x|\lt 1"></span>" 이 깨집니다. 대우가 참이므로 <b>ㄷ은 참.</b></div></div></div></div><p class="hintline" style="margin-top:10px">반대로 0을 지나는 모양(135° 보다 큰 쪽)은 거리를 세 토막으로 나눠 걷기 때문에 가장 먼 곳이 1보다 작아질 수 있습니다. 그때는 ㄷ의 결론("0을 지난다")이 이미 성립해 있죠.</p>
+  <div class="chnav"><button class="b mute" data-go="prev">← 이전</button><span class="sp"></span><button class="b" data-go="next">답 고르기 →</button></div>
 </section>
 
-<!-- ═══ SCENE 5 ═══════════════════════════════════════════════════ -->
-<section class="scene" id="s5">
-<p class="scene-eyebrow">STEP 3 · ㄷ 판정</p>
-<h2 class="scene-h2">ㄷ: <span class="accent">대우</span>로 읽는 조건문</h2>
-<p class="scene-lead">"~이면"은 대우 "~가 아니면"으로 뒤집어 봅시다.</p>
-<div class="work">
-  <div class="stack">
-    <p>ㄷ은 "<span class="kx" data-k="P\Rightarrow Q"></span>" 꼴입니다 (<span class="kx" data-k="P"></span>: <span class="kx" data-k="\lvert x(t)\rvert\lt 1"></span>, <span class="kx" data-k="Q"></span>: <span class="kx" data-k="(0,1)"></span> 안에 <span class="kx" data-k="x"></span>의 근 존재). 대우는 "<span class="kx" data-k="\lnot Q\Rightarrow\lnot P"></span>":</p>
-    <div class="fx sm boxed" data-k="\text{``}(0,1)\text{ 안에 }x(t)=0\text{인 점이 없으면, }\lvert x(t_0)\rvert\ge 1\text{인 }t_0\text{가 존재한다.''}"></div>
-    <p><span class="kx" data-k="x(t)=t(t-1)(at+b)"></span>의 근은 <span class="kx" data-k="t=0,1,-b/a"></span>입니다. <span class="kx" data-k="(0,1)"></span> 안에 근이 없다는 것은 <span class="kx" data-k="-b/a\notin(0,1)"></span>이라는 뜻. 이때 <span class="kx" data-k="x(t)"></span>는 <span class="kx" data-k="(0,1)"></span>에서 부호가 안 바뀌고, <span class="kx" data-k="x(0)=x(1)=0"></span>이므로 <b>혹이 하나</b>인 모양입니다.</p>
-    <p>혹이 하나면 움직인 거리는 <span class="kx" data-k="2\times\lvert\text{극값}\rvert"></span>입니다. 조건에서 움직인 거리가 2이므로:</p>
-    <div class="fx boxed hot" data-k="2\times\lvert\text{극값}\rvert=2\quad\Longrightarrow\quad\lvert\text{극값}\rvert=1"></div>
-    <p>즉 <span class="kx" data-k="\lvert x(t_0)\rvert=1"></span>인 점이 존재합니다. <span class="kx" data-k="\lnot P"></span>가 성립하므로 <b>ㄷ은 참.</b></p>
-  </div>
-  <div class="askbox">
-    <p class="askq">ㄷ의 대우를 올바르게 쓴 것은?</p>
-    <div class="opts">
-      <button class="opt"><span class="kx" data-k="(0,1)"></span> 안에 근이 있으면 <span class="kx" data-k="\lvert x(t)\rvert\ge 1"></span>인 점이 있다</button>
-      <button class="opt" data-correct="1"><span class="kx" data-k="(0,1)"></span> 안에 근이 없으면 <span class="kx" data-k="\lvert x(t_0)\rvert\ge 1"></span>인 <span class="kx" data-k="t_0"></span>가 있다</button>
-      <button class="opt"><span class="kx" data-k="\lvert x(t)\rvert\lt 1"></span>이면 근이 없다</button>
-    </div>
-    <div class="optfb" data-ok="정답! P⇒Q의 대우는 ￢Q⇒￢P입니다. 조건문을 뒤집는 것이 이 문제의 열쇠예요." data-no="P: |x|&lt;1, Q: 근 존재. 대우는 근이 없으면 |x|≥1인 점이 있다는 것입니다."></div>
-    <div class="hintrow"><button class="hbtn" data-open="h1">왜 "혹이 하나"인가?</button></div>
-    <div class="hint" data-key="h1"><p><span class="kx" data-k="x(t)"></span>는 삼차함수라 극값을 최대 2개 갖습니다. <span class="kx" data-k="(0,1)"></span> 안에 근이 없고 <span class="kx" data-k="x(0)=x(1)=0"></span>이면, <span class="kx" data-k="x"></span>는 <span class="kx" data-k="(0,1)"></span>에서 한쪽 부호만 갖습니다. 시작과 끝이 0이므로 올라갔다 내려오는(또는 그 반대) 혹 하나 모양이죠. 혹이 2개면 부호가 바뀌어 중간값정리에 의해 근이 생깁니다.</p></div>
-  </div>
-</div>
-<div class="scene-nav"><button class="nbtn" data-go="prev">← 이전</button><span class="sp"></span><button class="nbtn go" data-go="next">ㄴ 반박하기 →</button></div>
+<!-- ══════════ STEP 5 ══════════ -->
+<section class="ch" data-ch="4">
+  <p class="eyebrow">STEP 05 · 회수와 검산</p>
+  <h2 class="ct">셋을 놓고 <span class="am">둘</span>만 남긴다</h2>
+<table class="gtable"><tr><th>보기</th><th>판정</th><th>근거 한 줄</th></tr><tr class="key"><td>ㄱ</td><td class="hot">참</td><td><span class="m" data-k="x(1)-x(0)=0"></span> — 기본정리로 읽는다</td></tr><tr><td>ㄴ</td><td>거짓</td><td><span class="m" data-k="2|x|\le\int|v|=2"></span> 이므로 <span class="m" data-k="|x|\le1"></span>, 1을 넘지 못한다</td></tr><tr class="key"><td>ㄷ</td><td class="hot">참</td><td>0을 안 지나면 한 번 왕복 → 가장 먼 곳이 정확히 1</td></tr></table><div class="prob"><div class="prob-head"><span class="yr">최종 선택</span><h4>옳은 것만을 있는 대로 고르면?</h4></div><div class="prob-body"><div class="choices" data-q="final" data-ans="2"><button class="choice" data-i="0">① ㄱ</button><button class="choice" data-i="1">② ㄱ, ㄴ</button><button class="choice" data-i="2">③ ㄱ, ㄷ</button><button class="choice" data-i="3">④ ㄴ, ㄷ</button><button class="choice" data-i="4">⑤ ㄱ, ㄴ, ㄷ</button></div><div class="sol-btns"><button class="b gh" data-sol="finalSol">정답 확인</button></div><div class="sol intu" id="finalSol"><h5>마무리</h5><p class="mini-answer">ㄱ, ㄷ</p><p class="reveal-note">정답 ③ · 주어진 조건 <span class="m" data-k="\int|v|=2"></span> 는 ㄴ과 ㄷ에서만 쓰였습니다</p></div></div></div><div class="card quote pad"><h3>오늘 쓴 생각의 뼈대</h3><ul class="bul"><li><b class="am">위치와 거리</b> — <span class="m" data-k="\int v"></span> 는 위치의 변화, <span class="m" data-k="\int|v|"></span> 는 걸은 거리.</li><li><b class="am">읽는 도구</b> — 기본정리는 계산이 아니라 "끝 − 처음"을 읽는 도구.</li><li><b class="am">총 거리의 절반</b> — 제자리로 돌아오는 사람의 가장 먼 곳은 총 거리의 절반 이하.</li><li><b class="am">대우</b> — "<span class="m" data-k="|x|\lt1"></span> 이면 0을 지난다" 는 "0을 안 지나면 1에 닿는다" 로 뒤집어 읽는다.</li></ul></div>
+  <div class="chnav"><button class="b mute" data-go="prev">← 이전</button><span class="sp"></span><button class="b gh" data-go="top">처음으로</button></div>
 </section>
-
-<!-- ═══ SCENE 6 ═══════════════════════════════════════════════════ -->
-<section class="scene" id="s6">
-<p class="scene-eyebrow">STEP 4 · ㄴ 판정 + 정답</p>
-<h2 class="scene-h2">ㄴ: <span class="accent">반례 하나</span>면 충분하다</h2>
-<p class="scene-lead">"존재한다"는 주장을 깨뜨리려면 예시 하나면 됩니다.</p>
-<div class="work">
-  <div class="stack">
-    <p>ㄴ은 "모든 조건 만족 <span class="kx" data-k="(a,b)"></span>에 대해 <span class="kx" data-k="\lvert x(t_1)\rvert\gt 1"></span>인 <span class="kx" data-k="t_1"></span>이 존재한다"는 주장입니다. 이를 반박하려면 <b>조건은 만족하지만 <span class="kx" data-k="\lvert x(t)\rvert\le 1"></span>인 예시</b> 하나면 됩니다.</p>
-    <p>STEP 3에서 본 "혹 하나, 극값 <span class="kx" data-k="=1"></span>"인 경우가 바로 그 예시입니다. 극댓값이 정확히 1인 <span class="kx" data-k="(a,b)"></span>에서는 <span class="kx" data-k="\int\lvert v\rvert=2"></span>를 만족하면서도 <span class="kx" data-k="\lvert x(t)\rvert\gt 1"></span>인 점이 없습니다.</p>
-    <p><b>ㄴ은 거짓.</b></p>
-    <div class="fx sm boxed" data-k="\text{ㄱ 참, ㄴ 거짓, ㄷ 참}\ \Longrightarrow\ \text{정답 ③}"></div>
-    <p class="answer-big">③</p>
-  </div>
-  <div class="askbox">
-    <p class="askq">ㄴ이 거짓임을 보이는 방법은?</p>
-    <div class="opts">
-      <button class="opt">모든 <span class="kx" data-k="(a,b)"></span>에 대해 <span class="kx" data-k="\lvert x\rvert\gt 1"></span>임을 증명한다</button>
-      <button class="opt" data-correct="1">조건 <span class="kx" data-k="\int\lvert v\rvert=2"></span>를 만족하면서 <span class="kx" data-k="\lvert x(t)\rvert\le 1"></span>인 <span class="kx" data-k="(a,b)"></span> 예시를 하나 든다</button>
-      <button class="opt"><span class="kx" data-k="\lvert x(t)\rvert\gt 1"></span>인 <span class="kx" data-k="t_1"></span>을 직접 구한다</button>
-    </div>
-    <div class="optfb" data-ok="정답! 존재한다는 주장을 깨뜨리려면 반례 하나면 충분합니다." data-no="모든 경우에 존재한다는 것을 부정하려면? 하나의 반례면 됩니다."></div>
-  </div>
-</div>
-<div class="stack" style="margin-top:34px">
-<div class="takeaways">
-  <div class="takeaway"><b>구별</b><span><span class="kx" data-k="\int v"></span>는 위치 변화, <span class="kx" data-k="\int\lvert v\rvert"></span>는 움직인 거리. 둘이 다르면 방향을 바꾼 것입니다.</span></div>
-  <div class="takeaway"><b>읽기</b><span>미적분의 기본정리는 계산 도구가 아니라 <b>읽기 도구</b>입니다.</span></div>
-  <div class="takeaway"><b>대우</b><span>조건문은 대우로 뒤집어 보자. "근이 없으면"이 "혹이 하나"로 번역됩니다.</span></div>
-  <div class="takeaway"><b>반례</b><span>"존재한다"는 <b>반례 하나</b>로 깨뜨립니다.</span></div>
-</div>
-</div>
-<div class="scene-nav"><button class="nbtn" data-go="prev">← 이전</button><span class="sp"></span><button class="nbtn" data-go="restart">처음부터 다시</button></div>
-</section>
-
-  </main>
-</div>
+</main>
 
 <script>
-(function () {
+(function(){
   'use strict';
-  var LABELS = ['문제 읽기','ㄱ: 읽기','방향 전환','실험실','ㄷ: 대우','ㄴ: 반례·정답'];
-  var scenes = [].slice.call(document.querySelectorAll('.ex-main .scene'));
-  var rail = document.getElementById('rail');
-  var fill = document.getElementById('progFill');
-  var ptxt = document.getElementById('progTxt');
-  var seen = {0:1};
-  var cur = 0;
-
-  LABELS.forEach(function (label, i) {
-    var b = document.createElement('button');
-    b.className = 'rail-item' + (i === 0 ? ' active' : '');
-    b.innerHTML = '<i><span>' + (i + 1) + '</span></i><b>' + label + '</b>';
-    b.addEventListener('click', function () { go(i); });
-    rail.appendChild(b);
-  });
-  var items = [].slice.call(rail.children);
-
-  function go(i) {
-    cur = Math.max(0, Math.min(scenes.length - 1, i));
-    seen[cur] = 1;
-    scenes.forEach(function (s, j) { s.classList.toggle('is-on', j === cur); });
-    items.forEach(function (b, j) {
-      b.classList.toggle('active', j === cur);
-      b.classList.toggle('done', j !== cur && !!seen[j]);
-    });
-    fill.style.width = ((cur + 1) / scenes.length * 100) + '%';
-    ptxt.textContent = (cur + 1) + ' / ' + scenes.length;
-    var t = items[cur];
-    if (t && t.scrollIntoView && window.matchMedia('(max-width:1000px)').matches) {
-      t.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-  go(0);
-
-  document.addEventListener('click', function (e) {
-    var t = e.target.closest ? e.target.closest('[data-go]') : null;
-    if (t) {
-      var d = t.getAttribute('data-go');
-      go(d === 'next' ? cur + 1 : d === 'prev' ? cur - 1 : 0);
-      return;
-    }
-    var opt = e.target.closest ? e.target.closest('.opt') : null;
-    if (opt) {
-      var box = opt.closest('.askbox');
-      var ok = opt.hasAttribute('data-correct');
-      box.querySelectorAll('.opt').forEach(function (o) {
-        o.classList.remove('pick-ok', 'pick-no');
-        if (ok) o.classList.add('locked');
-      });
-      opt.classList.add(ok ? 'pick-ok' : 'pick-no');
-      var fb = box.querySelector('.optfb');
-      if (fb) {
-        fb.className = 'optfb on ' + (ok ? 'ok' : 'no');
-        fb.innerHTML = fb.getAttribute(ok ? 'data-ok' : 'data-no') || '';
-      }
-      if (window.JPLab) window.JPLab.renderAll(box);
-      return;
-    }
-    var hb = e.target.closest ? e.target.closest('.hbtn') : null;
-    if (hb) {
-      var scope = hb.closest('.askbox');
-      var key = hb.getAttribute('data-open');
-      var body = scope.querySelector('.hint[data-key="' + key + '"]');
-      if (!body) return;
-      var open = body.classList.toggle('on');
-      hb.classList.toggle('is-open', open);
-      if (open && window.JPLab) window.JPLab.renderAll(body);
-    }
+  var labels=["문제 만나기","ㄱ 읽기","ㄴ 상한","ㄷ 대우","회수"];
+  var chs=[].slice.call(document.querySelectorAll('main > section.ch'));
+  var nav=document.getElementById('nav'),fill=document.getElementById('pfill'),cur=0;
+  labels.forEach(function(t,i){var b=document.createElement('button');b.className=i===0?'on':'';b.innerHTML='<span class="n">0'+(i+1)+'</span>'+t;b.addEventListener('click',function(){go(i);});nav.appendChild(b);});
+  var tabs=[].slice.call(nav.children);
+  function go(i){cur=Math.max(0,Math.min(chs.length-1,i));chs.forEach(function(s,j){s.classList.toggle('on',j===cur);});tabs.forEach(function(b,j){b.classList.toggle('on',j===cur);});fill.style.width=((cur+1)/chs.length*100)+'%';if(tabs[cur]&&tabs[cur].scrollIntoView)tabs[cur].scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});window.scrollTo({top:0,behavior:'smooth'});}go(0);
+  document.addEventListener('click',function(e){
+    var t=e.target.closest&&e.target.closest('[data-go]');if(t){var d=t.getAttribute('data-go');go(d==='next'?cur+1:d==='prev'?cur-1:0);return;}
+    var c=e.target.closest&&e.target.closest('.choice');if(c){var box=c.parentElement;if(box.getAttribute('data-mode')==='record'){box.querySelectorAll('.choice').forEach(function(x){x.classList.remove('chosen');});c.classList.add('chosen');return;}var ans=+box.getAttribute('data-ans'),ok=+c.getAttribute('data-i')===ans;box.querySelectorAll('.choice').forEach(function(x){x.classList.remove('right','wrong');});c.classList.add(ok?'right':'wrong');if(!ok){var right=box.querySelector('.choice[data-i="'+ans+'"]');setTimeout(function(){if(right)right.classList.add('right');},650);}return;}
+    var s=e.target.closest&&e.target.closest('[data-sol]');if(s){var el=document.getElementById(s.getAttribute('data-sol'));if(!el)return;var open=el.classList.toggle('on');s.style.opacity=open?'1':'';if(open&&window.JPDark)window.JPDark.texAll(el);}
   });
 
-  document.addEventListener('keydown', function (e) {
-    if (/^(INPUT|TEXTAREA|BUTTON)$/.test((e.target.tagName || ''))) return;
-    if (e.key === 'ArrowRight') go(cur + 1);
-    if (e.key === 'ArrowLeft') go(cur - 1);
-  });
+  /* ── 그림 도구 ────────────────────────────────────────────────
+     좌표를 화면에 옮겨 주는 것만 한다. 가로세로 배율이 달라도
+     "어디서 끊기고 어디로 튀는지" 는 그대로 보인다. */
+  function view(x0,x1,y0,y1,W,H){
+    return {x0:x0,x1:x1,y0:y0,y1:y1,W:W,H:H,
+      sx:function(x){return (x-x0)/(x1-x0)*W;},
+      sy:function(y){return H-(y-y0)/(y1-y0)*H;}};
+  }
+  function axes(v,stepX,stepY){
+    var s='<rect x="0" y="0" width="'+v.W+'" height="'+v.H+'" fill="#fbfaf6"/>',x,y;
+    for(x=Math.ceil(v.x0/stepX)*stepX;x<=v.x1;x+=stepX)s+='<line x1="'+v.sx(x).toFixed(1)+'" y1="0" x2="'+v.sx(x).toFixed(1)+'" y2="'+v.H+'" stroke="rgba(58,49,37,.08)"/>';
+    for(y=Math.ceil(v.y0/stepY)*stepY;y<=v.y1;y+=stepY)s+='<line x1="0" y1="'+v.sy(y).toFixed(1)+'" x2="'+v.W+'" y2="'+v.sy(y).toFixed(1)+'" stroke="rgba(58,49,37,.08)"/>';
+    if(v.y0<0&&v.y1>0)s+='<line x1="0" y1="'+v.sy(0).toFixed(1)+'" x2="'+v.W+'" y2="'+v.sy(0).toFixed(1)+'" stroke="#8b8378" stroke-width="1.2"/>';
+    if(v.x0<0&&v.x1>0)s+='<line x1="'+v.sx(0).toFixed(1)+'" y1="0" x2="'+v.sx(0).toFixed(1)+'" y2="'+v.H+'" stroke="#8b8378" stroke-width="1.2"/>';
+    return s;
+  }
+  function curve(v,f,a,b,color,w,dash){
+    var d='',on=false,i,x,y,n=200;
+    for(i=0;i<=n;i++){x=a+(b-a)*i/n;y=f(x);
+      if(!isFinite(y)||y<v.y0-40||y>v.y1+40){on=false;continue;}
+      d+=(on?'L':'M')+v.sx(x).toFixed(1)+' '+v.sy(y).toFixed(1)+' ';on=true;}
+    return '<path d="'+d+'" fill="none" stroke="'+color+'" stroke-width="'+(w||2.4)+'"'+(dash?' stroke-dasharray="'+dash+'"':'')+' stroke-linecap="round"/>';
+  }
+  function dot(v,x,y,color,open){
+    if(y<v.y0||y>v.y1)return '';
+    return open?'<circle cx="'+v.sx(x).toFixed(1)+'" cy="'+v.sy(y).toFixed(1)+'" r="4.6" fill="#fbfaf6" stroke="'+color+'" stroke-width="2"/>'
+               :'<circle cx="'+v.sx(x).toFixed(1)+'" cy="'+v.sy(y).toFixed(1)+'" r="4.6" fill="'+color+'"/>';
+  }
+  function tx(v,x,y,t,color,anchor){
+    return '<text x="'+v.sx(x).toFixed(1)+'" y="'+v.sy(y).toFixed(1)+'" fill="'+(color||'#5f574b')+'" font-size="12" font-family="IBM Plex Mono,monospace" text-anchor="'+(anchor||'middle')+'">'+t+'</text>';
+  }
+  function wrap(v,inner){return '<svg viewBox="0 0 '+v.W+' '+v.H+'" role="img">'+inner+'</svg>';}
 
-  /* ── custom lab: motion (위치와 속도) ────────────────────────── */
-  function labMotion(root) {
-    var svg = root.querySelector('svg.lab-svg');
-    var aS = root.querySelector('[data-a]'), bS = root.querySelector('[data-b]');
-    var aV = root.querySelector('[data-aval]'), bV = root.querySelector('[data-bval]');
-    var ro = root.querySelector('[data-readout]');
-    if (!svg || !aS) return;
-    var W = 600, Hh = 340, pL = 44, pR = 16, pT = 24, pB = 44;
-    var xMin = -0.15, xMax = 1.15, yMin = -2.2, yMax = 2.2;
-    function X(x) { return pL + (x - xMin) / (xMax - xMin) * (W - pL - pR); }
-    function Y(y) { return pT + (yMax - y) / (yMax - yMin) * (Hh - pT - pB); }
-    var C = { axis: '#8b909b', grid: '#d8d4c8', x: '#1b3a6b', v: '#2f6f9f', band: '#9d2b2b', dot: '#1b3a6b', txt: '#4c515c' };
-    function draw() {
-      var a = parseFloat(aS.value), b = parseFloat(bS.value);
-      if (Math.abs(a) < 0.05) a = a < 0 ? -0.05 : 0.05;
-      aV.textContent = parseFloat(aS.value).toFixed(1);
-      bV.textContent = b.toFixed(1);
-      function x(t) { return t * (t - 1) * (a * t + b); }
-      function v(t) { return 3 * a * t * t + 2 * (b - a) * t - b; }
-      var s = '';
-      s += '<line x1="' + X(xMin) + '" y1="' + Y(0) + '" x2="' + X(xMax) + '" y2="' + Y(0) + '" stroke="' + C.axis + '" stroke-width="1.2"/>';
-      s += '<line x1="' + X(0) + '" y1="' + Y(yMin) + '" x2="' + X(0) + '" y2="' + Y(yMax) + '" stroke="' + C.grid + '" stroke-width="1"/>';
-      s += '<line x1="' + X(1) + '" y1="' + Y(yMin) + '" x2="' + X(1) + '" y2="' + Y(yMax) + '" stroke="' + C.grid + '" stroke-width="1" stroke-dasharray="4 4"/>';
-      for (var t = 0; t <= 1.001; t += 0.25) {
-        s += '<text x="' + X(t) + '" y="' + (Y(0) + 20) + '" fill="' + C.txt + '" font-size="12" text-anchor="middle">' + t.toFixed(2).replace(/0$/, '') + '</text>';
-      }
-      function curve(fn, color, width, dash) {
-        var p2 = [];
-        for (var px = xMin; px <= xMax; px += 0.008) {
-          var val = fn(px);
-          if (val > yMin - 0.5 && val < yMax + 0.5) p2.push(X(px).toFixed(1) + ',' + Y(Math.max(yMin, Math.min(yMax, val))).toFixed(1));
-        }
-        return '<polyline points="' + p2.join(' ') + '" fill="none" stroke="' + color + '" stroke-width="' + width + '"' + (dash ? ' stroke-dasharray="6 4"' : '') + '/>';
-      }
-      s += curve(v, C.v, 2, true);
-      s += curve(x, C.x, 3, false);
-      s += '<line x1="' + X(0) + '" y1="' + Y(1) + '" x2="' + X(1) + '" y2="' + Y(1) + '" stroke="' + C.band + '" stroke-width="1.2" stroke-dasharray="6 4"/>';
-      s += '<line x1="' + X(0) + '" y1="' + Y(-1) + '" x2="' + X(1) + '" y2="' + Y(-1) + '" stroke="' + C.band + '" stroke-width="1.2" stroke-dasharray="6 4"/>';
-      s += '<text x="' + (X(1) + 6) + '" y="' + (Y(1) + 4) + '" fill="' + C.band + '" font-size="12">1</text>';
-      s += '<text x="' + (X(1) + 6) + '" y="' + (Y(-1) + 4) + '" fill="' + C.band + '" font-size="12">-1</text>';
-      s += '<circle cx="' + X(0) + '" cy="' + Y(0) + '" r="6" fill="' + C.dot + '" stroke="#fff" stroke-width="2"/>';
-      s += '<circle cx="' + X(1) + '" cy="' + Y(0) + '" r="6" fill="' + C.dot + '" stroke="#fff" stroke-width="2"/>';
-      s += '<text x="' + X(0.5) + '" y="' + (Y(yMax) - 8) + '" fill="' + C.txt + '" font-size="12" text-anchor="middle">t: 0 → 1</text>';
-      s += '<text x="' + (W - pR - 4) + '" y="' + (pT + 14) + '" fill="' + C.x + '" font-size="13" text-anchor="end" font-weight="700">y = x(t) 위치</text>';
-      s += '<text x="' + (W - pR - 4) + '" y="' + (pT + 32) + '" fill="' + C.v + '" font-size="13" text-anchor="end" font-weight="700">y = v(t) 속도</text>';
-      svg.innerHTML = s;
-      var iv = 0, iav = 0, n = 2000;
-      for (var i = 0; i < n; i++) {
-        var tt = (i + 0.5) / n, w = 1 / n;
-        iv += v(tt) * w; iav += Math.abs(v(tt)) * w;
-      }
-      var mx = 0;
-      for (var j = 0; j <= 400; j++) { var xx = Math.abs(x(j / 400)); if (xx > mx) mx = xx; }
-      var near = Math.abs(iav - 2) < 0.05;
-      ro.className = 'verdict' + (near ? ' ok' : '');
-      ro.innerHTML = '<span class="vmark">' + (near ? '✓' : '·') + '</span><div class="vtext">∫₀¹v(t)dt = ' + iv.toFixed(3) + ' (위치 변화) · ∫₀¹|v(t)|dt = ' + iav.toFixed(3) + ' (움직인 거리)<small>max|x(t)| = ' + mx.toFixed(3) + (near ? ' — 조건 ∫|v|=2 근처!' : '') + '</small></div>';
+  var INK='#2f6670',HOT='#a95232',GREY='#9a9186';
+
+
+  /* 선분·기울기 직선·넓이 칠하기 — 열두 쪽이 함께 쓴다 */
+  function line(v,x1,y1,x2,y2,color,w,dash){
+    return '<line x1="'+v.sx(x1).toFixed(1)+'" y1="'+v.sy(y1).toFixed(1)+'" x2="'+v.sx(x2).toFixed(1)+'" y2="'+v.sy(y2).toFixed(1)+'" stroke="'+color+'" stroke-width="'+(w||2)+'"'+(dash?' stroke-dasharray="'+dash+'"':'')+'/>';
+  }
+  function thru(v,x0,y0,m,color,w,dash){
+    return line(v,v.x0,y0+m*(v.x0-x0),v.x1,y0+m*(v.x1-x0),color,w,dash);
+  }
+  function shade(v,f,a,b,color,base){
+    var d='M'+v.sx(a).toFixed(1)+' '+v.sy(base||0).toFixed(1),i,n=160,x;
+    for(i=0;i<=n;i++){x=a+(b-a)*i/n;d+=' L'+v.sx(x).toFixed(1)+' '+v.sy(f(x)).toFixed(1);}
+    d+=' L'+v.sx(b).toFixed(1)+' '+v.sy(base||0).toFixed(1)+' Z';
+    return '<path d="'+d+'" fill="'+color+'" stroke="none"/>';
+  }
+
+  var HOT_='#a95232';
+
+
+  function shape(deg){
+    var th=deg*Math.PI/180,a0=Math.cos(th),b0=Math.sin(th);
+    function dist(a,b){var A=3*a,B=2*(b-a),C=-b,pts=[0,1],D=B*B-4*A*C,s,r;
+      if(D>=0&&Math.abs(A)>1e-12){for(s=-1;s<=1;s+=2){r=(-B+s*Math.sqrt(D))/(2*A);if(r>0&&r<1)pts.push(r);}}
+      pts.sort(function(p,q){return p-q;});
+      var d=0,i;for(i=0;i<pts.length-1;i++){d+=Math.abs(X(a,b,pts[i+1])-X(a,b,pts[i]));}return d;}
+    function X(a,b,t){return t*(t-1)*(a*t+b);}
+    var lam=2/dist(a0,b0),a=a0*lam,b=b0*lam;
+    var mx=0,i,t;for(i=0;i<=2000;i++){t=i/2000;mx=Math.max(mx,Math.abs(X(a,b,t)));}
+    var r=Math.abs(a0)<1e-9?null:-b0/a0;
+    return {x:function(t){return X(a,b,t);},max:mx,zero:(r!==null&&r>1e-6&&r<1-1e-6)?r:null,a:a,b:b,excluded:Math.abs(a0)<0.0087};
+  }
+  var th1=document.getElementById('th1'),th2=document.getElementById('th2');
+  function lab1(){
+    var deg=+th1.value,S=shape(deg);
+    document.getElementById('th1v').textContent=deg+'°';
+    var V=view(-0.08,1.08,-1.35,1.35,560,330),s=axes(V,0.25,0.5);
+    s+=line(V,V.x0,1,V.x1,1,HOT,1.4,'5 5')+line(V,V.x0,-1,V.x1,-1,HOT,1.4,'5 5');
+    s+=tx(V,1.06,1.12,'|x|=1',HOT,'end');
+    if(!S.excluded){
+      s+=curve(V,S.x,0,1,INK,3);
+      s+=dot(V,0,0,INK)+dot(V,1,0,INK);
+      var best=0,bt=0,i,t;for(i=0;i<=1000;i++){t=i/1000;if(Math.abs(S.x(t))>best){best=Math.abs(S.x(t));bt=t;}}
+      s+=dot(V,bt,S.x(bt),HOT);
+      if(S.zero!==null)s+=dot(V,S.zero,0,'#477454');
+      s+=tx(V,0.5,-1.28,'시각 t : 0 → 1',GREY);
+    } else { s+=tx(V,0.5,0,'a=0 은 문제에서 제외된 모양',GREY); }
+    document.getElementById('lab1').innerHTML=wrap(V,s);
+    document.getElementById('r1a').textContent='0.000';
+    document.getElementById('r1b').textContent='2.000';
+    document.getElementById('r1c').textContent=S.excluded?'—':S.max.toFixed(4);
+    document.getElementById('r1d').textContent=S.excluded?'—':(S.zero!==null?'예 (t='+S.zero.toFixed(3)+')':'아니오');
+    var box=document.getElementById('v1box');
+    box.className='verdict '+(S.excluded?'':(S.zero===null?'ok':'mid'));
+    box.innerHTML=S.excluded?'<strong>제외</strong><span>a≠0 이어야 합니다</span>'
+      :(S.zero===null?'<strong>한 번 왕복 · 가장 먼 곳 = 1</strong><span>0을 지나지 않고 갔다가 돌아옵니다</span>'
+                      :'<strong>0을 지난다 · 가장 먼 곳 &lt; 1</strong><span>세 토막으로 걷기 때문에 멀리 못 갑니다</span>');
+  }
+  th1.addEventListener('input',lab1);
+  document.querySelectorAll('[data-set]').forEach(function(b){b.addEventListener('click',function(){th1.value=b.getAttribute('data-set');lab1();});});
+
+  function lab2(){
+    var deg=+th2.value,S=shape(deg),d,Sx;
+    document.getElementById('th2v').textContent=deg+'°';
+    var V=view(0,180,0,1.2,560,300),s=axes(V,30,0.25);
+    s+=line(V,0,1,180,1,HOT,1.4,'5 5');
+    /* 곡선: 135° 까지는 0을 안 지나는 모양(청록), 그 뒤는 0을 지나는 모양(초록). 90° 는 제외된 모양이라 건너뛴다. */
+    var A='',B='';
+    for(d=2;d<=178;d++){
+      if(Math.abs(d-90)<1)continue;
+      Sx=shape(d);
+      var pt=V.sx(d).toFixed(1)+' '+V.sy(Sx.max).toFixed(1);
+      if(d<=135)A+=(A?' L':'M')+pt;else B+=(B?' L':'M')+pt;
     }
-    aS.addEventListener('input', draw);
-    bS.addEventListener('input', draw);
-    draw();
+    s+='<path d="'+A+'" fill="none" stroke="'+INK+'" stroke-width="3"/><path d="'+B+'" fill="none" stroke="#477454" stroke-width="3"/>';
+    s+=line(V,135,0,135,1.2,GREY,1.2,'3 5')+tx(V,135,0.06,'135° : 경계',GREY);
+    s+=tx(V,60,1.1,'0을 안 지난다 → 정확히 1',INK)+tx(V,160,0.62,'0을 지난다','#477454');
+    if(!S.excluded)s+=dot(V,deg,S.max,HOT);
+    document.getElementById('lab2').innerHTML=wrap(V,s);
+    document.getElementById('r2a').textContent=S.excluded?'—':S.max.toFixed(4);
+    document.getElementById('r2b').textContent=S.excluded?'—':(S.zero!==null?'예':'아니오');
+    var box=document.getElementById('v2box');
+    box.className='verdict '+(S.excluded?'':(S.zero===null?'ok':'mid'));
+    box.innerHTML=S.excluded?'<strong>제외</strong><span>a≠0</span>':(S.zero===null?'<strong>가장 먼 곳이 정확히 1</strong><span>대우: 0을 안 지나면 |x|=1 에 닿는다</span>':'<strong>가장 먼 곳이 1보다 작다</strong><span>이때는 이미 0을 지난다</span>');
   }
+  th2.addEventListener('input',lab2);
+  document.querySelectorAll('[data-set2]').forEach(function(b){b.addEventListener('click',function(){th2.value=b.getAttribute('data-set2');lab2();});});
 
-  function bootCustom() {
-    document.querySelectorAll('[data-lab="motion14"]').forEach(labMotion);
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootCustom);
-  else bootCustom();
+  function boot(){lab1();lab2();}
+  if(document.readyState!=='loading')boot();else document.addEventListener('DOMContentLoaded',boot);
 })();
 </script>
 </body>
