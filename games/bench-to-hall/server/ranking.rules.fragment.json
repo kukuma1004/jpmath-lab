@@ -1,0 +1,66 @@
+{
+  "benchHallV2": {
+    "$kind": {
+      ".read": "($kind == 'batter' || $kind == 'pitcher') && query.orderByChild == 'score' && query.limitToLast != null && query.limitToLast > 0 && query.limitToLast <= 100",
+      ".indexOn": [
+        "score"
+      ],
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && auth.uid == $uid && ($kind == 'pitcher' || $kind == 'batter') && (!newData.exists() || !data.exists() || (now - data.child('submittedAt').val() >= 60000 && (newData.child('score').val() > data.child('score').val() || (newData.child('score').val() == data.child('score').val() && newData.child('peak').val() >= data.child('peak').val()))))",
+        ".validate": "newData.hasChildren([\"schema\", \"nickname\", \"position\", \"avatar\", \"score\", \"peak\", \"seasons\", \"proSeasons\", \"topSeasons\", \"statA\", \"statB\", \"statC\", \"statD\", \"awards\", \"titles\", \"submittedAt\"])",
+        "schema": {
+          ".validate": "newData.val() == 2"
+        },
+        "nickname": {
+          ".validate": "newData.isString() && newData.val().matches(/^[가-힣ㄱ-ㅎㅏ-ㅣA-Za-z0-9 _.-]{1,12}$/) && newData.val().matches(/.*[^ ].*/)"
+        },
+        "position": {
+          ".validate": "newData.val() == $kind"
+        },
+        "avatar": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= 23"
+        },
+        "peak": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 15 && newData.val() <= 100"
+        },
+        "seasons": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 1 && newData.val() <= 135"
+        },
+        "proSeasons": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 1 && newData.val() <= newData.parent().child('seasons').val()"
+        },
+        "topSeasons": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= newData.parent().child('proSeasons').val()"
+        },
+        "score": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= 999 && ((newData.val() == 999 && (($kind == 'batter' ? (newData.parent().child('statA').val() / 160 + newData.parent().child('statB').val() / 48 + newData.parent().child('statC').val() / 350 + newData.parent().child('statD').val() / 280) : (newData.parent().child('statA').val() / 12 + newData.parent().child('statB').val() / 230 + newData.parent().child('statC').val() / 30)) + (newData.parent().child('peak').val() > 72 ? (newData.parent().child('peak').val() - 72) * 0.88 : 0) + newData.parent().child('awards').val() * 2.3 + newData.parent().child('titles').val() * 1.25 + (newData.parent().child('topSeasons').val() < 20 ? newData.parent().child('topSeasons').val() : 20) * 0.45) >= 99.84999) || (newData.val() < 999 && newData.val() >= (($kind == 'batter' ? (newData.parent().child('statA').val() / 160 + newData.parent().child('statB').val() / 48 + newData.parent().child('statC').val() / 350 + newData.parent().child('statD').val() / 280) : (newData.parent().child('statA').val() / 12 + newData.parent().child('statB').val() / 230 + newData.parent().child('statC').val() / 30)) + (newData.parent().child('peak').val() > 72 ? (newData.parent().child('peak').val() - 72) * 0.88 : 0) + newData.parent().child('awards').val() * 2.3 + newData.parent().child('titles').val() * 1.25 + (newData.parent().child('topSeasons').val() < 20 ? newData.parent().child('topSeasons').val() : 20) * 0.45) * 10 - 0.50001 && newData.val() <= (($kind == 'batter' ? (newData.parent().child('statA').val() / 160 + newData.parent().child('statB').val() / 48 + newData.parent().child('statC').val() / 350 + newData.parent().child('statD').val() / 280) : (newData.parent().child('statA').val() / 12 + newData.parent().child('statB').val() / 230 + newData.parent().child('statC').val() / 30)) + (newData.parent().child('peak').val() > 72 ? (newData.parent().child('peak').val() - 72) * 0.88 : 0) + newData.parent().child('awards').val() * 2.3 + newData.parent().child('titles').val() * 1.25 + (newData.parent().child('topSeasons').val() < 20 ? newData.parent().child('topSeasons').val() : 20) * 0.45) * 10 + 0.50001))"
+        },
+        "awards": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= newData.parent().child('topSeasons').val() * 4"
+        },
+        "titles": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= newData.parent().child('topSeasons').val()"
+        },
+        "submittedAt": {
+          ".validate": "newData.isNumber() && newData.val() == now"
+        },
+        "$other": {
+          ".validate": false
+        },
+        "statA": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= newData.parent().child('topSeasons').val() * ($kind == 'batter' ? 280 : 40)"
+        },
+        "statB": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= newData.parent().child('topSeasons').val() * ($kind == 'batter' ? 100 : 400)"
+        },
+        "statC": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= newData.parent().child('topSeasons').val() * ($kind == 'batter' ? 250 : 70)"
+        },
+        "statD": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= newData.parent().child('topSeasons').val() * ($kind == 'batter' ? 100 : 0)"
+        }
+      }
+    }
+  }
+}

@@ -14,3 +14,8 @@ _to_delete/
 # Dream Loop 작업 이미지와 검수 기록은 공개 사이트에서 제외
 .dream-loop/
 
+# Firebase 로컬 검사 로그
+firebase-debug.log
+database-debug.log
+ui-debug.log
+
