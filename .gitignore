@@ -11,3 +11,6 @@
 *.bak
 _to_delete/
 
+# Dream Loop 작업 이미지와 검수 기록은 공개 사이트에서 제외
+.dream-loop/
+
