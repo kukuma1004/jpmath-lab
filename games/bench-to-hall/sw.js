@@ -1,5 +1,5 @@
 'use strict';
-const CACHE='bench-to-hall-app-v4-career-life-1';
+const CACHE='bench-to-hall-app-v4-career-model-1';
 const ART_CACHE='bench-to-hall-art-v1';
 const ROOT=new URL('./',self.location.href);
 const ASSETS=['index.html','manifest.webmanifest','icons/icon-16.png','icons/icon-32.png','icons/icon-180.png','icons/icon-192.png','icons/icon-512.png'];
@@ -18,7 +18,7 @@ self.addEventListener('fetch',event=>{
  const url=new URL(event.request.url);
  if(event.request.method!=='GET'||url.origin!==ROOT.origin)return;
  const artRoot=new URL('assets/afterlife/',ROOT).pathname;
- if(url.pathname.startsWith(artRoot)&&/^avatar-(?:[0-9]|1[0-9]|2[0-3])-(?:studio|academy|founder|travel)-v1\.webp$/.test(url.pathname.slice(artRoot.length))){
+ if(url.pathname.startsWith(artRoot)&&/^avatar-(?:[0-9]|1[0-9]|2[0-3])-(?:studio|academy|founder|travel|model|active)-v1\.webp$/.test(url.pathname.slice(artRoot.length))){
   event.respondWith((async()=>{let cache;try{cache=await caches.open(ART_CACHE);const cached=await cache.match(event.request);if(cached)return cached}catch(error){}const response=await fetch(event.request);if(response.ok&&cache)try{await cache.put(event.request,response.clone());const keys=await cache.keys();await Promise.all(keys.slice(0,Math.max(0,keys.length-12)).map(k=>cache.delete(k)))}catch(error){}return response})());return;
  }
  const navigation=event.request.mode==='navigate'&&(url.pathname===ROOT.pathname||url.pathname===new URL('index.html',ROOT).pathname);

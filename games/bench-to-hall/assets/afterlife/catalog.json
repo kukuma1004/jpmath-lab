@@ -2,7 +2,7 @@
   "schema": 1,
   "mode": "pre-generated",
   "avatars": 24,
-  "scenes": 4,
+  "scenes": 6,
   "assets": [
     {
       "avatar": 0,
@@ -15,12 +15,34 @@
     },
     {
       "avatar": 0,
+      "scene": "active",
+      "file": "avatar-0-active-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 178396,
+      "sha256": "ae63405528f0bafedf6dbc00f7594cce9d3ee801bba86cf41a564379dc079eac",
+      "adult": true,
+      "reference": "avatar-0-studio-v1.webp"
+    },
+    {
+      "avatar": 0,
       "scene": "founder",
       "file": "avatar-0-founder-v1.webp",
       "width": 1024,
       "height": 1536,
       "bytes": 262302,
       "sha256": "ea5e3d790d47d0b2ce5d188e8028e0f5c82b3b1e5e66ff84de8fdf5dc3b5e004"
+    },
+    {
+      "avatar": 0,
+      "scene": "model",
+      "file": "avatar-0-model-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 131780,
+      "sha256": "795ea7ff839262cbaa955eb7eebcb54e3da8e95c46b4f9fd2c6f9eca317301ac",
+      "adult": true,
+      "reference": "avatar-0-studio-v1.webp"
     },
     {
       "avatar": 0,
@@ -51,12 +73,34 @@
     },
     {
       "avatar": 1,
+      "scene": "active",
+      "file": "avatar-1-active-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 195448,
+      "sha256": "e9a16e46cc96c21d880ed7e387bbdc687afa0132520a2f822fbf775aec410179",
+      "adult": true,
+      "reference": "avatar-1-studio-v1.webp"
+    },
+    {
+      "avatar": 1,
       "scene": "founder",
       "file": "avatar-1-founder-v1.webp",
       "width": 1024,
       "height": 1536,
       "bytes": 249576,
       "sha256": "909c2b46467ef5866c7b25e04b8ab652df5a27ca9d36125086e6e448a971c4ed"
+    },
+    {
+      "avatar": 1,
+      "scene": "model",
+      "file": "avatar-1-model-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 175188,
+      "sha256": "3200afa2ae20a98e3b1003c4804c8efa75e426bdd73d3579464684c679696cc3",
+      "adult": true,
+      "reference": "avatar-1-studio-v1.webp"
     },
     {
       "avatar": 1,
@@ -87,12 +131,34 @@
     },
     {
       "avatar": 2,
+      "scene": "active",
+      "file": "avatar-2-active-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 193422,
+      "sha256": "30e03dbfa0662af84998478bd18a4caef0def9409ae5af76d7a9cd98370eac8a",
+      "adult": true,
+      "reference": "avatar-2-studio-v1.webp"
+    },
+    {
+      "avatar": 2,
       "scene": "founder",
       "file": "avatar-2-founder-v1.webp",
       "width": 1024,
       "height": 1536,
       "bytes": 277082,
       "sha256": "31c453b6168e687a77caf80ab8760be951167bc30a2941817fe5ea385da8f3ff"
+    },
+    {
+      "avatar": 2,
+      "scene": "model",
+      "file": "avatar-2-model-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 139192,
+      "sha256": "315d1b4c640f10adc91b34d94615e268677d8e8f3e170123744107f9a9b534c6",
+      "adult": true,
+      "reference": "avatar-2-studio-v1.webp"
     },
     {
       "avatar": 2,
@@ -123,12 +189,34 @@
     },
     {
       "avatar": 3,
+      "scene": "active",
+      "file": "avatar-3-active-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 181416,
+      "sha256": "6b50482655a2d96af967850532f7f2ec49bbab9403d769c77f0cac6237979bbc",
+      "adult": true,
+      "reference": "avatar-3-studio-v1.webp"
+    },
+    {
+      "avatar": 3,
       "scene": "founder",
       "file": "avatar-3-founder-v1.webp",
       "width": 1024,
       "height": 1536,
       "bytes": 265796,
       "sha256": "1338f8a4b62a7bbf0f3c174383b9c20e20ba63c4df13c8f9e62ea5b4dc4a0e86"
+    },
+    {
+      "avatar": 3,
+      "scene": "model",
+      "file": "avatar-3-model-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 108400,
+      "sha256": "ebbc6a03950bf0722d34812d6a3bd5b7232f18118454d922bd2be9575f3b1b76",
+      "adult": true,
+      "reference": "avatar-3-studio-v1.webp"
     },
     {
       "avatar": 3,
@@ -159,12 +247,34 @@
     },
     {
       "avatar": 4,
+      "scene": "active",
+      "file": "avatar-4-active-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 154288,
+      "sha256": "f74ae830c456af6dcc465b851fee9f84c9cc10b967a0dda4d28eee165b3efb60",
+      "adult": true,
+      "reference": "avatar-4-studio-v1.webp"
+    },
+    {
+      "avatar": 4,
       "scene": "founder",
       "file": "avatar-4-founder-v1.webp",
       "width": 1024,
       "height": 1536,
       "bytes": 245116,
       "sha256": "48bbe46141c050262ca7512d4f57db9626bbc6d4af372b0e975d11db8d3057b7"
+    },
+    {
+      "avatar": 4,
+      "scene": "model",
+      "file": "avatar-4-model-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 151974,
+      "sha256": "f1be35c9a316bff4df642e2d91545f14f3f7a2acbec1ff02c6ea6a189664d121",
+      "adult": true,
+      "reference": "avatar-4-studio-v1.webp"
     },
     {
       "avatar": 4,
@@ -195,12 +305,34 @@
     },
     {
       "avatar": 5,
+      "scene": "active",
+      "file": "avatar-5-active-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 189508,
+      "sha256": "892a94aa25d283591791a202a862a5d6e51ba94c7081ee3d1f408d38527f61ca",
+      "adult": true,
+      "reference": "avatar-5-studio-v1.webp"
+    },
+    {
+      "avatar": 5,
       "scene": "founder",
       "file": "avatar-5-founder-v1.webp",
       "width": 1024,
       "height": 1536,
       "bytes": 230342,
       "sha256": "b902a3ca617f081320bf75c8adb0bc89c5d4c0da80c09eecc3d51dbcbdd860b4"
+    },
+    {
+      "avatar": 5,
+      "scene": "model",
+      "file": "avatar-5-model-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 159122,
+      "sha256": "f668a7714ac27732f78b2a0abe718b57e433f5a56682776f5343a48985538991",
+      "adult": true,
+      "reference": "avatar-5-studio-v1.webp"
     },
     {
       "avatar": 5,
@@ -231,12 +363,34 @@
     },
     {
       "avatar": 6,
+      "scene": "active",
+      "file": "avatar-6-active-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 194030,
+      "sha256": "3c5c01260dd971ffdc1f4623e007cd866e1e43e163ada07f4f0d19955898b517",
+      "adult": true,
+      "reference": "avatar-6-studio-v1.webp"
+    },
+    {
+      "avatar": 6,
       "scene": "founder",
       "file": "avatar-6-founder-v1.webp",
       "width": 1024,
       "height": 1536,
       "bytes": 246484,
       "sha256": "050be9272ad32114b3caa38a71414ce2eda38bfc3e7c8cd0799bb6a990c2576b"
+    },
+    {
+      "avatar": 6,
+      "scene": "model",
+      "file": "avatar-6-model-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 137182,
+      "sha256": "0aaffc23e45d317e92186bc37dfdbde4464a49e03fae52d81c2ecc26642ddb20",
+      "adult": true,
+      "reference": "avatar-6-studio-v1.webp"
     },
     {
       "avatar": 6,
@@ -267,12 +421,34 @@
     },
     {
       "avatar": 7,
+      "scene": "active",
+      "file": "avatar-7-active-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 171144,
+      "sha256": "05eb759aaab7eed0ddd8499e1a35db81af5c020a6e77e018dbfc5681397bd829",
+      "adult": true,
+      "reference": "avatar-7-studio-v1.webp"
+    },
+    {
+      "avatar": 7,
       "scene": "founder",
       "file": "avatar-7-founder-v1.webp",
       "width": 1024,
       "height": 1536,
       "bytes": 243222,
       "sha256": "f7b29de139b00e5852eb2adea970802af7cc7fd98c219a7834a592393566e27d"
+    },
+    {
+      "avatar": 7,
+      "scene": "model",
+      "file": "avatar-7-model-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 150482,
+      "sha256": "fe3ae39d76ae95fb1a886c67f521c3afe3d1d6d82f9e0d4abbd56a0fbd85a613",
+      "adult": true,
+      "reference": "avatar-7-studio-v1.webp"
     },
     {
       "avatar": 7,
@@ -303,12 +479,34 @@
     },
     {
       "avatar": 8,
+      "scene": "active",
+      "file": "avatar-8-active-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 179564,
+      "sha256": "9eb67c65d4a88e2f347a9751c614cc9223458625bd56d814978f5c375775177d",
+      "adult": true,
+      "reference": "avatar-8-studio-v1.webp"
+    },
+    {
+      "avatar": 8,
       "scene": "founder",
       "file": "avatar-8-founder-v1.webp",
       "width": 1024,
       "height": 1536,
       "bytes": 250062,
       "sha256": "a7538d2ef787e66a83d476383531ca831aa823bcb9fb16066bd790a9aad6c898"
+    },
+    {
+      "avatar": 8,
+      "scene": "model",
+      "file": "avatar-8-model-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 148760,
+      "sha256": "602cae24b22b20ad4b743b6abbd99de4ab789a0b33d5b638f370c5cc973d890e",
+      "adult": true,
+      "reference": "avatar-8-studio-v1.webp"
     },
     {
       "avatar": 8,
@@ -339,12 +537,34 @@
     },
     {
       "avatar": 9,
+      "scene": "active",
+      "file": "avatar-9-active-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 191872,
+      "sha256": "aff7b5e6115188515b2c7d4a8941e6a5dd13a64c464be9eae6931944350d4947",
+      "adult": true,
+      "reference": "avatar-9-studio-v1.webp"
+    },
+    {
+      "avatar": 9,
       "scene": "founder",
       "file": "avatar-9-founder-v1.webp",
       "width": 1024,
       "height": 1536,
       "bytes": 249442,
       "sha256": "7024699dd53c5d25e4e084bb9816c1e462da264885bd73f69f356bb08db20731"
+    },
+    {
+      "avatar": 9,
+      "scene": "model",
+      "file": "avatar-9-model-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 122830,
+      "sha256": "186d03a83efe34d45096b9a0bed1b2a87d73e2b1a984a8a4ab7cf53ff1bc9743",
+      "adult": true,
+      "reference": "avatar-9-studio-v1.webp"
     },
     {
       "avatar": 9,
@@ -375,12 +595,34 @@
     },
     {
       "avatar": 10,
+      "scene": "active",
+      "file": "avatar-10-active-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 199842,
+      "sha256": "ecfbde4a1c582669ea7a5de5d5777394b488696b1ad7ee4beefecf8c401edcbf",
+      "adult": true,
+      "reference": "avatar-10-studio-v1.webp"
+    },
+    {
+      "avatar": 10,
       "scene": "founder",
       "file": "avatar-10-founder-v1.webp",
       "width": 1024,
       "height": 1536,
       "bytes": 239634,
       "sha256": "9f7fa9e40e6cc14704b742e49c365e99020e63cfb9b21f27485dec2c2e8a2bf3"
+    },
+    {
+      "avatar": 10,
+      "scene": "model",
+      "file": "avatar-10-model-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 144104,
+      "sha256": "dd3f69ad4c1ff43b1d205be747c942fa2b83d02b7a1ca5972f8a9ed656416a98",
+      "adult": true,
+      "reference": "avatar-10-studio-v1.webp"
     },
     {
       "avatar": 10,
@@ -411,12 +653,34 @@
     },
     {
       "avatar": 11,
+      "scene": "active",
+      "file": "avatar-11-active-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 174880,
+      "sha256": "9b088a6efbf294b49c768103d3dc95d5e8bc221ae9244f9f0099e32bb6dba7d8",
+      "adult": true,
+      "reference": "avatar-11-studio-v1.webp"
+    },
+    {
+      "avatar": 11,
       "scene": "founder",
       "file": "avatar-11-founder-v1.webp",
       "width": 1024,
       "height": 1536,
       "bytes": 234430,
       "sha256": "57e7fb34423f6141982d88f960eced154aa72577eeb448f85b53cd9e2f730f0e"
+    },
+    {
+      "avatar": 11,
+      "scene": "model",
+      "file": "avatar-11-model-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 131228,
+      "sha256": "fd64e45143d46367b97df8877fe3dbe503d1563497ec0b58eea100c11fec00bb",
+      "adult": true,
+      "reference": "avatar-11-studio-v1.webp"
     },
     {
       "avatar": 11,
@@ -447,12 +711,34 @@
     },
     {
       "avatar": 12,
+      "scene": "active",
+      "file": "avatar-12-active-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 155748,
+      "sha256": "855c9ca67df850d20ebb990b89a91b56df685fb5d7930fd9ec5855c523aba570",
+      "adult": true,
+      "reference": "avatar-12-studio-v1.webp"
+    },
+    {
+      "avatar": 12,
       "scene": "founder",
       "file": "avatar-12-founder-v1.webp",
       "width": 1024,
       "height": 1536,
       "bytes": 268124,
       "sha256": "5d44bcd8c0bfa56e9fb83888ba1bd3993a9878fedec983c1f74b4c885d169fdf"
+    },
+    {
+      "avatar": 12,
+      "scene": "model",
+      "file": "avatar-12-model-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 115522,
+      "sha256": "81a833b448bbe99d5abd6681837c8f5dcbec55f45918fff255078a49f68fff29",
+      "adult": true,
+      "reference": "avatar-12-studio-v1.webp"
     },
     {
       "avatar": 12,
@@ -483,12 +769,34 @@
     },
     {
       "avatar": 13,
+      "scene": "active",
+      "file": "avatar-13-active-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 190158,
+      "sha256": "0cf32942ffd22f1e18f3f5d0992ce038e676527d80f9b23e5b1ddf7b1173165e",
+      "adult": true,
+      "reference": "avatar-13-studio-v1.webp"
+    },
+    {
+      "avatar": 13,
       "scene": "founder",
       "file": "avatar-13-founder-v1.webp",
       "width": 1024,
       "height": 1536,
       "bytes": 253894,
       "sha256": "4ac3ffb9872bbe37708aa4c76730031818d5ae0c17f61c2a186a24802e6dce90"
+    },
+    {
+      "avatar": 13,
+      "scene": "model",
+      "file": "avatar-13-model-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 160840,
+      "sha256": "aa4d1fc73fc2b979c149b4773ef523c77ff7b0c68dafa4b9d7c3aeab8d3bec68",
+      "adult": true,
+      "reference": "avatar-13-studio-v1.webp"
     },
     {
       "avatar": 13,
@@ -519,12 +827,34 @@
     },
     {
       "avatar": 14,
+      "scene": "active",
+      "file": "avatar-14-active-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 185542,
+      "sha256": "8f2c364c4b8f696e7591fd536262d328c3f0755b730de487db97288f33fab5c2",
+      "adult": true,
+      "reference": "avatar-14-studio-v1.webp"
+    },
+    {
+      "avatar": 14,
       "scene": "founder",
       "file": "avatar-14-founder-v1.webp",
       "width": 1024,
       "height": 1536,
       "bytes": 250850,
       "sha256": "cd084c4cc7d6eea5f01804f8806431d5168e049345572174e10794f163ef0a1e"
+    },
+    {
+      "avatar": 14,
+      "scene": "model",
+      "file": "avatar-14-model-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 140276,
+      "sha256": "166a51058f5f6a27fed6de3e51e20ca144152a795b1a9af5b7d543b423c24ece",
+      "adult": true,
+      "reference": "avatar-14-studio-v1.webp"
     },
     {
       "avatar": 14,
@@ -555,12 +885,34 @@
     },
     {
       "avatar": 15,
+      "scene": "active",
+      "file": "avatar-15-active-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 163470,
+      "sha256": "d62f4897361ae965384281e81a73aa219a41041b330a37aab5f32f1b8ba1765a",
+      "adult": true,
+      "reference": "avatar-15-studio-v1.webp"
+    },
+    {
+      "avatar": 15,
       "scene": "founder",
       "file": "avatar-15-founder-v1.webp",
       "width": 1024,
       "height": 1536,
       "bytes": 290170,
       "sha256": "4aafd01c2ce5d1fa9b694ce59806795b5abdeaaced794940c507b6647a6431cb"
+    },
+    {
+      "avatar": 15,
+      "scene": "model",
+      "file": "avatar-15-model-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 115780,
+      "sha256": "7601324abeab6a78158d020157d2e2df6b449f59e65f4972e23ba0ba6d39c8ca",
+      "adult": true,
+      "reference": "avatar-15-studio-v1.webp"
     },
     {
       "avatar": 15,
@@ -591,12 +943,34 @@
     },
     {
       "avatar": 16,
+      "scene": "active",
+      "file": "avatar-16-active-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 160384,
+      "sha256": "e7b703eb9ab87fd95a373513cc5a94c30db819258e46761ff2129205dc2a163e",
+      "adult": true,
+      "reference": "avatar-16-studio-v1.webp"
+    },
+    {
+      "avatar": 16,
       "scene": "founder",
       "file": "avatar-16-founder-v1.webp",
       "width": 1024,
       "height": 1536,
       "bytes": 248288,
       "sha256": "35815f6ea20f5ad088b2f15857dd1b165f6051c6d99d277dd7daeff752b4b4f0"
+    },
+    {
+      "avatar": 16,
+      "scene": "model",
+      "file": "avatar-16-model-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 136782,
+      "sha256": "c80dce78d6a1b38980ef252d9b0e79f2dc058163d836e84c78006a18849d4f6f",
+      "adult": true,
+      "reference": "avatar-16-studio-v1.webp"
     },
     {
       "avatar": 16,
@@ -627,12 +1001,34 @@
     },
     {
       "avatar": 17,
+      "scene": "active",
+      "file": "avatar-17-active-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 176034,
+      "sha256": "33ca8c59f235b96355a8c376f18c2eedb42c8b419b7d3069653130867ad50489",
+      "adult": true,
+      "reference": "avatar-17-studio-v1.webp"
+    },
+    {
+      "avatar": 17,
       "scene": "founder",
       "file": "avatar-17-founder-v1.webp",
       "width": 1024,
       "height": 1536,
       "bytes": 231526,
       "sha256": "b9ad2007e24222e01c374953fefea77d32fad21151b5481e9bd03ab150dd6f98"
+    },
+    {
+      "avatar": 17,
+      "scene": "model",
+      "file": "avatar-17-model-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 145582,
+      "sha256": "f88935d94941375b397a7c061ec753c63a1f54e6d8dfacea86ad1f989bd3b6f4",
+      "adult": true,
+      "reference": "avatar-17-studio-v1.webp"
     },
     {
       "avatar": 17,
@@ -663,12 +1059,34 @@
     },
     {
       "avatar": 18,
+      "scene": "active",
+      "file": "avatar-18-active-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 171664,
+      "sha256": "55c7e9800c9439388df03393ddf7e2a96f3ff910eb13e3f458c3bca6cf6c587e",
+      "adult": true,
+      "reference": "avatar-18-studio-v1.webp"
+    },
+    {
+      "avatar": 18,
       "scene": "founder",
       "file": "avatar-18-founder-v1.webp",
       "width": 1024,
       "height": 1536,
       "bytes": 286630,
       "sha256": "8ff0c566d76a35b8e97f48c46d729211ce8d3e47d8155a36fef6b428271c1721"
+    },
+    {
+      "avatar": 18,
+      "scene": "model",
+      "file": "avatar-18-model-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 107168,
+      "sha256": "bbfa709be38b78b0a9b6e37224bc53071cf2cca787f81d50c6e0f24470ef2231",
+      "adult": true,
+      "reference": "avatar-18-studio-v1.webp"
     },
     {
       "avatar": 18,
@@ -699,12 +1117,34 @@
     },
     {
       "avatar": 19,
+      "scene": "active",
+      "file": "avatar-19-active-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 213294,
+      "sha256": "770622a23d7922111bd8927c1dcc109b4d698e58370cd6f2f116edbee88afb56",
+      "adult": true,
+      "reference": "avatar-19-studio-v1.webp"
+    },
+    {
+      "avatar": 19,
       "scene": "founder",
       "file": "avatar-19-founder-v1.webp",
       "width": 1024,
       "height": 1536,
       "bytes": 242948,
       "sha256": "5d04b6ac8d0ea08a22998f040d4ba273e46c7f2bd401961b217b86f95effb9eb"
+    },
+    {
+      "avatar": 19,
+      "scene": "model",
+      "file": "avatar-19-model-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 172292,
+      "sha256": "315c7afa254b3f8673ac1721f4a3fcb8c65d4d1982425e35e20da14dddb74f00",
+      "adult": true,
+      "reference": "avatar-19-studio-v1.webp"
     },
     {
       "avatar": 19,
@@ -735,12 +1175,34 @@
     },
     {
       "avatar": 20,
+      "scene": "active",
+      "file": "avatar-20-active-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 183486,
+      "sha256": "71fda75e1844d29c210874919abb2aa265c9dd837db19636b288d121e695f850",
+      "adult": true,
+      "reference": "avatar-20-studio-v1.webp"
+    },
+    {
+      "avatar": 20,
       "scene": "founder",
       "file": "avatar-20-founder-v1.webp",
       "width": 1024,
       "height": 1536,
       "bytes": 225858,
       "sha256": "7c7ec553aeb876ff4945ee4caac98b416275f5eec2018a11ecb8400510ea3955"
+    },
+    {
+      "avatar": 20,
+      "scene": "model",
+      "file": "avatar-20-model-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 140256,
+      "sha256": "bbc4d094aaf800e7b5407634155c796d7faccc7f2a2cff30247652dcfc349cba",
+      "adult": true,
+      "reference": "avatar-20-studio-v1.webp"
     },
     {
       "avatar": 20,
@@ -771,12 +1233,34 @@
     },
     {
       "avatar": 21,
+      "scene": "active",
+      "file": "avatar-21-active-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 156756,
+      "sha256": "80525ee01c90b3b35ed5ab86e6e38f64ee149f06887efacc0b2188b8d18f8907",
+      "adult": true,
+      "reference": "avatar-21-studio-v1.webp"
+    },
+    {
+      "avatar": 21,
       "scene": "founder",
       "file": "avatar-21-founder-v1.webp",
       "width": 1024,
       "height": 1536,
       "bytes": 246360,
       "sha256": "650d5695c00be529aa91a90b67aec5be9d1868aaeea4214b1d5ded3c8e63a9de"
+    },
+    {
+      "avatar": 21,
+      "scene": "model",
+      "file": "avatar-21-model-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 89992,
+      "sha256": "2bd16ad3d97511b8b5a05c06ae3eef8b0e306c18cedfc30d6609f66059909202",
+      "adult": true,
+      "reference": "avatar-21-studio-v1.webp"
     },
     {
       "avatar": 21,
@@ -807,12 +1291,34 @@
     },
     {
       "avatar": 22,
+      "scene": "active",
+      "file": "avatar-22-active-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 163184,
+      "sha256": "07eb600e4de4750abf7a1482b19a5792a90bbcf314f5df2ce3d49f2feebe394e",
+      "adult": true,
+      "reference": "avatar-22-studio-v1.webp"
+    },
+    {
+      "avatar": 22,
       "scene": "founder",
       "file": "avatar-22-founder-v1.webp",
       "width": 1024,
       "height": 1536,
       "bytes": 239968,
       "sha256": "401de6d1b21341a40b404f808d1534e16f9330fafcc4d87ef798305c7c005609"
+    },
+    {
+      "avatar": 22,
+      "scene": "model",
+      "file": "avatar-22-model-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 112380,
+      "sha256": "d668b62ec0ec426f5bbbfcc13c3455d23cc0b48c36e48fc7a7d555e3c5811e17",
+      "adult": true,
+      "reference": "avatar-22-studio-v1.webp"
     },
     {
       "avatar": 22,
@@ -843,12 +1349,34 @@
     },
     {
       "avatar": 23,
+      "scene": "active",
+      "file": "avatar-23-active-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 151572,
+      "sha256": "0d5ae90b2cdd8ef4242d5747cd9a4b412d1d8c252e172c4c02b3f63f1b622513",
+      "adult": true,
+      "reference": "avatar-23-studio-v1.webp"
+    },
+    {
+      "avatar": 23,
       "scene": "founder",
       "file": "avatar-23-founder-v1.webp",
       "width": 1024,
       "height": 1536,
       "bytes": 240914,
       "sha256": "44939ee48c2848f595d05d3224d8d6d27f8df234cfde2771b17eff5e2cb1c14e"
+    },
+    {
+      "avatar": 23,
+      "scene": "model",
+      "file": "avatar-23-model-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 142448,
+      "sha256": "9c0ec417b4700a21f3c31c692cf49912bd936f79c06219df8e1ee68f18137645",
+      "adult": true,
+      "reference": "avatar-23-studio-v1.webp"
     },
     {
       "avatar": 23,
