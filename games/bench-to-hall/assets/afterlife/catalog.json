@@ -1,0 +1,872 @@
+{
+  "schema": 1,
+  "mode": "pre-generated",
+  "avatars": 24,
+  "scenes": 4,
+  "assets": [
+    {
+      "avatar": 0,
+      "scene": "academy",
+      "file": "avatar-0-academy-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 197894,
+      "sha256": "19d84510fd95afcd4009413a1b1aa1d9f8228bcbee0f66d141a4b601c9243c69"
+    },
+    {
+      "avatar": 0,
+      "scene": "founder",
+      "file": "avatar-0-founder-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 262302,
+      "sha256": "ea5e3d790d47d0b2ce5d188e8028e0f5c82b3b1e5e66ff84de8fdf5dc3b5e004"
+    },
+    {
+      "avatar": 0,
+      "scene": "studio",
+      "file": "avatar-0-studio-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 169946,
+      "sha256": "6d401c0689c7a2622e7b3100f1f9b9b6706377d7c53dec316c37a96519860370"
+    },
+    {
+      "avatar": 0,
+      "scene": "travel",
+      "file": "avatar-0-travel-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 275322,
+      "sha256": "a404d2ab371dace02b994735a516f6f9fafa07a17116913df0034d5838231a38"
+    },
+    {
+      "avatar": 1,
+      "scene": "academy",
+      "file": "avatar-1-academy-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 215206,
+      "sha256": "d9876ba8d37887f9f75a81c74eaaeb30db53d3de8e73b7626d1e10e45c24a89e"
+    },
+    {
+      "avatar": 1,
+      "scene": "founder",
+      "file": "avatar-1-founder-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 249576,
+      "sha256": "909c2b46467ef5866c7b25e04b8ab652df5a27ca9d36125086e6e448a971c4ed"
+    },
+    {
+      "avatar": 1,
+      "scene": "studio",
+      "file": "avatar-1-studio-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 168498,
+      "sha256": "2bfe7730dcb5dfaae293dd2f0a8b081a71b4cacf41f9312bed83fdb437936c17"
+    },
+    {
+      "avatar": 1,
+      "scene": "travel",
+      "file": "avatar-1-travel-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 244630,
+      "sha256": "52f1a6cce40855b1586fe3e8788c7282bd95a2eca1862080e7a5a7a37ac47112"
+    },
+    {
+      "avatar": 2,
+      "scene": "academy",
+      "file": "avatar-2-academy-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 211306,
+      "sha256": "0a6f306ac6cab04a4bfd996b0744b51e6027bac68199ffc950a04ef1e83b7f63"
+    },
+    {
+      "avatar": 2,
+      "scene": "founder",
+      "file": "avatar-2-founder-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 277082,
+      "sha256": "31c453b6168e687a77caf80ab8760be951167bc30a2941817fe5ea385da8f3ff"
+    },
+    {
+      "avatar": 2,
+      "scene": "studio",
+      "file": "avatar-2-studio-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 196216,
+      "sha256": "99f4c5416d4b448dbde1b105d3b9598d908f8c9c0418ce0fab52d8fbfe0426b7"
+    },
+    {
+      "avatar": 2,
+      "scene": "travel",
+      "file": "avatar-2-travel-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 260948,
+      "sha256": "6c46962ec5b7dff46a98cc86e9f7a3766e0b723969dde84bc7a70f46b44e0a78"
+    },
+    {
+      "avatar": 3,
+      "scene": "academy",
+      "file": "avatar-3-academy-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 206768,
+      "sha256": "40241a5206af094fb083969072d444d6928653dfb2be545fc8870b20805fbc35"
+    },
+    {
+      "avatar": 3,
+      "scene": "founder",
+      "file": "avatar-3-founder-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 265796,
+      "sha256": "1338f8a4b62a7bbf0f3c174383b9c20e20ba63c4df13c8f9e62ea5b4dc4a0e86"
+    },
+    {
+      "avatar": 3,
+      "scene": "studio",
+      "file": "avatar-3-studio-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 144790,
+      "sha256": "52e36ee74c7b49d02b3bb89ae946217f8f868e5e4808e46ca2323c19f9449ab5"
+    },
+    {
+      "avatar": 3,
+      "scene": "travel",
+      "file": "avatar-3-travel-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 267506,
+      "sha256": "e36f0720de460f7681e7c7ba0a9aecf9c674b32c0d70851ad5026f5dc59d37b4"
+    },
+    {
+      "avatar": 4,
+      "scene": "academy",
+      "file": "avatar-4-academy-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 202636,
+      "sha256": "98c269ffc86220c47e328af1aac46a81f6f6cd7f4d3af64fec6071f32cef528e"
+    },
+    {
+      "avatar": 4,
+      "scene": "founder",
+      "file": "avatar-4-founder-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 245116,
+      "sha256": "48bbe46141c050262ca7512d4f57db9626bbc6d4af372b0e975d11db8d3057b7"
+    },
+    {
+      "avatar": 4,
+      "scene": "studio",
+      "file": "avatar-4-studio-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 153702,
+      "sha256": "ccaeb2504b12cf4dd6e60651feeee0ea98c774869944ce255fc92eee56d07a7d"
+    },
+    {
+      "avatar": 4,
+      "scene": "travel",
+      "file": "avatar-4-travel-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 275774,
+      "sha256": "9088388fb0a0a1a73b302f227b594ca5683859a8f35a5b3f1217feb9fd3f0826"
+    },
+    {
+      "avatar": 5,
+      "scene": "academy",
+      "file": "avatar-5-academy-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 173206,
+      "sha256": "36ed458756491c1cfd3d9547615de850df51598dfc64247d74fee76c466a0051"
+    },
+    {
+      "avatar": 5,
+      "scene": "founder",
+      "file": "avatar-5-founder-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 230342,
+      "sha256": "b902a3ca617f081320bf75c8adb0bc89c5d4c0da80c09eecc3d51dbcbdd860b4"
+    },
+    {
+      "avatar": 5,
+      "scene": "studio",
+      "file": "avatar-5-studio-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 208782,
+      "sha256": "3b08208750682469c743ae4a0c56581ce543bc591fa0b03fbf21dfed116874f0"
+    },
+    {
+      "avatar": 5,
+      "scene": "travel",
+      "file": "avatar-5-travel-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 260838,
+      "sha256": "da12962610002b5a32f7d00ad67ef24068296b2c87efd43e3ea04d612e0b2873"
+    },
+    {
+      "avatar": 6,
+      "scene": "academy",
+      "file": "avatar-6-academy-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 193200,
+      "sha256": "aea9b8fb2ae3dc0dbda786713e30fc758b2e029514cff90f84962ba08d10603a"
+    },
+    {
+      "avatar": 6,
+      "scene": "founder",
+      "file": "avatar-6-founder-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 246484,
+      "sha256": "050be9272ad32114b3caa38a71414ce2eda38bfc3e7c8cd0799bb6a990c2576b"
+    },
+    {
+      "avatar": 6,
+      "scene": "studio",
+      "file": "avatar-6-studio-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 179644,
+      "sha256": "c0a7f3ba2112ff9c5dbf4250a98db993ad3bc35c96e2af2c0d006505af9b5096"
+    },
+    {
+      "avatar": 6,
+      "scene": "travel",
+      "file": "avatar-6-travel-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 285408,
+      "sha256": "091148999ad1e4b461c41abe8248a5c4c2952f11568f4d089509ab1feee507b5"
+    },
+    {
+      "avatar": 7,
+      "scene": "academy",
+      "file": "avatar-7-academy-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 170230,
+      "sha256": "d0faa97a2d965f6f7b5ec573446718729f06c1262a42ea0daf173b14004f34ab"
+    },
+    {
+      "avatar": 7,
+      "scene": "founder",
+      "file": "avatar-7-founder-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 243222,
+      "sha256": "f7b29de139b00e5852eb2adea970802af7cc7fd98c219a7834a592393566e27d"
+    },
+    {
+      "avatar": 7,
+      "scene": "studio",
+      "file": "avatar-7-studio-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 181274,
+      "sha256": "db1d24273820e2762a4a1708f965e41f07e11887eadff91c7e83d4c82755fa7b"
+    },
+    {
+      "avatar": 7,
+      "scene": "travel",
+      "file": "avatar-7-travel-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 273592,
+      "sha256": "e62e8b355e28d1527a999b210c9913a9e766a323be25d5ff81c4aef8bc624ea0"
+    },
+    {
+      "avatar": 8,
+      "scene": "academy",
+      "file": "avatar-8-academy-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 183244,
+      "sha256": "eed41de7a59e623162998be003641b34bf64555152b04ac392797e5e412e5160"
+    },
+    {
+      "avatar": 8,
+      "scene": "founder",
+      "file": "avatar-8-founder-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 250062,
+      "sha256": "a7538d2ef787e66a83d476383531ca831aa823bcb9fb16066bd790a9aad6c898"
+    },
+    {
+      "avatar": 8,
+      "scene": "studio",
+      "file": "avatar-8-studio-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 186740,
+      "sha256": "e610751b7bd2a5a0d135d25a210fbf7ac80a3673631cdd69d75eaabd1964821c"
+    },
+    {
+      "avatar": 8,
+      "scene": "travel",
+      "file": "avatar-8-travel-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 283044,
+      "sha256": "3326d85ab89edc9cd6a0f435c5cfc25004fab14dbcd37bed7d3eec3fce141403"
+    },
+    {
+      "avatar": 9,
+      "scene": "academy",
+      "file": "avatar-9-academy-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 251278,
+      "sha256": "6e3be4e75b6cbe641105d18d0f536a1909d969265029bc868219838b29df5e34"
+    },
+    {
+      "avatar": 9,
+      "scene": "founder",
+      "file": "avatar-9-founder-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 249442,
+      "sha256": "7024699dd53c5d25e4e084bb9816c1e462da264885bd73f69f356bb08db20731"
+    },
+    {
+      "avatar": 9,
+      "scene": "studio",
+      "file": "avatar-9-studio-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 200308,
+      "sha256": "bc8f88b2c2fdf603a0b7196e40e650bc4ad9a29b806ced5d27fe8e050b4f66be"
+    },
+    {
+      "avatar": 9,
+      "scene": "travel",
+      "file": "avatar-9-travel-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 242518,
+      "sha256": "d84ec4bfb474b2cfe0bd2b3e3369479bb8ca44221afd2dbf7ade0a7182c53e68"
+    },
+    {
+      "avatar": 10,
+      "scene": "academy",
+      "file": "avatar-10-academy-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 199406,
+      "sha256": "fb84c9d27627812afd40224e4b5681bf96f9dc1e0118faabdcf9ff390d1ea812"
+    },
+    {
+      "avatar": 10,
+      "scene": "founder",
+      "file": "avatar-10-founder-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 239634,
+      "sha256": "9f7fa9e40e6cc14704b742e49c365e99020e63cfb9b21f27485dec2c2e8a2bf3"
+    },
+    {
+      "avatar": 10,
+      "scene": "studio",
+      "file": "avatar-10-studio-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 156966,
+      "sha256": "92dd43dd2497ff24dcc4171c41a8cfed07f92ceef676aa4cddd861a12385788c"
+    },
+    {
+      "avatar": 10,
+      "scene": "travel",
+      "file": "avatar-10-travel-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 267448,
+      "sha256": "8a967c04579394566a8ea796e58a429de3c20637e2185a32d2d7b93054de85c6"
+    },
+    {
+      "avatar": 11,
+      "scene": "academy",
+      "file": "avatar-11-academy-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 257980,
+      "sha256": "ab498ed2367b83f2b76cd3947aea67332a7c4f9ebf3eccedd4c5ea83250444b1"
+    },
+    {
+      "avatar": 11,
+      "scene": "founder",
+      "file": "avatar-11-founder-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 234430,
+      "sha256": "57e7fb34423f6141982d88f960eced154aa72577eeb448f85b53cd9e2f730f0e"
+    },
+    {
+      "avatar": 11,
+      "scene": "studio",
+      "file": "avatar-11-studio-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 182678,
+      "sha256": "104c3cff6911638042c282efc7f175dfdd86e0151a67e8e2cd5d33cd564506b2"
+    },
+    {
+      "avatar": 11,
+      "scene": "travel",
+      "file": "avatar-11-travel-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 283954,
+      "sha256": "e868343d69f720ca2c9c9dbbbcf7e237354ef94d7c2212f3015a8dc92110d19b"
+    },
+    {
+      "avatar": 12,
+      "scene": "academy",
+      "file": "avatar-12-academy-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 183366,
+      "sha256": "fb5bc132addba14b39cbe094ffe7132663d2864ccfd51bff4d2ff11cb7adc517"
+    },
+    {
+      "avatar": 12,
+      "scene": "founder",
+      "file": "avatar-12-founder-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 268124,
+      "sha256": "5d44bcd8c0bfa56e9fb83888ba1bd3993a9878fedec983c1f74b4c885d169fdf"
+    },
+    {
+      "avatar": 12,
+      "scene": "studio",
+      "file": "avatar-12-studio-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 143396,
+      "sha256": "b4aefccf77a40d1ac694128c5ecb842344c2a3f493a44a5c4200dfcbbe39b88f"
+    },
+    {
+      "avatar": 12,
+      "scene": "travel",
+      "file": "avatar-12-travel-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 290498,
+      "sha256": "6a6ce8a87b173b41af43dc5a485fc35d7360bbacb4924bb4a85c9d36a45fd7e1"
+    },
+    {
+      "avatar": 13,
+      "scene": "academy",
+      "file": "avatar-13-academy-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 201576,
+      "sha256": "941ce771db349d6a0b46af638f41905f748e89ecfe852ef67b88f01503185941"
+    },
+    {
+      "avatar": 13,
+      "scene": "founder",
+      "file": "avatar-13-founder-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 253894,
+      "sha256": "4ac3ffb9872bbe37708aa4c76730031818d5ae0c17f61c2a186a24802e6dce90"
+    },
+    {
+      "avatar": 13,
+      "scene": "studio",
+      "file": "avatar-13-studio-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 162136,
+      "sha256": "bb498736725865c3cb5eac40d0110a31c775f28eedec49cb3ad0e4a1e3f4f9a3"
+    },
+    {
+      "avatar": 13,
+      "scene": "travel",
+      "file": "avatar-13-travel-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 250434,
+      "sha256": "4d1715d6f46c8ea5e80946d204a9d9e1a9e4e83386577772bb1ee96a2e740711"
+    },
+    {
+      "avatar": 14,
+      "scene": "academy",
+      "file": "avatar-14-academy-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 211428,
+      "sha256": "89ec52387e423a19f291f221014f267cfb714aacb1799743e0d9f08deabab9e9"
+    },
+    {
+      "avatar": 14,
+      "scene": "founder",
+      "file": "avatar-14-founder-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 250850,
+      "sha256": "cd084c4cc7d6eea5f01804f8806431d5168e049345572174e10794f163ef0a1e"
+    },
+    {
+      "avatar": 14,
+      "scene": "studio",
+      "file": "avatar-14-studio-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 173776,
+      "sha256": "c7806601d516eb810ec78dddc0557a787ed5690dbcd937bb4f71ef3f87d82d3d"
+    },
+    {
+      "avatar": 14,
+      "scene": "travel",
+      "file": "avatar-14-travel-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 269424,
+      "sha256": "088c57383d732e9593185cbc6e1fa19b82a8dfc548cb0f568ced9a66392197cc"
+    },
+    {
+      "avatar": 15,
+      "scene": "academy",
+      "file": "avatar-15-academy-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 221708,
+      "sha256": "487c344aafe79b65fa9c4f5d585581f3f9d75ab95c20545ae7eebee76b5052de"
+    },
+    {
+      "avatar": 15,
+      "scene": "founder",
+      "file": "avatar-15-founder-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 290170,
+      "sha256": "4aafd01c2ce5d1fa9b694ce59806795b5abdeaaced794940c507b6647a6431cb"
+    },
+    {
+      "avatar": 15,
+      "scene": "studio",
+      "file": "avatar-15-studio-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 148258,
+      "sha256": "59cf4d7643008187f07b1a2ae1bd63791fb7b84a82ade52e5eb1089be0006cab"
+    },
+    {
+      "avatar": 15,
+      "scene": "travel",
+      "file": "avatar-15-travel-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 280180,
+      "sha256": "c71463aaf0bc868ecf7b4e327fa7f249cc581bf5b35a4d544c1833b9b96f68cf"
+    },
+    {
+      "avatar": 16,
+      "scene": "academy",
+      "file": "avatar-16-academy-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 215950,
+      "sha256": "79b84fff20b54804e24bb9af79d66f939d6efa5205e2b29e6cb3cee1cd85e04b"
+    },
+    {
+      "avatar": 16,
+      "scene": "founder",
+      "file": "avatar-16-founder-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 248288,
+      "sha256": "35815f6ea20f5ad088b2f15857dd1b165f6051c6d99d277dd7daeff752b4b4f0"
+    },
+    {
+      "avatar": 16,
+      "scene": "studio",
+      "file": "avatar-16-studio-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 132302,
+      "sha256": "6edddb9cb0da1dd1a5df2db163d2bf9852d9e7fcb552b58eed91051c8e748a6d"
+    },
+    {
+      "avatar": 16,
+      "scene": "travel",
+      "file": "avatar-16-travel-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 282202,
+      "sha256": "7e41ed460b55aa0111a8bba28cc8f9aa650b485ddcb61a124c8ed01e32391fd3"
+    },
+    {
+      "avatar": 17,
+      "scene": "academy",
+      "file": "avatar-17-academy-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 211948,
+      "sha256": "9fb3235f3f0f8ada05f56a812a20b3a6b28113ed226d5c64f1e0162999969a95"
+    },
+    {
+      "avatar": 17,
+      "scene": "founder",
+      "file": "avatar-17-founder-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 231526,
+      "sha256": "b9ad2007e24222e01c374953fefea77d32fad21151b5481e9bd03ab150dd6f98"
+    },
+    {
+      "avatar": 17,
+      "scene": "studio",
+      "file": "avatar-17-studio-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 166316,
+      "sha256": "e975eb93fcf6b0ba408546cec6bcbac3f581d6e24ece9a0ad8b11d98aae79c5f"
+    },
+    {
+      "avatar": 17,
+      "scene": "travel",
+      "file": "avatar-17-travel-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 283740,
+      "sha256": "c249cfb12fa0148b457a81e9bbb81556777d84874cb26ecffbfd224d1484e68b"
+    },
+    {
+      "avatar": 18,
+      "scene": "academy",
+      "file": "avatar-18-academy-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 203750,
+      "sha256": "6d4a1a86f7769469ff4cdb0542a338f34ae67181961ef8d166a819153bce2a3f"
+    },
+    {
+      "avatar": 18,
+      "scene": "founder",
+      "file": "avatar-18-founder-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 286630,
+      "sha256": "8ff0c566d76a35b8e97f48c46d729211ce8d3e47d8155a36fef6b428271c1721"
+    },
+    {
+      "avatar": 18,
+      "scene": "studio",
+      "file": "avatar-18-studio-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 160154,
+      "sha256": "d1f55c348a3894d12a8acfd7df10d55707643b93b2726f4cf3cd28f6dbd7d29f"
+    },
+    {
+      "avatar": 18,
+      "scene": "travel",
+      "file": "avatar-18-travel-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 267710,
+      "sha256": "1598b00b5f5f76a7a476ad79156148f1e54f432f6ee8c65143908e4100c05b66"
+    },
+    {
+      "avatar": 19,
+      "scene": "academy",
+      "file": "avatar-19-academy-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 266658,
+      "sha256": "f4d8a821715e472a247a3a80bcab28863fa3268feb5a0f5f880586cad3f3d65e"
+    },
+    {
+      "avatar": 19,
+      "scene": "founder",
+      "file": "avatar-19-founder-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 242948,
+      "sha256": "5d04b6ac8d0ea08a22998f040d4ba273e46c7f2bd401961b217b86f95effb9eb"
+    },
+    {
+      "avatar": 19,
+      "scene": "studio",
+      "file": "avatar-19-studio-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 176102,
+      "sha256": "e32ecef2eaedfce33d16a4ce34900be826b2122e9a0693189829b860144986aa"
+    },
+    {
+      "avatar": 19,
+      "scene": "travel",
+      "file": "avatar-19-travel-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 277992,
+      "sha256": "4776c3086e9c7792818a63a4c0409aa9a94a96b24baa2bfdf1d47330d1230521"
+    },
+    {
+      "avatar": 20,
+      "scene": "academy",
+      "file": "avatar-20-academy-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 247542,
+      "sha256": "a37b6497a195f8338ae6de3cab86555f8de580311e44f13e88a80da12df7783b"
+    },
+    {
+      "avatar": 20,
+      "scene": "founder",
+      "file": "avatar-20-founder-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 225858,
+      "sha256": "7c7ec553aeb876ff4945ee4caac98b416275f5eec2018a11ecb8400510ea3955"
+    },
+    {
+      "avatar": 20,
+      "scene": "studio",
+      "file": "avatar-20-studio-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 175480,
+      "sha256": "17beb04aa41294ac44d30c9e1e33aac2ecef4dafa0985b3359e6d826f5961c5b"
+    },
+    {
+      "avatar": 20,
+      "scene": "travel",
+      "file": "avatar-20-travel-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 276676,
+      "sha256": "b155b561a540e77900acde86c41a362564c658acb913d3071b5f6ce3d300b71f"
+    },
+    {
+      "avatar": 21,
+      "scene": "academy",
+      "file": "avatar-21-academy-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 229670,
+      "sha256": "a1953f77088df475aaac812424382a3d648524e39744e5cc1873f648c40e9a11"
+    },
+    {
+      "avatar": 21,
+      "scene": "founder",
+      "file": "avatar-21-founder-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 246360,
+      "sha256": "650d5695c00be529aa91a90b67aec5be9d1868aaeea4214b1d5ded3c8e63a9de"
+    },
+    {
+      "avatar": 21,
+      "scene": "studio",
+      "file": "avatar-21-studio-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 136082,
+      "sha256": "a76c0090b6fb0800eb26e54a85becb6183ede43fe29f3389eb1220e805de5613"
+    },
+    {
+      "avatar": 21,
+      "scene": "travel",
+      "file": "avatar-21-travel-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 255866,
+      "sha256": "9a662afc68aeffae2cb065cc21ddbb4ab6f786381d226f1863e8c7b5264e2929"
+    },
+    {
+      "avatar": 22,
+      "scene": "academy",
+      "file": "avatar-22-academy-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 238372,
+      "sha256": "f62ec0067cf4355cdaf0042d6ff9835020e3f9dedeb0f2c6db249b3a10ec48d3"
+    },
+    {
+      "avatar": 22,
+      "scene": "founder",
+      "file": "avatar-22-founder-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 239968,
+      "sha256": "401de6d1b21341a40b404f808d1534e16f9330fafcc4d87ef798305c7c005609"
+    },
+    {
+      "avatar": 22,
+      "scene": "studio",
+      "file": "avatar-22-studio-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 153000,
+      "sha256": "8d20c9558cd9382d93691d0158ad1b529ffd4aa17231143543bf6c224c97cb78"
+    },
+    {
+      "avatar": 22,
+      "scene": "travel",
+      "file": "avatar-22-travel-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 232268,
+      "sha256": "90adddc9f73da7f24704df268e962998a7f36980dc8634b4371c5e821f8d46ca"
+    },
+    {
+      "avatar": 23,
+      "scene": "academy",
+      "file": "avatar-23-academy-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 214280,
+      "sha256": "13020cbbed57cd393dfd56121e9249f038858f53539513d7e83d2c871a180510"
+    },
+    {
+      "avatar": 23,
+      "scene": "founder",
+      "file": "avatar-23-founder-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 240914,
+      "sha256": "44939ee48c2848f595d05d3224d8d6d27f8df234cfde2771b17eff5e2cb1c14e"
+    },
+    {
+      "avatar": 23,
+      "scene": "studio",
+      "file": "avatar-23-studio-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 151538,
+      "sha256": "b451905c3faf2563c16219b948f2a52ef75a8f085c98190de9ba4a31a25c379d"
+    },
+    {
+      "avatar": 23,
+      "scene": "travel",
+      "file": "avatar-23-travel-v1.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 277808,
+      "sha256": "f5336d83c3d51a8bc8c5940214bfc36cb9590011b0f13ed4f7f1e5182304f2a8"
+    }
+  ]
+}
