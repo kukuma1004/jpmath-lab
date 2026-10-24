@@ -12,3 +12,7 @@ The original 96 images and original portrait atlas are preserved byte-for-byte. 
 - Optional `player.epilogue={schema:1,path}` metadata remains save format4. Earlier1/2/3/4 saves read normally. Ranking summaries, RNG, salaries and career stats are unchanged by the choice.
 
 Dream Loop target and three comparison rounds are at `.dream-loop/model-release/`. The user approved deployment after these checks. Full game review uses isolated save keys and a demo ranking emulator config; no synthetic records are submitted to production.
+
+## Automatic earned ending revision (local review, not deployed)
+
+The current source assigns one scene from the completed career rather than exposing the whole wardrobe. Legacy epilogue schema1 is migrated once for retired players to schema2 with source=career, path, atSeason, basis. Stored results remain frozen across reloads and imports. Career stats, RNG, rank score and all144 art bytes stay intact. Model eligibility remains age20+. No runtime image API is introduced.

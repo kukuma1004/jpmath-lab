@@ -1,5 +1,5 @@
 'use strict';
-const CACHE='bench-to-hall-app-v4-career-model-1';
+const CACHE='bench-to-hall-app-v4-career-earned-1';
 const ART_CACHE='bench-to-hall-art-v1';
 const ROOT=new URL('./',self.location.href);
 const ASSETS=['index.html','manifest.webmanifest','icons/icon-16.png','icons/icon-32.png','icons/icon-180.png','icons/icon-192.png','icons/icon-512.png'];
