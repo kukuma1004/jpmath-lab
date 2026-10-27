@@ -1,0 +1,103 @@
+{
+  "benchHallV3": {
+    "$kind": {
+      ".read": "($kind == 'batter' || $kind == 'pitcher' || $kind == 'twoWay') && (query.orderByChild == 'score' || query.orderByChild == 'salaryPeak') && query.limitToLast != null && query.limitToLast > 0 && query.limitToLast <= 100",
+      ".indexOn": [
+        "score",
+        "salaryPeak"
+      ],
+      "$entry": {
+        ".read": "auth != null && $entry.beginsWith(auth.uid + '_') && (!data.exists() || data.child('owner').val() == auth.uid)",
+        ".write": "auth != null && ($kind == 'batter' || $kind == 'pitcher' || $kind == 'twoWay') && (!data.exists() || data.child('owner').val() == auth.uid) && (!newData.exists() || (newData.child('owner').val() == auth.uid && (!data.exists() || now - data.child('submittedAt').val() >= 60000)))",
+        ".validate": "newData.hasChildren([\"schema\", \"nickname\", \"position\", \"avatar\", \"score\", \"peak\", \"seasons\", \"proSeasons\", \"topSeasons\", \"statA\", \"statB\", \"statC\", \"statD\", \"awards\", \"titles\", \"batPoints\", \"pitchPoints\", \"honorPoints\", \"salaryPeak\", \"hallScore\", \"retired\", \"careerKey\", \"owner\", \"submittedAt\"]) && ($kind != 'twoWay' || newData.hasChildren(['pitchingW','pitchingK','pitchingSV','pitchingOuts'])) && (!data.exists() || (newData.child('seasons').val() >= data.child('seasons').val() && newData.child('score').val() >= data.child('score').val() && newData.child('salaryPeak').val() >= data.child('salaryPeak').val() && newData.child('careerKey').val() == data.child('careerKey').val() && newData.child('position').val() == data.child('position').val() && (data.child('retired').val() != true || newData.child('retired').val() == true)))",
+        "schema": {
+          ".validate": "newData.val() == 4"
+        },
+        "nickname": {
+          ".validate": "newData.isString() && newData.val().matches(/^[가-힣ㄱ-ㅎㅏ-ㅣA-Za-z0-9 _.-]{1,12}$/) && newData.val().matches(/.*[^ ].*/)"
+        },
+        "position": {
+          ".validate": "newData.val() == $kind"
+        },
+        "owner": {
+          ".validate": "newData.val() == auth.uid"
+        },
+        "careerKey": {
+          ".validate": "newData.isString() && newData.val().matches(/^[a-f0-9]{16}$/) && $entry == auth.uid + '_' + newData.val()"
+        },
+        "retired": {
+          ".validate": "newData.isBoolean()"
+        },
+        "submittedAt": {
+          ".validate": "newData.isNumber() && newData.val() == now"
+        },
+        "$other": {
+          ".validate": false
+        },
+        "avatar": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= 23"
+        },
+        "peak": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 15 && newData.val() <= 100"
+        },
+        "seasons": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 1 && newData.val() <= 135"
+        },
+        "proSeasons": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 1 && newData.val() <= newData.parent().child('seasons').val()"
+        },
+        "topSeasons": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= newData.parent().child('proSeasons').val()"
+        },
+        "hallScore": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= 999"
+        },
+        "salaryPeak": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= 100000000"
+        },
+        "batPoints": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= newData.parent().child('topSeasons').val() * ($kind == 'pitcher' ? 0 : 4000)"
+        },
+        "pitchPoints": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= newData.parent().child('topSeasons').val() * ($kind == 'batter' ? 0 : 4000)"
+        },
+        "honorPoints": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= newData.parent().child('topSeasons').val() * 1000"
+        },
+        "awards": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= newData.parent().child('seasons').val() * 7"
+        },
+        "titles": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= newData.parent().child('seasons').val()"
+        },
+        "statA": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= newData.parent().child('topSeasons').val() * ($kind == 'pitcher' ? 40 : 280)"
+        },
+        "statB": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= newData.parent().child('topSeasons').val() * ($kind == 'pitcher' ? 400 : 100)"
+        },
+        "statC": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= newData.parent().child('topSeasons').val() * ($kind == 'pitcher' ? 70 : 250)"
+        },
+        "statD": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= newData.parent().child('topSeasons').val() * ($kind == 'pitcher' ? 0 : 100)"
+        },
+        "pitchingW": {
+          ".validate": "$kind == 'twoWay' && newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= newData.parent().child('topSeasons').val() * 40"
+        },
+        "pitchingK": {
+          ".validate": "$kind == 'twoWay' && newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= newData.parent().child('topSeasons').val() * 400"
+        },
+        "pitchingSV": {
+          ".validate": "$kind == 'twoWay' && newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= newData.parent().child('topSeasons').val() * 70"
+        },
+        "pitchingOuts": {
+          ".validate": "$kind == 'twoWay' && newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= newData.parent().child('topSeasons').val() * 1500"
+        },
+        "score": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= 2000000 && newData.val() > (newData.parent().child('batPoints').val() + newData.parent().child('pitchPoints').val() * ($kind == 'twoWay' ? 0.8 : 1) + newData.parent().child('honorPoints').val() + (newData.parent().child('topSeasons').val() > 0 && newData.parent().child('peak').val() > 70 ? (newData.parent().child('peak').val() - 70) * 12 : 0)) - 0.5 && newData.val() <= (newData.parent().child('batPoints').val() + newData.parent().child('pitchPoints').val() * ($kind == 'twoWay' ? 0.8 : 1) + newData.parent().child('honorPoints').val() + (newData.parent().child('topSeasons').val() > 0 && newData.parent().child('peak').val() > 70 ? (newData.parent().child('peak').val() - 70) * 12 : 0)) + 0.5"
+        }
+      }
+    }
+  }
+}
