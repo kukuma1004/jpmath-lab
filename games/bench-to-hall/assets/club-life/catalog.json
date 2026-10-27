@@ -1,0 +1,230 @@
+{
+  "schema": 1,
+  "tool": "built-in image_gen",
+  "fictionalAdults": true,
+  "clubs": 10,
+  "characters": 30,
+  "illustrations": 60,
+  "assets": [
+    {
+      "club": "kia",
+      "team": "KIA 타이거즈",
+      "file": "club-kia-v1.webp",
+      "members": [
+        "kia-0",
+        "kia-1",
+        "kia-2"
+      ],
+      "ages": [
+        28,
+        26,
+        25
+      ],
+      "width": 1536,
+      "height": 1024,
+      "columns": 3,
+      "rows": 2,
+      "bytes": 334706,
+      "sha256": "bba96b0d669def84ab8d01f8c4246fab460619bca2e95b79daaed237464d739d",
+      "master": "exec-0017f10f-2cdd-4a30-8a4b-5c746c801dd3.png"
+    },
+    {
+      "club": "samsung",
+      "team": "삼성 라이온즈",
+      "file": "club-samsung-v1.webp",
+      "members": [
+        "samsung-0",
+        "samsung-1",
+        "samsung-2"
+      ],
+      "ages": [
+        27,
+        25,
+        29
+      ],
+      "width": 1536,
+      "height": 1024,
+      "columns": 3,
+      "rows": 2,
+      "bytes": 312710,
+      "sha256": "1890a0d02895a5a165fba583e6d48fa8c2c969a6cb47342bd2c0d3325dfecef0",
+      "master": "exec-8ad9b1b3-ea1b-4cce-9e84-81af2308e3a4.png"
+    },
+    {
+      "club": "lg",
+      "team": "LG 트윈스",
+      "file": "club-lg-v1.webp",
+      "members": [
+        "lg-0",
+        "lg-1",
+        "lg-2"
+      ],
+      "ages": [
+        28,
+        26,
+        25
+      ],
+      "width": 1536,
+      "height": 1024,
+      "columns": 3,
+      "rows": 2,
+      "bytes": 335254,
+      "sha256": "eceaf5255f0c5e2b157266550c249c46da8a8d8462bc299307f7ba0f7c5ab03f",
+      "master": "exec-c354c422-29ec-4523-8675-b68b2f698e25.png"
+    },
+    {
+      "club": "doosan",
+      "team": "두산 베어스",
+      "file": "club-doosan-v1.webp",
+      "members": [
+        "doosan-0",
+        "doosan-1",
+        "doosan-2"
+      ],
+      "ages": [
+        29,
+        26,
+        27
+      ],
+      "width": 1536,
+      "height": 1024,
+      "columns": 3,
+      "rows": 2,
+      "bytes": 317992,
+      "sha256": "4259c6485eb12c298f710460efd2edc6f28029fb40d0e1614e637df450d283b7",
+      "master": "exec-9c79add7-e9da-49b2-aac9-2f47d8b101c9.png"
+    },
+    {
+      "club": "kt",
+      "team": "KT 위즈",
+      "file": "club-kt-v1.webp",
+      "members": [
+        "kt-0",
+        "kt-1",
+        "kt-2"
+      ],
+      "ages": [
+        27,
+        25,
+        28
+      ],
+      "width": 1536,
+      "height": 1024,
+      "columns": 3,
+      "rows": 2,
+      "bytes": 313904,
+      "sha256": "38aa446bc9a783cddd29c844354cb27230e3d485163d6a9ddfd8a865cef8b84d",
+      "master": "exec-ca1e1f46-b3b9-411f-b0d5-388bdf012ab7.png"
+    },
+    {
+      "club": "ssg",
+      "team": "SSG 랜더스",
+      "file": "club-ssg-v1.webp",
+      "members": [
+        "ssg-0",
+        "ssg-1",
+        "ssg-2"
+      ],
+      "ages": [
+        27,
+        26,
+        25
+      ],
+      "width": 1536,
+      "height": 1024,
+      "columns": 3,
+      "rows": 2,
+      "bytes": 381668,
+      "sha256": "8e61c0e626a718c1f01aa4ddb3ad7df2762330f0176a202331d35b6dea97cf4f",
+      "master": "exec-09e1ac12-7c6c-4d3b-aa8a-668f833db698.png"
+    },
+    {
+      "club": "lotte",
+      "team": "롯데 자이언츠",
+      "file": "club-lotte-v1.webp",
+      "members": [
+        "lotte-0",
+        "lotte-1",
+        "lotte-2"
+      ],
+      "ages": [
+        28,
+        26,
+        27
+      ],
+      "width": 1536,
+      "height": 1024,
+      "columns": 3,
+      "rows": 2,
+      "bytes": 365332,
+      "sha256": "ddb3d18186c8e86c8e3b46c88a9c1b8e5e3f92ccf4bd908351e7adcd4bd0c516",
+      "master": "exec-b831c1e3-8634-46ea-a27f-76038976a0cd.png"
+    },
+    {
+      "club": "hanwha",
+      "team": "한화 이글스",
+      "file": "club-hanwha-v1.webp",
+      "members": [
+        "hanwha-0",
+        "hanwha-1",
+        "hanwha-2"
+      ],
+      "ages": [
+        27,
+        25,
+        29
+      ],
+      "width": 1536,
+      "height": 1024,
+      "columns": 3,
+      "rows": 2,
+      "bytes": 315142,
+      "sha256": "7d6482ecc9d5eb5505ca9b53e44ad2aa9054461980dbd8f356c40131a4244112",
+      "master": "exec-cf9cb21b-f0a1-4b8b-97c5-db46567273f3.png"
+    },
+    {
+      "club": "nc",
+      "team": "NC 다이노스",
+      "file": "club-nc-v1.webp",
+      "members": [
+        "nc-0",
+        "nc-1",
+        "nc-2"
+      ],
+      "ages": [
+        28,
+        26,
+        27
+      ],
+      "width": 1536,
+      "height": 1024,
+      "columns": 3,
+      "rows": 2,
+      "bytes": 353140,
+      "sha256": "0132fb96ce89ef6aee959ebc0a2a56013477f750ab979af5f7ab88e2fbfcf891",
+      "master": "exec-93525145-1045-467b-b0bb-bdc4ab29ae5e.png"
+    },
+    {
+      "club": "kiwoom",
+      "team": "키움 히어로즈",
+      "file": "club-kiwoom-v1.webp",
+      "members": [
+        "kiwoom-0",
+        "kiwoom-1",
+        "kiwoom-2"
+      ],
+      "ages": [
+        27,
+        25,
+        29
+      ],
+      "width": 1536,
+      "height": 1024,
+      "columns": 3,
+      "rows": 2,
+      "bytes": 300488,
+      "sha256": "962826a4a350c7aa77927bfab3b3ec612433487490274ca809f00c033f5db71a",
+      "master": "exec-d74b120c-843e-4928-bc86-e55812b3efc8.png"
+    }
+  ]
+}

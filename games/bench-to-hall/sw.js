@@ -1,5 +1,5 @@
 'use strict';
-const CACHE='bench-to-hall-app-v5-moments-2';
+const CACHE='bench-to-hall-app-v5-economy-1';
 const ART_CACHE='bench-to-hall-art-v1';
 const ROOT=new URL('./',self.location.href);
 const ASSETS=['index.html','manifest.webmanifest','icons/icon-16.png','icons/icon-32.png','icons/icon-180.png','icons/icon-192.png','icons/icon-512.png'];
@@ -19,9 +19,11 @@ self.addEventListener('fetch',event=>{
  if(event.request.method!=='GET'||url.origin!==ROOT.origin)return;
  const artRoot=new URL('assets/afterlife/',ROOT).pathname;
  const careRoot=new URL('assets/care/',ROOT).pathname;
+ const clubRoot=new URL('assets/club-life/',ROOT).pathname;
  const careFile=url.pathname.startsWith(careRoot)?url.pathname.slice(careRoot.length):'';
  const careArt=/^avatar-(?:[0-9]|1[0-9]|2[0-3])-moments-v1\.webp$/.test(careFile)||/^avatar-(?:1|3|5|6|9|11|14|16|17|19|21|22|23)-moments-extra-[ab]-v1\.webp$/.test(careFile);
- if(careArt||url.pathname.startsWith(artRoot)&&/^avatar-(?:[0-9]|1[0-9]|2[0-3])-(?:studio|academy|founder|travel|model|active)-v1\.webp$/.test(url.pathname.slice(artRoot.length))){
+ const clubArt=url.pathname.startsWith(clubRoot)&&/^club-(?:kia|samsung|lg|doosan|kt|ssg|lotte|hanwha|nc|kiwoom)-v1\.webp$/.test(url.pathname.slice(clubRoot.length));
+ if(careArt||clubArt||url.pathname.startsWith(artRoot)&&/^avatar-(?:[0-9]|1[0-9]|2[0-3])-(?:studio|academy|founder|travel|model|active)-v1\.webp$/.test(url.pathname.slice(artRoot.length))){
   event.respondWith((async()=>{let cache;try{cache=await caches.open(ART_CACHE);const cached=await cache.match(event.request);if(cached)return cached}catch(error){}const response=await fetch(event.request);if(response.ok&&cache)try{await cache.put(event.request,response.clone());const keys=await cache.keys();await Promise.all(keys.slice(0,Math.max(0,keys.length-12)).map(k=>cache.delete(k)))}catch(error){}return response})());return;
  }
  const navigation=event.request.mode==='navigate'&&(url.pathname===ROOT.pathname||url.pathname===new URL('index.html',ROOT).pathname);
