@@ -1,8 +1,8 @@
 'use strict';
-const CACHE='bench-to-hall-app-v5-motion-2';
+const CACHE='bench-to-hall-app-v5-hall-10';
 const ART_CACHE='bench-to-hall-art-v1';
 const ROOT=new URL('./',self.location.href);
-const ASSETS=['index.html','manifest.webmanifest','icons/icon-16.png','icons/icon-32.png','icons/icon-180.png','icons/icon-192.png','icons/icon-512.png'];
+const ASSETS=['index.html','manifest.webmanifest','icons/icon-16.png','icons/icon-32.png','icons/icon-180.png','icons/icon-192.png','icons/icon-512.png','assets/stadium-day-v9.webp'];
 const PATHS=new Set(ASSETS.map(p=>new URL(p,ROOT).pathname));
 self.addEventListener('install',event=>event.waitUntil((async()=>{
  const cache=await caches.open(CACHE);
