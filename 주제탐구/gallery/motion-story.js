@@ -1,6 +1,7 @@
 import {animate,stagger} from 'animejs';
 import {motionFrameFor} from './motion-frames.js';
 import {STAGE_NAMES} from './motion-designs.js';
+import {SceneFlow} from './motion-effects.js';
 
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ZOOM=new Set(['zoom','dimension','sphere-slice','surface']);
@@ -8,34 +9,45 @@ const BUILD=new Set(['riemann','volume','rolle','newton','space-points','reflect
 const TURN=new Set(['projection','rotation','dot','cone-cut','cone-discriminant','ellipsoid']);
 
 export class MotionStory{
-  constructor(host,work,{motion=true}={}){
-    this.host=host;this.work=work;this.enabled=motion;this.phase=-1;this.animations=[];this.destroyed=false;
-    this.visibilityHandler=()=>{if(document.hidden)this.finish()};
+  constructor(host,work,{motion=true,onPlaybackChange=()=>{}}={}){
+    this.host=host;this.work=work;this.enabled=motion;this.phase=-1;this.animations=[];this.destroyed=false;this.paused=false;this.onPlaybackChange=onPlaybackChange;
+    this.caption=host.closest('.motion-theater')?.querySelector('.scene-live-caption');
+    this.visible=typeof IntersectionObserver!=='function';this.presented=-1;
+    this.visibilityHandler=()=>{if(document.hidden)this.finish();else this.present()};
     document.addEventListener('visibilitychange',this.visibilityHandler);
+    if(typeof IntersectionObserver==='function'){this.observer=new IntersectionObserver(entries=>{this.visible=!!entries[0]?.isIntersecting;if(this.visible)this.present();else this.finish()},{threshold:.08});this.observer.observe(host)}
     host.dataset.renderer='motion-svg';
   }
+  get playing(){return this.enabled&&!this.paused}
+  present(){if(this.destroyed||!this.visible||!this.playing||document.hidden||this.phase<0)return;if(this.presented!==this.phase)this.setPhase(this.phase,{replay:true});else this.flow?.start()}
   finish(){
+    this.flow?.stop();
     this.animations.forEach(animation=>{animation.pause();animation.revert()});this.animations=[];
     this.host.querySelectorAll('[data-outgoing]').forEach(node=>node.remove());
     this.host.querySelectorAll('[data-draw]').forEach(node=>{node.style.removeProperty('stroke-dasharray');node.style.removeProperty('stroke-dashoffset')});
     this.host.classList.remove('is-playing');
   }
-  setMotion(on){if(on===this.enabled)return;this.enabled=on;if(!on)this.finish()}
+  setMotion(on){if(on===this.enabled)return;this.enabled=on;if(!on)this.finish();else this.present();this.onPlaybackChange(this.playing)}
+  setPlaying(on){this.paused=!on;if(on)this.present();else this.finish();this.onPlaybackChange(this.playing)}
   setPhase(value,{replay=false}={}){
     if(this.destroyed)return;
     const phase=Math.max(0,Math.min(6,Math.trunc(value)));
     if(phase===this.phase&&!replay)return;
     this.finish();
+    this.flow?.dispose();this.flow=null;
     const old=this.host.querySelector('.motion-frame'),previous=this.phase,direction=phase>=previous?1:-1;
     const frame=motionFrameFor(this.work,phase),fresh=document.createElement('div');fresh.className='motion-frame';
-    fresh.innerHTML='<div class="motion-stage-copy"><p class="motion-kicker"><span>'+String(phase+1).padStart(2,'0')+'</span> '+STAGE_NAMES[phase]+'</p><h3>'+esc(frame.headline)+'</h3><div class="motion-focus"><span></span><p>'+esc(frame.focus)+'</p></div><small>전시 해설 · 예시 모형</small></div><div class="motion-illustration">'+frame.svg+'</div>';
+    fresh.innerHTML='<div class="motion-stage-copy"><p class="motion-kicker"><span>'+String(phase+1).padStart(2,'0')+'</span> '+STAGE_NAMES[phase]+'</p><h3>'+esc(frame.headline)+'</h3><div class="motion-focus"><span></span><p>'+esc(frame.focus)+'</p></div><small>전시 해설 · 예시 모형</small></div><div class="motion-camera"><div class="motion-illustration">'+frame.svg+'</div></div>';
     this.phase=phase;this.host.dataset.phase=String(phase);this.host.dataset.family=frame.family;this.host.setAttribute('aria-label',frame.headline+' '+frame.focus+'에 대한 전시 해설용 도해');
     if(old){old.setAttribute('data-outgoing','');old.setAttribute('aria-hidden','true');if(!this.enabled)old.remove()}
     this.host.append(fresh);
-    const heading=this.host.closest('.motion-theater')?.querySelector('.scene-live-caption');
+    this.flow=new SceneFlow(fresh.querySelector('svg'),{compact:matchMedia('(max-width: 780px)').matches});
+    const heading=this.caption;
     if(heading)heading.textContent=frame.annotation;
-    if(!this.enabled||document.hidden)return;
+    if(!this.playing||document.hidden||!this.visible)return;
+    this.presented=phase;
     this.host.classList.add('is-playing');
+    this.flow.start();
     const run=(target,options)=>{if(!target||target.length===0)return;const animation=animate(target,options);this.animations.push(animation);return animation};
     let morphs=0;
     if(old&&!replay){
@@ -65,6 +77,6 @@ export class MotionStory{
     run(fresh.querySelectorAll('[data-label]'),{opacity:[0,1],delay:stagger(18,{start:530}),duration:480,ease:'out(2)'});
     run(fresh.querySelectorAll('.wash[data-rise],.positive-fill,.negative-fill'),{opacity:[0,1],scaleY:[.15,1],delay:stagger(30,{start:240}),duration:880,ease:'out(3)'});
   }
-  replay(){this.setPhase(this.phase,{replay:true})}
-  dispose(){this.destroyed=true;this.finish();document.removeEventListener('visibilitychange',this.visibilityHandler);this.host.replaceChildren()}
+  replay(){if(!this.enabled)return;this.paused=false;this.onPlaybackChange(this.playing);this.setPhase(this.phase,{replay:true})}
+  dispose(){this.destroyed=true;this.finish();this.flow?.dispose();this.flow=null;this.observer?.disconnect();document.removeEventListener('visibilitychange',this.visibilityHandler);this.host.replaceChildren()}
 }

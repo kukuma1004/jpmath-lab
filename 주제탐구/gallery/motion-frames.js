@@ -1,4 +1,5 @@
 import {motionDesignFor} from './motion-designs.js';
+import {enhanceMotionSVG} from './motion-effects.js';
 
 // All coordinates below are explanatory models, never a student's measured output.
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -168,5 +169,5 @@ export function motionFrameFor(work,phase){
   const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 470" aria-hidden="true" focusable="false" data-family="'+family+'" data-phase="'+s+'"><style>.primary,.secondary,.guide,.axis,.ghost,.warning{fill:none;stroke-linecap:round;stroke-linejoin:round}.primary{stroke:'+light+';stroke-width:2.5}.secondary{stroke:#e2ebfa;stroke-width:1.5;opacity:.8}.guide{stroke:#a5b3cd;stroke-width:1.2;stroke-dasharray:5 7;opacity:.7}.axis{stroke:#a5b3cd;stroke-width:.8;opacity:.25}.ghost{stroke:#b6c4df;stroke-width:1;opacity:.23}.warning{stroke:#ffd593;stroke-width:2;stroke-dasharray:4 5}.node{fill:'+light+';stroke:#fff4e5;stroke-width:1.1}.wash{fill:'+light+';fill-opacity:.12;stroke:'+light+';stroke-width:1}.plane-wash{fill:#b5c5ff;fill-opacity:.07;stroke:#c1cbdf;stroke-opacity:.4;stroke-width:1}.positive-fill{fill:'+light+';fill-opacity:.26;stroke:'+light+';stroke-width:1}.negative-fill{fill:#86b2ef;fill-opacity:.27;stroke:#86b2ef;stroke-width:1}.warning-fill{fill:#ffd593;fill-opacity:.25;stroke:#ffd593;stroke-width:1}.label,.metric,.tiny,.warning-label{font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif;fill:#e3ebfa;font-weight:400}.label{font-size:15px}.metric{font-size:15px;fill:#f5f6fb}.tiny{font-size:12px;fill:#a9bad5}.warning-label{font-size:15px;fill:#ffd593}</style>'+drawing+'</svg>';
   const encoded=drawing.match(/class="metric"[^>]*>([^<]+)</)?.[1]||design.focus;
   const annotation=encoded.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'");
-  return {svg,phase:s,family,headline:design.beats[s],focus:design.focus,annotation};
+  return {svg:enhanceMotionSVG(svg,{id:work.id+'-'+s,light}),phase:s,family,headline:design.beats[s],focus:design.focus,annotation};
 }
