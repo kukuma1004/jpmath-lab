@@ -127,3 +127,33 @@ html{scroll-padding-bottom:120px}
 @media(max-width:540px){.work-page .work-heading h1{font-size:27px}.story-deck .deck-copy{padding:25px 21px 32px}.motion-stage-copy h3{font-size:22px}.motion-focus p{font-size:11px}.motion-stage-copy small{font-size:10px}.dock-menu{grid-template-columns:repeat(3,minmax(0,1fr));padding:12px}.diagram-zoom-tools{gap:7px}.diagram-zoom-tools>p{max-width:112px;margin-left:5px}.theater-bottomline p{font-size:12px}.story-deck .student-excerpt{font-size:17px}.diagram-header h2{font-size:16px}}
 @media(max-width:360px){.work-page .deck-controls{left:8px;right:8px;padding:9px;grid-template-columns:70px minmax(0,1fr) 86px;gap:7px}.work-page .deck-controls>button{font-size:12px}.deck-position #slidePosition{font-size:10px}.deck-position small{font-size:9px}.theater-actions button{font-size:10px;padding:7px 6px}.motion-stage-copy{padding-left:16px;padding-right:16px;column-gap:12px}.motion-stage-copy h3{font-size:21px}.diagram-zoom-tools>p{display:none}.diagram-navigation{grid-template-columns:78px minmax(0,1fr) 78px}.story-deck .deck-copy{padding-left:18px;padding-right:18px}}
 @media(max-height:500px) and (orientation:landscape){.diagram-header{min-height:56px;padding-top:7px;padding-bottom:7px}.diagram-header p{display:none}.diagram-header h2{margin:0;font-size:15px}.diagram-zoom-tools{position:absolute;right:22px;top:80px;display:flex;flex-direction:column;border:0;z-index:4;padding:0}.diagram-zoom-tools>p{display:none}.diagram-navigation{padding-top:5px}.diagram-navigation>button{min-height:42px}.diagram-dialog .motion-camera{width:min(100%,calc((100dvh - 125px)*1.61))}}
+
+/* Studio restoration: depth and measured movement, with quiet mathematical lines. */
+.motion-theater{background:#203f35;color:#e9eadc;box-shadow:inset 0 1px #e5ebd41a}
+.motion-stage{background:radial-gradient(ellipse at 69% 37%,#67836538,transparent 62%),#203f35}
+.motion-stage:before,.motion-frame:after{display:none!important;animation:none!important}
+.motion-stage-copy h3{color:#f0eee2;font-weight:400;line-height:1.8}
+.motion-kicker,.motion-focus p,.motion-stage-copy small{color:#b9c8b3}
+.motion-kicker>span{color:#d7dfb4;font-size:40px}
+.motion-focus>span{background:#b3c392}
+.theater-topline{border-color:#d5dec526;color:#c2cfba}
+.theater-topline i{background:#d7dfb4;box-shadow:none;width:4px;height:4px}
+.theater-actions button{color:#e6e8d8;border-color:#bfccb33d;background:transparent;font-size:11px;min-height:44px;padding:8px 12px}
+.theater-actions button:hover{background:#d9e0c410}
+.theater-actions .scene-view{border-color:#dce5bd70;background:#dbe3c00a}
+.theater-actions [aria-pressed=true]{background:#dae2bf18}
+.theater-bottomline{border-color:#c7d3b726}.theater-bottomline p{color:#d5ddc9}.theater-bottomline>span{color:#a2b49c}
+.living-illustration{display:none;position:relative;width:100%;aspect-ratio:760/470;isolation:isolate}
+.living-illustration canvas{display:block;width:100%;height:100%;pointer-events:none}
+.living-illustration .scene-live-label{display:none}
+.living-metric{position:absolute;left:7%;right:7%;bottom:4%;text-align:center;font:400 12px/1.9 var(--sans);color:#c7d3b8;min-height:24px;overflow-wrap:anywhere;pointer-events:none}
+.motion-stage[data-view=model] .living-illustration{display:block}
+.motion-stage[data-view=model] .motion-illustration{display:none}
+.motion-stage[data-view=diagram] .living-illustration{display:none}
+.diagram-dialog{background:#172f29}.diagram-surface{background:radial-gradient(ellipse at center,#54735030,transparent 70%)}
+.diagram-dialog .living-illustration{aspect-ratio:760/470;width:100%;margin:0;min-height:0}
+.diagram-dialog .living-metric{font-size:14px;bottom:2%}
+@media(min-width:1500px){.living-illustration{min-height:450px}}
+@media(max-width:1100px){.theater-topline{gap:16px;padding-left:22px;padding-right:22px}.theater-actions{gap:6px}.theater-actions button{font-size:10px;padding-left:9px;padding-right:9px}}
+@media(max-width:780px){.theater-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.theater-actions button{font-size:10px;padding:7px 4px;min-height:44px}.living-metric{font-size:11px;line-height:1.85;left:5%;right:5%;bottom:3%}.motion-kicker>span{font-size:31px}.motion-stage-copy h3{font-size:23px}.diagram-dialog .living-metric{font-size:12px}}
+@media(max-width:420px){.theater-actions{grid-template-columns:repeat(2,minmax(0,1fr))}.theater-actions button{font-size:12px}.living-illustration{aspect-ratio:760/490}.living-metric{font-size:12px;line-height:1.7;bottom:0;left:6%;right:6%}.motion-stage-copy h3{font-size:22px}}
