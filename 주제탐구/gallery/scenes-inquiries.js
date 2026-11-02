@@ -61,17 +61,17 @@ export function drawInquiry2D({kind:k,t,phase,c,path,dot,green,pale}){
   const dashed=(pts,color=pale)=>{c.setLineDash([5,5]);path(pts,color,1);c.setLineDash([])};
   if(k==='riemann'){
     const n=4+Math.floor(18*(.5+.5*Math.sin(t*.28))),dx=300/n,base=35,left=-150;
-    for(let i=0;i<n;i++){const low=(i/n)**2*185,high=((i+1)/n)**2*185;c.fillStyle='#ddec9d15';c.fillRect(left+i*dx,base-high,dx,high);c.strokeStyle='#c4d7b355';c.strokeRect(left+i*dx,base-high,dx,high);c.strokeStyle=green;c.strokeRect(left+i*dx,base-low,dx,low)}
+    for(let i=0;i<n;i++){const low=(i/n)**2*185,high=((i+1)/n)**2*185;c.fillStyle=green+'15';c.fillRect(left+i*dx,base-high,dx,high);c.strokeStyle=pale+'55';c.strokeRect(left+i*dx,base-high,dx,high);c.strokeStyle=green;c.strokeRect(left+i*dx,base-low,dx,low)}
     const ps=[];for(let i=0;i<=120;i++){const x=i/120;ps.push([left+300*x,base-185*x*x])}path(ps);path([[left,base],[150,base]],pale,1);text('n = '+n+'   L = '+((n-1)*(2*n-1)/(6*n*n)).toFixed(4)+'   R = '+((n+1)*(2*n+1)/(6*n*n)).toFixed(4),-190,104);text('f(x)=x² · [0,1] · ∫f = 1/3',-190,128);
   }else if(k==='signed-area'){
-    const end=-2+4*(.5+.5*Math.sin(t*.25));for(let x=-2;x<end;x+=.025){const yy=x*55;c.fillStyle=x<0?'#b9ceb52b':'#ddec9d44';c.fillRect(x*85,Math.min(35,35-yy),2.5,Math.abs(yy));}plot(x=>x,-2,2,85,55);dot(end*85,35-end*55,5);text('∫ f = '+((end*end-4)/2).toFixed(2)+'   ∫ |f| = '+(end<0?(4-end*end)/2:2+end*end/2).toFixed(2));text('f(x)=x · 시작점 −2',-200,144);
+    const end=-2+4*(.5+.5*Math.sin(t*.25));for(let x=-2;x<end;x+=.025){const yy=x*55;c.fillStyle=x<0?pale+'2b':green+'44';c.fillRect(x*85,Math.min(35,35-yy),2.5,Math.abs(yy));}plot(x=>x,-2,2,85,55);dot(end*85,35-end*55,5);text('∫ f = '+((end*end-4)/2).toFixed(2)+'   ∫ |f| = '+(end<0?(4-end*end)/2:2+end*end/2).toFixed(2));text('f(x)=x · 시작점 −2',-200,144);
   }else if(k==='parabola'){
     const p=.6+.55*(.5+.5*Math.sin(t*.3)),x=1.5*Math.sin(t*.3+.7),y=x*x/(4*p),sx=62,F=[0,35-p*sx],P=[x*sx,35-y*sx],H=[x*sx,35+p*sx];plot(x=>x*x/(4*p),-2.4,2.4,sx,sx);dashed([[-200,35+p*sx],[200,35+p*sx]]);path([F,P,H],pale,1.2);dot(...F,5);dot(...P,5);text('F',F[0]+10,F[1]);text('d(P,F) = d(P,준선)',-200,-145);
   }else if(k==='rolle'){
     const roots=[-2,-1,0,1,2],inner=[-Math.sqrt((15+Math.sqrt(145))/10),-Math.sqrt((15-Math.sqrt(145))/10),Math.sqrt((15-Math.sqrt(145))/10),Math.sqrt((15+Math.sqrt(145))/10)];
-    plot(x=>x**5-5*x**3+4*x,-2.12,2.12,85,15);roots.forEach(x=>dot(x*85,35,4));const alpha=.45+.4*Math.sin(t*.3);for(let i=0;i<4;i++){path([[roots[i]*85,77],[roots[i+1]*85,77]],'#c2d4b060',1);dot(inner[i]*85,95,5,'rgba(221,236,157,'+alpha+')')}text('f의 근 5개 → f′의 근 4개',-185,132);
+    plot(x=>x**5-5*x**3+4*x,-2.12,2.12,85,15);roots.forEach(x=>dot(x*85,35,4));const alpha=.45+.4*Math.sin(t*.3);for(let i=0;i<4;i++){path([[roots[i]*85,77],[roots[i+1]*85,77]],pale+'60',1);dot(inner[i]*85,95,5,green+Math.round(alpha*255).toString(16).padStart(2,'0'))}text('f의 근 5개 → f′의 근 4개',-185,132);
   }else if(k==='restore'||k==='restore-quadratic'){
-    const f=k==='restore'?x=>x**3/3-x:x=>x*x;[-1.2,0,1.2].forEach((C,i)=>plot(x=>f(x)+C,-1.8,1.8,86,32,i===1?green:'#c2d4b055',i===1?2:1));const C=.9*Math.sin(t*.3);plot(x=>f(x)+C,-1.8,1.8,86,32,'#e1eea4b0',2);dot(86,35-(f(1)+C)*32,5);text(k==='restore'?'같은 도함수 x²−1, 달라지는 적분상수 C':'같은 도함수 2x, 달라지는 적분상수 C',-205,132);
+    const f=k==='restore'?x=>x**3/3-x:x=>x*x;[-1.2,0,1.2].forEach((C,i)=>plot(x=>f(x)+C,-1.8,1.8,86,32,i===1?green:pale+'55',i===1?2:1));const C=.9*Math.sin(t*.3);plot(x=>f(x)+C,-1.8,1.8,86,32,green+'b0',2);dot(86,35-(f(1)+C)*32,5);text(k==='restore'?'같은 도함수 x²−1, 달라지는 적분상수 C':'같은 도함수 2x, 달라지는 적분상수 C',-205,132);
   }else if(k==='ratio'){
     plot(x=>x**3-3*x,-1.85,1.85,85,28);[[-1,2],[0,0],[1,-2]].forEach(p=>dot(p[0]*85,35-p[1]*28,5));path([[-85,105],[0,105],[85,105]],pale,1);[-85,0,85].forEach(x=>path([[x,100],[x,110]],pale,1));text('1',-46,126);text('1',39,126);text('변곡점을 기준으로 나눈 수평 거리',-180,-138);
   }else if(k==='mean-value'){
@@ -79,13 +79,13 @@ export function drawInquiry2D({kind:k,t,phase,c,path,dot,green,pale}){
   }else if(k==='chain'){
     const mode=Math.floor(t/6)%3,f=[x=>x*x,x=>x**3,x=>x**4][mode];plot(f,-1.5,1.5,90,32);dot(0,35,5);text(['x² · 도함수 부호 − → + · 극소','x³ · 도함수 부호 + → + · 극값 아님','x⁴ · 두 조건이 겹쳐도 부호 확인'][mode],-205,130);text('h′(0)=0 다음에, 양쪽 부호를 읽습니다.',-205,-140);
   }else if(k==='model'){
-    plot(x=>1+.3*x,-2,2,80,55,pale,1.4);plot(x=>Math.exp(.5*x),-2,2,80,55,green,1.7);plot(x=>2/(1+Math.exp(-x)),-2,2,80,55,'#aac782',1.4);text('일차 · 지수 · 로지스틱 후보 함수',-200,120);text('전시용 함수 도해 · 학생 실측 자료 아님',-200,144);
+    plot(x=>1+.3*x,-2,2,80,55,pale,1.4);plot(x=>Math.exp(.5*x),-2,2,80,55,green,1.7);plot(x=>2/(1+Math.exp(-x)),-2,2,80,55,pale,1.4);text('일차 · 지수 · 로지스틱 후보 함수',-200,120);text('전시용 함수 도해 · 학생 실측 자료 아님',-200,144);
   }else if(k==='compound'){
     const X=r=>-180+(r-1)/14*360,Y=y=>35-y*2.6,exact=r=>Math.log(2)/Math.log(1+r/100),ps=[],qs=[];for(let r=1.5;r<=15;r+=.07){ps.push([X(r),Y(exact(r))]);qs.push([X(r),Y(72/r)])}path(ps);dashed(qs);const r=3+9*(.5+.5*Math.sin(t*.24));dot(X(r),Y(exact(r)),5);text('r='+r.toFixed(1)+'%  정확값 '+exact(r).toFixed(2)+'년  72/r '+(72/r).toFixed(2)+'년',-205,118);text('연 1회 복리 · 일정한 이율의 수학 모형',-205,142);
   }else if(k==='tangent-conic'){
     const a=2,b=1,theta=t*.23,ps=[];for(let i=0;i<=160;i++){const q=i/160*Math.PI*2;ps.push([a*Math.cos(q)*80,35-b*Math.sin(q)*80])}path(ps);const P=[a*Math.cos(theta),b*Math.sin(theta)],D=[-a*Math.sin(theta),b*Math.cos(theta)];path([[80*(P[0]-2*D[0]),35-80*(P[1]-2*D[1])],[80*(P[0]+2*D[0]),35-80*(P[1]+2*D[1])]],pale,1.2);dot(P[0]*80,35-P[1]*80,5);text('수직인 경우에도 접점과 중근은 남습니다.',-205,145);
   }else if(k==='tangent-count'){
-    const b=[-.12,0,.3,1,1.12][Math.floor(t/5)%5],H=x=>2*x**3-3*x*x+b,roots=[];const add=x=>{if(!roots.some(r=>Math.abs(r-x)<1e-5))roots.push(x)};for(const x of [0,1])if(Math.abs(H(x))<1e-8)add(x);for(const [l,r]of[[-3,0],[0,1],[1,3]]){let lo=l,hi=r;if(H(lo)*H(hi)>=0)continue;for(let i=0;i<45;i++){const mid=(lo+hi)/2;if(H(lo)*H(mid)<=0)hi=mid;else lo=mid}add((lo+hi)/2)}plot(x=>x**3,-1.3,1.75,85,28);roots.forEach(a=>{path([[-110,35-(3*a*a*(-110/85)-2*a**3)*28],[180,35-(3*a*a*(180/85)-2*a**3)*28]],'#c2d4b08f',1);dot(a*85,35-a**3*28,4)});dot(85,35-b*28,6);text('P(1, '+b+') · 서로 다른 접선 '+roots.length+'개',-205,136);
+    const b=[-.12,0,.3,1,1.12][Math.floor(t/5)%5],H=x=>2*x**3-3*x*x+b,roots=[];const add=x=>{if(!roots.some(r=>Math.abs(r-x)<1e-5))roots.push(x)};for(const x of [0,1])if(Math.abs(H(x))<1e-8)add(x);for(const [l,r]of[[-3,0],[0,1],[1,3]]){let lo=l,hi=r;if(H(lo)*H(hi)>=0)continue;for(let i=0;i<45;i++){const mid=(lo+hi)/2;if(H(lo)*H(mid)<=0)hi=mid;else lo=mid}add((lo+hi)/2)}plot(x=>x**3,-1.3,1.75,85,28);roots.forEach(a=>{path([[-110,35-(3*a*a*(-110/85)-2*a**3)*28],[180,35-(3*a*a*(180/85)-2*a**3)*28]],pale+'8f',1);dot(a*85,35-a**3*28,4)});dot(85,35-b*28,6);text('P(1, '+b+') · 서로 다른 접선 '+roots.length+'개',-205,136);
   }else if(k==='rotation'){
     plot(x=>x*x,-1.55,1.55,60,60);const theta=.7*Math.sin(t*.22),co=Math.cos(theta),si=Math.sin(theta);path([[-200*co,35+200*si],[200*co,35-200*si]],green,1.2);path([[200*si,35+200*co],[-200*si,35-200*co]],pale,1.2);dot(60,-25,5);text('점은 그대로 · 좌표축이 회전합니다.',-205,130);text('XY항의 계수 = −a sin(2θ)',-205,151);
   }else if(k==='curvature'){

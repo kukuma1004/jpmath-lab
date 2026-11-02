@@ -54,7 +54,7 @@ export function artSVG(kind,seed=0){
 export class SceneView{
   constructor(host,kind,options={}){
     this.host=host;this.kind=kind;this.options=options;this.enabled=options.motion!==false;this.time=0;this.phase=0;this.visible=true;this.destroyed=false;this.raf=0;
-    try{if(isSpace(kind))this.init3D();else this.init2D();}catch(error){this.controls?.dispose();this.renderer?.dispose();this.renderer?.forceContextLoss();this.renderer=null;this.scene=null;this.controls=null;host.replaceChildren();this.init2D();host.dataset.renderer='canvas2d-fallback';console.warn('전시 도해를 2D로 표시합니다.',error.message);}
+    try{if(isSpace(kind)){this.init3D();this.applyPalette();}else this.init2D();}catch(error){this.controls?.dispose();this.renderer?.dispose();this.renderer?.forceContextLoss();this.renderer=null;this.scene=null;this.controls=null;host.replaceChildren();if(isSpace(kind)){host.innerHTML=artSVG(kind);host.dataset.renderer='svg-fallback';this.staticFallback=true;this.enabled=false;}else{this.init2D();host.dataset.renderer='canvas2d-fallback';}console.warn('전시 도해를 대체 화면으로 표시합니다.',error.message);}
     this.resizeObserver=new ResizeObserver(()=>{this.resize();this.draw()});this.resizeObserver.observe(host);
     this.visibility=new IntersectionObserver(entries=>{this.visible=entries[0].isIntersecting;if(this.visible&&this.enabled)this.start()},{rootMargin:'150px'});this.visibility.observe(host);
     this.resize();this.draw();if(this.enabled)this.start();
@@ -62,7 +62,7 @@ export class SceneView{
   init3D(){
     this.scene=new THREE.Scene();this.camera=new THREE.PerspectiveCamera(34,1,.1,60);this.camera.position.set(5,3.5,6.5);this.camera.lookAt(0,0,0);
     this.renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,powerPreference:'low-power'});this.renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,window.innerWidth<700?1.25:1.6));this.renderer.setClearColor(0,0);this.renderer.outputColorSpace=THREE.SRGBColorSpace;this.renderer.toneMapping=THREE.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.2;this.host.append(this.renderer.domElement);this.host.dataset.renderer='webgl';
-    this.scene.add(new THREE.HemisphereLight(0xeef2cc,0x173a2b,2.5));const sun=new THREE.DirectionalLight(0xf1edc7,3.1);sun.position.set(-3,6,4);this.scene.add(sun);const fill=new THREE.DirectionalLight(0x96bf95,2);fill.position.set(5,-2,-3);this.scene.add(fill);
+    this.scene.add(new THREE.HemisphereLight(0xe9edf5,0x1b2634,2.5));const sun=new THREE.DirectionalLight(0xffffff,3.1);sun.position.set(-3,6,4);this.scene.add(sun);const fill=new THREE.DirectionalLight(0xb8c8e4,2);fill.position.set(5,-2,-3);this.scene.add(fill);
     this.group=new THREE.Group();this.scene.add(this.group);this.controls=new OrbitControls(this.camera,this.renderer.domElement);this.controls.enablePan=false;this.controls.enableZoom=false;this.controls.enableDamping=true;this.controls.dampingFactor=.065;this.controls.maxPolarAngle=Math.PI*.75;this.controls.minPolarAngle=.3;this.controls.addEventListener('change',()=>{if(!this.raf)this.renderer.render(this.scene,this.camera)});
     this.renderer.domElement.style.touchAction='pan-y';
     this.updates=[];
@@ -74,6 +74,7 @@ export class SceneView{
     else if(this.kind==='surface')this.surface();
     else if(inquiry3D(this.kind))makeInquiry3D(this);
   }
+  applyPalette(){if(!Number.isFinite(this.options.hue))return;const value={};this.scene.traverse(object=>{for(const material of (Array.isArray(object.material)?object.material:object.material?[object.material]:[])){if(!material.color)continue;material.color.getHSL(value);if(value.s>.08)material.color.setHSL(this.options.hue,Math.min(.62,Math.max(.28,value.s)),value.l)}})}
   material(color=GREEN,opacity=.75){return new THREE.MeshPhysicalMaterial({color,roughness:.33,metalness:.12,transparent:opacity<1,opacity,side:THREE.DoubleSide,depthWrite:opacity>=1,clearcoat:.7})}
   mesh(geometry,color=GREEN,opacity=.75){const m=new THREE.Mesh(geometry,this.material(color,opacity));this.group.add(m);return m}
   line(points,color=ACCENT,opacity=.8,dashed=false){const geom=new THREE.BufferGeometry().setFromPoints(points.map(p=>new THREE.Vector3(...p)));const mat=dashed?new THREE.LineDashedMaterial({color,transparent:true,opacity,dashSize:.07,gapSize:.05}):new THREE.LineBasicMaterial({color,transparent:true,opacity});const line=new THREE.Line(geom,mat);if(dashed)line.computeLineDistances();this.group.add(line);return line}
@@ -135,11 +136,11 @@ export class SceneView{
   init2D(){this.canvas=document.createElement('canvas');this.host.append(this.canvas);this.ctx=this.canvas.getContext('2d');this.host.dataset.renderer='canvas2d';}
   resize(){const r=this.host.getBoundingClientRect();this.width=Math.max(1,r.width);this.height=Math.max(1,r.height);if(this.renderer){this.renderer.setSize(this.width,this.height,false);this.camera.aspect=this.width/this.height;this.camera.updateProjectionMatrix();}else if(this.canvas){const dpr=Math.min(window.devicePixelRatio||1,2);this.canvas.width=this.width*dpr;this.canvas.height=this.height*dpr;this.ctx.setTransform(dpr,0,0,dpr,0,0);}}
   setPhase(p){this.phase=p;this.draw()}
-  setMotion(on){this.enabled=on;if(this.controls)this.controls.enableDamping=on;if(on)this.start();else{cancelAnimationFrame(this.raf);this.raf=0;this.draw()}}
+  setMotion(on){this.enabled=on&&!this.staticFallback;if(this.controls)this.controls.enableDamping=on;if(this.enabled)this.start();else{cancelAnimationFrame(this.raf);this.raf=0;this.draw()}}
   start(){if(this.raf||this.destroyed)return;this.last=0;const tick=ts=>{if(this.destroyed||!this.enabled||!this.visible){this.raf=0;return}this.time+=this.last?Math.min((ts-this.last)/1000,.08):0;this.last=ts;this.draw();this.raf=requestAnimationFrame(tick)};this.raf=requestAnimationFrame(tick)}
   draw(){if(this.destroyed)return;if(this.renderer){this.updates.forEach(f=>f(this.time));this.controls.update();this.renderer.render(this.scene,this.camera)}else if(this.ctx)this.drawCanvas()}
   drawCanvas(){
-    const c=this.ctx,W=this.width,H=this.height,s=Math.min(W/500,H/400),cx=W*.49,cy=H*.58,t=this.time,green='#ddec9d',pale='#c2d4b0';
+    const c=this.ctx,W=this.width,H=this.height,s=Math.min(W/500,H/400),cx=W*.49,cy=H*.58,t=this.time,green=this.options.primary||'#ddec9d',pale='#dce2ed';
     c.clearRect(0,0,W,H);c.save();c.translate(cx,cy);c.scale(s,s);c.lineWidth=1;
     c.strokeStyle='#ccddbb17';for(let x=-210;x<=210;x+=35){c.beginPath();c.moveTo(x,-180);c.lineTo(x,140);c.stroke()}for(let y=-175;y<145;y+=35){c.beginPath();c.moveTo(-220,y);c.lineTo(220,y);c.stroke()}
     const path=(pts,color=green,width=2)=>{c.beginPath();pts.forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));c.strokeStyle=color;c.lineWidth=width;c.stroke()};
