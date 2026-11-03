@@ -49,7 +49,7 @@ export function liveMathFrame(family,time,phase=0){
     if(family==='secant'){plot(x=>a*a+(2*a+h)*(x-a),-2.3,2.3,'secondary');dot(map(a+h,f(a+h)),'B');metric='h = '+h.toFixed(3)+'   ·   할선 '+(2*a+h).toFixed(3)+' → 접선 '+(2*a).toFixed(3)}
     else{line([mp(a+delta,f(a+delta)),mp(a+delta,a*a+2*a*delta)],'secondary');metric='관찰 범위 δ = '+delta.toFixed(3)+'   ·   최대 차이 δ² = '+(delta*delta).toFixed(4)}Object.assign(values,{h,delta,slope:2*a+h});description=family==='zoom'?'같은 점을 중심으로 범위를 천천히 좁혀 곡선과 접선의 차이를 봅니다.':'두 번째 점이 접근하면 실제 할선의 기울기가 접선에 가까워집니다.';
   }else if(family==='limits'){
-    axes();const h=.035+1.65*wave,x=1+h;plot(x=>x+1,-2.6,2.6);dot(map(1,2),'', 'ghost');dot(map(x,x+1),'x');dot(map(1-h,2-h));values.x=x;metric='(x²−1)/(x−1) = x+1, x≠1   ·   현재 '+(x+1).toFixed(3);description='구멍 난 점에 값을 대입하지 않고 양쪽에서 같은 값으로 접근합니다.';
+    axes();const h=.035+1.65*wave,x=1+h;plot(x=>x+1,-2.6,2.6);dot(map(1,2),'','hole');dot(map(x,x+1),'x');dot(map(1-h,2-h));values.x=x;metric='(x²−1)/(x−1) = x+1, x≠1   ·   현재 '+(x+1).toFixed(3);description='구멍 난 점에 값을 대입하지 않고 양쪽에서 같은 값으로 접근합니다.';
   }else if(family==='ratio'||family==='extrema'||family==='area-scale'){
     axes();const a=.55+.35*wave,n=.8+.22*Math.sin(time*.17),center=.2*Math.sin(time*.13),f=x=>a*((x-center)**3-3*n*n*(x-center));plot(f,-2.7,2.7);
     for(const x of[center-n,center,center+n])dot(map(x,f(x)));
