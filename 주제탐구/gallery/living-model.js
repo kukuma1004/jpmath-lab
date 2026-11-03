@@ -84,12 +84,37 @@ export class LivingModel extends SceneView{
       curves.forEach((curve,i)=>{curve.visible=!!paths[i]&&paths[i].length>1;if(curve.visible)this.updateLine(curve,paths[i])});this.group.rotation.y=.08+Math.sin(t*.06)*.08;this.setMetric('절단면 y=mx+b · m='+m.toFixed(3)+' · 경계 m=H/R='+ (H/R).toFixed(2));
     });
   }
+  // 미적분 계열은 평면 곡선이라 기하의 입체 모형에 비해 밋밋해 보였다(2026-11-03).
+  // 같은 2D 캔버스 위에 원근 바닥과 바닥 그림자를 깔아 곡선이 공간 안에 놓이게 한다.
+  // 수학적 내용(frame.paths)은 그대로 두고 배경과 그림자만 더한다.
+  drawDepth(c,frame){
+    const L=45,R=715,T=28,B=393,VX=(L+R)/2,HZ=T+176;
+    const grid=c.createLinearGradient(0,HZ,0,B);
+    grid.addColorStop(0,'rgba(226,236,205,0)');grid.addColorStop(1,'rgba(226,236,205,.16)');
+    c.save();c.lineWidth=.8;c.strokeStyle=grid;
+    for(let i=1;i<=7;i++){const t=i/7,y=HZ+(B-HZ)*t*t;c.beginPath();c.moveTo(L,y);c.lineTo(R,y);c.stroke()}
+    for(let i=0;i<=10;i++){const x=L+(R-L)*(i/10);c.beginPath();c.moveTo(VX+(x-VX)*.16,HZ);c.lineTo(x,B);c.stroke()}
+    c.restore();
+    // 곡선을 바닥에 눕힌 그림자. 원본 좌표를 바닥 쪽으로 눌러 옆으로 조금 벌린다.
+    c.save();c.strokeStyle='rgba(12,16,10,.30)';c.lineCap='round';c.lineJoin='round';c.filter='blur(2px)';
+    for(const path of frame.paths){
+      if(path.closed||path.role==='guide'||path.role==='axis')continue;
+      c.beginPath();
+      path.points.forEach((pt,i)=>{
+        const x=pt[0]+(pt[0]-VX)*.05,y=B-(B-pt[1])*.10;
+        i?c.lineTo(x,y):c.moveTo(x,y);
+      });
+      c.lineWidth=path.role==='primary'?3.2:2;c.stroke();
+    }
+    c.restore();
+  }
   drawCanvas(){
     if(!this.ctx)return;const c=this.ctx,W=this.width,H=this.height,scale=Math.min(W/760,H/470),dx=(W-760*scale)/2,dy=(H-470*scale)/2,frame=liveMathFrame(this.options.family,this.time,this.phaseValue??0);
     c.clearRect(0,0,W,H);c.save();c.translate(dx,dy);c.scale(scale,scale);c.beginPath();c.rect(45,28,670,365);c.clip();
+    this.drawDepth(c,frame);
     const colors={primary:INK,secondary:'#a6baa0',axis:'#afc3b12c',guide:'#cad7c47a',ghost:'#b9c9b44d',wash:'#b9cfa127',negative:'#cda98b30'};
-    for(const path of frame.paths){c.beginPath();path.points.forEach((p,i)=>i?c.lineTo(...p):c.moveTo(...p));if(path.closed){c.closePath();c.fillStyle=colors[path.role];c.fill()}else{c.strokeStyle=colors[path.role];c.lineWidth=path.role==='primary'?2.1:path.role==='secondary'?1.45:1;c.lineCap='round';c.lineJoin='round';c.setLineDash(path.role==='guide'?[5,7]:[]);c.stroke()}}
-    c.setLineDash([]);for(const node of frame.dots){c.beginPath();c.arc(...node.point,node.role==='primary'?4:3,0,Math.PI*2);c.fillStyle=colors[node.role];c.fill()}
+    for(const path of frame.paths){c.beginPath();path.points.forEach((p,i)=>i?c.lineTo(...p):c.moveTo(...p));if(path.closed){c.closePath();c.fillStyle=colors[path.role];c.fill()}else{c.strokeStyle=colors[path.role];c.lineWidth=path.role==='primary'?3:path.role==='secondary'?1.7:1;if(path.role==='primary'){c.shadowColor='rgba(227,232,205,.5)';c.shadowBlur=9}else c.shadowBlur=0;c.lineCap='round';c.lineJoin='round';c.setLineDash(path.role==='guide'?[5,7]:[]);c.stroke()}}
+    c.shadowBlur=0;c.setLineDash([]);for(const node of frame.dots){c.beginPath();c.arc(...node.point,node.role==='primary'?4:3,0,Math.PI*2);c.fillStyle=colors[node.role];c.fill()}
     c.font=Math.max(16,12/Math.max(.1,scale))+'px "IBM Plex Sans KR",sans-serif';c.fillStyle=FAINT;for(const label of frame.labels)c.fillText(label.text,...label.point);c.restore();this.setMetric(frame.metric);this.description=frame.description;
   }
   setPhase(value){this.targetPhase=value;if(this.phaseValue===undefined)this.phaseValue=value;this.draw()}

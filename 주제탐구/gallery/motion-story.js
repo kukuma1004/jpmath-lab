@@ -63,18 +63,18 @@ export class MotionStory{
           if(key==='d'&&(from.replace(/[-+\d.e]+/gi,'')!==to.replace(/[-+\d.e]+/gi,'')||(from.match(/[-+]?\d*\.?\d+(?:e[-+]?\d+)?/gi)||[]).length!==(to.match(/[-+]?\d*\.?\d+(?:e[-+]?\d+)?/gi)||[]).length))continue;
           attrs[key]=[from,to];
         }
-        if(Object.keys(attrs).length){run(node,{...attrs,duration:1300,ease:'inOut(3)'});morphs++}
+        if(Object.keys(attrs).length){run(node,{...attrs,duration:820,ease:'inOut(3)'});morphs++}
       });
     }
     this.host.dataset.morphs=String(morphs);
-    if(old)run(old,{opacity:[1,0],duration:420,ease:'inOut(2)',onComplete:()=>old.remove()});
+    if(old)run(old,{opacity:[1,0],duration:260,ease:'inOut(2)',onComplete:()=>old.remove()});
     // The model itself keeps its position and clock. Only the editorial copy changes around it.
-    run(fresh.querySelector('.motion-stage-copy'),{opacity:[0,1],translateY:[12,0],duration:850,delay:80,ease:'out(3)'});
+    run(fresh.querySelector('.motion-stage-copy'),{opacity:[0,1],translateY:[12,0],duration:520,delay:40,ease:'out(4)'});
     if(this.view==='diagram'){
       const strokes=fresh.querySelectorAll('.primary[data-draw],.secondary[data-draw]');
       strokes.forEach(node=>{node.style.strokeDasharray='1';node.style.strokeDashoffset='1'});
-      run(strokes,{strokeDashoffset:[1,0],delay:stagger(24,{start:80}),duration:1250,ease:'inOut(3)'});
-      run(fresh.querySelectorAll('[data-label]'),{opacity:[0,1],delay:stagger(15,{start:240}),duration:650,ease:'out(2)'});
+      run(strokes,{strokeDashoffset:[1,0],delay:stagger(13,{start:40}),duration:760,ease:'inOut(3)'});
+      run(fresh.querySelectorAll('[data-label]'),{opacity:[0,1],delay:stagger(9,{start:150}),duration:400,ease:'out(3)'});
     }
   }
   replay(){if(!this.enabled)return;this.paused=false;if(this.model){this.model.time=0;this.model.phase=this.model.phaseValue=this.phase;this.model.draw()}this.onPlaybackChange(this.playing);this.setPhase(this.phase,{replay:true})}
