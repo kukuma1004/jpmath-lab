@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>삼차함수 개형과 2:1 비율 탐구</title>
+<style>
+:root{--ink:#172033;--muted:#5d687d;--line:#dbe2ee;--bg:#f4f7fc;--card:#fff;--blue:#2563eb;--red:#dc4b4b;--green:#15966b;--purple:#805ad5;--orange:#d97706}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif;line-height:1.6}
+header{background:linear-gradient(120deg,#173b78,#2563eb);color:white;padding:26px 18px}
+header .wrap,main{max-width:1100px;margin:auto}h1{font-size:clamp(23px,4vw,34px);margin:0 0 8px}header p{margin:0;opacity:.92}
+main{padding:18px}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin:14px 0;box-shadow:0 4px 16px #1d35570a}
+h2{font-size:21px;margin:0 0 12px}h3{font-size:17px;margin:14px 0 6px}.muted{color:var(--muted);font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+label{font-size:13px;color:var(--muted);display:block;margin-bottom:4px}input{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:9px;font-size:16px}
+button{border:0;border-radius:9px;padding:10px 14px;background:var(--blue);color:white;font-weight:700;cursor:pointer;margin:5px 5px 0 0}
+button.secondary{background:#e8eefb;color:#1e40af}button:focus,input:focus{outline:3px solid #93c5fd}
+.examples{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.result{background:#f0f5ff;border:1px solid #c9d9ff;border-radius:12px;padding:14px;margin-top:12px}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.pill{background:#eef2f8;border-radius:999px;padding:5px 10px;font-size:13px}
+.graphs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.graphbox{border:1px solid var(--line);border-radius:12px;padding:8px;min-width:0}
+.graphbox h3{margin:4px 8px}.graphbox svg{width:100%;height:auto;display:block;background:#fff}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--muted);padding:5px 8px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px}
+.ratio-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.metric{background:#f8fafc;border:1px solid var(--line);padding:12px;border-radius:12px}
+.metric strong{font-size:22px;display:block}.formula{font-family:ui-monospace,Consolas,monospace;background:#f2f5fa;padding:10px;border-radius:8px;overflow-wrap:anywhere}
+.note{border-left:4px solid var(--orange);padding:9px 12px;background:#fff8eb;border-radius:5px;margin:10px 0}
+.good{border-left:4px solid var(--green);padding:9px 12px;background:#effcf6;border-radius:5px;margin:10px 0}
+ul{padding-left:22px}li{margin:5px 0}
+details{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:8px 0}summary{font-weight:700;cursor:pointer}
+table{border-collapse:collapse;width:100%;font-size:14px}td,th{border:1px solid var(--line);padding:8px;text-align:left}th{background:#f3f6fb}
+footer{text-align:center;color:var(--muted);padding:24px;font-size:13px}
+@media(max-width:720px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.graphs,.ratio-grid{grid-template-columns:1fr}main{padding:10px}.card{padding:14px}}
+
+header{background:linear-gradient(120deg,#173b78,#2563eb,#7c3aed,#2563eb,#173b78);background-size:300% 100%;animation:bg 14s ease infinite;position:relative;overflow:hidden}
+header::after{content:"x³";position:absolute;right:4%;top:-30px;font-size:150px;font-weight:800;opacity:.13;animation:float 6s ease-in-out infinite}
+@keyframes bg{50%{background-position:100% 0}}@keyframes float{50%{transform:translateY(14px) rotate(6deg)}}
+.draw{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.4s ease-out forwards}@keyframes draw{to{stroke-dashoffset:0}}
+.pop{transform-box:fill-box;transform-origin:center;animation:pop .6s cubic-bezier(.3,1.7,.5,1) both}@keyframes pop{from{transform:scale(0);opacity:0}}
+.ring{transform-box:fill-box;transform-origin:center;fill:none;animation:ring 1.8s ease-out infinite}@keyframes ring{from{transform:scale(.6);opacity:.9}to{transform:scale(2.8);opacity:0}}
+.flow{animation:flow 1s linear infinite}@keyframes flow{to{stroke-dashoffset:-13}}
+.fade{animation:fade .8s .5s both}@keyframes fade{from{opacity:0}}
+.rv{opacity:0;transform:translateY(28px);transition:opacity .7s,transform .7s}.rv.in{opacity:1;transform:none}
+button{transition:transform .15s,box-shadow .15s}button:hover{transform:translateY(-2px);box-shadow:0 6px 14px #2563eb44}
+.stage{display:grid;grid-template-columns:1.6fr 1fr;gap:12px;margin:10px 0}
+.pcap{background:#f0f5ff;border:1px solid #c9d9ff;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.pbar{height:7px;background:#dbe5f7;border-radius:9px;overflow:hidden}.pbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#2563eb,#7c3aed);transition:width .6s}
+#trout{margin-top:8px}
+@media(max-width:720px){.stage{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.draw{stroke-dashoffset:0}.rv{opacity:1;transform:none}}
+.dbadge{padding:12px 16px;border-radius:14px;font-weight:800;font-size:18px;color:#fff;transition:background .6s;margin:10px 0}.dbadge small{display:block;font-weight:500;opacity:.92;font-size:13px}
+.b-two{background:linear-gradient(120deg,#15966b,#2563eb)}.b-double{background:linear-gradient(120deg,#805ad5,#d97706)}.b-none{background:linear-gradient(120deg,#dc4b4b,#be185d)}
+.bump{animation:bump .5s}@keyframes bump{40%{transform:scale(1.04)}}
+tbody td{transition:background .4s}tr.hl td{background:#fff3c4;font-weight:700}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<h1>삼차함수 개형과 2:1 비율 탐구</h1>
+<p>도함수의 판별식으로 개형을 분류하고, 극점의 수평접선과 두 번째 교점 사이의 비율을 확인합니다.</p>
+</div></header>
+<main>
+<section class="card">
+<h2>1. 함수 입력 및 분석</h2>
+<p class="muted">삼차함수 f(x)=ax³+bx²+cx+d의 계수를 바꾸어 보세요. 최고차항 계수 a는 0이 될 수 없습니다.</p>
+<div class="grid">
+<div><label for="a">a (x³의 계수)</label><input id="a" type="number" step="any" value="1"></div>
+<div><label for="b">b (x²의 계수)</label><input id="b" type="number" step="any" value="0"></div>
+<div><label for="c">c (x의 계수)</label><input id="c" type="number" step="any" value="-3"></div>
+<div><label for="d">d (상수항)</label><input id="d" type="number" step="any" value="0"></div>
+</div>
+<div><button id="analyze">함수 분석하기</button><button class="secondary" id="reset">기본값으로</button></div>
+<div class="examples">
+<button class="secondary" data-values="1,0,-3,0">예시 1: x³−3x</button>
+<button class="secondary" data-values="1,0,0,0">예시 2: x³</button>
+<button class="secondary" data-values="1,0,1,0">예시 3: x³+x</button>
+<button class="secondary" data-values="-1,0,3,0">예시 4: −x³+3x</button>
+</div>
+<div id="status" class="result" aria-live="polite"></div>
+</section>
+
+<section class="card">
+<h2>2. 그래프로 확인하기</h2>
+<p class="muted">왼쪽은 원함수, 오른쪽은 도함수입니다. 극대점에서 그은 수평접선과 그래프의 다른 교점도 표시됩니다.</p>
+<div class="graphs">
+<div class="graphbox"><h3>원함수 f(x)</h3><svg id="fg" viewBox="0 0 600 390" role="img" aria-label="삼차함수 그래프"></svg>
+<div class="legend">
+<span><i class="dot" style="background:#dc4b4b"></i>극대점</span>
+<span><i class="dot" style="background:#15966b"></i>극소점</span>
+<span><i class="dot" style="background:#805ad5"></i>변곡점</span>
+<span><i class="dot" style="background:#d97706"></i>두 번째 교점</span>
+</div></div>
+<div class="graphbox"><h3>도함수 f′(x)</h3><svg id="dg" viewBox="0 0 600 390" role="img" aria-label="도함수 그래프"></svg>
+<div class="legend"><span><i class="dot" style="background:#2563eb"></i>도함수</span><span><i class="dot" style="background:#111827"></i>도함수의 실근</span></div></div>
+</div>
+<div style="margin-top:12px"><b>🔎 점 따라가기</b> — 슬라이더를 움직이면 접선의 기울기가 원함수와 도함수에서 동시에 변합니다. <button id="trplay" class="secondary">▶ 자동 이동</button>
+<input id="tr" type="range" min="0" max="1000" value="350" style="padding:0;margin-top:6px"><div id="trout" class="formula"></div></div>
+<div class="muted" style="margin-top:10px">그래프는 보기 좋은 범위를 자동으로 설정한 시각화입니다. 정확한 좌표와 계산값은 아래 결과를 기준으로 확인하세요.</div>
+</section>
+
+<section class="card">
+<h2>3. 판별식으로 개형 분류</h2>
+<div id="classification"></div>
+<div class="dx"><div id="dbadge" class="dbadge b-two"></div>
+<div class="graphs"><div class="graphbox"><h3>도함수 f′(x)=3x²+c</h3><svg id="dp" viewBox="0 0 300 220" role="img" aria-label="도함수 포물선"></svg></div>
+<div class="graphbox"><h3>원함수 f(x)=x³+cx</h3><svg id="dq" viewBox="0 0 300 220" role="img" aria-label="원함수 개형"></svg></div></div>
+<div class="legend"><span><i class="dot" style="background:#15966b"></i>f′&gt;0 (증가)</span><span><i class="dot" style="background:#dc4b4b"></i>f′&lt;0 (감소)</span><span><i class="dot" style="background:#805ad5"></i>f′=0 (정지)</span></div>
+<label for="dsl" style="margin-top:8px">D/4 조절 (포물선을 위아래로 움직여 보세요)</label>
+<input id="dsl" type="range" min="-6" max="6" step="0.05" value="4" style="padding:0">
+<div><button class="secondary" data-t="4">D/4 &gt; 0</button><button class="secondary" data-t="0">D/4 = 0</button><button class="secondary" data-t="-4">D/4 &lt; 0</button><button id="dtour">▶ 세 경우 자동 투어</button></div></div>
+<h3>세 가지 대표 사례 비교</h3>
+<table>
+<thead><tr><th>함수</th><th>도함수</th><th>판별식 D/4</th><th>결론</th></tr></thead>
+<tbody>
+<tr><td>x³−3x</td><td>3x²−3</td><td>3 &gt; 0</td><td>극대·극소 모두 존재</td></tr>
+<tr><td>x³</td><td>3x²</td><td>0</td><td>극값 없이 증가, 정지 변곡점</td></tr>
+<tr><td>x³+x</td><td>3x²+1</td><td>−1 &lt; 0</td><td>극값 없이 계속 증가</td></tr>
+</tbody></table>
+</section>
+
+<section class="card">
+<h2>4. 극점 접선의 2:1 비율 자세히 보기</h2>
+<p>도함수의 판별식이 양수여서 극대점과 극소점이 모두 있을 때, 극대점에서 기울기가 0인 수평접선을 그으면 그래프와 접점 이외에 한 번 더 만납니다.</p>
+<div id="ratio" class="result"></div>
+<div class="ratio-grid" style="margin-top:12px">
+<div class="metric"><span class="muted">극대점과 극소점 사이 거리</span><strong id="dist1">—</strong><span class="muted" id="dist1detail"></span></div>
+<div class="metric"><span class="muted">극소점과 두 번째 교점 사이 거리</span><strong id="dist2">—</strong><span class="muted" id="dist2detail"></span></div>
+</div>
+<div style="margin-top:12px">
+<h3>거리 비교 그림(수직선 위 x좌표)</h3>
+<svg id="numberline" viewBox="0 0 700 160" style="width:100%;height:auto;background:#fff;border:1px solid var(--line);border-radius:10px"></svg>
+</div>
+<div class="good"><b>확인할 핵심:</b> 극대점에서 극소점까지의 x좌표 거리 : 극소점에서 두 번째 교점까지의 x좌표 거리는 2 : 1입니다. 최고차항 계수 a가 음수인 경우에도 극대점의 위치를 자동으로 찾아 같은 거리 관계를 확인합니다.</div>
+</section>
+
+<section class="card">
+<h2>5. 2:1 비율이 성립하는 이유</h2>
+<p>f(x)=ax³+bx²+cx+d에서 도함수의 서로 다른 두 근을 극대점의 x좌표 α, 극소점의 x좌표 β라고 두겠습니다. (a&gt;0일 때 α&lt;β이며, a&lt;0일 때는 극대점이 오른쪽에 놓이므로 아래의 거리 표현은 절댓값으로 해석합니다.)</p>
+<div class="stage"><div><svg id="pst" viewBox="0 0 600 430" style="width:100%;height:auto;background:#fff;border:1px solid var(--line);border-radius:12px" role="img" aria-label="2:1 증명 애니메이션"></svg></div>
+<div class="pcap"><div class="pbar"><i id="pbar"></i></div><b id="ptitle"></b><div id="ptext"></div><div class="formula" id="pform"></div><div class="muted" id="pnote"></div>
+<div><button class="secondary" id="pprev">◀ 이전</button><button id="pnext">다음 ▶</button><button class="secondary" id="pauto">▶ 자동재생</button></div></div></div><details><summary>글로 보는 증명</summary><ol>
+<li>극대점에서의 접선은 수평이므로 y=f(α)입니다.</li>
+<li>그래프와 접선의 교점은 방정식 f(x)−f(α)=0의 해입니다. x=α에서 접하므로 α는 중근이고, 나머지 교점을 γ라고 하면 식은 a(x−α)²(x−γ)=0으로 인수분해됩니다.</li>
+<li>근과 계수의 관계를 쓰면 2α+γ=−b/a입니다.</li>
+<li>도함수 3ax²+2bx+c=0의 두 근의 합은 α+β=−2b/(3a)입니다.</li>
+<li>첫 번째 식에서 γ=−b/a−2α이고, 두 번째 식에서 −b/a=3(α+β)/2이므로 γ=(3β−α)/2가 됩니다.</li>
+<li>따라서 γ−β=(β−α)/2입니다. 즉, 극점 사이 거리는 두 번째 교점까지의 거리의 두 배입니다.</li>
+</ol></details>
+<div class="formula">|β−α| : |γ−β| = 2 : 1</div>
+<div class="note">위의 α, β를 극대·극소의 순서로 둘 때는 a의 부호에 따라 x좌표의 대소가 달라집니다. 실제 거리 관계는 절댓값을 사용하면 두 경우 모두 같은 2:1로 표현됩니다.</div>
+</section>
+
+<section class="card">
+<h2>6. 탐구에서 확인한 점과 한계</h2>
+<ul>
+<li><b>도함수의 영점만으로는 극값을 판정할 수 없습니다.</b> f(x)=x³처럼 도함수가 0이어도 좌우 부호가 바뀌지 않으면 극값이 아닙니다.</li>
+<li><b>판별식과 부호 변화를 함께 확인해야 합니다.</b> 판별식은 도함수의 실근 개수를 알려주고, 도함수의 부호 변화는 실제 극값 여부를 결정합니다.</li>
+<li><b>a=0은 유효하지 않은 입력입니다.</b> 이때 함수는 삼차함수가 아니므로 이번 탐구의 판별식 분류와 비율 관계의 대상에서 제외합니다.</li>
+<li><b>2:1 관계에는 조건이 있습니다.</b> 삼차함수가 극대·극소를 가져야 하며, 극대점에서 그은 수평접선을 기준으로 한 두 번째 교점을 비교해야 합니다. 임의의 점에서 그은 기울기가 0이 아닌 접선에까지 이 결과를 일반화할 수는 없습니다.</li>
+<li><b>사차함수로 확장할 때의 한계:</b> 도함수가 삼차함수가 되므로 이차방정식의 판별식 하나만으로는 실근 개수와 개형을 모두 분류하기 어렵습니다.</li>
+</ul>
+<h3>다음 탐구로 이어질 질문</h3>
+<ul>
+<li>극대·극소점이 아닌 임의의 점에서 그은 비스듬한 접선에서도 x좌표 간격의 일정한 비율이 나타날까?</li>
+<li>사차함수의 도함수인 삼차방정식의 실근 개수에 따라 그래프 개형을 어떻게 분류할 수 있을까?</li>
+<li>극대점의 수평접선과 삼차함수 그래프 사이의 넓이를 정적분으로 구하면 2:1 비율과 연결되는 간단한 공식이 나올까?</li>
+</ul>
+</section>
+</main>
+<footer>삼차함수 탐구용 시뮬레이션 · 계산 결과는 입력한 계수에 따라 실시간으로 바뀝니다.</footer>
+<script>
+const $=id=>document.getElementById(id);
+const fmt=(x)=>Number.isFinite(x)?(Math.abs(x)<1e-9? "0" : Number(x.toFixed(5)).toString()):"—";
+const f=(x,p)=>p.a*x*x*x+p.b*x*x+p.c*x+p.d;
+const df=(x,p)=>3*p.a*x*x+2*p.b*x+p.c;
+let last=null;
+function read(){return {a:Number($('a').value),b:Number($('b').value),c:Number($('c').value),d:Number($('d').value)}}
+function analyze0(){
+ const p=read(); last=p;
+ if(![p.a,p.b,p.c,p.d].every(Number.isFinite)){ $('status').innerHTML='<b>입력 오류</b><br>네 계수를 모두 숫자로 입력하세요.';clearGraphs();return}
+ if(p.a===0){$('status').innerHTML='<b>유효하지 않은 입력</b><br>a=0이면 삼차함수가 아니라 이차 이하의 다항함수입니다. a에 0이 아닌 값을 입력하세요.';$('classification').innerHTML='삼차함수의 최고차항 계수 a는 0이 아니어야 합니다.';$('ratio').innerHTML='삼차함수가 아니므로 2:1 비율을 분석하지 않습니다.';clearGraphs();return}
+ const q=p.b*p.b-3*p.a*p.c, disc=4*q, m=-p.b/(3*p.a), infY=f(m,p);
+ const common=`f′(x)=3(${fmt(p.a)})x²+2(${fmt(p.b)})x+(${fmt(p.c)})`;
+ let roots=[], kind='';
+ if(q>1e-10){
+  const s=Math.sqrt(q), r1=(-p.b-s)/(3*p.a),r2=(-p.b+s)/(3*p.a);
+  roots=[r1,r2].sort((x,y)=>x-y);
+  kind='two';
+ }else if(q < -1e-10){kind='none'}else{kind='double'}
+ const derivSign=p.a>0?'양수':'음수';
+ $('status').innerHTML=`<b>입력 함수</b><div class="formula">f(x)=${fmt(p.a)}x³ ${p.b>=0?'+':'−'} ${fmt(Math.abs(p.b))}x² ${p.c>=0?'+':'−'} ${fmt(Math.abs(p.c))}x ${p.d>=0?'+':'−'} ${fmt(Math.abs(p.d))}</div><b>도함수</b><div class="formula">${common}</div><b>D/4=b²−3ac=${fmt(q)}</b>`;
+ if(kind==='two'){
+  const [rlo,rhi]=roots;
+  const xMax=p.a>0?rlo:rhi, xMin=p.a>0?rhi:rlo;
+  const max={x:xMax,y:f(xMax,p)}, min={x:xMin,y:f(xMin,p)};
+  const gamma=3*m-2*xMax, cross={x:gamma,y:max.y};
+  const d1=Math.abs(xMax-xMin),d2=Math.abs(xMin-gamma),ratio=d1/d2;
+  $('classification').innerHTML=`<div class="good"><b>D/4&gt;0:</b> 도함수는 서로 다른 두 실근을 가집니다. 도함수의 부호가 바뀌므로 원함수에는 극대점과 극소점이 각각 하나씩 있습니다.</div><p>도함수의 두 근: x=${fmt(rlo)}, ${fmt(rhi)} · 변곡점: (${fmt(m)}, ${fmt(infY)})</p><p>극대점: (${fmt(max.x)}, ${fmt(max.y)}) · 극소점: (${fmt(min.x)}, ${fmt(min.y)})</p>`;
+  $('ratio').innerHTML=`<b>극대점의 수평접선</b>: y=${fmt(max.y)}<br><b>접점(극대점)</b>: x=${fmt(max.x)}<br><b>두 번째 교점</b>: (${fmt(cross.x)}, ${fmt(cross.y)})<br><br><div class="formula">극대점과 극소점 사이 = |${fmt(xMin)} − ${fmt(xMax)}| = ${fmt(d1)}<br>극소점과 두 번째 교점 사이 = |${fmt(gamma)} − ${fmt(xMin)}| = ${fmt(d2)}<br>거리의 비 = ${fmt(d1)} : ${fmt(d2)} ≈ ${fmt(ratio)} : 1</div><p>계산된 비율이 2:1에 가까운지 확인하세요.</p>`;
+  $('dist1').textContent=fmt(d1);$('dist2').textContent=fmt(d2);
+  $('dist1detail').textContent=`|x극소 − x극대| = ${fmt(d1)}`;
+  $('dist2detail').textContent=`|x두 번째 교점 − x극소| = ${fmt(d2)}`;
+  drawNumberLine(xMax,xMin,gamma);
+  drawAll(p,{max,min,inf:{x:m,y:infY},cross});
+ }else{
+  const stationary=kind==='double';
+  $('classification').innerHTML=stationary?`<div class="note"><b>D/4=0:</b> 도함수는 중근 x=${fmt(m)}을 가집니다. 도함수의 부호는 ${derivSign}로 유지되므로 극값은 없고, (${fmt(m)}, ${fmt(infY)})는 수평접선을 갖는 변곡점입니다.</div>`:`<div class="note"><b>D/4&lt;0:</b> 도함수는 실근이 없습니다. 도함수의 부호는 항상 ${derivSign}이므로 함수는 ${p.a>0?'계속 증가':'계속 감소'}하며 극값이 없습니다.</div>`;
+  $('ratio').innerHTML='극대점과 극소점이 모두 존재하지 않으므로 극대점의 수평접선을 이용한 2:1 비율은 적용되지 않습니다.';
+  $('dist1').textContent='적용 안 됨';$('dist2').textContent='적용 안 됨';$('dist1detail').textContent='극대점·극소점이 없음';$('dist2detail').textContent='두 번째 교점을 정할 수 없음';
+  $('numberline').innerHTML='';drawAll(p,stationary?{inf:{x:m,y:infY}}:{});
+ }
+}
+function clearGraphs(){$('fg').innerHTML='';$('dg').innerHTML='';$('numberline').innerHTML='';$('dist1').textContent='—';$('dist2').textContent='—'}
+function svgEl(tag,attrs,parent){const e=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const k in attrs)e.setAttribute(k,attrs[k]);parent.appendChild(e);return e}
+function graph(svgId,fn,points=[],opts={}){
+ const svg=$(svgId);svg.innerHTML='';const W=600,H=390,L=55,R=18,T=20,B=42;
+ let xs=points.map(o=>o.x).filter(Number.isFinite);let xspan=Math.max(4,...xs.map(Math.abs))*1.45;
+ let xmin=-xspan,xmax=xspan, samples=[];
+ for(let i=0;i<=360;i++){let x=xmin+(xmax-xmin)*i/360,y=fn(x);if(Number.isFinite(y))samples.push({x,y})}
+ let vals=samples.map(o=>o.y).concat(points.map(o=>o.y).filter(Number.isFinite),[0]);let ymin=Math.min(...vals),ymax=Math.max(...vals);
+ if(ymax-ymin<1)ymax+=1,ymin-=1;let pad=(ymax-ymin)*.16;ymin-=pad;ymax+=pad;
+ const X=x=>L+(x-xmin)/(xmax-xmin)*(W-L-R),Y=y=>H-B-(y-ymin)/(ymax-ymin)*(H-T-B);G[svgId]={X,Y,xmin,xmax,ymin,ymax};
+ for(let i=0;i<=8;i++){let x=xmin+(xmax-xmin)*i/8;svgEl('line',{x1:X(x),x2:X(x),y1:T,y2:H-B,stroke:'#e8edf5','stroke-width':1},svg);svgEl('text',{x:X(x),y:H-B+19,'font-size':11,'text-anchor':'middle',fill:'#64748b'},svg).textContent=fmt(x)}
+ for(let i=0;i<=6;i++){let y=ymin+(ymax-ymin)*i/6;svgEl('line',{x1:L,x2:W-R,y1:Y(y),y2:Y(y),stroke:'#e8edf5','stroke-width':1},svg);svgEl('text',{x:L-8,y:Y(y)+4,'font-size':11,'text-anchor':'end',fill:'#64748b'},svg).textContent=fmt(y)}
+ if(ymin<=0&&ymax>=0)svgEl('line',{x1:L,x2:W-R,y1:Y(0),y2:Y(0),stroke:'#334155','stroke-width':1.7},svg);
+ if(xmin<=0&&xmax>=0)svgEl('line',{x1:X(0),x2:X(0),y1:T,y2:H-B,stroke:'#334155','stroke-width':1.7},svg);
+ let d='';samples.forEach((o,i)=>d+=(i?'L':'M')+X(o.x).toFixed(2)+','+Y(o.y).toFixed(2)+' ');
+ svgEl('path',{d,fill:'none',stroke:opts.derivative?'#2563eb':'#173b78','stroke-width':3.5,'stroke-linejoin':'round',pathLength:1,class:'draw'},svg);
+ if(opts.tangent!==undefined){svgEl('line',{x1:L,x2:W-R,y1:Y(opts.tangent),y2:Y(opts.tangent),stroke:'#d97706','stroke-width':2.5,'stroke-dasharray':'8 5',class:'flow'},svg)}
+ points.forEach(o=>{if(o.x<xmin||o.x>xmax||o.y<ymin||o.y>ymax)return;if(o.label!=='변곡점'&&!/^근/.test(o.label))svgEl('circle',{cx:X(o.x),cy:Y(o.y),r:8,stroke:o.color,'stroke-width':2,class:'ring'},svg);svgEl('circle',{cx:X(o.x),cy:Y(o.y),r:7,fill:o.color||'#dc4b4b',stroke:'white','stroke-width':2.5,class:'pop',style:'animation-delay:'+(.5+Math.random()*.6)+'s'},svg);let label=svgEl('text',{x:X(o.x)+8,y:Y(o.y)-10,'font-size':12,fill:o.color||'#172033','font-weight':700},svg);label.textContent=o.label||`(${fmt(o.x)}, ${fmt(o.y)})`});
+}
+function drawAll(p,marks){
+ let pts=[];if(marks.max)pts.push({...marks.max,color:'#dc4b4b',label:'극대'});if(marks.min)pts.push({...marks.min,color:'#15966b',label:'극소'});if(marks.inf)pts.push({...marks.inf,color:'#805ad5',label:'변곡점'});if(marks.cross)pts.push({...marks.cross,color:'#d97706',label:'두 번째 교점'});
+ let tangent=marks.max?marks.max.y:undefined;
+ graph('fg',x=>f(x,p),pts,{tangent});
+ let q=p.b*p.b-3*p.a*p.c, roots=[];
+ if(q>0){let s=Math.sqrt(q);roots=[(-p.b-s)/(3*p.a),(-p.b+s)/(3*p.a)].map(x=>({x,y:0,color:'#111827',label:`근 ${fmt(x)}`}))}
+ graph('dg',x=>df(x,p),roots,{derivative:true});initTracer();
+}
+function drawNumberLine(xMax,xMin,gamma){
+ const svg=$('numberline');svg.innerHTML='';
+ let vals=[xMax,xMin,gamma],lo=Math.min(...vals),hi=Math.max(...vals),pad=Math.max(1,(hi-lo)*.25);lo-=pad;hi+=pad;
+ const X=x=>40+(x-lo)/(hi-lo)*620;
+ svgEl('line',{x1:40,x2:660,y1:80,y2:80,stroke:'#64748b','stroke-width':2},svg);
+ vals.forEach((x,i)=>{let color=i===0?'#dc4b4b':i===1?'#15966b':'#d97706';svgEl('line',{x1:X(x),x2:X(x),y1:65,y2:96,stroke:color,'stroke-width':3},svg);svgEl('circle',{cx:X(x),cy:80,r:6,fill:color},svg);svgEl('text',{x:X(x),y:48,'text-anchor':'middle','font-size':12,fill:color,'font-weight':700},svg).textContent=[`극대 ${fmt(x)}`,`극소 ${fmt(x)}`,`교점 ${fmt(x)}`][i]});
+ const a=X(xMax),b=X(xMin),c=X(gamma);
+ const y1=120,y2=143;
+ svgEl('line',{x1:a,x2:b,y1,y2:y1,stroke:'#2563eb','stroke-width':6,'stroke-linecap':'round',pathLength:1,class:'draw'},svg);
+ svgEl('text',{x:(a+b)/2,y:116,'text-anchor':'middle','font-size':12,fill:'#2563eb'},svg).textContent='극점 사이 거리';
+ svgEl('line',{x1:b,x2:c,y1:y2,y2,stroke:'#d97706','stroke-width':6,'stroke-linecap':'round',pathLength:1,class:'draw',style:'animation-delay:.7s'},svg);
+ svgEl('text',{x:(b+c)/2,y:137,'text-anchor':'middle','font-size':12,fill:'#d97706'},svg).textContent='두 번째 거리';
+}
+
+const G={};let pstep=0,ptimer=null,PS=null;
+function analyze(){analyze0();buildProof();countUp()}
+function countUp(){['dist1','dist2'].forEach(id=>{const el=$(id),v=parseFloat(el.textContent);if(!isFinite(v))return;const t0=performance.now();(function st(t){const k=Math.min(1,(t-t0)/900);el.textContent=fmt(v*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(st)})(t0)})}
+function initTracer(){['fg','dg'].forEach(id=>{const g=G[id],sv=$(id);g.line=svgEl('line',{'stroke-width':3,'stroke-linecap':'round'},sv);g.dot=svgEl('circle',{r:8,stroke:'white','stroke-width':3},sv)});moveTracer($('tr').value/1000)}
+function moveTracer(t){
+ const g=G.fg,h=G.dg;if(!last||!last.a||!g||!g.line)return;const p=last;
+ const x=g.xmin+(g.xmax-g.xmin)*t,y=f(x,p),sl=df(x,p),dx=(g.xmax-g.xmin)*.08;
+ const c=sl>.03?'#15966b':sl<-.03?'#dc4b4b':'#805ad5',vis=y>=g.ymin&&y<=g.ymax;
+ [g.line,g.dot].forEach(e=>e.style.display=vis?'':'none');
+ g.line.setAttribute('x1',g.X(x-dx));g.line.setAttribute('y1',g.Y(y-sl*dx));g.line.setAttribute('x2',g.X(x+dx));g.line.setAttribute('y2',g.Y(y+sl*dx));g.line.setAttribute('stroke',c);
+ g.dot.setAttribute('cx',g.X(x));g.dot.setAttribute('cy',g.Y(y));g.dot.setAttribute('fill',c);
+ const hv=x>=h.xmin&&x<=h.xmax&&sl>=h.ymin&&sl<=h.ymax;h.dot.style.display=hv?'':'none';h.line.style.display='none';
+ h.dot.setAttribute('cx',h.X(x));h.dot.setAttribute('cy',h.Y(sl));h.dot.setAttribute('fill',c);
+ $('trout').textContent=`x=${fmt(x)} · f(x)=${fmt(y)} · f′(x)=${fmt(sl)} → ${sl>.03?'증가 ↗':sl<-.03?'감소 ↘':'기울기 ≈ 0 (수평접선)'}`;
+}
+let trAnim=null;
+$('tr').addEventListener('input',e=>moveTracer(e.target.value/1000));
+$('trplay').addEventListener('click',()=>{
+ if(trAnim){cancelAnimationFrame(trAnim);trAnim=null;$('trplay').textContent='▶ 자동 이동';return}
+ $('trplay').textContent='⏸ 멈추기';let t0=performance.now(),v0=+$('tr').value;
+ (function st(t){const ph=((t-t0)/9000+v0/2000)%1,v=ph<.5?ph*2:2-ph*2;$('tr').value=v*1000;moveTracer(v);trAnim=requestAnimationFrame(st)})(t0);
+});
+const STEPS=[
+['① 극대점의 수평접선','극대점 α에서 접선의 기울기는 0이므로 접선은 수평선입니다.','y = f(α)'],
+['② 접선과 그래프의 교점','f(x)−f(α)=0의 해가 교점입니다. α에서 접하므로 중근(2개로 셈), 나머지 하나가 γ입니다.','f(x)−f(α) = a(x−α)²(x−γ)'],
+['③ 근과 계수의 관계','세 근 α, α, γ의 합은 −b/a이고, 이 값은 변곡점 x좌표 m의 3배입니다.','2α+γ = −b/a = 3m'],
+['④ 도함수의 두 근','f′의 두 근 α, β의 합은 −2b/(3a)=2m. 변곡점 m은 α와 β의 한가운데입니다.','α+β = 2m'],
+['⑤ γ를 α, β로 표현','3m = 3(α+β)/2 를 ③에 대입하면 γ가 α, β만으로 나옵니다. 즉 γ−m = 2(m−α).','γ = 3(α+β)/2 − 2α = (3β−α)/2'],
+['⑥ 2 : 1 완성','γ−β = (β−α)/2. 파란 막대 하나가 주황 막대 두 개와 정확히 같습니다!','|β−α| : |γ−β| = 2 : 1']];
+function buildProof(){
+ const ok=last&&last.a&&last.b*last.b-3*last.a*last.c>1e-10,p=ok?last:{a:1,b:0,c:-3,d:0};
+ const s=Math.sqrt(p.b*p.b-3*p.a*p.c),r=[(-p.b-s)/(3*p.a),(-p.b+s)/(3*p.a)],al=p.a>0?r[0]:r[1],be=p.a>0?r[1]:r[0],m=-p.b/(3*p.a);
+ PS={p,al,be,m,ga:3*m-2*al,y0:f(al,p)};
+ $('pnote').textContent=ok?'현재 입력한 함수로 보여줍니다.':'현재 입력은 극대·극소가 없어 예시 f(x)=x³−3x로 보여줍니다.';
+ showStep(pstep);
+}
+function showStep(k){
+ pstep=k;if(!PS)return;const {p,al,be,ga,m,y0}=PS,svg=$('pst');svg.innerHTML='';
+ const W=600,L=36,R=20,T=22,GB=280,yS=322,xs=[al,be,ga],mn=Math.min(...xs),mx=Math.max(...xs),S=mx-mn,lo=mn-S*.4,hi=mx+S*.4;
+ const X=x=>L+(x-lo)/(hi-lo)*(W-L-R),pts=[];for(let i=0;i<=160;i++){const x=lo+(hi-lo)*i/160;pts.push([x,f(x,p)])}
+ let ymin=Math.min(y0,...pts.map(o=>o[1])),ymax=Math.max(y0,...pts.map(o=>o[1]));const pd=(ymax-ymin)*.12;ymin-=pd;ymax+=pd;
+ const Y=y=>GB-(y-ymin)/(ymax-ymin)*(GB-T),now=i=>k===i,E=(t,a,c)=>svgEl(t,Object.assign({class:c||''},a),svg);
+ const tx=(x,y,t,c,cl,sz)=>{E('text',{x,y,fill:c,'font-size':sz||13,'font-weight':700,'text-anchor':'middle'},cl).textContent=t};
+ E('line',{x1:L,x2:W-R,y1:yS,y2:yS,stroke:'#94a3b8','stroke-width':2});
+ E('path',{d:pts.map((o,i)=>(i?'L':'M')+X(o[0]).toFixed(1)+','+Y(o[1]).toFixed(1)).join(' '),fill:'none',stroke:'#173b78','stroke-width':3.5,pathLength:1},now(0)?'draw':'');
+ const ty=Y(y0);if(k===0)E('line',{x1:L,x2:W-R,y1:ty,y2:ty,stroke:'#d97706','stroke-width':2.5,pathLength:1,style:'animation-delay:.6s'},'draw');
+ else E('line',{x1:L,x2:W-R,y1:ty,y2:ty,stroke:'#d97706','stroke-width':2.5,'stroke-dasharray':'8 5'},'flow');
+ if(k>=1){E('circle',{cx:X(al),cy:ty,r:14,fill:'none',stroke:'#dc4b4b','stroke-width':2.5},now(1)?'pop':'');if(now(1))tx(X(al),ty+34,'중근 (×2)','#dc4b4b','fade')}
+ const pt=(x,y,c,lab,i)=>{if(k<i)return;const cl=now(i)?'pop':'';if(now(i))E('circle',{cx:X(x),cy:Y(y),r:8,stroke:c,'stroke-width':2},'ring');
+  E('line',{x1:X(x),x2:X(x),y1:Y(y),y2:yS,stroke:c,'stroke-dasharray':'3 4',opacity:.55});
+  E('circle',{cx:X(x),cy:Y(y),r:7,fill:c,stroke:'#fff','stroke-width':2.5},cl);E('circle',{cx:X(x),cy:yS,r:5,fill:c},cl);tx(X(x),Y(y)-14,lab,c,cl,15)};
+ pt(al,y0,'#dc4b4b','α',0);pt(ga,y0,'#d97706','γ',1);pt(m,f(m,p),'#805ad5','m',2);pt(be,f(be,p),'#15966b','β',3);
+ const bar=(x1,x2,y,c,lab,dl)=>{E('line',{x1:X(x1),x2:X(x2),y1:y,y2:y,stroke:c,'stroke-width':7,'stroke-linecap':'round',pathLength:1,style:'animation-delay:'+(dl||0)+'s'},'draw');tx((X(x1)+X(x2))/2,y-10,lab,c,'fade')};
+ const y1=yS+26,y2=yS+54,y3=yS+82,d=Math.abs(ga-be),dir=Math.sign(be-al);
+ if(k===3){bar(al,m,y1,'#2563eb','m−α');bar(m,be,y1,'#0ea5e9','β−m',.5)}
+ if(k===4){bar(al,m,y1,'#2563eb','m−α');bar(m,ga,y1,'#d97706','γ−m = 2(m−α)',.5)}
+ if(k===5){bar(al,be,y1,'#2563eb','|β−α|');bar(be,ga,y2,'#d97706','|γ−β|',.6);bar(al,al+dir*d,y3,'#d97706','×1',1.2);bar(al+dir*d,al+2*dir*d,y3,'#f59e0b','×2',1.8);tx(W/2,44,'2 : 1','#7c3aed','pop',34)}
+ const [t,x,fm]=STEPS[k];$('ptitle').textContent=t;$('ptext').textContent=x;$('pform').textContent=fm;$('pbar').style.width=(k+1)/6*100+'%';
+}
+function stopAuto(){clearInterval(ptimer);ptimer=null;$('pauto').textContent='▶ 자동재생'}
+$('pprev').addEventListener('click',()=>{stopAuto();showStep(Math.max(0,pstep-1))});
+$('pnext').addEventListener('click',()=>{stopAuto();showStep(Math.min(5,pstep+1))});
+$('pauto').addEventListener('click',()=>{if(ptimer)return stopAuto();if(pstep>=5)showStep(0);$('pauto').textContent='⏸ 멈추기';ptimer=setInterval(()=>{pstep>=5?stopAuto():showStep(pstep+1)},3200)});
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.08});
+document.querySelectorAll('.card').forEach(c=>{c.classList.add('rv');io.observe(c)});
+const DX={t:4,st:''};let dtw=null,dtm=null,dtour=false;
+function initD(){[['dp',-3,9],['dq',-5,5]].forEach(([id,yl,yh])=>{
+ const sv=$(id),W=300,H=220,X=x=>10+(x+2)/4*(W-20),Y=y=>H-10-(y-yl)/(yh-yl)*(H-20);
+ const cp=svgEl('clipPath',{id:'c'+id},svgEl('defs',{},sv));svgEl('rect',{x:0,y:0,width:W,height:H},cp);
+ svgEl('line',{x1:10,x2:W-10,y1:Y(0),y2:Y(0),stroke:'#334155','stroke-width':1.5},sv);svgEl('line',{x1:X(0),x2:X(0),y1:10,y2:H-10,stroke:'#334155','stroke-width':1.5},sv);
+ const g=svgEl('g',{'clip-path':`url(#c${id})`},sv);
+ const dots=[0,1].map(()=>({r:svgEl('circle',{r:9,fill:'none','stroke-width':2,class:'ring'},sv),d:svgEl('circle',{r:7,stroke:'#fff','stroke-width':2.5},sv)}));
+ DX[id]={X,Y,g,dots};})}
+function drawD(t){
+ DX.t=t;const c=-t/3,r=c<0?Math.sqrt(-c/3):0,st=Math.abs(t)<.05?'double':t>0?'two':'none';
+ const F=[x=>3*x*x+c,x=>x*x*x+c*x],S=x=>3*x*x+c;
+ ['dp','dq'].forEach((id,k)=>{const o=DX[id];o.g.innerHTML='';
+  for(let i=0;i<120;i++){const xa=-2+4*i/120,xb=-2+4*(i+1)/120,sl=S((xa+xb)/2);
+   svgEl('line',{x1:o.X(xa),y1:o.Y(F[k](xa)),x2:o.X(xb),y2:o.Y(F[k](xb)),stroke:sl>.05?'#15966b':sl<-.05?'#dc4b4b':'#805ad5','stroke-width':4.5,'stroke-linecap':'round'},o.g)}
+  const pos=st==='two'?[[-r,'#dc4b4b'],[r,'#15966b']]:st==='double'?[[0,'#805ad5']]:[];
+  o.dots.forEach((dd,j)=>{const p=pos[j];[dd.r,dd.d].forEach(e=>e.style.display=p?'':'none');if(!p)return;const y=k?F[1](p[0]):0;
+   [dd.r,dd.d].forEach(e=>{e.setAttribute('cx',o.X(p[0]));e.setAttribute('cy',o.Y(y))});dd.d.setAttribute('fill',p[1]);dd.r.setAttribute('stroke',p[1])})});
+ const b=$('dbadge'),eq=`f′(x)=3x² ${c>=0?'+':'−'} ${fmt(Math.abs(c))}`;
+ b.innerHTML=st==='two'?`D/4 = ${fmt(t)} > 0 → 극대·극소 2개<small>${eq} · 도함수 실근 2개, 부호가 +→−→+ 로 바뀜</small>`:st==='double'?`D/4 = 0 → 극값 없음 (정지 변곡점)<small>${eq} · 중근 x=0, 부호가 바뀌지 않아 극값이 아님</small>`:`D/4 = ${fmt(t)} < 0 → 극값 없음, 계속 증가<small>${eq} · 실근이 없어 항상 f′>0</small>`;
+ if(DX.st!==st){DX.st=st;b.className='dbadge b-'+st;void b.offsetWidth;b.classList.add('bump');
+  document.querySelectorAll('tbody tr').forEach((tr,i)=>tr.classList.toggle('hl',i===(st==='two'?0:st==='double'?1:2)))}
+}
+function tweenD(to,dur,done){cancelAnimationFrame(dtw);const from=DX.t,t0=performance.now();
+ (function st(n){const k=Math.min(1,(n-t0)/dur),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2,v=k<1?from+(to-from)*e:to;$('dsl').value=v;drawD(v);if(k<1)dtw=requestAnimationFrame(st);else if(done)done()})(t0)}
+function stopTour(){dtour=false;clearTimeout(dtm);$('dtour').textContent='▶ 세 경우 자동 투어'}
+function tour(i){if(!dtour)return;const seq=[4,0,-4,0];tweenD(seq[i%4],1500,()=>{dtm=setTimeout(()=>tour(i+1),1800)})}
+function startTour(){dtour=true;$('dtour').textContent='⏸ 투어 멈추기';tour(0)}
+initD();drawD(4);
+$('dsl').addEventListener('input',e=>{stopTour();cancelAnimationFrame(dtw);drawD(+e.target.value)});
+document.querySelectorAll('[data-t]').forEach(bt=>bt.addEventListener('click',()=>{stopTour();tweenD(+bt.dataset.t,1200)}));
+$('dtour').addEventListener('click',()=>dtour?(stopTour(),cancelAnimationFrame(dtw)):startTour());
+new IntersectionObserver((es,ob)=>{if(es[0].isIntersecting){ob.disconnect();startTour()}},{threshold:.5}).observe(document.querySelector('.dx'));
+$('analyze').addEventListener('click',analyze);
+$('reset').addEventListener('click',()=>{$('a').value=1;$('b').value=0;$('c').value=-3;$('d').value=0;analyze()});
+document.querySelectorAll('[data-values]').forEach(btn=>btn.addEventListener('click',()=>{['a','b','c','d'].forEach((id,i)=>$(id).value=btn.dataset.values.split(',')[i]);analyze()}));
+['a','b','c','d'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter')analyze()}));
+analyze();
+</script>
+</body></html>

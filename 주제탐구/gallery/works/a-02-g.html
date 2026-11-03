@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>구를 평면으로 자르면 왜 원이 될까?</title>
+<style>
+:root{--ink:#182338;--muted:#68758a;--line:#dfe6ef;--bg:#f4f7fb;--blue:#3478cf;--plane:#f59e0b;--cut:#d81b60;--green:#12806a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}header{background:#fff;border-bottom:1px solid var(--line);padding:25px max(18px,calc((100vw - 1180px)/2))}header .tag{font-size:12px;font-weight:800;letter-spacing:.12em;color:var(--blue)}h1{font-size:clamp(25px,4vw,36px);line-height:1.2;margin:8px 0}header p{margin:0;color:var(--muted);max-width:780px}main{max-width:1180px;margin:22px auto;padding:0 16px 28px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(330px,.9fr);gap:18px;align-items:start}.card{background:white;border:1px solid var(--line);border-radius:17px;overflow:hidden;box-shadow:0 5px 20px #233b5c0a}.head{padding:16px 18px 12px;display:flex;justify-content:space-between;gap:10px;align-items:center}.head h2{font-size:17px;margin:0}.muted{color:var(--muted);font-size:12px}.pill{font-size:12px;font-weight:750;padding:4px 9px;border-radius:99px;background:#eaf2ff;color:#285e9d}#scene{display:block;width:100%;height:430px;touch-action:none;background:radial-gradient(ellipse at 50% 35%,#fff,#eaf0f8)}.legend{display:flex;gap:12px;flex-wrap:wrap;padding:10px 16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}.swatch{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px}.controls{padding:0 18px 16px}.control{margin:13px 0 17px}.rowline{display:flex;justify-content:space-between;gap:10px;margin-bottom:6px}.rowline label{font-weight:750;font-size:14px}.value{font-weight:800;color:var(--blue);font-variant-numeric:tabular-nums}input[type=range]{width:100%;accent-color:var(--blue)}.ends{display:flex;justify-content:space-between;color:var(--muted);font-size:11px}.buttons{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}button{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:9px;padding:7px 10px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}button:hover{background:#eef4fc;border-color:#b6cbe6}button:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}.insight{margin:0 18px 18px;padding:12px 13px;background:#f8fafc;border:1px solid var(--line);border-radius:12px}.insight strong{display:block;margin-bottom:3px}.insight p{font-size:13px;margin:0;color:#4f5e72}.proof{padding:0 18px 18px}.proof h3{margin:4px 0 10px;font-size:16px}.proofintro{font-size:13px;color:var(--muted);margin:0 0 12px}.step{display:flex;gap:10px;padding:11px 0;border-top:1px solid var(--line)}.num{flex:0 0 27px;height:27px;border-radius:50%;display:grid;place-items:center;background:#e9f1ff;color:#245da2;font-weight:800;font-size:12px}.step p{margin:0;font-size:13px;color:#3f4c60}.step p b{color:var(--ink)}.formula{font-family:Georgia,"Times New Roman",serif;font-size:20px;background:#f4f7fb;border-radius:9px;padding:9px 12px;margin:8px 0;overflow-wrap:anywhere}.formula.small{font-size:17px}.proofnote{font-size:12px;color:var(--muted);margin-top:8px}.question{padding:14px 18px;border-top:1px solid var(--line)}.question h3{font-size:14px;margin:0 0 7px}.question p{font-size:13px;color:#4f5e72;margin:5px 0}.status{font-weight:800;font-size:14px;padding:12px 18px 0}.status.cut{color:var(--green)}.status.touch{color:#a76b09}.status.none{color:#b42348}.readout{padding:8px 18px 16px}.readout .formula{margin:5px 0}.footer{max-width:1180px;padding:0 16px 28px;margin:auto;color:var(--muted);font-size:12px}@media(max-width:820px){main{grid-template-columns:1fr}#scene{height:390px}}@media(max-width:480px){#scene{height:330px}.head{align-items:flex-start}}
+</style>
+</head>
+<body>
+<header><div class="tag">기하 탐구 · 직접 관찰하고 증명하기</div><h1>구를 평면으로 자르면 왜 원이 될까?</h1><p>값을 구하는 데서 멈추지 않고, 단면 위의 모든 점이 단면의 중심에서 같은 거리에 있다는 사실을 그림과 피타고라스 정리로 확인해 봅니다.</p></header>
+<main>
+<section class="card">
+ <div class="head"><div><h2>① 구와 절단 평면 관찰하기</h2><div class="muted">그림을 드래그하면 시점을 바꿀 수 있습니다.</div></div><span class="pill">캔버스 그래픽 · 오프라인</span></div>
+ <canvas id="scene" aria-label="구와 절단 평면을 관찰하는 그림"></canvas>
+ <div class="legend"><span><i class="swatch" style="background:#3478cf"></i>구</span><span><i class="swatch" style="background:#f59e0b"></i>절단 평면</span><span><i class="swatch" style="background:#d81b60"></i>단면 원과 교선</span><span><i class="swatch" style="background:#bd8410"></i>O: 구의 중심</span><span><i class="swatch" style="background:#12806a"></i>H: 단면의 중심</span></div>
+ <div class="controls">
+  <div class="control"><div class="rowline"><label for="radius">구의 반지름 R</label><span class="value" id="radiusValue">5</span></div><input id="radius" type="range" min="1" max="10" step="1" value="5"><div class="ends"><span>1</span><span>10</span></div></div>
+  <div class="control"><div class="rowline"><label for="height">중심에서 평면까지의 부호 있는 높이 d</label><span class="value" id="heightValue">0</span></div><input id="height" type="range" min="-7" max="7" step="0.1" value="0"><div class="ends"><span id="dmin">−7</span><span>0</span><span id="dmax">+7</span></div><div class="buttons"><button data-set="0">중심을 통과</button><button data-ratio="0.6">중심에서 조금 벗어나기</button><button data-edge="1">구에 접하기</button><button data-out="1">구 바깥으로 이동</button></div></div>
+ </div>
+ <div class="insight"><strong id="observationTitle">먼저 그림을 관찰해 보세요.</strong><p id="observation">평면과 구가 만나는 부분에 주목해 보세요. 단면 위의 여러 점은 중심 H에서 얼마나 떨어져 있을까요?</p></div>
+</section>
+<section class="card">
+ <div class="head"><div><h2>② 왜 단면이 원인지 증명하기</h2><div class="muted">그림의 점 O, H, P와 아래 설명을 연결해 보세요.</div></div></div>
+ <div class="status cut" id="status">● 구를 자릅니다.</div>
+ <div class="readout"><div class="formula" id="mainFormula">R² = d² + r²</div><div class="muted" id="formulaCaption">직각삼각형 OHP에 피타고라스 정리를 적용합니다.</div></div>
+ <div class="proof">
+  <h3>증명의 핵심 4단계</h3>
+  <div class="step"><span class="num">1</span><p><b>단면의 중심 H를 정합니다.</b><br>구의 중심 O에서 절단 평면에 수선을 내린 발을 H라고 합니다. 이때 OH의 길이는 높이의 부호가 아닌 거리이므로 <b>|d|</b>입니다.</p></div>
+  <div class="step"><span class="num">2</span><p><b>단면 위의 임의의 점 P를 잡습니다.</b><br>P는 구 위에 있으므로 OP는 항상 구의 반지름 R입니다. 또 OH는 평면에 수직이고 HP는 평면 안에 있으므로 ∠OHP = 90°입니다.</p></div>
+  <div class="step"><span class="num">3</span><p><b>피타고라스 정리를 적용합니다.</b><br>직각삼각형 OHP에서 OP² = OH² + HP²입니다. 따라서 R² = d² + HP², 즉 HP = √(R² − d²)입니다. 이 길이는 P를 어디에 잡아도 같습니다.</p></div>
+  <div class="step"><span class="num">4</span><p><b>원의 정의와 연결합니다.</b><br>단면 위의 모든 점 P가 평면 안의 한 점 H에서 같은 거리 r만큼 떨어져 있습니다. 평면에서 한 점으로부터 거리가 일정한 점들의 자취가 원이므로, 구와 평면의 교선은 원입니다.</p></div>
+  <div class="formula small">OP = R, &nbsp; OH = |d|, &nbsp; HP = r<br>R² = d² + r² &nbsp; ⇒ &nbsp; r = √(R² − d²)</div>
+  <p class="proofnote">주의: d는 위·아래를 구분하는 부호 있는 높이이고, OH는 거리이므로 |d|입니다. 식에는 제곱이 들어가므로 d가 +값이든 −값이든 단면 반지름은 같습니다.</p>
+ </div>
+ <div class="question"><h3>③ 직접 확인해 볼 질문</h3><p>• R을 고정하고 |d|를 키우면 단면 원은 어떻게 변하나요?</p><p>• d = +3과 d = −3에서 단면 반지름이 같은 이유를 식으로 설명할 수 있나요?</p><p>• |d| = R 또는 |d| &gt; R일 때는 왜 원이 생기지 않거나 점 하나만 남을까요?</p></div>
+</section>
+</main>
+<div class="footer">검증 예시: R=5, d=3이면 r=4입니다. R=5, d=5이면 접점 한 개, R=5, d=6이면 교선이 없습니다. 먼저 직접 계산한 뒤 화면과 비교해 보세요. 이 값은 검증용 예시이며 실험 측정 결과가 아닙니다.</div>
+<script>
+(()=>{
+const canvas=document.getElementById('scene'),ctx=canvas.getContext('2d');const Rinput=document.getElementById('radius'),dinput=document.getElementById('height');let yaw=Math.PI/4,pitch=-Math.acos(1/Math.sqrt(3)),drag=false,lx=0,ly=0;
+const fmt=n=>Number(n.toFixed(2)).toString();
+function resize(){const rect=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(rect.width*dpr);canvas.height=Math.round(rect.height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);draw()}
+function project(p,R,w,h){let [x,y,z]=p;let cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(pitch),sp=Math.sin(pitch);let x1=x*cy-y*sy,y1=x*sy+y*cy,z1=z;let y2=y1*cp-z1*sp,z2=y1*sp+z1*cp;let scale=Math.min(w,h)*.34/(R+1.5);return {x:w/2+x1*scale,y:h*.51-y2*scale,depth:z2,scale}}
+function line(a,b,color,width=1,dash=[]){ctx.beginPath();ctx.setLineDash(dash);ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();ctx.setLineDash([])}
+function text(s,p,color='#334155',size=12){ctx.font=`700 ${size}px system-ui`;ctx.fillStyle=color;ctx.fillText(s,p.x+6,p.y-6)}
+function draw(){if(!ctx)return;const w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;ctx.clearRect(0,0,w,h);const R=+Rinput.value,d=+dinput.value,ad=Math.abs(d),inside=ad<R-1e-6,tangent=Math.abs(ad-R)<1e-6,r=inside?Math.sqrt(Math.max(0,R*R-d*d)):0;
+ // softly shaded sphere silhouette
+ const center=project([0,0,0],R,w,h),rad=R*center.scale; // 구의 화면상 반지름은 회전 각도와 무관하게 고정
+ // 절단 평면은 구보다 먼저 그려 구 뒤쪽에서는 자연스럽게 가려지도록 함
+ const s=R*1.13,planePts=[[-s,-s,d],[s,-s,d],[s,s,d],[-s,s,d]].map(p=>project(p,R,w,h));ctx.beginPath();ctx.moveTo(planePts[0].x,planePts[0].y);planePts.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));ctx.closePath();ctx.fillStyle='rgba(190,145,90,.16)';ctx.fill();ctx.strokeStyle='rgba(174,132,80,.48)';ctx.lineWidth=1.2;ctx.stroke();
+ const grad=ctx.createRadialGradient(center.x-rad*.34,center.y-rad*.42,rad*.06,center.x,center.y,rad*1.12);grad.addColorStop(0,'rgba(133,190,249,.78)');grad.addColorStop(.62,'rgba(65,132,211,.56)');grad.addColorStop(1,'rgba(37,91,162,.30)');ctx.beginPath();ctx.arc(center.x,center.y,rad,0,Math.PI*2);ctx.fillStyle=grad;ctx.fill();ctx.strokeStyle='rgba(39,94,164,.72)';ctx.lineWidth=1.5;ctx.stroke();
+ // 위선과 경선을 깊이 기준으로 연속 구간으로 나누어 그립니다. 앞쪽은 실선, 뒤쪽은 점선으로 표시합니다.
+ function drawGridCurve(points){
+   if(points.length<2)return;
+   let run=[],side=null;
+   const strokeRun=()=>{if(run.length<2)return;ctx.beginPath();ctx.moveTo(run[0].x,run[0].y);for(let j=1;j<run.length;j++)ctx.lineTo(run[j].x,run[j].y);ctx.strokeStyle=side==='front'?'rgba(255,255,255,.34)':'rgba(38,91,157,.11)';ctx.lineWidth=side==='front'?0.8:0.65;ctx.setLineDash(side==='front'?[]:[2,5]);ctx.stroke();};
+   for(const p of points){const nextSide=p.depth>=0?'front':'back';if(side!==null&&nextSide!==side){strokeRun();run=[p];}else run.push(p);side=nextSide;}
+   strokeRun();ctx.setLineDash([]);
+ }
+ for(let lat=-60;lat<=60;lat+=30){const a=lat*Math.PI/180,pts=[];for(let i=0;i<=240;i++){const t=i/240*Math.PI*2;pts.push(project([R*Math.cos(a)*Math.cos(t),R*Math.cos(a)*Math.sin(t),R*Math.sin(a)],R,w,h));}drawGridCurve(pts);}
+ // 각 경선은 구의 북극과 남극을 잇는 반원입니다. 30도 간격으로 전체 방향을 표시합니다.
+ for(let lon=0;lon<360;lon+=30){const a=lon*Math.PI/180,pts=[];for(let i=0;i<=180;i++){const t=-Math.PI/2+i/180*Math.PI;pts.push(project([R*Math.cos(t)*Math.cos(a),R*Math.cos(t)*Math.sin(a),R*Math.sin(t)],R,w,h));}drawGridCurve(pts);}
+ // cross-section disk projected as an ellipse; drawn after plane so it stays visible
+ if(inside){ctx.save();ctx.beginPath();for(let i=0;i<=160;i++){const a=i/160*Math.PI*2,p=project([r*Math.cos(a),r*Math.sin(a),d],R,w,h);if(!i)ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y)}ctx.closePath();ctx.fillStyle='rgba(216,27,96,.25)';ctx.fill();ctx.strokeStyle='#c2185b';ctx.lineWidth=3;ctx.stroke();ctx.restore()}else if(tangent){const p=project([0,0,d],R,w,h);ctx.beginPath();ctx.arc(p.x,p.y,5,0,Math.PI*2);ctx.fillStyle='#d81b60';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke()}
+ // 좌표축은 표시하지 않고, 증명에 필요한 O와 H만 표시
+ const O=project([0,0,0],R,w,h),H=project([0,0,d],R,w,h);
+ // O-H perpendicular and points
+ if(Math.abs(d)>.001)line(O,H,'#12806a',2.5);[[O,'#bd8410','O'],[H,'#12806a','H']].forEach(([p,c,label])=>{ctx.beginPath();ctx.arc(p.x,p.y,4,0,Math.PI*2);ctx.fillStyle=c;ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();text(label,p,c)});
+ if(inside){const P=project([r,0,d],R,w,h);line(H,P,'#d81b60',2.5);const OP=project([r,0,d],R,w,h);line(O,OP,'rgba(40,52,70,.65)',1.6,[4,4]);text('P',P,'#b5144e');const mid={x:(H.x+P.x)/2,y:(H.y+P.y)/2};text('r',mid,'#b5144e');text('R', {x:(O.x+OP.x)/2,y:(O.y+OP.y)/2},'#344054');}
+ // corner caption and current state
+ ctx.fillStyle='#334155';ctx.font='700 12px system-ui';ctx.fillText(`절단 평면: z = ${d>0?'+':''}${fmt(d)}`,13,21);ctx.fillStyle='#64748b';ctx.font='12px system-ui';ctx.fillText('드래그하여 시점 회전',13,h-13);
+ // 오른쪽 위 방향 표시: 본 그래픽과 동일한 yaw/pitch 투영을 사용하므로 회전과 동기화됩니다.
+ const axOrigin={x:w-62,y:62},axisLen=27;
+ ctx.save();ctx.beginPath();ctx.arc(axOrigin.x,axOrigin.y,43,0,Math.PI*2);ctx.fillStyle='rgba(255,255,255,.78)';ctx.fill();ctx.strokeStyle='rgba(148,163,184,.35)';ctx.lineWidth=1;ctx.stroke();
+ const axisDefs=[{v:[1,0,0],label:'x',color:'#dc5555'},{v:[0,1,0],label:'y',color:'#15966b'},{v:[0,0,1],label:'z',color:'#397bd5'}];
+ // 축 방향만 회전·투영합니다. 위치 투영 함수에 0 크기의 캔버스를 넘기지 않습니다.
+ const axisDirection=([x,y,z])=>{const cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(pitch),sp=Math.sin(pitch);const x1=x*cy-y*sy,y1=x*sy+y*cy;return {x:x1,y:-(y1*cp-z*sp)};};
+ for(const a of axisDefs){const q=axisDirection(a.v),len=Math.hypot(q.x,q.y)||1,ex=axOrigin.x+q.x/len*axisLen,ey=axOrigin.y+q.y/len*axisLen;ctx.beginPath();ctx.moveTo(axOrigin.x,axOrigin.y);ctx.lineTo(ex,ey);ctx.strokeStyle=a.color;ctx.lineWidth=2.5;ctx.stroke();ctx.beginPath();ctx.arc(ex,ey,3,0,Math.PI*2);ctx.fillStyle=a.color;ctx.fill();ctx.font='700 12px system-ui';ctx.fillText(a.label,ex+(q.x/len)*7-3,ey+(q.y/len)*7+4);}
+ ctx.restore();
+ document.getElementById('radiusValue').textContent=fmt(R);document.getElementById('heightValue').textContent=(d>0?'+':'')+fmt(d);dinput.min=-(R+2);dinput.max=R+2;document.getElementById('dmin').textContent='−'+(R+2);document.getElementById('dmax').textContent='+'+(R+2);
+ const status=document.getElementById('status'),obsT=document.getElementById('observationTitle'),obs=document.getElementById('observation'),mainF=document.getElementById('mainFormula'),caption=document.getElementById('formulaCaption');
+ if(inside){status.className='status cut';status.textContent='● 구와 평면이 원으로 만납니다.';mainF.textContent=`R² = d² + r²  →  r = ${fmt(r)}`;caption.textContent=`현재 값: ${fmt(R*R)} = ${fmt(d*d)} + ${fmt(r*r)}. 하지만 원이 되는 이유는 이 수치보다 모든 점 P에 대해 HP가 같은 길이라는 사실입니다.`;obsT.textContent='관찰: 단면 위의 점 P를 어디에 잡아도';obs.textContent=`OP는 구의 반지름 ${fmt(R)}로 일정합니다. OH=${fmt(ad)}도 고정되어 있으므로 피타고라스 정리에서 HP는 항상 ${fmt(r)}입니다. 평면에서 H로부터 거리가 같은 점들이 모여 원을 이룹니다.`}
+ else if(tangent){status.className='status touch';status.textContent='● 구와 평면은 한 점에서 접합니다.';mainF.textContent=`r = √(R² − d²) = 0`;caption.textContent='반지름이 0인 원은 한 점으로 줄어듭니다.';obsT.textContent='관찰: 원의 크기가 0으로 줄어듭니다.';obs.textContent='평면이 구의 가장 위쪽 또는 아래쪽에 닿으면 H와 접점이 겹칩니다. 서로 다른 단면 점 P를 잡을 수 없고 교점 하나만 남습니다.'}
+ else{status.className='status none';status.textContent='● 구와 평면이 만나지 않습니다.';mainF.textContent=`R² − d² = ${fmt(R*R-d*d)} < 0`;caption.textContent='실수인 r이 존재하지 않으므로 단면이 없습니다.';obsT.textContent='관찰: 평면이 구 바깥에 있습니다.';obs.textContent='중심에서 평면까지의 거리 |d|가 구의 반지름 R보다 큽니다. 구 위의 점 P를 잡을 수 없으므로 단면 원도 생기지 않습니다.'}
+}
+Rinput.addEventListener('input',()=>{const R=+Rinput.value;dinput.min=-(R+2);dinput.max=R+2;if(+dinput.value>R+2)dinput.value=R+2;if(+dinput.value<-(R+2))dinput.value=-(R+2);draw()});dinput.addEventListener('input',draw);document.querySelectorAll('[data-set]').forEach(b=>b.addEventListener('click',()=>{dinput.value=+b.dataset.set;draw()}));document.querySelectorAll('[data-ratio]').forEach(b=>b.addEventListener('click',()=>{dinput.value=(+Rinput.value)*(+b.dataset.ratio);draw()}));document.querySelectorAll('[data-edge]').forEach(b=>b.addEventListener('click',()=>{dinput.value=+Rinput.value;draw()}));document.querySelectorAll('[data-out]').forEach(b=>b.addEventListener('click',()=>{dinput.value=+Rinput.value+1;draw()}));canvas.addEventListener('pointerdown',e=>{drag=true;lx=e.clientX;ly=e.clientY;canvas.setPointerCapture(e.pointerId)});canvas.addEventListener('pointermove',e=>{if(!drag)return;yaw+=(e.clientX-lx)*.009;pitch=Math.max(-1.15,Math.min(1.15,pitch+(e.clientY-ly)*.008));lx=e.clientX;ly=e.clientY;draw()});function stop(){drag=false}canvas.addEventListener('pointerup',stop);canvas.addEventListener('pointercancel',stop);window.addEventListener('resize',resize);resize();
+})();
+</script>
+</body>
+</html>

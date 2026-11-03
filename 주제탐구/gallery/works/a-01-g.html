@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>구 위 동점의 내적 극값 탐구</title>
+<style>
+body{font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif;margin:0;background:#f6f7fb;color:#20242b}
+.wrap{max-width:1100px;margin:auto;padding:24px}
+h1{margin-bottom:6px}.sub{color:#626b78}
+.grid{display:grid;grid-template-columns:330px 1fr;gap:18px}
+.card{background:white;border:1px solid #ddd;border-radius:14px;padding:18px;box-shadow:0 2px 8px #0000000a}
+label{display:block;margin:10px 0 4px;font-weight:650} input{width:100%;box-sizing:border-box;padding:9px;border:1px solid #bbb;border-radius:8px}
+button{margin-top:14px;padding:10px 14px;border:0;border-radius:8px;background:#222;color:white;cursor:pointer}
+.result{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.metric{padding:12px;background:#f1f3f6;border-radius:10px}
+canvas{width:100%;height:390px;border:1px solid #ddd;border-radius:10px;background:white}
+pre{white-space:pre-wrap;background:#f7f7f7;padding:12px;border-radius:10px;line-height:1.55}
+.note{font-size:.92rem;color:#5d6672}.test{margin-top:12px;padding:12px;border-left:4px solid #777;background:#fafafa}
+@media(max-width:800px){.grid{grid-template-columns:1fr}.result{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>기하: 구 위 동점의 내적 최댓값·최솟값</h1>
+<div class="sub">수학적 가설을 직접 계산하고 웹앱 결과와 비교하는 검증용 도구</div>
+
+<div class="grid">
+<div class="card">
+<h2>입력</h2>
+<p class="note">구의 중심 O=(h,k,l), 반지름 r, 고정 벡터 a=(a₁,a₂,a₃)를 입력하세요.</p>
+<label>중심 h</label><input id="h" type="number" value="1" step="0.1">
+<label>중심 k</label><input id="k" type="number" value="1" step="0.1">
+<label>중심 l</label><input id="l" type="number" value="1" step="0.1">
+<label>반지름 r</label><input id="r" type="number" value="3" min="0.1" step="0.1">
+<label>벡터 a₁</label><input id="a1" type="number" value="2" step="0.1">
+<label>벡터 a₂</label><input id="a2" type="number" value="1" step="0.1">
+<label>벡터 a₃</label><input id="a3" type="number" value="-2" step="0.1">
+<button onclick="calc()">계산 및 시각화</button>
+
+<div class="test">
+<b>검증용 3개 테스트 예시</b><br>
+① 경계값: r=0.5, a=(5,5,5)<br>
+② 일반값: O=(1,1,1), r=3, a=(2,1,-2)<br>
+③ 예외값: a=(0,0,0)
+</div>
+</div>
+
+<div>
+<div class="card">
+<h2>계산 결과</h2>
+<div class="result">
+<div class="metric"><b>|a|</b><div id="amag">-</div></div>
+<div class="metric"><b>상수항 a·O</b><div id="constant">-</div></div>
+<div class="metric"><b>내적 최댓값</b><div id="max">-</div></div>
+<div class="metric"><b>내적 최솟값</b><div id="min">-</div></div>
+</div>
+<h3>수학적 해석</h3><pre id="explain">입력 후 계산하세요.</pre>
+<h3>극값이 예상되는 구 위의 점</h3>
+<pre id="points">-</pre>
+</div>
+
+<div class="card" style="margin-top:18px">
+<h2>정사영 방향 시각화</h2>
+<div id="sphereWrap">
+  <canvas id="cv" width="900" height="500"></canvas>
+</div>
+<p class="note">구의 실제 공간적 모양을 이해할 수 있도록 3차원 구를 투영해 표시합니다. 마우스로 드래그하면 구를 회전할 수 있고, 휠로 확대·축소할 수 있습니다. a 방향의 화살표와 내적 최댓값·최솟값이 발생하는 두 점을 함께 표시합니다.</p>
+</div>
+</div>
+</div>
+</div>
+
+<script>
+function n(id){return Number(document.getElementById(id).value)}
+function fmt(x){return Number.isFinite(x)?x.toFixed(6).replace(/\.?0+$/,""):"계산 불가"}
+
+let scene, camera, renderer, sphere, axisGroup, maxPoint, minPoint, vectorArrow;
+let drag=false,lastX=0,lastY=0,rotX=-0.35,rotY=0.7,zoom=1;
+
+function init3D(){
+ const c=document.getElementById("cv");
+ scene=new THREE.Scene();
+ scene.background=new THREE.Color(0xffffff);
+ camera=new THREE.PerspectiveCamera(45,c.width/c.height,0.1,100);
+ camera.position.set(0,0,13);
+
+ renderer=new THREE.WebGLRenderer({canvas:c,antialias:true});
+ renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+
+ scene.add(new THREE.AmbientLight(0xffffff,0.9));
+ const light=new THREE.DirectionalLight(0xffffff,0.8);
+ light.position.set(5,8,10); scene.add(light);
+
+ const grid=new THREE.GridHelper(12,12);
+ grid.rotation.x=Math.PI/2; scene.add(grid);
+
+ c.addEventListener("pointerdown",e=>{drag=true;lastX=e.clientX;lastY=e.clientY;c.setPointerCapture(e.pointerId)});
+ c.addEventListener("pointerup",()=>drag=false);
+ c.addEventListener("pointermove",e=>{
+   if(!drag)return;
+   rotY+=(e.clientX-lastX)*0.008;
+   rotX+=(e.clientY-lastY)*0.008;
+   rotX=Math.max(-1.4,Math.min(1.4,rotX));
+   lastX=e.clientX;lastY=e.clientY; render3D();
+ });
+ c.addEventListener("wheel",e=>{
+   e.preventDefault(); zoom*=e.deltaY<0?1.08:0.93;
+   zoom=Math.max(.55,Math.min(2.2,zoom)); render3D();
+ },{passive:false});
+ render3D();
+}
+
+function clearGroup(g){
+ if(!g)return;
+ while(g.children.length){const o=g.children.pop();o.traverse?.(x=>{x.geometry?.dispose();x.material?.dispose()});}
+ scene.remove(g);
+}
+
+function addSphere(center,r){
+ if(sphere){scene.remove(sphere);sphere.geometry.dispose();sphere.material.dispose();}
+ const geo=new THREE.SphereGeometry(r,48,32);
+ const mat=new THREE.MeshPhongMaterial({color:0x8db8d8,transparent:true,opacity:.34,side:THREE.DoubleSide});
+ sphere=new THREE.Mesh(geo,mat);
+ sphere.position.set(center[0],center[1],center[2]);
+ scene.add(sphere);
+
+ const wire=new THREE.LineSegments(
+   new THREE.EdgesGeometry(new THREE.SphereGeometry(r,24,16)),
+   new THREE.LineBasicMaterial({color:0x4b5968,transparent:true,opacity:.35})
+ );
+ wire.position.copy(sphere.position); scene.add(wire);
+ sphere.userData.wire=wire;
+}
+
+function arrowFromTo(a,b,color){
+ const A=new THREE.Vector3(...a), B=new THREE.Vector3(...b);
+ const dir=B.clone().sub(A), len=dir.length();
+ const ar=new THREE.ArrowHelper(dir.normalize(),A,len,color,Math.min(.45,len*.18),Math.min(.25,len*.1));
+ return ar;
+}
+
+function render3D(){
+ if(!renderer)return;
+ camera.position.set(0,0,13/zoom);
+ camera.lookAt(0,0,0);
+ if(axisGroup){
+   axisGroup.rotation.x=rotX;axisGroup.rotation.y=rotY;
+ }
+ renderer.render(scene,camera);
+}
+
+function update3D(h,k,l,r,a,px,qx){
+ clearGroup(axisGroup); axisGroup=new THREE.Group(); scene.add(axisGroup);
+ addSphere([h,k,l],r);
+
+ // 공간축
+ const L=Math.max(5,r+2);
+ axisGroup.add(new THREE.AxesHelper(L));
+
+ if(a){
+   const amag=Math.hypot(...a);
+   if(amag>0){
+     const u=a.map(v=>v/amag);
+     const start=[h,k,l];
+     const end=[h+r*u[0],k+r*u[1],l+r*u[2]];
+     const end2=[h-r*u[0],k-r*u[1],l-r*u[2]];
+     vectorArrow=arrowFromTo(start,end,0x333333); axisGroup.add(vectorArrow);
+
+     const g1=new THREE.SphereGeometry(.14,20,16);
+     maxPoint=new THREE.Mesh(g1,new THREE.MeshPhongMaterial({color:0x2e7d32}));
+     maxPoint.position.set(...end);axisGroup.add(maxPoint);
+
+     const g2=new THREE.SphereGeometry(.14,20,16);
+     minPoint=new THREE.Mesh(g2,new THREE.MeshPhongMaterial({color:0xc62828}));
+     minPoint.position.set(...end2);axisGroup.add(minPoint);
+
+     const line1=arrowFromTo(start,end,0x2e7d32);
+     const line2=arrowFromTo(start,end2,0xc62828);
+     line1.line.material.opacity=.0; line2.line.material.opacity=.0;
+     axisGroup.add(line1,line2);
+   }
+ }
+ render3D();
+}
+
+function calc(){
+ const h=n("h"),k=n("k"),l=n("l"),r=n("r"),a1=n("a1"),a2=n("a2"),a3=n("a3");
+ if(!(r>0)){alert("반지름 r은 0보다 커야 합니다.");return}
+ const amag=Math.hypot(a1,a2,a3);
+ const constant=a1*h+a2*k+a3*l;
+ document.getElementById("amag").textContent=fmt(amag);
+ document.getElementById("constant").textContent=fmt(constant);
+
+ if(amag===0){
+   document.getElementById("max").textContent=fmt(constant);
+   document.getElementById("min").textContent=fmt(constant);
+   document.getElementById("points").textContent="벡터 a가 영벡터이므로 방향이 정해지지 않습니다. 구 위의 모든 점에서 내적이 동일합니다.";
+   document.getElementById("explain").textContent="가변항 r×(a·u)는 항상 0입니다. 따라서 최댓값과 최솟값이 같은 값이 됩니다.";
+   update3D(h,k,l,r,[a1,a2,a3],null,null);
+   return;
+ }
+
+ const mx=constant+r*amag, mn=constant-r*amag;
+ const px=[h+r*a1/amag,k+r*a2/amag,l+r*a3/amag];
+ const qx=[h-r*a1/amag,k-r*a2/amag,l-r*a3/amag];
+
+ document.getElementById("max").textContent=fmt(mx);
+ document.getElementById("min").textContent=fmt(mn);
+ document.getElementById("points").textContent=
+ "최댓값 점 P₊ = ("+px.map(fmt).join(", ")+")\n"+
+ "최솟값 점 P₋ = ("+qx.map(fmt).join(", ")+")";
+ document.getElementById("explain").textContent=
+ "점 P를 P=O+r×u (|u|=1)로 분해하면,\n"+
+ "a·P = a·O + r×(a·u)로 나뉩니다.\n\n"+
+ "상수항 a·O = "+fmt(constant)+"\n"+
+ "가변항의 범위: -r|a| ≤ r×(a·u) ≤ r|a|\n"+
+ "따라서 예상 극값: "+fmt(constant)+" ± "+fmt(r*amag)+"\n\n"+
+ "최댓값은 u가 a와 같은 방향일 때, 최솟값은 반대 방향일 때 발생합니다.";
+
+ update3D(h,k,l,r,[a1,a2,a3],px,qx);
+}
+
+const s=document.createElement("script");
+s.src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js";
+s.onload=()=>{init3D();calc()};
+document.head.appendChild(s);
+</script>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>곡선의 국소적 직선화 탐구 도구</title>
+<style>
+:root{--blue:#315ee8;--blue-dark:#2449bd;--orange:#e76b32;--ink:#182238;--muted:#68758d;--line:#dce4f0;--bg:#f4f7fc;--soft:#f7f9fd}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif}
+.wrap{max-width:1240px;margin:auto;padding:24px 20px 48px}header{margin-bottom:20px}.eyebrow{display:inline-block;margin-bottom:8px;padding:4px 9px;border-radius:20px;background:#e8efff;color:var(--blue-dark);font-size:.78rem;font-weight:800;letter-spacing:.02em}h1{font-size:clamp(1.45rem,3vw,2.15rem);line-height:1.25;margin:0 0 8px;letter-spacing:-.04em}h2{font-size:1.08rem;margin:0 0 14px;letter-spacing:-.02em}h3{font-size:.95rem;margin:0 0 9px}.sub,.hint,.small{color:var(--muted);font-size:.84rem}.sub{font-size:.96rem;margin:0}
+.layout{display:grid;grid-template-columns:minmax(300px,360px) minmax(0,1fr);gap:18px;align-items:start}.panel,.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 5px 20px #20365b0a}.controls{position:sticky;top:12px}.main{display:grid;gap:16px;min-width:0}.section{border-top:1px solid var(--line);margin-top:16px;padding-top:16px}.section.first{border:0;margin:0;padding:0}
+label{display:block;font-size:.86rem;font-weight:750;margin:10px 0 5px}input,select,button{font:inherit}input[type=number],select{width:100%;min-height:44px;border:1px solid #cbd6e6;border-radius:10px;padding:8px 11px;background:#fff;color:var(--ink)}input:focus,select:focus,button:focus-visible{outline:3px solid #b9ccff;outline-offset:1px}input[type=range]{width:100%;accent-color:var(--blue)}
+.coeffs{display:grid;grid-template-columns:1fr 1fr;gap:9px}.coeffs>div{padding:9px 10px 10px;border:1px solid var(--line);border-radius:11px;background:var(--soft)}.coeffs label{margin:0 0 5px;font-size:.8rem;color:#47536a}.coeffs input{min-height:40px}.formula-hint{margin:8px 0 0;padding:9px 10px;border-radius:9px;background:#f0f5ff;color:#3b527d;font-size:.8rem}
+.range{display:flex;justify-content:space-between;align-items:center;font-size:.8rem;color:var(--muted)}.val{font-weight:800;color:var(--blue);font-size:.9rem}button{border:0;border-radius:10px;min-height:43px;padding:9px 12px;background:var(--blue);color:#fff;font-weight:750;cursor:pointer;transition:background .15s,transform .15s}button:hover{background:var(--blue-dark)}button:active{transform:translateY(1px)}button.secondary{background:#eaf0ff;color:#24449f}button.secondary:hover{background:#dce7ff}button.ghost{background:#fff;color:#334155;border:1px solid var(--line)}button.ghost:hover{background:#f7f9fd}.buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:13px}.buttons #zoom{grid-column:1/-1;min-height:48px;font-size:1rem}.examples{display:grid;grid-template-columns:1fr;gap:7px}.examples button{text-align:left;font-size:.84rem;min-height:40px}
+.card-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:8px}.step{display:inline-flex;align-items:center;justify-content:center;width:25px;height:25px;margin-right:7px;border-radius:8px;background:#edf2ff;color:var(--blue);font-size:.8rem;font-weight:850}.graph-card{padding-bottom:14px}canvas{display:block;width:100%;height:350px}.legend{display:flex;flex-wrap:wrap;gap:14px;padding:7px 3px 0;font-size:.82rem;color:#475569}.legend span{display:flex;align-items:center;gap:6px}.swatch{width:22px;height:3px;background:var(--blue)}.swatch.tan{background:repeating-linear-gradient(90deg,var(--orange) 0 6px,transparent 6px 10px)}.swatch.area{width:15px;height:11px;background:#dbeafe;border:1px solid #93c5fd}
+.mathgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.mathbox{padding:12px;background:var(--soft);border:1px solid var(--line);border-radius:12px;min-width:0}.formula{font-family:Georgia,"Times New Roman",serif;font-size:1.03rem;overflow-wrap:anywhere}.explain{font-size:.78rem;color:var(--muted);margin:5px 0 0}.status{margin-top:12px;padding:11px 12px;border-radius:10px;background:#eff4ff;color:#24449f;font-size:.84rem}.status.error{background:#fff0f0;color:#b42318}.status.success{background:#edf9f1;color:#187044}
+.tablewrap{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:490px;font-size:.82rem}th,td{padding:9px 8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}th{background:#f5f7fb;color:#4e5b72;font-weight:750}th:first-child,td:first-child{text-align:center}.interpret{padding:13px 14px;background:#f2f6ff;border-left:4px solid var(--blue);border-radius:10px;font-size:.88rem}.guide ol{padding-left:20px;margin:6px 0}.guide li{margin:5px 0}.concept{padding-top:12px;margin-top:13px;border-top:1px solid var(--line)}
+@media(max-width:900px){.wrap{padding:18px 14px 36px}.layout{grid-template-columns:1fr}.controls{position:static;order:1}.main{order:2}.controls .section{margin-top:13px;padding-top:13px}.examples{grid-template-columns:repeat(3,minmax(0,1fr))}.examples button{font-size:.78rem;text-align:center;padding:7px 5px}}
+@media(max-width:560px){.wrap{padding:14px 10px 28px}.panel,.card{padding:14px;border-radius:15px}.mathgrid{grid-template-columns:1fr 1fr}.examples{grid-template-columns:1fr}.examples button{text-align:left;padding:8px 10px}canvas{height:270px}.card-head{align-items:flex-start}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><span class="eyebrow">미적분Ⅰ · 수학 탐구 도구</span><h1>확대하면 곡선은 왜 직선처럼 보일까?</h1><p class="sub">함수와 접선을 직접 비교하고, 관찰 범위를 줄일 때 최대 오차가 어떻게 변하는지 확인해 보자.</p></header>
+<div class="layout">
+<aside class="panel controls">
+<h2><span class="step">1</span>함수와 관찰 조건</h2>
+<label for="degree">함수 종류</label><select id="degree"><option value="2">이차함수</option><option value="3" selected>삼차함수</option></select>
+<p class="hint">각 칸에 숫자를 입력해. 계수 범위는 -10부터 10이야.</p><div id="coeffs" class="coeffs">
+<div><label for="c_a">a · x³ 계수</label><input id="c_a" type="number" value="1" min="-10" max="10" step="any"></div>
+<div><label for="c_b">b · x² 계수</label><input id="c_b" type="number" value="0" min="-10" max="10" step="any"></div>
+<div><label for="c_c">c · x 계수</label><input id="c_c" type="number" value="0" min="-10" max="10" step="any"></div>
+<div><label for="c_d">d · 상수항</label><input id="c_d" type="number" value="0" min="-10" max="10" step="any"></div>
+</div><p class="formula-hint" id="formulaHint">삼차함수: f(x) = ax³ + bx² + cx + d</p>
+<div class="section"><h3>접점과 확대 설정</h3>
+<label for="x0">접점의 x좌표 (x₀)</label><input id="x0" type="number" min="-10" max="10" step="any" value="0"><p class="hint">허용 범위: -10~10</p>
+<label for="delta">초기 관찰 범위 반지름 (δ)</label><input id="delta" type="range" min=".1" max="5" step=".1" value="2"><div class="range"><span>0.1</span><b class="val" id="dv">2</b><span>5</span></div>
+<label for="ratio">확대할 때 남길 비율</label><input id="ratio" type="range" min=".1" max=".9" step=".05" value=".5"><div class="range"><span>0.1</span><b class="val" id="rv">0.5</b><span>0.9</span></div>
+<p class="hint">예: 0.5이면 관찰 범위가 이전의 절반으로 줄어들어.</p>
+<div class="buttons"><button id="zoom">확대하기</button><button id="undo" class="secondary">이전 단계</button><button id="reset" class="secondary">초기화</button><button id="apply" class="ghost">입력 적용</button></div><div id="status" class="status">계수를 입력한 뒤 ‘입력 적용’을 눌러 그래프를 확인해.</div></div>
+<div class="section"><h3>② 검증 사례 불러오기</h3><div class="examples">
+<button class="secondary" data-case="ordinary">일반 사례: 이차함수</button>
+<button class="secondary" data-case="boundary">경계 사례: 삼차항 계수 0</button>
+<button class="secondary" data-case="exception">예외 사례: 일차함수</button></div><p class="hint">사례를 불러오면 기존 입력값이 예시 값으로 바뀌어.</p></div>
+</aside>
+<main class="main">
+<section class="card graph-card"><div class="card-head"><h2><span class="step">3</span>그래프 비교</h2><span class="small">파랑: 함수 · 주황: 접선</span></div><canvas id="graph" aria-label="원래 함수와 접선 그래프"></canvas><div class="legend"><span><i class="swatch"></i>원래 함수</span><span><i class="swatch tan"></i>접선</span><span><i class="swatch area"></i>관찰 구간</span></div><p class="small" id="caption">접점과 관찰 구간에 맞춰 가로축을 자동 조정해.</p></section>
+<section class="card"><h2><span class="step">4</span>수학식과 계산 과정</h2><div class="mathgrid">
+<div class="mathbox"><div class="formula" id="ff">f(x)=x³</div><p class="explain">입력한 원래 함수</p></div>
+<div class="mathbox"><div class="formula" id="lf">L(x)=0</div><p class="explain">접점에서 같은 값과 기울기를 갖는 접선</p></div>
+<div class="mathbox"><div class="formula">E(x)=|f(x)-L(x)|</div><p class="explain">같은 x에서 함수와 접선 사이의 세로 거리</p></div>
+<div class="mathbox"><div class="formula" id="mf">최대 오차 계산 중</div><p class="explain">관찰 구간 전체에서 가장 큰 오차</p></div></div><div id="calc" class="status">계산 과정이 여기에 표시돼.</div></section>
+<section class="card"><h2><span class="step">5</span>관찰 결과 기록</h2><div class="tablewrap"><table><thead><tr><th>단계</th><th>관찰 구간</th><th>최대 오차</th><th>오차 감소 비율</th></tr></thead><tbody id="tbody"><tr><td colspan="4" style="text-align:center">아직 기록이 없어.</td></tr></tbody></table></div><p class="hint">감소 비율은 직전 단계의 최대 오차와 비교해. 첫 단계는 비교 대상이 없어.</p><button id="csv" class="secondary" style="width:100%;margin-top:10px">결과 표 CSV 저장</button></section>
+<section class="card"><h2><span class="step">6</span>결과 해석</h2><div id="interpret" class="interpret">입력값을 적용하면 그래프와 오차 변화를 해석해 줄게.</div></section>
+<section class="card guide"><h2><span class="step">7</span>사용 방법과 핵심 개념</h2><ol><li>함수 종류를 선택하고 계수를 입력해.</li><li>접점의 x좌표와 초기 관찰 범위를 설정해.</li><li>확대 비율을 정하고 ‘입력 적용’을 눌러.</li><li>‘확대하기’를 누르며 그래프와 최대 오차를 비교해.</li><li>CSV 표를 저장하거나 손계산 결과와 비교해.</li></ol><div class="section"><h3>왜 접선에 가까워질까?</h3><p class="small">접선은 한 점에서 함수의 기울기를 나타내는 직선이야. 접점 주변에서 함수의 변화 중 1차 성분은 접선의 변화와 일치하고, 더 높은 차수의 성분이 곡선과 접선의 차이를 만들어. 관찰 범위를 줄이면 이 높은 차수 성분의 영향이 작아져.</p><p class="small"><b>주의:</b> 이차함수의 최대 오차는 관찰 반지름의 제곱에 비례해. 삼차함수는 세제곱 성분도 포함하므로 실제 오차를 구간 전체에서 계산해.</p></div></section>
+</main></div></div>
+<script>
+"use strict";
+
+// 초보자 수정 위치 ①: 기본값과 검증용 예시 사례
+const CASES={
+ ordinary:{degree:2,coef:{a:0,b:1,c:0,d:0},x0:1,delta:1,ratio:.5,label:"일반 사례: f(x)=x²"},
+ boundary:{degree:3,coef:{a:0,b:2,c:3,d:1},x0:.5,delta:.5,ratio:.5,label:"경계 사례: 삼차항 계수가 0인 이차함수"},
+ exception:{degree:3,coef:{a:0,b:0,c:2,d:1},x0:-1,delta:2,ratio:.5,label:"예외 사례: 접선과 일치하는 일차함수"}
+};
+const $=id=>document.getElementById(id);
+let history=[],initialDelta=2,currentDelta=2,last=null;
+
+// 함수 종류에 맞는 계수 입력칸 만들기
+function buildCoeffs(){
+ const degree=+$("degree").value;
+ const old={};["a","b","c","d"].forEach(k=>{const el=$("c_"+k);if(el)old[k]=el.value;});
+ const items=degree===3?[["a","a · x³ 계수"],["b","b · x² 계수"],["c","c · x 계수"],["d","d · 상수항"]]:[["b","b · x² 계수"],["c","c · x 계수"],["d","d · 상수항"]];
+ $("coeffs").innerHTML="";
+ items.forEach(([key,label])=>{
+  const box=document.createElement("div"),lab=document.createElement("label"),input=document.createElement("input");
+  lab.textContent=label;lab.htmlFor="c_"+key;input.id="c_"+key;input.type="number";input.step="any";input.min="-10";input.max="10";
+  input.value=old[key]!==undefined?old[key]:(key==="a"?1:0);box.append(lab,input);$("coeffs").append(box);
+ });
+ $("formulaHint").textContent=degree===3?"삼차함수: f(x) = ax³ + bx² + cx + d":"이차함수: f(x) = bx² + cx + d";
+}
+function read(){
+ const degree=+$("degree").value,coef={a:0,b:0,c:0,d:0};
+ const keys=degree===3?["a","b","c","d"]:["b","c","d"];
+ keys.forEach(k=>{const el=$("c_"+k);if(!el||el.value.trim()==="")throw Error("모든 함수 계수를 입력해 줘.");const n=+el.value;if(!Number.isFinite(n)||n< -10||n>10)throw Error("함수 계수는 -10부터 10 사이여야 해.");coef[k]=n;});
+ if($("x0").value.trim()==="")throw Error("접점의 x좌표를 입력해 줘.");
+ const x0=+$("x0").value,delta=+$("delta").value,ratio=+$("ratio").value;
+ if(!Number.isFinite(x0)||x0< -10||x0>10)throw Error("접점의 x좌표는 -10부터 10 사이여야 해.");
+ if(!(delta>=.1&&delta<=5))throw Error("관찰 반지름은 0.1부터 5 사이여야 해.");
+ if(!(ratio>=.1&&ratio<=.9))throw Error("확대 비율은 0.1부터 0.9 사이여야 해.");
+ return {degree,coef,x0,delta,ratio};
+}
+function f(x,p){const {a,b,c,d}=p.coef;return ((a*x+b)*x+c)*x+d;}
+function df(x,p){const {a,b,c}=p.coef;return (3*a*x+2*b)*x+c;}
+function fmt(n,d=6){if(!Number.isFinite(n))return "계산 불가";if(Math.abs(n)<1e-12)return "0";return Number(n.toPrecision(d)).toString();}
+function degreeOf(p){const q=p.coef;if(Math.abs(q.a)>1e-12)return 3;if(Math.abs(q.b)>1e-12)return 2;if(Math.abs(q.c)>1e-12)return 1;return 0;}
+function functionText(p){
+ const q=p.coef,terms=[];
+ [[q.a,"x³"],[q.b,"x²"],[q.c,"x"],[q.d,""]].forEach(([v,s])=>{if(Math.abs(v)<1e-12)return;const term=(s&&Math.abs(Math.abs(v)-1)<1e-12?"":fmt(Math.abs(v)))+s;terms.push((terms.length?(v<0?" - ":" + "):(v<0?"-":""))+term);});
+ return "f(x) = "+(terms.join("")||"0");
+}
+// 접점 기준 t=x-x0로 두면 f(x)-L(x)=A*t³+B*t².
+// 최대 오차 후보는 양 끝점과 내부에서 도함수가 0인 지점이다.
+function calculate(p,delta){
+ const x0=p.x0,y0=f(x0,p),slope=df(x0,p),intercept=y0-slope*x0;
+ const A=p.coef.a,B=3*p.coef.a*x0+p.coef.b;
+ const candidates=[{t:-delta,label:"왼쪽 끝점"},{t:delta,label:"오른쪽 끝점"}];
+ if(Math.abs(A)>1e-14){const t=-2*B/(3*A);if(t>-delta+1e-12&&t<delta-1e-12)candidates.push({t,label:"구간 내부 극값 후보"});}
+ const tested=candidates.map(o=>({...o,x:x0+o.t,error:Math.abs(A*o.t**3+B*o.t**2)})).sort((u,v)=>v.error-u.error);
+ return {y0,slope,intercept,left:x0-delta,right:x0+delta,max:tested[0].error,where:tested[0].x,candidates:tested};
+}
+function status(msg,type=""){$("status").textContent=msg;$("status").className="status"+(type?" "+type:"");}
+function render(p){
+ const r=calculate(p,currentDelta);last=r;
+ $("dv").textContent=fmt(currentDelta,4);$("rv").textContent=fmt(p.ratio,3);
+ $("ff").textContent=functionText(p);
+ $("lf").textContent="L(x) = "+fmt(r.slope)+"x "+(r.intercept<0?"- ":"+ ")+fmt(Math.abs(r.intercept));
+ $("mf").textContent="최대 오차 ≈ "+fmt(r.max)+" (x ≈ "+fmt(r.where)+")";
+ $("caption").textContent="관찰 구간: ["+fmt(r.left)+", "+fmt(r.right)+"] / 접점 x₀ = "+fmt(p.x0);
+ $("calc").textContent="① 접점: ("+fmt(p.x0)+", "+fmt(r.y0)+")  ② 접선 기울기 f'(x₀) = "+fmt(r.slope)+"  ③ 관찰 구간: ["+fmt(r.left)+", "+fmt(r.right)+"]  ④ 후보 비교: "+r.candidates.map(v=>v.label+" x="+fmt(v.x)+", 오차="+fmt(v.error)).join(" / ")+"  ⑤ 최대 오차 = "+fmt(r.max)+".";
+ draw(p,r);table();interpret(p,r);$("undo").disabled=history.length<=1;
+}
+function interpret(p,r){
+ const n=degreeOf(p);let s="현재 함수는 "+(n===3?"삼차함수":n===2?"이차함수":n===1?"일차함수":"상수함수")+"로 판별돼. ";
+ if(n<=1)s+="일차함수 또는 상수함수는 그래프 자체가 직선이므로 접선과 원래 함수가 일치해. 최대 오차는 0이야.";
+ else{s+="현재 관찰 구간에서 최대 오차는 약 "+fmt(r.max)+"이야. ";if(history.length>1){const prev=history[history.length-2].error;if(prev>1e-14)s+="직전 단계보다 최대 오차가 약 "+fmt((prev-r.max)/prev*100,5)+"% 감소했어. ";}s+=r.max<1e-8?"오차가 매우 작아 그래프가 접선과 거의 겹쳐 보일 수 있어.":"관찰 범위를 더 줄이며 곡선과 접선 사이의 차이가 어떻게 변하는지 확인해 봐.";}
+ $("interpret").textContent=s;
+}
+function draw(p,r){
+ const c=$("graph"),rect=c.getBoundingClientRect(),dpr=devicePixelRatio||1;c.width=Math.max(1,rect.width*dpr);c.height=Math.max(1,rect.height*dpr);
+ const ctx=c.getContext("2d");ctx.setTransform(dpr,0,0,dpr,0,0);const W=rect.width,H=rect.height;ctx.clearRect(0,0,W,H);
+ const span=Math.max(currentDelta*1.35,.08),xmin=p.x0-span,xmax=p.x0+span;let ymin=Infinity,ymax=-Infinity;
+ for(let i=0;i<=240;i++){const x=xmin+(xmax-xmin)*i/240;ymin=Math.min(ymin,f(x,p),r.slope*x+r.intercept);ymax=Math.max(ymax,f(x,p),r.slope*x+r.intercept);}
+ const pad=Math.max((ymax-ymin)*.13,.5);ymin-=pad;ymax+=pad;if(ymax-ymin<1e-8){ymin-=1;ymax+=1;}
+ const L=48,R=12,T=12,B=30,px=x=>L+(x-xmin)/(xmax-xmin)*(W-L-R),py=y=>T+(ymax-y)/(ymax-ymin)*(H-T-B);
+ ctx.fillStyle="#eff6ff";ctx.fillRect(px(r.left),T,px(r.right)-px(r.left),H-T-B);
+ ctx.strokeStyle="#e7edf5";ctx.fillStyle="#64748b";ctx.font="11px sans-serif";
+ for(let i=0;i<=5;i++){const x=xmin+(xmax-xmin)*i/5,xx=px(x);ctx.beginPath();ctx.moveTo(xx,T);ctx.lineTo(xx,H-B);ctx.stroke();ctx.textAlign="center";ctx.fillText(fmt(x,3),xx,H-10);}
+ for(let i=0;i<=4;i++){const y=ymin+(ymax-ymin)*i/4,yy=py(y);ctx.beginPath();ctx.moveTo(L,yy);ctx.lineTo(W-R,yy);ctx.stroke();ctx.textAlign="right";ctx.fillText(fmt(y,3),L-6,yy+4);}
+ ctx.strokeStyle="#94a3b8";if(ymin<=0&&ymax>=0){ctx.beginPath();ctx.moveTo(L,py(0));ctx.lineTo(W-R,py(0));ctx.stroke();}if(xmin<=0&&xmax>=0){ctx.beginPath();ctx.moveTo(px(0),T);ctx.lineTo(px(0),H-B);ctx.stroke();}
+ ctx.beginPath();ctx.strokeStyle="#2563eb";ctx.lineWidth=2.7;ctx.setLineDash([]);for(let i=0;i<=500;i++){const x=xmin+(xmax-xmin)*i/500,y=f(x,p);if(!i)ctx.moveTo(px(x),py(y));else ctx.lineTo(px(x),py(y));}ctx.stroke();
+ ctx.beginPath();ctx.strokeStyle="#ea580c";ctx.lineWidth=2.2;ctx.setLineDash([7,5]);for(let i=0;i<=100;i++){const x=xmin+(xmax-xmin)*i/100,y=r.slope*x+r.intercept;if(!i)ctx.moveTo(px(x),py(y));else ctx.lineTo(px(x),py(y));}ctx.stroke();ctx.setLineDash([]);
+ ctx.beginPath();ctx.arc(px(p.x0),py(r.y0),5,0,Math.PI*2);ctx.fillStyle="#0f172a";ctx.fill();ctx.strokeStyle="#fff";ctx.lineWidth=2;ctx.stroke();
+}
+function table(){
+ const body=$("tbody");body.innerHTML="";if(!history.length){body.innerHTML='<tr><td colspan="4">기록이 없어.</td></tr>';return;}
+ history.forEach((v,i)=>{const tr=document.createElement("tr"),rate=i===0?"—":v.previous>1e-14?fmt((v.previous-v.error)/v.previous*100,5)+"%":"비교 불가";
+ [i,"["+fmt(v.left)+", "+fmt(v.right)+"]",fmt(v.error),rate].forEach(x=>{const td=document.createElement("td");td.textContent=x;tr.append(td);});body.append(tr);});
+}
+function apply(){
+ try{
+  let p=read();
+  // 삼차함수의 삼차항 계수가 0이면 이차함수 입력 화면으로 자동 전환한다.
+  if(p.degree===3 && Math.abs(p.coef.a)<1e-12){
+   $("degree").value="2";
+   buildCoeffs();
+   $("c_b").value=p.coef.b;
+   $("c_c").value=p.coef.c;
+   $("c_d").value=p.coef.d;
+   p=read();
+  }
+  initialDelta=p.delta;currentDelta=p.delta;history=[];
+  render(p);
+  history.push({left:last.left,right:last.right,error:last.max,previous:null});
+  table();render(p);
+  status(degreeOf(p)<p.degree?"실제 함수가 일차함수 또는 상수함수이므로 해당 차수로 판별했어.":"입력값을 적용했어.","success");
+  return true;
+ }catch(e){status(e.message,"error");return false;}
+}
+$("degree").addEventListener("change",()=>{buildCoeffs();apply();});
+$("delta").addEventListener("input",()=>$("dv").textContent=fmt(+$("delta").value,4));
+$("ratio").addEventListener("input",()=>$("rv").textContent=fmt(+$("ratio").value,3));
+$("apply").addEventListener("click",apply);
+$("zoom").addEventListener("click",()=>{try{const p=read();if(!history.length){const r=calculate(p,currentDelta);history.push({left:r.left,right:r.right,error:r.max,previous:null});}const prev=last.max,next=currentDelta*p.ratio;if(next<1e-10)throw Error("관찰 범위가 너무 작아졌어. 초기화해 줘.");currentDelta=next;const r=calculate(p,currentDelta);history.push({left:r.left,right:r.right,error:r.max,previous:prev});render(p);status("관찰 범위를 이전의 "+fmt(p.ratio*100)+"%로 줄였어.","success");}catch(e){status(e.message,"error");}});
+$("undo").addEventListener("click",()=>{if(history.length<=1)return;history.pop();currentDelta=(history[history.length-1].right-history[history.length-1].left)/2;render(read());status("이전 관찰 단계로 돌아갔어.","success");});
+$("reset").addEventListener("click",()=>{try{const p=read();currentDelta=initialDelta;history=[];const r=calculate(p,currentDelta);history.push({left:r.left,right:r.right,error:r.max,previous:null});render(p);status("처음 관찰 범위로 초기화했어.","success");}catch(e){status(e.message,"error");}});
+document.querySelectorAll("[data-case]").forEach(btn=>btn.addEventListener("click",()=>{const v=CASES[btn.dataset.case];$("degree").value=v.degree;buildCoeffs();Object.entries(v.coef).forEach(([k,n])=>{const el=$("c_"+k);if(el)el.value=n;});$("x0").value=v.x0;$("delta").value=v.delta;$("ratio").value=v.ratio;initialDelta=v.delta;currentDelta=v.delta;apply();status(v.label+" 값을 불러왔어. 직접 손계산한 값과 비교해 봐.","success");}));
+$("csv").addEventListener("click",()=>{if(!history.length){status("저장할 결과가 없어. 먼저 입력 적용 또는 확대하기를 눌러 줘.","error");return;}const rows=[["단계","관찰구간_왼쪽","관찰구간_오른쪽","최대오차","오차감소비율(%)"]];history.forEach((v,i)=>rows.push([i,v.left,v.right,v.error,i===0||v.previous==null?"":v.previous>1e-14?(v.previous-v.error)/v.previous*100:""]));const csv="\uFEFF"+rows.map(row=>row.map(x=>'"'+String(x).replaceAll('"','""')+'"').join(",")).join("\r\n");const url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));const a=document.createElement("a");a.href=url;a.download="국소적_직선화_탐구결과.csv";a.click();URL.revokeObjectURL(url);status("CSV 파일 저장을 요청했어.","success");});
+window.addEventListener("resize",()=>{if(last){try{render(read());}catch(e){}}});
+
+// 초보자 수정 위치 ②: 첫 화면의 기본 함수와 기본 관찰 설정
+buildCoeffs();$("dv").textContent=fmt(+$("delta").value);$("rv").textContent=fmt(+$("ratio").value);apply();
+</script>
+</body>
+</html>

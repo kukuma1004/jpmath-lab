@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>조형서 - 삼차함수의 접선 개수 탐구</title>
+<style>
+:root{--ink:#182238;--muted:#68758b;--line:#d9deea;--blue:#3267e9;--bg:#f4f6fb;--card:#fff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+main{max-width:1120px;margin:0 auto;padding:26px 18px 48px}
+header{margin-bottom:22px}
+h1{font-size:clamp(25px,4vw,36px);margin:0 0 9px;font-weight:800;letter-spacing:-1.2px}
+.subtitle{color:var(--muted);font-size:15px;line-height:1.6;margin:0}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:19px;padding:22px;margin:16px 0;box-shadow:0 5px 18px rgba(24,34,56,.045)}
+h2{font-size:20px;margin:0 0 18px;letter-spacing:-.5px}
+h3{font-size:16px;margin:0 0 12px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.field label{display:block;font-weight:700;margin:0 0 8px}
+input[type=number]{width:100%;height:48px;border:1px solid #c8cfdd;border-radius:12px;padding:0 13px;font-size:17px;color:var(--ink);background:#fff;outline:none}
+input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(50,103,233,.12)}
+.hint{font-size:13px;color:var(--muted);line-height:1.6;margin:10px 0 0}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+button{border:0;border-radius:11px;padding:12px 18px;font-size:15px;font-weight:700;cursor:pointer}
+.primary{background:var(--blue);color:white}.secondary{background:#edf1f8;color:#34415a}
+.graph-wrap{border:1px solid var(--line);border-radius:15px;overflow:hidden;background:#fff}
+canvas{display:block;width:100%;height:410px;touch-action:none}
+.graph-note{padding:10px 13px;color:var(--muted);font-size:13px;border-top:1px solid #edf0f5}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}
+.stat{background:#f6f8fc;border:1px solid #e2e7f0;border-radius:13px;padding:14px}
+.stat small{display:block;color:var(--muted);margin-bottom:7px}
+.stat strong{font-size:21px;overflow-wrap:anywhere}
+.formula{background:#f5f7fb;border:1px solid #e0e5ef;border-radius:11px;padding:13px 14px;margin:10px 0;font-family:Georgia,serif;font-size:18px;overflow-wrap:anywhere}
+.result{line-height:1.75;color:#34415a}
+.legend{display:flex;gap:15px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin:0 0 10px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+@media(max-width:650px){main{padding:18px 12px 34px}.panel{padding:17px}.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr}canvas{height:330px}}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>삼차함수의 접선 개수 탐구</h1>
+  <p class="subtitle">조형서 · 미적분Ⅰ 수학 탐구 웹앱<br>외부점 P의 위치를 바꾸며 접점 방정식의 실근 개수와 실제 접선 개수의 관계를 확인한다.</p>
+</header>
+
+<section class="panel">
+  <h2>① 함수와 외부점</h2>
+  <div class="grid">
+    <div class="field"><label for="a">a</label><input id="a" type="number" step="0.1" value="1"></div>
+    <div class="field"><label for="b">b</label><input id="b" type="number" step="0.1" value="0"></div>
+    <div class="field"><label for="c">c</label><input id="c" type="number" step="0.1" value="-3"></div>
+    <div class="field"><label for="d">d</label><input id="d" type="number" step="0.1" value="0"></div>
+  </div>
+  <p class="hint">함수는 f(x) = ax³ + bx² + cx + d 이다. a는 0이 될 수 없다.</p>
+  <div class="grid" style="margin-top:18px">
+    <div class="field"><label for="p">외부점 P의 x좌표</label><input id="p" type="number" step="0.05" value="1.75"></div>
+    <div class="field"><label for="q">외부점 P의 y좌표</label><input id="q" type="number" step="0.05" value="2"></div>
+  </div>
+  <div class="actions">
+    <button class="primary" id="apply">값 적용하기</button>
+    <button class="secondary" id="reset">초기값으로</button>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>② 함수 그래프와 접선 시각화</h2>
+  <div class="legend">
+    <span><i class="dot" style="background:#3267e9"></i>삼차함수</span>
+    <span><i class="dot" style="background:#e34b55"></i>외부점 P</span>
+    <span><i class="dot" style="background:#13a38b"></i>접선</span>
+    <span><i class="dot" style="background:#9b72d8"></i>변곡접선</span>
+  </div>
+  <div class="graph-wrap">
+    <canvas id="graph" width="1000" height="520"></canvas>
+    <div class="graph-note">그래프의 빨간 점 P를 손가락이나 마우스로 끌어 이동해 보세요. 점의 위치에 따라 접선과 접점이 실시간으로 바뀐다.</div>
+  </div>
+  <div class="stats">
+    <div class="stat"><small>서로 다른 접선</small><strong id="tangentCount">-</strong></div>
+    <div class="stat"><small>외부점 P</small><strong id="pointText">-</strong></div>
+    <div class="stat"><small>접점 방정식의 서로 다른 실근</small><strong id="rootCount">-</strong></div>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>③ 접점 방정식 분석</h2>
+  <p class="result">접점을 T = (t, f(t))로 놓으면 접선의 방정식은 다음과 같다.</p>
+  <div class="formula">y − f(t) = f′(t)(x − t)</div>
+  <p class="result">외부점 P = (p, q)가 접선 위에 있으므로</p>
+  <div class="formula">q − f(t) = f′(t)(p − t)</div>
+  <p class="result">이를 정리하면 접점의 x좌표 t에 대한 삼차방정식을 얻는다.</p>
+  <div class="formula" id="equation">-</div>
+  <p class="result">접점 방정식의 서로 다른 실근은 서로 다른 접점에 대응한다. 따라서 실근의 개수를 통해 P에서 그을 수 있는 서로 다른 접선의 개수를 판단할 수 있다. 중근은 서로 다른 실근으로 한 번만 센다.</p>
+  <h3 style="margin-top:20px">도함수와 경계</h3>
+  <div class="formula" id="derivative">-</div>
+  <div class="formula" id="inflection">-</div>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const canvas=$('graph'),ctx=canvas.getContext('2d');
+let dragging=false, state={a:1,b:0,c:-3,d:0,p:1.75,q:2};
+const colors={curve:'#3267e9',point:'#e34b55',tangent:'#13a38b',inf:'#9b72d8'};
+function f(x){let s=state;return s.a*x*x*x+s.b*x*x+s.c*x+s.d}
+function fp(x){let s=state;return 3*s.a*x*x+2*s.b*x+s.c}
+function fmt(n){return Number(n.toFixed(3)).toString()}
+function poly(t){let s=state;return 2*s.a*t**3+(s.b-3*s.a*s.p)*t**2-2*s.b*s.p*t+(s.q-s.d-s.c*s.p)}
+function rootsReal(){
+ let s=state, A=2*s.a,B=s.b-3*s.a*s.p,C=-2*s.b*s.p,D=s.q-s.d-s.c*s.p;
+ let crit=[];
+ let disc=B*B-3*A*C;
+ if(disc>=0){let r=Math.sqrt(disc);crit.push((-B-r)/(3*A),(-B+r)/(3*A))}
+ let bound=100, cuts=[-bound,...crit.filter(x=>x>-bound&&x<bound).sort((x,y)=>x-y),bound], roots=[];
+ const add=x=>{if(!roots.some(y=>Math.abs(y-x)<1e-5))roots.push(x)};
+ for(let x of cuts)if(Math.abs(poly(x))<1e-7)add(x);
+ for(let i=0;i<cuts.length-1;i++){
+  let lo=cuts[i],hi=cuts[i+1],fl=poly(lo),fh=poly(hi);
+  if(fl*fh>0)continue;
+  for(let k=0;k<65;k++){let mid=(lo+hi)/2,fm=poly(mid);if(fl*fm<=0){hi=mid;fh=fm}else{lo=mid;fl=fm}}
+  add((lo+hi)/2);
+ }
+ return roots.sort((x,y)=>x-y);
+}
+function mapX(x){return (x+5)/10*canvas.width}
+function mapY(y){return canvas.height-(y+10)/20*canvas.height}
+function draw(){
+ let w=canvas.width,h=canvas.height;ctx.clearRect(0,0,w,h);ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);
+ ctx.strokeStyle='#edf0f5';ctx.lineWidth=1;
+ for(let x=-5;x<=5;x++){let X=mapX(x);ctx.beginPath();ctx.moveTo(X,0);ctx.lineTo(X,h);ctx.stroke()}
+ for(let y=-10;y<=10;y+=2){let Y=mapY(y);ctx.beginPath();ctx.moveTo(0,Y);ctx.lineTo(w,Y);ctx.stroke()}
+ ctx.strokeStyle='#7d8798';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,mapY(0));ctx.lineTo(w,mapY(0));ctx.moveTo(mapX(0),0);ctx.lineTo(mapX(0),h);ctx.stroke();
+ ctx.fillStyle='#68758b';ctx.font='16px sans-serif';ctx.fillText('x',w-22,mapY(0)-10);ctx.fillText('y',mapX(0)+10,20);
+ // cubic curve
+ ctx.strokeStyle=colors.curve;ctx.lineWidth=4;ctx.beginPath();
+ for(let i=0;i<=600;i++){let x=-5+i/60,y=f(x),X=mapX(x),Y=mapY(Math.max(-30,Math.min(30,y)));if(i===0)ctx.moveTo(X,Y);else ctx.lineTo(X,Y)}ctx.stroke();
+ // inflection tangent
+ let xi=-state.b/(3*state.a), yi=f(xi), slope=fp(xi);
+ line(xi,yi,slope,colors.inf,2.5,[9,7]);
+ // contact tangents
+ let rs=rootsReal();
+ rs.forEach(t=>{let y=f(t),m=fp(t);line(t,y,m,colors.tangent,2.5)});
+ // external point
+ ctx.fillStyle=colors.point;ctx.beginPath();ctx.arc(mapX(state.p),mapY(state.q),11,0,Math.PI*2);ctx.fill();
+ ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.stroke();
+ // contact points
+ rs.forEach(t=>{ctx.fillStyle='#13a38b';ctx.beginPath();ctx.arc(mapX(t),mapY(f(t)),6,0,Math.PI*2);ctx.fill()});
+}
+function line(x,y,m,color,width,dash=[]){ctx.save();ctx.strokeStyle=color;ctx.lineWidth=width;ctx.setLineDash(dash);ctx.beginPath();let x1=-5,x2=5;ctx.moveTo(mapX(x1),mapY(y+m*(x1-x)));ctx.lineTo(mapX(x2),mapY(y+m*(x2-x)));ctx.stroke();ctx.restore()}
+function update(){
+ state={a:+$('a').value,b:+$('b').value,c:+$('c').value,d:+$('d').value,p:+$('p').value,q:+$('q').value};
+ if(!Number.isFinite(state.a)||state.a===0){$('a').value=1;state.a=1}
+ let rs=rootsReal(),xi=-state.b/(3*state.a),yi=f(xi);
+ $('tangentCount').textContent=rs.length+'개';
+ $('rootCount').textContent=rs.length+'개';
+ $('pointText').textContent='('+fmt(state.p)+', '+fmt(state.q)+')';
+ let s=state;
+ $('equation').textContent=fmt(2*s.a)+'t³ + ('+fmt(s.b-3*s.a*s.p)+')t² + ('+fmt(-2*s.b*s.p)+')t + ('+fmt(s.q-s.d-s.c*s.p)+') = 0';
+ $('derivative').textContent='G′(t) = 2(3at + b)(t − p)';
+ $('inflection').textContent='변곡점: ('+fmt(xi)+', '+fmt(yi)+')  /  변곡접선: y = '+fmt(yi-slopeAt(xi)*xi)+' + '+fmt(slopeAt(xi))+'x';
+ draw();
+}
+function slopeAt(x){return fp(x)}
+$('apply').onclick=update;
+$('reset').onclick=()=>{Object.entries({a:1,b:0,c:-3,d:0,p:1.75,q:2}).forEach(([k,v])=>$(k).value=v);update()};
+['a','b','c','d','p','q'].forEach(id=>$(id).addEventListener('change',update));
+function pointer(e){let r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*canvas.width,y=(e.clientY-r.top)/r.height*canvas.height;return {x,y}}
+function down(e){let z=pointer(e),px=mapX(state.p),py=mapY(state.q);if(Math.hypot(z.x-px,z.y-py)<45){dragging=true;canvas.setPointerCapture(e.pointerId)}}
+function move(e){if(!dragging)return;let z=pointer(e);state.p=Math.max(-5,Math.min(5,(z.x/canvas.width)*10-5));state.q=Math.max(-10,Math.min(10,(1-z.y/canvas.height)*20-10));$('p').value=fmt(state.p);$('q').value=fmt(state.q);update()}
+function up(){dragging=false}
+canvas.addEventListener('pointerdown',down);canvas.addEventListener('pointermove',move);canvas.addEventListener('pointerup',up);canvas.addEventListener('pointercancel',up);
+update();
+</script>
+</body>
+</html>

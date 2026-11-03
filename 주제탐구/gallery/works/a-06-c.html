@@ -1,0 +1,1462 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>입체도형의 부피와 겉넓이 미적분 시각화 실험실</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- KaTeX for Math Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        /* Custom Range Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            background: #334155;
+            height: 0.5rem;
+            border-radius: 9999px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            margin-top: -4px;
+            background-color: #38bdf8;
+            height: 1.25rem;
+            width: 1.25rem;
+            border-radius: 9999px;
+            border: 2px solid #0f172a;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+            transition: transform 0.15s ease, background-color 0.15s ease;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+            background-color: #7dd3fc;
+        }
+        .canvas-container {
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+            border: 1px solid #334155;
+        }
+        .tab-active {
+            background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.35);
+            border-color: #60a5fa;
+        }
+        .katex { font-size: 1.05em; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="px-2.5 py-0.5 text-xs font-semibold bg-sky-500/20 text-sky-300 border border-sky-500/30 rounded-full">수학Ⅱ · 미적분Ⅰ 심화 탐구</span>
+                    <span class="text-xs text-slate-400">구분구적법과 정적분 시각화 실험실</span>
+                </div>
+                <h1 class="text-xl sm:text-2xl font-bold text-white mt-1 tracking-tight">
+                    단면적 적분을 통한 입체도형의 부피와 구의 겉넓이 유도
+                </h1>
+            </div>
+            <!-- Navigation Tabs -->
+            <div class="flex flex-wrap gap-2" id="tab-buttons">
+                <button onclick="switchTab(1)" id="tab-btn-1" class="tab-active px-4 py-2 rounded-xl text-sm font-semibold border border-slate-700 transition-all">
+                    ① 원뿔·각뿔 비교 ($\frac{1}{3}$ 유래)
+                </button>
+                <button onclick="switchTab(2)" id="tab-btn-2" class="bg-slate-800/80 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl text-sm font-semibold border border-slate-700 transition-all">
+                    ② 구의 부피 유도 (단면 원판)
+                </button>
+                <button onclick="switchTab(3)" id="tab-btn-3" class="bg-slate-800/80 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl text-sm font-semibold border border-slate-700 transition-all">
+                    ③ 구의 겉넓이 ($\cos\theta$ 경사 길이)
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left Column: Interactive Visual Canvases (8 cols) -->
+        <div class="lg:col-span-8 flex flex-col gap-6">
+            
+            <!-- Primary 3D/Geometric Visualization Canvas Card -->
+            <div class="canvas-container rounded-2xl p-4 flex flex-col relative overflow-hidden shadow-xl">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-3 z-10">
+                    <div>
+                        <h2 id="canvas-title" class="text-base sm:text-lg font-bold text-sky-300">
+                            밑넓이($B$)와 높이($H$)가 같은 원뿔과 사각뿔의 단면 비교
+                        </h2>
+                        <p id="canvas-subtitle" class="text-xs text-slate-400">
+                            마우스 드래그 또는 터치로 입체 각도를 회전할 수 있습니다.
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="toggleRiemann()" id="riemann-toggle-btn" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 hover:bg-indigo-500/30 transition">
+                            구분구적법 기둥 보기: ON
+                        </button>
+                        <button onclick="resetCamera()" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition">
+                            시점 초기화
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Main Interactive Canvas -->
+                <div class="relative w-full h-[360px] sm:h-[420px] select-none">
+                    <canvas id="mainCanvas" class="w-full h-full cursor-grab active:cursor-grabbing rounded-xl"></canvas>
+                    
+                    <!-- Floating Overlay Badge -->
+                    <div id="canvas-overlay" class="absolute bottom-3 left-3 bg-slate-900/85 backdrop-blur border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-xs space-y-1 pointer-events-none">
+                        <!-- Dynamic Content injected by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Secondary Graph & Cross-Section Comparison Canvas Card -->
+            <div class="canvas-container rounded-2xl p-4 flex flex-col shadow-xl">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 id="graph-title" class="text-sm sm:text-base font-bold text-emerald-300">
+                        단면적 함수 $A(x) = B\left(\frac{x}{H}\right)^2$ 적분 그래프 및 실제 단면 모양 비교
+                    </h3>
+                    <span id="graph-badge" class="text-xs mono px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        카발리에리의 원리 성립
+                    </span>
+                </div>
+                <div class="relative w-full h-[220px] sm:h-[240px]">
+                    <canvas id="graphCanvas" class="w-full h-full rounded-xl"></canvas>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Controls, Live Calculations & Report Insights (4 cols) -->
+        <div class="lg:col-span-4 flex flex-col gap-5">
+
+            <!-- Sliders & Parameter Controls Card -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <h3 class="font-bold text-white flex items-center gap-2">
+                        <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                        탐구 변수 조작 패널
+                    </h3>
+                    <button onclick="toggleAutoPlay()" id="autoplay-btn" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-sky-500/20 text-sky-300 border border-sky-500/30 hover:bg-sky-500/30 transition">
+                        ▶ 단면 자동 이동
+                    </button>
+                </div>
+
+                <!-- Control 1: Slice Position (x or theta) -->
+                <div class="space-y-1.5">
+                    <div class="flex justify-between text-xs sm:text-sm">
+                        <span id="label-pos" class="font-medium text-slate-300">꼭짓점으로부터의 거리 $x$ (높이비 $\frac{x}{H}$)</span>
+                        <span id="val-pos" class="mono font-bold text-sky-400">x = 3.60 (60%)</span>
+                    </div>
+                    <input type="range" id="slider-pos" min="0" max="1" step="0.01" value="0.6" class="w-full">
+                </div>
+
+                <!-- Control 2: Number of Slices N (Riemann Sum) -->
+                <div class="space-y-1.5">
+                    <div class="flex justify-between text-xs sm:text-sm">
+                        <span class="font-medium text-slate-300">구분구적법 분할 수 ($N$)</span>
+                        <span id="val-n" class="mono font-bold text-indigo-400">N = 12개</span>
+                    </div>
+                    <input type="range" id="slider-n" min="4" max="80" step="1" value="12" class="w-full">
+                    <p class="text-[11px] text-slate-400">
+                        $N$이 커질수록 얇은 기둥(또는 띠)의 합이 정적분 이론값에 수렴합니다.
+                    </p>
+                </div>
+
+                <!-- Control 3: Radius R -->
+                <div class="space-y-1.5">
+                    <div class="flex justify-between text-xs sm:text-sm">
+                        <span id="label-r" class="font-medium text-slate-300">기준 반지름 ($R$)</span>
+                        <span id="val-r" class="mono font-bold text-emerald-400">R = 3.0</span>
+                    </div>
+                    <input type="range" id="slider-r" min="1.5" max="4.5" step="0.1" value="3.0" class="w-full">
+                </div>
+
+                <!-- Control 4: Height H (Only visible in Tab 1) -->
+                <div id="control-h-wrapper" class="space-y-1.5">
+                    <div class="flex justify-between text-xs sm:text-sm">
+                        <span class="font-medium text-slate-300">뿔의 높이 ($H$)</span>
+                        <span id="val-h" class="mono font-bold text-amber-400">H = 6.0</span>
+                    </div>
+                    <input type="range" id="slider-h" min="3.0" max="9.0" step="0.2" value="6.0" class="w-full">
+                </div>
+
+                <!-- Control 5: Tab 3 Mode Toggle (Slant Length ds vs Horizontal dx) -->
+                <div id="control-tab3-mode" class="hidden pt-2 border-t border-slate-800 space-y-2">
+                    <span class="text-xs font-semibold text-amber-300 block">⚠️ 구의 겉넓이 띠의 폭 적용 방식 비교</span>
+                    <div class="grid grid-cols-1 gap-2">
+                        <button onclick="setSphereBandMode('slant')" id="btn-mode-slant" class="text-left px-3 py-2 rounded-xl border border-emerald-500 bg-emerald-500/20 text-emerald-200 text-xs font-medium transition">
+                            <div class="font-bold">✅ 올바른 유도: 경사 길이 반영 ($ds = R\,d\theta$)</div>
+                            <div class="text-[11px] opacity-80">구면의 기울기를 반영한 호의 길이 곱셈 $\rightarrow 4\pi R^2$</div>
+                        </button>
+                        <button onclick="setSphereBandMode('flat')" id="btn-mode-flat" class="text-left px-3 py-2 rounded-xl border border-slate-700 bg-slate-800/70 text-slate-300 text-xs font-medium transition">
+                            <div class="font-bold">❌ 오류 비교: 단순 수평 두께만 사용 ($dx$)</div>
+                            <div class="text-[11px] opacity-80">경사 길이를 무시하고 $2\pi r \cdot dx$ 적분 $\rightarrow \pi^2 R^2$ (오차 발생!)</div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Numerical Comparison & Formula Readout Card -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+                <h3 class="font-bold text-white text-sm sm:text-base border-b border-slate-800 pb-2.5 flex items-center justify-between">
+                    <span>실시간 계산 및 정적분 비교</span>
+                    <span id="live-tag" class="text-[11px] px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 font-mono">B = πR² 동일 조건</span>
+                </h3>
+
+                <div id="live-metrics" class="space-y-2.5 text-xs sm:text-sm">
+                    <!-- Populated dynamically by JS -->
+                </div>
+            </div>
+
+            <!-- Student Report Synthesis Card (Matches Guidelines ①~④) -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3 flex-1">
+                <h3 class="font-bold text-sky-300 text-sm sm:text-base flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <span id="insight-title">탐구 보고서 핵심 해석</span>
+                </h3>
+                <div id="insight-content" class="text-xs sm:text-sm text-slate-300 space-y-2.5 leading-relaxed">
+                    <!-- Dynamic Report Text -->
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Bottom Summary Section: Complete Report Viewer -->
+    <section class="max-w-7xl w-full mx-auto px-4 sm:px-6 pb-10">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-4 mb-5">
+                <div>
+                    <h2 class="text-lg font-bold text-white">📑 미적분Ⅰ 탐구 보고서 수식 및 구조 요약</h2>
+                    <p class="text-xs text-slate-400">수행 과정 기록 · 결과와 근거 · 수학적 해석 · 한계와 주의할 점 핵심 정리</p>
+                </div>
+                <span class="text-xs px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 self-start sm:self-auto">
+                    완료 기준 충족: 단면적 비교 · 1/3 계수 · 코사인 경사 길이 유도
+                </span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs sm:text-sm">
+                <div class="bg-slate-800/50 border border-slate-700/70 rounded-xl p-4 space-y-2">
+                    <div class="font-bold text-sky-400">1. 수행 과정 및 비교 조건</div>
+                    <p class="text-slate-300 leading-relaxed">
+                        밑면의 모양(원 vs 다각형)에 관계없이 뿔의 부피 공식이 성립하는 이유를 확인하기 위해 <strong>밑넓이($B=\pi R^2$)와 높이($H$)를 같게</strong> 설정하였다. 경사진 입체를 밑면에 평행한 얇은 단면으로 나누어 적분하였다.
+                    </p>
+                </div>
+                <div class="bg-slate-800/50 border border-slate-700/70 rounded-xl p-4 space-y-2">
+                    <div class="font-bold text-emerald-400">2. 결과와 근거 (단면적과 적분)</div>
+                    <p class="text-slate-300 leading-relaxed">
+                        높이비 $\frac{x}{H}$에서 $A_{\text{원뿔}}(x) = A_{\text{각뿔}}(x) = B\left(\frac{x}{H}\right)^2$으로 항상 같고, $\int_0^H B\frac{x^2}{H^2}dx = \frac{1}{3}BH$가 된다. 구의 겉넓이는 $r=R\cos\theta$, 경사 폭 $R\,d\theta$를 곱해 $\int_{-\pi/2}^{\pi/2} 2\pi R^2\cos\theta\,d\theta = 4\pi R^2$을 유도하였다.
+                    </p>
+                </div>
+                <div class="bg-slate-800/50 border border-slate-700/70 rounded-xl p-4 space-y-2">
+                    <div class="font-bold text-indigo-400">3. 수학적 해석 (공통 구조)</div>
+                    <p class="text-slate-300 leading-relaxed">
+                        모든 부피·겉넓이는 <strong>미소 조각(단면적·띠)의 정적분</strong>이라는 공통 구조를 가진다. 특히 계수 <strong>$\frac{1}{3}$</strong>은 닮음비의 제곱($x^2$)에 비례하는 단면적을 적분할 때 $\int x^2 dx = \frac{1}{3}x^3$에서 필연적으로 도출되는 값이다.
+                    </p>
+                </div>
+                <div class="bg-slate-800/50 border border-slate-700/70 rounded-xl p-4 space-y-2">
+                    <div class="font-bold text-amber-400">4. 한계와 주의할 점</div>
+                    <p class="text-slate-300 leading-relaxed">
+                        겉넓이 유도 시 단순 수평 두께($dx$)만 곱하면 오차가 사라지지 않으므로 반드시 <strong>띠의 경사 길이($R\,d\theta$)</strong>를 반영해야 한다. 임의의 다각형 닮음 넓이비 증명과 삼각함수 미적분 증명은 상위 미적분 학습 후 보완할 계획이다.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // --- Application State ---
+        const state = {
+            tab: 1,                  // 1: Cone & Pyramid, 2: Sphere Volume, 3: Sphere Surface Area
+            posRatio: 0.65,          // Normalized slice position [0, 1]
+            N: 12,                   // Number of Riemann slices
+            R: 3.0,                  // Base radius / Sphere radius
+            H: 6.0,                  // Cone / Pyramid height
+            showRiemann: true,       // Show stacked disks/slabs
+            sphereBandMode: 'slant', // 'slant' (ds = R dtheta) or 'flat' (dx)
+            autoPlay: false,
+            // 3D Camera Angles
+            camYaw: -0.55,
+            camPitch: 0.38,
+            isDragging: false,
+            lastMouseX: 0,
+            lastMouseY: 0
+        };
+
+        const mainCanvas = document.getElementById('mainCanvas');
+        const mainCtx = mainCanvas.getContext('2d');
+        const graphCanvas = document.getElementById('graphCanvas');
+        const graphCtx = graphCanvas.getContext('2d');
+
+        // --- Helper: KaTeX Re-render ---
+        function renderMath() {
+            if (window.renderMathInElement) {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        }
+
+        // --- 3D Projection Helper ---
+        function project3D(x, y, z, cx, cy, scale) {
+            // Rotate around Y axis (yaw)
+            const cosY = Math.cos(state.camYaw);
+            const sinY = Math.sin(state.camYaw);
+            const x1 = x * cosY - z * sinY;
+            const z1 = x * sinY + z * cosY;
+
+            // Rotate around X axis (pitch)
+            const cosP = Math.cos(state.camPitch);
+            const sinP = Math.sin(state.camPitch);
+            const y2 = y * cosP - z1 * sinP;
+            const z2 = y * sinP + z1 * cosP;
+
+            // Weak perspective projection
+            const fov = 28;
+            const perspective = fov / (fov + z2 * 0.15);
+            return {
+                x: cx + x1 * scale * perspective,
+                y: cy - y2 * scale * perspective,
+                z: z2
+            };
+        }
+
+        // --- Canvas Resize Handling ---
+        function resizeCanvases() {
+            const dpr = window.devicePixelRatio || 1;
+            
+            const mainRect = mainCanvas.parentElement.getBoundingClientRect();
+            mainCanvas.width = mainRect.width * dpr;
+            mainCanvas.height = mainRect.height * dpr;
+            mainCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            const graphRect = graphCanvas.parentElement.getBoundingClientRect();
+            graphCanvas.width = graphRect.width * dpr;
+            graphCanvas.height = graphRect.height * dpr;
+            graphCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            drawAll();
+        }
+
+        window.addEventListener('resize', resizeCanvases);
+
+        // --- Mouse / Touch Camera Rotation ---
+        mainCanvas.addEventListener('mousedown', (e) => {
+            state.isDragging = true;
+            state.lastMouseX = e.clientX;
+            state.lastMouseY = e.clientY;
+        });
+        window.addEventListener('mousemove', (e) => {
+            if (!state.isDragging) return;
+            const dx = e.clientX - state.lastMouseX;
+            const dy = e.clientY - state.lastMouseY;
+            state.camYaw += dx * 0.008;
+            state.camPitch = Math.max(-1.1, Math.min(1.2, state.camPitch + dy * 0.008));
+            state.lastMouseX = e.clientX;
+            state.lastMouseY = e.clientY;
+            drawAll();
+        });
+        window.addEventListener('mouseup', () => { state.isDragging = false; });
+
+        mainCanvas.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                state.isDragging = true;
+                state.lastMouseX = e.touches[0].clientX;
+                state.lastMouseY = e.touches[0].clientY;
+            }
+        }, {passive: true});
+        window.addEventListener('touchmove', (e) => {
+            if (!state.isDragging || e.touches.length !== 1) return;
+            const dx = e.touches[0].clientX - state.lastMouseX;
+            const dy = e.touches[0].clientY - state.lastMouseY;
+            state.camYaw += dx * 0.008;
+            state.camPitch = Math.max(-1.1, Math.min(1.2, state.camPitch + dy * 0.008));
+            state.lastMouseX = e.touches[0].clientX;
+            state.lastMouseY = e.touches[0].clientY;
+            drawAll();
+        }, {passive: true});
+        window.addEventListener('touchend', () => { state.isDragging = false; });
+
+        // --- UI Controls Event Listeners ---
+        document.getElementById('slider-pos').addEventListener('input', (e) => {
+            state.posRatio = parseFloat(e.target.value);
+            updateUIValues();
+            drawAll();
+        });
+        document.getElementById('slider-n').addEventListener('input', (e) => {
+            state.N = parseInt(e.target.value);
+            updateUIValues();
+            drawAll();
+        });
+        document.getElementById('slider-r').addEventListener('input', (e) => {
+            state.R = parseFloat(e.target.value);
+            updateUIValues();
+            drawAll();
+        });
+        document.getElementById('slider-h').addEventListener('input', (e) => {
+            state.H = parseFloat(e.target.value);
+            updateUIValues();
+            drawAll();
+        });
+
+        function switchTab(tabNum) {
+            state.tab = tabNum;
+            for (let i = 1; i <= 3; i++) {
+                const btn = document.getElementById(`tab-btn-${i}`);
+                if (i === tabNum) {
+                    btn.className = "tab-active px-4 py-2 rounded-xl text-sm font-semibold border border-slate-700 transition-all";
+                } else {
+                    btn.className = "bg-slate-800/80 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl text-sm font-semibold border border-slate-700 transition-all";
+                }
+            }
+
+            // Show/hide specific controls
+            document.getElementById('control-h-wrapper').classList.toggle('hidden', tabNum !== 1);
+            document.getElementById('control-tab3-mode').classList.toggle('hidden', tabNum !== 3);
+
+            const riemannBtn = document.getElementById('riemann-toggle-btn');
+            if (tabNum === 3) {
+                riemannBtn.textContent = `구면 띠 분할 보기: ${state.showRiemann ? 'ON' : 'OFF'}`;
+            } else {
+                riemannBtn.textContent = `구분구적법 기둥 보기: ${state.showRiemann ? 'ON' : 'OFF'}`;
+            }
+
+            updateTabContent();
+            updateUIValues();
+            drawAll();
+        }
+
+        function toggleRiemann() {
+            state.showRiemann = !state.showRiemann;
+            const btn = document.getElementById('riemann-toggle-btn');
+            if (state.tab === 3) {
+                btn.textContent = `구면 띠 분할 보기: ${state.showRiemann ? 'ON' : 'OFF'}`;
+            } else {
+                btn.textContent = `구분구적법 기둥 보기: ${state.showRiemann ? 'ON' : 'OFF'}`;
+            }
+            btn.className = state.showRiemann
+                ? "px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 hover:bg-indigo-500/30 transition"
+                : "px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700 transition";
+            drawAll();
+        }
+
+        function resetCamera() {
+            state.camYaw = -0.55;
+            state.camPitch = 0.38;
+            drawAll();
+        }
+
+        function setSphereBandMode(mode) {
+            state.sphereBandMode = mode;
+            const btnSlant = document.getElementById('btn-mode-slant');
+            const btnFlat = document.getElementById('btn-mode-flat');
+            if (mode === 'slant') {
+                btnSlant.className = "text-left px-3 py-2 rounded-xl border border-emerald-500 bg-emerald-500/20 text-emerald-200 text-xs font-medium transition";
+                btnFlat.className = "text-left px-3 py-2 rounded-xl border border-slate-700 bg-slate-800/70 text-slate-300 text-xs font-medium transition";
+            } else {
+                btnSlant.className = "text-left px-3 py-2 rounded-xl border border-slate-700 bg-slate-800/70 text-slate-300 text-xs font-medium transition";
+                btnFlat.className = "text-left px-3 py-2 rounded-xl border border-rose-500 bg-rose-500/20 text-rose-200 text-xs font-medium transition";
+            }
+            updateUIValues();
+            drawAll();
+        }
+
+        function toggleAutoPlay() {
+            state.autoPlay = !state.autoPlay;
+            const btn = document.getElementById('autoplay-btn');
+            if (state.autoPlay) {
+                btn.textContent = "⏸ 일시정지";
+                btn.className = "px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/40";
+                requestAnimationFrame(autoPlayLoop);
+            } else {
+                btn.textContent = "▶ 단면 자동 이동";
+                btn.className = "px-2.5 py-1 rounded-lg text-xs font-semibold bg-sky-500/20 text-sky-300 border border-sky-500/30";
+            }
+        }
+
+        function autoPlayLoop() {
+            if (!state.autoPlay) return;
+            state.posRatio += 0.004;
+            if (state.posRatio > 1) state.posRatio = 0;
+            document.getElementById('slider-pos').value = state.posRatio;
+            updateUIValues();
+            drawAll();
+            requestAnimationFrame(autoPlayLoop);
+        }
+
+        // --- Update Dynamic Texts & Math Cards ---
+        function updateTabContent() {
+            const cTitle = document.getElementById('canvas-title');
+            const gTitle = document.getElementById('graph-title');
+            const gBadge = document.getElementById('graph-badge');
+            const iTitle = document.getElementById('insight-title');
+            const iContent = document.getElementById('insight-content');
+            const liveTag = document.getElementById('live-tag');
+
+            if (state.tab === 1) {
+                cTitle.innerHTML = `밑넓이($B = \\pi R^2$)와 높이($H$)가 같은 원뿔과 사각뿔의 단면적 비교`;
+                gTitle.innerHTML = `단면적 함수 $A(x) = B\\left(\\frac{x}{H}\\right)^2$ 적분 그래프 및 실제 단면 비교`;
+                gBadge.textContent = `카발리에리의 원리 & 1/3 계수`;
+                liveTag.textContent = `B = πR² 동일 조건`;
+                iTitle.textContent = `탐구 해석 ①: 왜 밑넓이와 높이를 같게 두었으며, 1/3은 왜 나올까?`;
+                iContent.innerHTML = `
+                    <p>• <strong>비교 조건 설정 이유:</strong> 밑면이 원(원뿔)이든 다각형(각뿔)이든 상관없이 부피 공식이 성립함을 보이기 위해 <strong>밑넓이 $B=\\pi R^2$와 높이 $H$를 동일하게 통제</strong>하였습니다.</p>
+                    <p>• <strong>단면적의 일치:</strong> 꼭짓점으로부터 같은 거리 $x$(높이비 $\\frac{x}{H}$)에서 원뿔의 단면적 $\\pi r^2 = \\pi R^2(\\frac{x}{H})^2$과 각뿔의 단면적 $B(\\frac{x}{H})^2$은 항상 같습니다.</p>
+                    <p>• <strong>공통 계수 $\\frac{1}{3}$의 유래:</strong> 닮음에 의해 길이비($x$)의 제곱($x^2$)에 비례하는 단면적을 적분할 때 다항함수 적분 공식 $\\int_0^H x^2 dx = \\left[\\frac{1}{3}x^3\\right]_0^H$에서 필연적으로 $\\frac{1}{3}$이 등장합니다.</p>
+                `;
+            } else if (state.tab === 2) {
+                cTitle.innerHTML = `반지름이 $R$인 구의 단면 원판 분할과 정적분 부피 유도`;
+                gTitle.innerHTML = `구의 위치별 단면적 함수 $A(x) = \\pi(R^2 - x^2)$ 이차함수 그래프`;
+                gBadge.textContent = `우함수 대칭 적분`;
+                liveTag.textContent = `r = √(R² - x²)`;
+                iTitle.textContent = `탐구 해석 ②: 피타고라스 정리와 구의 단면 원판 적분`;
+                iContent.innerHTML = `
+                    <p>• <strong>단면의 반지름 유도:</strong> 구의 중심에서 $x$만큼 떨어진 단면은 원이며, 직각삼각형의 피타고라스 정리에 의해 단면 반지름은 $r = \\sqrt{R^2 - x^2}$이 됩니다.</p>
+                    <p>• <strong>단면적 적분:</strong> 단면의 넓이 $A(x) = \\pi(R^2 - x^2)$을 $-R$부터 $R$까지 정적분하면 우함수의 대칭성에 의해 $2\\pi \\left[R^2x - \\frac{1}{3}x^3\\right]_0^R = \\frac{4}{3}\\pi R^3$이 유도됩니다.</p>
+                    <p>• <strong>공통 구조:</strong> 뿔의 부피와 마찬가지로 단면적의 $x^2$ 항이 적분되면서 분모에 $3$이 등장합니다.</p>
+                `;
+            } else {
+                cTitle.innerHTML = `구의 겉넓이 유도: 중심각 $\\theta$와 띠의 경사 길이($ds = R\\,d\\theta$) 반영`;
+                gTitle.innerHTML = `위도각 $\\theta$에 따른 미소 띠 둘레 함수 $2\\pi R\\cos\\theta$ 적분 비교`;
+                gBadge.textContent = `경사 길이(ds) vs 수평 두께(dx)`;
+                liveTag.textContent = `r = R cos θ, ds = R dθ`;
+                iTitle.textContent = `탐구 해석 ③: 왜 수평 두께(dx) 대신 띠의 경사 길이(R dθ)를 곱해야 할까?`;
+                iContent.innerHTML = `
+                    <p>• <strong>코사인을 활용한 띠 설정:</strong> 중심각(위도각) $\\theta \\in [-\\frac{\\pi}{2}, \\frac{\\pi}{2}]$에서 단면 반지름은 $r = R\\cos\\theta$이므로 띠의 둘레는 $2\\pi R\\cos\\theta$입니다.</p>
+                    <p>• <strong>띠의 경사 길이($R\\,d\\theta$) 반영 이유:</strong> 구의 표면은 비스듬히 휘어져 있으므로, 띠의 폭을 단순 수평 두께($dx$)로 두면 기울기가 무시되어 $\\pi^2 R^2 \\approx 9.87R^2$이라는 <strong>잘못된 값(약 21.5% 오차)</strong>이 나옵니다.</p>
+                    <p>• <strong>정확한 겉넓이 유도:</strong> 호의 길이 공식에 따른 경사 폭 $ds = R\\,d\\theta$를 곱해 $\\int_{-\\pi/2}^{\\pi/2} 2\\pi R^2\\cos\\theta\\,d\\theta = 2\\pi R^2[\\sin\\theta]_{-\\pi/2}^{\\pi/2} = 4\\pi R^2$을 얻습니다.</p>
+                `;
+            }
+            renderMath();
+        }
+
+        function updateUIValues() {
+            const R = state.R;
+            const H = state.H;
+            const N = state.N;
+            const B = Math.PI * R * R;
+
+            document.getElementById('val-n').textContent = `N = ${N}개`;
+            document.getElementById('val-r').textContent = `R = ${R.toFixed(1)}`;
+            document.getElementById('val-h').textContent = `H = ${H.toFixed(1)}`;
+
+            const labelPos = document.getElementById('label-pos');
+            const valPos = document.getElementById('val-pos');
+            const metricsDiv = document.getElementById('live-metrics');
+            const overlayDiv = document.getElementById('canvas-overlay');
+
+            if (state.tab === 1) {
+                const x = state.posRatio * H;
+                const ratio = state.posRatio;
+                const rSlice = R * ratio;
+                const sideSquare = Math.sqrt(B) * ratio;
+                const areaSlice = B * ratio * ratio;
+
+                labelPos.innerHTML = `꼭짓점 거리 $x$ (높이비 $x/H$)`;
+                valPos.textContent = `x = ${x.toFixed(2)} (${(ratio * 100).toFixed(0)}%)`;
+
+                // Riemann sum (midpoint/right average for visual clarity, let's show standard right & midpoint)
+                let riemannVol = 0;
+                const dx = H / N;
+                for (let i = 1; i <= N; i++) {
+                    const xi = (i - 0.5) * dx;
+                    riemannVol += B * Math.pow(xi / H, 2) * dx;
+                }
+                const exactVol = (1 / 3) * B * H;
+
+                metricsDiv.innerHTML = `
+                    <div class="flex justify-between py-1 border-b border-slate-800/80">
+                        <span class="text-slate-400">통제된 밑넓이 ($B = \\pi R^2$)</span>
+                        <span class="mono font-semibold text-white">${B.toFixed(2)}</span>
+                    </div>
+                    <div class="flex justify-between py-1 border-b border-slate-800/80">
+                        <span class="text-sky-300">원뿔 단면적 $A_{\\text{원뿔}}(x) = \\pi r^2$</span>
+                        <span class="mono font-bold text-sky-400">${areaSlice.toFixed(2)}</span>
+                    </div>
+                    <div class="flex justify-between py-1 border-b border-slate-800/80">
+                        <span class="text-amber-300">각뿔 단면적 $A_{\\text{각뿔}}(x) = a^2$</span>
+                        <span class="mono font-bold text-amber-400">${areaSlice.toFixed(2)} (동일!)</span>
+                    </div>
+                    <div class="flex justify-between py-1 border-b border-slate-800/80">
+                        <span class="text-indigo-300">구분구적법 부피 합 ($N=${N}$)</span>
+                        <span class="mono font-semibold text-indigo-300">${riemannVol.toFixed(2)}</span>
+                    </div>
+                    <div class="flex justify-between py-1 bg-emerald-500/10 px-2 rounded-lg border border-emerald-500/30">
+                        <span class="text-emerald-300 font-semibold">정적분 부피 $V = \\frac{1}{3}BH$</span>
+                        <span class="mono font-bold text-emerald-400">${exactVol.toFixed(2)}</span>
+                    </div>
+                `;
+
+                overlayDiv.innerHTML = `
+                    <div class="text-sky-300 font-semibold">현재 단면 높이비: $x/H = ${ratio.toFixed(2)}$</div>
+                    <div class="text-slate-300">원뿔 단면 반지름 $r = ${rSlice.toFixed(2)}$ / 사각뿔 한 변 $a = ${sideSquare.toFixed(2)}$</div>
+                    <div class="text-emerald-300 font-semibold">넓이비 $= (x/H)^2 = ${(ratio * ratio).toFixed(3)}$</div>
+                `;
+
+            } else if (state.tab === 2) {
+                // x from -R to R
+                const x = (state.posRatio * 2 - 1) * R;
+                const rSlice = Math.sqrt(Math.max(0, R * R - x * x));
+                const areaSlice = Math.PI * rSlice * rSlice;
+
+                labelPos.innerHTML = `중심으로부터의 위치 $x \\in [-R, R]$`;
+                valPos.textContent = `x = ${x >= 0 ? '+' : ''}${x.toFixed(2)}`;
+
+                let riemannVol = 0;
+                const dx = (2 * R) / N;
+                for (let i = 0; i < N; i++) {
+                    const xi = -R + (i + 0.5) * dx;
+                    riemannVol += Math.PI * (R * R - xi * xi) * dx;
+                }
+                const exactVol = (4 / 3) * Math.PI * Math.pow(R, 3);
+
+                metricsDiv.innerHTML = `
+                    <div class="flex justify-between py-1 border-b border-slate-800/80">
+                        <span class="text-slate-400">단면 반지름 $r = \\sqrt{R^2-x^2}$</span>
+                        <span class="mono font-semibold text-sky-400">${rSlice.toFixed(2)}</span>
+                    </div>
+                    <div class="flex justify-between py-1 border-b border-slate-800/80">
+                        <span class="text-slate-400">단면 원판 넓이 $A(x) = \\pi(R^2-x^2)$</span>
+                        <span class="mono font-bold text-amber-400">${areaSlice.toFixed(2)}</span>
+                    </div>
+                    <div class="flex justify-between py-1 border-b border-slate-800/80">
+                        <span class="text-indigo-300">원판 기둥 부피 합 ($N=${N}$)</span>
+                        <span class="mono font-semibold text-indigo-300">${riemannVol.toFixed(2)}</span>
+                    </div>
+                    <div class="flex justify-between py-1 bg-emerald-500/10 px-2 rounded-lg border border-emerald-500/30">
+                        <span class="text-emerald-300 font-semibold">정적분 구의 부피 $\\frac{4}{3}\\pi R^3$</span>
+                        <span class="mono font-bold text-emerald-400">${exactVol.toFixed(2)}</span>
+                    </div>
+                `;
+
+                overlayDiv.innerHTML = `
+                    <div class="text-sky-300 font-semibold">피타고라스 관계: $R^2 = x^2 + r^2$</div>
+                    <div class="text-slate-300">$${R.toFixed(1)}^2 = (${x.toFixed(2)})^2 + (${rSlice.toFixed(2)})^2$</div>
+                    <div class="text-amber-300">단면적 $A(x) = ${areaSlice.toFixed(2)}$</div>
+                `;
+
+            } else {
+                // Tab 3: theta from -pi/2 to pi/2
+                const theta = (state.posRatio - 0.5) * Math.PI;
+                const deg = (theta * 180) / Math.PI;
+                const rSlice = R * Math.cos(theta);
+                const circum = 2 * Math.PI * rSlice;
+                const dTheta = Math.PI / N;
+                const ds = R * dTheta;
+                const dx = R * Math.cos(theta) * dTheta; // horizontal thickness projection
+
+                labelPos.innerHTML = `중심각(위도각) $\\theta \\in [-90^\\circ, +90^\\circ]$`;
+                valPos.textContent = `θ = ${deg >= 0 ? '+' : ''}${deg.toFixed(0)}° (${theta.toFixed(2)} rad)`;
+
+                const correctArea = 4 * Math.PI * R * R;
+                // Incorrect integral: int_{-R}^{R} 2*pi*sqrt(R^2-x^2) dx = 2*pi * (pi*R^2 / 2) = pi^2 * R^2
+                const wrongArea = Math.PI * Math.PI * R * R;
+
+                metricsDiv.innerHTML = `
+                    <div class="flex justify-between py-1 border-b border-slate-800/80">
+                        <span class="text-slate-400">띠의 단면 반지름 $r = R\\cos\\theta$</span>
+                        <span class="mono font-semibold text-sky-400">${rSlice.toFixed(2)}</span>
+                    </div>
+                    <div class="flex justify-between py-1 border-b border-slate-800/80">
+                        <span class="text-slate-400">띠의 둘레 $2\\pi R\\cos\\theta$</span>
+                        <span class="mono font-semibold text-amber-400">${circum.toFixed(2)}</span>
+                    </div>
+                    <div class="flex justify-between py-1 border-b border-slate-800/80">
+                        <span class="text-emerald-300">✅ 경사 길이 반영 ($4\\pi R^2$)</span>
+                        <span class="mono font-bold text-emerald-400">${correctArea.toFixed(2)}</span>
+                    </div>
+                    <div class="flex justify-between py-1 px-2 rounded-lg ${state.sphereBandMode === 'flat' ? 'bg-rose-500/20 border border-rose-500/40' : 'bg-slate-800/50'}">
+                        <span class="text-rose-300">❌ 수평 두께 $dx$만 곱할 때 ($\\pi^2 R^2$)</span>
+                        <span class="mono font-bold text-rose-400">${wrongArea.toFixed(2)} (-21.5% 오차)</span>
+                    </div>
+                `;
+
+                overlayDiv.innerHTML = `
+                    <div class="text-sky-300 font-semibold">중심각 $\\theta = ${deg.toFixed(0)}^\\circ$, $\\cos\\theta = ${Math.cos(theta).toFixed(2)}$</div>
+                    <div class="text-emerald-300">경사 폭(호의 길이): $ds = R\\,d\\theta = ${ds.toFixed(3)}$</div>
+                    <div class="text-rose-300">단순 수평 폭: $dx = \\cos\\theta\\,ds = ${dx.toFixed(3)}$</div>
+                `;
+            }
+
+            renderMath();
+        }
+
+        // --- Drawing Logic ---
+        function drawAll() {
+            const w = mainCanvas.clientWidth;
+            const h = mainCanvas.clientHeight;
+            mainCtx.clearRect(0, 0, w, h);
+
+            const gw = graphCanvas.clientWidth;
+            const gh = graphCanvas.clientHeight;
+            graphCtx.clearRect(0, 0, gw, gh);
+
+            if (state.tab === 1) {
+                drawTab1Main(w, h);
+                drawTab1Graph(gw, gh);
+            } else if (state.tab === 2) {
+                drawTab2Main(w, h);
+                drawTab2Graph(gw, gh);
+            } else {
+                drawTab3Main(w, h);
+                drawTab3Graph(gw, gh);
+            }
+        }
+
+        // ==========================================
+        // TAB 1: Cone & Square Pyramid Visualization
+        // ==========================================
+        function drawTab1Main(w, h) {
+            const R = state.R;
+            const H = state.H;
+            const B = Math.PI * R * R;
+            const sideBase = Math.sqrt(B); // Square base side so Area = B
+            const scale = Math.min(w, h) / 14;
+
+            const coneCx = w * 0.28;
+            const pyrCx = w * 0.72;
+            const cy = h * 0.54;
+
+            // Apex is at y = +H/2, Base is at y = -H/2
+            const yTop = H / 2;
+            const yBot = -H / 2;
+
+            // 1. Draw Cone (Left)
+            // Riemann cylinders if enabled
+            if (state.showRiemann) {
+                const N = state.N;
+                const dy = H / N;
+                for (let i = 0; i < N; i++) {
+                    const distFromApex = (i + 0.5) * dy;
+                    const yTopDisk = yTop - i * dy;
+                    const yBotDisk = yTop - (i + 1) * dy;
+                    const rDisk = R * (distFromApex / H);
+                    draw3DCylinder(mainCtx, coneCx, cy, scale, rDisk, yBotDisk, yTopDisk, 'rgba(56, 189, 248, 0.14)', 'rgba(56, 189, 248, 0.35)');
+                }
+            }
+
+            // Cone Wireframe & Base
+            draw3DCircle(mainCtx, coneCx, cy, scale, R, yBot, 'rgba(148, 163, 184, 0.15)', '#64748b', 1.5);
+            const apexCone = project3D(0, yTop, 0, coneCx, cy, scale);
+            const leftEdgeCone = project3D(-R, yBot, 0, coneCx, cy, scale);
+            const rightEdgeCone = project3D(R, yBot, 0, coneCx, cy, scale);
+            mainCtx.strokeStyle = '#94a3b8';
+            mainCtx.lineWidth = 1.5;
+            mainCtx.beginPath();
+            mainCtx.moveTo(leftEdgeCone.x, leftEdgeCone.y);
+            mainCtx.lineTo(apexCone.x, apexCone.y);
+            mainCtx.lineTo(rightEdgeCone.x, rightEdgeCone.y);
+            mainCtx.stroke();
+
+            // Highlighted Active Slice on Cone
+            const xDist = state.posRatio * H;
+            const ySlice = yTop - xDist;
+            const rSlice = R * state.posRatio;
+            draw3DCircle(mainCtx, coneCx, cy, scale, rSlice, ySlice, 'rgba(56, 189, 248, 0.55)', '#38bdf8', 2.5);
+
+            // Label Cone
+            mainCtx.fillStyle = '#e2e8f0';
+            mainCtx.font = 'bold 13px "Noto Sans KR"';
+            mainCtx.textAlign = 'center';
+            mainCtx.fillText(`원뿔 (밑넓이 B = πR²)`, coneCx, 28);
+
+            // 2. Draw Square Pyramid (Right)
+            if (state.showRiemann) {
+                const N = state.N;
+                const dy = H / N;
+                for (let i = 0; i < N; i++) {
+                    const distFromApex = (i + 0.5) * dy;
+                    const yTopSlab = yTop - i * dy;
+                    const yBotSlab = yTop - (i + 1) * dy;
+                    const sSlab = sideBase * (distFromApex / H);
+                    draw3DSquareSlab(mainCtx, pyrCx, cy, scale, sSlab, yBotSlab, yTopSlab, 'rgba(251, 191, 36, 0.14)', 'rgba(251, 191, 36, 0.35)');
+                }
+            }
+
+            // Pyramid Wireframe & Base
+            draw3DSquare(mainCtx, pyrCx, cy, scale, sideBase, yBot, 'rgba(148, 163, 184, 0.15)', '#64748b', 1.5);
+            const apexPyr = project3D(0, yTop, 0, pyrCx, cy, scale);
+            const halfS = sideBase / 2;
+            const corners = [
+                [-halfS, yBot, -halfS],
+                [halfS, yBot, -halfS],
+                [halfS, yBot, halfS],
+                [-halfS, yBot, halfS]
+            ];
+            mainCtx.strokeStyle = '#94a3b8';
+            mainCtx.lineWidth = 1.5;
+            corners.forEach(c => {
+                const p = project3D(c[0], c[1], c[2], pyrCx, cy, scale);
+                mainCtx.beginPath();
+                mainCtx.moveTo(apexPyr.x, apexPyr.y);
+                mainCtx.lineTo(p.x, p.y);
+                mainCtx.stroke();
+            });
+
+            // Highlighted Active Slice on Pyramid
+            const sSlice = sideBase * state.posRatio;
+            draw3DSquare(mainCtx, pyrCx, cy, scale, sSlice, ySlice, 'rgba(251, 191, 36, 0.55)', '#fbbf24', 2.5);
+
+            mainCtx.fillStyle = '#e2e8f0';
+            mainCtx.fillText(`사각뿔 (밑넓이 B = a² = πR²)`, pyrCx, 28);
+
+            // Connecting Dashed Line showing same depth x from apex
+            const cSliceCenter = project3D(0, ySlice, 0, coneCx, cy, scale);
+            const pSliceCenter = project3D(0, ySlice, 0, pyrCx, cy, scale);
+            mainCtx.save();
+            mainCtx.setLineDash([5, 5]);
+            mainCtx.strokeStyle = '#10b981';
+            mainCtx.lineWidth = 1.5;
+            mainCtx.beginPath();
+            mainCtx.moveTo(cSliceCenter.x, cSliceCenter.y);
+            mainCtx.lineTo(pSliceCenter.x, pSliceCenter.y);
+            mainCtx.stroke();
+            mainCtx.restore();
+
+            mainCtx.fillStyle = '#34d399';
+            mainCtx.font = '600 12px "JetBrains Mono"';
+            mainCtx.fillText(`같은 깊이 x = ${xDist.toFixed(2)} (높이비 ${(state.posRatio*100).toFixed(0)}%)`, w * 0.5, (cSliceCenter.y + pSliceCenter.y) / 2 - 8);
+        }
+
+        function drawTab1Graph(gw, gh) {
+            const R = state.R;
+            const H = state.H;
+            const B = Math.PI * R * R;
+
+            // Left 62% for Integral Graph A(x) vs x, Right 38% for 2D Cross-Section Shape Comparison
+            const plotLeft = 48;
+            const plotRight = gw * 0.58;
+            const plotTop = 22;
+            const plotBot = gh - 32;
+            const pw = plotRight - plotLeft;
+            const ph = plotBot - plotTop;
+
+            // Axes
+            graphCtx.strokeStyle = '#475569';
+            graphCtx.lineWidth = 1.5;
+            graphCtx.beginPath();
+            graphCtx.moveTo(plotLeft, plotTop);
+            graphCtx.lineTo(plotLeft, plotBot);
+            graphCtx.lineTo(plotRight, plotBot);
+            graphCtx.stroke();
+
+            // Riemann Rectangles on A(x) = B (x/H)^2
+            const N = state.N;
+            const dx = H / N;
+            for (let i = 0; i < N; i++) {
+                const xMid = (i + 0.5) * dx;
+                const ratio = xMid / H;
+                const area = B * ratio * ratio;
+                const x1 = plotLeft + (i / N) * pw;
+                const barW = pw / N;
+                const barH = (area / B) * ph;
+
+                graphCtx.fillStyle = 'rgba(99, 102, 241, 0.25)';
+                graphCtx.strokeStyle = 'rgba(99, 102, 241, 0.6)';
+                graphCtx.lineWidth = 1;
+                graphCtx.fillRect(x1, plotBot - barH, barW, barH);
+                graphCtx.strokeRect(x1, plotBot - barH, barW, barH);
+            }
+
+            // Exact Quadratic Curve A(x) = B(x/H)^2
+            graphCtx.strokeStyle = '#38bdf8';
+            graphCtx.lineWidth = 2.5;
+            graphCtx.beginPath();
+            for (let i = 0; i <= 100; i++) {
+                const t = i / 100;
+                const px = plotLeft + t * pw;
+                const py = plotBot - (t * t) * ph;
+                if (i === 0) graphCtx.moveTo(px, py);
+                else graphCtx.lineTo(px, py);
+            }
+            graphCtx.stroke();
+
+            // Current x marker on curve
+            const curX = plotLeft + state.posRatio * pw;
+            const curY = plotBot - (state.posRatio * state.posRatio) * ph;
+            graphCtx.strokeStyle = '#10b981';
+            graphCtx.lineWidth = 1.5;
+            graphCtx.beginPath();
+            graphCtx.moveTo(curX, plotBot);
+            graphCtx.lineTo(curX, curY);
+            graphCtx.stroke();
+
+            graphCtx.fillStyle = '#10b981';
+            graphCtx.beginPath();
+            graphCtx.arc(curX, curY, 5, 0, Math.PI * 2);
+            graphCtx.fill();
+
+            // Labels
+            graphCtx.fillStyle = '#94a3b8';
+            graphCtx.font = '11px "Noto Sans KR"';
+            graphCtx.textAlign = 'center';
+            graphCtx.fillText('0 (꼭짓점)', plotLeft, plotBot + 16);
+            graphCtx.fillText(`H = ${H.toFixed(1)} (밑면)`, plotRight - 15, plotBot + 16);
+            graphCtx.textAlign = 'right';
+            graphCtx.fillText('B', plotLeft - 6, plotTop + 8);
+            graphCtx.textAlign = 'left';
+            graphCtx.fillStyle = '#38bdf8';
+            graphCtx.fillText('A(x) = B(x/H)² → 적분 시 1/3 BH', plotLeft + 12, plotTop + 14);
+
+            // Right Side: 2D Actual Cross-Section Comparison
+            const rightCenter = gw * 0.79;
+            const cy = gh * 0.48;
+            const maxDrawR = Math.min(gw * 0.16, gh * 0.34);
+            const rDraw = maxDrawR * state.posRatio;
+            const sDraw = rDraw * Math.sqrt(Math.PI); // Equal area square!
+
+            // Circle Cross-section
+            const cX = rightCenter - maxDrawR * 1.15;
+            graphCtx.fillStyle = 'rgba(56, 189, 248, 0.3)';
+            graphCtx.strokeStyle = '#38bdf8';
+            graphCtx.lineWidth = 2;
+            graphCtx.beginPath();
+            graphCtx.arc(cX, cy, Math.max(2, rDraw), 0, Math.PI * 2);
+            graphCtx.fill();
+            graphCtx.stroke();
+
+            // Square Cross-section
+            const sX = rightCenter + maxDrawR * 1.15;
+            graphCtx.fillStyle = 'rgba(251, 191, 36, 0.3)';
+            graphCtx.strokeStyle = '#fbbf24';
+            graphCtx.fillRect(sX - sDraw / 2, cy - sDraw / 2, Math.max(4, sDraw), Math.max(4, sDraw));
+            graphCtx.strokeRect(sX - sDraw / 2, cy - sDraw / 2, Math.max(4, sDraw), Math.max(4, sDraw));
+
+            graphCtx.fillStyle = '#e2e8f0';
+            graphCtx.font = 'bold 13px "JetBrains Mono"';
+            graphCtx.textAlign = 'center';
+            graphCtx.fillText('=', rightCenter, cy + 5);
+
+            const areaVal = (B * state.posRatio * state.posRatio).toFixed(2);
+            graphCtx.font = '11px "Noto Sans KR"';
+            graphCtx.fillStyle = '#38bdf8';
+            graphCtx.fillText(`원 단면적: ${areaVal}`, cX, gh - 14);
+            graphCtx.fillStyle = '#fbbf24';
+            graphCtx.fillText(`정사각형 단면적: ${areaVal}`, sX, gh - 14);
+        }
+
+        // ==========================================
+        // TAB 2: Sphere Volume (Disk Integration)
+        // ==========================================
+        function drawTab2Main(w, h) {
+            const R = state.R;
+            const scale = Math.min(w, h) / (R * 2.7);
+            const cx = w * 0.5;
+            const cy = h * 0.52;
+
+            // Draw Riemann Disks along X-axis
+            if (state.showRiemann) {
+                const N = state.N;
+                const dx = (2 * R) / N;
+                for (let i = 0; i < N; i++) {
+                    const xLeft = -R + i * dx;
+                    const xRight = xLeft + dx;
+                    const xMid = (xLeft + xRight) / 2;
+                    const rDisk = Math.sqrt(Math.max(0, R * R - xMid * xMid));
+                    draw3DXCylinder(mainCtx, cx, cy, scale, rDisk, xLeft, xRight, 'rgba(99, 102, 241, 0.14)', 'rgba(129, 140, 248, 0.4)');
+                }
+            }
+
+            // Draw Sphere Wireframe (Latitude / Longitude rings)
+            mainCtx.strokeStyle = 'rgba(148, 163, 184, 0.25)';
+            mainCtx.lineWidth = 1;
+            for (let lat = -60; lat <= 60; lat += 30) {
+                const rad = (lat * Math.PI) / 180;
+                const xPos = R * Math.sin(rad);
+                const rLat = R * Math.cos(rad);
+                draw3DYZCircle(mainCtx, cx, cy, scale, rLat, xPos, null, 'rgba(148, 163, 184, 0.25)', 1);
+            }
+            // Equator XY circle
+            draw3DXYCircle(mainCtx, cx, cy, scale, R, 'rgba(148, 163, 184, 0.35)', 1.5);
+
+            // X-axis line
+            const pLeft = project3D(-R * 1.25, 0, 0, cx, cy, scale);
+            const pRight = project3D(R * 1.25, 0, 0, cx, cy, scale);
+            mainCtx.strokeStyle = '#64748b';
+            mainCtx.lineWidth = 1.5;
+            mainCtx.beginPath();
+            mainCtx.moveTo(pLeft.x, pLeft.y);
+            mainCtx.lineTo(pRight.x, pRight.y);
+            mainCtx.stroke();
+
+            // Active Slice at x
+            const x = (state.posRatio * 2 - 1) * R;
+            const rSlice = Math.sqrt(Math.max(0, R * R - x * x));
+            draw3DYZCircle(mainCtx, cx, cy, scale, rSlice, x, 'rgba(56, 189, 248, 0.45)', '#38bdf8', 2.5);
+
+            // Highlight Right Triangle (Origin -> (x,0,0) -> (x, rSlice, 0))
+            const pOrigin = project3D(0, 0, 0, cx, cy, scale);
+            const pX = project3D(x, 0, 0, cx, cy, scale);
+            const pRim = project3D(x, rSlice, 0, cx, cy, scale);
+
+            mainCtx.fillStyle = 'rgba(251, 191, 36, 0.25)';
+            mainCtx.beginPath();
+            mainCtx.moveTo(pOrigin.x, pOrigin.y);
+            mainCtx.lineTo(pX.x, pX.y);
+            mainCtx.lineTo(pRim.x, pRim.y);
+            mainCtx.closePath();
+            mainCtx.fill();
+
+            mainCtx.strokeStyle = '#fbbf24';
+            mainCtx.lineWidth = 2.5;
+            mainCtx.beginPath();
+            mainCtx.moveTo(pOrigin.x, pOrigin.y);
+            mainCtx.lineTo(pX.x, pX.y);
+            mainCtx.lineTo(pRim.x, pRim.y);
+            mainCtx.closePath();
+            mainCtx.stroke();
+
+            // Labels for R, x, r
+            mainCtx.fillStyle = '#fbbf24';
+            mainCtx.font = 'bold 12px "JetBrains Mono"';
+            mainCtx.fillText(`R=${R.toFixed(1)}`, (pOrigin.x + pRim.x) / 2 - 10, (pOrigin.y + pRim.y) / 2 - 6);
+            mainCtx.fillStyle = '#38bdf8';
+            mainCtx.fillText(`r=√(R²-x²)`, pRim.x + 10, (pX.y + pRim.y) / 2);
+        }
+
+        function drawTab2Graph(gw, gh) {
+            const R = state.R;
+            const maxArea = Math.PI * R * R;
+
+            const plotLeft = 50;
+            const plotRight = gw - 30;
+            const plotTop = 24;
+            const plotBot = gh - 32;
+            const pw = plotRight - plotLeft;
+            const ph = plotBot - plotTop;
+
+            // Axes
+            graphCtx.strokeStyle = '#475569';
+            graphCtx.lineWidth = 1.5;
+            graphCtx.beginPath();
+            graphCtx.moveTo(plotLeft, plotBot);
+            graphCtx.lineTo(plotRight, plotBot);
+            graphCtx.moveTo(plotLeft + pw / 2, plotTop);
+            graphCtx.lineTo(plotLeft + pw / 2, plotBot);
+            graphCtx.stroke();
+
+            // Riemann bars
+            const N = state.N;
+            for (let i = 0; i < N; i++) {
+                const tMid = (i + 0.5) / N;
+                const xVal = (tMid * 2 - 1) * R;
+                const area = Math.PI * (R * R - xVal * xVal);
+                const bx = plotLeft + (i / N) * pw;
+                const bw = pw / N;
+                const bh = (area / maxArea) * ph;
+
+                graphCtx.fillStyle = 'rgba(99, 102, 241, 0.22)';
+                graphCtx.strokeStyle = 'rgba(99, 102, 241, 0.55)';
+                graphCtx.fillRect(bx, plotBot - bh, bw, bh);
+                graphCtx.strokeRect(bx, plotBot - bh, bw, bh);
+            }
+
+            // Parabola A(x) = pi(R^2 - x^2)
+            graphCtx.strokeStyle = '#38bdf8';
+            graphCtx.lineWidth = 2.5;
+            graphCtx.beginPath();
+            for (let i = 0; i <= 100; i++) {
+                const t = i / 100;
+                const xVal = (t * 2 - 1) * R;
+                const area = Math.PI * (R * R - xVal * xVal);
+                const px = plotLeft + t * pw;
+                const py = plotBot - (area / maxArea) * ph;
+                if (i === 0) graphCtx.moveTo(px, py);
+                else graphCtx.lineTo(px, py);
+            }
+            graphCtx.stroke();
+
+            // Active Slice Marker
+            const x = (state.posRatio * 2 - 1) * R;
+            const curArea = Math.PI * Math.max(0, R * R - x * x);
+            const curPx = plotLeft + state.posRatio * pw;
+            const curPy = plotBot - (curArea / maxArea) * ph;
+
+            graphCtx.fillStyle = '#fbbf24';
+            graphCtx.beginPath();
+            graphCtx.arc(curPx, curPy, 5.5, 0, Math.PI * 2);
+            graphCtx.fill();
+
+            // Labels
+            graphCtx.fillStyle = '#94a3b8';
+            graphCtx.font = '11px "JetBrains Mono"';
+            graphCtx.textAlign = 'center';
+            graphCtx.fillText(`-R (-${R.toFixed(1)})`, plotLeft + 10, plotBot + 16);
+            graphCtx.fillText('0 (구의 중심)', plotLeft + pw / 2, plotBot + 16);
+            graphCtx.fillText(`+R (+${R.toFixed(1)})`, plotRight - 10, plotBot + 16);
+        }
+
+        // ==========================================
+        // TAB 3: Sphere Surface Area (Cosine & Slant Length ds = R dθ)
+        // ==========================================
+        function drawTab3Main(w, h) {
+            const R = state.R;
+            const N = state.N;
+            const theta = (state.posRatio - 0.5) * Math.PI;
+            const dTheta = Math.PI / N;
+
+            // Split view: Left 55% 3D Sphere with Bands, Right 45% 2D Cross-Section Magnified Diagram of Slant ds vs dx
+            const leftCx = w * 0.30;
+            const cy = h * 0.53;
+            const scale = Math.min(w * 0.52, h) / (R * 2.5);
+
+            // 1. Left: 3D Sphere Bands
+            if (state.showRiemann) {
+                for (let i = 0; i < N; i++) {
+                    const th1 = -Math.PI / 2 + i * dTheta;
+                    const th2 = th1 + dTheta;
+                    const thMid = (th1 + th2) / 2;
+                    const x1 = R * Math.sin(th1);
+                    const x2 = R * Math.sin(th2);
+                    const r1 = R * Math.cos(th1);
+                    const r2 = R * Math.cos(th2);
+                    const rMid = R * Math.cos(thMid);
+
+                    if (state.sphereBandMode === 'slant') {
+                        // Frustum band (follows slant ds)
+                        draw3DFrustumBand(mainCtx, leftCx, cy, scale, r1, r2, x1, x2, 'rgba(16, 185, 129, 0.14)', 'rgba(52, 211, 153, 0.38)');
+                    } else {
+                        // Flat cylinder using only dx (demonstrating error!)
+                        draw3DXCylinder(mainCtx, leftCx, cy, scale, rMid, x1, x2, 'rgba(244, 63, 94, 0.14)', 'rgba(251, 113, 133, 0.4)');
+                    }
+                }
+            }
+
+            // Highlight Current Band at theta
+            const th1 = Math.max(-Math.PI / 2, theta - dTheta / 2);
+            const th2 = Math.min(Math.PI / 2, theta + dTheta / 2);
+            const x1 = R * Math.sin(th1);
+            const x2 = R * Math.sin(th2);
+            const r1 = R * Math.cos(th1);
+            const r2 = R * Math.cos(th2);
+            draw3DFrustumBand(mainCtx, leftCx, cy, scale, r1, r2, x1, x2, 'rgba(56, 189, 248, 0.55)', '#38bdf8');
+
+            // 2. Right: 2D Geometric Proof Diagram (r = R cos θ, ds = R dθ vs dx)
+            const rightCx = w * 0.74;
+            const r2D = Math.min(w * 0.19, h * 0.36);
+
+            // Circle outline
+            mainCtx.strokeStyle = '#64748b';
+            mainCtx.lineWidth = 2;
+            mainCtx.beginPath();
+            mainCtx.arc(rightCx, cy, r2D, 0, Math.PI * 2);
+            mainCtx.stroke();
+
+            // Axes
+            mainCtx.strokeStyle = '#334155';
+            mainCtx.lineWidth = 1;
+            mainCtx.beginPath();
+            mainCtx.moveTo(rightCx - r2D * 1.2, cy);
+            mainCtx.lineTo(rightCx + r2D * 1.2, cy);
+            mainCtx.moveTo(rightCx, cy - r2D * 1.2);
+            mainCtx.lineTo(rightCx, cy + r2D * 1.2);
+            mainCtx.stroke();
+
+            // Point on circle at angle theta (measured from vertical equator axis to horizontal polar axis)
+            // Let horizontal be x = R sin(theta), vertical be r = R cos(theta)
+            const px = rightCx + r2D * Math.sin(theta);
+            const py = cy - r2D * Math.cos(theta);
+
+            // Triangle: Center -> (px, cy) -> (px, py)
+            mainCtx.fillStyle = 'rgba(56, 189, 248, 0.15)';
+            mainCtx.beginPath();
+            mainCtx.moveTo(rightCx, cy);
+            mainCtx.lineTo(rightCx, py);
+            mainCtx.lineTo(px, py);
+            mainCtx.closePath();
+            mainCtx.fill();
+
+            // Radius R line
+            mainCtx.strokeStyle = '#f8fafc';
+            mainCtx.lineWidth = 2;
+            mainCtx.beginPath();
+            mainCtx.moveTo(rightCx, cy);
+            mainCtx.lineTo(px, py);
+            mainCtx.stroke();
+
+            // r = R cos(theta) vertical line
+            mainCtx.strokeStyle = '#38bdf8';
+            mainCtx.lineWidth = 2.5;
+            mainCtx.beginPath();
+            mainCtx.moveTo(px, cy);
+            mainCtx.lineTo(px, py);
+            mainCtx.stroke();
+
+            // Highlight Arc ds = R dtheta vs Horizontal dx
+            const visualDTheta = 0.26; // exaggerated slightly for clear visibility
+            const thA = theta - visualDTheta / 2;
+            const thB = theta + visualDTheta / 2;
+            const xA = rightCx + r2D * Math.sin(thA);
+            const yA = cy - r2D * Math.cos(thA);
+            const xB = rightCx + r2D * Math.sin(thB);
+            const yB = cy - r2D * Math.cos(thB);
+
+            // Horizontal dx segment (Red/Rose)
+            mainCtx.strokeStyle = '#fb7185';
+            mainCtx.lineWidth = 3;
+            mainCtx.beginPath();
+            mainCtx.moveTo(xA, yA);
+            mainCtx.lineTo(xB, yA);
+            mainCtx.stroke();
+
+            // Slant length ds segment (Emerald Green)
+            mainCtx.strokeStyle = '#34d399';
+            mainCtx.lineWidth = 4;
+            mainCtx.beginPath();
+            mainCtx.moveTo(xA, yA);
+            mainCtx.lineTo(xB, yB);
+            mainCtx.stroke();
+
+            // Diagram Annotations
+            mainCtx.font = 'bold 12px "Noto Sans KR"';
+            mainCtx.fillStyle = '#e2e8f0';
+            mainCtx.textAlign = 'center';
+            mainCtx.fillText('단면 기하 구조 (경사 길이 ds vs 수평 폭 dx)', rightCx, 28);
+
+            mainCtx.font = 'bold 11px "JetBrains Mono"';
+            mainCtx.fillStyle = '#38bdf8';
+            mainCtx.fillText('r = R cosθ', px + (theta >= 0 ? 36 : -36), (cy + py) / 2);
+
+            mainCtx.fillStyle = '#34d399';
+            mainCtx.fillText('경사 폭 ds = R dθ', rightCx, cy + r2D + 22);
+            mainCtx.fillStyle = '#fb7185';
+            mainCtx.fillText('수평 폭 dx = cosθ · ds (오차 원인)', rightCx, cy + r2D + 38);
+        }
+
+        function drawTab3Graph(gw, gh) {
+            const R = state.R;
+            const maxCircum = 2 * Math.PI * R;
+
+            const plotLeft = 52;
+            const plotRight = gw - 30;
+            const plotTop = 24;
+            const plotBot = gh - 32;
+            const pw = plotRight - plotLeft;
+            const ph = plotBot - plotTop;
+
+            // Axes
+            graphCtx.strokeStyle = '#475569';
+            graphCtx.lineWidth = 1.5;
+            graphCtx.beginPath();
+            graphCtx.moveTo(plotLeft, plotBot);
+            graphCtx.lineTo(plotRight, plotBot);
+            graphCtx.moveTo(plotLeft + pw / 2, plotTop);
+            graphCtx.lineTo(plotLeft + pw / 2, plotBot);
+            graphCtx.stroke();
+
+            // Cosine Curve: 2*pi*R^2 cos(theta)
+            graphCtx.strokeStyle = '#34d399';
+            graphCtx.lineWidth = 2.5;
+            graphCtx.beginPath();
+            for (let i = 0; i <= 100; i++) {
+                const t = i / 100;
+                const th = (t - 0.5) * Math.PI;
+                const val = Math.cos(th);
+                const px = plotLeft + t * pw;
+                const py = plotBot - val * ph;
+                if (i === 0) graphCtx.moveTo(px, py);
+                else graphCtx.lineTo(px, py);
+            }
+            graphCtx.stroke();
+
+            // Incorrect Curve if using dx without slant length: 2*pi*R^2 cos^2(theta)
+            graphCtx.save();
+            graphCtx.setLineDash([4, 4]);
+            graphCtx.strokeStyle = '#fb7185';
+            graphCtx.lineWidth = 2;
+            graphCtx.beginPath();
+            for (let i = 0; i <= 100; i++) {
+                const t = i / 100;
+                const th = (t - 0.5) * Math.PI;
+                const val = Math.cos(th) * Math.cos(th);
+                const px = plotLeft + t * pw;
+                const py = plotBot - val * ph;
+                if (i === 0) graphCtx.moveTo(px, py);
+                else graphCtx.lineTo(px, py);
+            }
+            graphCtx.stroke();
+            graphCtx.restore();
+
+            // Active Theta Marker
+            const theta = (state.posRatio - 0.5) * Math.PI;
+            const curVal = state.sphereBandMode === 'slant' ? Math.cos(theta) : Math.cos(theta) * Math.cos(theta);
+            const curPx = plotLeft + state.posRatio * pw;
+            const curPy = plotBot - curVal * ph;
+
+            graphCtx.fillStyle = state.sphereBandMode === 'slant' ? '#34d399' : '#fb7185';
+            graphCtx.beginPath();
+            graphCtx.arc(curPx, curPy, 5.5, 0, Math.PI * 2);
+            graphCtx.fill();
+
+            // Legend & Labels
+            graphCtx.font = '11px "Noto Sans KR"';
+            graphCtx.textAlign = 'left';
+            graphCtx.fillStyle = '#34d399';
+            graphCtx.fillText('실선: 2πR cosθ · R dθ 적분 → 4πR² (정확한 겉넓이)', plotLeft + 10, plotTop + 12);
+            graphCtx.fillStyle = '#fb7185';
+            graphCtx.fillText('점선: 경사 길이 미반영 (dx 사용) → π²R² (과소추정 오차)', plotLeft + 10, plotTop + 28);
+
+            graphCtx.fillStyle = '#94a3b8';
+            graphCtx.textAlign = 'center';
+            graphCtx.fillText('-π/2 (-90°)', plotLeft + 15, plotBot + 16);
+            graphCtx.fillText('0 (적도)', plotLeft + pw / 2, plotBot + 16);
+            graphCtx.fillText('+π/2 (+90°)', plotRight - 15, plotBot + 16);
+        }
+
+        // --- 3D Primitive Drawing Helpers ---
+        function draw3DCircle(ctx, cx, cy, scale, r, yLevel, fillColor, strokeColor, lineWidth = 1.5) {
+            const segs = 40;
+            ctx.beginPath();
+            for (let i = 0; i <= segs; i++) {
+                const ang = (i / segs) * Math.PI * 2;
+                const px = r * Math.cos(ang);
+                const pz = r * Math.sin(ang);
+                const pt = project3D(px, yLevel, pz, cx, cy, scale);
+                if (i === 0) ctx.moveTo(pt.x, pt.y);
+                else ctx.lineTo(pt.x, pt.y);
+            }
+            if (fillColor) {
+                ctx.fillStyle = fillColor;
+                ctx.fill();
+            }
+            if (strokeColor) {
+                ctx.strokeStyle = strokeColor;
+                ctx.lineWidth = lineWidth;
+                ctx.stroke();
+            }
+        }
+
+        function draw3DCylinder(ctx, cx, cy, scale, r, yBot, yTop, fillColor, strokeColor) {
+            draw3DCircle(ctx, cx, cy, scale, r, yBot, fillColor, strokeColor, 1);
+            draw3DCircle(ctx, cx, cy, scale, r, yTop, fillColor, strokeColor, 1);
+            const pL1 = project3D(-r, yBot, 0, cx, cy, scale);
+            const pL2 = project3D(-r, yTop, 0, cx, cy, scale);
+            const pR1 = project3D(r, yBot, 0, cx, cy, scale);
+            const pR2 = project3D(r, yTop, 0, cx, cy, scale);
+            ctx.strokeStyle = strokeColor;
+            ctx.beginPath();
+            ctx.moveTo(pL1.x, pL1.y); ctx.lineTo(pL2.x, pL2.y);
+            ctx.moveTo(pR1.x, pR1.y); ctx.lineTo(pR2.x, pR2.y);
+            ctx.stroke();
+        }
+
+        function draw3DSquare(ctx, cx, cy, scale, side, yLevel, fillColor, strokeColor, lineWidth = 1.5) {
+            const h = side / 2;
+            const pts = [
+                project3D(-h, yLevel, -h, cx, cy, scale),
+                project3D(h, yLevel, -h, cx, cy, scale),
+                project3D(h, yLevel, h, cx, cy, scale),
+                project3D(-h, yLevel, h, cx, cy, scale)
+            ];
+            ctx.beginPath();
+            ctx.moveTo(pts[0].x, pts[0].y);
+            for (let i = 1; i < 4; i++) ctx.lineTo(pts[i].x, pts[i].y);
+            ctx.closePath();
+            if (fillColor) {
+                ctx.fillStyle = fillColor;
+                ctx.fill();
+            }
+            if (strokeColor) {
+                ctx.strokeStyle = strokeColor;
+                ctx.lineWidth = lineWidth;
+                ctx.stroke();
+            }
+        }
+
+        function draw3DSquareSlab(ctx, cx, cy, scale, side, yBot, yTop, fillColor, strokeColor) {
+            draw3DSquare(ctx, cx, cy, scale, side, yBot, fillColor, strokeColor, 1);
+            draw3DSquare(ctx, cx, cy, scale, side, yTop, fillColor, strokeColor, 1);
+        }
+
+        function draw3DYZCircle(ctx, cx, cy, scale, r, xLevel, fillColor, strokeColor, lineWidth = 1.5) {
+            const segs = 40;
+            ctx.beginPath();
+            for (let i = 0; i <= segs; i++) {
+                const ang = (i / segs) * Math.PI * 2;
+                const py = r * Math.cos(ang);
+                const pz = r * Math.sin(ang);
+                const pt = project3D(xLevel, py, pz, cx, cy, scale);
+                if (i === 0) ctx.moveTo(pt.x, pt.y);
+                else ctx.lineTo(pt.x, pt.y);
+            }
+            if (fillColor) {
+                ctx.fillStyle = fillColor;
+                ctx.fill();
+            }
+            if (strokeColor) {
+                ctx.strokeStyle = strokeColor;
+                ctx.lineWidth = lineWidth;
+                ctx.stroke();
+            }
+        }
+
+        function draw3DXYCircle(ctx, cx, cy, scale, r, strokeColor, lineWidth = 1.5) {
+            const segs = 48;
+            ctx.beginPath();
+            for (let i = 0; i <= segs; i++) {
+                const ang = (i / segs) * Math.PI * 2;
+                const px = r * Math.cos(ang);
+                const py = r * Math.sin(ang);
+                const pt = project3D(px, py, 0, cx, cy, scale);
+                if (i === 0) ctx.moveTo(pt.x, pt.y);
+                else ctx.lineTo(pt.x, pt.y);
+            }
+            ctx.strokeStyle = strokeColor;
+            ctx.lineWidth = lineWidth;
+            ctx.stroke();
+        }
+
+        function draw3DXCylinder(ctx, cx, cy, scale, r, x1, x2, fillColor, strokeColor) {
+            draw3DYZCircle(ctx, cx, cy, scale, r, x1, fillColor, strokeColor, 1);
+            draw3DYZCircle(ctx, cx, cy, scale, r, x2, fillColor, strokeColor, 1);
+        }
+
+        function draw3DFrustumBand(ctx, cx, cy, scale, r1, r2, x1, x2, fillColor, strokeColor) {
+            draw3DYZCircle(ctx, cx, cy, scale, r1, x1, fillColor, strokeColor, 1.2);
+            draw3DYZCircle(ctx, cx, cy, scale, r2, x2, fillColor, strokeColor, 1.2);
+            const pTop1 = project3D(x1, r1, 0, cx, cy, scale);
+            const pTop2 = project3D(x2, r2, 0, cx, cy, scale);
+            const pBot1 = project3D(x1, -r1, 0, cx, cy, scale);
+            const pBot2 = project3D(x2, -r2, 0, cx, cy, scale);
+            ctx.strokeStyle = strokeColor;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(pTop1.x, pTop1.y); ctx.lineTo(pTop2.x, pTop2.y);
+            ctx.moveTo(pBot1.x, pBot1.y); ctx.lineTo(pBot2.x, pBot2.y);
+            ctx.stroke();
+        }
+
+        // --- Initialization ---
+        window.onload = function () {
+            updateTabContent();
+            updateUIValues();
+            resizeCanvases();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>원뿔 절단 이차곡선 탐구 LAB</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#061019;color:#edf8ff;font-family:Arial,sans-serif}header{padding:24px;background:#091a28;border-bottom:1px solid #315066}.wrap{max-width:1250px;margin:auto;padding:0 18px}.ey{color:#55ddff;font-size:12px;letter-spacing:2px}h1{margin:8px 0;font-size:clamp(25px,4vw,40px)}h2,h3{margin-top:0}p{line-height:1.7;color:#c9d8e0}.tabs{display:flex;gap:8px;overflow:auto;padding:16px 0}.tab{padding:11px 15px;border:1px solid #315066;border-radius:10px;background:#0a1722;color:#d5e3ea;cursor:pointer;white-space:nowrap}.tab.active{border-color:#55ddff;background:#12384d;color:white}.chapter{display:none}.chapter.active{display:block}.card{background:#0b1925;border:1px solid #29485d;border-radius:14px;padding:19px;margin-bottom:16px}.formula{background:#030910;border:1px solid #24465c;border-radius:9px;padding:12px;margin:11px 0;text-align:center;font:19px Georgia,serif;overflow:auto}.step{border-left:3px solid #55ddff;padding-left:12px;margin:15px 0;color:#dceaf1}.key{color:#83ffb5}.warn{color:#ffd77d}.ok{color:#83ffb5}.mono{white-space:pre-wrap;font:13px/1.75 Consolas,monospace;color:#c9dde7}.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.mini{background:#07131e;border:1px solid #214154;border-radius:10px;padding:13px}.mini h4{margin:0 0 7px}.mini p{margin:0}.lab{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:12px;align-items:start}.controls{grid-column:1 / -1;display:grid;grid-template-columns:repeat(4,minmax(120px,1fr)) auto auto;gap:8px;align-items:stretch}.ctrl{background:#07131e;border:1px solid #214154;border-radius:10px;padding:7px;min-width:0}.ctrl label{font-size:12px;margin-bottom:4px}.ctrl input{margin:2px 0}.calcside{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto;grid-column:2;grid-row:2}.visualcol{min-width:0;grid-column:1;grid-row:2}.visualcol canvas{height:460px}.calcside .mono{font-size:12px;line-height:1.65}.calcside .card{padding:13px}.ctrl label{display:flex;justify-content:space-between;margin-bottom:7px}.v{color:#83ffb5}input{width:100%;accent-color:#55ddff}canvas{display:block;width:100%;height:500px;background:#02070c;border:1px solid #203b4d;border-radius:10px}.canvasbox{position:relative}.canvasbox .tag{position:absolute;left:12px;top:10px;background:#06111ce8;border:1px solid #29485d;border-radius:7px;padding:5px 8px;font-size:12px;color:#bdd2dd}.status{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:10px 0}.stat{background:#07131e;border:1px solid #214154;border-radius:9px;padding:11px}.stat small{display:block;color:#91aabb}.stat strong{font-size:16px}.testtable{width:100%;border-collapse:collapse;margin-top:10px}.testtable th,.testtable td{border:1px solid #29485d;padding:8px;text-align:center}.testtable th{background:#07131e}.note{font-size:12px;color:#91a9b8}.btn{padding:11px 14px;border:1px solid #55ddff;border-radius:9px;background:#0d2c3d;color:#fff;cursor:pointer}.danger{color:#ffd77d}@media(max-width:1050px){.lab{grid-template-columns:minmax(0,1fr) 300px}.controls{grid-template-columns:repeat(3,minmax(110px,1fr)) auto auto}.calcside .mono{font-size:12px}}@media(max-width:760px){.two,.lab,.status{grid-template-columns:1fr}.controls{grid-column:1;grid-template-columns:repeat(2,minmax(0,1fr))}.visualcol,.calcside{grid-column:1;grid-row:auto;position:static;max-height:none}.visualcol canvas{height:360px}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><div class="ey">GEOMETRY · CONIC SECTION · ALGEBRAIC PROOF</div><h1>원뿔의 절단각과 이차곡선의 생성 원리</h1><p>원뿔식과 절단평면을 왜 그렇게 정하는지부터 시작하여, 평면 위의 좌표를 만들고 직접 대입해 원·타원·포물선·쌍곡선의 표준형까지 변형한다.</p></div></header>
+<main class="wrap">
+<nav class="tabs"><button class="tab active" data-p="lab">CH 1 · 실험실</button><button class="tab" data-p="circle">CH 2 · 원</button><button class="tab" data-p="ellipse">CH 3 · 타원</button><button class="tab" data-p="parabola">CH 4 · 포물선</button><button class="tab" data-p="hyperbola">CH 5 · 쌍곡선</button></nav>
+
+<section id="lab" class="chapter active">
+<div class="card"><h2>1. CONIC LAB · 실제 계산으로 확인</h2><p>여기서는 그림을 미리 넣지 않는다. 원뿔식과 절단평면식으로부터 평면 위 좌표를 계산하고, 그 계산 결과로 교선을 그린다. 특히 포물선은 슬라이더에서 근삿값을 선택하면 A가 0이 아닌 아주 작은 값이 될 수 있으므로, 정확한 경계각 버튼을 따로 제공한다.</p></div>
+<div class="lab"><aside class="controls">
+<div class="ctrl"><label>시점 X <span class="v" id="rxv"></span></label><input id="rx" type="range" min="-70" max="70" value="25"></div>
+<div class="ctrl"><label>시점 Y <span class="v" id="ryv"></span></label><input id="ry" type="range" min="-70" max="70" value="25"></div>
+<div class="ctrl"><label>절단각 θ <span class="v" id="tv"></span></label><input id="theta" type="range" min="-90" max="90" step=".001" value="0"></div>
+<div class="ctrl"><label>평면 위치 c <span class="v" id="cv"></span></label><input id="c" type="range" min="-2.5" max="2.5" step=".05" value="1.4"></div>
+<button class="btn" id="parabolaBtn">포물선 경계각 정확히 적용</button><button class="btn" id="reset">초기화</button>
+
+</aside><div class="visualcol">
+<div class="card canvasbox"><span class="tag">원뿔 + 실제 계산된 절단평면 교선</span><canvas id="l3"></canvas></div>
+<div class="status"><div class="stat"><small>현재 분류</small><strong id="type"></strong></div><div class="stat"><small>판정 근거</small><strong id="reason"></strong></div><div class="stat"><small>A</small><strong id="av"></strong></div><div class="stat"><small>경계각</small><strong id="bv"></strong></div></div>
+<div class="card"><h3>손계산 검증용 3점</h3><table class="testtable"><thead><tr><th>#</th><th>s</th><th>t</th><th>교선식 좌변</th></tr></thead><tbody id="checks"></tbody></table><p class="note">각 점은 계산된 교선 위의 점이다. A s²+t²-2Ds+C에 직접 값을 넣어 0에 가까운지 확인하면 된다. 포물선은 정확한 경계각 버튼을 누른 뒤 확인한다.</p></div>
+</div><aside class="card calcside"><h3>실시간 계산 과정</h3><div class="mono" id="calc"></div></aside></div></section>
+
+<section id="circle" class="chapter">
+<div class="card"><h2>2. 원: 먼저 원뿔과 절단평면을 정하는 이유</h2>
+<p>꼭짓점을 원점으로 하고 중심축을 z축으로 하는 이중 원뿔을 생각한다. 높이가 z인 곳에서 원뿔의 반지름이 |kz|가 되도록 정하면 피타고라스 정리에 의해</p>
+<div class="formula">x² + y² = k²z²</div>
+<p>가 된다. 여기서 k는 원뿔의 벌어진 정도를 나타내는 상수이다.</p>
+<div class="step">원뿔을 z축에 수직으로 자르면 절단평면은 높이가 일정한 평면이므로 z=c라고 둘 수 있다.</div>
+<div class="formula">x²+y²=k²c²</div>
+<p>원뿔식에 z=c를 대입한 결과가 바로 중심 (0,0), 반지름 |kc|인 원의 표준형이다.</p></div>
+<div class="card"><h2>대입한 식은 어디서 나왔을까?</h2><p>높이 z에서 원뿔의 단면은 반지름 |kz|인 원이다. 따라서 그 원의 방정식 x²+y²=(kz)²가 모든 높이에서 성립한다. 이것을 한 식으로 표현한 것이 원뿔식이다. 절단평면이 z=c이므로 그 평면에 있는 모든 점은 z값이 c이다. 그래서 원뿔식의 z 자리에 c를 대입한다.</p><div class="formula">x²+y²=k²z²  →  z=c 대입  →  x²+y²=k²c²</div><p class="ok">결론: 교선의 방정식 자체가 원의 표준형과 같으므로 원이다.</p></div>
+</section>
+
+<section id="ellipse" class="chapter">
+<div class="card"><h2>3. 타원: 기울어진 평면을 어떻게 식으로 나타내는가?</h2>
+<p>이제 평면을 기울인다. 여기서 θ는 평면을 수평인 상태에서 x축 방향으로 기울인 각이라고 생각한다. 90°에서도 식이 끊기지 않게 하기 위해 tanθ를 직접 사용하지 않고 평면의 법선벡터를 사용한다.</p>
+<div class="formula">n=(-sinθ, 0, cosθ)</div>
+<p>이 벡터는 평면에 수직인 방향이다. 평면을 기울이면 xz평면 안에서 이 법선벡터도 함께 회전한다. 원점에서 평면까지의 위치를 c로 정하면, 평면 위의 점 P=(x,y,z)는 법선 방향 성분이 c이므로</p>
+<div class="formula">(-sinθ)x+(cosθ)z=c</div><div class="formula">z cosθ - x sinθ = c</div>
+<p>가 된다. θ=0°이면 z=c가 되어 수평면으로 돌아가고, θ=90°이면 -x=c가 되어 수직면도 표현할 수 있다.</p></div>
+<div class="card"><h2>평면 위의 좌표식은 어떻게 나오는가?</h2>
+<p>평면 위에서 움직이는 방향을 두 개 잡는다. 첫 번째 방향은 평면 안에서 기울어진 방향</p><div class="formula">u=(cosθ,0,sinθ)</div><p>이고, 두 번째 방향은 y축 방향</p><div class="formula">v=(0,1,0)</div><p>이다. 원점에서 평면에 가장 가까운 점은 법선 방향으로 c만큼 간 점이므로</p><div class="formula">P₀=(-c sinθ,0,c cosθ)</div><p>이다. 따라서 평면 위의 임의의 점은 P₀에서 u방향으로 s만큼, v방향으로 t만큼 이동한 점이다.</p>
+<div class="formula">P=P₀+s u+t v</div><div class="formula">x=-c sinθ+s cosθ<br>y=t<br>z=c cosθ+s sinθ</div></div>
+<div class="card"><h2>원뿔식에 실제로 대입하기</h2><div class="step">① 원뿔식에 위에서 만든 x,y,z를 넣는다.</div><div class="formula">x²+y²=k²z²</div><div class="formula">(-c sinθ+s cosθ)²+t² = k²(c cosθ+s sinθ)²</div>
+<div class="step">② 제곱을 전개하고 같은 항끼리 모은다.</div><div class="formula">A s²+t²-2Ds+C=0</div><div class="mono">A = cos²θ - k²sin²θ
+D = c sinθ cosθ(1+k²)
+C = c²(sin²θ-k²cos²θ)</div>
+<div class="step">③ 타원에서는 A>0이다. 완전제곱을 한다.</div><div class="formula">A(s-D/A)²+t² = D²/A-C</div><p>양변을 오른쪽 상수로 나누면 두 제곱항의 합이 1인 꼴이 된다. 이것이 타원의 표준형이다.</p><div class="formula">(s-s₀)²/a² + t²/b² = 1</div><p class="ok">따라서 타원은 그림이 비슷해서 정하는 것이 아니라, 실제 교선 방정식을 타원의 표준형으로 바꿀 수 있기 때문에 타원이다.</p></div>
+</section>
+
+<section id="parabola" class="chapter">
+<div class="card"><h2>4. 포물선: 왜 정확히 경계각에서 생기는가?</h2>
+<p>타원과 쌍곡선을 구분했던 핵심은 교선 방정식의 s²항 계수 A이다. 같은 원뿔과 평면을 사용하면</p><div class="formula">A s²+t²-2Ds+C=0</div><div class="formula">A=cos²θ-k²sin²θ</div>
+<p>이다. 타원은 A>0, 쌍곡선은 A<0이므로 그 사이의 경계에서는 A가 정확히 0이 되어야 한다.</p>
+<div class="step">① 포물선 조건을 세운다.</div><div class="formula">A=0</div><div class="step">② A의 식을 넣는다.</div><div class="formula">cos²θ-k²sin²θ=0</div><div class="step">③ 정리한다.</div><div class="formula">cos²θ=k²sin²θ</div><div class="formula">tan²θ=1/k²</div><div class="formula">|tanθ|=1/k</div>
+<p>따라서 원뿔의 벌어진 정도 k가 정해지면 포물선이 되는 절단각도 정해진다. 이때의 각은 절단평면이 원뿔의 한 모선과 평행해지는 경계와 연결된다.</p></div>
+<div class="card"><h2>포물선의 식이 표준형으로 바뀌는 과정</h2>
+<div class="step">① 포물선 조건 A=0을 교선 방정식에 넣는다.</div><div class="formula">0·s²+t²-2Ds+C=0</div><div class="formula">t²-2Ds+C=0</div>
+<div class="step">② s항을 반대편으로 넘긴다.</div><div class="formula">t²=2Ds-C</div>
+<div class="step">③ 오른쪽을 한 덩어리로 묶는다.</div><div class="formula">t²=2D(s-C/(2D))</div>
+<div class="step">④ 포물선 표준형 t²=4p(s-s₀)와 비교한다.</div><div class="formula">4p=2D  →  p=D/2</div><div class="formula">s₀=C/(2D)</div>
+<p>따라서</p><div class="formula">t²=4p(s-s₀)</div><p>가 된다. 이것은 포물선의 표준형이다. 즉 포물선이라는 결론은 그림의 모양을 보고 정한 것이 아니라, 원뿔식과 평면식을 대입해서 얻은 식이 포물선 표준형과 정확히 일치하기 때문에 얻는다.</p></div>
+<div class="card"><h2>초점·준선 성질까지 확인</h2><div class="two"><div class="mini"><h4>표준형</h4><div class="formula">t²=4p(s-s₀)</div><p>꼭짓점은 (s₀,0), 초점은 (s₀+p,0), 준선은 s=s₀-p이다.</p></div><div class="mini"><h4>거리 성질</h4><p>포물선 위의 점 P=(s,t)는 초점까지의 거리와 준선까지의 거리가 같다.</p><div class="formula">PF=d(P,준선)</div></div></div><p class="note">※ 이 단계는 대수적으로 얻은 포물선이 초점·준선으로 정의되는 포물선과 같은 곡선임을 연결하는 부분이다.</p></div>
+</section>
+
+<section id="hyperbola" class="chapter">
+<div class="card"><h2>5. 쌍곡선: 왜 포물선보다 더 기울이면 쌍곡선이 되는가?</h2>
+<p>앞에서 얻은 교선 방정식은 각도를 바꾸어도 같은 형태이다.</p><div class="formula">A s²+t²-2Ds+C=0</div><div class="formula">A=cos²θ-k²sin²θ</div>
+<p>포물선 경계에서는 A=0이었다. 이보다 더 기울이면 k²sin²θ가 cos²θ보다 커지므로 A<0이 된다. 그러면 s²항과 t²항의 부호가 서로 달라진다. 이것이 쌍곡선이 생기는 대수적인 이유이다.</p>
+<div class="step">① A<0인 식에서 s항을 완전제곱한다.</div><div class="formula">A(s-D/A)²+t² = D²/A-C</div>
+<div class="step">② A<0이므로 -A를 양수로 두고 식을 옮긴다.</div><div class="formula">(-A)(s-s₀)²-t² = -(D²/A-C)</div>
+<div class="step">③ 양변을 적절한 양수로 나누면</div><div class="formula">(s-s₀)²/a² - t²/b² = 1</div>
+<p>이 식은 쌍곡선의 표준형이다. 따라서 쌍곡선도 그림의 모양을 보고 정하는 것이 아니라, 실제 교선 방정식에서 제곱항의 부호가 반대가 되고 그 식을 표준형으로 바꿀 수 있기 때문에 얻어진다.</p></div>
+<div class="card"><h2>쌍곡선의 초점·거리 성질과 연결</h2><div class="formula">(s-s₀)²/a² - t²/b² = 1</div><div class="step">표준형에서 a²와 b²를 비교하면 초점거리 c는</div><div class="formula">c²=a²+b²</div><p>가 된다. 따라서 두 초점은 F₁=(s₀-c,0), F₂=(s₀+c,0)이고 쌍곡선 위의 점 P에 대해서는 두 초점까지의 거리 차가 일정하다.</p><div class="formula">|PF₁-PF₂|=2a</div><p>즉 원뿔과 평면을 대입해서 얻은 식 → 쌍곡선 표준형 → 초점까지의 거리 차라는 순서로 대수적 정의와 기하적 정의를 연결할 수 있다.</p></div>
+<div class="card"><h2>절단각에 따른 분류를 한 줄로 정리</h2><div class="formula">A>0 → 타원　　A=0 → 포물선　　A<0 → 쌍곡선</div><p>여기서 경계각은</p><div class="formula">|θ|=arctan(1/k)</div><p>이다. k=0.72라면 약 54.246°이다. 따라서 이 값을 기준으로 작은 각에서는 타원, 정확히 경계에서는 포물선, 더 큰 각에서는 쌍곡선이 된다.</p></div>
+</section>
+
+
+</main>
+<script>
+const $=q=>document.querySelector(q),K=.72,bound=Math.atan(1/K)*180/Math.PI,EPS=1e-8;
+function setup(c){let r=c.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);c.width=Math.max(300,r.width*d);c.height=Math.max(300,r.height*d);let g=c.getContext('2d');g.setTransform(d,0,0,d,0,0);return[g,r.width,r.height]}
+function coef(th,c){let r=th*Math.PI/180,co=Math.cos(r),si=Math.sin(r);return{co,si,A:co*co-K*K*si*si,D:c*si*co*(1+K*K),C:c*c*(si*si-K*K*co*co)}}
+function planePoint(th,c,s,t){let r=th*Math.PI/180,co=Math.cos(r),si=Math.sin(r);return[-c*si+s*co,t,c*co+s*si]}
+function curvePoints(th,c){let q=coef(th,c),a=[];
+ if(Math.abs(q.A)<1e-5){if(Math.abs(q.D)<EPS)return a;let lim=2;for(let i=0;i<=1000;i++){let t=-lim+2*lim*i/1000,s=(t*t+q.C)/(2*q.D);a.push([s,t])}return a}
+ let R=q.D*q.D/q.A-q.C,s0=q.D/q.A;
+ if(q.A>0&&R>0){let as=Math.sqrt(R/q.A),bt=Math.sqrt(R);for(let i=0;i<=800;i++){let u=2*Math.PI*i/800;a.push([s0+as*Math.cos(u),bt*Math.sin(u)])}return a}
+ if(q.A<0&&R<0){let H=-q.A,aa=Math.sqrt((-R)/H),bb=Math.sqrt(-R);for(let branch of [-1,1])for(let i=0;i<=360;i++){let u=.03+1.75*i/360,s=s0+branch*aa*Math.cosh(u),t=bb*Math.sinh(u);a.push([s,t]);a.push([s,-t])}return a}
+ return a;
+}
+function project(v,rx,ry,w,h){let ax=rx*Math.PI/180,ay=ry*Math.PI/180,[x,y,z]=v;let y0=y*Math.cos(ax)-z*Math.sin(ax),z0=y*Math.sin(ax)+z*Math.cos(ax),x1=x*Math.cos(ay)+z0*Math.sin(ay),z1=-x*Math.sin(ay)+z0*Math.cos(ay),s=Math.min(w,h)/7.2,d=1+z1*.018;return[w/2+x1*s/d,h/2-y0*s/d]}
+function coneLines(g,w,h,rx,ry){g.strokeStyle='#31556a';g.lineWidth=.6;for(let z=-3.5;z<=3.5;z+=.28){let rr=Math.abs(K*z);if(rr<.02)continue;g.beginPath();for(let i=0;i<=72;i++){let u=i*2*Math.PI/72,v=project([rr*Math.cos(u),rr*Math.sin(u),z],rx,ry,w,h);i?g.lineTo(...v):g.moveTo(...v)}g.stroke()}for(let i=0;i<18;i++){let u=i*2*Math.PI/18,a=project([0,0,0],rx,ry,w,h),b=project([K*3.5*Math.cos(u),K*3.5*Math.sin(u),3.5],rx,ry,w,h),d=project([-K*3.5*Math.cos(u),-K*3.5*Math.sin(u),-3.5],rx,ry,w,h);g.strokeStyle='#4c7185';g.beginPath();g.moveTo(...a);g.lineTo(...b);g.stroke();g.beginPath();g.moveTo(...a);g.lineTo(...d);g.stroke()}}
+function drawLab(){let c=$('#l3'),[g,w,h]=setup(c);g.fillStyle='#02070c';g.fillRect(0,0,w,h);let rx=+$(`input#rx`).value,ry=+$(`input#ry`).value,th=+$(`#theta`).value,cc=+$(`#c`).value;q=coef(th,cc);coneLines(g,w,h,rx,ry);
+ let pts=curvePoints(th,cc);g.strokeStyle='#67e8ff';g.lineWidth=2;g.beginPath();pts.forEach((st,i)=>{let v=project(planePoint(th,cc,st[0],st[1]),rx,ry,w,h);i?g.lineTo(...v):g.moveTo(...v)});g.stroke();
+ let patch=[planePoint(th,cc,-3.7,-3.7),planePoint(th,cc,3.7,-3.7),planePoint(th,cc,3.7,3.7),planePoint(th,cc,-3.7,3.7)].map(v=>project(v,rx,ry,w,h));g.save();g.globalAlpha=.16;g.fillStyle='#e5b75f';g.beginPath();patch.forEach((v,i)=>i?g.lineTo(...v):g.moveTo(...v));g.closePath();g.fill();g.restore();g.strokeStyle='#e5b75f';g.lineWidth=1.5;g.beginPath();patch.forEach((v,i)=>i?g.lineTo(...v):g.moveTo(...v));g.closePath();g.stroke();
+ $(`#rxv`).textContent=rx+'°';$(`#ryv`).textContent=ry+'°';$(`#tv`).textContent=th.toFixed(2)+'°';$(`#cv`).textContent=cc.toFixed(2);$(`#av`).textContent=q.A.toFixed(6);$(`#bv`).textContent=bound.toFixed(3)+'°';
+ let type,reason;if(Math.abs(th-90)<1e-5||Math.abs(th+90)<1e-5){type='퇴화(두 직선)';reason='θ=±90°에서 A<0이지만 일반 쌍곡선이 아니라 두 직선으로 퇴화';}else if(Math.abs(q.A)<1e-5){type='포물선';reason='A=0: s²항이 사라져 t²=4p(s-s₀) 꼴';}else if(q.A>0){type=Math.abs(th)<1e-5?'원':'타원';reason='A>0: 두 제곱항의 부호가 같음';}else{type='쌍곡선';reason='A<0: 두 제곱항의 부호가 반대';}$(`#type`).textContent=type;$(`#reason`).textContent=reason;
+ let R=q.A? q.D*q.D/q.A-q.C:null,s0=q.A?q.D/q.A:null;let txt=`[1] 원뿔식: x²+y²=k²z²,  k=${K}\n[2] 절단평면: z cosθ - x sinθ = c\n[3] 평면 좌표: x=-c sinθ+s cosθ, y=t, z=c cosθ+s sinθ\n[4] 대입: (-c sinθ+s cosθ)²+t² = k²(c cosθ+s sinθ)²\n[5] 정리: A s²+t²-2Ds+C=0\n    A=${q.A.toFixed(8)}, D=${q.D.toFixed(8)}, C=${q.C.toFixed(8)}`;if(Math.abs(q.A)<1e-5){let p=q.D/2,s00=q.C/(2*q.D);txt+=`\n[6] A=0 → t²=2D(s-C/(2D))\n[7] 4p=2D → p=${p.toFixed(6)}, s₀=${s00.toFixed(6)}\n[8] 포물선 표준형: t²=4p(s-s₀)`}else if(q.A>0&&R>0){txt+=`\n[6] 완전제곱: A(s-D/A)²+t²=R\n[7] A>0, R>0 → 타원형\n[8] 두 제곱항의 합=상수 → 타원 표준형으로 변환 가능`}else if(q.A<0&&R<0){txt+=`\n[6] 완전제곱: A(s-D/A)²+t²=R\n[7] A<0, R<0 → 부호를 정리하면 (s-s₀)²/a²-t²/b²=1\n[8] 두 제곱항의 차=1 → 쌍곡선 표준형`}$(`#calc`).textContent=txt;
+ let sample=pts.length?[pts[Math.floor(pts.length*.2)],pts[Math.floor(pts.length*.5)],pts[Math.floor(pts.length*.8)]]:[];$(`#checks`).innerHTML=sample.map((p,i)=>{let val=q.A*p[0]*p[0]+p[1]*p[1]-2*q.D*p[0]+q.C;return `<tr><td>${i+1}</td><td>${p[0].toFixed(5)}</td><td>${p[1].toFixed(5)}</td><td>${val.toExponential(3)}</td></tr>`}).join('');}
+function resize(){drawLab()}document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.chapter').forEach(x=>x.classList.remove('active'));$('#'+b.dataset.p).classList.add('active');if(b.dataset.p==='lab')setTimeout(drawLab,30)});
+['rx','ry','theta','c'].forEach(id=>$('#'+id).addEventListener('input',drawLab));$('#parabolaBtn').onclick=()=>{ $('#theta').value=bound.toFixed(6); drawLab(); };$('#reset').onclick=()=>{$('#rx').value=25;$('#ry').value=25;$('#theta').value=0;$('#c').value=1.4;drawLab()};window.addEventListener('resize',resize);drawLab();
+</script>
+</body></html>

@@ -80,8 +80,8 @@
       "revisions": 5,
       "topicMismatch": false,
       "artifact": {
-        "status": "unlinked",
-        "url": null
+        "status": "linked",
+        "url": "https://kukuma1004.github.io/jpmath-lab/주제탐구/gallery/works/a-06-c.html"
       },
       "raw": {
         "hypothesis": "구를 중심을 지나는 축에 수직인 얇은 원기둥 단면으로 나누어 적분하면 부피는 \\frac{4}{3}\\pi r^3 이 되고, 표면을 얇은 띠로 나누어 적분하면 겉넓이는 4\\pi r^2 이 될 것이다. 또한 이때 부피는 반지름 r 의 세제곱에, 겉넓이는 반지름 r 의 제곱에 비례할 것이다.",
@@ -296,8 +296,8 @@
       "revisions": 5,
       "topicMismatch": false,
       "artifact": {
-        "status": "awaiting-file",
-        "url": null
+        "status": "linked",
+        "url": "https://kukuma1004.github.io/jpmath-lab/주제탐구/gallery/works/a-07-c.html"
       },
       "raw": {
         "hypothesis": "미분 가능한 이차함수의 그래프를 한 점 주변에서 확대할수록 곡선과 접선의 차이는 작아질 것이다. 특히 관찰 범위를 1/10로 줄이면 곡선의 2차 성분에 의한 오차는 약 1/100로 줄어들어, 그래프가 접선에 점점 가까워질 것으로 예상한다.",
@@ -382,8 +382,8 @@
       "revisions": 12,
       "topicMismatch": false,
       "artifact": {
-        "status": "unlinked",
-        "url": null
+        "status": "linked",
+        "url": "https://kukuma1004.github.io/jpmath-lab/주제탐구/gallery/works/a-03-c.html"
       },
       "raw": {
         "hypothesis": "f(x)=x²에서 h를 절반으로 줄이면 평균변화율과 f′(a)의 차(오차)도 절반이 될 것이다. 평균변화율은 2a+h이고 f′(a)=2a이므로 오차는 |h|이다. f(x)=|x|는 x=0에서 연속이지만 좌우 평균변화율이 −1과 1로 달라 미분가능하지 않을 것이다. 함수마다 곡선이 굽은 정도가 달라 오차의 크기도 다를 것이다.",
@@ -468,8 +468,8 @@
       "revisions": 8,
       "topicMismatch": false,
       "artifact": {
-        "status": "unlinked",
-        "url": null
+        "status": "linked",
+        "url": "https://kukuma1004.github.io/jpmath-lab/주제탐구/gallery/works/a-04-c.html"
       },
       "raw": {
         "hypothesis": "도함수의 실근 개수와 부호 변화에 따라 원함수의 극대·극소 개수와 그래프의 개형이 달라질 것이라고 예상한다. 특히 삼차함수에서는 도함수가 이차함수이므로 판별식의 부호에 따라 도함수의 실근 개수를 분류할 수 있고, 이를 통해 원함수의 극값 존재 여부를 판단할 수 있을 것이다. 사차함수에서는 도함수가 삼차함수가 되므로 도함수의 실근과 부호 변화를 관찰하여 원함수의 극값과 그래프 개형의 관계를 확인할 것이다.",
@@ -857,8 +857,8 @@
       "revisions": 2,
       "topicMismatch": false,
       "artifact": {
-        "status": "unlinked",
-        "url": null
+        "status": "linked",
+        "url": "https://kukuma1004.github.io/jpmath-lab/주제탐구/gallery/works/a-01-c.html"
       },
       "raw": {
         "hypothesis": "삼차함수의 곡선 밖에 있는 외부점에서 곡선에 그을 수 있는 서로 다른 접선의 개수는 외부점의 위치에 따라 1개 또는 3개로 달라지며, 그 경계에서는 2개의 서로 다른 접선이 나타날 것으로 예상한다. 특히 이러한 접선 개수의 변화는 단순히 그래프의 모양에 따른 현상이 아니라, 접점의 가로좌표를 미지수로 설정하여 얻어지는 삼차방정식의 서로 다른 실근 개수 변화와 정확하게 대응할 것으로 예상한다.\n\n이를 확인하기 위해 곡선 위의 접점을 T=(t,f(t))로 설정하고, T에서의 접선이 외부점 P=(p,q)를 지난다는 조건을 이용하여 t에 대한 방정식을 직접 유도할 것이다. 외부점 P가 고정되면 p,q는 상수이고 t만 미지수가 되므로, 삼차함수에서는 t에 대한 삼차방정식이 만들어질 것으로 예상한다. 따라서 이 방정식의 서로 다른 실근 하나하나가 외부점에서 그을 수 있는 하나의 접선에 대응할 것이라고 가설을 세웠다.\n\n또한 접점 방정식의 도함수를 이용하면 방정식의 극대·극소가 나타나는 위치를 찾을 수 있고, 이 두 극값의 부호 관계에 따라 삼차방정식이 서로 다른 실근 1개 또는 3개를 갖는 조건을 구분할 수 있을 것으로 예상한다. 특히 중근이 발생하는 경계 조건을 정리하면 외부점이 원래 삼차함수의 그래프 위에 있거나 변곡점에서의 접선인 변곡접선 위에 놓이는 조건이 나타날 것으로 예상한다.\n\n따라서 최종적으로 ① 외부점의 위치, ② 접점 방정식의 실근 개수, ③ 실제 접선의 개수 사이에 일정한 대응 관계가 존재하고, 함수 곡선과 변곡접선이 그 대응 관계가 변화하는 기하학적 경계라는 것을 확인할 수 있을 것으로 예상한다.",
@@ -900,8 +900,8 @@
       "revisions": 3,
       "topicMismatch": false,
       "artifact": {
-        "status": "unlinked",
-        "url": null
+        "status": "linked",
+        "url": "https://kukuma1004.github.io/jpmath-lab/주제탐구/gallery/works/a-02-c.html"
       },
       "raw": {
         "hypothesis": "다항함수의 조각으로 이루어진 연속함수 f(x)가 미분가능한 함수일 때, 그 도함수 f'(x)는 연속일 것이다.",
@@ -1029,8 +1029,8 @@
       "revisions": 4,
       "topicMismatch": false,
       "artifact": {
-        "status": "unlinked",
-        "url": null
+        "status": "linked",
+        "url": "https://kukuma1004.github.io/jpmath-lab/주제탐구/gallery/works/a-06-g.html"
       },
       "raw": {
         "hypothesis": "차원이 높아질수록 초구의 부피는 처음에는 커지다가 어느 순간부터 다시 작아진다. 또 4차원 초구를 한 좌표씩 고정하면 3차원 구가 점점 작아지거나 커지는 단면으로 볼 수 있다.",
@@ -1202,8 +1202,8 @@
       "revisions": 4,
       "topicMismatch": false,
       "artifact": {
-        "status": "awaiting-file",
-        "url": null
+        "status": "linked",
+        "url": "https://kukuma1004.github.io/jpmath-lab/주제탐구/gallery/works/a-07-g.html"
       },
       "raw": {
         "hypothesis": "이면각이 커질수록 평면도형의 정사영 넓이는 점점 작아질 것이며, 정사영 넓이는 원래 넓이에 이면각의 코사인 값을 곱한 값으로 나타낼 수 있을 것이다. 또한 공간에서 한 점과 평면 사이의 최단거리는 평면에 내린 수선의 길이와 같으므로, 정사영에서 특정 방향의 길이가 줄어드는 원리와 최단거리의 원리가 수직 성분과 관련되어 서로 연결될 것이라고 예상한다",
@@ -1245,8 +1245,8 @@
       "revisions": 3,
       "topicMismatch": false,
       "artifact": {
-        "status": "unlinked",
-        "url": null
+        "status": "linked",
+        "url": "https://kukuma1004.github.io/jpmath-lab/주제탐구/gallery/works/a-09-g.html"
       },
       "raw": {
         "hypothesis": "원뿔의 반각을 일정하게 유지한 상태에서 절단평면의 기울기를 변화시키면, 절단평면과 원뿔의 모선이 이루는 관계에 따라 서로 다른 이차곡선이 나타날 것으로 예상된다. 절단평면이 원뿔의 축에 수직으로 놓이면 원이 나타나고, 모선보다 완만하게 기울어지면 타원이 나타날 것으로 예상된다. 절단평면의 기울기가 모선의 기울기와 같아져 서로 평행해지는 경계에서는 포물선이 나타나며, 모선보다 더 가파르게 기울어지면 쌍곡선이 나타날 것으로 예상된다. 이는 절단평면의 기울기에 따라 원뿔과 평면이 만나는 위치와 형태가 달라지기 때문이다. 또한 3차원 그래프를 마우스로 회전하여 여러 방향에서 관찰하면 이러한 절단면과 모선의 관계를 더 쉽게 확인할 수 있을 것으로 예상된다.",
@@ -1288,8 +1288,8 @@
       "revisions": 9,
       "topicMismatch": false,
       "artifact": {
-        "status": "unlinked",
-        "url": null
+        "status": "linked",
+        "url": "https://kukuma1004.github.io/jpmath-lab/주제탐구/gallery/works/a-03-g.html"
       },
       "raw": {
         "hypothesis": "두 초점 사이 거리를 2c, 자취를 결정하는 값을 k라 할 때, 타원은 거리의 합 k가 2c보다 클 때(k>2c), 쌍곡선은 거리의 차 k가 0과 2c 사이일 때(0<k<2c) 만들어질 것이다. k가 정확히 2c가 되는 경계에서는 타원은 두 초점을 잇는 선분으로, 쌍곡선은 초점 바깥쪽 반직선으로 퇴화하고, 그 범위를 벗어나면 자취가 아예 존재하지 않을 것이라고 예상한다. 이는 삼각형에서 두 변의 합은 나머지 한 변보다 크고, 두 변의 차는 나머지 한 변보다 작아야 한다는 삼각부등식에서 비롯된 예상이다.",
@@ -1722,8 +1722,8 @@
       "revisions": 1,
       "topicMismatch": false,
       "artifact": {
-        "status": "unlinked",
-        "url": null
+        "status": "linked",
+        "url": "https://kukuma1004.github.io/jpmath-lab/주제탐구/gallery/works/a-01-g.html"
       },
       "raw": {
         "hypothesis": "구의 중심을 O, 반지름을 r, 구 위의 임의의 점을 P, 고정된 벡터를 a라고 할 때, 구 위에서 P가 이동하더라도 벡터 a와 P의 위치벡터가 이루는 내적에는 일정하게 유지되는 부분과 P의 위치에 따라 달라지는 부분이 존재할 것으로 예상한다.\n\n구의 중심 O가 원점이 아닌 경우에도 P의 위치벡터를 ‘중심 O의 위치벡터 + 중심 O에서 P까지의 반지름 벡터’로 분해할 수 있다. 내적의 분배법칙을 적용하면 중심의 위치벡터와 고정 벡터 a의 내적은 구 위의 점 P가 이동하더라도 변하지 않는 상수항이 되고, 반지름 벡터와 a의 내적은 P의 위치와 방향에 따라 달라지는 가변항이 될 것으로 예상한다.\n\n또한 중심 O에서 P를 향하는 반지름 벡터를 r×u라고 나타내면 u의 크기는 항상 1이다. 따라서 가변항은 r×(a·u)의 형태로 나타나며, 내적의 코사인 정의에 따라 a·u는 -|a| 이상 |a| 이하의 값을 가질 것으로 예상한다. 이에 따라 가변항의 최댓값은 r×|a|, 최솟값은 -r×|a|가 될 것으로 예상한다.\n\n특히 최댓값은 단위벡터 u가 a와 같은 방향일 때, 최솟값은 u가 a와 반대 방향일 때 나타날 것으로 예상한다. 이는 구의 중심 O를 지나면서 벡터 a와 평행한 직선이 구와 만나는 두 끝점에서 각각 내적의 최댓값과 최솟값이 발생한다는 공간기하적 해석으로 연결할 수 있다.\n\n나아가 구와 평면의 관계에서도 중심에서 평면까지의 거리와 정사영이 핵심적인 역할을 할 것으로 예상한다. 구의 중심에서 평면까지의 거리를 d라고 하면 d<r일 때 평면과 구가 원으로 교차하고, 단면원의 반지름은 √(r²-d²)가 될 것으로 예상한다. 따라서 내적의 최댓값·최솟값 문제와 평면 단면 문제는 서로 다른 문제처럼 보이지만, 실제로는 벡터의 방향, 정사영, 거리라는 공통된 기하적 원리를 통해 설명할 수 있을 것이라는 가설을 세운다.\n\n이 가설을 일반적인 문자식으로 먼저 분석한 후 여러 입력값을 적용하여 손계산 결과와 웹앱의 계산 결과를 비교함으로써 수학적으로 검증하고자 한다.",
@@ -1765,8 +1765,8 @@
       "revisions": 2,
       "topicMismatch": false,
       "artifact": {
-        "status": "unlinked",
-        "url": null
+        "status": "linked",
+        "url": "https://kukuma1004.github.io/jpmath-lab/주제탐구/gallery/works/a-02-g.html"
       },
       "raw": {
         "hypothesis": "평면으로 자른 구의 단면은 항상 원이다.",

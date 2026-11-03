@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>평균변화율 자동 변화 탐구</title>
+<style>
+:root{--bg:#f5f7f4;--card:#fff;--ink:#1d2a26;--sub:#5d6b66;--line:#d9e0dc;--curve:#1d2a26;--tan:#c0392b;--sec:#e08a00;--left:#2a6fdb;--right:#1f9d6b}
+@media (prefers-color-scheme:dark){:root{--bg:#141a18;--card:#1c2421;--ink:#e8efec;--sub:#9db0a9;--line:#33403b;--curve:#e8efec;--tan:#ff7a68;--sec:#ffb347;--left:#6aa5ff;--right:#4fd6a0}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;line-height:1.5}
+main{max-width:980px;margin:0 auto;padding:16px}
+h1{font-size:1.35rem;margin:4px 0 2px}
+p.s{color:var(--sub);margin:0 0 12px;font-size:.92rem}
+.grid{display:grid;grid-template-columns:300px 1fr;gap:14px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px}
+label{display:block;font-weight:600;font-size:.9rem;margin:10px 0 4px}
+.row{display:flex;gap:8px;align-items:center}
+input[type=range]{flex:1;min-width:0}
+input[type=number],select{width:92px;padding:6px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font-size:1rem}
+select{width:100%}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:6px;padding:5px 9px;font-size:.88rem;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--left);outline-offset:1px}
+.chk{display:flex;align-items:center;gap:6px;font-weight:400;margin:6px 0}
+.chk i{width:18px;height:3px;display:inline-block;border-radius:2px}
+svg{width:100%;height:auto;display:block}
+.vals{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:10px}
+.vals div{background:var(--bg);border-radius:8px;padding:8px 10px;font-size:.85rem;color:var(--sub)}
+.vals b{display:block;color:var(--ink);font-size:1.05rem;font-variant-numeric:tabular-nums}
+.note{font-size:.88rem;color:var(--sub);margin-top:8px}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.88rem;font-variant-numeric:tabular-nums}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th{color:var(--sub);font-weight:600}
+tr.cur td{background:var(--bg);font-weight:700}
+</style>
+</head>
+<body>
+<main>
+<h1>h가 줄어들 때 평균변화율의 변화</h1>
+<p class="s">함수와 기준점 a를 고르고 재생을 누르면 h가 자동으로 0에 가까워지면서 평균변화율(할선의 기울기)이 f′(a)(접선의 기울기)로 가까워지는 모습을 보여 줍니다.</p>
+
+<div class="grid">
+<div>
+ <div class="card">
+  <label for="fn">함수 f(x)</label>
+  <select id="fn">
+   <option value="sq">x²</option>
+   <option value="cu">x³</option>
+   <option value="ab">|x|</option>
+   <option value="sin">sin x</option>
+   <option value="exp">eˣ</option>
+  </select>
+  <label for="a">기준점 a</label>
+  <div class="row"><input type="range" id="aR" min="-3" max="3" step="0.1" value="1"><input type="number" id="aN" step="0.1" value="1"></div>
+  <label>접근 방향</label>
+  <select id="dir"><option value="1">오른쪽에서 (h>0)</option><option value="-1">왼쪽에서 (h<0)</option></select>
+  <label>재생</label>
+  <div class="chips" style="margin:0"><button id="play">일시정지</button><button id="rst">처음부터</button></div>
+  <label class="chk"><input type="checkbox" id="lp" checked>끝나면 반복</label>
+  <label for="spd">속도</label>
+  <div class="row"><input type="range" id="spd" min="0.25" max="3" step="0.25" value="1"></div>
+  <label for="prog">진행 (h: 2 → 0.01)</label>
+  <div class="row"><input type="range" id="prog" min="0" max="1" step="0.001" value="0"></div>
+  <label for="rng">보기 범위 (a±)</label>
+  <div class="row"><input type="range" id="rng" min="0.5" max="5" step="0.5" value="2.5"></div>
+ </div>
+ <div class="card">
+  <b>그래프에 표시</b>
+  <label class="chk"><input type="checkbox" id="cSec" checked><i style="background:var(--sec)"></i>할선 (a, a+h)</label>
+  <label class="chk"><input type="checkbox" id="cL"><i style="background:var(--left)"></i>좌할선 (a, a−|h|)</label>
+  <label class="chk"><input type="checkbox" id="cR"><i style="background:var(--right)"></i>우할선 (a, a+|h|)</label>
+  <label class="chk"><input type="checkbox" id="cT" checked><i style="background:var(--tan)"></i>접선 (y=f′(a)(x−a)+f(a))</label>
+ </div>
+</div>
+
+<div>
+ <div class="card">
+  <svg id="g" viewBox="0 0 640 400" role="img" aria-label="함수 그래프와 할선, 접선"></svg>
+  <div class="vals" id="vals"></div>
+  <div class="note" id="msg"></div>
+ </div>
+ <div class="card">
+  <b>h에 따른 평균변화율 g(h)</b>
+  <svg id="g2" viewBox="0 0 640 220" role="img" aria-label="h에 따른 평균변화율 그래프"></svg>
+  <div class="note">주황 점이 현재 h입니다. 점선은 f′(a)이며, 곡선이 h=0 근처에서 점선으로 모이면 미분계수가 존재합니다.</div>
+ </div>
+</div>
+</div>
+
+<div class="card">
+ <b>h 값별 계산표 (맨 위 줄이 지금 화면의 h)</b>
+ <div class="tw"><table><thead id="th"></thead><tbody id="cr"></tbody><tbody id="tb"></tbody></table></div>
+ <div class="note">마지막 열은 h를 절반으로 줄였을 때의 오차 ÷ 현재 오차입니다. 0.5에 가까우면 오차가 절반으로 줄어든다는 뜻입니다.</div>
+</div>
+</main>
+
+<script>
+const F={
+ sq:{f:x=>x*x,d:x=>2*x},
+ cu:{f:x=>x*x*x,d:x=>3*x*x},
+ ab:{f:x=>Math.abs(x),d:x=>x===0?null:(x>0?1:-1)},
+ sin:{f:Math.sin,d:Math.cos},
+ exp:{f:Math.exp,d:Math.exp}
+};
+const $=id=>document.getElementById(id);
+const NS='http://www.w3.org/2000/svg';
+const HS=[1,-1,0.5,-0.5,0.1,-0.1,0.01,-0.01];
+const H0=2,HMIN=0.01;
+let T=0,playing=true,hold=0,last=null;
+function curH(){return parseFloat($('dir').value)*H0*Math.pow(HMIN/H0,T)}
+function fmt(v,n=5){if(v===null||!isFinite(v))return '없음';return String(+v.toFixed(n))}
+function el(t,at,par){const e=document.createElementNS(NS,t);for(const k in at)e.setAttribute(k,at[k]);if(par)par.appendChild(e);return e}
+function txt(par,x,y,s,at={}){const t=el('text',Object.assign({x,y,'font-size':12,fill:'var(--sub)'},at),par);t.textContent=s;return t}
+
+function state(){return{k:$('fn').value,a:parseFloat($('aN').value)||0,h:curH(),R:parseFloat($('rng').value)}}
+function rate(k,a,h){return (F[k].f(a+h)-F[k].f(a))/h}
+
+function draw(){
+ const {k,a,h,R}=state(), f=F[k].f, d=F[k].d(a);
+ const g=$('g'); g.innerHTML='';
+ const W=640,H=400,m=34, x0=a-R,x1=a+R;
+ let lo=Infinity,hi=-Infinity;
+ for(let i=0;i<=200;i++){const y=f(x0+(x1-x0)*i/200);lo=Math.min(lo,y);hi=Math.max(hi,y)}
+ lo=Math.min(lo,0);hi=Math.max(hi,0);
+ const pad=(hi-lo)*0.08||1;lo-=pad;hi+=pad;
+ const X=x=>m+(x-x0)/(x1-x0)*(W-2*m), Y=y=>H-m-(y-lo)/(hi-lo)*(H-2*m);
+ const cp=el('clipPath',{id:'cp'},g);el('rect',{x:m,y:m/2,width:W-2*m,height:H-1.5*m},cp);
+ // 축
+ if(lo<0&&hi>0)el('line',{x1:m,x2:W-m,y1:Y(0),y2:Y(0),stroke:'var(--line)','stroke-width':1.5},g);
+ if(x0<0&&x1>0)el('line',{x1:X(0),x2:X(0),y1:m/2,y2:H-m,stroke:'var(--line)','stroke-width':1.5},g);
+ txt(g,m,H-10,'x = '+fmt(x0,2));txt(g,W-m,H-10,fmt(x1,2),{'text-anchor':'end'});
+ txt(g,4,Y(hi)+10,fmt(hi,1));txt(g,4,Y(lo),fmt(lo,1));
+ const L=el('g',{'clip-path':'url(#cp)'},g);
+ const line=(m_,col,w,dash)=>{const y=x=>f(a)+m_*(x-a);el('line',{x1:X(x0),y1:Y(y(x0)),x2:X(x1),y2:Y(y(x1)),stroke:col,'stroke-width':w,'stroke-dasharray':dash||'none'},L)};
+ if($('cT').checked&&d!==null)line(d,'var(--tan)',2,'6 4');
+ if($('cL').checked&&h!==0)line(rate(k,a,-Math.abs(h)),'var(--left)',2);
+ if($('cR').checked&&h!==0)line(rate(k,a,Math.abs(h)),'var(--right)',2);
+ if($('cSec').checked&&h!==0)line(rate(k,a,h),'var(--sec)',2.5);
+ let pts='';for(let i=0;i<=300;i++){const x=x0+(x1-x0)*i/300;pts+=X(x)+','+Y(f(x))+' '}
+ el('polyline',{points:pts,fill:'none',stroke:'var(--curve)','stroke-width':2.5},L);
+ el('circle',{cx:X(a),cy:Y(f(a)),r:5.5,fill:'var(--tan)'},g);
+ txt(g,X(a)+8,Y(f(a))-8,'(a, f(a))',{fill:'var(--ink)'});
+ if(h!==0){const p=a+h;if(p>=x0&&p<=x1){el('circle',{cx:X(p),cy:Y(f(p)),r:5.5,fill:'var(--sec)'},g);txt(g,X(p)+8,Y(f(p))+16,'(a+h, f(a+h))',{fill:'var(--ink)'})}}
+ // 값
+ const v=$('vals');
+ if(h===0){v.innerHTML='';$('msg').textContent='h=0이면 평균변화율을 계산할 수 없습니다. h를 0이 아닌 값으로 정하세요.'}
+ else{
+  const r=rate(k,a,h),rl=rate(k,a,-Math.abs(h)),rr=rate(k,a,Math.abs(h));
+  const err=d===null?null:Math.abs(r-d);
+  v.innerHTML=`<div>평균변화율<b>${fmt(r)}</b></div><div>f′(a)<b>${fmt(d)}</b></div><div>오차 |평균변화율−f′(a)|<b>${fmt(err)}</b></div><div>좌 / 우 기울기 (±|h|)<b>${fmt(rl,3)} / ${fmt(rr,3)}</b></div>`;
+  $('msg').textContent=d===null?'x=0에서 |x|는 좌우 기울기가 −1과 1로 달라 미분계수가 존재하지 않습니다. (연속이지만 미분가능하지 않음)':
+   'a='+fmt(a,2)+', h='+fmt(h,3)+' 일 때 두 점 (a, f(a))와 (a+h, f(a+h))를 잇는 할선의 기울기입니다.';
+ }
+ draw2(k,a,h,d);curRow(k,a,d,h);$('prog').value=T;
+}
+
+function draw2(k,a,h,d){
+ const g=$('g2');g.innerHTML='';
+ const W=640,H=220,m=34,hm=2;
+ const vals=[];
+ for(let i=0;i<=400;i++){const hh=-hm+4*i/400;if(Math.abs(hh)<1e-9)continue;vals.push([hh,rate(k,a,hh)])}
+ let lo=Math.min(...vals.map(p=>p[1])),hi=Math.max(...vals.map(p=>p[1]));
+ if(d!==null){lo=Math.min(lo,d);hi=Math.max(hi,d)}
+ const pad=(hi-lo)*0.1||1;lo-=pad;hi+=pad;
+ const X=x=>m+(x+hm)/(2*hm)*(W-2*m),Y=y=>H-m-(y-lo)/(hi-lo)*(H-1.6*m);
+ el('line',{x1:X(0),x2:X(0),y1:8,y2:H-m,stroke:'var(--line)','stroke-width':1.5},g);
+ txt(g,m,H-10,'h=−2');txt(g,W-m,H-10,'2',{'text-anchor':'end'});txt(g,X(0)+4,H-10,'0');
+ if(d!==null){el('line',{x1:m,x2:W-m,y1:Y(d),y2:Y(d),stroke:'var(--tan)','stroke-dasharray':'6 4','stroke-width':1.8},g);txt(g,W-m,Y(d)-5,'f′(a)',{'text-anchor':'end',fill:'var(--tan)'})}
+ [[-1,0],[0,1]].forEach(([s,e])=>{let p='';vals.filter(v=>s<0?v[0]<0:v[0]>0).forEach(v=>p+=X(v[0])+','+Y(v[1])+' ');el('polyline',{points:p,fill:'none',stroke:'var(--curve)','stroke-width':2.4},g)});
+ if(h!==0)el('circle',{cx:X(h),cy:Y(rate(k,a,h)),r:6,fill:'var(--sec)'},g);
+ txt(g,4,Y(hi)+10,fmt(hi,1));txt(g,4,Y(lo),fmt(lo,1));
+}
+
+function row(k,a,d,h,c){
+ const r=rate(k,a,h),e=d===null?null:Math.abs(r-d),e2=d===null?null:Math.abs(rate(k,a,h/2)-d);
+ const ratio=(e&&e2!==null)?fmt(e2/e,4):'—';
+ return `<tr class="${c}"><td>${fmt(a,2)}</td><td>${fmt(h,4)}</td><td>${fmt(r,6)}</td><td>${fmt(d)}</td><td>${fmt(e,6)}</td><td>${ratio}</td></tr>`;
+}
+function curRow(k,a,d,h){$('cr').innerHTML=row(k,a,d,h,'cur')}
+function table(){
+ const {k,a}=state(),d=F[k].d(a);
+ $('th').innerHTML='<tr><th>a</th><th>h</th><th>평균변화율</th><th>f′(a)</th><th>오차</th><th>h/2일 때 오차÷오차</th></tr>';
+ $('tb').innerHTML=HS.map(h=>row(k,a,d,h,'')).join('');
+}
+
+function sync(from,to,fn){$(from).addEventListener('input',()=>{$(to).value=$(from).value;draw()})}
+sync('aR','aN');sync('aN','aR');
+['fn','rng','cSec','cL','cR','cT','dir'].forEach(i=>$(i).addEventListener('input',draw));
+['fn','aR','aN'].forEach(i=>$(i).addEventListener('input',table));
+$('play').onclick=()=>{playing=!playing;if(playing&&T>=1)T=0;$('play').textContent=playing?'일시정지':'재생'};
+$('rst').onclick=()=>{T=0;hold=0;playing=true;$('play').textContent='일시정지';draw()};
+$('prog').addEventListener('input',()=>{T=parseFloat($('prog').value);playing=false;$('play').textContent='재생';draw()});
+function tick(ts){
+ if(last!==null&&playing){
+  const dt=ts-last;
+  if(T>=1){hold+=dt;if(hold>1200){if($('lp').checked){T=0;hold=0}else{playing=false;$('play').textContent='재생'}}}
+  else T=Math.min(1,T+dt*parseFloat($('spd').value)/9000);
+  draw();
+ }
+ last=ts;requestAnimationFrame(tick);
+}
+table();
+draw();requestAnimationFrame(tick);
+</script>
+</body>
+</html>

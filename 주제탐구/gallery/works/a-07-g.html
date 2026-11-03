@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>정사영 넓이와 최단거리 탐구</title>
+  <style>
+    :root {
+      --ink: #203047; --muted: #65758b; --line: #dce4ee;
+      --blue: #3478c8; --green: #159b83; --bg: #f4f7fb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--ink);
+      font-family: system-ui, -apple-system, "Noto Sans KR", sans-serif;
+      line-height: 1.55;
+    }
+    main { width: min(1000px, 94%); margin: 26px auto 44px; }
+    h1 { margin: 0; font-size: clamp(1.55rem, 4vw, 2.2rem); }
+    h2 { margin: 0 0 13px; font-size: 1.15rem; }
+    p { margin: 7px 0; }
+    .subtitle { color: var(--muted); margin: 5px 0 20px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .card {
+      min-width: 0; padding: 18px; background: white;
+      border: 1px solid var(--line); border-radius: 15px;
+      box-shadow: 0 5px 18px #2030470a;
+    }
+    .wide { grid-column: 1 / -1; }
+    label { display: block; margin: 12px 0 5px; font-weight: 650; }
+    input[type="number"] {
+      width: 100%; padding: 11px; border: 1px solid #cbd6e3;
+      border-radius: 9px; font: inherit; color: var(--ink);
+    }
+    input:focus { outline: 2px solid #a8cdf5; border-color: var(--blue); }
+    .hint, .muted { color: var(--muted); font-size: .9rem; }
+    .error { min-height: 1.4em; color: #b33a32; font-size: .9rem; }
+    .result { margin-top: 12px; padding: 14px; border-radius: 12px; background: #edf6ff; }
+    .big { color: #1766ae; font-size: 2rem; font-weight: 750; }
+    .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 10px; }
+    .metric { padding: 10px; border-radius: 9px; background: #f6f8fb; }
+    .metric strong { display: block; font-size: 1.1rem; }
+    .formula { padding: 11px; border-left: 4px solid var(--blue); border-radius: 6px; background: #f5f8fc; }
+    canvas { display: block; width: 100%; height: 250px; border: 1px solid var(--line); border-radius: 9px; background: white; }
+    .visual { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; align-items: center; }
+    svg { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 9px; background: #fbfdff; }
+    table { width: 100%; border-collapse: collapse; font-size: .94rem; }
+    th, td { padding: 9px 6px; text-align: center; border-bottom: 1px solid var(--line); }
+    th { background: #f5f8fc; }
+    footer { margin: 18px 0; text-align: center; color: var(--muted); font-size: .85rem; }
+    @media (max-width: 680px) {
+      .grid, .visual { grid-template-columns: 1fr; }
+      .wide { grid-column: auto; }
+      .card { padding: 14px; }
+      canvas { height: 220px; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>정사영 넓이와 최단거리 탐구</h1>
+    <p class="subtitle">기하 · 이면각에 따른 정사영 넓이 변화와 수선의 최단거리 원리</p>
+  </header>
+
+  <div class="grid">
+    <section class="card">
+      <h2>① 정사영 넓이 계산</h2>
+      <label for="area">원래 직사각형의 넓이</label>
+      <input id="area" type="number" min="1" max="100" step="0.1" value="10">
+      <p class="hint">1 이상 100 이하의 값을 입력하세요.</p>
+
+      <label for="angle">이면각 (도)</label>
+      <input id="angle" type="number" min="0" max="90" step="1" value="60">
+      <p class="hint">0도 이상 90도 이하로 설정하세요.</p>
+      <div id="error" class="error" role="status"></div>
+
+      <div class="result" aria-live="polite">
+        <span class="muted">정사영 넓이</span>
+        <div class="big" id="projected">5.00</div>
+        <div class="metrics">
+          <div class="metric"><span class="muted">원래 넓이</span><strong id="original">10</strong></div>
+          <div class="metric"><span class="muted">넓이 감소량</span><strong id="reduction">5.00</strong></div>
+        </div>
+      </div>
+      <p class="formula"><strong>사용한 수학식</strong><br>정사영 넓이 = 원래 넓이 × 이면각의 코사인값</p>
+      <p class="hint">코드는 입력한 도 단위 각도를 라디안으로 바꾼 뒤 코사인값을 계산합니다.</p>
+    </section>
+
+    <section class="card">
+      <h2>② 각도에 따른 넓이 변화 그래프</h2>
+      <canvas id="chart" width="640" height="340" aria-label="이면각에 따른 정사영 넓이 그래프"></canvas>
+      <p class="hint">가로축은 이면각(0~90도), 세로축은 정사영 넓이입니다. 현재 입력한 각도는 점으로 표시됩니다.</p>
+      <p class="formula">각도가 커질수록 코사인값이 작아지므로 정사영 넓이도 감소합니다.</p>
+    </section>
+
+    <section class="card wide">
+      <h2>③ 직사각형의 정사영 시각화</h2>
+      <div class="visual">
+        <svg viewBox="0 0 440 270" role="img" aria-label="기울어진 직사각형과 밑평면에 생긴 정사영">
+          <polygon points="38,195 350,195 400,230 88,230" fill="#e9eef4" stroke="#aab8c8"/>
+          <polygon id="shadow" points="90,185 285,185 325,205 130,205" fill="#e9b949" fill-opacity=".5" stroke="#bd891c" stroke-width="2"/>
+          <polygon id="plane" points="90,185 285,185 325,105 130,105" fill="#75aee8" fill-opacity=".78" stroke="#2466a9" stroke-width="2.5"/>
+          <line id="heightGuide" x1="130" y1="105" x2="130" y2="185" stroke="#159b83" stroke-dasharray="4 3"/>
+          <text x="210" y="254" text-anchor="middle" font-size="12" fill="#65758b">밑평면</text>
+          <text x="210" y="91" text-anchor="middle" font-size="12" fill="#2466a9">기울어진 직사각형</text>
+          <text x="210" y="201" text-anchor="middle" font-size="11" fill="#805b0d">정사영(그림자)</text>
+        </svg>
+        <div>
+          <p><strong>현재 이면각: <span id="angleLabel">60</span>도</strong></p>
+          <p id="visualText">각도가 커질수록 직사각형의 정사영 넓이가 줄어듭니다.</p>
+          <ul>
+            <li>교선과 평행한 가로 방향의 길이는 유지됩니다.</li>
+            <li>교선과 수직인 방향의 길이는 코사인값만큼 줄어듭니다.</li>
+            <li>따라서 전체 넓이도 같은 비율로 감소합니다.</li>
+          </ul>
+        </div>
+      </div>
+      <p class="hint">그림은 원리를 이해하기 위한 단순화된 모식도입니다. 실제 3차원 투영을 정밀하게 렌더링한 것은 아닙니다.</p>
+    </section>
+
+    <section class="card wide">
+      <h2>④ 수선이 최단거리인 이유</h2>
+      <div class="visual">
+        <svg viewBox="0 0 440 235" role="img" aria-label="공간의 점 P에서 평면에 내린 수선과 평면 위 점 Q까지의 거리">
+          <polygon points="35,165 350,165 395,200 80,200" fill="#e9eef4" stroke="#aab8c8"/>
+          <line x1="170" y1="43" x2="170" y2="165" stroke="#159b83" stroke-width="3"/>
+          <line x1="170" y1="43" x2="285" y2="165" stroke="#d18a24" stroke-width="2.5"/>
+          <line x1="170" y1="165" x2="285" y2="165" stroke="#65758b" stroke-width="2"/>
+          <path d="M170 153 L182 153 L182 165" fill="none" stroke="#159b83" stroke-width="1.7"/>
+          <circle cx="170" cy="43" r="4" fill="#203047"/>
+          <circle cx="170" cy="165" r="4" fill="#159b83"/>
+          <circle cx="285" cy="165" r="4" fill="#d18a24"/>
+          <g fill="#203047" font-size="13"><text x="155" y="31">P</text><text x="151" y="184">H</text><text x="290" y="184">Q</text></g>
+          <g font-size="11"><text x="180" y="105" fill="#159b83">수선</text><text x="230" y="91" fill="#b87917">직선 거리</text></g>
+        </svg>
+        <div>
+          <p>공간의 점 P에서 평면에 수선을 내린 발을 H라고 하고, 평면 위 임의의 점을 Q라고 합시다.</p>
+          <p>선분 PH와 HQ는 서로 수직이므로 직각삼각형이 만들어집니다. P에서 Q까지의 거리는 빗변이므로 수선 PH보다 길거나 같습니다.</p>
+          <p class="formula"><strong>핵심 원리</strong><br>직각삼각형에서 빗변은 직각변보다 깁니다. 따라서 수선의 길이가 점과 평면 사이의 최단거리입니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card wide">
+      <h2>⑤ 손계산과 웹앱 결과 비교</h2>
+      <p>원래 넓이를 10으로 두고 아래 세 가지 예시를 직접 계산한 뒤 웹앱의 기준 출력값과 비교하세요.</p>
+      <table>
+        <thead><tr><th>구분</th><th>이면각</th><th>손계산값</th><th>웹앱 기준 출력</th><th>확인</th></tr></thead>
+        <tbody>
+          <tr><td>경계값</td><td>0도</td><td>10</td><td id="test0">10.00</td><td id="check0">기준값 일치</td></tr>
+          <tr><td>일반값</td><td>60도</td><td>5</td><td id="test60">5.00</td><td id="check60">기준값 일치</td></tr>
+          <tr><td>경계값</td><td>90도</td><td>0</td><td id="test90">0.00</td><td id="check90">기준값 일치</td></tr>
+        </tbody>
+      </table>
+      <p class="hint">이 표는 원래 넓이 10을 기준으로 한 검증 예시입니다. 위 입력값을 바꾸어도 검증 기준은 유지됩니다.</p>
+    </section>
+  </div>
+  <footer>수학적 원리를 직접 입력하고 확인하는 기하 탐구용 웹앱</footer>
+</main>
+
+<script>
+  const areaInput = document.getElementById("area");
+  const angleInput = document.getElementById("angle");
+  const errorBox = document.getElementById("error");
+
+  // [초보자 수정 위치 1] 정사영 넓이 계산식입니다.
+  // Math.cos는 라디안 단위를 사용하므로 도 단위를 먼저 변환합니다.
+  function calculateProjectionArea(area, angleDegrees) {
+    const radians = angleDegrees * Math.PI / 180;
+    return area * Math.cos(radians);
+  }
+
+  function formatNumber(value) {
+    // 컴퓨터의 아주 작은 소수 계산 오차를 0으로 정리해 표시합니다.
+    if (Math.abs(value) < 1e-10) value = 0;
+    return value.toFixed(2);
+  }
+
+  // [초보자 수정 위치 2] 그래프의 축, 눈금, 곡선과 현재 위치를 그립니다.
+  function drawGraph(area, angle) {
+    const canvas = document.getElementById("chart");
+    const ctx = canvas.getContext("2d");
+    const width = canvas.width, height = canvas.height;
+    const left = 58, right = 18, top = 18, bottom = 43;
+    const plotWidth = width - left - right;
+    const plotHeight = height - top - bottom;
+
+    ctx.clearRect(0, 0, width, height);
+    ctx.font = "13px system-ui";
+    ctx.strokeStyle = "#dce4ee";
+    ctx.lineWidth = 1;
+
+    for (let i = 0; i <= 4; i++) {
+      const y = top + plotHeight * i / 4;
+      ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(width - right, y); ctx.stroke();
+      ctx.fillStyle = "#65758b"; ctx.textAlign = "right";
+      ctx.fillText((area * (1 - i / 4)).toFixed(1), left - 8, y + 4);
+    }
+    for (let i = 0; i <= 3; i++) {
+      const x = left + plotWidth * i / 3;
+      ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, height - bottom); ctx.stroke();
+      ctx.fillStyle = "#65758b"; ctx.textAlign = "center";
+      ctx.fillText((i * 30) + "도", x, height - 17);
+    }
+
+    ctx.beginPath(); ctx.strokeStyle = "#3478c8"; ctx.lineWidth = 3;
+    for (let degree = 0; degree <= 90; degree++) {
+      const x = left + plotWidth * degree / 90;
+      const y = top + plotHeight * (1 - calculateProjectionArea(area, degree) / area);
+      if (degree === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    const pointX = left + plotWidth * angle / 90;
+    const pointY = top + plotHeight * (1 - calculateProjectionArea(area, angle) / area);
+    ctx.fillStyle = "#d45b43";
+    ctx.beginPath(); ctx.arc(pointX, pointY, 6, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#203047"; ctx.textAlign = "center";
+    ctx.fillText("이면각", left + plotWidth / 2, height - 2);
+  }
+
+  // [초보자 수정 위치 3] 직사각형 그림의 각도별 모양을 바꿉니다.
+  // 세로 방향의 정사영 길이가 코사인값에 비례하도록 단순화해 표현합니다.
+  function updateVisualization(angle) {
+    const radians = angle * Math.PI / 180;
+    const projectedHeight = 80 * Math.cos(radians);
+    const baseY = 185;
+    const topY = baseY - projectedHeight;
+    document.getElementById("plane").setAttribute(
+      "points", `90,${baseY} 285,${baseY} 325,${topY} 130,${topY}`
+    );
+    document.getElementById("shadow").setAttribute(
+      "points", `90,${baseY} 285,${baseY} 325,${baseY + 20} 130,${baseY + 20}`
+    );
+    document.getElementById("heightGuide").setAttribute("y1", topY);
+    document.getElementById("heightGuide").setAttribute("y2", baseY);
+    document.getElementById("angleLabel").textContent = angle;
+
+    let message;
+    if (angle === 0) {
+      message = "두 평면이 평행한 상태로, 정사영 넓이가 원래 넓이와 같습니다.";
+    } else if (angle === 90) {
+      message = "직사각형이 밑평면에 수직으로 서며, 정사영은 선처럼 나타납니다.";
+    } else {
+      message = "각도가 커질수록 직사각형의 세로 방향 정사영 길이가 짧아집니다.";
+    }
+    document.getElementById("visualText").textContent = message;
+  }
+
+  // [초보자 수정 위치 4] 입력값 검사와 화면의 전체 결과 갱신을 담당합니다.
+  function updateApp() {
+    const areaText = areaInput.value.trim();
+    const angleText = angleInput.value.trim();
+    const area = Number(areaText);
+    const angle = Number(angleText);
+
+    if (areaText === "" || angleText === "" ||
+        !Number.isFinite(area) || !Number.isFinite(angle)) {
+      errorBox.textContent = "두 입력값을 모두 숫자로 입력해 주세요.";
+      return;
+    }
+    if (area < 1 || area > 100) {
+      errorBox.textContent = "원래 넓이는 1 이상 100 이하로 입력해 주세요.";
+      return;
+    }
+    if (angle < 0 || angle > 90) {
+      errorBox.textContent = "이면각은 0도 이상 90도 이하로 입력해 주세요.";
+      return;
+    }
+
+    errorBox.textContent = "";
+    const projected = calculateProjectionArea(area, angle);
+    document.getElementById("projected").textContent = formatNumber(projected);
+    document.getElementById("original").textContent = String(area);
+    document.getElementById("reduction").textContent = formatNumber(area - projected);
+    drawGraph(area, angle);
+    updateVisualization(angle);
+  }
+
+  areaInput.addEventListener("input", updateApp);
+  angleInput.addEventListener("input", updateApp);
+
+  // [초보자 수정 위치 5] 손계산과 비교할 기준 예시 세 가지입니다.
+  // 원래 넓이 10일 때의 기준값: 0도는 10, 60도는 5, 90도는 0입니다.
+  const testAngles = [0, 60, 90];
+  const handValues = [10, 5, 0];
+  testAngles.forEach((degree, index) => {
+    const appValue = calculateProjectionArea(10, degree);
+    document.getElementById("test" + degree).textContent = formatNumber(appValue);
+    document.getElementById("check" + degree).textContent =
+      Math.abs(appValue - handValues[index]) < 1e-9 ? "기준값 일치" : "확인 필요";
+  });
+
+  updateApp();
+</script>
+</body>
+</html>

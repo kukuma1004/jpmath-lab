@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4차원 초구면(x²+y²+z²+w²=r²) 단면 & 정사영 시각화 탐구</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', 'Inter', sans-serif;
+            background-color: #0b0f19;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+        .font-mono-math {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111827;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4b5563;
+        }
+        input[type=range] {
+            accent-color: #3b82f6;
+        }
+        .glass-card {
+            background: rgba(17, 24, 39, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(55, 65, 81, 0.6);
+        }
+        .preset-active {
+            border-color: #60a5fa !important;
+            background-color: rgba(37, 99, 235, 0.25) !important;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.35);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- 상단 헤더 -->
+    <header class="border-b border-gray-800 bg-gray-900/90 sticky top-0 z-30 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20 font-bold text-white text-lg">
+                    4D
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                        4차원 초구면의 3차원 단면과 정사영 탐구
+                        <span class="hidden sm:inline-block text-xs px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 font-mono-math">
+                            x² + y² + z² + w² = r²
+                        </span>
+                    </h1>
+                    <p class="text-xs text-gray-400">기하 ‘공간 도형과 좌표’ 확장 탐구 — 좌표 고정(단면) vs 좌표 소거(정사영) 및 차원별 부피 비교</p>
+                </div>
+            </div>
+
+            <!-- 메인 탭 전환 -->
+            <div class="flex bg-gray-800/90 p-1 rounded-xl border border-gray-700 text-xs sm:text-sm">
+                <button id="tabBtnExplore" onclick="switchMainTab('explore')" class="px-3.5 py-1.5 rounded-lg font-semibold transition-all bg-blue-600 text-white shadow">
+                    1. 3D 단면·정사영 실험실
+                </button>
+                <button id="tabBtnDimension" onclick="switchMainTab('dimension')" class="px-3.5 py-1.5 rounded-lg font-semibold transition-all text-gray-300 hover:text-white">
+                    2. 차원별(n차원) 부피 비교표
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ========================================== -->
+    <!-- 탭 1: 3D 단면 & 정사영 실험실 -->
+    <!-- ========================================== -->
+    <main id="tabExplore" class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-5 grid grid-cols-1 lg:grid-cols-12 gap-5">
+        
+        <!-- 좌측: 3D 시각화 캔버스 및 (w, R) 관계 다이어그램 (7칸) -->
+        <div class="lg:col-span-7 flex flex-col gap-4">
+            
+            <!-- 3D 뷰포트 카드 -->
+            <div class="glass-card rounded-2xl overflow-hidden flex flex-col relative shadow-xl border border-gray-800">
+                <!-- 캔버스 상단 오버레이 상태창 -->
+                <div class="p-3 sm:p-4 bg-gradient-to-b from-gray-900/95 via-gray-900/70 to-transparent flex flex-wrap items-center justify-between gap-2 z-10 pointer-events-none">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span id="modeBadge" class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40">
+                                단면 관찰 모드 (w 고정 · 교집합)
+                            </span>
+                            <span id="targetBadge" class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">
+                                초구면 (= 25, 경계 껍질)
+                            </span>
+                        </div>
+                        <div id="liveEquationBanner" class="mt-1.5 font-mono-math text-sm sm:text-base font-bold text-white">
+                            x² + y² + z² + (0)² = 25 &nbsp;⟹&nbsp; <span class="text-blue-400">x² + y² + z² = 25</span>
+                        </div>
+                    </div>
+
+                    <div id="shapeStatusChip" class="px-3 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold">
+                        ● 반지름 R = 5 인 구면
+                    </div>
+                </div>
+
+                <!-- Three.js 3D Canvas Container -->
+                <div id="canvas3DContainer" class="w-full h-[340px] sm:h-[420px] relative cursor-grab active:cursor-grabbing">
+                    <!-- 공집합 또는 한 점 안내 오버레이 -->
+                    <div id="emptySetOverlay" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-gray-950/75 backdrop-blur-sm z-20 p-6 text-center pointer-events-none">
+                        <div id="overlayIcon" class="w-14 h-14 rounded-2xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-2xl mb-3 text-rose-400 font-bold">
+                            ∅
+                        </div>
+                        <h3 id="overlayTitle" class="text-lg font-bold text-white mb-1">공집합 (실수해 없음 · 도형이 존재하지 않음)</h3>
+                        <p id="overlayDesc" class="text-xs sm:text-sm text-gray-300 max-w-md leading-relaxed">
+                            w = 6 일 때 x² + y² + z² = 25 - 36 = -11 이 됩니다.<br>
+                            실수의 제곱의 합은 음수가 될 수 없으므로 3차원 단면과 만나지 않습니다.
+                        </p>
+                    </div>
+
+                    <!-- 마우스 조작 팁 -->
+                    <div class="absolute bottom-3 left-3 z-10 pointer-events-none flex items-center gap-2 text-[11px] text-gray-400 bg-gray-900/80 px-2.5 py-1 rounded-lg border border-gray-800">
+                        <span>🖱️ 드래그: 3D 회전</span>
+                        <span>•</span>
+                        <span>축 안내: <b class="text-red-400">X</b> <b class="text-emerald-400">Y</b> <b class="text-blue-400">Z</b></span>
+                    </div>
+
+                    <button onclick="resetCamera()" class="absolute bottom-3 right-3 z-10 text-xs bg-gray-800/90 hover:bg-gray-700 text-gray-200 px-3 py-1.5 rounded-lg border border-gray-700 transition">
+                        시점 초기화
+                    </button>
+                </div>
+            </div>
+
+            <!-- 하단: 왜 단면 반지름이 변할까? 2D (w, R) 원리 다이어그램 -->
+            <div class="glass-card rounded-2xl p-4 border border-gray-800">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                    <div>
+                        <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                            보조 원리 그래프: 제4의 축(w축) 절단면과 3D 구 반지름(R)의 관계
+                        </h2>
+                        <p class="text-xs text-gray-400">
+                            피타고라스 정리 <span class="font-mono-math text-cyan-300">w² + R² = r²</span> 에 의해 고정한 <span class="font-mono-math">w</span> 위치에서의 세로 절단선 길이가 곧 3차원 구의 반지름 <span class="font-mono-math text-blue-300">R = √(r² - w²)</span>이 됩니다.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="w-full h-44 bg-gray-950/80 rounded-xl border border-gray-800/80 overflow-hidden relative">
+                    <canvas id="slice2DCanvas" class="w-full h-full block"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 우측: 조작 패널 & 수치/개념 비교 (5칸) -->
+        <div class="lg:col-span-5 flex flex-col gap-4">
+            
+            <!-- 1) 관찰 방법 & 대상 선택 카드 -->
+            <div class="glass-card rounded-2xl p-4 border border-gray-800 flex flex-col gap-3.5">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-sm font-bold text-white">① 관찰 방식 및 대상 구분</h2>
+                    <span class="text-[11px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">핵심 개념 비교</span>
+                </div>
+
+                <!-- 단면 vs 정사영 선택 -->
+                <div>
+                    <label class="text-xs text-gray-400 block mb-1.5">관찰 방법 선택 (좌표 고정 vs 좌표 제거)</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="btnModeSection" onclick="setObservationMode('section')" class="p-2.5 rounded-xl border text-left transition-all bg-blue-600/20 border-blue-500 text-white">
+                            <div class="text-xs font-bold flex items-center justify-between">
+                                <span>단면 (Cross-section)</span>
+                                <span class="text-[10px] px-1.5 py-0.5 rounded bg-blue-500 text-white">선택됨</span>
+                            </div>
+                            <div class="text-[11px] text-gray-300 mt-0.5">w = k 고정 (초평면과의 교집합)</div>
+                        </button>
+                        <button id="btnModeProjection" onclick="setObservationMode('projection')" class="p-2.5 rounded-xl border text-left transition-all bg-gray-800/60 border-gray-700 text-gray-300 hover:border-gray-600">
+                            <div class="text-xs font-bold flex items-center justify-between">
+                                <span>3차원 정사영 (Projection)</span>
+                            </div>
+                            <div class="text-[11px] text-gray-400 mt-0.5">w 좌표 소거 (모든 단면의 합집합)</div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 초구면(경계) vs 초구(내부 포함) 구분 -->
+                <div>
+                    <label class="text-xs text-gray-400 block mb-1.5">탐구 대상 구분 (경계 vs 내부 포함)</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="btnTargetSurface" onclick="setTargetType('surface')" class="p-2.5 rounded-xl border text-left transition-all bg-indigo-600/20 border-indigo-400 text-white">
+                            <div class="text-xs font-bold font-mono-math">초구면 (x²+y²+z²+w² = r²)</div>
+                            <div class="text-[11px] text-gray-300 mt-0.5">경계만 포함 → 단면은 속이 빈 <b>구면</b></div>
+                        </button>
+                        <button id="btnTargetSolid" onclick="setTargetType('solid')" class="p-2.5 rounded-xl border text-left transition-all bg-gray-800/60 border-gray-700 text-gray-300 hover:border-gray-600">
+                            <div class="text-xs font-bold font-mono-math">초구 (x²+y²+z²+w² ≤ r²)</div>
+                            <div class="text-[11px] text-gray-400 mt-0.5">내부까지 포함 → 단면은 속이 찬 <b>구</b></div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2) w = 0, 3, 5, 6 조건 프리셋 및 슬라이더 조작 -->
+            <div class="glass-card rounded-2xl p-4 border border-gray-800 flex flex-col gap-3.5">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-sm font-bold text-white">② 고정할 좌표 w 선택 (r = 5 기준)</h2>
+                    <div class="flex items-center gap-1.5 text-xs">
+                        <span class="text-gray-400">초구 반지름 r:</span>
+                        <select id="radiusSelect" onchange="changeHypersphereRadius(this.value)" class="bg-gray-800 border border-gray-700 rounded-lg px-2 py-0.5 text-white font-mono-math text-xs">
+                            <option value="3">r = 3 (r²=9)</option>
+                            <option value="4">r = 4 (r²=16)</option>
+                            <option value="5" selected>r = 5 (r²=25, 과제 기준)</option>
+                            <option value="6">r = 6 (r²=36)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 과제 필수 4대 조건 원클릭 버튼 -->
+                <div class="grid grid-cols-4 gap-2">
+                    <button id="preset0" onclick="selectPresetW(0)" class="preset-btn preset-active p-2 rounded-xl border border-gray-700 bg-gray-800/80 text-center transition">
+                        <div class="font-mono-math font-bold text-sm text-white">w = 0</div>
+                        <div class="text-[11px] text-blue-300 mt-0.5">R = 5 구면</div>
+                    </button>
+                    <button id="preset3" onclick="selectPresetW(3)" class="preset-btn p-2 rounded-xl border border-gray-700 bg-gray-800/80 text-center transition">
+                        <div class="font-mono-math font-bold text-sm text-white">w = 3</div>
+                        <div class="text-[11px] text-cyan-300 mt-0.5">R = 4 구면</div>
+                    </button>
+                    <button id="preset5" onclick="selectPresetW(5)" class="preset-btn p-2 rounded-xl border border-gray-700 bg-gray-800/80 text-center transition">
+                        <div class="font-mono-math font-bold text-sm text-white">w = 5</div>
+                        <div class="text-[11px] text-amber-300 mt-0.5">R = 0 한 점</div>
+                    </button>
+                    <button id="preset6" onclick="selectPresetW(6)" class="preset-btn p-2 rounded-xl border border-gray-700 bg-gray-800/80 text-center transition">
+                        <div class="font-mono-math font-bold text-sm text-white">w = 6</div>
+                        <div class="text-[11px] text-rose-300 mt-0.5">공집합 (∅)</div>
+                    </button>
+                </div>
+
+                <!-- 연속 슬라이더 -->
+                <div class="bg-gray-900/90 p-3 rounded-xl border border-gray-800">
+                    <div class="flex justify-between items-center text-xs mb-1.5">
+                        <span class="text-gray-400">w 좌표 연속 조절 슬라이더</span>
+                        <span id="wSliderLabel" class="font-mono-math font-bold text-blue-400 text-sm">w = 0.0</span>
+                    </div>
+                    <input id="wSlider" type="range" min="-7" max="7" step="0.1" value="0" oninput="onWSliderInput(this.value)" class="w-full cursor-pointer">
+                    <div class="flex justify-between text-[10px] text-gray-500 font-mono-math mt-1">
+                        <span>-7 (공집합)</span>
+                        <span>-5 (한점)</span>
+                        <span>0 (최대 R=5)</span>
+                        <span>+5 (한점)</span>
+                        <span>+7 (공집합)</span>
+                    </div>
+                </div>
+
+                <!-- 실시간 계산 결과 카드 -->
+                <div class="grid grid-cols-3 gap-2 text-center">
+                    <div class="bg-gray-900/80 p-2.5 rounded-xl border border-gray-800">
+                        <div class="text-[11px] text-gray-400">단면의 반지름 (R)</div>
+                        <div id="metricRadius" class="font-mono-math text-sm sm:text-base font-bold text-white mt-0.5">5</div>
+                        <div id="metricRadiusSub" class="text-[10px] text-gray-500 font-mono-math">√(25 - 0)</div>
+                    </div>
+                    <div class="bg-gray-900/80 p-2.5 rounded-xl border border-gray-800">
+                        <div class="text-[11px] text-gray-400">구면 겉넓이 (4πR²)</div>
+                        <div id="metricArea" class="font-mono-math text-sm sm:text-base font-bold text-cyan-300 mt-0.5">100π</div>
+                        <div id="metricAreaSub" class="text-[10px] text-gray-500 font-mono-math">≈ 314.16</div>
+                    </div>
+                    <div class="bg-gray-900/80 p-2.5 rounded-xl border border-gray-800">
+                        <div class="text-[11px] text-gray-400">내부 부피 (4/3πR³)</div>
+                        <div id="metricVolume" class="font-mono-math text-sm sm:text-base font-bold text-indigo-300 mt-0.5">500/3 π</div>
+                        <div id="metricVolumeSub" class="text-[10px] text-gray-500 font-mono-math">≈ 523.60</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3) 네 조건 비교 요약 및 단면 vs 정사영 수학적 해설 -->
+            <div class="glass-card rounded-2xl p-4 border border-gray-800 flex flex-col gap-3">
+                <h2 class="text-sm font-bold text-white">③ w = 0, 3, 5, 6 계산 비교 & 수학적 해석</h2>
+
+                <div class="space-y-1.5 text-xs">
+                    <div id="rowW0" onclick="selectPresetW(0)" class="p-2 rounded-lg border border-blue-500/40 bg-blue-500/10 cursor-pointer transition flex items-center justify-between">
+                        <div><b class="text-blue-300 font-mono-math">w=0:</b> <span class="font-mono-math">x²+y²+z²=25</span> (반지름 5인 구면)</div>
+                        <span class="font-mono-math text-[11px] text-gray-300">S=100π, V=500/3π</span>
+                    </div>
+                    <div id="rowW3" onclick="selectPresetW(3)" class="p-2 rounded-lg border border-gray-800 bg-gray-900/60 cursor-pointer transition flex items-center justify-between">
+                        <div><b class="text-cyan-300 font-mono-math">w=3:</b> <span class="font-mono-math">x²+y²+z²=16</span> (반지름 4인 구면)</div>
+                        <span class="font-mono-math text-[11px] text-gray-300">S=64π, V=256/3π</span>
+                    </div>
+                    <div id="rowW5" onclick="selectPresetW(5)" class="p-2 rounded-lg border border-gray-800 bg-gray-900/60 cursor-pointer transition flex items-center justify-between">
+                        <div><b class="text-amber-300 font-mono-math">w=5:</b> <span class="font-mono-math">x²+y²+z²=0</span> (원점 (0,0,0) 한 점)</div>
+                        <span class="font-mono-math text-[11px] text-gray-300">R=0, S=0, V=0</span>
+                    </div>
+                    <div id="rowW6" onclick="selectPresetW(6)" class="p-2 rounded-lg border border-gray-800 bg-gray-900/60 cursor-pointer transition flex items-center justify-between">
+                        <div><b class="text-rose-300 font-mono-math">w=6:</b> <span class="font-mono-math">x²+y²+z²=-11</span> (공집합 · 실수해 없음)</div>
+                        <span class="font-mono-math text-[11px] text-rose-300">도형 없음 (∅)</span>
+                    </div>
+                </div>
+
+                <!-- 단면 vs 정사영 핵심 설명 박스 -->
+                <div id="explanationBox" class="p-3 rounded-xl bg-gray-900/95 border border-gray-700/80 text-xs text-gray-300 leading-relaxed">
+                    <div class="font-bold text-white mb-1 flex items-center gap-1.5">
+                        <span class="text-blue-400">●</span> 왜 단면(좌표 고정)과 정사영(좌표 제거)이 다를까요?
+                    </div>
+                    <p>
+                        • <b>단면(교집합):</b> <span class="font-mono-math text-blue-300">w=k</span>로 고정하면 특정 층의 점들만 남으므로, 속이 빈 초구면을 자르면 속이 빈 <b>구면(<span class="font-mono-math">x²+y²+z²=25-k²</span>)</b>이 됩니다.<br>
+                        • <b>3차원 정사영(합집합):</b> <span class="font-mono-math">w</span>좌표를 없애고 <span class="font-mono-math">-5 ≤ w ≤ 5</span>의 모든 단면 구면을 3차원 공간에 겹쳐 내려찍으면 속이 꽉 찬 <b>반지름 5인 구(<span class="font-mono-math text-indigo-300">x²+y²+z² ≤ 25</span>)</b>가 됩니다.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ========================================== -->
+    <!-- 탭 2: 차원별(n차원) 초구 부피 공식 & 실제 계산표 -->
+    <!-- ========================================== -->
+    <section id="tabDimension" class="hidden flex-1 max-w-7xl w-full mx-auto p-3 sm:p-5 flex-col gap-5">
+        <div class="glass-card rounded-2xl p-5 border border-gray-800">
+            <div class="flex flex-wrap items-center justify-between gap-4 border-b border-gray-800 pb-4">
+                <div>
+                    <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                        심화 완료 기준 충족 자료
+                    </span>
+                    <h2 class="text-lg sm:text-xl font-bold text-white mt-1.5">
+                        반지름(r)과 단위를 고정한 차원별(n차원) 초구의 부피·겉넓이 비교
+                    </h2>
+                    <p class="text-xs sm:text-sm text-gray-400 mt-0.5">
+                        차원이 높아질 때 부피 증감을 수학적으로 비교하기 위해 <b>동일한 반지름(r)과 단위(cmⁿ)를 고정</b>하여 계산한 결과입니다.
+                    </p>
+                </div>
+
+                <!-- 고정 반지름 선택 -->
+                <div class="flex items-center gap-3 bg-gray-900 p-3 rounded-xl border border-gray-700">
+                    <label class="text-xs font-bold text-gray-300">고정 반지름 (r) 설정:</label>
+                    <div class="flex gap-1.5">
+                        <button onclick="setFixedDimRadius(1)" id="dimR1" class="px-3 py-1 rounded-lg text-xs font-mono-math font-bold bg-gray-800 text-gray-300 border border-gray-700">
+                            r = 1 cm (단위초구)
+                        </button>
+                        <button onclick="setFixedDimRadius(5)" id="dimR5" class="px-3 py-1 rounded-lg text-xs font-mono-math font-bold bg-blue-600 text-white border border-blue-500">
+                            r = 5 cm (과제 초구)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 공식 및 출처 안내 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+                <div class="bg-gray-900/90 p-4 rounded-xl border border-gray-800">
+                    <div class="text-xs font-bold text-blue-400 mb-1">📌 n차원 초구(내부 포함, x₁²+⋯+xₙ² ≤ r²)의 부피 공식</div>
+                    <div class="font-mono-math text-sm sm:text-base font-bold text-white bg-gray-950 p-3 rounded-lg border border-gray-800 my-2">
+                        Vₙ(r) = [ π^(n/2) / Γ(n/2 + 1) ] · rⁿ &nbsp;(단위: cmⁿ)
+                    </div>
+                    <p class="text-xs text-gray-400 leading-relaxed">
+                        • <b>점화식 관계:</b> <span class="font-mono-math text-gray-200">Vₙ(r) = (2πr² / n) · Vₙ₋₂(r)</span> (단, <span class="font-mono-math">V₁(r)=2r, V₂(r)=πr²</span>)<br>
+                        • <b>초구면(경계)의 (n-1)차원 겉넓이:</b> <span class="font-mono-math text-gray-200">Sₙ₋₁(r) = dVₙ(r)/dr = (n / r) · Vₙ(r)</span>
+                    </p>
+                </div>
+
+                <div class="bg-gray-900/90 p-4 rounded-xl border border-gray-800 flex flex-col justify-between">
+                    <div>
+                        <div class="text-xs font-bold text-amber-400 mb-1">📚 수학적 출처 및 주의할 점 (완료 기준 반영)</div>
+                        <p class="text-xs text-gray-300 leading-relaxed">
+                            • <b>공식 출처:</b> 다중적분과 오일러 감마함수(<span class="font-mono-math">Γ(z)</span>)를 이용한 <span class="font-mono-math">n</span>차원 유클리드 구의 부피 일반화 (참고: <i>Apostol, Calculus Vol.2</i> / <i>Wikipedia 'Volume of an n-ball'</i>).<br>
+                            • <b>주의점:</b> 반지름이 <span class="font-mono-math text-cyan-300">r = 1</span>로 고정되면 <b>5차원에서 부피가 최대(≈5.26)</b>가 된 후 차원이 커질수록 0에 수렴하고, <span class="font-mono-math text-cyan-300">r = 5</span>로 고정되면 1~10차원에서 계속 증가합니다. 즉 <b>반지름 고정 조건</b>에 따라 증감 양상이 달라집니다.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 차원별 부피 막대그래프 & 실제 계산표 -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                <!-- 막대그래프 시각화 -->
+                <div class="lg:col-span-5 bg-gray-900/90 p-4 rounded-xl border border-gray-800">
+                    <h3 id="chartTitle" class="text-xs font-bold text-white mb-3">
+                        📊 차원(n=1~10)별 초구 부피 비교 그래프 (고정 반지름 r = 5 cm)
+                    </h3>
+                    <div id="dimBarChart" class="space-y-2"></div>
+                </div>
+
+                <!-- 실제 계산표 -->
+                <div class="lg:col-span-7 overflow-x-auto bg-gray-900/90 rounded-xl border border-gray-800">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="border-b border-gray-800 bg-gray-950/80 text-gray-400">
+                                <th class="p-3">차원 (n)</th>
+                                <th class="p-3">도형 명칭 (경계 / 내부)</th>
+                                <th class="p-3">부피 공식 Vₙ(r)</th>
+                                <th class="p-3">실제 부피 계산값 (Vₙ)</th>
+                                <th class="p-3">경계 크기 (겉넓이 Sₙ₋₁)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dimTableBody" class="divide-y divide-gray-800/70 font-mono-math">
+                            <!-- JS에서 자동 생성 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // ==========================================
+        // 상태 변수 관리
+        // ==========================================
+        let state = {
+            r: 5,                  // 4차원 초구 반지름 (기본값 5, r²=25)
+            w: 0,                  // 고정할 w 좌표
+            mode: 'section',       // 'section' (단면: w 고정) | 'projection' (3차원 정사영: w 소거)
+            target: 'surface',     // 'surface' (초구면: = r²) | 'solid' (초구 내부 포함: <= r²)
+            dimFixedR: 5           // 탭 2의 차원별 부피 비교용 고정 반지름 (1 또는 5)
+        };
+
+        // ==========================================
+        // Three.js 3D 씬 구성
+        // ==========================================
+        let scene, camera, renderer, mainGroup;
+        let isDragging = false;
+        let prevMouse = { x: 0, y: 0 };
+        let sphericalCam = { radius: 13.5, theta: Math.PI / 4, phi: Math.PI / 3 };
+
+        function initThreeJS() {
+            const container = document.getElementById('canvas3DContainer');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+            updateCameraPosition();
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+
+            // 조명 설정
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
+            scene.add(ambientLight);
+
+            const dirLight1 = new THREE.DirectionalLight(0x93c5fd, 0.9);
+            dirLight1.position.set(10, 15, 12);
+            scene.add(dirLight1);
+
+            const dirLight2 = new THREE.DirectionalLight(0x818cf8, 0.5);
+            dirLight2.position.set(-10, -10, -8);
+            scene.add(dirLight2);
+
+            // 보조선 그리드 및 X, Y, Z 축
+            const gridHelper = new THREE.GridHelper(12, 12, 0x334155, 0x1e293b);
+            gridHelper.position.y = -0.01;
+            scene.add(gridHelper);
+
+            createAxesLines();
+
+            mainGroup = new THREE.Group();
+            scene.add(mainGroup);
+
+            // 마우스/터치 회전 이벤트
+            const dom = renderer.domElement;
+            dom.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                prevMouse = { x: e.clientX, y: e.clientY };
+            });
+            window.addEventListener('mouseup', () => isDragging = false);
+            window.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                const dx = e.clientX - prevMouse.x;
+                const dy = e.clientY - prevMouse.y;
+                prevMouse = { x: e.clientX, y: e.clientY };
+                sphericalCam.theta -= dx * 0.008;
+                sphericalCam.phi = Math.max(0.15, Math.min(Math.PI - 0.15, sphericalCam.phi - dy * 0.008));
+                updateCameraPosition();
+            });
+
+            // 터치 지원
+            dom.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    isDragging = true;
+                    prevMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                }
+            }, { passive: true });
+            window.addEventListener('touchend', () => isDragging = false);
+            window.addEventListener('touchmove', (e) => {
+                if (!isDragging || e.touches.length !== 1) return;
+                const dx = e.touches[0].clientX - prevMouse.x;
+                const dy = e.touches[0].clientY - prevMouse.y;
+                prevMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                sphericalCam.theta -= dx * 0.008;
+                sphericalCam.phi = Math.max(0.15, Math.min(Math.PI - 0.15, sphericalCam.phi - dy * 0.008));
+                updateCameraPosition();
+            }, { passive: true });
+
+            window.addEventListener('resize', onWindowResize);
+
+            rebuild3DGeometry();
+            draw2DSliceDiagram();
+            animate();
+        }
+
+        function createAxesLines() {
+            const axisLen = 6.5;
+            // X축 (Red)
+            const xGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-axisLen, 0, 0), new THREE.Vector3(axisLen, 0, 0)]);
+            scene.add(new THREE.Line(xGeo, new THREE.LineBasicMaterial({ color: 0xf87171, transparent: true, opacity: 0.65 })));
+            // Y축 (Green)
+            const yGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, -axisLen, 0), new THREE.Vector3(0, axisLen, 0)]);
+            scene.add(new THREE.Line(yGeo, new THREE.LineBasicMaterial({ color: 0x34d399, transparent: true, opacity: 0.65 })));
+            // Z축 (Blue)
+            const zGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, -axisLen), new THREE.Vector3(0, 0, axisLen)]);
+            scene.add(new THREE.Line(zGeo, new THREE.LineBasicMaterial({ color: 0x60a5fa, transparent: true, opacity: 0.65 })));
+        }
+
+        function updateCameraPosition() {
+            camera.position.x = sphericalCam.radius * Math.sin(sphericalCam.phi) * Math.cos(sphericalCam.theta);
+            camera.position.y = sphericalCam.radius * Math.cos(sphericalCam.phi);
+            camera.position.z = sphericalCam.radius * Math.sin(sphericalCam.phi) * Math.sin(sphericalCam.theta);
+            camera.lookAt(0, 0, 0);
+        }
+
+        function resetCamera() {
+            sphericalCam = { radius: 13.5, theta: Math.PI / 4, phi: Math.PI / 3 };
+            updateCameraPosition();
+        }
+
+        function onWindowResize() {
+            const container = document.getElementById('canvas3DContainer');
+            if (!container || !renderer) return;
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+            draw2DSliceDiagram();
+        }
+
+        // ==========================================
+        // 3D 도형 생성 및 업데이트 (단면 vs 정사영, 초구면 vs 초구)
+        // ==========================================
+        function rebuild3DGeometry() {
+            if (!mainGroup) return;
+            while (mainGroup.children.length > 0) {
+                const child = mainGroup.children[0];
+                mainGroup.remove(child);
+            }
+
+            const r = state.r;
+            const w = state.w;
+            const rSqMinusWSq = +(r * r - w * w).toFixed(4);
+
+            // 기준 최대 반지름(w=0일 때 반지름 r) 가이드 구면 (점선 느낌의 옅은 와이어프레임)
+            const refGeo = new THREE.SphereGeometry(r, 24, 16);
+            const refWire = new THREE.LineSegments(
+                new THREE.WireframeGeometry(refGeo),
+                new THREE.LineBasicMaterial({ color: 0x475569, transparent: true, opacity: 0.16 })
+            );
+            mainGroup.add(refWire);
+
+            // 1) 3차원 정사영 모드 (w 좌표 제거 -> -r <= w <= r 모든 단면의 합집합 = 반지름 r인 속이 찬 구)
+            if (state.mode === 'projection') {
+                // 여러 w값(w=0, 1, 2, 3, 4...)의 구면들이 겹쳐서 속을 채우는 모습을 중첩 껍질로 표현
+                const sampleWs = [0, r * 0.4, r * 0.6, r * 0.8, r * 0.92];
+                const colors = [0x3b82f6, 0x38bdf8, 0x818cf8, 0xa78bfa, 0xf472b6];
+
+                sampleWs.forEach((sw, idx) => {
+                    const rad = Math.sqrt(Math.max(0, r * r - sw * sw));
+                    if (rad > 0.05) {
+                        // 1/8 절개(Cutaway)하여 내부 겹침이 한눈에 보이도록 구성
+                        const shellGeo = new THREE.SphereGeometry(rad, 32, 24, 0, Math.PI * 1.5);
+                        const shellMat = new THREE.MeshPhongMaterial({
+                            color: colors[idx % colors.length],
+                            transparent: true,
+                            opacity: idx === 0 ? 0.32 : 0.25,
+                            side: THREE.DoubleSide,
+                            shininess: 70
+                        });
+                        mainGroup.add(new THREE.Mesh(shellGeo, shellMat));
+
+                        // 경계 링 표시
+                        const ringGeo = new THREE.RingGeometry(rad - 0.03, rad + 0.03, 48);
+                        const ringMat = new THREE.MeshBasicMaterial({ color: colors[idx % colors.length], side: THREE.DoubleSide });
+                        const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+                        mainGroup.add(ringMesh);
+                    }
+                });
+
+                // 중심점 (w = ±r 투영점)
+                const centerGeo = new THREE.SphereGeometry(0.18, 16, 16);
+                const centerMat = new THREE.MeshBasicMaterial({ color: 0xfbbf24 });
+                mainGroup.add(new THREE.Mesh(centerGeo, centerMat));
+                return;
+            }
+
+            // 2) 단면 관찰 모드 (w 고정)
+            if (rSqMinusWSq < 0) {
+                // 공집합: 아무 도형도 그리지 않음
+                return;
+            } else if (Math.abs(rSqMinusWSq) < 1e-4) {
+                // 한 점 (원점 0,0,0)
+                const pointGeo = new THREE.SphereGeometry(0.24, 24, 24);
+                const pointMat = new THREE.MeshBasicMaterial({ color: 0xfbbf24 });
+                mainGroup.add(new THREE.Mesh(pointGeo, pointMat));
+
+                // 빛나는 후광 효과
+                const haloGeo = new THREE.SphereGeometry(0.45, 24, 24);
+                const haloMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0.35 });
+                mainGroup.add(new THREE.Mesh(haloGeo, haloMat));
+            } else {
+                const R = Math.sqrt(rSqMinusWSq);
+
+                if (state.target === 'surface') {
+                    // [초구면의 단면 = 속이 빈 구면(겉껍질)]
+                    const sphereGeo = new THREE.SphereGeometry(R, 36, 28);
+                    const sphereMat = new THREE.MeshPhongMaterial({
+                        color: 0x3b82f6,
+                        transparent: true,
+                        opacity: 0.35,
+                        side: THREE.DoubleSide,
+                        shininess: 80
+                    });
+                    mainGroup.add(new THREE.Mesh(sphereGeo, sphereMat));
+
+                    // 구면임을 명확히 보여 주는 경위도 와이어프레임
+                    const wireGeo = new THREE.WireframeGeometry(new THREE.SphereGeometry(R, 20, 14));
+                    const wireMat = new THREE.LineBasicMaterial({ color: 0x60a5fa, transparent: true, opacity: 0.55 });
+                    mainGroup.add(new THREE.LineSegments(wireGeo, wireMat));
+
+                    // 적도선 강조 링
+                    const eqCurve = new THREE.EllipseCurve(0, 0, R, R, 0, 2 * Math.PI, false, 0);
+                    const eqPoints = eqCurve.getPoints(64).map(p => new THREE.Vector3(p.x, 0, p.y));
+                    const eqGeo = new THREE.BufferGeometry().setFromPoints(eqPoints);
+                    mainGroup.add(new THREE.Line(eqGeo, new THREE.LineBasicMaterial({ color: 0x38bdf8 })));
+
+                } else {
+                    // [초구의 단면 = 내부가 꽉 찬 구] -> 내부가 채워져 있음을 보여 주기 위해 1/8 절개 단면도 함께 표시
+                    const solidGeo = new THREE.SphereGeometry(R, 36, 28, 0, Math.PI * 1.5);
+                    const solidMat = new THREE.MeshPhongMaterial({
+                        color: 0x6366f1,
+                        transparent: true,
+                        opacity: 0.78,
+                        side: THREE.DoubleSide,
+                        shininess: 60
+                    });
+                    mainGroup.add(new THREE.Mesh(solidGeo, solidMat));
+
+                    // 절개된 내부 채움 단면 (반원판 2개)
+                    const halfCircleShape = new THREE.Shape();
+                    halfCircleShape.absarc(0, 0, R, -Math.PI / 2, Math.PI / 2, false);
+                    const planeGeo = new THREE.ShapeGeometry(halfCircleShape, 32);
+                    const cutMat = new THREE.MeshPhongMaterial({
+                        color: 0x818cf8,
+                        side: THREE.DoubleSide,
+                        transparent: true,
+                        opacity: 0.9
+                    });
+
+                    const cutPlane1 = new THREE.Mesh(planeGeo, cutMat);
+                    mainGroup.add(cutPlane1);
+
+                    const cutPlane2 = new THREE.Mesh(planeGeo, cutMat);
+                    cutPlane2.rotation.y = -Math.PI / 2;
+                    mainGroup.add(cutPlane2);
+                }
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if (mainGroup && !isDragging) {
+                mainGroup.rotation.y += 0.003;
+            }
+            if (renderer && scene && camera) {
+                renderer.render(scene, camera);
+            }
+        }
+
+        // ==========================================
+        // 2D 보조 다이어그램: (w, R) 평면에서의 절단 원리 시각화
+        // ==========================================
+        function draw2DSliceDiagram() {
+            const canvas = document.getElementById('slice2DCanvas');
+            if (!canvas) return;
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width * window.devicePixelRatio;
+            canvas.height = rect.height * window.devicePixelRatio;
+
+            const ctx = canvas.getContext('2d');
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+            const W = rect.width;
+            const H = rect.height;
+            ctx.clearRect(0, 0, W, H);
+
+            const cx = W * 0.5;
+            const cy = H * 0.54;
+            const scale = Math.min(W / 16, (H - 36) / (state.r * 2.3));
+            const rPx = state.r * scale;
+
+            // 배경 축 그리기 (가로: w축, 세로: 3D 반지름 R축)
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(20, cy);
+            ctx.lineTo(W - 20, cy);
+            ctx.moveTo(cx, 12);
+            ctx.lineTo(cx, H - 12);
+            ctx.stroke();
+
+            // 축 레이블
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '11px "JetBrains Mono", sans-serif';
+            ctx.fillText('w축 (제4좌표)', W - 95, cy - 6);
+            ctx.fillText('3D 반지름 R', cx + 6, 20);
+
+            // 눈금 표시 (-r, 0, 3, r, 6)
+            const ticks = [-state.r, 0, 3, state.r, 6];
+            ticks.forEach(t => {
+                const tx = cx + t * scale;
+                if (tx > 25 && tx < W - 25) {
+                    ctx.strokeStyle = '#475569';
+                    ctx.beginPath();
+                    ctx.moveTo(tx, cy - 3);
+                    ctx.lineTo(tx, cy + 3);
+                    ctx.stroke();
+                    ctx.fillStyle = '#64748b';
+                    ctx.font = '10px "JetBrains Mono"';
+                    ctx.fillText(`w=${t}`, tx - 12, cy + 15);
+                }
+            });
+
+            // 4차원 초구의 (w, R) 관계 원: w² + R² = r²
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(cx, cy, rPx, 0, Math.PI * 2);
+            if (state.target === 'solid' || state.mode === 'projection') {
+                ctx.fillStyle = 'rgba(99, 102, 241, 0.16)';
+                ctx.fill();
+            }
+            ctx.strokeStyle = '#60a5fa';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.restore();
+
+            if (state.mode === 'projection') {
+                // 정사영 모드일 때: 모든 w (-r ~ +r)가 w=0 평면으로 수렴하는 화살표 표시
+                ctx.fillStyle = 'rgba(59, 130, 246, 0.22)';
+                ctx.fillRect(cx - rPx, cy - rPx, rPx * 2, rPx * 2);
+
+                ctx.strokeStyle = '#818cf8';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(cx, cy - rPx);
+                ctx.lineTo(cx, cy + rPx);
+                ctx.stroke();
+
+                ctx.fillStyle = '#c7d2fe';
+                ctx.font = 'bold 11px "Noto Sans KR"';
+                ctx.fillText(`정사영: -${state.r} ≤ w ≤ ${state.r} 전체가 겹쳐 반지름 ${state.r}인 구 형성`, 16, 22);
+                return;
+            }
+
+            // 현재 고정된 w의 절단선(초평면 w = k)
+            const sliceX = cx + state.w * scale;
+            const rSqMinusWSq = state.r * state.r - state.w * state.w;
+
+            // 절단 평면 점선
+            ctx.save();
+            ctx.setLineDash([4, 4]);
+            ctx.strokeStyle = rSqMinusWSq >= 0 ? '#38bdf8' : '#f43f5e';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(sliceX, 10);
+            ctx.lineTo(sliceX, H - 10);
+            ctx.stroke();
+            ctx.restore();
+
+            if (rSqMinusWSq > 0) {
+                const R = Math.sqrt(rSqMinusWSq);
+                const RPx = R * scale;
+
+                // 절단되어 남는 반지름 R 선분 강조
+                ctx.strokeStyle = '#22d3ee';
+                ctx.lineWidth = 3.5;
+                ctx.beginPath();
+                ctx.moveTo(sliceX, cy - RPx);
+                ctx.lineTo(sliceX, cy + RPx);
+                ctx.stroke();
+
+                // 교점 점 찍기
+                ctx.fillStyle = '#ffffff';
+                [cy - RPx, cy + RPx].forEach(py => {
+                    ctx.beginPath();
+                    ctx.arc(sliceX, py, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+
+                ctx.fillStyle = '#38bdf8';
+                ctx.font = 'bold 11px "JetBrains Mono"';
+                ctx.fillText(`R = ${formatNumber(R)}`, sliceX + 6, cy - RPx / 2);
+            } else if (Math.abs(rSqMinusWSq) < 1e-4) {
+                // 접하는 한 점
+                ctx.fillStyle = '#fbbf24';
+                ctx.beginPath();
+                ctx.arc(sliceX, cy, 5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.font = 'bold 11px "Noto Sans KR"';
+                ctx.fillText('접점 (R=0, 한 점)', sliceX + 8, cy - 8);
+            } else {
+                // 공집합
+                ctx.fillStyle = '#fb7185';
+                ctx.font = 'bold 11px "Noto Sans KR"';
+                const labelX = Math.min(Math.max(sliceX - 45, 15), W - 130);
+                ctx.fillText('교점 없음 (공집합 ∅)', labelX, 24);
+            }
+        }
+
+        // ==========================================
+        // UI 조작 및 실시간 수식/수치 업데이트
+        // ==========================================
+        function formatNumber(num) {
+            return Number.isInteger(+num.toFixed(3)) ? +num.toFixed(0) : +num.toFixed(2);
+        }
+
+        function gcd(a, b) {
+            return b === 0 ? a : gcd(b, a % b);
+        }
+
+        function updateDashboardUI() {
+            const r = state.r;
+            const w = state.w;
+            const r2 = r * r;
+            const w2 = +(w * w).toFixed(4);
+            const rem = +(r2 - w2).toFixed(4);
+
+            // 슬라이더 라벨 동기화
+            document.getElementById('wSlider').value = w;
+            document.getElementById('wSliderLabel').textContent = `w = ${formatNumber(w)}`;
+
+            // 프리셋 버튼 활성화 표시
+            [0, 3, 5, 6].forEach(val => {
+                const btn = document.getElementById(`preset${val}`);
+                const row = document.getElementById(`rowW${val}`);
+                const isMatch = Math.abs(w - val) < 1e-3 && state.mode === 'section';
+                if (btn) btn.classList.toggle('preset-active', isMatch);
+                if (row) {
+                    row.className = isMatch
+                        ? 'p-2 rounded-lg border border-blue-500 bg-blue-500/20 cursor-pointer transition flex items-center justify-between'
+                        : 'p-2 rounded-lg border border-gray-800 bg-gray-900/60 cursor-pointer transition flex items-center justify-between';
+                }
+            });
+
+            // 배지 업데이트
+            const modeBadge = document.getElementById('modeBadge');
+            const targetBadge = document.getElementById('targetBadge');
+            const eqBanner = document.getElementById('liveEquationBanner');
+            const statusChip = document.getElementById('shapeStatusChip');
+            const overlay = document.getElementById('emptySetOverlay');
+
+            const signSym = state.target === 'surface' ? '=' : '≤';
+            targetBadge.textContent = state.target === 'surface'
+                ? `초구면 (${signSym} ${r2}, 경계 껍질)`
+                : `초구 (${signSym} ${r2}, 내부 포함)`;
+
+            if (state.mode === 'projection') {
+                modeBadge.textContent = '3차원 정사영 모드 (w 소거 · 합집합)';
+                modeBadge.className = 'px-2.5 py-0.5 text-xs font-bold rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40';
+                eqBanner.innerHTML = `-${r} ≤ w ≤ ${r} 단면들의 합집합 &nbsp;⟹&nbsp; <span class="text-purple-400">x² + y² + z² ≤ ${r2}</span>`;
+                statusChip.textContent = `● 반지름 ${r}인 속이 꽉 찬 3차원 구 (내부 포함)`;
+                statusChip.className = 'px-3 py-1.5 rounded-xl bg-purple-500/20 border border-purple-500/40 text-purple-300 text-xs font-bold';
+                overlay.classList.add('hidden');
+
+                document.getElementById('metricRadius').textContent = `${r}`;
+                document.getElementById('metricRadiusSub').textContent = `최대 반지름 고정`;
+                document.getElementById('metricArea').textContent = `${4 * r2}π`;
+                document.getElementById('metricAreaSub').textContent = `≈ ${(4 * Math.PI * r2).toFixed(2)}`;
+                document.getElementById('metricVolume').textContent = `${4 * r2 * r}/3 π`;
+                document.getElementById('metricVolumeSub').textContent = `≈ ${((4 / 3) * Math.PI * Math.pow(r, 3)).toFixed(2)}`;
+                return;
+            }
+
+            // 단면 관찰 모드일 때
+            modeBadge.textContent = '단면 관찰 모드 (w 고정 · 교집합)';
+            modeBadge.className = 'px-2.5 py-0.5 text-xs font-bold rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40';
+
+            const wDisplay = w < 0 ? `(${formatNumber(w)})` : formatNumber(w);
+            eqBanner.innerHTML = `x² + y² + z² + ${wDisplay}² ${signSym} ${r2} &nbsp;⟹&nbsp; <span class="text-blue-400">x² + y² + z² ${signSym} ${formatNumber(rem)}</span>`;
+
+            if (rem < 0) {
+                // 공집합
+                statusChip.textContent = '∅ 공집합 (실수해 없음 · 도형 없음)';
+                statusChip.className = 'px-3 py-1.5 rounded-xl bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs font-bold';
+                overlay.classList.remove('hidden');
+
+                document.getElementById('overlayDesc').innerHTML =
+                    `w = ${formatNumber(w)} 일 때 단면 방정식은 <b>x² + y² + z² ${signSym} ${formatNumber(rem)}</b> 이 됩니다.<br>` +
+                    `실수 제곱의 합은 음수가 될 수 없으므로 만족하는 점이 없는 <b>공집합(∅)</b>입니다.`;
+
+                document.getElementById('metricRadius').textContent = '없음';
+                document.getElementById('metricRadiusSub').textContent = '실수해 없음';
+                document.getElementById('metricArea').textContent = '없음';
+                document.getElementById('metricAreaSub').textContent = '크기 없음';
+                document.getElementById('metricVolume').textContent = '없음';
+                document.getElementById('metricVolumeSub').textContent = '크기 없음';
+
+            } else if (Math.abs(rem) < 1e-4) {
+                // 원점 한 점
+                overlay.classList.add('hidden');
+                statusChip.textContent = '● 원점 (0, 0, 0) 한 점 (접점)';
+                statusChip.className = 'px-3 py-1.5 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-bold';
+
+                document.getElementById('metricRadius').textContent = '0';
+                document.getElementById('metricRadiusSub').textContent = '원점 (0,0,0)';
+                document.getElementById('metricArea').textContent = '0';
+                document.getElementById('metricAreaSub').textContent = '넓이 0';
+                document.getElementById('metricVolume').textContent = '0';
+                document.getElementById('metricVolumeSub').textContent = '부피 0';
+
+            } else {
+                // 양수 반지름 R
+                overlay.classList.add('hidden');
+                const R = Math.sqrt(rem);
+                const shapeWord = state.target === 'surface' ? '구면 (속이 빈 껍질)' : '구 (내부 포함)';
+                statusChip.textContent = `● 반지름 R = ${formatNumber(R)} 인 ${shapeWord}`;
+                statusChip.className = 'px-3 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold';
+
+                const isIntR = Number.isInteger(+R.toFixed(3));
+                document.getElementById('metricRadius').textContent = isIntR ? `${Math.round(R)}` : `√${formatNumber(rem)}`;
+                document.getElementById('metricRadiusSub').textContent = isIntR ? `√(${r2} - ${formatNumber(w2)})` : `≈ ${R.toFixed(2)}`;
+
+                // 겉넓이 4 * pi * R^2 = 4 * rem * pi
+                const areaCoeff = +(4 * rem).toFixed(2);
+                document.getElementById('metricArea').textContent = `${areaCoeff}π`;
+                document.getElementById('metricAreaSub').textContent = `≈ ${(4 * Math.PI * rem).toFixed(2)}`;
+
+                // 부피 (4/3) * pi * R^3
+                if (isIntR) {
+                    const rInt = Math.round(R);
+                    const num = 4 * Math.pow(rInt, 3);
+                    const g = gcd(num, 3);
+                    const fracStr = (3 / g === 1) ? `${num / g}π` : `${num / g}/${3 / g} π`;
+                    document.getElementById('metricVolume').textContent = fracStr;
+                } else {
+                    document.getElementById('metricVolume').textContent = `${((4 / 3) * Math.pow(R, 3)).toFixed(1)}π`;
+                }
+                document.getElementById('metricVolumeSub').textContent = `≈ ${((4 / 3) * Math.PI * Math.pow(R, 3)).toFixed(2)}`;
+            }
+        }
+
+        // 이벤트 핸들러
+        function selectPresetW(wVal) {
+            state.mode = 'section';
+            updateModeButtonsUI();
+            state.w = wVal;
+            updateDashboardUI();
+            rebuild3DGeometry();
+            draw2DSliceDiagram();
+        }
+
+        function onWSliderInput(val) {
+            state.mode = 'section';
+            updateModeButtonsUI();
+            state.w = parseFloat(val);
+            updateDashboardUI();
+            rebuild3DGeometry();
+            draw2DSliceDiagram();
+        }
+
+        function changeHypersphereRadius(newR) {
+            state.r = parseInt(newR, 10);
+            updateDashboardUI();
+            rebuild3DGeometry();
+            draw2DSliceDiagram();
+        }
+
+        function setObservationMode(mode) {
+            state.mode = mode;
+            updateModeButtonsUI();
+            updateDashboardUI();
+            rebuild3DGeometry();
+            draw2DSliceDiagram();
+        }
+
+        function updateModeButtonsUI() {
+            const btnSec = document.getElementById('btnModeSection');
+            const btnProj = document.getElementById('btnModeProjection');
+            if (state.mode === 'section') {
+                btnSec.className = 'p-2.5 rounded-xl border text-left transition-all bg-blue-600/20 border-blue-500 text-white';
+                btnProj.className = 'p-2.5 rounded-xl border text-left transition-all bg-gray-800/60 border-gray-700 text-gray-300 hover:border-gray-600';
+            } else {
+                btnProj.className = 'p-2.5 rounded-xl border text-left transition-all bg-purple-600/20 border-purple-500 text-white';
+                btnSec.className = 'p-2.5 rounded-xl border text-left transition-all bg-gray-800/60 border-gray-700 text-gray-300 hover:border-gray-600';
+            }
+        }
+
+        function setTargetType(target) {
+            state.target = target;
+            const btnSurf = document.getElementById('btnTargetSurface');
+            const btnSolid = document.getElementById('btnTargetSolid');
+            if (target === 'surface') {
+                btnSurf.className = 'p-2.5 rounded-xl border text-left transition-all bg-indigo-600/20 border-indigo-400 text-white';
+                btnSolid.className = 'p-2.5 rounded-xl border text-left transition-all bg-gray-800/60 border-gray-700 text-gray-300 hover:border-gray-600';
+            } else {
+                btnSolid.className = 'p-2.5 rounded-xl border text-left transition-all bg-indigo-600/20 border-indigo-400 text-white';
+                btnSurf.className = 'p-2.5 rounded-xl border text-left transition-all bg-gray-800/60 border-gray-700 text-gray-300 hover:border-gray-600';
+            }
+            updateDashboardUI();
+            rebuild3DGeometry();
+            draw2DSliceDiagram();
+        }
+
+        // ==========================================
+        // 탭 2: 차원별(n=1~10) 초구 부피 공식 & 계산표 생성
+        // ==========================================
+        const dimFormulas = {
+            1: { name: '선분 (양 끝 2점 / 내부 선분)', formula: '2r' },
+            2: { name: '원 (원주 / 내부 원판)', formula: 'πr²' },
+            3: { name: '구 (구면 / 내부 구)', formula: '(4/3)πr³' },
+            4: { name: '4차원 초구 (초구면 / 내부 초구)', formula: '(1/2)π²r⁴' },
+            5: { name: '5차원 초구', formula: '(8/15)π²r⁵' },
+            6: { name: '6차원 초구', formula: '(1/6)π³r⁶' },
+            7: { name: '7차원 초구', formula: '(16/105)π³r⁷' },
+            8: { name: '8차원 초구', formula: '(1/24)π⁴r⁸' },
+            9: { name: '9차원 초구', formula: '(32/945)π⁴r⁹' },
+            10: { name: '10차원 초구', formula: '(1/120)π⁵r¹⁰' }
+        };
+
+        // 감마함수를 이용한 n차원 구의 부피 계산
+        function gammaHalfInteger(n) {
+            // Γ(n/2 + 1)
+            if (n % 2 === 0) {
+                let k = n / 2;
+                let fact = 1;
+                for (let i = 2; i <= k; i++) fact *= i;
+                return fact;
+            } else {
+                // n = 2k + 1 -> Γ(k + 3/2)
+                let res = Math.sqrt(Math.PI);
+                for (let m = 1; m <= n; m += 2) {
+                    res *= (m / 2);
+                }
+                return res;
+            }
+        }
+
+        function calcNBallVolume(n, r) {
+            return (Math.pow(Math.PI, n / 2) / gammaHalfInteger(n)) * Math.pow(r, n);
+        }
+
+        function setFixedDimRadius(rVal) {
+            state.dimFixedR = rVal;
+            document.getElementById('dimR1').className = rVal === 1
+                ? 'px-3 py-1 rounded-lg text-xs font-mono-math font-bold bg-blue-600 text-white border border-blue-500'
+                : 'px-3 py-1 rounded-lg text-xs font-mono-math font-bold bg-gray-800 text-gray-300 border border-gray-700';
+            document.getElementById('dimR5').className = rVal === 5
+                ? 'px-3 py-1 rounded-lg text-xs font-mono-math font-bold bg-blue-600 text-white border border-blue-500'
+                : 'px-3 py-1 rounded-lg text-xs font-mono-math font-bold bg-gray-800 text-gray-300 border border-gray-700';
+            renderDimensionComparison();
+        }
+
+        function renderDimensionComparison() {
+            const r = state.dimFixedR;
+            document.getElementById('chartTitle').textContent =
+                `📊 차원(n=1~10)별 초구 부피 비교 그래프 (고정 반지름 r = ${r} cm)`;
+
+            const volumes = [];
+            for (let n = 1; n <= 10; n++) {
+                const v = calcNBallVolume(n, r);
+                const s = (n / r) * v;
+                volumes.push({ n, v, s });
+            }
+
+            const maxV = Math.max(...volumes.map(d => d.v));
+
+            // 막대그래프 렌더링
+            const chartEl = document.getElementById('dimBarChart');
+            chartEl.innerHTML = volumes.map(d => {
+                const pct = Math.max(3, (d.v / maxV) * 100);
+                const isHighlight = (r === 1 && d.n === 5) || (d.n === 3 || d.n === 4);
+                const barColor = d.n === 4
+                    ? 'bg-gradient-to-r from-blue-500 to-cyan-400'
+                    : (r === 1 && d.n === 5 ? 'bg-gradient-to-r from-amber-500 to-yellow-400' : 'bg-indigo-500/70');
+
+                return `
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-[11px] font-mono-math">
+                            <span class="${isHighlight ? 'text-white font-bold' : 'text-gray-400'}">
+                                ${d.n}차원 ${d.n === 4 ? '(탐구 초구)' : ''} ${r === 1 && d.n === 5 ? '★최대' : ''}
+                            </span>
+                            <span class="text-gray-300">${d.v >= 1000 ? d.v.toLocaleString('ko-KR', { maximumFractionDigits: 1 }) : d.v.toFixed(3)} cm^${d.n}</span>
+                        </div>
+                        <div class="w-full h-2.5 bg-gray-800 rounded-full overflow-hidden">
+                            <div class="h-full ${barColor} rounded-full transition-all duration-300" style="width: ${pct}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // 테이블 렌더링
+            const tbody = document.getElementById('dimTableBody');
+            tbody.innerHTML = volumes.map(d => {
+                const is4D = d.n === 4;
+                const vFormatted = d.v >= 1000
+                    ? d.v.toLocaleString('ko-KR', { maximumFractionDigits: 2 })
+                    : d.v.toFixed(4);
+                const sFormatted = d.s >= 1000
+                    ? d.s.toLocaleString('ko-KR', { maximumFractionDigits: 2 })
+                    : d.s.toFixed(4);
+
+                return `
+                    <tr class="${is4D ? 'bg-blue-500/15 text-white font-bold' : 'text-gray-300 hover:bg-gray-800/40'}">
+                        <td class="p-3">${d.n}차원</td>
+                        <td class="p-3 font-sans text-xs">${dimFormulas[d.n].name}</td>
+                        <td class="p-3 text-cyan-300">${dimFormulas[d.n].formula}</td>
+                        <td class="p-3 text-indigo-300">${vFormatted} <span class="text-[10px] text-gray-500">cm^${d.n}</span></td>
+                        <td class="p-3 text-emerald-300">${sFormatted} <span class="text-[10px] text-gray-500">cm^${d.n - 1}</span></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // 메인 탭 전환
+        function switchMainTab(tabName) {
+            const exploreSec = document.getElementById('tabExplore');
+            const dimSec = document.getElementById('tabDimension');
+            const btnExp = document.getElementById('tabBtnExplore');
+            const btnDim = document.getElementById('tabBtnDimension');
+
+            if (tabName === 'explore') {
+                exploreSec.classList.remove('hidden');
+                dimSec.classList.add('hidden');
+                dimSec.classList.remove('flex');
+                btnExp.className = 'px-3.5 py-1.5 rounded-lg font-semibold transition-all bg-blue-600 text-white shadow';
+                btnDim.className = 'px-3.5 py-1.5 rounded-lg font-semibold transition-all text-gray-300 hover:text-white';
+                onWindowResize();
+            } else {
+                exploreSec.classList.add('hidden');
+                dimSec.classList.remove('hidden');
+                dimSec.classList.add('flex');
+                btnDim.className = 'px-3.5 py-1.5 rounded-lg font-semibold transition-all bg-blue-600 text-white shadow';
+                btnExp.className = 'px-3.5 py-1.5 rounded-lg font-semibold transition-all text-gray-300 hover:text-white';
+                renderDimensionComparison();
+            }
+        }
+
+        window.onload = function () {
+            initThreeJS();
+            updateDashboardUI();
+            renderDimensionComparison();
+        };
+    </script>
+</body>
+</html>
