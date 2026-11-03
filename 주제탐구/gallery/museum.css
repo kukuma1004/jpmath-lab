@@ -1,0 +1,119 @@
+/* 미술관식 전시 개편 · 2026-11-03
+   기존 gallery.css / motion.css 뒤에 얹는 표현 전용 층이다.
+   구조·데이터·동작은 바꾸지 않고 색·여백·타이포·그림만 다룬다. */
+
+:root{
+  --wall:#efece5;            /* 전시실 벽 */
+  --wall-deep:#e7e3da;
+  --plaque:#fffdf7;          /* 작품 설명 명판 */
+  --frame:#cfc9bb;           /* 액자 테두리 */
+  --stage:#141d2c;           /* 무대 기본 */
+  --stage-2:#22304a;
+}
+body[data-subject="calculus"],[data-subject="calculus"]{--stage:#2a1710;--stage-2:#4a2516}
+body[data-subject="geometry"],[data-subject="geometry"]{--stage:#141c33;--stage-2:#243159}
+body[data-subject="economics"],[data-subject="economics"]{--stage:#0d231d;--stage-2:#15402f}
+
+/* ── 전시장 벽 ───────────────────────────────── */
+body{background:var(--wall)}
+.masthead{background:color-mix(in srgb,var(--wall) 92%,#fff);backdrop-filter:saturate(1.1)}
+
+/* ── 입구: 전시 포스터 ────────────────────────── */
+.hero{align-items:stretch;min-height:0;padding-top:60px;padding-bottom:70px}
+.hero-copy{display:flex;flex-direction:column;justify-content:center}
+.hero h1{letter-spacing:-.062em}
+.hero h1 em{text-decoration-color:#c08b53;text-decoration-thickness:3px}
+
+/* 아치형 벽감(niche) 안에 걸린 포스터 */
+.hero-art{
+  height:auto;min-height:520px;
+  background:var(--plaque);
+  border-radius:200px 200px 8px 8px;
+  padding:14px;
+  box-shadow:0 2px 0 #fff inset,0 26px 60px -32px #2b2418aa;
+  display:flex;
+}
+.hero-art:before{inset:14px;border-radius:188px 188px 4px 4px;border-color:#00000018}
+.hero-poster{
+  flex:1;min-width:0;position:relative;overflow:hidden;
+  border-radius:186px 186px 4px 4px;
+  background:#f3efe6 center/cover no-repeat;
+  background-image:url('art/exhibition-poster.webp');
+  box-shadow:0 0 0 1px var(--frame) inset;
+}
+/* 입구는 포스터 한 장으로 둔다. 회색 구를 겹치면 포스터가 탁해져서 내린다.
+   살아 움직이는 수학 모형은 작품마다의 무대에 그대로 남아 있다. */
+.hero-art .scene-host{display:none}
+.hero-orbit{top:46px;color:#6a614e;font-weight:500}
+.art-caption{bottom:26px;color:#5d5546}
+
+/* 입구 명판 */
+.hero-meta{border-top:1px solid var(--frame);padding-top:20px;margin-top:34px}
+.hero-meta b{font-family:var(--mono)}
+
+/* ── 전시실 세 곳 ────────────────────────────── */
+.subjects-section{background:var(--wall-deep)}
+.subject-room{border-color:var(--frame);background:var(--plaque);border-radius:10px;transition:transform .3s,box-shadow .3s}
+.subject-room:hover{transform:translateY(-6px);box-shadow:0 24px 50px -30px #2b241899}
+.room-art{
+  height:230px;padding:0;position:relative;overflow:hidden;
+  background:var(--tint) center/cover no-repeat;
+}
+/* 생성한 전시실 그림이 있으면 배경으로 깔고, 기존 도해는 그 위에 옅게 */
+.subject-room[data-subject="calculus"] .room-art{background-image:url('art/room-calculus.webp')}
+.subject-room[data-subject="geometry"] .room-art{background-image:url('art/room-geometry.webp')}
+.subject-room[data-subject="economics"] .room-art{background-image:url('art/room-economics.webp')}
+.room-art>svg{position:absolute;inset:0;opacity:.28;padding:12px 25px}
+.room-art:after{content:'';position:absolute;inset:0;box-shadow:0 0 0 1px #00000012 inset}
+.room-mark{background:color-mix(in srgb,var(--plaque) 88%,transparent);border-radius:4px;backdrop-filter:blur(2px)}
+.room-copy h3{letter-spacing:-.04em}
+
+/* ── 작품 카드: 과목으로 구분되게 ───────────────── */
+.card-art{background:var(--tint);box-shadow:0 0 0 1px #00000010 inset;border-radius:6px}
+.work-card:hover .card-art{border-radius:30px 6px 30px 6px}
+.card-number{background:color-mix(in srgb,var(--tint) 70%,#fff);border-radius:3px;padding:1px 5px}
+.work-card h3{letter-spacing:-.048em}
+.card-bottom{border-top:1px solid #0000000f}
+
+/* ── 작품 무대: 과목마다 다른 방 색 ──────────────────
+   motion.css 끝의 복원 블록이 모든 과목을 같은 초록(#203f35)으로 칠하고 있었다.
+   이 파일이 뒤에 실리므로 같은 선택자로 과목색을 되돌려 준다. */
+.figure-surface{background:linear-gradient(170deg,var(--stage-2),var(--stage))}
+.motion-theater{background:var(--stage);color:#eceff5}
+.motion-stage{background:radial-gradient(ellipse at 69% 37%,color-mix(in srgb,var(--stage-2) 62%,transparent),transparent 62%),var(--stage)}
+.motion-stage-copy h3{color:#f4f1ea}
+.motion-kicker,.motion-focus p,.motion-stage-copy small{color:color-mix(in srgb,var(--accent-light) 72%,#b9bdc6)}
+.theater-topline,.theater-bottomline{color:#dfe4ec}
+.theater-bottomline p{color:#cfd6e2}
+
+/* ── 읽는 면 ────────────────────────────────── */
+.story-deck{border-color:var(--frame);background:var(--plaque);box-shadow:0 22px 60px -40px #2b241877}
+.deck-tab-list{background:color-mix(in srgb,var(--wall) 85%,#fff)}
+.deck-tab-list button[aria-selected="true"]{background:var(--plaque)}
+.chapter-quote{border-left-width:3px}
+.student-excerpt{color:#262d36}
+
+/* ── 명판식 꼬리말 ──────────────────────────── */
+.site-footer{border-top:1px solid var(--frame)}
+.footer-title{letter-spacing:-.045em}
+
+/* 등장 연출은 gallery.js의 entrance()가 Anime.js로 이미 처리한다. 여기서 .reveal의
+   opacity를 건드리면 관찰자가 돌기 전까지 카드가 사라지므로 손대지 않는다. */
+
+@media(max-width:1100px){
+  .hero-art{min-height:450px;border-radius:170px 170px 8px 8px}
+  .hero-art:before{border-radius:158px 158px 4px 4px}
+  .hero-poster{border-radius:156px 156px 4px 4px}
+}
+@media(max-width:780px){
+  .hero{padding-top:40px}
+  .hero-art{min-height:380px;max-width:470px;border-radius:150px 150px 8px 8px;padding:11px}
+  .hero-art:before{inset:11px;border-radius:140px 140px 4px 4px}
+  .hero-poster{border-radius:139px 139px 4px 4px}
+  .room-art{min-height:265px;height:100%}
+  .room-art>svg{padding:10px 0}
+}
+@media(max-width:540px){
+  .hero-art{min-height:330px}
+  .card-art{border-radius:6px!important}
+}
