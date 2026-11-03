@@ -39,8 +39,8 @@ export function liveMathFrame(family,time,phase=0){
     for(const c of[-1.25,0,1.25])plot(x=>f(x)+c,-2.2,2.2,'ghost');plot(x=>f(x)+C,-2.2,2.2);dot(map(1,f(1)+C));values.C=C;metric='C = '+C.toFixed(2)+'   ·   같은 기울기, 다른 출발 높이';description='적분상수가 달라져도 곡선의 각 지점 기울기는 유지됩니다.';
   }else if(family==='rolle'){
     let coeff=[1,2,-67,-68,672,0],roots=[-8,-4,0,3,7];
-    const active=Math.min(3,Math.floor(time/4.5)%4),rows=s<2?2:4;for(let row=0;row<rows;row++){const y=106+row*77;line([[94,y],[667,y]],'axis');for(let i=0;i<roots.length;i++){const p=[380+roots[i]*31,y];dot(p,'',row===active?'primary':'ghost');if(row<3&&i<roots.length-1)line([[p[0],y+13],[380+roots[i+1]*31,y+13]],'guide')}label(row===0?'f':row===1?'f′':row===2?'f″':'f‴',[62,y+6]);if(row<3){roots=interlacedRoots(coeff,roots);coeff=derivativeCoefficients(coeff)}}
-    values.coefficients=[1,2,-67,-68,672,0];metric='5 → 4 → 3 → 2   ·   서로 다른 두 근 사이, 도함수의 근';description='학생이 다룬 다섯 근의 예시에서 미분할 때마다 근의 끼임을 읽습니다.';
+    const active=Math.min(3,Math.floor(time/4.5)%4),rows=s<2?2:4;let prev=null;for(let row=0;row<rows;row++){const y=106+row*77;line([[94,y],[667,y]],'axis');if(prev)for(const r of roots){const x=380+r*31;line([[x,y-64],[x,y-6]],row===active?'secondary':'ghost');}for(let i=0;i<roots.length;i++){const p=[380+roots[i]*31,y];dot(p,'',row===active?'primary':'ghost');if(row<3&&i<roots.length-1)line([[p[0],y+13],[380+roots[i+1]*31,y+13]],'guide')}label(row===0?'f':row===1?'f′':row===2?'f″':'f‴',[62,y+6]);if(row<3){prev=roots;roots=interlacedRoots(coeff,roots);coeff=derivativeCoefficients(coeff)}}
+    values.coefficients=[1,2,-67,-68,672,0];metric='5 → 4 → 3 → 2   ·   서로 다른 두 근 사이, 도함수의 근';description='세로선은 새로 생긴 근이 윗줄의 어느 두 근 사이에서 나왔는지 가리킵니다.';
   }else if(family==='zoom'||family==='secant'){
     const a=.45,h=at([1.4,1.2,.5,.15,.1,.04,.3])*(.85+.3*wave),delta=family==='zoom'?at([2,1.5,.65,1,.2,.09,.4])*(.85+.3*wave):1,f=x=>x*x;
     const mp=family==='zoom'?(x,y)=>[380+(x-a)/delta*100,235-(y-a*a)/delta*68]:map;
@@ -66,7 +66,7 @@ export function liveMathFrame(family,time,phase=0){
     axes();plot(x=>x**3,-1.45,1.7);const b=family==='tangent-merge'?1+.2*Math.sin(time*.16):.5+.65*Math.sin(time*.16),roots=tangentRoots(b);
     for(const a of roots){plot(x=>3*a*a*x-2*a**3,-2,2,'secondary');dot(map(a,a**3))}dot(map(1,b),'P');Object.assign(values,{b,roots});metric='P(1, '+b.toFixed(3)+')   ·   서로 다른 접선 '+roots.length+'개';description='같은 점을 지나는 접선을 실제 접점 방정식으로 다시 구합니다.';
   }else if(family==='join'){
-    axes();const m=phase>=4?2:2+.85*Math.sin(time*.22);plot(x=>x*x,-1.7,1);plot(x=>m*(x-1)+1,1,2.5,'secondary');dot(map(1,1));values.slope=m;metric='접합점 (1,1)   ·   왼쪽 기울기 2 / 오른쪽 '+m.toFixed(3);description='높이를 유지한 채 오른쪽 기울기를 바꾸고 마지막에는 둘을 맞춥니다.';
+    axes();const m=phase>=4?2:2+.85*Math.sin(time*.22);line([map(1,-.55),map(1,2.5)],'guide');plot(x=>x*x,-1.7,1);plot(x=>1+2*(x-1),1,2.5,'guide');plot(x=>m*(x-1)+1,1,2.5,'secondary');dot(map(1,1),'');label('x²',[map(-1.25,1.9)[0],map(-1.25,1.9)[1]]);label(Math.abs(m-2)<.02?'기울기 일치':'기울기 어긋남',[map(1.5,0)[0],map(0,0)[1]+30]);values.slope=m;metric='접합점 (1,1)   ·   왼쪽 기울기 2 / 오른쪽 '+m.toFixed(3)+(Math.abs(m-2)<.02?'   ·   매끄럽게 이어짐':'   ·   꺾임');description='점선은 왼쪽 기울기를 그대로 늘인 선입니다. 오른쪽 조각이 그 위에 올라오면 매끄럽게 이어집니다.';
   }else if(family==='model'){
     axes();const fs=[x=>1+.3*x,x=>Math.exp(.5*x),x=>2/(1+Math.exp(-x))];fs.forEach((f,i)=>plot(f,-2.5,2.5,i===1?'primary':'ghost'));
     const x=-2+4*wave;for(const f of fs)dot(map(x,f(x)));values.x=x;metric='일차 · 지수 · 로지스틱   ·   같은 x에서 예측을 비교';description='세 가지 후보 함수의 예시이며 학생의 실측 자료를 대신하지 않습니다.';

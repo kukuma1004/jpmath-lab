@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>삼차함수 일곱 영역 넓이비 4:4:5:3:8:7:1</title>
+<style>
+:root{--bg:#fff;--fg:#1c1c1e;--mut:#6b6b70;--line:#d8d8dc;--card:#f5f5f7;--acc:#2a6f6b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17181a;--fg:#ececee;--mut:#9a9aa2;--line:#35363a;--card:#222326;--acc:#6fc5bf}}
+:root[data-theme="dark"]{--bg:#17181a;--fg:#ececee;--mut:#9a9aa2;--line:#35363a;--card:#222326;--acc:#6fc5bf}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 system-ui,-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;padding:14px;max-width:760px;margin:auto}
+h1{font-size:19px;margin:4px 0 2px}h2{font-size:16px;margin:22px 0 8px}
+.sub{color:var(--mut);font-size:13px;margin:0 0 12px}
+.card{background:var(--card);border-radius:12px;padding:12px 14px;margin:10px 0}
+.row{display:flex;align-items:center;gap:10px;margin:6px 0}
+.row label{width:74px;font-weight:600}.row input[type=range]{flex:1;accent-color:var(--acc)}
+.row b{width:42px;text-align:right}
+button{border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:8px;padding:5px 10px;font:inherit;font-size:13px}
+svg{width:100%;height:auto;display:block;background:var(--bg);border-radius:10px;border:1px solid var(--line)}
+.sc{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:12.5px;white-space:nowrap}
+th,td{border-bottom:1px solid var(--line);padding:5px 7px;text-align:center}
+th{color:var(--mut);font-weight:600}
+.ok{color:var(--acc);font-weight:700}.bad{color:#d33;font-weight:700}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px}
+p{margin:6px 0}code{font-size:13px}
+</style></head><body>
+<h1>삼차함수 일곱 영역 넓이비 4 : 4 : 5 : 3 : 8 : 7 : 1</h1>
+<p class="sub">y = a·x(x−n)(x+n) 의 기울기 a와 폭 n을 바꿔도 비가 유지되는지 계산으로 확인합니다.</p>
+
+<div class="card">
+ <div class="row"><label>기울기 a</label><input id="a" type="range" min="-5" max="5" step="1" value="1"><b id="av"></b></div>
+ <div class="row"><label>폭 n</label><input id="n" type="range" min="1" max="5" step="1" value="2"><b id="nv"></b></div>
+ <div class="row"><button id="p1">n=1, a=1</button><button id="p2">n=2, a=1</button><button id="p3">a=−1, n=2</button></div>
+ <p id="par" class="sub"></p>
+</div>
+
+<svg id="g" viewBox="0 0 360 300"></svg>
+<p id="chk" style="margin-top:10px"></p>
+
+<h2>① 일곱 영역의 경계 · 구간 · 위아래 함수 · 정적분</h2>
+<p class="sub">F(x)=|a|(x³−n²x), u=n/√3, M=2|a|n³/(3√3)=F(−u). a&lt;0이면 그래프가 좌우로 뒤집히므로 x′=(a의 부호)·x 좌표에서 같은 영역을 잡습니다. 모든 정적분은 (위−아래)≥0이라 넓이가 음수가 되지 않습니다.</p>
+<div class="sc"><table id="t1"></table></div>
+
+<h2>② n=1, n=2 같은 번호 영역 비교 (현재 a)</h2>
+<div class="sc"><table id="t2"></table></div>
+
+<h2>③ x = nt 로 본 배율</h2>
+<div class="card" id="sc"></div>
+
+<script>
+let pa=1;const T=[4,4,5,3,8,7,1],C=['#e5484d','#3fbf6b','#f2b01e','#2f7de1','#35c8f0','#168f8a','#d63e9c'];
+const $=id=>document.getElementById(id),f4=v=>(Math.abs(v)<1e-12?0:v).toFixed(4),f3=v=>(Math.abs(v)<1e-12?0:v).toFixed(3);
+const FORM=['∫[−2u,−u] (M−max(F,0)) dx','∫[−n,−u] F dx','∫[−u,0] F dx','∫[−u,0] (M−F) dx','∫[0,u] M dx','∫[u,2u] (M−max(F,0)) dx','∫[n,2u] F dx'];
+const UP=['M','F','F','M','M','M','F'],LO=['max(F,0)','0','0','F','0','max(F,0)','0'];
+const gcd=(p,q)=>q?gcd(q,p%q):p,fr=v=>{const N=Math.round(v*36),d=gcd(N,36);return N===0?'0':(36/d===1?`${N/d}`:`${N/d}/${36/d}`)};
+function geo(a,n){
+ const k=Math.abs(a),s=a<0?-1:1,u=n/Math.sqrt(3),M=2*k*n**3/(3*Math.sqrt(3)),p=Math.max;
+ const F=x=>k*(x**3-n*n*x),G=x=>k*(x**4/4-n*n*x*x/2),z=x=>0,m=x=>M;
+ const R=[[-2*u,-u,x=>p(F(x),0),m],[-n,-u,z,F],[-u,0,z,F],[-u,0,F,m],[0,u,z,m],[u,2*u,x=>p(F(x),0),m],[n,2*u,z,F]];
+ const bp=[-2*u,-n,-u,0,u,n,2*u];
+ const area=R.map(([x0,x1,lo,hi])=>{let t=0;for(let i=0;i<6;i++){const l=p(x0,bp[i]),r=Math.min(x1,bp[i+1]);if(r>l){const h=x=>hi(x)-lo(x);t+=(h(l)+4*h((l+r)/2)+h(r))*(r-l)/6}}return t});
+ const A2=G(-u)-G(-n),A7=G(2*u)-G(n),cl=[M*u-A2,A2,-G(-u),M*u+G(-u),M*u,M*u-A7,A7];
+ return{k,s,u,M,F,R,area,err:Math.max(...area.map((v,i)=>Math.abs(v-cl[i]))),unit:k*n**4/36};
+}
+function render(){
+ let a=+$('a').value;if(a===0){a=pa>0?-1:1;$('a').value=a}pa=a;
+ const n=+$('n').value;$('av').textContent=a;$('nv').textContent=n;
+ const g=geo(a,n),{s,u,M,k}=g;
+ $('par').innerHTML=`u=n/√3 ≈ ${f4(u)}, M=2|a|n³/(3√3) ≈ ${f4(M)}, 넓이 단위 |a|n⁴/36 = ${fr(g.unit)}`+(a<0?' · a&lt;0: 좌우 뒤집힘':'');
+ const W=360,H=300,xr=1.45*n,yr=1.4*M,X=x=>W/2+x*(W/2)/xr,Y=y=>H/2-y*(H/2)/yr;
+ let sv=`<defs><clipPath id="cp"><rect width="${W}" height="${H}"/></clipPath></defs>`;
+ g.R.forEach(([x0,x1,lo,hi],i)=>{
+  const up=[],dn=[];for(let j=0;j<=40;j++){const x=x0+(x1-x0)*j/40;up.push([X(s*x),Y(hi(x))]);dn.push([X(s*x),Y(lo(x))])}
+  const pts=up.concat(dn.reverse()).map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' ');
+  sv+=`<polygon points="${pts}" fill="${C[i]}" fill-opacity=".55" stroke="${C[i]}" stroke-width=".6"/>`;
+ });
+ sv+=`<line x1="0" x2="${W}" y1="${Y(0)}" y2="${Y(0)}" stroke="var(--mut)" stroke-width=".8"/><line y1="0" y2="${H}" x1="${X(0)}" x2="${X(0)}" stroke="var(--mut)" stroke-width=".8"/>`;
+ [M,-M].forEach(y=>sv+=`<line x1="0" x2="${W}" y1="${Y(y)}" y2="${Y(y)}" stroke="var(--mut)" stroke-dasharray="4 3" stroke-width=".8"/>`);
+ [-2,-1,0,1,2].forEach(q=>sv+=`<line x1="${X(q*u)}" x2="${X(q*u)}" y1="${Y(M)}" y2="${Y(-M)}" stroke="var(--fg)" stroke-width="1"/><text x="${X(q*u)}" y="${Y(-M)+12}" text-anchor="middle" font-size="9" fill="var(--mut)">${q?q+'u':'0'}</text>`);
+ sv+=`<text x="3" y="${Y(M)-3}" font-size="9" fill="var(--mut)">y=M</text><text x="3" y="${Y(-M)-3}" font-size="9" fill="var(--mut)">y=−M</text>`;
+ let d='';for(let j=0;j<=240;j++){const x=-xr+2*xr*j/240;d+=(j?'L':'M')+X(x).toFixed(1)+','+Y(a*(x**3-n*n*x)).toFixed(1)}
+ sv+=`<path d="${d}" fill="none" stroke="#3b7f78" stroke-width="2" clip-path="url(#cp)"/>`;
+ g.R.forEach(([x0,x1,lo,hi],i)=>{const mx=(x0+x1)/2;
+  const cx=X(s*mx),cy=Y((lo(mx)+hi(mx))/2),v=fr(g.area[i]);
+  if(i==6){const ex=X(s*x1)+s*3,an=s>0?'start':'end';sv+=`<text x="${ex}" y="${cy-4}" text-anchor="${an}" font-size="11" font-weight="700" fill="var(--fg)">7</text><text x="${ex}" y="${cy+8}" text-anchor="${an}" font-size="8.5" fill="var(--fg)">${v}</text>`}
+  else sv+=`<text x="${cx}" y="${cy-6}" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--fg)">${i+1}</text><text x="${cx}" y="${cy+8}" text-anchor="middle" dominant-baseline="central" font-size="9" fill="var(--fg)">${v}</text>`});
+ $('g').innerHTML=sv;
+ const rs=g.area.map(v=>v/g.unit),ok=rs.every((v,i)=>Math.abs(v-T[i])<1e-9)&&g.err<1e-9;
+ $('chk').innerHTML=`넓이 ÷ (|a|n⁴/36) = <b>${rs.map(v=>v.toFixed(3).replace(/\.?0+$/,'')).join(' : ')}</b> ${ok?'<span class="ok">✓ 4:4:5:3:8:7:1 일치</span>':'<span class="bad">불일치</span>'}`;
+ let h='<tr><th>번호</th><th>x′ 구간(수치)</th><th>위</th><th>아래</th><th>정적분</th><th>넓이</th><th>비</th></tr>';
+ g.R.forEach(([x0,x1],i)=>h+=`<tr><td><span class="dot" style="background:${C[i]}"></span>${i+1}</td><td>[${f3(x0)}, ${f3(x1)}]</td><td>${UP[i]}</td><td>${LO[i]}</td><td style="text-align:left">${FORM[i]}</td><td>${fr(g.area[i])} ≈ ${f3(g.area[i])}</td><td>${rs[i].toFixed(3).replace(/\.?0+$/,'')}</td></tr>`);
+ h+=`<tr><td colspan="5">합 (직사각형 [−2u,2u]×[0,M] = 8|a|n⁴/9)</td><td>${fr(g.area.reduce((x,y)=>x+y))}</td><td>32</td></tr>`;
+ $('t1').innerHTML=h;
+ const g1=geo(a,1),g2=geo(a,2);
+ let h2='<tr><th>번호</th><th>n=1 넓이</th><th>n=2 넓이</th><th>n=2÷n=1</th><th>n=1 비</th><th>n=2 비</th></tr>';
+ g1.area.forEach((v,i)=>h2+=`<tr><td><span class="dot" style="background:${C[i]}"></span>${i+1}</td><td>${fr(v)}</td><td>${fr(g2.area[i])}</td><td>${(g2.area[i]/v).toFixed(3)}</td><td>${(v/g1.unit).toFixed(3).replace(/\.?0+$/,'')}</td><td>${(g2.area[i]/g2.unit).toFixed(3).replace(/\.?0+$/,'')}</td></tr>`);
+ $('t2').innerHTML=h2;
+ $('sc').innerHTML=`<p>x=nt 로 두면 y=a·nt(nt−n)(nt+n)=<b>a n³</b>·t(t²−1), dx=<b>n</b> dt 입니다.</p>
+ <p>가로 ×n, 세로 ×|a|n³, 넓이 ×|a|n⁴ (∫|y|dx = |a|n³·n ∫|t(t²−1)|dt).</p>
+ <p>기준 a=1, n=1일 때 각 영역 넓이는 (4,4,5,3,8,7,1)/36 이므로, 현재 a=${a}, n=${n}의 넓이는 비 × ${fr(g.unit)} 입니다. 부호 a&lt;0은 좌우 뒤집힘일 뿐이라 넓이 배율에는 |a|만 들어갑니다.</p>`;
+}
+['a','n'].forEach(id=>$(id).addEventListener('input',render));
+const set=(a,n)=>()=>{$('a').value=a;$('n').value=n;render()};
+$('p1').onclick=set(1,1);$('p2').onclick=set(1,2);$('p3').onclick=set(-1,2);
+render();
+</script></body></html>

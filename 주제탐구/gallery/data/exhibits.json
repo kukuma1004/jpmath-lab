@@ -684,8 +684,8 @@
       "revisions": 5,
       "topicMismatch": false,
       "artifact": {
-        "status": "unlinked",
-        "url": null
+        "status": "linked",
+        "url": "https://kukuma1004.github.io/jpmath-lab/주제탐구/gallery/works/a-05-c.html"
       },
       "raw": {
         "hypothesis": "삼차함수의 구간별 넓이비가 4:4:5:3:8:7:1이 나올 것이다.",
@@ -1591,8 +1591,8 @@
       "revisions": 5,
       "topicMismatch": false,
       "artifact": {
-        "status": "unlinked",
-        "url": null
+        "status": "linked",
+        "url": "https://kukuma1004.github.io/jpmath-lab/주제탐구/gallery/works/a-05-g.html"
       },
       "raw": {
         "hypothesis": "벡터의 내적값은 고정된 한 벡터값과 다른 벡터의 한 벡터 방향으로의 성분의 곱일 것이다.",
