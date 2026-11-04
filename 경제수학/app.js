@@ -85,8 +85,14 @@ const simStrategies = {
   promotion:{label:'홍보 집중',demand:10,variable:0,fixed:15000,trust:1},
   community:{label:'지역 나눔',demand:4,variable:0,fixed:8000,trust:6}
 };
-let eventOrder=events.map((_,index)=>index).sort(()=>Math.random()-.5);
-const sim = {week:0, org:'profit', strategy:'quality', trust:50, score:0, history:[]};
+function shuffledEventOrder() {
+  const order=events.map((_,index)=>index);
+  for(let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]];}
+  return order;
+}
+let eventOrder=shuffledEventOrder();
+const sim = {week:0, org:'profit', strategy:'quality', trust:50, score:0, history:[], business:'bakery', difficulty:'standard'};
+const businessModels={bakery:{name:'동네빵 연구소',base:105,slope:100,unit:1300,fixed:45000},repair:{name:'수리 공방',base:90,slope:130,unit:900,fixed:60000},cafe:{name:'동네 찻집',base:115,slope:90,unit:1700,fixed:35000}};
 const priceRange = document.querySelector('#priceRange');
 const quantityRange = document.querySelector('#quantityRange');
 const runWeekButton = document.querySelector('[data-run-week]');
@@ -96,11 +102,13 @@ function simulationNumbers() {
   const strategy = simStrategies[sim.strategy];
   const price = Number(priceRange.value);
   const quantity = Number(quantityRange.value);
-  const demand = Math.max(8, Math.round(105 - price / 100 + event.demand + strategy.demand));
+  const business=businessModels[sim.business];
+  const challenge=sim.difficulty==='challenge'?1.3:sim.difficulty==='intro'?.8:1;
+  const demand = Math.max(8, Math.round(business.base - price / business.slope + event.demand*challenge + strategy.demand));
   const sold = Math.min(demand, quantity);
   const revenue = sold * price;
-  const variableCost = 1300 + event.variable + strategy.variable;
-  const fixedCost = Math.max(20000, 45000 + event.fixed + strategy.fixed);
+  const variableCost = business.unit + event.variable*challenge + strategy.variable;
+  const fixedCost = Math.max(20000, business.fixed*challenge + event.fixed + strategy.fixed);
   const cost = fixedCost + variableCost * quantity;
   const profit = revenue - cost;
   return {price, quantity, demand, sold, revenue, cost, profit, strategy, unsold:Math.max(0, quantity - sold), missed:Math.max(0, demand - sold)};
@@ -115,7 +123,8 @@ function updateSimulation() {
   document.querySelector('[data-sold]').textContent = `${data.sold}개`;
   document.querySelector('[data-revenue]').textContent = won(data.revenue);
   document.querySelector('[data-cost]').textContent = won(data.cost);
-  document.querySelector('[data-trust]').textContent = `${sim.trust}점 (+${data.strategy.trust})`;
+  const expectedTrustChange = Math.max(0,Math.min(100,sim.trust + data.strategy.trust - (data.missed>=10?2:0) - (data.unsold>=15?1:0))) - sim.trust;
+  document.querySelector('[data-trust]').textContent = `${sim.trust}점 (${expectedTrustChange>=0?'+':''}${expectedTrustChange})`;
   document.querySelector('[data-profit-label]').textContent = sim.org === 'profit' ? '이익' : '잉여';
   const profitNode = document.querySelector('[data-profit]');
   profitNode.textContent = `${data.profit >= 0 ? '+' : '−'}${won(Math.abs(data.profit))}`;
@@ -152,6 +161,8 @@ document.querySelectorAll('[data-sim-strategy]').forEach(button => button.addEve
 runWeekButton.addEventListener('click', () => {
   if (sim.week >= 8 || sim.running) return;
   sim.running = true;
+  document.querySelector('[data-reset-sim]').disabled = true;
+  document.querySelectorAll('[data-org]').forEach(button => button.disabled = true);
   const data = simulationNumbers();
   const valueGain = sim.org === 'profit'
     ? data.profit / 1000 - data.unsold * 1.2 + data.strategy.trust * .8
@@ -165,13 +176,14 @@ runWeekButton.addEventListener('click', () => {
     sim.score += valueGain;
     const trustChange=data.strategy.trust-(data.missed>=10?2:0)-(data.unsold>=15?1:0);
     sim.trust=Math.max(0,Math.min(100,sim.trust+trustChange));
-    sim.history.push({...data, valueGain, trustChange});
+    sim.history.push({...data, valueGain, trustChange, eventTitle:events[eventOrder[sim.week]].title});
     const report = document.querySelector('[data-week-report]');
     report.hidden = false;
     report.innerHTML = `<b>${sim.week + 1}주 보고 · ${data.strategy.label} · ${data.sold}개 판매</b><p>${sim.org === 'profit' ? `이익 ${won(data.profit)}, 재고 ${data.unsold}개, 신뢰 ${trustChange>=0?'+':''}${trustChange}점을 기업가치에 반영했습니다.` : `빵 ${data.sold}개로 지역에 기여했고, 잉여 ${won(data.profit)}은 목적 사업에 다시 사용합니다. 신뢰는 ${trustChange>=0?'+':''}${trustChange}점입니다.`}</p>`;
     document.querySelector('[data-scene-title]').textContent=`${sim.week+1}주 영업 종료 · ${data.sold}개 판매`;
     document.querySelector('[data-scene-subtitle]').textContent=data.unsold?`재고 ${data.unsold}개가 남았습니다.`:`준비한 상품을 모두 판매했습니다.`;
     sim.week += 1;sim.running=false;
+    document.querySelector('[data-reset-sim]').disabled = false;
     document.querySelectorAll('[data-org]').forEach(button => button.disabled = true);
     priceRange.disabled=false;quantityRange.disabled=false;document.querySelectorAll('[data-sim-strategy]').forEach(button=>button.disabled=false);
     if (sim.week >= 8) {
@@ -180,12 +192,17 @@ runWeekButton.addEventListener('click', () => {
       const profile=sim.trust>=75&&sim.score>=500?'지속가능 경영자':sim.score>=500?'수익 집중 경영자':sim.trust>=75?'지역 신뢰 경영자':'도전 중인 경영자';
       report.innerHTML = `<b>8주 운영 완료 · ${profile}</b><p>최종 ${sim.org === 'profit' ? '기업가치' : '사회가치'} ${Math.round(sim.score)}점 · 신뢰 ${sim.trust}점입니다. 이익과 재고뿐 아니라 선택한 전략의 비용과 신뢰 효과도 비교해 보세요.</p>`;
     } else runWeekButton.disabled=false;
+    const totalProfit=sim.history.reduce((sum,week)=>sum+week.profit,0);
+    const totalWaste=sim.history.reduce((sum,week)=>sum+week.unsold,0);
+    const totalMissed=sim.history.reduce((sum,week)=>sum+week.missed,0);
+    report.innerHTML+=`<div class="season-summary"><span>누적 ${sim.org==='profit'?'이익':'잉여'} <strong>${won(totalProfit)}</strong></span><span>남은 빵 <strong>${totalWaste}개</strong></span><span>놓친 수요 <strong>${totalMissed}개</strong></span></div><details class="season-ledger" ${sim.week===8?'open':''}><summary>주별 의사결정 기록 · 다음 운영과 비교하기</summary><div class="ledger-scroll"><table><caption>시장 사건에 따른 가격·생산·성과 기록</caption><thead><tr><th>주</th><th>사건 / 전략</th><th>가격</th><th>생산 / 판매</th><th>${sim.org==='profit'?'이익':'잉여'}</th></tr></thead><tbody>${sim.history.map((week,i)=>`<tr><th>${i+1}</th><td>${week.eventTitle}<small>${week.strategy.label}</small></td><td>${won(week.price)}</td><td>${week.quantity} / ${week.sold}개</td><td>${won(week.profit)}</td></tr>`).join('')}</tbody></table></div><p>돌아보기: 이익이 가장 높았던 주와 수요를 가장 잘 충족한 주는 같았나요? 사건과 전략을 함께 비교하세요.</p></details>`;
     updateSimulation();
   },2850);
 });
 
 document.querySelector('[data-reset-sim]').addEventListener('click', () => {
-  sim.week = 0; sim.org = 'profit'; sim.strategy='quality'; sim.trust=50; sim.score = 0; sim.history = []; sim.running=false;eventOrder=events.map((_,index)=>index).sort(()=>Math.random()-.5);
+  if (sim.running) return;
+  sim.week = 0; sim.org = 'profit'; sim.strategy='quality'; sim.trust=50; sim.score = 0; sim.history = []; sim.running=false;eventOrder=shuffledEventOrder();
   priceRange.value = 4500; quantityRange.value = 50;
   document.querySelectorAll('[data-org]').forEach(button => {button.disabled = false; button.classList.toggle('selected', button.dataset.org === 'profit');});
   document.querySelectorAll('[data-sim-strategy]').forEach(button => {button.disabled=false;button.classList.toggle('selected',button.dataset.simStrategy==='quality')});

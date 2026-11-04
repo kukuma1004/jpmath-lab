@@ -1,0 +1,73 @@
+/* Battle-only overrides: keep the detective game's market meter untouched. */
+.game-page .economy-battle .market-meter{display:block;min-width:0;margin:0;padding:12px 9px;border:6px ridge #d8a563;border-radius:18px;background:#fff7dd}
+.economy-battle .market-meter>b{display:block;white-space:nowrap;font-size:13px}
+.economy-battle .market-meter .market-bars{display:flex;gap:8px;margin:10px 0}
+.economy-battle .market-bars span{flex:1;min-width:0;min-height:115px;white-space:nowrap}
+.economy-battle .market-meter>strong{font:800 28px/1.2 sans-serif;color:#28714c;margin:5px 0}
+.economy-battle .battle-title{padding:18px 26px}
+.economy-battle .battle-title h3{margin:0 0 5px}
+.economy-battle .battle-world{background-position:center 38%;gap:18px;grid-template-columns:190px minmax(0,1fr) 205px;padding:20px 14px}
+.economy-battle .battle-objectives,.economy-battle .battle-log{padding:12px}
+.economy-battle .battle-objectives>div{padding:9px;margin:9px 0}
+.economy-battle .battle-objectives h4{margin:6px 0 12px;padding-bottom:10px}
+.economy-battle .battle-objectives p{margin:8px 0}
+.economy-battle .battle-center{grid-template-columns:minmax(0,1fr) 155px;margin-top:16px}
+.economy-battle .ai-cards{padding:12px 16px 16px;gap:14px}
+.economy-battle .ai-cards .econ-card{flex-basis:145px;width:145px}
+.economy-battle .player-hand{padding-top:20px;min-height:220px}
+.economy-battle .player-guide{margin-top:-48px;width:calc(100% - 168px);min-height:70px}
+.economy-battle .player-guide p{padding:10px;font-size:12px}
+.economy-battle .player-guide>b{padding:8px;font-size:13px}
+.economy-battle .econ-card{background:linear-gradient(115deg,#fffef2,#fff0d2);border-color:#b77b46}
+.economy-battle .econ-card .card-art{box-shadow:inset 0 0 0 2px #fff7d9,0 2px 0 #c89c5f}
+.economy-battle .card-preview{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px}
+.economy-battle .card-preview span{padding:7px;border:1px solid #cfddc9;border-radius:7px;background:#f0f6e9;text-align:center;font-size:11px}
+.economy-battle .card-preview b{display:block;font-size:15px;color:#236747}
+.economy-battle .forecast-note{display:block;margin-top:7px;color:#6b624e;font-size:11px}
+.economy-battle .market-reason{background:#fff5df;border:1px solid #dcb97e;border-radius:10px;padding:11px;margin-top:12px;line-height:1.6;font-size:12px}
+.economy-battle .market-reason>b{display:block;margin-bottom:5px;font-size:14px}
+.economy-battle button:focus-visible{outline:3px solid #075a47;outline-offset:4px}
+.economy-battle .battle-sequence{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin:0 0 12px;padding:8px 11px;border:1px solid #dcc6a3;border-radius:9px;background:#fff9e9;font-size:11px;color:#5a5847}
+.economy-battle .battle-sequence b{color:#215b45;margin-right:auto}
+.economy-battle .battle-sequence span{white-space:nowrap}
+.economy-battle .battle-sequence .current{font-weight:700;color:#215b45;background:#e6efdf;border-radius:5px;padding:3px 6px}
+.economy-battle .battle-log>div{max-height:355px;overscroll-behavior:contain;scrollbar-width:thin}
+.economy-battle .battle-objectives select{background:#fffdf7;border:1px solid #d6bea0;border-radius:7px;color:#273e32;font:inherit;min-height:38px}
+.economy-battle .econ-card strong{font-variant-numeric:tabular-nums}
+.economy-battle .card-inspector{box-shadow:0 5px 14px #55351c20}
+.economy-battle .card-inspector>button{min-height:44px;cursor:pointer;transition:background .18s}
+.economy-battle .card-inspector>button:hover:not(:disabled){background:#123f32}
+@media(min-width:1151px){
+  .economy-battle .battle-world{min-height:0;gap:16px;grid-template-columns:185px minmax(0,1fr) 200px;padding:18px 14px}
+  .economy-battle .battle-table{display:grid;grid-template-columns:minmax(0,1fr) 145px;column-gap:12px;align-content:start;align-items:start}
+  .economy-battle .market-ai{grid-column:1/-1;margin:-7px 0 10px}
+  .economy-battle .ai-cards{grid-column:1;padding:13px 8px 14px;gap:8px;border-width:6px}
+  .economy-battle .ai-cards .econ-card{width:124px;flex-basis:124px}
+  .economy-battle .battle-center{display:contents}
+  .economy-battle .played-slots{grid-column:1;grid-row:3;padding:16px 4px 6px}
+  .economy-battle .empty-slot,.economy-battle .played-mini{min-height:70px}
+  .game-page .economy-battle .market-meter{grid-column:2;grid-row:2/4;margin-top:9px;align-self:center;transform:rotate(2deg)}
+  .economy-battle .player-guide{grid-column:1/-1;width:auto;margin:9px 0 0;min-height:0}
+  .economy-battle .player-guide p{margin:0}
+  .economy-battle .player-hand{grid-column:1/-1;min-height:205px;padding:21px 3px 15px}
+  .economy-battle .player-hand .econ-card{border-width:4px}
+  .economy-battle .player-hand .card-art{height:70px;font-size:45px}
+  .economy-battle .card-inspector{grid-column:1/-1}
+  .economy-battle .battle-sequence{grid-column:1/-1;margin-bottom:0}
+  .economy-battle .battle-footer{padding:14px 20px}
+  .economy-battle .battle-footer>span{padding:12px}
+  .economy-battle .battle-footer>button{padding:16px}
+}
+@media(max-width:700px){
+  .economy-battle .player-hand{justify-content:flex-start;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;padding:18px 9px 15px;gap:10px;min-height:0;scrollbar-width:thin}
+  .economy-battle .player-hand .econ-card{flex:0 0 122px;max-width:122px;transform:none;scroll-snap-align:center;margin:0}
+  .economy-battle .player-hand .econ-card .card-art{height:72px;font-size:43px}
+  .economy-battle .player-hand .econ-card>b{font-size:14px;min-height:0}
+  .economy-battle .player-hand .econ-card>span:not(.card-art):not(.card-cost){font-size:12px;letter-spacing:0}
+  .economy-battle .player-hand .econ-card:hover,.economy-battle .player-hand .econ-card:focus-visible,.economy-battle .player-hand .econ-card.picked{transform:translateY(-4px);box-shadow:0 0 0 3px #fff1a0,0 4px 10px #81582160;outline-width:2px}
+  .economy-battle .battle-sequence{margin:8px 0 0}
+  .economy-battle .battle-log>div{max-height:280px}
+}
+@media(min-width:1250px){.economy-battle .battle-title>div{display:flex;align-items:center;gap:24px}.economy-battle .battle-title h3{white-space:nowrap;font-size:27px}.economy-battle .battle-title p{border-left:2px solid #ddcbb4;padding-left:22px;max-width:530px}.economy-battle .battle-table{padding-inline:2px}}
+@media(max-width:1150px){.economy-battle .battle-world{grid-template-columns:170px minmax(0,1fr)}.economy-battle .battle-log{grid-column:1/-1}.economy-battle .market-reason{max-width:none}}
+@media(max-width:700px){.economy-battle .battle-world{display:flex;padding:12px}.economy-battle .player-guide{margin-top:8px;width:auto}.economy-battle .battle-center{grid-template-columns:minmax(0,1fr) 130px}.economy-battle .market-meter>b{font-size:11px}.economy-battle .battle-title{padding:15px 12px}.economy-battle .ai-cards{padding-inline:8px;gap:7px}.economy-battle .card-preview{gap:3px}.economy-battle .card-preview span{padding:6px 3px}.economy-battle .player-hand{padding-top:24px}.economy-battle .market-bars i{width:32px}}

@@ -6,7 +6,8 @@
 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="경제수학을 여섯 가지 비아케이드 장르로 배우는 의사결정 게임 연구소">
+  <meta name="description" content="경제수학을 일곱 가지 비아케이드 장르로 배우는 의사결정 게임 연구소">
+  <link rel="icon" href="data:,">
   <title>게임 연구소 · 경제수학 · JP Math Lab</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,6 +21,11 @@
   <script src="../jp-polish.js?v=20261104-2" defer></script>
   <link rel="stylesheet" href="../jp-nav-2.css?v=20261104-2">
   <link rel="stylesheet" href="경제수학_경험_nav.css?v=2">
+  <link rel="stylesheet" href="게임_스튜디오.css?v=1">
+  <script src="게임_스튜디오.js?v=1" defer></script>
+  <link rel="stylesheet" href="게임_캠페인.css?v=1">
+  <link rel="stylesheet" href="게임_카드정돈.css?v=1">
+  <script src="게임_캠페인.js?v=1" defer></script>
   <script src="../jp-nav-2.js?v=20261104-2" data-jp-section="경제수학" defer></script>
 </head>
 <body class="game-page economy-experience-page">
@@ -33,9 +39,9 @@
   <main>
     <section class="game-hero">
       <div class="hero-copy">
-        <p class="eyebrow">6 GENRES · NO ARCADE</p>
+        <p class="eyebrow">7 GENRES · THINK, PLAY, REFLECT</p>
         <h1>경제수학 게임 연구소</h1>
-        <p>순발력이 아니라 생각하고 비교하고 다시 결정하는 여섯 가지 게임입니다. 아래에서 하나를 고르면 바로 시작됩니다.</p>
+        <p>일곱 가지 게임에서 결정하고 결과를 비교하세요. 무작위 개념 연습과 결과 카드로 배움을 이어갑니다.</p>
       </div>
       <dl class="hero-stats">
         <div><dt>수와 경제</dt><dd>환율 · 세금 · 복리</dd></div>
@@ -137,7 +143,7 @@
   <footer><div><b>JP Math Lab · 경제수학 게임 연구소</b><p>기록이나 로그인 없이 자유롭게 다시 시도하세요.</p></div><div class="source-links"><a href="index.html">경제수학 홈</a><a href="교과서학습.html">개념 학습</a></div></footer>
 
   <dialog class="glossary" id="glossaryDialog"><div class="dialog-head"><div><p class="eyebrow">PLAIN ECONOMICS</p><h2>쉬운 경제 용어집</h2></div><button type="button" aria-label="용어집 닫기" data-close-glossary>×</button></div><p class="dialog-lede">게임에서 만난 낯선 말을 일상 사례로 먼저 이해해 보세요.</p><label class="term-search"><span>용어 검색</span><input type="search" placeholder="예: 영리기업, 매출, 한계" data-term-search></label><div class="term-list" data-term-list></div></dialog>
-  <script src="app.js?v=4"></script>
+  <script src="app.js?v=5"></script>
   <script data-scroll-to-panel>
   // 게임을 고르면 해당 패널이 화면 위쪽에 오도록 맞춘다
   document.querySelectorAll('.game-tab[data-game]').forEach(function (tab) {
