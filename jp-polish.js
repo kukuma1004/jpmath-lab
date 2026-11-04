@@ -41,6 +41,7 @@
   }
 
   function markRise(root) {
+    if(window.JPKinetic)return;
     if (reduce || !io) return;
     var nodes = (root || document).querySelectorAll(RISE);
     var lastParent = null, seq = 0;
@@ -66,6 +67,7 @@
   /* ── 2. 탭 전환 ────────────────────────────────────────── */
 
   function flashPanels() {
+    if(window.JPKinetic)return;
     // 방금 보이게 된 패널을 찾아 한 번 흘려 넣는다
     var shown = document.querySelectorAll(
       '.tab-panel.active, .panel.active, [data-panel].active, .tab-pane.active'
@@ -90,6 +92,7 @@
   /* ── 3. 값이 바뀐 수치에 짧은 강조 ─────────────────────── */
 
   function watchReadouts(root) {
+    if(window.JPKinetic)return;
     if (reduce) return;
     var outs = (root || document).querySelectorAll('.readout-box, output, .chip-value, [data-readout]');
     outs.forEach(function (el) {
@@ -256,6 +259,7 @@
     function syncTab() {
       var theory = document.getElementById('page-theory');
       var on = !theory || !theory.classList.contains('hidden');
+      document.body.classList.toggle('jp-rail-theory',on);
       rail.style.visibility = on ? '' : 'hidden';
       bar.style.display = on ? '' : 'none';
       if (on) spy();
@@ -458,7 +462,9 @@
     document.documentElement.dataset.jpMotion = value;
     document.documentElement.classList.add('jp-v2');
 
-    var route = path.indexOf('/미적분1/') !== -1 ? 'calculus'
+    var route = path.indexOf('/수업창고/') !== -1 ? 'teacher'
+      : path.indexOf('/수능문제/') !== -1 || path.indexOf('/AI킬러문제/') !== -1 ? 'csat'
+      : path.indexOf('/미적분1/') !== -1 ? 'calculus'
       : path.indexOf('/기하/') !== -1 ? 'geometry'
       : path.indexOf('/경제수학/') !== -1 ? 'economy'
       : path.indexOf('/수능문제/') !== -1 ? 'csat'
@@ -542,6 +548,7 @@
   }
 
   function animateIn(element, index) {
+    if(window.JPKinetic)return;
     if (reduce || element.__jpMotionIn || !element.getClientRects().length) return;
     element.__jpMotionIn = true;
     var kind = document.documentElement.dataset.jpMotion;
@@ -586,7 +593,7 @@
     indicator.style.height = box.height + 'px';
     indicator.style.transform = 'translate3d(' + (box.left - groupBox.left + group.scrollLeft) + 'px,' +
       (box.top - groupBox.top + group.scrollTop) + 'px,0)';
-    indicator.classList.add('is-visible');
+    if(!indicator.classList.contains('is-visible'))indicator.classList.add('is-visible');
   }
 
   function wireTabTracks(root) {
@@ -610,6 +617,7 @@
   }
 
   function countElement(node) {
+    if(window.JPKinetic)return;
     if (reduce || node.__jpCounted || node.dataset.jpCounting === 'true') return;
     var raw = node.textContent.trim().replace(/,/g, '');
     if (!/^\d+(?:\.\d+)?$/.test(raw)) return;
@@ -634,6 +642,7 @@
   }
 
   function wireCounts(root) {
+    if(window.JPKinetic)return;
     var selector = '.overview-card strong, .stats strong, [data-countup]';
     Array.prototype.forEach.call((root || document).querySelectorAll(selector), function (node) {
       countElement(node);
@@ -644,6 +653,7 @@
   }
 
   function drawStaticGraphs(root) {
+    if(window.JPKinetic)return;
     if (reduce) return;
     var svgSelector = '.slide-art svg, .visual-card svg, .graph-card svg, [data-jp-draw] svg';
     Array.prototype.forEach.call((root || document).querySelectorAll(svgSelector), function (svg) {
@@ -671,6 +681,7 @@
   }
 
   function wireDetails(root) {
+    if(window.JPKinetic)return;
     Array.prototype.forEach.call((root || document).querySelectorAll('details'), function (detail) {
       if (detail.__jpDetail) return;
       detail.__jpDetail = true;
@@ -794,7 +805,7 @@
       records.forEach(function (record) {
         if (record.type === 'attributes' && record.target.getClientRects().length) visiblePanel = record.target;
       });
-      if (visiblePanel && !reduce && visiblePanel.animate) {
+      if (visiblePanel && !window.JPKinetic && !reduce && visiblePanel.animate) {
         visiblePanel.animate([{ opacity: .72 }, { opacity: 1 }], { duration: 220, easing: 'ease-out' });
       }
       clearTimeout(pending);

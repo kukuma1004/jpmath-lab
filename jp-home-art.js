@@ -14,15 +14,18 @@
   //
   // 어두운 카드 위에서 읽히도록 밝은 선과 은은한 빛으로만 그린다.
 
-  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let reduce = motion.matches;
 
   function fit(canvas) {
     if (!canvas) return null;
     const rect = canvas.getBoundingClientRect();
     if (rect.width < 2 || rect.height < 2) return null;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = Math.round(rect.width * dpr);
-    canvas.height = Math.round(rect.height * dpr);
+    if(canvas.width !== Math.round(rect.width*dpr)||canvas.height !== Math.round(rect.height*dpr)){
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.height * dpr);
+    }
     const ctx = canvas.getContext('2d');
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, rect.width, rect.height);
@@ -195,17 +198,16 @@
   ].filter(j => j.el);
   if (!jobs.length) return;
 
-  function paint(t) { jobs.forEach(j => { try { j.fn(j.el, t, j.accent); } catch (e) { /* 한 장이 실패해도 나머지는 그린다 */ } }); }
+  function paint(t) { jobs.filter(j=>j.visible!==false).forEach(j => { try { j.fn(j.el, t, j.accent); } catch (e) { /* 한 장이 실패해도 나머지는 그린다 */ } }); }
 
   // 먼저 한 번 그려 둔다. 탭이 화면에 보이지 않으면 rAF 가 멈추는데,
   // 그때도 카드가 비어 보이면 안 된다.
   paint(0);
-  if (!reduce) {
-    let frame = 0;
-    const loop = now => { paint(now); frame = requestAnimationFrame(loop); };
-    frame = requestAnimationFrame(loop);
-    window.addEventListener('pagehide', () => cancelAnimationFrame(frame), { once: true });
-  }
+  let frame = 0,last=0,closed=false;
+  function stop(){cancelAnimationFrame(frame);frame=0;last=0}
+  function start(){if(frame||closed||reduce||document.hidden||!jobs.some(j=>j.visible!==false))return;const loop=now=>{if(closed||reduce||document.hidden||!jobs.some(j=>j.visible!==false)){stop();return}if(!last||now-last>=32){last=now;paint(now)}frame=requestAnimationFrame(loop)};frame=requestAnimationFrame(loop)}
+  const visibility=new IntersectionObserver(entries=>{for(const entry of entries){const job=jobs.find(j=>j.el===entry.target);if(job)job.visible=entry.isIntersecting}if(jobs.some(j=>j.visible))start();else stop()},{threshold:.05});jobs.forEach(j=>visibility.observe(j.el));
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();else start()});motion.addEventListener('change',()=>{reduce=motion.matches;stop();paint(0);start()});window.addEventListener('pagehide',()=>{closed=true;stop()});window.addEventListener('pageshow',()=>{closed=false;paint(0);start()});start();
   let rz = 0;
   window.addEventListener('resize', () => {
     window.cancelAnimationFrame(rz);

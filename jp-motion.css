@@ -1,0 +1,48 @@
+/* 공통 모션의 세부 표현. 내용과 수학 좌표, 입력 필드는 그대로 둔다. */
+:root{--jp-kinetic-ease:cubic-bezier(.19,1,.28,1)}
+html[data-jp-kinetic] :is(a,button,input,select,summary):focus-visible{outline:2px solid currentColor;outline-offset:4px}
+html[data-jp-kinetic] :is(.tab-btn,.view-btn,.mode-btn,.mode-tab,.chapter-tab,[role=tab]){transition:color .24s,background-color .24s,border-color .24s,box-shadow .32s var(--jp-kinetic-ease)}
+html[data-jp-kinetic] :is(.tab-btn,.view-btn,[role=tab])[aria-selected=true],html[data-jp-kinetic] :is(.tab-btn,.view-btn).active{box-shadow:inset 0 -2px currentColor}
+html[data-jp-kinetic] :is(.resource-card,.experience-card,.route-card,.question-card,.practice-card,.game-card){transition:box-shadow .4s var(--jp-kinetic-ease),border-color .3s,background-color .3s}
+html[data-jp-kinetic] :is(output,.chip-value,.metric-value,.stat-value,.score-value,.allocation-value){font-variant-numeric:tabular-nums}
+html[data-jp-kinetic] input[type=range]{touch-action:pan-y}
+html[data-jp-kinetic] :is(.eq,.eq-box,.equation,.formula,.math-block){min-width:0;scrollbar-width:thin;scrollbar-color:#9b998f transparent}
+html[data-jp-kinetic] body :is(.katex-display,.formula-scroll){overflow-x:auto;overflow-y:hidden;max-width:100%;scrollbar-width:thin}
+html[data-jp-kinetic] .core-formula>*{min-width:0}
+.jp-condition-before{position:fixed;z-index:6;pointer-events:none;overflow:hidden;contain:strict;border-radius:3px}
+.jp-condition-before>svg,.jp-condition-before>canvas{width:100%!important;height:100%!important;display:block!important;pointer-events:none!important}
+.jp-condition-before>span{position:absolute;right:9px;top:8px;padding:3px 7px;border-radius:3px;background:#f3efe6;color:#4e564d;font:500 10px/1.5 'IBM Plex Sans KR',sans-serif;box-shadow:0 0 0 1px #8b8e7e55}
+@media(min-width:1180px){
+  html[data-jp-kinetic] body.jp-rail-on:not(.jp-rail-theory) .wrap{display:block;max-width:1120px!important}
+  html[data-jp-kinetic] body.jp-rail-on:not(.jp-rail-theory) .jp-rail{display:none}
+}
+@media(min-width:980px){
+  html[data-jp-kinetic=lab] #page-lab:not(.hidden):has(>.step-card):has(>.mini-graph-wrap){display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:24px;align-items:start}
+  html[data-jp-kinetic=lab] #page-lab:has(>.step-card):has(>.mini-graph-wrap)>:not(.step-card,.step-controls,.final-box,.mini-graph-wrap){grid-column:1/-1}
+  html[data-jp-kinetic=lab] #page-lab:has(>.step-card)>.mini-graph-wrap{grid-column:2;grid-row:7/span 3;position:sticky;top:150px}
+  html[data-jp-kinetic=lab] #page-lab:has(>.mini-graph-wrap)>.step-card,html[data-jp-kinetic=lab] #page-lab:has(>.mini-graph-wrap)>.step-controls,html[data-jp-kinetic=lab] #page-lab:has(>.mini-graph-wrap)>.final-box{grid-column:1}
+}
+@media(max-width:700px){
+  html[data-jp-kinetic] .core-formula{grid-template-columns:minmax(0,1fr)}
+  html[data-jp-kinetic=lab] #page-lab:not(.hidden):has(>.step-card):has(>.mini-graph-wrap){display:flex;flex-direction:column;padding-bottom:88px}
+  html[data-jp-kinetic=lab] #page-lab:has(>.step-card)>.mini-graph-wrap{order:1;margin-bottom:14px}
+  html[data-jp-kinetic=lab] #page-lab:has(>.mini-graph-wrap)>.step-card{order:2}
+  html[data-jp-kinetic=lab] #page-lab:has(>.mini-graph-wrap)>.final-box{order:3}
+  html[data-jp-kinetic=lab] #page-lab:not(.hidden):has(>.mini-graph-wrap)>.step-controls{position:fixed;z-index:45;left:12px;right:12px;bottom:0;margin:0;padding:9px 8px max(10px,env(safe-area-inset-bottom));background:var(--paper,#f3f1e9);border:1px solid var(--border,#d6d6cc);border-radius:15px 15px 0 0;box-shadow:0 -8px 24px #26362914}
+  html[data-jp-kinetic] input[type=range]{min-height:44px}
+  html[data-jp-kinetic]:not([data-jp-kinetic=game]) :is(.tab-btn,.view-btn,.mode-btn,.mode-tab,.a-chip,.fn-chip,.chip,.param-btn,.fn-btn,[role=tab],.choice,.choice-btn,.option-btn,button[data-page],button[data-step],button[data-ch]){min-height:44px}
+  html[data-jp-kinetic=exhibition] .deck-tab-list{scrollbar-width:none}
+  html[data-jp-kinetic=exhibition] .deck-tab-list::-webkit-scrollbar{display:none}
+  html[data-jp-kinetic=game] :is(.btn,.smallbtn,.iconbtn,.primary-button,.reset-button,.strategy-button,.game-tab,.start-button){min-height:44px}
+  html[data-jp-kinetic] :is(.tabbar-inner,.inquiry-tabs,.subject-tabs,.chapter-nav,.ex-nav){scrollbar-width:none;overscroll-behavior-x:contain;scroll-snap-type:x proximity}
+  html[data-jp-kinetic] :is(.tabbar-inner,.inquiry-tabs,.subject-tabs,.chapter-nav,.ex-nav)>button{scroll-snap-align:center}
+  html[data-jp-kinetic=problem] :is(.ch,.scene,.ex-scene){scroll-margin-top:100px}
+  html[data-jp-kinetic] :is(.readout-box,.lab-readout,.result-card,.decision-result){overflow-wrap:anywhere}
+  html[data-jp-kinetic=research] :is(textarea,input[type=text],input[type=email],select){font-size:max(16px,1em)}
+  .jp-condition-before>span{font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){
+  html[data-jp-kinetic] :is([data-jp-kinetic-enter],.tab-btn,.view-btn,[role=tab],.resource-card,.experience-card,.route-card,.question-card,.practice-card,.game-card){animation:none!important;transition:none!important}
+  html[data-jp-kinetic] [data-jp-rise].jp-pre{opacity:1!important;transform:none!important}
+  .jp-condition-before{display:none!important}
+}
