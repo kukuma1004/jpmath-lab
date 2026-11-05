@@ -77,3 +77,42 @@ html.jp-studio body.jp-home .home-footer strong{color:#34463c}
   .studio-trail{align-items:flex-start;gap:10px;padding:16px 4px;margin-bottom:23px}.studio-trail p{font-size:12px}.studio-trail a{font-size:12px;gap:10px;white-space:normal;min-width:110px}.studio-trail b{font-size:19px}
 }
 @media(prefers-reduced-motion:reduce){html.jp-studio .room-card{animation:none!important;transition:none!important}}
+
+/* Give each exhibit its own bounded stage. The canvas must not participate
+   in the text column: its intrinsic height otherwise pushes the art and CTA
+   below a fixed-height card, where overflow clips both. */
+html.jp-studio body.jp-home .room-card{isolation:isolate;box-sizing:border-box;min-width:0;width:100%}
+html.jp-studio body.jp-home .home-rooms{scroll-margin-top:84px}
+html.jp-studio body.jp-home .room-card{scroll-margin-top:84px}
+html.jp-studio body.jp-home .room-art{position:absolute;z-index:0;margin:0;pointer-events:none}
+html.jp-studio body.jp-home .room-art canvas{width:100%;height:100%}
+html.jp-studio body.jp-home :is(.room-name,.room-line,.room-go){position:relative;z-index:1}
+html.jp-studio body.jp-home .room-go{align-self:flex-start;min-height:44px;padding-top:0;align-items:center}
+html.jp-studio body.jp-home .room-space .room-art{left:37%;right:10%;bottom:15px;height:115px}
+
+@media(max-width:700px){
+  html.jp-studio body.jp-home .global-header{background:#f2efe7;backdrop-filter:none}
+  html.jp-studio body.jp-home .home-rooms{padding-top:15px;scroll-margin-top:78px}
+  html.jp-studio body.jp-home .rooms-title{margin-bottom:13px;font-size:13px;gap:12px}
+  html.jp-studio body.jp-home .rooms-title span{font-size:11px}
+  html.jp-studio body.jp-home .rooms-grid{gap:9px}
+  html.jp-studio body.jp-home .room-card{
+    height:auto;min-height:166px;aspect-ratio:2.15;
+    padding:16px 21px 22px;border-radius:10px;
+    border-color:#ffffff24;
+    scroll-margin-top:78px;
+  }
+  html.jp-studio body.jp-home .room-calculus{background:radial-gradient(ellipse at 55% 82%,#5b392a55,transparent 62%),#302219}
+  html.jp-studio body.jp-home .room-space{background:radial-gradient(ellipse at 55% 65%,#33416c55,transparent 62%),#202a43}
+  html.jp-studio body.jp-home .room-economy{background:radial-gradient(ellipse at 50% 84%,#2d68504d,transparent 64%),#1d3d34}
+  html.jp-studio body.jp-home .room-name{font-size:clamp(26px,7.2vw,34px);line-height:1.45}
+  html.jp-studio body.jp-home .room-line{font-size:13px;line-height:1.6;margin-top:2px}
+  html.jp-studio body.jp-home .room-go{font-family:'IBM Plex Sans KR',sans-serif;font-size:13px;color:#f5ede1;margin-top:auto;min-height:44px}
+  html.jp-studio body.jp-home .room-art{left:12%;right:6%;top:auto;bottom:7px;height:49%;opacity:1}
+  html.jp-studio body.jp-home .room-space .room-art{left:34%;right:24%;top:22%;bottom:auto;height:67%}
+  html.jp-studio body.jp-home .room-economy .room-art{left:12%;right:6%;height:51%;bottom:8px}
+  html.jp-studio body.jp-home .home-quick{margin-top:13px;gap:9px}
+  html.jp-studio body.jp-home .home-quick a{min-height:44px;align-items:center;border-radius:8px}
+  html.jp-studio body.jp-home .home-quick b{font-size:13px}
+  html.jp-studio body.jp-home .home-quick small{font-size:12px}
+}

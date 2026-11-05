@@ -83,7 +83,9 @@
     const px = X(u), py = Y(y);
     const slope = d * (-(base - top) * 0.42) / ((w - padL - padR) / 3.4);
     const span = Math.min(54, w * .24);
-    ctx.beginPath(); ctx.moveTo(px - span, py - slope * span); ctx.lineTo(px + span, py + slope * span);
+    // Keep both ends inside the exhibit throughout the animation.
+    const tangentLeft = Math.max(padL, px - span), tangentRight = Math.min(w - padR, px + span);
+    ctx.beginPath(); ctx.moveTo(tangentLeft, py + slope * (tangentLeft - px)); ctx.lineTo(tangentRight, py + slope * (tangentRight - px));
     ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.lineWidth = 1.8; ctx.stroke();
     ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px, Y(0));
     ctx.strokeStyle = accent + '77'; ctx.lineWidth = 1.2; ctx.setLineDash([3, 4]); ctx.stroke(); ctx.setLineDash([]);
@@ -95,7 +97,7 @@
   function geometry(canvas, t, accent) {
     const s = fit(canvas); if (!s) return;
     const { ctx, w, h } = s;
-    const cx = w / 2, cy = h / 2 + 1, R = Math.min(h * .46, w * .30);
+    const cx = w / 2, cy = h * .46, R = Math.min(h * .41, w * .44);
     const yaw = reduce ? .6 : t * .00034;
     const pitch = .5;
 
@@ -129,9 +131,15 @@
         prev = p;
       });
     };
+    // The wire sculpture floats above a soft pool of light.
+    const pool = ctx.createRadialGradient(cx, cy + R * 1.04, 0, cx, cy + R * 1.04, R);
+    pool.addColorStop(0, accent + '69'); pool.addColorStop(1, accent + '00');
+    ctx.save(); ctx.translate(cx, cy + R * 1.04); ctx.scale(1, .17);
+    ctx.fillStyle = pool; ctx.translate(-cx, -(cy + R * 1.04));
+    ctx.fillRect(cx - R, cy + R * .04, R * 2, R * 2); ctx.restore();
     // 속이 찬 구 — 선만 있으면 얇아 보인다
     const body = ctx.createRadialGradient(cx - R * .34, cy - R * .38, R * .08, cx, cy, R * 1.02);
-    body.addColorStop(0, accent + 'aa'); body.addColorStop(.55, accent + '46'); body.addColorStop(1, accent + '12');
+    body.addColorStop(0, accent + '42'); body.addColorStop(.55, accent + '20'); body.addColorStop(1, accent + '08');
     ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.fillStyle = body; ctx.fill();
 
     [-1.0, -.5, 0, .5, 1.0].forEach(b => draw(ring(b, 'lat')));
@@ -156,8 +164,8 @@
   function economy(canvas, t, accent) {
     const s = fit(canvas); if (!s) return;
     const { ctx, w, h } = s;
-    const ground = h - 10, top = 12;
-    const seeds = [.42, .78, .30, .95, .58, .86, .36, .68, .50, .88, .34, .62];
+    const ground = h - 14, top = 7;
+    const seeds = [.08, .42, .02, .97, .39, .59, .02, .26, .55, .08, .40];
     const n = seeds.length, gap = 3;
     const bw = (w - 16 - gap * (n - 1)) / n;
 
@@ -165,7 +173,7 @@
     ctx.beginPath(); ctx.moveTo(8, ground + .5); ctx.lineTo(w - 8, ground + .5); ctx.stroke();
 
     seeds.forEach((base, i) => {
-      const wave = reduce ? 1 : (.86 + .14 * Math.sin(t * .0013 + i * .8));
+      const wave = reduce ? 1 : (.97 + .03 * Math.sin(t * .0007 + i * .8));
       const bh = (ground - top) * base * wave;
       const x = 8 + i * (bw + gap), y = ground - bh;
 
@@ -176,15 +184,18 @@
 
       // 창문
       ctx.fillStyle = 'rgba(255,255,255,.42)';
-      const cols = Math.max(1, Math.floor(bw / 5));
-      for (let r = 0; r * 7 + 6 < bh; r++) {
+      const cols = 2;
+      for (let r = 0; r * 11 + 9 < bh; r++) {
         for (let c = 0; c < cols; c++) {
           if (((i * 13 + r * 7 + c * 3) % 5) > 2) continue;
-          ctx.fillRect(x + 2 + c * (bw - 3) / cols, y + 4 + r * 7, 1.8, 2.6);
+          ctx.fillRect(x + bw * .27 + c * bw * .37, y + 6 + r * 11, 2.1, 3);
         }
       }
     });
 
+    ctx.beginPath(); ctx.moveTo(8, ground); ctx.lineTo(w - 8, ground);
+    ctx.strokeStyle = accent + '99'; ctx.lineWidth = 1;
+    glow(ctx, accent, 9); ctx.stroke(); noGlow(ctx);
     // 바닥 반사
     const ref = ctx.createLinearGradient(0, ground, 0, h);
     ref.addColorStop(0, accent + '30'); ref.addColorStop(1, accent + '00');
