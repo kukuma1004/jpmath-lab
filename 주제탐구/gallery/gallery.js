@@ -62,6 +62,7 @@ function artifactHTML(w){
   else if(type==='unavailable'){title='작품의 새 주소를 기다립니다.';description='현재 제출 주소에 연결되지 않아 다시 확인하고 있습니다. 탐구 기록은 먼저 전시하고, 새 주소나 원본 파일을 받으면 체험을 연결합니다.';actions='<span class="artifact-status">작품 주소 확인 중</span>';}
   else if(type==='awaiting-file'){title='작품의 원본을 모으고 있습니다.';description='현재 제출 주소는 학생 기기 안의 파일을 가리킵니다. HTML 원본을 연결하면 이 자리에서 작품을 체험할 수 있습니다.';actions='<span class="artifact-status">원본 파일 수합 중</span>';}
   else{title='이 자리에서 작품을 만나게 됩니다.';description='탐구 기록을 먼저 전시했습니다. 학생이 만든 웹앱이나 자료가 준비되면 이 자리에 연결합니다.';actions='<span class="artifact-status">웹앱 준비 중</span>';}
+  const alternate=artifactURL({url:w.artifact.alternateUrl});if(alternate&&alternate!==url)actions+='<a class="button-line" href="'+esc(alternate)+'" target="_blank" rel="noopener noreferrer">기존 공개 주소 <span aria-hidden="true">↗</span></a>';
   return '<div class="artifact-card"><span class="artifact-symbol" aria-hidden="true">↗</span><h3>'+title+'</h3><p>'+description+'</p><div class="artifact-actions">'+actions+'</div></div>'+(w.recordNote?'<div class="closing-note"><strong>함께 읽어 주세요</strong><p>'+esc(w.recordNote)+'</p></div>':'');
 }
 function chapterHTML(ch,i,w){

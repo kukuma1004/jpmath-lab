@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>미적분Ⅰ 도함수 탐구</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f6fa;color:#192337;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;line-height:1.55}
+main{max-width:960px;margin:auto;padding:22px 15px 40px}h1{font-size:1.7rem;line-height:1.3;margin:0 0 8px}.muted{color:#637086}
+.card{background:white;border:1px solid #dce2ec;border-radius:15px;padding:16px;margin:14px 0}
+.row{display:flex;gap:9px;flex-wrap:wrap}input{flex:1 1 210px;min-width:0;padding:11px;border:1px solid #b9c5d6;border-radius:10px;font:inherit}
+button{border:0;border-radius:10px;background:#245bd6;color:white;padding:11px 15px;font:inherit;font-weight:700;cursor:pointer}.alt{background:#e9eef8;color:#243653;padding:8px 11px}
+.examples{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.graphs{display:grid;grid-template-columns:1fr;gap:13px}.graphbox{border:1px solid #e1e6ee;border-radius:12px;padding:12px;min-width:0}
+svg{width:100%;height:auto;display:block;background:white}.graphbox p,.small{font-size:.9rem;color:#637086}.result{background:#eff5ff;border-left:4px solid #245bd6;border-radius:8px;padding:12px 14px;overflow-wrap:anywhere}.result p{margin:6px 0}
+@media(min-width:720px){.graphs{grid-template-columns:1fr 1fr}}
+</style></head><body><main>
+<h1>미적분Ⅰ: 도함수의 부호로 원함수 개형 추론하기</h1>
+<p class="muted">도함수의 영점과 부호 변화를 이용해 원함수의 증가·감소 구간과 극값을 알아보는 탐구 도구</p>
+<section class="card"><b>도함수 f′(x) 입력</b><div class="row" style="margin-top:8px"><input id="expr" value="x^2-1"><button id="run">그래프 분석</button></div>
+<div class="examples"><button class="alt" data-v="x^2-1">x² − 1</button><button class="alt" data-v="x^2">x²</button><button class="alt" data-v="x^3">x³</button><button class="alt" data-v="2*x">2x</button></div>
+<p class="small">예시: x^2-1, x^2, x^3, 2*x, (x-1)*(x+1). 거듭제곱은 ^ 기호로 입력하세요.</p></section>
+<section class="card"><h2>그래프</h2><div class="graphs">
+<div class="graphbox"><h3>① 도함수 그래프 y = f′(x)</h3><p>도함수의 영점과 양수·음수 구간</p>
+<svg id="dg" viewBox="0 0 420 280" aria-label="도함수 그래프">
+<g stroke="#e5eaf2"><path d="M42 52H402M42 90H402M42 127H402M42 165H402M42 202H402M102 15V230M162 15V230M222 15V230M282 15V230M342 15V230"/></g><path d="M42 127H402M222 15V230" stroke="#68758a" fill="none"/>
+<path d="M42 27 Q132 127 222 140 Q312 127 402 27" stroke="#245bd6" stroke-width="3" fill="none"/>
+<g fill="#637086" font-size="11"><text x="42" y="252" text-anchor="middle">−3</text><text x="102" y="252" text-anchor="middle">−2</text><text x="162" y="252" text-anchor="middle">−1</text><text x="222" y="252" text-anchor="middle">0</text><text x="282" y="252" text-anchor="middle">1</text><text x="342" y="252" text-anchor="middle">2</text><text x="402" y="252" text-anchor="middle">3</text></g></svg></div>
+<div class="graphbox"><h3>② 원함수의 한 가지 개형 y = F(x)</h3><p>F′(x) = f′(x)가 되도록 만든 원함수</p>
+<svg id="og" viewBox="0 0 420 280" aria-label="원함수 그래프">
+<g stroke="#e5eaf2"><path d="M42 52H402M42 90H402M42 127H402M42 165H402M42 202H402M102 15V230M162 15V230M222 15V230M282 15V230M342 15V230"/></g><path d="M42 127H402M222 15V230" stroke="#68758a" fill="none"/>
+<path d="M42 224 C92 180 125 105 162 117 C190 123 205 133 222 127 C240 122 258 133 282 138 C322 145 362 75 402 31" stroke="#d43b42" stroke-width="3" fill="none"/>
+<g fill="#637086" font-size="11"><text x="42" y="252" text-anchor="middle">−3</text><text x="102" y="252" text-anchor="middle">−2</text><text x="162" y="252" text-anchor="middle">−1</text><text x="222" y="252" text-anchor="middle">0</text><text x="282" y="252" text-anchor="middle">1</text><text x="342" y="252" text-anchor="middle">2</text><text x="402" y="252" text-anchor="middle">3</text></g></svg></div></div>
+<p class="small">가로 범위는 −3 ≤ x ≤ 3입니다. 원함수 그래프는 수치 적분으로 그린 한 가지 예이며, 적분상수에 따라 위아래로 이동할 수 있습니다.</p></section>
+<section class="card"><h2>분석 결과</h2><div class="result" id="result" aria-live="polite">
+<p><b>입력한 도함수:</b> f′(x) = x² − 1</p><p><b>영점:</b> x = −1, 1</p><p><b>증가 구간:</b> x &lt; −1, x &gt; 1</p><p><b>감소 구간:</b> −1 &lt; x &lt; 1</p><p><b>극값:</b> x = −1에서 극대, x = 1에서 극소</p></div></section>
+<section class="card"><h2>핵심 개념</h2><p><b style="color:#14763a">f′(x) &gt; 0</b> → 원함수 증가<br><b style="color:#bf3030">f′(x) &lt; 0</b> → 원함수 감소<br>+에서 −로 바뀌면 극대, −에서 +로 바뀌면 극소</p>
+<p class="small">f′(x)=0인 점이 모두 극값은 아닙니다. 그 점의 왼쪽과 오른쪽에서 도함수의 부호가 바뀌는지 확인해야 합니다.</p></section>
+</main>
+<script>
+(()=>{
+const $=id=>document.getElementById(id),NS="http://www.w3.org/2000/svg",xmin=-3,xmax=3;
+function el(tag,a={},t){let n=document.createElementNS(NS,tag);Object.entries(a).forEach(([k,v])=>n.setAttribute(k,v));if(t!==undefined)n.textContent=t;return n}
+function fnFrom(s){s=s.trim().replace(/[−–]/g,"-").replace(/²/g,"^2").replace(/³/g,"^3").replace(/\s/g,"").toLowerCase();if(!s||!/^[0-9x+\-*/^().]+$/.test(s))throw Error("예시처럼 x^2-1 형태로 입력해 주세요.");s=s.replace(/(\d)(x|\()/g,"$1*$2").replace(/x\(/g,"x*(").replace(/\)(x|\d|\()/g,")*$1").replace(/\^/g,"**");let f;try{f=new Function("x",'"use strict";return ('+s+');')}catch(e){throw Error("수식 형식을 확인해 주세요.");}return x=>{let y=f(x);return typeof y==="number"?y:NaN}}
+function integrate(f,a,b){let n=300,h=(b-a)/n,sum=f(a)+f(b);for(let i=1;i<n;i++){let y=f(a+i*h);if(!Number.isFinite(y))return NaN;sum+=(i%2?4:2)*y}return sum*h/3}
+function scale(f){let m=1;for(let i=0;i<=300;i++){let y=Math.abs(f(xmin+(xmax-xmin)*i/300));if(Number.isFinite(y))m=Math.max(m,y)}return m*1.12}
+function base(svg){svg.replaceChildren();let g=el("g",{stroke:"#e5eaf2"});for(let i=0;i<=6;i++){let x=42+i*60;g.append(el("path",{d:`M${x} 15V230`}));let y=15+i*35.8;g.append(el("path",{d:`M42 ${y}H402`}))}svg.append(g);svg.append(el("path",{d:"M42 127.5H402M222 15V230",stroke:"#68758a",fill:"none","stroke-width":"1.5"}))}
+function draw(svg,f,color){base(svg);let ys=scale(f),d="",on=false;for(let i=0;i<=600;i++){let x=xmin+(xmax-xmin)*i/600,y=f(x);if(!Number.isFinite(y)||Math.abs(y)>1e7){on=false;continue}let px=42+(x-xmin)/6*360,py=127.5-y/ys*107.5;d+=(on?" L":" M")+px.toFixed(2)+" "+py.toFixed(2);on=true}svg.append(el("path",{d,stroke:color,fill:"none","stroke-width":"3","stroke-linecap":"round","stroke-linejoin":"round"}))}
+function roots(f){let a=[],N=6000,dx=6/N,px=xmin,py=f(px);for(let i=1;i<=N;i++){let x=xmin+i*dx,y=f(x);if(Number.isFinite(py)&&Number.isFinite(y)){if(Math.abs(py)<1e-8)a.push(px);if(py*y<0){let l=px,h=x,fl=py;for(let k=0;k<40;k++){let m=(l+h)/2,fm=f(m);if(fl*fm<=0)h=m;else{l=m;fl=fm}}a.push((l+h)/2)}}px=x;py=y}return a.filter((v,i)=>i===0||Math.abs(v-a[i-1])>.015).map(v=>Math.abs(v)<.0005?0:v)}
+function fmt(x){return Math.abs(x)<.005?"0":Number(x.toFixed(2)).toString()}
+function analyze(){try{let s=$("expr").value,f=fnFrom(s),r=roots(f),F=x=>integrate(f,0,x);draw($("dg"),f,"#245bd6");draw($("og"),F,"#d43b42");
+let rr=r.filter(x=>x>xmin+.001&&x<xmax-.001),cuts=[xmin,...rr,xmax],ints=[];for(let i=0;i<cuts.length-1;i++){let v=f((cuts[i]+cuts[i+1])/2);ints.push({a:cuts[i],b:cuts[i+1],sign:v>1e-7?"+":v< -1e-7?"−":"0"})}
+let label=o=>o.a===xmin?`x < ${fmt(o.b)}`:o.b===xmax?`x > ${fmt(o.a)}`:`${fmt(o.a)} < x < ${fmt(o.b)}`;
+let inc=ints.filter(o=>o.sign==="+").map(label),dec=ints.filter(o=>o.sign==="−").map(label);
+let ex=rr.map(x=>{let d=.005,l=f(x-d),q=f(x+d);return l>0&&q<0?`x = ${fmt(x)}에서 극대`:l<0&&q>0?`x = ${fmt(x)}에서 극소`:`x = ${fmt(x)}에서 부호 변화 없음`});
+let lines=[["입력한 도함수","f′(x) = "+s],["영점",r.length?r.map(x=>"x = "+fmt(x)).join(", "):"이 범위에서 찾지 못함"],["증가 구간",inc.join(", ")||"확인된 구간 없음"],["감소 구간",dec.join(", ")||"확인된 구간 없음"],["극값",ex.join("; ")||"이 범위에서 확인된 극값 없음"]];
+let box=$("result");box.replaceChildren();lines.forEach(([a,b])=>{let p=document.createElement("p"),z=document.createElement("b");z.textContent=a+": ";p.append(z,document.createTextNode(b));box.append(p)});let note=document.createElement("p");note.className="small";note.textContent="※ −3 ≤ x ≤ 3 범위의 수치 근사입니다. 중근이나 복잡한 식은 결과를 직접 확인하세요.";box.append(note)
+}catch(e){$("result").textContent="입력 오류: "+e.message}}
+$("run").addEventListener("click",analyze);$("expr").addEventListener("keydown",e=>{if(e.key==="Enter")analyze()});document.querySelectorAll("[data-v]").forEach(b=>b.addEventListener("click",()=>{$("expr").value=b.dataset.v;analyze()}));analyze();
+})();
+</script></body></html>

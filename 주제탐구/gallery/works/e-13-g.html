@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>공간좌표 계산기</title>
+<meta name="description" content="공간좌표에서 거리·내분점·정사영·구의 방정식을 계산하고 3D로 확인하는 기하 탐구 계산기">
+<style>
+:root {
+  --bg: #f7f6f2;
+  --panel: #ffffff;
+  --ink: #1d2320;
+  --muted: #69716c;
+  --line: #dcdcd4;
+  --accent: #1f6f5c;
+  --accent-soft: #e3f0eb;
+  --warn: #b5482f;
+  --warn-soft: #f8e7e1;
+  --canvas: #fbfbf8;
+  --grid: #e6e6de;
+  --axis: #8b928d;
+  --pa: #c2410c;
+  --pb: #1d4ed8;
+  --pp: #15803d;
+  --proj: #7c3aed;
+  --sph: #0e7490;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141816; --panel: #1c211f; --ink: #e8ebe9; --muted: #9aa39e; --line: #2f3633;
+    --accent: #5cc3a6; --accent-soft: #1d3530; --warn: #f08a6c; --warn-soft: #3a231d;
+    --canvas: #181c1a; --grid: #262c29; --axis: #6f7873;
+    --pa: #fb923c; --pb: #60a5fa; --pp: #4ade80; --proj: #c4b5fd; --sph: #22d3ee;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141816; --panel: #1c211f; --ink: #e8ebe9; --muted: #9aa39e; --line: #2f3633;
+  --accent: #5cc3a6; --accent-soft: #1d3530; --warn: #f08a6c; --warn-soft: #3a231d;
+  --canvas: #181c1a; --grid: #262c29; --axis: #6f7873;
+  --pa: #fb923c; --pb: #60a5fa; --pp: #4ade80; --proj: #c4b5fd; --sph: #22d3ee;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  font-size: 15px; line-height: 1.55;
+}
+header { max-width: 1200px; margin: 0 auto; padding: 22px 16px 10px; }
+header h1 { margin: 0; font-size: 22px; letter-spacing: -0.02em; }
+header p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+nav.tabs { max-width: 1200px; margin: 0 auto; padding: 6px 16px; display: flex; gap: 6px; flex-wrap: wrap; }
+nav.tabs button {
+  border: 1px solid var(--line); background: var(--panel); color: var(--ink);
+  padding: 8px 14px; border-radius: 999px; font: inherit; cursor: pointer;
+}
+nav.tabs button.on { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 600; }
+main {
+  max-width: 1200px; margin: 0 auto; padding: 10px 16px 40px;
+  display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 16px; align-items: start;
+}
+@media (max-width: 860px) { main { grid-template-columns: minmax(0, 1fr); } }
+.stage {
+  position: sticky; top: 10px; background: var(--canvas); border: 1px solid var(--line);
+  border-radius: 14px; overflow: hidden;
+}
+@media (max-width: 860px) { .stage { position: relative; top: 0; } }
+canvas { display: block; width: 100%; aspect-ratio: 1 / 0.9; touch-action: none; cursor: grab; }
+canvas:active { cursor: grabbing; }
+.stage-bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+.stage-bar button { font: inherit; font-size: 13px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--ink); cursor: pointer; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+.panel + .panel { margin-top: 12px; }
+.panel h2 { margin: 0 0 10px; font-size: 16px; }
+.panel h3 { margin: 14px 0 6px; font-size: 14px; color: var(--muted); font-weight: 600; }
+.pt { display: grid; grid-template-columns: 34px repeat(3, minmax(0, 1fr)); gap: 6px; align-items: center; margin-bottom: 6px; }
+.pt b { font-size: 15px; }
+input[type=number] {
+  width: 100%; min-width: 0; padding: 7px 8px; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--bg); color: var(--ink); font: inherit; font-variant-numeric: tabular-nums;
+}
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+.row label { font-size: 14px; color: var(--muted); }
+input[type=range] { flex: 1; min-width: 120px; accent-color: var(--accent); }
+select { font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { font: inherit; font-size: 14px; border: 0; background: transparent; color: var(--ink); padding: 6px 12px; cursor: pointer; }
+.seg button.on { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 14px; }
+td, th { padding: 6px 4px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+th { color: var(--muted); font-weight: 600; font-size: 13px; }
+td.v { text-align: right; white-space: nowrap; }
+.ok, .bad { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 13px; font-weight: 600; }
+.ok { background: var(--accent-soft); color: var(--accent); }
+.bad { background: var(--warn-soft); color: var(--warn); }
+.note { font-size: 13px; color: var(--muted); margin: 8px 0 0; }
+.tests { display: flex; flex-direction: column; gap: 6px; }
+.tests button {
+  text-align: left; font: inherit; font-size: 14px; padding: 9px 12px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer;
+}
+.tests button:hover { border-color: var(--accent); }
+.formula { font-family: "Cambria Math", "Times New Roman", serif; font-size: 15px; background: var(--bg); border-radius: 8px; padding: 8px 10px; margin: 6px 0; overflow-x: auto; }
+.legend { display: flex; gap: 12px; flex-wrap: wrap; }
+.legend span::before { content: ""; display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; background: var(--c); vertical-align: 0; }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<header>
+  <h1>공간좌표 계산기</h1>
+  <p>좌표만으로 거리·내분점·정사영·구의 방정식을 계산하고, 그 결과를 원래 조건에 대입해 검증합니다.</p>
+</header>
+<nav class="tabs" id="tabs">
+  <button data-mode="seg" class="on">1. 거리·내분점·정사영</button>
+  <button data-mode="tet">2. 사면체 검증</button>
+  <button data-mode="sph">3. 구의 방정식</button>
+</nav>
+<main>
+  <section class="stage">
+    <canvas id="cv"></canvas>
+    <div class="stage-bar">
+      <span class="legend" id="legend"></span>
+      <span><button id="resetView">시점 초기화</button></span>
+    </div>
+  </section>
+
+  <section>
+    <!-- 선분 모드 -->
+    <div data-pane="seg">
+      <div class="panel">
+        <h2>두 점 입력</h2>
+        <div class="pt"><b style="color:var(--pa)" id="labA">A</b><input type="number" step="any" id="ax"><input type="number" step="any" id="ay"><input type="number" step="any" id="az"></div>
+        <div class="pt"><b style="color:var(--pb)" id="labB">B</b><input type="number" step="any" id="bx"><input type="number" step="any" id="by"><input type="number" step="any" id="bz"></div>
+        <div class="row">
+          <span class="seg" id="divKind"><button data-k="in" class="on">내분</button><button data-k="ex">외분</button></span>
+          <label>m</label><input type="number" id="mNum" min="0" step="1" style="width:64px">
+          <label>n</label><input type="number" id="nNum" min="0" step="1" style="width:64px">
+        </div>
+        <div class="row"><label style="width:18px">m</label><input type="range" id="mRange" min="1" max="10" step="1"></div>
+        <div class="row"><label style="width:18px">n</label><input type="range" id="nRange" min="1" max="10" step="1"></div>
+        <div class="row">
+          <label>정사영할 평면</label>
+          <span class="seg" id="planeSel"><button data-p="xy" class="on">xy평면</button><button data-p="yz">yz평면</button><button data-p="zx">zx평면</button></span>
+        </div>
+      </div>
+      <div class="panel" id="segOut"></div>
+    </div>
+
+    <!-- 사면체 모드 -->
+    <div data-pane="tet" hidden>
+      <div class="panel">
+        <h2>사면체 꼭짓점</h2>
+        <div class="pt"><b style="color:var(--pa)">A</b><input type="number" step="any" id="t0x"><input type="number" step="any" id="t0y"><input type="number" step="any" id="t0z"></div>
+        <div class="pt"><b style="color:var(--pb)">B</b><input type="number" step="any" id="t1x"><input type="number" step="any" id="t1y"><input type="number" step="any" id="t1z"></div>
+        <div class="pt"><b style="color:var(--pp)">C</b><input type="number" step="any" id="t2x"><input type="number" step="any" id="t2y"><input type="number" step="any" id="t2z"></div>
+        <div class="pt"><b style="color:var(--proj)">D</b><input type="number" step="any" id="t3x"><input type="number" step="any" id="t3y"><input type="number" step="any" id="t3z"></div>
+        <div class="row"><button class="seg" style="padding:6px 12px;cursor:pointer;background:var(--bg);color:var(--ink);font:inherit;font-size:14px" id="tetReset">정사면체로 되돌리기</button></div>
+      </div>
+      <div id="tetOut"></div>
+    </div>
+
+    <!-- 구 모드 -->
+    <div data-pane="sph" hidden>
+      <div class="panel">
+        <h2>구의 중심과 반지름</h2>
+        <div class="pt"><b style="color:var(--sph)">중심</b><input type="number" step="any" id="sx"><input type="number" step="any" id="sy"><input type="number" step="any" id="sz"></div>
+        <div class="row"><label>반지름 r</label><input type="range" id="srRange" min="0.5" max="6" step="0.1"><input type="number" id="srNum" step="any" min="0" style="width:80px"></div>
+        <h3>위치를 확인할 점 P</h3>
+        <div class="pt"><b style="color:var(--pa)">P</b><input type="number" step="any" id="spx"><input type="number" step="any" id="spy"><input type="number" step="any" id="spz"></div>
+      </div>
+      <div class="panel" id="sphOut"></div>
+    </div>
+
+    <div class="panel">
+      <h2>테스트 값</h2>
+      <div class="tests">
+        <button data-test="1">(1) 선분 AB를 1:1로 내분 → 중점 (1, 0, 0) 예상</button>
+        <button data-test="2">(2) 선분 DG를 3:1로 내분 → (0, 0, 0), 네 꼭짓점까지 거리 √3 예상</button>
+        <button data-test="3">(3) D를 (−1, −1, 2)로 바꿈 → "정사면체 아님" 예상</button>
+        <button data-test="4">(4) 정사면체를 비스듬히 회전 → 좌표가 무리수일 때 오차 판정 확인</button>
+      </div>
+      <p class="note">같음 판정은 두 값의 차이가 10⁻⁹ 이하일 때로 정했습니다. 컴퓨터의 소수 계산은 √2 같은 무리수를 끝까지 저장하지 못해 아주 작은 차이가 생기기 때문입니다.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+(() => {
+  // ---------- 수학 도구 ----------
+  const EPS = 1e-9;
+  const sub = (p, q) => [p[0]-q[0], p[1]-q[1], p[2]-q[2]];
+  const add = (p, q) => [p[0]+q[0], p[1]+q[1], p[2]+q[2]];
+  const mul = (p, k) => [p[0]*k, p[1]*k, p[2]*k];
+  const dot = (p, q) => p[0]*q[0] + p[1]*q[1] + p[2]*q[2];
+  const cross = (p, q) => [p[1]*q[2]-p[2]*q[1], p[2]*q[0]-p[0]*q[2], p[0]*q[1]-p[1]*q[0]];
+  const dist2 = (p, q) => { const d = sub(p, q); return dot(d, d); };
+  const dist = (p, q) => Math.sqrt(dist2(p, q));
+  const same = (a, b) => Math.abs(a - b) <= EPS * Math.max(1, Math.abs(a), Math.abs(b));
+
+  // m:n 내분점 = (nA + mB)/(m+n), 외분점 = (−nA + mB)/(m−n)
+  function divide(A, B, m, n, kind) {
+    if (kind === 'ex') {
+      if (m === n) return null;
+      return mul(add(mul(A, -n), mul(B, m)), 1 / (m - n));
+    }
+    if (m + n === 0) return null;
+    return mul(add(mul(A, n), mul(B, m)), 1 / (m + n));
+  }
+
+  // 화면 표시용: 정수·분수·√ 꼴이면 그렇게, 아니면 소수 넷째 자리
+  function fmtNum(x) {
+    if (Math.abs(x) < 1e-10) return '0';
+    if (Math.abs(x - Math.round(x)) < 1e-9) return String(Math.round(x)).replace('-', '−');
+    for (let d = 2; d <= 12; d++) {
+      const k = x * d;
+      if (Math.abs(k - Math.round(k)) < 1e-9) {
+        const num = Math.round(k);
+        return (num < 0 ? '−' : '') + Math.abs(num) + '/' + d;
+      }
+    }
+    return x.toFixed(4).replace('-', '−');
+  }
+  function simplifySqrt(n) {
+    let out = 1, inside = n;
+    for (let k = Math.floor(Math.sqrt(n)); k > 1; k--) {
+      if (inside % (k*k) === 0) { out *= k; inside /= k*k; break; }
+    }
+    return { out, inside };
+  }
+  // 길이는 제곱값이 정수/간단한 분수면 √ 꼴로 보여 준다
+  function fmtLen(len) {
+    const sq = len * len;
+    if (Math.abs(len - Math.round(len)) < 1e-9) return String(Math.round(len));
+    for (const d of [1, 3, 2, 4, 9]) {
+      const k = sq * d;
+      if (Math.abs(k - Math.round(k)) < 1e-7 && Math.round(k) < 100000) {
+        const N = Math.round(k);
+        if (d === 1) {
+          const { out, inside } = simplifySqrt(N);
+          return (out > 1 ? out : '') + '√' + inside + ' ≈ ' + len.toFixed(4);
+        }
+        // √(N/d) = √(N·d)/d
+        const { out, inside } = simplifySqrt(N * d);
+        if (inside === 1) return fmtNum(out / d);
+        const g = gcd(out, d);
+        const o = out / g, dd = d / g;
+        return (o > 1 ? o : '') + '√' + inside + (dd > 1 ? '/' + dd : '') + ' ≈ ' + len.toFixed(4);
+      }
+    }
+    return len.toFixed(4);
+  }
+  const gcd = (a, b) => b ? gcd(b, a % b) : a;
+  // (x − a)² 꼴: a가 음수면 (x + |a|)², 0이면 x²
+  const term = (v, a) => Math.abs(a) < 1e-10 ? v + '²' : `(${v} ${a < 0 ? '+' : '−'} ${fmtNum(Math.abs(a))})²`;
+  const sphEq = (O, r2) => `${term('x', O[0])} + ${term('y', O[1])} + ${term('z', O[2])} = ${fmtNum(r2)}`;
+  const fmtPt = p => '(' + p.map(fmtNum).join(', ') + ')';
+  const badge = (ok, yes, no) => `<span class="${ok ? 'ok' : 'bad'}">${ok ? yes : no}</span>`;
+
+  // ---------- 상태 ----------
+  const REG = [[1,1,1],[1,-1,-1],[-1,1,-1],[-1,-1,1]];
+  const state = {
+    mode: 'seg',
+    A: [1,1,1], B: [1,-1,-1], m: 1, n: 1, kind: 'in', plane: 'xy',
+    labels: ['A', 'B'],
+    T: REG.map(p => p.slice()),
+    S: [0,0,0], r: Math.sqrt(3), P: [1,1,1],
+  };
+
+  const $ = id => document.getElementById(id);
+  const readPt = pre => [$(pre+'x'), $(pre+'y'), $(pre+'z')].map(el => parseFloat(el.value) || 0);
+  const writePt = (pre, p) => { ['x','y','z'].forEach((c, i) => { $(pre+c).value = +p[i].toFixed(10); }); };
+
+  // ---------- 3D 그리기 ----------
+  const cv = $('cv'), ctx = cv.getContext('2d');
+  const view = { yaw: -0.65, pitch: 0.42, zoom: 1 };
+  function css(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+  let W = 0, H = 0, scale = 40;
+  function resize() {
+    const r = cv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+    W = r.width; H = r.height;
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    draw();
+  }
+  // z축이 위를 향하도록: yaw는 z축 회전, pitch는 내려다보는 각
+  function project(p) {
+    const cy = Math.cos(view.yaw), sy = Math.sin(view.yaw);
+    const x1 = p[0]*cy - p[1]*sy, y1 = p[0]*sy + p[1]*cy;
+    const cp = Math.cos(view.pitch), sp = Math.sin(view.pitch);
+    const sx = x1, syy = p[2]*cp + y1*sp, depth = y1*cp - p[2]*sp;
+    const camDist = 28;
+    const f = camDist / (camDist + depth);
+    return [W/2 + sx*scale*f, H/2 - syy*scale*f, depth];
+  }
+  function line(p, q, color, width = 1.5, dash = []) {
+    const a = project(p), b = project(q);
+    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.setLineDash(dash);
+    ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); ctx.setLineDash([]);
+  }
+  function dotAt(p, color, label, r = 5) {
+    const a = project(p);
+    ctx.fillStyle = color; ctx.beginPath(); ctx.arc(a[0], a[1], r, 0, Math.PI*2); ctx.fill();
+    if (label) {
+      ctx.font = '600 14px Pretendard, "Malgun Gothic", sans-serif';
+      ctx.fillStyle = color; ctx.fillText(label, a[0] + 8, a[1] - 8);
+    }
+  }
+  function circle3d(center, radius, u, v, color, width = 1.4, dash = []) {
+    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.setLineDash(dash); ctx.beginPath();
+    for (let i = 0; i <= 96; i++) {
+      const t = i / 96 * Math.PI * 2;
+      const p = add(center, add(mul(u, radius*Math.cos(t)), mul(v, radius*Math.sin(t))));
+      const a = project(p);
+      i ? ctx.lineTo(a[0], a[1]) : ctx.moveTo(a[0], a[1]);
+    }
+    ctx.stroke(); ctx.setLineDash([]);
+  }
+  function drawAxes(extent) {
+    const g = css('--grid'), ax = css('--axis');
+    const L = Math.ceil(extent);
+    for (let i = -L; i <= L; i++) {
+      line([i, -L, 0], [i, L, 0], g, 1);
+      line([-L, i, 0], [L, i, 0], g, 1);
+    }
+    const E = L + 0.8;
+    line([-E,0,0], [E,0,0], ax, 1.3); line([0,-E,0], [0,E,0], ax, 1.3); line([0,0,-E], [0,0,E], ax, 1.3);
+    ctx.font = 'italic 600 14px "Times New Roman", serif'; ctx.fillStyle = ax;
+    [['x',[E+0.3,0,0]],['y',[0,E+0.3,0]],['z',[0,0,E+0.3]]].forEach(([t,p]) => { const a = project(p); ctx.fillText(t, a[0]-4, a[1]+4); });
+    for (let i = -L; i <= L; i++) if (i) {
+      ctx.font = '11px sans-serif';
+      const a = project([i,0,0]); ctx.fillText(i, a[0]-3, a[1]+14);
+      const b = project([0,i,0]); ctx.fillText(i, b[0]-3, b[1]+14);
+      const c = project([0,0,i]); ctx.fillText(i, c[0]+6, c[1]+4);
+    }
+  }
+  function sceneExtent(pts) {
+    let m = 2;
+    pts.forEach(p => p.forEach(c => { if (isFinite(c)) m = Math.max(m, Math.abs(c)); }));
+    return Math.min(m, 12);
+  }
+  function projOnto(p, plane) {
+    if (plane === 'xy') return [p[0], p[1], 0];
+    if (plane === 'yz') return [0, p[1], p[2]];
+    return [p[0], 0, p[2]];
+  }
+
+  function draw() {
+    if (!W) return;
+    ctx.clearRect(0, 0, W, H);
+    const cA = css('--pa'), cB = css('--pb'), cP = css('--pp'), cJ = css('--proj'), cS = css('--sph'), ink = css('--ink');
+    let legend = '';
+    if (state.mode === 'seg') {
+      const P = divide(state.A, state.B, state.m, state.n, state.kind);
+      const pts = [state.A, state.B]; if (P) pts.push(P);
+      const ext = sceneExtent(pts); scale = Math.min(W, H) / (2 * ext + 3.5) * view.zoom;
+      drawAxes(ext);
+      const pA = projOnto(state.A, state.plane), pB = projOnto(state.B, state.plane);
+      line(state.A, pA, cJ, 1, [3,4]); line(state.B, pB, cJ, 1, [3,4]);
+      line(pA, pB, cJ, 2.5);
+      if (P && state.kind === 'ex') line(P, Math.abs(dist(P, state.A)) < Math.abs(dist(P, state.B)) ? state.A : state.B, cP, 1.4, [6,4]);
+      line(state.A, state.B, ink, 2.5);
+      dotAt(state.A, cA, state.labels[0]); dotAt(state.B, cB, state.labels[1]);
+      if (P) dotAt(P, cP, 'P', 6);
+      legend = `<span style="--c:${cA}">${state.labels[0]}</span><span style="--c:${cB}">${state.labels[1]}</span><span style="--c:${cP}">${state.kind === 'in' ? '내분점' : '외분점'} P</span><span style="--c:${cJ}">${state.plane}평면 정사영</span>`;
+    } else if (state.mode === 'tet') {
+      const T = state.T, info = tetInfo(T);
+      const pts = T.slice(); if (info.O) pts.push(info.O);
+      const ext = sceneExtent(pts); scale = Math.min(W, H) / (2 * ext + 3.5) * view.zoom;
+      drawAxes(ext);
+      const cols = [cA, cB, cP, cJ];
+      if (info.O && info.R < 20) {
+        circle3d(info.O, info.R, [1,0,0], [0,1,0], cS, 1, [4,4]);
+        circle3d(info.O, info.R, [1,0,0], [0,0,1], cS, 1, [4,4]);
+        circle3d(info.O, info.R, [0,1,0], [0,0,1], cS, 1, [4,4]);
+      }
+      for (let i = 0; i < 4; i++) for (let j = i+1; j < 4; j++) line(T[i], T[j], ink, 2);
+      line(T[3], info.H, cJ, 1.6, [5,4]);
+      line(info.H, T[0], cJ, 1, [2,3]);
+      dotAt(info.G, css('--muted'), 'G', 4);
+      if (!info.HisG) dotAt(info.H, cJ, 'H', 4);
+      if (info.O) dotAt(info.O, cS, 'O', 5);
+      'ABCD'.split('').forEach((l, i) => dotAt(T[i], cols[i], l));
+      legend = `<span style="--c:${css('--muted')}">G 무게중심</span><span style="--c:${cJ}">D에서 내린 수선</span><span style="--c:${cS}">외접구·중심 O</span>`;
+    } else {
+      const S = state.S, r = state.r;
+      const ext = sceneExtent([add(S,[r,r,r]), sub(S,[r,r,r]), state.P]); scale = Math.min(W, H) / (2 * ext + 3.5) * view.zoom;
+      drawAxes(ext);
+      circle3d(S, r, [1,0,0], [0,1,0], cS, 1, [4,4]);
+      circle3d(S, r, [1,0,0], [0,0,1], cS, 1, [4,4]);
+      circle3d(S, r, [0,1,0], [0,0,1], cS, 1, [4,4]);
+      const cuts = sphereCuts(S, r);
+      if (cuts.xy) circle3d([S[0],S[1],0], cuts.xy, [1,0,0], [0,1,0], cA, 2.4);
+      if (cuts.yz) circle3d([0,S[1],S[2]], cuts.yz, [0,1,0], [0,0,1], cB, 2.4);
+      if (cuts.zx) circle3d([S[0],0,S[2]], cuts.zx, [1,0,0], [0,0,1], cP, 2.4);
+      line(S, state.P, cJ, 1.3, [4,4]);
+      dotAt(S, cS, 'C', 5); dotAt(state.P, cJ, 'P', 5);
+      legend = `<span style="--c:${cA}">xy평면과의 교선</span><span style="--c:${cB}">yz평면</span><span style="--c:${cP}">zx평면</span>`;
+    }
+    $('legend').innerHTML = legend;
+  }
+
+  // ---------- 계산 ----------
+  function tetInfo(T) {
+    const [A, B, C, D] = T;
+    const G = mul(add(add(A, B), C), 1/3);
+    // D에서 평면 ABC에 내린 수선의 발: 법선 방향 성분만 빼낸다
+    const nrm = cross(sub(B, A), sub(C, A)), nn = dot(nrm, nrm);
+    const H = nn > EPS ? sub(D, mul(nrm, dot(sub(D, A), nrm) / nn)) : G;
+    // 외접구 중심: |O−A|² = |O−B|² = |O−C|² = |O−D|² 를 정리한 일차연립방정식 3개
+    const rows = [B, C, D].map(Q => [...mul(sub(Q, A), 2), dot(Q, Q) - dot(A, A)]);
+    const det3 = m => m[0][0]*(m[1][1]*m[2][2]-m[1][2]*m[2][1]) - m[0][1]*(m[1][0]*m[2][2]-m[1][2]*m[2][0]) + m[0][2]*(m[1][0]*m[2][1]-m[1][1]*m[2][0]);
+    const M = rows.map(r => r.slice(0, 3)), det = det3(M);
+    let O = null, R = null;
+    if (Math.abs(det) > 1e-9) {
+      O = [0,1,2].map(k => det3(M.map((r, i) => r.map((v, j) => j === k ? rows[i][3] : v))) / det);
+      R = dist(O, A);
+    }
+    return { G, H, HisG: dist(H, G) < 1e-9, O, R };
+  }
+  function sphereCuts(S, r) {
+    const cut = d => Math.abs(d) < r ? Math.sqrt(r*r - d*d) : (same(Math.abs(d), r) ? 0 : null);
+    return { xy: cut(S[2]), yz: cut(S[0]), zx: cut(S[1]) };
+  }
+
+  function renderSeg() {
+    const { A, B, m, n, kind, plane } = state;
+    const [la, lb] = state.labels;
+    $('labA').textContent = la; $('labB').textContent = lb;
+    const P = divide(A, B, m, n, kind);
+    const AB = dist(A, B);
+    let h = `<h2>계산 결과</h2><table>`;
+    h += `<tr><td>${la}${lb} 거리</td><td class="v">${fmtLen(AB)}</td></tr>`;
+    h += `<tr><td colspan="2"><div class="formula">${la}${lb} = √((${fmtNum(B[0]-A[0])})² + (${fmtNum(B[1]-A[1])})² + (${fmtNum(B[2]-A[2])})²) = √${/\//.test(fmtNum(dist2(A,B))) ? '(' + fmtNum(dist2(A,B)) + ')' : fmtNum(dist2(A,B))}</div></td></tr>`;
+    if (!P) {
+      h += `<tr><td colspan="2"><span class="bad">m = n이면 외분점이 없습니다</span><p class="note">외분점 공식의 분모 m − n이 0이 됩니다. 두 점에서의 거리 비가 1:1인 점은 선분 위의 중점 하나뿐이라 선분 밖에는 생기지 않습니다.</p></td></tr>`;
+    } else {
+      const AP = dist(A, P), PB = dist(P, B);
+      const ratioOk = same(AP * n, PB * m);
+      h += `<tr><td>${kind === 'in' ? '내분점' : '외분점'} P (${m}:${n})</td><td class="v">${fmtPt(P)}</td></tr>`;
+      h += `<tr><td colspan="2"><div class="formula">P = ${kind === 'in' ? `(${n}·${la} + ${m}·${lb}) / (${m}+${n})` : `(${m}·${lb} − ${n}·${la}) / (${m}−${n})`}</div></td></tr>`;
+      h += `<tr><td>검증: ${la}P : P${lb}</td><td class="v">${fmtLen(AP).split(' ')[0]} : ${fmtLen(PB).split(' ')[0]} ${badge(ratioOk, m + ':' + n + ' 성립', '불일치')}</td></tr>`;
+    }
+    const pA = projOnto(A, plane), pB = projOnto(B, plane), L = dist(pA, pB);
+    h += `</table><h3>${plane}평면 위로 정사영</h3><table>`;
+    h += `<tr><td>${la}'${lb}' (그림자) 길이</td><td class="v">${fmtLen(L)}</td></tr>`;
+    if (AB > EPS) {
+      const c = L / AB, deg = Math.acos(Math.min(1, c)) * 180 / Math.PI;
+      h += `<tr><td>cos θ = ${la}'${lb}' / ${la}${lb}</td><td class="v">${c.toFixed(4)}</td></tr>`;
+      h += `<tr><td>선분과 평면이 이루는 각 θ</td><td class="v">${deg.toFixed(2)}°</td></tr>`;
+      h += `<tr><td>검증: ${la}${lb} × cos θ</td><td class="v">${(AB*c).toFixed(4)} ${badge(same(AB*c, L), '그림자 길이와 같음', '불일치')}</td></tr>`;
+    }
+    h += `</table><p class="note">정사영은 평면에 수직인 좌표 하나를 0으로 만든 점입니다. 예를 들어 xy평면이면 z좌표를 0으로 바꿉니다.</p>`;
+    $('segOut').innerHTML = h;
+  }
+
+  function renderTet() {
+    const T = state.T, L = 'ABCD';
+    const info = tetInfo(T);
+    const edges = [];
+    for (let i = 0; i < 4; i++) for (let j = i+1; j < 4; j++) edges.push([L[i]+L[j], dist(T[i], T[j])]);
+    const regular = edges.every(e => same(e[1], edges[0][1]));
+    let h = `<div class="panel"><h2>모서리 6개</h2><table>`;
+    edges.forEach(([name, len]) => { h += `<tr><td>${name}</td><td class="v">${fmtLen(len)}</td></tr>`; });
+    h += `</table><p style="margin:10px 0 0">${badge(regular, '6개 모두 같음 → 정사면체', '길이가 다른 모서리가 있음 → 정사면체 아님')}</p>`;
+
+    const DH2 = dist2(T[3], info.H), HA2 = dist2(info.H, T[0]), DA2 = dist2(T[3], T[0]);
+    h += `</div><div class="panel"><h2>수선의 발</h2><table>`;
+    h += `<tr><td>△ABC의 무게중심 G</td><td class="v">${fmtPt(info.G)}</td></tr>`;
+    h += `<tr><td>D에서 평면 ABC에 내린 수선의 발 H</td><td class="v">${fmtPt(info.H)}</td></tr>`;
+    h += `<tr><td>H와 G가 같은 점인가</td><td class="v">${badge(info.HisG, '같음', '다름')}</td></tr>`;
+    h += `<tr><td colspan="2"><div class="formula">DH² + HA² = ${fmtNum(DH2)} + ${fmtNum(HA2)} = ${fmtNum(DH2 + HA2)},&nbsp; DA² = ${fmtNum(DA2)}</div></td></tr>`;
+    h += `<tr><td>피타고라스 정리 대입</td><td class="v">${badge(same(DH2 + HA2, DA2), '성립 → H가 수선의 발', '불성립')}</td></tr>`;
+    h += `<tr><td>높이 DH</td><td class="v">${fmtLen(Math.sqrt(DH2))}</td></tr>`;
+    if (regular) {
+      const a = edges[0][1];
+      h += `<tr><td>정사면체 높이 공식 a√6/3</td><td class="v">${fmtLen(a*Math.sqrt(6)/3)} ${badge(same(a*Math.sqrt(6)/3, Math.sqrt(DH2)), '일치', '불일치')}</td></tr>`;
+    }
+    h += `</table>`;
+
+    h += `</div><div class="panel"><h2>외접구</h2>`;
+    if (!info.O) {
+      h += `<p><span class="bad">네 점이 한 평면 위에 있어 외접구가 하나로 정해지지 않습니다</span></p>`;
+    } else {
+      const DG31 = divide(T[3], info.G, 3, 1, 'in');
+      h += `<table><tr><td>네 점에서 거리가 같은 점 O</td><td class="v">${fmtPt(info.O)}</td></tr>`;
+      L.split('').forEach((l, i) => { h += `<tr><td>O${l}</td><td class="v">${fmtLen(dist(info.O, T[i]))}</td></tr>`; });
+      const eq = T.every(p => same(dist(info.O, p), info.R));
+      h += `<tr><td>등거리 조건 대입</td><td class="v">${badge(eq, '네 거리 모두 같음', '불일치')}</td></tr>`;
+      h += `<tr><td>DG를 3:1로 내분한 점</td><td class="v">${fmtPt(DG31)} ${badge(dist(DG31, info.O) < 1e-9, 'O와 같음', 'O와 다름')}</td></tr></table>`;
+      h += `<div class="formula">구: ${sphEq(info.O, info.R*info.R)}</div>`;
+      h += `<p class="note">O는 |OA|² = |OB|², |OA|² = |OC|², |OA|² = |OD|² 세 식을 정리한 일차연립방정식의 해입니다. 정사면체가 아니면 외접구의 중심이 DG 위에 있지 않을 수 있습니다.</p>`;
+    }
+    h += `</div>`;
+    $('tetOut').innerHTML = h;
+  }
+
+  function renderSph() {
+    const S = state.S, r = state.r, P = state.P;
+    const cuts = sphereCuts(S, r);
+    let h = `<h2>구의 방정식</h2><div class="formula">${sphEq(S, r*r)}</div>`;
+    h += `<h3>좌표평면과 만나서 생기는 원</h3><table><tr><th>평면</th><th>중심까지 거리</th><th style="text-align:right">원의 반지름</th></tr>`;
+    [['xy평면', S[2], cuts.xy], ['yz평면', S[0], cuts.yz], ['zx평면', S[1], cuts.zx]].forEach(([name, d, c]) => {
+      h += `<tr><td>${name}</td><td>|${fmtNum(d)}|</td><td class="v">${c === null ? '<span class="bad">만나지 않음</span>' : c === 0 ? '한 점에서 접함' : fmtLen(c)}</td></tr>`;
+    });
+    h += `</table><p class="note">원의 반지름 = √(r² − d²). 평면까지의 거리 d가 r보다 크면 만나지 않습니다.</p>`;
+    const d = dist(S, P);
+    const where = same(d, r) ? '구 위' : d < r ? '구 안' : '구 밖';
+    h += `<h3>점 P의 위치</h3><table><tr><td>중심 C와 P 사이 거리</td><td class="v">${fmtLen(d)}</td></tr>`;
+    h += `<tr><td>반지름 r과 비교</td><td class="v"><span class="${where === '구 위' ? 'ok' : 'bad'}">${where}</span></td></tr></table>`;
+    $('sphOut').innerHTML = h;
+  }
+
+  function render() {
+    if (state.mode === 'seg') renderSeg(); else if (state.mode === 'tet') renderTet(); else renderSph();
+    draw();
+  }
+
+  // ---------- 입력 연결 ----------
+  function syncSegInputs() {
+    writePt('a', state.A); writePt('b', state.B);
+    $('mNum').value = state.m; $('nNum').value = state.n;
+    $('mRange').value = Math.min(10, Math.max(1, state.m)); $('nRange').value = Math.min(10, Math.max(1, state.n));
+    document.querySelectorAll('#divKind button').forEach(b => b.classList.toggle('on', b.dataset.k === state.kind));
+    document.querySelectorAll('#planeSel button').forEach(b => b.classList.toggle('on', b.dataset.p === state.plane));
+  }
+  function syncTetInputs() { state.T.forEach((p, i) => writePt('t' + i, p)); }
+  function syncSphInputs() { writePt('s', state.S); writePt('sp', state.P); $('srNum').value = +state.r.toFixed(6); $('srRange').value = state.r; }
+
+  ['ax','ay','az','bx','by','bz'].forEach(id => $(id).addEventListener('input', () => {
+    state.A = readPt('a'); state.B = readPt('b'); render();
+  }));
+  const setMN = (m, n) => {
+    state.m = Math.max(0, m); state.n = Math.max(0, n);
+    $('mNum').value = state.m; $('nNum').value = state.n;
+    $('mRange').value = Math.min(10, Math.max(1, state.m)); $('nRange').value = Math.min(10, Math.max(1, state.n));
+    render();
+  };
+  $('mRange').addEventListener('input', e => setMN(+e.target.value, state.n));
+  $('nRange').addEventListener('input', e => setMN(state.m, +e.target.value));
+  $('mNum').addEventListener('input', e => setMN(parseFloat(e.target.value) || 0, state.n));
+  $('nNum').addEventListener('input', e => setMN(state.m, parseFloat(e.target.value) || 0));
+  document.querySelectorAll('#divKind button').forEach(b => b.addEventListener('click', () => { state.kind = b.dataset.k; syncSegInputs(); render(); }));
+  document.querySelectorAll('#planeSel button').forEach(b => b.addEventListener('click', () => { state.plane = b.dataset.p; syncSegInputs(); render(); }));
+
+  for (let i = 0; i < 4; i++) ['x','y','z'].forEach(c => $('t'+i+c).addEventListener('input', () => {
+    state.T = [0,1,2,3].map(k => readPt('t'+k)); render();
+  }));
+  $('tetReset').addEventListener('click', () => { state.T = REG.map(p => p.slice()); syncTetInputs(); render(); });
+
+  ['sx','sy','sz','spx','spy','spz'].forEach(id => $(id).addEventListener('input', () => {
+    state.S = readPt('s'); state.P = readPt('sp'); render();
+  }));
+  $('srRange').addEventListener('input', e => { state.r = +e.target.value; $('srNum').value = state.r; render(); });
+  $('srNum').addEventListener('input', e => { state.r = Math.max(0, parseFloat(e.target.value) || 0); $('srRange').value = state.r; render(); });
+
+  function setMode(mode) {
+    state.mode = mode;
+    document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.mode === mode));
+    document.querySelectorAll('[data-pane]').forEach(p => p.hidden = p.dataset.pane !== mode);
+    render();
+  }
+  document.querySelectorAll('#tabs button').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+
+  // 임의의 축 둘레로 회전시켜 좌표를 무리수로 만든다 (거리는 변하지 않아야 함)
+  function rotate(p) {
+    const a = 0.7, b = 0.45;
+    const ca = Math.cos(a), sa = Math.sin(a), cb = Math.cos(b), sb = Math.sin(b);
+    const x1 = p[0]*ca - p[1]*sa, y1 = p[0]*sa + p[1]*ca;
+    return [x1, y1*cb - p[2]*sb, y1*sb + p[2]*cb].map(v => v + 0.5);
+  }
+
+  document.querySelectorAll('[data-test]').forEach(btn => btn.addEventListener('click', () => {
+    const t = btn.dataset.test;
+    if (t === '1') {
+      Object.assign(state, { A: REG[0].slice(), B: REG[1].slice(), m: 1, n: 1, kind: 'in', labels: ['A', 'B'] });
+      syncSegInputs(); setMode('seg');
+    } else if (t === '2') {
+      const G = mul(add(add(REG[0], REG[1]), REG[2]), 1/3);
+      Object.assign(state, { A: REG[3].slice(), B: G, m: 3, n: 1, kind: 'in', labels: ['D', 'G'] });
+      syncSegInputs(); setMode('seg');
+    } else if (t === '3') {
+      state.T = REG.map(p => p.slice()); state.T[3] = [-1, -1, 2];
+      syncTetInputs(); setMode('tet');
+    } else {
+      state.T = REG.map(rotate);
+      syncTetInputs(); setMode('tet');
+    }
+  }));
+  // 사용자가 좌표를 직접 고치면 테스트 (2)의 D, G 이름표를 다시 A, B로 돌린다
+  ['ax','ay','az','bx','by','bz'].forEach(id => $(id).addEventListener('input', () => { state.labels = ['A', 'B']; }, { capture: true }));
+
+  // ---------- 시점 조작 ----------
+  let drag = null;
+  cv.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY, yaw: view.yaw, pitch: view.pitch }; cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener('pointermove', e => {
+    if (!drag) return;
+    view.yaw = drag.yaw + (e.clientX - drag.x) * 0.01;
+    view.pitch = Math.max(-1.45, Math.min(1.45, drag.pitch + (e.clientY - drag.y) * 0.01));
+    draw();
+  });
+  cv.addEventListener('pointerup', () => drag = null);
+  cv.addEventListener('pointercancel', () => drag = null);
+  cv.addEventListener('wheel', e => { e.preventDefault(); view.zoom = Math.max(0.4, Math.min(3, view.zoom * (e.deltaY < 0 ? 1.1 : 0.9))); draw(); }, { passive: false });
+  $('resetView').addEventListener('click', () => { Object.assign(view, { yaw: -0.65, pitch: 0.42, zoom: 1 }); draw(); });
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', draw);
+  new ResizeObserver(resize).observe(cv);
+
+  syncSegInputs(); syncTetInputs(); syncSphInputs();
+  render();
+})();
+</script>
+</body>
+</html>

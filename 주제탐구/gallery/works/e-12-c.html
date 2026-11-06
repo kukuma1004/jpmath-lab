@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>미적분Ⅰ: 합성함수의 극한 탐구 웹앱</title>
+    <style>
+        /* 모바일 및 기본 레이아웃 스타일링 */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; padding: 15px; background-color: #f4f7f6; color: #333; line-height: 1.5; }
+        .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1 { font-size: 1.3rem; text-align: center; margin-bottom: 15px; color: #1e3a8a; }
+
+        /* 입력 컨트롤 구역 */
+        .control-group { margin-bottom: 15px; padding: 12px; background: #eff6ff; border-radius: 8px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem; }
+        select, input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.95rem; margin-bottom: 10px; }
+        .info-msg { font-size: 0.8rem; color: #d97706; margin-top: -5px; margin-bottom: 8px; }
+
+        /* 결과 출력 박스 */
+        .result-box { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .card { padding: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.85rem; }
+        .card-title { font-weight: bold; color: #0f172a; margin-bottom: 4px; }
+        .highlight { font-weight: bold; color: #2563eb; }
+        .status-fail { color: #dc2626; font-weight: bold; }
+        .status-pass { color: #16a34a; font-weight: bold; }
+
+        /* Canvas 시각화 영역 */
+        .canvas-container { position: relative; width: 100%; height: 220px; background: #fafafa; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 15px; }
+        canvas { width: 100%; height: 100%; }
+
+        /* 수학적 설명 구역 */
+        .math-explain { background: #f1f5f9; padding: 12px; border-left: 4px solid #3b82f6; border-radius: 4px; font-size: 0.85rem; }
+        .math-explain code { background: #e2e8f0; padding: 2px 4px; border-radius: 4px; font-family: monospace; }
+
+        @media (max-width: 480px) {
+            .result-box { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>합성함수 극한 순서 교환 조건 탐구</h1>
+
+    <div class="control-group">
+        <label for="gSelect">안쪽 함수 g(x) 선택:</label>
+        <select id="gSelect" onchange="calculateAndDraw()">
+            <option value="x">g(x) = x (양방향 접근)</option>
+            <option value="x2">g(x) = x² (한쪽 방향 0+ 접근)</option>
+            <option value="zero">g(x) = 0 (상수함수 접근)</option>
+        </select>
+
+        <label for="fSelect">바깥 함수 f(t) 선택 (t=0 불연속):</label>
+        <select id="fSelect" onchange="calculateAndDraw()">
+            <option value="sgn">부호함수 sgn(t) (t>0:1, t=0:0, t<0:-1)</option>
+            <option value="step">구간함수 (t>0:2, t<=0:-1)</option>
+        </select>
+
+        <label for="dxInput">접근 거리 dx (0.0001 ~ 0.1):</label>
+        <input type="number" id="dxInput" value="0.001" min="0.0001" max="0.1" step="0.001" oninput="validateAndUpdate()">
+        <div id="inputError" class="info-msg"></div>
+    </div>
+
+    <div class="result-box">
+        <div class="card">
+            <div class="card-title">① 연산 후 극한: lim f(g(x))</div>
+            <div>우극한 (x → 0+): <span id="rightLimit" class="highlight">-</span></div>
+            <div>좌극한 (x → 0-): <span id="leftLimit" class="highlight">-</span></div>
+            <div>결과: <span id="limitResult">-</span></div>
+        </div>
+        <div class="card">
+            <div class="card-title">② 극한 후 연산: f( lim g(x) )</div>
+            <div>lim g(x) = L: <span id="innerLimit" class="highlight">-</span></div>
+            <div>함숫값 f(L): <span id="fLValue" class="highlight">-</span></div>
+            <div>순서 교환 성립 여부: <span id="exchangeResult">-</span></div>
+        </div>
+    </div>
+
+    <div class="canvas-container">
+        <canvas id="graphCanvas"></canvas>
+    </div>
+
+    <div class="math-explain">
+        <strong>수학적 원리 해석:</strong><br>
+        <span id="mathMeaningText">함수를 선택하면 해석이 표시됩니다.</span>
+    </div>
+</div>
+
+<script>
+    // [수정 가능 지점 3]: 안쪽 함수 g(x) 수학적 정의 정의부
+    function g(x, type) {
+        if (type === 'x') return x;
+        if (type === 'x2') return x * x;
+        if (type === 'zero') return 0;
+        return 0;
+    }
+
+    // [수정 가능 지점 4]: 바깥 함수 f(t) 수학적 정의 정의부
+    function f(t, type) {
+        if (type === 'sgn') {
+            if (t > 0) return 1;
+            if (t === 0) return 0;
+            if (t < 0) return -1;
+        } else if (type === 'step') {
+            if (t > 0) return 2;
+            return -1; // t <= 0
+        }
+        return 0;
+    }
+
+    // 입력값 범위 검증 함수
+    function validateAndUpdate() {
+        const input = document.getElementById('dxInput');
+        const errorDiv = document.getElementById('inputError');
+        let val = parseFloat(input.value);
+
+        if (isNaN(val) || val < 0.0001 || val > 0.1) {
+            errorDiv.textContent = '※ dx는 0.0001 이상 0.1 이하의 숫자여야 합니다.';
+            return;
+        } else {
+            errorDiv.textContent = '';
+        }
+        calculateAndDraw();
+    }
+
+    // 메인 계산 및 화면 갱신 함수
+    function calculateAndDraw() {
+        const gType = document.getElementById('gSelect').value;
+        const fType = document.getElementById('fSelect').value;
+        const dx = parseFloat(document.getElementById('dxInput').value) || 0.001;
+        const a = 0; // 목표 지점 x = 0 고정
+
+        // 1. 근사 계산 (x -> 0+ 및 x -> 0-)
+        const g_right = g(a + dx, gType);
+        const g_left = g(a - dx, gType);
+
+        const fg_right = f(g_right, fType);
+        const fg_left = f(g_left, fType);
+
+        // 2. 안쪽 함수 극한 lim g(x) 계산 (수치적 수렴값)
+        const L = g(a, gType); // 연속인 g(x)들이므로 g(0) = L
+        const f_L = f(L, fType);
+
+        // 3. 우극한/좌극한 일치 여부 확인 (차이가 0.0001 미만이면 동일로 판단)
+        const limitExists = Math.abs(fg_right - fg_left) < 0.0001;
+        const limitVal = limitExists ? fg_right : null;
+
+        // UI에 수치 결과 표시
+        document.getElementById('rightLimit').textContent = fg_right;
+        document.getElementById('leftLimit').textContent = fg_left;
+
+        const limitResElem = document.getElementById('limitResult');
+        if (limitExists) {
+            limitResElem.textContent = limitVal + " (존재)";
+            limitResElem.className = "status-pass";
+        } else {
+            limitResElem.textContent = "존재하지 않음";
+            limitResElem.className = "status-fail";
+        }
+
+        document.getElementById('innerLimit').textContent = L;
+        document.getElementById('fLValue').textContent = f_L;
+
+        const exResElem = document.getElementById('exchangeResult');
+        if (limitExists && limitVal === f_L) {
+            exResElem.textContent = "성립 (일치)";
+            exResElem.className = "status-pass";
+        } else {
+            exResElem.textContent = "불성립 (불일치)";
+            exResElem.className = "status-fail";
+        }
+
+        // 수학적 설명 텍스트 업데이트
+        updateExplanation(gType, limitExists, limitVal, f_L);
+
+        // Canvas 시각화 그래프 그리기
+        drawGraph(gType, fType);
+    }
+
+    function updateExplanation(gType, limitExists, limitVal, f_L) {
+        const explainElem = document.getElementById('mathMeaningText');
+        if (gType === 'x') {
+            explainElem.innerHTML = `안쪽 함수 <code>g(x)=x</code>는 x가 0으로 갈 때 양수(0+)와 음수(0-) 방향 모두로 다가갑니다. 바깥 함수 f(t)가 t=0에서 불연속이므로, 양쪽에서 다가갈 때 서로 다른 함숫값 구간으로 갈라져 <strong>lim f(g(x))는 존재하지 않습니다.</strong>`;
+        } else if (gType === 'x2') {
+            explainElem.innerHTML = `안쪽 함수 <code>g(x)=x²</code>은 x가 양수든 음수든 항상 0보다 큰 쪽(0+)으로만 접근합니다. 바깥 함수 f(t)가 t=0에서 불연속이더라도 한쪽 방향(0+) 우극한만 사용하므로 <strong>합성함수의 극한값(${limitVal})이 정상 존재합니다.</strong> (단, 함숫값 f(0)=${f_L}과는 다를 수 있음)`;
+        } else if (gType === 'zero') {
+            explainElem.innerHTML = `안쪽 함수 <code>g(x)=0</code>은 0으로 다가가는 것이 아니라 항상 0인 상수입니다. 따라서 바깥 함수의 연속성 여부와 상관없이 항상 함숫값 <code>f(0)=${f_L}</code>으로 일정하게 유지됩니다.`;
+        }
+    }
+
+    // Canvas 그래프 그리기
+    function drawGraph(gType, fType) {
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // 해상도 조절
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight;
+
+        const w = canvas.width;
+        const h = canvas.height;
+
+        ctx.clearRect(0, 0, w, h);
+
+        // 좌표축 그리기
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, h / 2); ctx.lineTo(w, h / 2); // x축
+        ctx.moveTo(w / 2, 0); ctx.lineTo(w / 2, h); // y축
+        ctx.stroke();
+
+        ctx.fillStyle = '#64748b';
+        ctx.font = '11px sans-serif';
+        ctx.fillText("합성함수 h(x) = f(g(x)) 그래프 시각화", 10, 15);
+
+        // 그래프 데이터 점 찍기
+        ctx.strokeStyle = '#2563eb';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+
+        const scaleX = w / 4; // x범위 -2 ~ 2
+        const scaleY = h / 6; // y범위 -3 ~ 3
+
+        let first = true;
+        for (let pixelX = 0; pixelX < w; pixelX += 2) {
+            const x = (pixelX - w / 2) / scaleX;
+            // x = 0 지점 부근 불연속점 구멍 처리를 위한 스킵
+            if (Math.abs(x) < 0.02 && gType !== 'zero') {
+                first = true;
+                continue;
+            }
+            const y = f(g(x, gType), fType);
+            const pixelY = h / 2 - y * scaleY;
+
+            if (first) {
+                ctx.moveTo(pixelX, pixelY);
+                first = false;
+            } else {
+                ctx.lineTo(pixelX, pixelY);
+            }
+        }
+        ctx.stroke();
+
+        // x=0 지점 구멍 표시
+        const y0 = f(g(0, gType), fType);
+        const pY0 = h / 2 - y0 * scaleY;
+
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#2563eb';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(w / 2, pY0, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+    }
+
+    // 초기 실행
+    window.onload = function() {
+        calculateAndDraw();
+    };
+    window.onresize = function() {
+        calculateAndDraw();
+    };
+</script>
+
+</body>
+</html>

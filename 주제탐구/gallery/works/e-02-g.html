@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>포물선 자취 생성기 | 기하 탐구</title>
+  <style>
+    /* [수정 위치 1] 화면 색상과 글씨를 바꾸려면 이 부분을 수정하세요. */
+    :root { --bg:#f4f7fc; --paper:#fff; --ink:#1d2842; --muted:#63738b;
+      --line:#dce4ef; --main:#5649c8; --curve:#6b49d6;
+      --focus:#e67b24; --directrix:#2878ca; --point:#dc4760; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink);
+      font-family:system-ui,"Malgun Gothic",sans-serif; line-height:1.55; }
+    .wrap { width:min(1120px,100%); margin:auto; padding:24px 16px 40px; }
+    h1 { margin:4px 0 8px; font-size:clamp(1.55rem,4vw,2.1rem); }
+    h2 { margin:0 0 13px; font-size:1.14rem; }
+    p { margin:8px 0; }
+    .tag { font-size:.84rem; color:var(--main); font-weight:800; }
+    .lead,.hint { color:var(--muted); }
+    .lead { margin-bottom:20px; }
+    .hint { font-size:.85rem; }
+    .grid { display:grid; grid-template-columns:290px minmax(0,1fr); gap:16px; align-items:start; }
+    .card { background:var(--paper); padding:20px; border:1px solid var(--line);
+      border-radius:17px; box-shadow:0 4px 20px #1d284208; min-width:0; }
+    .field { margin-bottom:17px; }
+    label { display:block; font-size:.93rem; font-weight:750; margin-bottom:7px; }
+    .controlrow { display:flex; gap:12px; align-items:center; }
+    .controlrow input[type="range"] { flex:1; min-width:0; accent-color:var(--main); height:32px; }
+    input[type="number"] { width:85px; min-width:78px; min-height:44px;
+      padding:8px 10px; border-radius:10px; border:1px solid #b6c4d7;
+      color:var(--ink); background:white; font:inherit; }
+    input:focus-visible,button:focus-visible,canvas:focus-visible { outline:3px solid #a7a0ef; outline-offset:2px; }
+    .error { background:#fff0f2; color:#a52538; padding:11px 12px;
+      border-radius:10px; font-size:.9rem; margin-top:8px; }
+    button { border:0; border-radius:10px; font:inherit; font-weight:750;
+      cursor:pointer; padding:10px 14px; min-height:43px; }
+    button:disabled { cursor:not-allowed; opacity:.5; }
+    .primary { color:white; background:var(--main); width:100%; }
+    .secondary { color:#3936a4; background:#eeedff; }
+    .split { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(230px,1fr); gap:16px; }
+    canvas { display:block; width:100%; height:380px; background:#fbfcff;
+      border:1px solid var(--line); border-radius:12px; touch-action:none; cursor:crosshair; }
+    .legend { display:flex; flex-wrap:wrap; gap:6px 13px; margin:9px 0; font-size:.85rem; }
+    .orange { color:var(--focus); } .blue { color:var(--directrix); }
+    .red { color:var(--point); } .purple { color:var(--curve); }
+    .math-panel { display:grid; gap:12px; align-content:start; }
+    .formula { background:#f7f8fc; border-radius:12px; padding:11px 13px; }
+    .formula .title { color:var(--muted); font-size:.82rem; font-weight:700; }
+    .math { font-family:Georgia,"Times New Roman",serif; font-size:1.08rem;
+      overflow-wrap:anywhere; line-height:1.8; }
+    .results { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin-top:15px; }
+    .metric { border:1px solid var(--line); border-radius:12px; padding:12px; min-width:0; }
+    .metric .title { font-size:.79rem; color:var(--muted); }
+    .metric .number { font-size:clamp(1.06rem,2.5vw,1.45rem); font-weight:800; overflow-wrap:anywhere; }
+    .explain { border-radius:12px; padding:12px 14px; background:#f0f3ff; margin:12px 0 0; }
+    .actions { display:flex; flex-wrap:wrap; gap:8px; margin:13px 0; }
+    .tablewrap { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; font-size:.89rem; }
+    th,td { padding:10px 8px; border-bottom:1px solid var(--line); text-align:left; }
+    th { background:#f5f7fc; white-space:nowrap; }
+    .testlist { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:12px; }
+    .test { background:#f3f2ff; color:#343194; text-align:left; }
+    .test small { display:block; font-weight:400; color:var(--muted); }
+    .foot { font-size:.86rem; color:var(--muted); margin-top:12px; }
+    @media(max-width:920px) { .grid { grid-template-columns:1fr; } }
+    @media(max-width:670px) {
+      .wrap { padding:15px 11px 30px; }
+      .card { padding:15px; }
+      .split { grid-template-columns:1fr; }
+      canvas { height:340px; }
+      .results { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .testlist { grid-template-columns:1fr; }
+      .test { text-align:center; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <div class="tag">기하 · 초점과 준선의 등거리 조건 실험</div>
+      <h1>포물선 자취 생성기</h1>
+      <p class="lead">초점에서의 거리와 준선에서의 거리를 직접 비교하고, p를 바꿔 포물선의 폭을 관찰해 보세요.</p>
+    </header>
+    <div class="grid">
+      <section class="card" aria-labelledby="controlTitle">
+        <h2 id="controlTitle">1. 조건 바꾸기</h2>
+        <div class="field">
+          <label for="pNumber">꼭짓점에서 초점까지의 거리 p</label>
+          <div class="controlrow">
+            <input id="pRange" type="range" min="0.5" max="4" step="0.1" value="1" aria-label="p 슬라이더">
+            <input id="pNumber" type="number" min="0.5" max="4" step="any" value="1" inputmode="decimal">
+          </div>
+          <p class="hint">0.5 ≤ p ≤ 4, 양수만 허용</p>
+        </div>
+        <div class="field">
+          <label for="xNumber">포물선 위의 점 P의 x좌표</label>
+          <div class="controlrow">
+            <input id="xRange" type="range" min="-4" max="4" step="0.1" value="2" aria-label="점의 x좌표 슬라이더">
+            <input id="xNumber" type="number" min="-4" max="4" step="any" value="2" inputmode="decimal">
+          </div>
+          <p class="hint">−4 ≤ x ≤ 4 · 그래프를 누르거나 드래그해도 점이 움직입니다.</p>
+        </div>
+        <p id="error" class="error" role="alert" hidden></p>
+        <button id="record" type="button" class="primary">현재 거리 결과 표에 기록하기</button>
+        <p class="hint">꼭짓점 V(0,0)은 고정됩니다. p를 바꾸면 초점과 준선은 함께 움직입니다.</p>
+      </section>
+      <section class="card" aria-labelledby="graphTitle">
+        <h2 id="graphTitle">2. 포물선과 거리 확인</h2>
+        <div class="split">
+          <div>
+            <canvas id="graph" role="img" aria-label="포물선, 초점, 준선, 점 P, 두 거리 및 높이 1에서의 폭을 그린 그래프"></canvas>
+            <div class="legend">
+              <span class="purple">● 포물선</span>
+              <span class="orange">● 초점 F와 PF</span>
+              <span class="blue">━ 준선과 PD</span>
+              <span class="red">● 점 P</span>
+            </div>
+            <p class="hint">가로·세로 축은 같은 눈금 크기로 표시하여 폭을 공정하게 비교합니다.</p>
+          </div>
+          <div class="math-panel">
+            <div class="formula">
+              <div class="title">기본 조건</div>
+              <div class="math">F(0, p), 준선 y = −p</div>
+              <div class="math">V(0, 0)</div>
+            </div>
+            <div class="formula">
+              <div class="title">두 거리의 의미</div>
+              <div class="math">PF = √[x² + (y−p)²]</div>
+              <div class="math">PD = |y+p|</div>
+              <p class="hint">PD는 점 P에서 준선에 내린 수선의 길이입니다.</p>
+            </div>
+            <div class="formula">
+              <div class="title">등거리 조건으로 방정식 유도</div>
+              <div class="math">PF = PD</div>
+              <div class="math">x²+(y−p)² = (y+p)²</div>
+              <div class="math"><strong>x² = 4py</strong></div>
+              <p class="hint">그래프의 점은 y = x²/(4p)로 계산합니다.</p>
+            </div>
+            <div class="formula">
+              <div class="title">폭 비교 기준: y = 1</div>
+              <div class="math">x = ±2√p → 폭 = 4√p</div>
+              <p class="hint">같은 높이에서 좌우 두 점 사이 거리를 비교합니다.</p>
+            </div>
+          </div>
+        </div>
+        <div class="results" aria-live="polite">
+          <div class="metric"><div class="title">선택한 점 P(x, y)</div><div class="number" id="pointText">—</div></div>
+          <div class="metric"><div class="title">초점까지 거리 PF</div><div class="number orange" id="focusText">—</div></div>
+          <div class="metric"><div class="title">준선까지 거리 PD</div><div class="number blue" id="lineText">—</div></div>
+          <div class="metric"><div class="title">두 거리의 절댓값 차이</div><div class="number" id="differenceText">—</div></div>
+        </div>
+        <p class="explain" id="explanation">입력값을 바꾸어 비교해 보세요.</p>
+        <p class="hint" id="widthText">y=1에서의 폭: —</p>
+      </section>
+    </div>
+    <section class="card" style="margin-top:16px" aria-labelledby="recordTitle">
+      <h2 id="recordTitle">3. 측정 기록표</h2>
+      <p class="hint">원하는 좌표에서 '현재 거리 결과 표에 기록하기'를 눌러 값을 쌓아 보세요. 기록된 값은 페이지를 새로고침하면 사라집니다.</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>p</th><th>P(x, y)</th><th>PF</th><th>PD</th><th>|PF−PD|</th></tr></thead>
+          <tbody id="records"><tr id="emptyRow"><td colspan="5">아직 기록한 점이 없습니다.</td></tr></tbody>
+        </table>
+      </div>
+      <div class="actions"><button type="button" class="secondary" id="clearRecords">기록 지우기</button></div>
+    </section>
+    <section class="card" style="margin-top:16px" aria-labelledby="testTitle">
+      <h2 id="testTitle">4. 손계산과 비교하는 3가지 테스트</h2>
+      <p>아래 값은 <strong>웹앱 실험 결과가 아니라 수학적으로 구한 손계산 기준</strong>입니다. 버튼을 누른 뒤 웹앱 출력과 직접 비교하세요.</p>
+      <div class="testlist">
+        <button class="test" type="button" data-p="0.5" data-x="0"><b>① 경계값: p=0.5, x=0</b><small>P(0,0), PF=0.5, PD=0.5, 차이=0</small></button>
+        <button class="test" type="button" data-p="1" data-x="2"><b>② 일반값: p=1, x=2</b><small>P(2,1), PF=2, PD=2, 차이=0</small></button>
+        <button class="test" type="button" data-p="0" data-x="2"><b>③ 예외값: p=0, x=2</b><small>정상적인 포물선 조건이 아니므로 오류 안내</small></button>
+      </div>
+      <p class="foot">검증 방법: 출력값을 위의 손계산 기준과 비교하고, 같으면 직접 기록하세요. 오류 테스트에서는 수치 대신 입력 안내가 표시되는지 확인합니다. 소수 표시는 최대 4자리로 반올림됩니다.</p>
+    </section>
+  </main>
+  <script>
+    "use strict";
+    const $ = id => document.getElementById(id);
+    const canvas = $("graph");
+    const ctx = canvas.getContext("2d");
+    let state = null;
+    let dragging = false;
+
+    // [수정 위치 2] 입력 허용 범위를 바꾸려면 다음 숫자들과 HTML의 min/max를 함께 수정하세요.
+    const P_MIN = 0.5, P_MAX = 4, X_MIN = -4, X_MAX = 4;
+    const fmt = n => (Math.abs(n) < 1e-9 ? 0 : n).toLocaleString("ko-KR", { maximumFractionDigits:4 });
+
+    // [수정 위치 3] 수학식과 프로그램 계산을 연결하는 부분입니다.
+    // 등거리 조건으로 유도한 x² = 4py를 y에 대해 풀면 y = x²/(4p)입니다.
+    // p가 0이면 나눗셈이 불가능하고 정상적인 포물선이 아니므로 먼저 검사합니다.
+    function calculate(p, x) {
+      const y = x * x / (4 * p);
+      const focusDistance = Math.hypot(x, y - p); // 피타고라스 정리
+      const lineDistance = Math.abs(y + p);        // 수평선 y=-p까지 수직 거리
+      return { p, x, y, focusDistance, lineDistance,
+        difference:Math.abs(focusDistance-lineDistance), width:4*Math.sqrt(p) };
+    }
+
+    function readAndUpdate() {
+      const rawP = $("pNumber").value.trim();
+      const rawX = $("xNumber").value.trim();
+      let error = "";
+      if (rawP === "" || rawX === "") error = "p와 x좌표를 모두 입력하세요.";
+      const p = Number(rawP), x = Number(rawX);
+      if (!error && (!Number.isFinite(p) || !Number.isFinite(x))) error = "숫자만 입력하세요.";
+      if (!error && (p < P_MIN || p > P_MAX)) error = `p는 ${P_MIN}부터 ${P_MAX} 사이의 양수여야 합니다. p=0은 허용하지 않습니다.`;
+      if (!error && (x < X_MIN || x > X_MAX)) error = `x좌표는 ${X_MIN}부터 ${X_MAX} 사이여야 합니다.`;
+      $("error").hidden = !error;
+      $("error").textContent = error;
+      $("record").disabled = Boolean(error);
+      if (error) {
+        state = null;
+        for (const id of ["pointText","focusText","lineText","differenceText"]) $(id).textContent = "—";
+        $("widthText").textContent = "y=1에서의 폭: —";
+        $("explanation").textContent = "입력값을 고친 뒤 그래프와 거리를 확인하세요.";
+        draw();
+        return;
+      }
+      state = calculate(p, x);
+      $("pRange").value = String(p);
+      $("xRange").value = String(x);
+      $("pointText").textContent = `(${fmt(x)}, ${fmt(state.y)})`;
+      $("focusText").textContent = fmt(state.focusDistance);
+      $("lineText").textContent = fmt(state.lineDistance);
+      $("differenceText").textContent = fmt(state.difference);
+      $("widthText").textContent = `높이 y=1에서 좌우 폭 = 4√${fmt(p)} ≈ ${fmt(state.width)} (좌표 단위)`;
+      $("explanation").textContent = `초점 F(0, ${fmt(p)}), 준선 y = −${fmt(p)}. ` +
+        `점 P에서 두 거리의 차이를 확인해 보세요. 꼭짓점은 고정되어 있고, p가 커질수록 같은 높이에서 폭 4√p가 커집니다.`;
+      draw();
+    }
+
+    // [수정 위치 4] 그래프를 그리는 부분입니다. 모든 좌표는 '동일한 한 칸 길이'를 사용합니다.
+    // 색상 변경: curve(보라), focus(주황), directrix(파랑), point(빨강) 참조
+    function graphLayout() {
+      const w = canvas.getBoundingClientRect().width;
+      const h = canvas.getBoundingClientRect().height;
+      const scale = Math.min((w-52)/10.5, (h-36)/13);
+      const ox = w/2, oy = 18+9*scale;
+      return {w,h,scale,ox,oy, X:x=>ox+x*scale, Y:y=>oy-y*scale};
+    }
+    function draw() {
+      const {w,h,scale,X,Y} = graphLayout();
+      const ratio = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(w*ratio);
+      canvas.height = Math.round(h*ratio);
+      ctx.setTransform(ratio,0,0,ratio,0,0);
+      ctx.fillStyle = "#fbfcff";
+      ctx.fillRect(0,0,w,h);
+      if (!state) {
+        ctx.fillStyle = "#65758c";
+        ctx.font = "15px system-ui";
+        ctx.textAlign = "center";
+        ctx.fillText("올바른 p와 x값을 입력해 주세요",w/2,h/2);
+        return;
+      }
+      const {p,x,y,width} = state;
+      ctx.save();
+      ctx.beginPath(); ctx.rect(15,9,w-30,h-20); ctx.clip();
+      ctx.font = "11px system-ui";
+      for (let ix=-5; ix<=5; ix++) {
+        ctx.strokeStyle = "#e8edf6"; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(X(ix),10); ctx.lineTo(X(ix),h-12); ctx.stroke();
+      }
+      for (let iy=-4; iy<=9; iy++) {
+        ctx.strokeStyle = "#e8edf6";
+        ctx.beginPath(); ctx.moveTo(15,Y(iy)); ctx.lineTo(w-15,Y(iy)); ctx.stroke();
+      }
+      ctx.strokeStyle = "#697991"; ctx.lineWidth=1.6;
+      ctx.beginPath(); ctx.moveTo(15,Y(0)); ctx.lineTo(w-15,Y(0)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(X(0),10); ctx.lineTo(X(0),h-12); ctx.stroke();
+
+      // 준선: y=-p. p가 커지면 아래로 내려갑니다.
+      ctx.strokeStyle = "#2878ca"; ctx.lineWidth=2.3; ctx.setLineDash([7,5]);
+      ctx.beginPath(); ctx.moveTo(15,Y(-p)); ctx.lineTo(w-15,Y(-p)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle="#2878ca"; ctx.textAlign="left";
+      ctx.fillText(`준선 y=${fmt(-p)}`,22,Y(-p)-8);
+
+      // 같은 높이 y=1의 좌우 끝점: x = ±2√p. 폭=4√p.
+      const half = width/2;
+      ctx.strokeStyle="#be9228"; ctx.lineWidth=2; ctx.setLineDash([3,4]);
+      ctx.beginPath(); ctx.moveTo(X(-half),Y(1)); ctx.lineTo(X(half),Y(1)); ctx.stroke();
+      ctx.setLineDash([]);
+      for (const sx of [-half,half]) {
+        ctx.fillStyle="#be9228"; ctx.beginPath(); ctx.arc(X(sx),Y(1),3.4,0,2*Math.PI); ctx.fill();
+      }
+
+      // 포물선: y = x²/(4p). 화면에 보이는 곡선만 그립니다.
+      ctx.strokeStyle="#6b49d6"; ctx.lineWidth=2.8;
+      ctx.beginPath();
+      for (let i=0;i<=400;i++) {
+        const xx=-5+10*i/400, yy=xx*xx/(4*p);
+        if (i===0) ctx.moveTo(X(xx),Y(yy)); else ctx.lineTo(X(xx),Y(yy));
+      }
+      ctx.stroke();
+
+      // 거리 PF와 PD: PD의 발은 (x,-p)에 있습니다.
+      ctx.strokeStyle="#e67b24"; ctx.lineWidth=2.5;
+      ctx.beginPath(); ctx.moveTo(X(x),Y(y)); ctx.lineTo(X(0),Y(p)); ctx.stroke();
+      ctx.strokeStyle="#2878ca";
+      ctx.beginPath(); ctx.moveTo(X(x),Y(y)); ctx.lineTo(X(x),Y(-p)); ctx.stroke();
+
+      function dot(px,py,color,r,label,dx=8,dy=-11) {
+        ctx.fillStyle=color; ctx.beginPath(); ctx.arc(X(px),Y(py),r,0,Math.PI*2); ctx.fill();
+        ctx.font="bold 12px system-ui"; ctx.textAlign="left";
+        ctx.fillText(label,X(px)+dx,Y(py)+dy);
+      }
+      dot(0,0,"#64748b",4,"V",8,16);
+      dot(0,p,"#e67b24",5,"F");
+      dot(x,y,"#dc4760",6,"P",8,-12);
+      ctx.restore();
+
+      // 눈금 라벨은 그래프 밖으로 넘치지 않도록 별도로 그립니다.
+      ctx.fillStyle="#738299"; ctx.font="10px system-ui"; ctx.textAlign="center";
+      for (let ix=-4;ix<=4;ix+=2) ctx.fillText(String(ix),X(ix),Math.min(h-9,Y(0)+13));
+      ctx.textAlign="right";
+      for (let iy=-4;iy<=8;iy+=2) {
+        if (Y(iy)>10 && Y(iy)<h-10 && iy!==0) ctx.fillText(String(iy),X(0)-6,Y(iy)-3);
+      }
+    }
+
+    // 그래프 안에서 손가락/마우스로 x를 바꾸면 P는 포물선을 따라서 움직입니다.
+    function movePointFromPointer(event) {
+      if (!state) return;
+      const rect = canvas.getBoundingClientRect();
+      const {ox,scale} = graphLayout();
+      const proposed = (event.clientX-rect.left-ox)/scale;
+      const bounded = Math.min(X_MAX,Math.max(X_MIN,Math.round(proposed*10)/10));
+      $("xNumber").value = String(bounded);
+      readAndUpdate();
+    }
+    canvas.addEventListener("pointerdown", event => {
+      if (!state) return;
+      dragging=true;
+      canvas.setPointerCapture(event.pointerId);
+      movePointFromPointer(event);
+    });
+    canvas.addEventListener("pointermove", event => { if (dragging) movePointFromPointer(event); });
+    canvas.addEventListener("pointerup", () => { dragging=false; });
+    canvas.addEventListener("pointercancel", () => { dragging=false; });
+
+    // 버튼 입력과 텍스트 입력값을 서로 동기화합니다.
+    $("pRange").addEventListener("input", event => { $("pNumber").value=event.target.value; readAndUpdate(); });
+    $("xRange").addEventListener("input", event => { $("xNumber").value=event.target.value; readAndUpdate(); });
+    $("pNumber").addEventListener("input", readAndUpdate);
+    $("xNumber").addEventListener("input", readAndUpdate);
+    $("record").addEventListener("click", () => {
+      if (!state) return;
+      $("emptyRow")?.remove();
+      const tr=document.createElement("tr");
+      const values=[fmt(state.p),`(${fmt(state.x)}, ${fmt(state.y)})`,
+        fmt(state.focusDistance),fmt(state.lineDistance),fmt(state.difference)];
+      for (const value of values) { const td=document.createElement("td"); td.textContent=value; tr.appendChild(td); }
+      $("records").appendChild(tr);
+    });
+    $("clearRecords").addEventListener("click", () => {
+      $("records").replaceChildren();
+      const tr=document.createElement("tr"); tr.id="emptyRow";
+      const td=document.createElement("td"); td.colSpan=5; td.textContent="아직 기록한 점이 없습니다.";
+      tr.appendChild(td); $("records").appendChild(tr);
+    });
+    document.querySelectorAll("[data-p]").forEach(button => button.addEventListener("click", () => {
+      $("pNumber").value=button.dataset.p;
+      $("xNumber").value=button.dataset.x;
+      readAndUpdate();
+    }));
+    window.addEventListener("resize",draw);
+    readAndUpdate();
+  </script>
+</body>
+</html>

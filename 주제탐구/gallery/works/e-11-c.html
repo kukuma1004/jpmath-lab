@@ -1,0 +1,1696 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>이계도함수 탐구실</title>
+  <style>
+    /* ============================================================
+       초보자가 수정할 위치 ①: 앱의 색깔
+       아래 색상값만 바꾸면 전체 분위기를 쉽게 바꿀 수 있습니다.
+       ============================================================ */
+    :root {
+      --bg: #f4f7fb;
+      --surface: #ffffff;
+      --surface-soft: #eef4ff;
+      --text: #172033;
+      --muted: #5b6578;
+      --border: #d9e0eb;
+      --primary: #315bd6;
+      --primary-dark: #2447ad;
+      --focus: #ffb000;
+      --danger: #b42318;
+      --danger-soft: #fff0ee;
+      --success: #147a4b;
+      --success-soft: #eaf8f1;
+      --f-color: #315bd6;
+      --d1-color: #14805e;
+      --d2-color: #bd4d17;
+      --grid: #dfe5ee;
+      --axis: #657086;
+      --shadow: 0 10px 30px rgba(31, 48, 84, 0.08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
+      line-height: 1.65;
+      word-break: keep-all;
+    }
+
+    button,
+    input,
+    select { font: inherit; }
+
+    button,
+    select,
+    input[type="number"],
+    input[type="range"] { min-height: 44px; }
+
+    button,
+    select,
+    input[type="number"] {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    button:focus-visible,
+    select:focus-visible,
+    input:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    button {
+      padding: 0.65rem 1rem;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    button:hover { border-color: var(--primary); }
+
+    .primary-button {
+      border-color: var(--primary);
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    .primary-button:hover { background: var(--primary-dark); }
+
+    .page-header {
+      padding: 3rem 1.25rem 4.5rem;
+      background: linear-gradient(135deg, #203b8f 0%, #315bd6 58%, #3d79d9 100%);
+      color: #ffffff;
+    }
+
+    .header-inner,
+    main,
+    footer {
+      width: min(1120px, calc(100% - 2rem));
+      margin-inline: auto;
+    }
+
+    .eyebrow {
+      margin: 0 0 0.35rem;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      opacity: 0.82;
+    }
+
+    h1,
+    h2,
+    h3,
+    p { margin-top: 0; }
+
+    h1 {
+      margin-bottom: 0.8rem;
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      line-height: 1.2;
+    }
+
+    h2 {
+      margin-bottom: 0.5rem;
+      font-size: clamp(1.35rem, 3vw, 1.8rem);
+      line-height: 1.35;
+    }
+
+    h3 {
+      margin-bottom: 0.45rem;
+      font-size: 1.08rem;
+    }
+
+    .header-summary {
+      max-width: 780px;
+      margin-bottom: 0;
+      font-size: 1.04rem;
+      opacity: 0.94;
+    }
+
+    main {
+      display: grid;
+      gap: 1.25rem;
+      margin-top: -2rem;
+      padding-bottom: 2rem;
+    }
+
+    .panel {
+      min-width: 0;
+      padding: clamp(1rem, 3vw, 1.7rem);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .section-lead,
+    .help,
+    .small-note {
+      color: var(--muted);
+    }
+
+    .section-lead { margin-bottom: 1.25rem; }
+
+    .small-note {
+      margin: 0.5rem 0 0;
+      font-size: 0.92rem;
+    }
+
+    .control-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .control-group {
+      display: grid;
+      align-content: start;
+      gap: 0.45rem;
+    }
+
+    .control-group label,
+    fieldset legend {
+      font-weight: 700;
+    }
+
+    select,
+    input[type="number"] {
+      width: 100%;
+      padding: 0.65rem 0.75rem;
+    }
+
+    fieldset {
+      min-width: 0;
+      margin: 1.25rem 0 0;
+      padding: 1rem;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+
+    fieldset legend { padding: 0 0.4rem; }
+
+    .coefficient-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(72px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .coefficient-grid label {
+      display: grid;
+      gap: 0.35rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .range-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 110px;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--primary);
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+      margin-top: 1rem;
+    }
+
+    .error-box {
+      display: none;
+      margin-top: 1rem;
+      padding: 0.85rem 1rem;
+      border-left: 4px solid var(--danger);
+      border-radius: 8px;
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+
+    .error-box.is-visible { display: block; }
+
+    .error-box ul { margin: 0.35rem 0 0; padding-left: 1.25rem; }
+
+    .formula-grid,
+    .value-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.8rem;
+    }
+
+    .formula-card,
+    .value-card {
+      min-width: 0;
+      padding: 1rem;
+      border-radius: 14px;
+      background: var(--surface-soft);
+    }
+
+    .formula-card[data-kind="f"] { border-top: 4px solid var(--f-color); }
+    .formula-card[data-kind="d1"] { border-top: 4px solid var(--d1-color); }
+    .formula-card[data-kind="d2"] { border-top: 4px solid var(--d2-color); }
+
+    .formula-label,
+    .value-label {
+      display: block;
+      margin-bottom: 0.35rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .formula {
+      overflow-wrap: anywhere;
+      font-family: Cambria, "Times New Roman", serif;
+      font-size: clamp(1.05rem, 2vw, 1.28rem);
+    }
+
+    .value-grid { margin-top: 0.8rem; }
+
+    .value-card {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+    }
+
+    .value-number {
+      display: block;
+      font-size: 1.35rem;
+      font-variant-numeric: tabular-nums;
+      font-weight: 800;
+    }
+
+    .interpretation-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.8rem;
+      margin-top: 1rem;
+    }
+
+    .explanation {
+      padding: 1rem;
+      border-left: 4px solid var(--primary);
+      border-radius: 8px;
+      background: #f7f9ff;
+    }
+
+    .explanation h3 { margin-bottom: 0.25rem; }
+    .explanation p:last-child { margin-bottom: 0; }
+
+    .graph-list {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .graph-controls {
+      margin-bottom: 1.25rem;
+      padding: 1rem;
+      border-radius: 12px;
+      background: var(--surface-soft);
+    }
+
+    .graph-controls label { font-weight: 700; }
+
+    .graph-slider-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .graph-slider-row input { min-width: 0; flex: 1; }
+
+    .graph-live-values {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem 1.25rem;
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+    }
+
+    .graph-selection {
+      margin-top: 0.5rem;
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+    }
+
+    .graph-row {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(240px, 1fr);
+      align-items: center;
+      gap: 1rem;
+      margin: 0;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .graph-row:first-child {
+      padding-top: 0;
+      border-top: 0;
+    }
+
+    .chart-area { min-width: 0; }
+
+    .chart-title {
+      margin-bottom: 0.4rem;
+      font-weight: 800;
+    }
+
+    .chart-wrap {
+      width: 100%;
+      min-height: 250px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+      overflow: hidden;
+    }
+
+    .chart-wrap svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      user-select: none;
+      touch-action: none;
+    }
+
+    .graph-drag-handle {
+      cursor: grab;
+      touch-action: none;
+    }
+
+    .chart-wrap svg > :not(.graph-drag-handle) { pointer-events: none; }
+
+    .chart-wrap svg.is-dragging,
+    .chart-wrap svg.is-dragging .graph-drag-handle { cursor: grabbing; }
+
+    .graph-note {
+      min-width: 0;
+      padding: 1rem;
+      border-radius: 12px;
+      background: #f8fafc;
+    }
+
+    .graph-note .formula { margin-bottom: 0.7rem; }
+    .graph-note p:last-child { margin-bottom: 0; }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem 1.1rem;
+      margin: 0 0 1.25rem;
+      padding: 0;
+      list-style: none;
+      color: var(--muted);
+    }
+
+    .legend li {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .legend-line {
+      width: 26px;
+      height: 4px;
+      border-radius: 999px;
+      background: currentColor;
+    }
+
+    .legend-f { color: var(--f-color); }
+    .legend-d1 { color: var(--d1-color); }
+    .legend-d2 { color: var(--d2-color); }
+
+    .motion-box {
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 12px;
+      background: #fff8eb;
+      border: 1px solid #efdbac;
+    }
+
+    .motion-box p:last-child { margin-bottom: 0; }
+
+    .table-wrap {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 0.85rem;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f2f5fa;
+      font-size: 0.92rem;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    .test-output {
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .test-output.pass { color: var(--success); }
+    .test-output.fail { color: var(--danger); }
+
+    .verification-guide {
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 12px;
+      background: var(--success-soft);
+    }
+
+    .verification-guide ol { margin-bottom: 0; padding-left: 1.25rem; }
+
+    footer {
+      padding: 0.5rem 0 2.5rem;
+      color: var(--muted);
+      text-align: center;
+      font-size: 0.92rem;
+    }
+
+    @media (max-width: 800px) {
+      .coefficient-grid { grid-template-columns: repeat(3, minmax(72px, 1fr)); }
+      .formula-grid,
+      .value-grid { grid-template-columns: 1fr; }
+      .graph-row { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 600px) {
+      body { word-break: normal; }
+      .page-header { padding-top: 2.2rem; }
+      .header-inner,
+      main,
+      footer { width: min(100% - 1rem, 1120px); }
+      main { gap: 0.8rem; }
+      .panel { border-radius: 14px; }
+      .control-grid,
+      .interpretation-grid { grid-template-columns: 1fr; }
+      .coefficient-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .range-row { grid-template-columns: 1fr; }
+      .button-row button { width: 100%; }
+      .chart-wrap { min-height: 230px; }
+      .table-wrap { overflow: visible; border: 0; }
+      table { min-width: 0; }
+      thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+      tbody,
+      tr,
+      td { display: block; width: 100%; }
+      tr {
+        margin-bottom: 0.8rem;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      tr:last-child { margin-bottom: 0; }
+      td {
+        display: grid;
+        grid-template-columns: 92px minmax(0, 1fr);
+        gap: 0.75rem;
+        padding: 0.75rem;
+      }
+      td::before {
+        content: attr(data-label);
+        color: var(--muted);
+        font-weight: 700;
+      }
+      tr:last-child td:not(:last-child) { border-bottom: 1px solid var(--border); }
+      td:last-child { border-bottom: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+    }
+
+    @media print {
+      body { background: #ffffff; }
+      .page-header { padding: 1rem; background: #ffffff; color: #000000; }
+      main { margin-top: 0; width: 100%; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      button,
+      input[type="range"] { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <div class="header-inner">
+      <p class="eyebrow">미적분Ⅰ · 직접 확인하는 수학 탐구</p>
+      <h1>이계도함수 탐구실</h1>
+      <p class="header-summary">
+        이계도함수의 부호가 기울기의 변화, 그래프의 굽음, 운동의 가속도와 어떻게 이어지는지
+        계수와 관찰점을 바꾸며 확인해 보세요.
+      </p>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel" aria-labelledby="input-title">
+      <h2 id="input-title">1. 함수와 관찰점 정하기</h2>
+      <p class="section-lead">
+        기본 함수 세 개 중 하나를 고른 뒤 계수를 직접 바꿀 수 있습니다. 소수도 입력할 수 있습니다.
+      </p>
+
+      <div class="control-grid">
+        <div class="control-group">
+          <label for="preset">기본 함수</label>
+          <select id="preset">
+            <option value="cubicMinus">f(x) = x³ − 3x</option>
+            <option value="cubic">f(x) = x³</option>
+            <option value="quartic">f(x) = x⁴</option>
+            <option value="custom" disabled>직접 수정한 함수</option>
+          </select>
+          <span class="help">함수를 선택하면 아래 계수가 자동으로 채워집니다.</span>
+        </div>
+
+        <div class="control-group">
+          <label for="mode">해석 방법</label>
+          <select id="mode">
+            <option value="function">일반 함수 f(x)로 보기</option>
+            <option value="motion">위치함수 s(t)로 보기</option>
+          </select>
+          <span class="help">위치함수로 보면 1차 미분은 속도, 2차 미분은 가속도입니다.</span>
+        </div>
+      </div>
+
+      <fieldset aria-describedby="coefficient-help">
+        <legend>다항함수의 계수</legend>
+        <p id="coefficient-help" class="small-note">
+          f(x) = ax⁴ + bx³ + cx² + dx + e에서 각 계수는 −10 이상 10 이하로 입력하세요.
+        </p>
+        <div class="coefficient-grid">
+          <label for="coef-a">a<input id="coef-a" data-coef="a" type="number" step="any" value="0" inputmode="decimal"></label>
+          <label for="coef-b">b<input id="coef-b" data-coef="b" type="number" step="any" value="1" inputmode="decimal"></label>
+          <label for="coef-c">c<input id="coef-c" data-coef="c" type="number" step="any" value="0" inputmode="decimal"></label>
+          <label for="coef-d">d<input id="coef-d" data-coef="d" type="number" step="any" value="-3" inputmode="decimal"></label>
+          <label for="coef-e">e<input id="coef-e" data-coef="e" type="number" step="any" value="0" inputmode="decimal"></label>
+        </div>
+      </fieldset>
+
+      <div class="control-grid" style="margin-top: 1.25rem;">
+        <div class="control-group">
+          <label for="graph-range">그래프의 가로 범위</label>
+          <select id="graph-range">
+            <option value="3">−3부터 3까지</option>
+            <option value="5">−5부터 5까지</option>
+            <option value="10">−10부터 10까지</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="x-number"><span id="point-symbol">관찰할 x₀</span> <span id="point-range-text">(−3 이상 3 이하)</span></label>
+          <div class="range-row">
+            <input id="x-slider" type="range" min="-3" max="3" step="0.1" value="0" aria-label="관찰할 값 조절">
+            <input id="x-number" type="number" min="-3" max="3" step="any" value="0" inputmode="decimal" aria-label="관찰할 값 직접 입력">
+          </div>
+        </div>
+      </div>
+
+      <div class="button-row">
+        <button id="reset-button" type="button">선택한 기본 함수로 되돌리기</button>
+        <button id="zero-button" class="primary-button" type="button">관찰점을 0으로</button>
+      </div>
+
+      <div id="error-box" class="error-box" role="alert" aria-live="assertive"></div>
+    </section>
+
+    <section class="panel" aria-labelledby="formula-title">
+      <h2 id="formula-title">2. 식과 현재 값 확인하기</h2>
+      <p class="section-lead">
+        코드는 입력한 계수를 아래 미분 공식에 대입합니다. 결과를 임의로 정하는 것이 아닙니다.
+      </p>
+
+      <div class="formula-grid" aria-live="polite">
+        <div class="formula-card" data-kind="f">
+          <span id="formula-label-f" class="formula-label">원함수</span>
+          <div id="formula-f" class="formula">f(x) = x³ − 3x</div>
+        </div>
+        <div class="formula-card" data-kind="d1">
+          <span id="formula-label-d1" class="formula-label">도함수: 각 항의 지수를 앞으로 곱하고 지수를 1 줄임</span>
+          <div id="formula-d1" class="formula">f′(x) = 3x² − 3</div>
+        </div>
+        <div class="formula-card" data-kind="d2">
+          <span id="formula-label-d2" class="formula-label">이계도함수: 도함수를 한 번 더 미분</span>
+          <div id="formula-d2" class="formula">f″(x) = 6x</div>
+        </div>
+      </div>
+
+      <div class="value-grid" aria-live="polite">
+        <div class="value-card">
+          <span id="value-label-f" class="value-label">f(x₀)</span>
+          <strong id="value-f" class="value-number">0</strong>
+        </div>
+        <div class="value-card">
+          <span id="value-label-d1" class="value-label">f′(x₀)</span>
+          <strong id="value-d1" class="value-number">−3</strong>
+        </div>
+        <div class="value-card">
+          <span id="value-label-d2" class="value-label">f″(x₀)</span>
+          <strong id="value-d2" class="value-number">0</strong>
+        </div>
+      </div>
+
+      <div class="interpretation-grid" aria-live="polite">
+        <article class="explanation">
+          <h3>증가·감소와 기울기의 변화</h3>
+          <p id="slope-explanation"></p>
+        </article>
+        <article class="explanation">
+          <h3>굽음과 변곡점 판정</h3>
+          <p id="curvature-explanation"></p>
+          <p id="candidate-list" class="small-note"></p>
+        </article>
+      </div>
+
+      <aside class="motion-box" aria-labelledby="motion-title">
+        <h3 id="motion-title">운동과의 연결</h3>
+        <p id="motion-formula" class="formula"></p>
+        <p id="motion-explanation"></p>
+      </aside>
+    </section>
+
+    <section class="panel" aria-labelledby="graph-title">
+      <h2 id="graph-title">3. 세 그래프 나란히 읽기</h2>
+      <p class="section-lead">
+        각 그래프의 동그란 관찰점을 마우스나 손가락으로 잡아 좌우로 끌어 보세요.
+        점이 곡선을 따라 움직이고, 세 그래프의 관찰점·점선·슬라이더·계산값이 즉시 함께 바뀝니다.
+        함수의 모양은 그대로이며, 선택한 위치의 값과 기울기를 비교할 수 있습니다.
+        각 그래프의 세로축 범위는 따로 조절됩니다.
+      </p>
+
+      <!-- 초보자가 수정할 위치 ④: step="0.1"은 슬라이더 한 칸의 간격입니다. -->
+      <div class="graph-controls">
+        <label for="graph-x-slider"><span id="graph-point-symbol">관찰할 x₀</span> = <output id="graph-point-value" for="graph-x-slider x-slider x-number">0</output></label>
+        <div class="graph-slider-row">
+          <span id="graph-slider-min">−3</span>
+          <input id="graph-x-slider" type="range" min="-3" max="3" step="0.1" value="0" aria-describedby="graph-slider-help">
+          <span id="graph-slider-max">3</span>
+        </div>
+        <div class="graph-live-values" aria-live="polite" aria-atomic="true">
+          <span id="graph-live-f">f(0) = 0</span>
+          <span id="graph-live-d1">f′(0) = −3</span>
+          <span id="graph-live-d2">f″(0) = 0</span>
+        </div>
+        <p id="graph-slider-help" class="small-note">그래프의 점을 직접 끌거나 슬라이더·방향키로 0.1씩 조절하세요. 세로값은 선택한 가로값을 함수식에 대입해 정해집니다. 1번 입력과도 연동됩니다.</p>
+      </div>
+
+      <ul class="legend" aria-label="그래프 색상 범례">
+        <li class="legend-f"><span class="legend-line" aria-hidden="true"></span><span id="legend-f">f(x): 원함수</span></li>
+        <li class="legend-d1"><span class="legend-line" aria-hidden="true"></span><span id="legend-d1">f′(x): 기울기</span></li>
+        <li class="legend-d2"><span class="legend-line" aria-hidden="true"></span><span id="legend-d2">f″(x): 기울기의 변화</span></li>
+      </ul>
+
+      <div class="graph-list">
+        <figure class="graph-row">
+          <div class="chart-area">
+            <figcaption id="chart-title-f" class="chart-title">원함수 f(x)</figcaption>
+            <div class="chart-wrap"><svg id="chart-f" role="img" aria-labelledby="chart-title-f"></svg></div>
+            <p id="graph-selection-f" class="graph-selection"></p>
+          </div>
+          <div class="graph-note">
+            <h3>사용한 식</h3>
+            <p id="graph-formula-f" class="formula"></p>
+            <p id="graph-meaning-f"></p>
+          </div>
+        </figure>
+
+        <figure class="graph-row">
+          <div class="chart-area">
+            <figcaption id="chart-title-d1" class="chart-title">도함수 f′(x)</figcaption>
+            <div class="chart-wrap"><svg id="chart-d1" role="img" aria-labelledby="chart-title-d1"></svg></div>
+            <p id="graph-selection-d1" class="graph-selection"></p>
+          </div>
+          <div class="graph-note">
+            <h3>사용한 식</h3>
+            <p id="graph-formula-d1" class="formula"></p>
+            <p id="graph-meaning-d1"></p>
+          </div>
+        </figure>
+
+        <figure class="graph-row">
+          <div class="chart-area">
+            <figcaption id="chart-title-d2" class="chart-title">이계도함수 f″(x)</figcaption>
+            <div class="chart-wrap"><svg id="chart-d2" role="img" aria-labelledby="chart-title-d2"></svg></div>
+            <p id="graph-selection-d2" class="graph-selection"></p>
+          </div>
+          <div class="graph-note">
+            <h3>사용한 식</h3>
+            <p id="graph-formula-d2" class="formula"></p>
+            <p id="graph-meaning-d2"></p>
+          </div>
+        </figure>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="test-title">
+      <h2 id="test-title">4. 손계산과 웹앱 비교하기</h2>
+      <p class="section-lead">
+        먼저 ‘손계산 예상’을 직접 계산해 본 뒤 버튼을 누르세요. 웹앱이 계산한 값과 판정이 같은지 비교합니다.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">종류</th>
+              <th scope="col">입력</th>
+              <th scope="col">손계산 예상</th>
+              <th scope="col">실행</th>
+              <th scope="col">웹앱 비교 결과</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td data-label="종류">일반값</td>
+              <td data-label="입력">f(x)=x³−3x, x₀=2</td>
+              <td data-label="손계산 예상">f=2, f′=9, f″=12</td>
+              <td data-label="실행"><button type="button" data-test="general">확인하기</button></td>
+              <td data-label="비교 결과" id="test-output-general" class="test-output">아직 실행하지 않음</td>
+            </tr>
+            <tr>
+              <td data-label="종류">경계값</td>
+              <td data-label="입력">f(x)=x³, x₀=0</td>
+              <td data-label="손계산 예상">f=f′=f″=0, f″ 부호 −→+, 변곡점</td>
+              <td data-label="실행"><button type="button" data-test="boundary">확인하기</button></td>
+              <td data-label="비교 결과" id="test-output-boundary" class="test-output">아직 실행하지 않음</td>
+            </tr>
+            <tr>
+              <td data-label="종류">예외값</td>
+              <td data-label="입력">f(x)=x⁴, x₀=0</td>
+              <td data-label="손계산 예상">f=f′=f″=0, f″ 부호 +→+, 변곡점 아님</td>
+              <td data-label="실행"><button type="button" data-test="exception">확인하기</button></td>
+              <td data-label="비교 결과" id="test-output-exception" class="test-output">아직 실행하지 않음</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="verification-guide">
+        <strong>검증 순서</strong>
+        <ol>
+          <li>종이에 함수값, 도함수값, 이계도함수값을 먼저 계산합니다.</li>
+          <li>해당 행의 ‘확인하기’를 눌러 웹앱 결과와 숫자를 비교합니다.</li>
+          <li>f″(0)=0인 두 사례는 0의 양쪽에서 부호가 바뀌는지도 따로 비교합니다.</li>
+        </ol>
+      </div>
+      <p id="test-message" class="small-note" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <footer>
+    이 파일은 입력값을 외부로 보내거나 저장하지 않습니다. 모든 계산은 현재 브라우저 안에서만 이루어집니다.
+  </footer>
+
+  <script>
+    "use strict";
+
+    /* ============================================================
+       초보자가 수정할 위치 ②: 기본 함수와 입력 범위
+       coefficients의 순서는 [a, b, c, d, e]이며
+       f(x) = ax⁴ + bx³ + cx² + dx + e를 뜻합니다.
+       ============================================================ */
+    const PRESETS = {
+      cubicMinus: { coefficients: [0, 1, 0, -3, 0] },
+      cubic:      { coefficients: [0, 1, 0, 0, 0] },
+      quartic:    { coefficients: [1, 0, 0, 0, 0] }
+    };
+
+    const LIMITS = {
+      coefficientMin: -10,
+      coefficientMax: 10
+    };
+
+    const EPSILON = 1e-9;
+    const SVG_NS = "http://www.w3.org/2000/svg";
+
+    const elements = {
+      preset: document.getElementById("preset"),
+      mode: document.getElementById("mode"),
+      coefficientInputs: [...document.querySelectorAll("[data-coef]")],
+      graphRange: document.getElementById("graph-range"),
+      xSlider: document.getElementById("x-slider"),
+      graphXSlider: document.getElementById("graph-x-slider"),
+      graphPointSymbol: document.getElementById("graph-point-symbol"),
+      graphPointValue: document.getElementById("graph-point-value"),
+      graphSliderMin: document.getElementById("graph-slider-min"),
+      graphSliderMax: document.getElementById("graph-slider-max"),
+      graphLiveF: document.getElementById("graph-live-f"),
+      graphLiveD1: document.getElementById("graph-live-d1"),
+      graphLiveD2: document.getElementById("graph-live-d2"),
+      graphSelectionF: document.getElementById("graph-selection-f"),
+      graphSelectionD1: document.getElementById("graph-selection-d1"),
+      graphSelectionD2: document.getElementById("graph-selection-d2"),
+      xNumber: document.getElementById("x-number"),
+      pointSymbol: document.getElementById("point-symbol"),
+      pointRangeText: document.getElementById("point-range-text"),
+      resetButton: document.getElementById("reset-button"),
+      zeroButton: document.getElementById("zero-button"),
+      errorBox: document.getElementById("error-box"),
+      formulaF: document.getElementById("formula-f"),
+      formulaD1: document.getElementById("formula-d1"),
+      formulaD2: document.getElementById("formula-d2"),
+      formulaLabelF: document.getElementById("formula-label-f"),
+      formulaLabelD1: document.getElementById("formula-label-d1"),
+      formulaLabelD2: document.getElementById("formula-label-d2"),
+      valueLabelF: document.getElementById("value-label-f"),
+      valueLabelD1: document.getElementById("value-label-d1"),
+      valueLabelD2: document.getElementById("value-label-d2"),
+      valueF: document.getElementById("value-f"),
+      valueD1: document.getElementById("value-d1"),
+      valueD2: document.getElementById("value-d2"),
+      slopeExplanation: document.getElementById("slope-explanation"),
+      curvatureExplanation: document.getElementById("curvature-explanation"),
+      candidateList: document.getElementById("candidate-list"),
+      motionFormula: document.getElementById("motion-formula"),
+      motionExplanation: document.getElementById("motion-explanation"),
+      legendF: document.getElementById("legend-f"),
+      legendD1: document.getElementById("legend-d1"),
+      legendD2: document.getElementById("legend-d2"),
+      chartTitleF: document.getElementById("chart-title-f"),
+      chartTitleD1: document.getElementById("chart-title-d1"),
+      chartTitleD2: document.getElementById("chart-title-d2"),
+      chartF: document.getElementById("chart-f"),
+      chartD1: document.getElementById("chart-d1"),
+      chartD2: document.getElementById("chart-d2"),
+      graphFormulaF: document.getElementById("graph-formula-f"),
+      graphFormulaD1: document.getElementById("graph-formula-d1"),
+      graphFormulaD2: document.getElementById("graph-formula-d2"),
+      graphMeaningF: document.getElementById("graph-meaning-f"),
+      graphMeaningD1: document.getElementById("graph-meaning-d1"),
+      graphMeaningD2: document.getElementById("graph-meaning-d2"),
+      testMessage: document.getElementById("test-message")
+    };
+
+    let lastPreset = "cubicMinus";
+    let latestState = null;
+    let renderQueued = false;
+    const chartGeometry = new WeakMap();
+    let graphDrag = null;
+
+    // 입력 범위를 실제 입력 칸에도 적용합니다.
+    elements.coefficientInputs.forEach((input) => {
+      input.min = String(LIMITS.coefficientMin);
+      input.max = String(LIMITS.coefficientMax);
+    });
+
+    function nearlyZero(value) {
+      return Math.abs(value) < EPSILON;
+    }
+
+    function signOf(value) {
+      if (nearlyZero(value)) return 0;
+      return value > 0 ? 1 : -1;
+    }
+
+    function formatNumber(value, digits = 5) {
+      if (!Number.isFinite(value)) return "정의되지 않음";
+      if (nearlyZero(value)) return "0";
+      const rounded = Number(value.toFixed(digits));
+      const absolute = Math.abs(rounded);
+      if (absolute >= 100000 || absolute < 0.0001) {
+        return rounded.toExponential(3).replace("-", "−");
+      }
+      return String(rounded).replace("-", "−");
+    }
+
+    function formatTick(value) {
+      if (nearlyZero(value)) return "0";
+      const absolute = Math.abs(value);
+      if (absolute >= 10000 || absolute < 0.01) {
+        return value.toExponential(1).replace("-", "−");
+      }
+      return formatNumber(value, 2);
+    }
+
+    function coefficientTerms(coefficients, order) {
+      const [a, b, c, d, e] = coefficients;
+      if (order === 0) {
+        return [
+          { coefficient: a, power: 4 },
+          { coefficient: b, power: 3 },
+          { coefficient: c, power: 2 },
+          { coefficient: d, power: 1 },
+          { coefficient: e, power: 0 }
+        ];
+      }
+      if (order === 1) {
+        return [
+          { coefficient: 4 * a, power: 3 },
+          { coefficient: 3 * b, power: 2 },
+          { coefficient: 2 * c, power: 1 },
+          { coefficient: d, power: 0 }
+        ];
+      }
+      return [
+        { coefficient: 12 * a, power: 2 },
+        { coefficient: 6 * b, power: 1 },
+        { coefficient: 2 * c, power: 0 }
+      ];
+    }
+
+    function polynomialHtml(terms, variable) {
+      const visibleTerms = terms.filter((term) => !nearlyZero(term.coefficient));
+      if (visibleTerms.length === 0) return "0";
+
+      return visibleTerms.map((term, index) => {
+        const negative = term.coefficient < 0;
+        const magnitude = Math.abs(term.coefficient);
+        const sign = index === 0 ? (negative ? "−" : "") : (negative ? " − " : " + ");
+        const numberPart = term.power > 0 && nearlyZero(magnitude - 1) ? "" : formatNumber(magnitude);
+        const variablePart = term.power === 0
+          ? ""
+          : variable + (term.power === 1 ? "" : `<sup>${term.power}</sup>`);
+        return sign + numberPart + variablePart;
+      }).join("");
+    }
+
+    function evaluateAll(coefficients, x) {
+      const [a, b, c, d, e] = coefficients;
+      // 수학식 f, f′, f″을 그대로 코드의 계산식으로 옮긴 부분입니다.
+      return {
+        f: a * x ** 4 + b * x ** 3 + c * x ** 2 + d * x + e,
+        d1: 4 * a * x ** 3 + 3 * b * x ** 2 + 2 * c * x + d,
+        d2: 12 * a * x ** 2 + 6 * b * x + 2 * c
+      };
+    }
+
+    function readState() {
+      const errors = [];
+      const coefficients = elements.coefficientInputs.map((input) => {
+        const raw = input.value.trim();
+        const name = input.dataset.coef;
+        if (raw === "") {
+          errors.push(`계수 ${name}의 값을 입력하세요.`);
+          return NaN;
+        }
+        const value = Number(raw);
+        if (!Number.isFinite(value)) {
+          errors.push(`계수 ${name}에는 숫자를 입력하세요.`);
+        } else if (value < LIMITS.coefficientMin || value > LIMITS.coefficientMax) {
+          errors.push(`계수 ${name}는 ${LIMITS.coefficientMin} 이상 ${LIMITS.coefficientMax} 이하이어야 합니다.`);
+        }
+        return value;
+      });
+
+      const range = Number(elements.graphRange.value);
+      const rawX = elements.xNumber.value.trim();
+      const x0 = Number(rawX);
+      const symbol = elements.mode.value === "motion" ? "t₀" : "x₀";
+
+      if (rawX === "" || !Number.isFinite(x0)) {
+        errors.push(`관찰할 ${symbol}에 숫자를 입력하세요.`);
+      } else if (x0 < -range || x0 > range) {
+        errors.push(`관찰할 ${symbol}는 그래프 범위인 ${-range} 이상 ${range} 이하이어야 합니다.`);
+      }
+
+      if (errors.length > 0) {
+        showErrors(errors);
+        return null;
+      }
+
+      hideErrors();
+      return {
+        coefficients,
+        range,
+        x0,
+        mode: elements.mode.value,
+        values: evaluateAll(coefficients, x0)
+      };
+    }
+
+    function showErrors(errors) {
+      elements.errorBox.innerHTML = `<strong>입력을 확인해 주세요.</strong><ul>${errors.map((error) => `<li>${error}</li>`).join("")}</ul>`;
+      elements.errorBox.classList.add("is-visible");
+    }
+
+    function hideErrors() {
+      elements.errorBox.textContent = "";
+      elements.errorBox.classList.remove("is-visible");
+    }
+
+    function applyPreset(name) {
+      const preset = PRESETS[name];
+      if (!preset) return;
+      lastPreset = name;
+      elements.preset.value = name;
+      elements.coefficientInputs.forEach((input, index) => {
+        input.value = String(preset.coefficients[index]);
+      });
+      render();
+    }
+
+    function setCustomPreset() {
+      elements.preset.value = "custom";
+    }
+
+    function updatePointRange() {
+      const range = Number(elements.graphRange.value);
+      elements.xSlider.min = String(-range);
+      elements.xSlider.max = String(range);
+      elements.graphXSlider.min = String(-range);
+      elements.graphXSlider.max = String(range);
+      elements.graphSliderMin.textContent = formatNumber(-range);
+      elements.graphSliderMax.textContent = formatNumber(range);
+      elements.xNumber.min = String(-range);
+      elements.xNumber.max = String(range);
+      elements.pointRangeText.textContent = `(−${range} 이상 ${range} 이하)`;
+    }
+
+    function derivativeRoots(coefficients) {
+      const [a, b, c] = coefficients;
+      const A = 12 * a;
+      const B = 6 * b;
+      const C = 2 * c;
+
+      if (nearlyZero(A) && nearlyZero(B)) {
+        return nearlyZero(C) ? { all: true, roots: [] } : { all: false, roots: [] };
+      }
+
+      if (nearlyZero(A)) {
+        return { all: false, roots: [-C / B] };
+      }
+
+      const discriminant = B * B - 4 * A * C;
+      if (discriminant < -EPSILON) return { all: false, roots: [] };
+      if (nearlyZero(discriminant)) return { all: false, roots: [-B / (2 * A)] };
+
+      const rootDiscriminant = Math.sqrt(discriminant);
+      const roots = [(-B - rootDiscriminant) / (2 * A), (-B + rootDiscriminant) / (2 * A)];
+      roots.sort((left, right) => left - right);
+      return { all: false, roots };
+    }
+
+    function inflectionAt(coefficients, x) {
+      const [a, b] = coefficients;
+      const current = evaluateAll(coefficients, x).d2;
+      if (!nearlyZero(current)) {
+        return { isCandidate: false, changes: false, direction: "" };
+      }
+
+      // f″의 미분값, 즉 f‴이 0이 아니면 f″은 그 점에서 부호를 바꿉니다.
+      const thirdDerivative = 24 * a * x + 6 * b;
+      if (!nearlyZero(thirdDerivative)) {
+        return {
+          isCandidate: true,
+          changes: true,
+          direction: thirdDerivative > 0 ? "− → +" : "+ → −"
+        };
+      }
+
+      if (!nearlyZero(a)) {
+        const sign = a > 0 ? "+ → +" : "− → −";
+        return { isCandidate: true, changes: false, direction: sign };
+      }
+
+      return { isCandidate: true, changes: false, direction: "0 → 0" };
+    }
+
+    function currentNames(mode) {
+      if (mode === "motion") {
+        return {
+          variable: "t",
+          point: "t₀",
+          fName: "s(t)",
+          d1Name: "v(t)",
+          d2Name: "a(t)",
+          fShort: "s",
+          d1Short: "v",
+          d2Short: "a"
+        };
+      }
+      return {
+        variable: "x",
+        point: "x₀",
+        fName: "f(x)",
+        d1Name: "f′(x)",
+        d2Name: "f″(x)",
+        fShort: "f",
+        d1Short: "f′",
+        d2Short: "f″"
+      };
+    }
+
+    /* ============================================================
+       초보자가 수정할 위치 ③: 판정 설명 문장
+       계산 규칙은 유지하고, 화면에 보이는 설명을 다듬고 싶다면
+       아래 updateExplanations 함수의 한국어 문장을 수정하세요.
+       ============================================================ */
+    function updateExplanations(state, names) {
+      const { coefficients, x0, values, range } = state;
+      const d1Sign = signOf(values.d1);
+      const d2Sign = signOf(values.d2);
+
+      let increaseText;
+      if (d1Sign > 0) {
+        increaseText = `${names.d1Short}(${formatNumber(x0)}) > 0이므로 원함수는 이 점에서 증가하는 방향입니다.`;
+      } else if (d1Sign < 0) {
+        increaseText = `${names.d1Short}(${formatNumber(x0)}) < 0이므로 원함수는 이 점에서 감소하는 방향입니다.`;
+      } else {
+        increaseText = `${names.d1Short}(${formatNumber(x0)}) = 0이므로 정지점 후보입니다. 증가·감소가 실제로 바뀌는지는 주변의 ${names.d1Short} 부호를 확인해야 합니다.`;
+      }
+
+      let slopeChangeText;
+      if (d2Sign > 0) {
+        slopeChangeText = `${names.d2Short}(${formatNumber(x0)}) > 0이므로 기울기는 커지는 방향입니다.`;
+      } else if (d2Sign < 0) {
+        slopeChangeText = `${names.d2Short}(${formatNumber(x0)}) < 0이므로 기울기는 작아지는 방향입니다.`;
+      } else {
+        slopeChangeText = `${names.d2Short}(${formatNumber(x0)}) = 0이므로 이 한 점만으로 기울기 변화 방향을 결론 내리지 않습니다.`;
+      }
+      elements.slopeExplanation.textContent = `${increaseText} ${slopeChangeText}`;
+
+      const inflection = inflectionAt(coefficients, x0);
+      let curvatureText;
+      if (d2Sign > 0) {
+        curvatureText = `${names.d2Short}(${formatNumber(x0)}) > 0이므로 그래프는 이 점 근처에서 아래로 볼록합니다.`;
+      } else if (d2Sign < 0) {
+        curvatureText = `${names.d2Short}(${formatNumber(x0)}) < 0이므로 그래프는 이 점 근처에서 위로 볼록합니다.`;
+      } else if (inflection.changes) {
+        curvatureText = `${names.d2Short}(${formatNumber(x0)}) = 0이고 양쪽 부호가 ${inflection.direction}로 바뀝니다. 따라서 (${formatNumber(x0)}, ${formatNumber(values.f)})는 변곡점입니다.`;
+      } else {
+        curvatureText = `${names.d2Short}(${formatNumber(x0)}) = 0이지만 양쪽 부호가 ${inflection.direction}로 바뀌지 않습니다. 따라서 (${formatNumber(x0)}, ${formatNumber(values.f)})는 변곡점이 아닙니다.`;
+      }
+      elements.curvatureExplanation.textContent = curvatureText;
+
+      const rootInfo = derivativeRoots(coefficients);
+      if (rootInfo.all) {
+        elements.candidateList.textContent = `${names.d2Name} = 0이 모든 점에서 성립합니다. 이 함수는 기울기의 변화가 없는 일차함수 또는 상수함수입니다.`;
+      } else {
+        const rootsInRange = rootInfo.roots.filter((root) => root >= -range - EPSILON && root <= range + EPSILON);
+        if (rootsInRange.length === 0) {
+          elements.candidateList.textContent = `현재 그래프 구간에는 ${names.d2Name} = 0인 변곡점 후보가 없습니다.`;
+        } else {
+          const descriptions = rootsInRange.map((root) => {
+            const result = inflectionAt(coefficients, root);
+            return `${names.variable}=${formatNumber(root)} (${result.changes ? `부호 ${result.direction}, 변곡점` : `부호 ${result.direction}, 변곡점 아님`})`;
+          });
+          elements.candidateList.textContent = `현재 구간의 ${names.d2Name} = 0인 후보: ${descriptions.join(", ")}`;
+        }
+      }
+
+      elements.graphMeaningF.textContent = `세로값은 ${names.fName}의 값입니다. 그래프가 올라가거나 내려가는 방향은 ${names.d1Name}의 부호로 확인합니다.`;
+      elements.graphMeaningD1.textContent = `${names.d1Name} > 0이면 원함수가 증가하고, ${names.d1Name} < 0이면 감소합니다. 이 그래프 자체가 올라가면 기울기가 커지는 중입니다.`;
+      elements.graphMeaningD2.textContent = `${names.d2Name} > 0이면 기울기가 커지고 아래로 볼록하며, ${names.d2Name} < 0이면 기울기가 작아지고 위로 볼록합니다.`;
+
+      elements.motionFormula.innerHTML = `v(t) = s′(t) = ${polynomialHtml(coefficientTerms(coefficients, 1), "t")}, &nbsp; a(t) = s″(t) = ${polynomialHtml(coefficientTerms(coefficients, 2), "t")}`;
+
+      const velocitySign = signOf(values.d1);
+      const accelerationSign = signOf(values.d2);
+      if (velocitySign === 0 || accelerationSign === 0) {
+        elements.motionExplanation.textContent = `현재 관찰점에서는 속도나 가속도 중 하나가 0입니다. 이 한 순간만 보고 속력 증가·감소를 정하지 말고, 관찰점의 앞뒤에서 v(t)와 a(t)의 부호를 다시 비교하세요.`;
+      } else if (velocitySign === accelerationSign) {
+        elements.motionExplanation.textContent = `현재 속도와 가속도의 부호가 같으므로 속력은 증가하는 방향입니다. 같은 방향으로 움직이면서 그 방향으로 더 빨라지는 경우입니다.`;
+      } else {
+        elements.motionExplanation.textContent = `현재 속도와 가속도의 부호가 다르므로 속력은 감소하는 방향입니다. 움직이는 방향과 반대 방향으로 가속되는 경우입니다.`;
+      }
+    }
+
+    function createSvgElement(tag, attributes = {}) {
+      const node = document.createElementNS(SVG_NS, tag);
+      Object.entries(attributes).forEach(([name, value]) => node.setAttribute(name, String(value)));
+      return node;
+    }
+
+    function appendSvgText(svg, text, x, y, options = {}) {
+      const node = createSvgElement("text", {
+        x,
+        y,
+        fill: options.fill || "#5b6578",
+        "font-size": options.fontSize || 12,
+        "text-anchor": options.anchor || "middle",
+        "font-family": "-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif"
+      });
+      if (options.weight) node.setAttribute("font-weight", options.weight);
+      if (options.transform) node.setAttribute("transform", options.transform);
+      node.textContent = text;
+      svg.appendChild(node);
+      return node;
+    }
+
+    function cssColor(variableName) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
+
+    function drawChart(svg, functionKey, state, label, colorVariable) {
+      const container = svg.parentElement;
+      const width = Math.max(280, Math.floor(container.clientWidth));
+      const height = width < 520 ? 250 : 300;
+      const margin = { top: 20, right: 18, bottom: 45, left: width < 420 ? 52 : 64 };
+      const plotWidth = width - margin.left - margin.right;
+      const plotHeight = height - margin.top - margin.bottom;
+      const color = cssColor(colorVariable);
+      const gridColor = cssColor("--grid");
+      const axisColor = cssColor("--axis");
+      const { range, x0, coefficients } = state;
+
+      // 터치 중인 원은 유지해야 휴대폰에서 드래그가 끊기지 않습니다.
+      let dragHandle = svg.querySelector("[data-drag-handle]");
+      [...svg.children].forEach((child) => {
+        if (child !== dragHandle) child.remove();
+      });
+      svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+      svg.setAttribute("width", String(width));
+      svg.setAttribute("height", String(height));
+
+      const title = createSvgElement("title");
+      title.textContent = `${label} 그래프. 가로축은 ${state.mode === "motion" ? "t" : "x"}, 점선은 선택한 관찰점입니다.`;
+      svg.appendChild(title);
+      const description = createSvgElement("desc");
+      description.textContent = `가로 범위 ${-range}부터 ${range}, 관찰점 ${formatNumber(x0)}에서 함수값 ${formatNumber(state.values[functionKey])}.`;
+      svg.appendChild(description);
+
+      const sampleCount = Math.max(320, width);
+      const samples = [];
+      for (let index = 0; index <= sampleCount; index += 1) {
+        const x = -range + (2 * range * index) / sampleCount;
+        samples.push({ x, y: evaluateAll(coefficients, x)[functionKey] });
+      }
+
+      const yValues = samples.map((sample) => sample.y).filter(Number.isFinite);
+      let yMin = Math.min(0, ...yValues);
+      let yMax = Math.max(0, ...yValues);
+      if (nearlyZero(yMax - yMin)) {
+        const center = yMin;
+        yMin = center - 1;
+        yMax = center + 1;
+      } else {
+        const padding = (yMax - yMin) * 0.1;
+        yMin -= padding;
+        yMax += padding;
+      }
+
+      const xToPixel = (x) => margin.left + ((x + range) / (2 * range)) * plotWidth;
+      const yToPixel = (y) => margin.top + ((yMax - y) / (yMax - yMin)) * plotHeight;
+      chartGeometry.set(svg, { left: margin.left, width: plotWidth, range });
+
+      const clipId = `clip-${svg.id}`;
+      const defs = createSvgElement("defs");
+      const clipPath = createSvgElement("clipPath", { id: clipId });
+      clipPath.appendChild(createSvgElement("rect", {
+        x: margin.left,
+        y: margin.top,
+        width: plotWidth,
+        height: plotHeight
+      }));
+      defs.appendChild(clipPath);
+      svg.appendChild(defs);
+
+      const plotFrame = createSvgElement("rect", {
+        x: margin.left,
+        y: margin.top,
+        width: plotWidth,
+        height: plotHeight,
+        fill: "#ffffff",
+        stroke: gridColor,
+        "stroke-width": 1
+      });
+      svg.appendChild(plotFrame);
+
+      const xTicks = width < 420 ? [-range, 0, range] : [-range, -range / 2, 0, range / 2, range];
+      const yTicks = Array.from({ length: 5 }, (_, index) => yMin + ((yMax - yMin) * index) / 4);
+
+      xTicks.forEach((tick) => {
+        const x = xToPixel(tick);
+        svg.appendChild(createSvgElement("line", {
+          x1: x, y1: margin.top, x2: x, y2: margin.top + plotHeight,
+          stroke: gridColor, "stroke-width": 1
+        }));
+        appendSvgText(svg, formatTick(tick), x, margin.top + plotHeight + 20);
+      });
+
+      yTicks.forEach((tick) => {
+        const y = yToPixel(tick);
+        svg.appendChild(createSvgElement("line", {
+          x1: margin.left, y1: y, x2: margin.left + plotWidth, y2: y,
+          stroke: gridColor, "stroke-width": 1
+        }));
+        appendSvgText(svg, formatTick(tick), margin.left - 8, y + 4, { anchor: "end" });
+      });
+
+      if (0 >= yMin && 0 <= yMax) {
+        const axisY = yToPixel(0);
+        svg.appendChild(createSvgElement("line", {
+          x1: margin.left, y1: axisY, x2: margin.left + plotWidth, y2: axisY,
+          stroke: axisColor, "stroke-width": 1.5
+        }));
+      }
+
+      if (0 >= -range && 0 <= range) {
+        const axisX = xToPixel(0);
+        svg.appendChild(createSvgElement("line", {
+          x1: axisX, y1: margin.top, x2: axisX, y2: margin.top + plotHeight,
+          stroke: axisColor, "stroke-width": 1.5
+        }));
+      }
+
+      const pathData = samples.map((sample, index) => {
+        const command = index === 0 ? "M" : "L";
+        return `${command}${xToPixel(sample.x).toFixed(2)},${yToPixel(sample.y).toFixed(2)}`;
+      }).join(" ");
+
+      const plotGroup = createSvgElement("g", { "clip-path": `url(#${clipId})` });
+      plotGroup.appendChild(createSvgElement("path", {
+        d: pathData,
+        fill: "none",
+        stroke: color,
+        "stroke-width": 3,
+        "stroke-linecap": "round",
+        "stroke-linejoin": "round"
+      }));
+
+      const selectedX = xToPixel(x0);
+      const selectedYValue = state.values[functionKey];
+      const selectedY = yToPixel(selectedYValue);
+      plotGroup.appendChild(createSvgElement("line", {
+        x1: selectedX, y1: margin.top, x2: selectedX, y2: margin.top + plotHeight,
+        stroke: axisColor, "stroke-width": 1.5, "stroke-dasharray": "6 5"
+      }));
+      plotGroup.appendChild(createSvgElement("circle", {
+        cx: selectedX, cy: selectedY, r: 5.5,
+        fill: "#ffffff", stroke: color, "stroke-width": 3,
+        "pointer-events": "none"
+      }));
+      svg.appendChild(plotGroup);
+
+      const variable = state.mode === "motion" ? "t" : "x";
+      appendSvgText(svg, variable, margin.left + plotWidth, height - 9, { anchor: "end", fill: axisColor, weight: 700 });
+      appendSvgText(svg, label, 14, margin.top + plotHeight / 2, {
+        anchor: "middle",
+        fill: axisColor,
+        weight: 700,
+        transform: `rotate(-90 14 ${margin.top + plotHeight / 2})`
+      });
+      appendSvgText(svg, `${variable}₀=${formatNumber(x0)}`, Math.min(Math.max(selectedX, margin.left + 38), margin.left + plotWidth - 38), margin.top + 14, {
+        fill: axisColor,
+        weight: 700
+      });
+
+      // 보이는 점 주변도 누를 수 있도록 투명한 원을 겹칩니다.
+      // 점의 크기는 유지하면서 손가락으로 지름 44px 범위를 잡을 수 있습니다.
+      if (!dragHandle) {
+        dragHandle = createSvgElement("circle", {
+          r: 22, fill: "transparent", stroke: "none",
+          class: "graph-drag-handle", "data-drag-handle": "",
+          "aria-hidden": "true"
+        });
+        svg.appendChild(dragHandle);
+      }
+      dragHandle.setAttribute("cx", String(selectedX));
+      dragHandle.setAttribute("cy", String(selectedY));
+    }
+
+    /* ============================================================
+       초보자가 수정할 위치 ⑤: 그래프의 점을 직접 움직이는 부분
+       마우스·손가락의 가로 위치를 x값으로 바꿉니다.
+       y값은 직접 움직이지 않고 evaluateAll의 함수식으로 계산합니다.
+       이동 간격은 3번 슬라이더의 step(기본 0.1)을 함께 사용합니다.
+       ============================================================ */
+    function pointerXInChart(svg, event) {
+      const matrix = svg.getScreenCTM();
+      if (!matrix) return null;
+      const point = svg.createSVGPoint();
+      point.x = event.clientX;
+      point.y = event.clientY;
+      return point.matrixTransform(matrix.inverse()).x;
+    }
+
+    function moveGraphPoint(event) {
+      if (!graphDrag || graphDrag.pointerId !== event.pointerId || !latestState) return;
+      const { svg, offsetX } = graphDrag;
+      const geometry = chartGeometry.get(svg);
+      const pointerX = pointerXInChart(svg, event);
+      if (!geometry || pointerX === null) return;
+
+      const rawX = ((pointerX - offsetX - geometry.left) / geometry.width) * 2 * geometry.range - geometry.range;
+      const step = Number(elements.graphXSlider.step) || 0.1;
+      const snappedX = Number((Math.round(rawX / step) * step).toFixed(10));
+      const x = Math.max(-geometry.range, Math.min(geometry.range, snappedX));
+      elements.xNumber.value = String(x);
+      scheduleRender();
+    }
+
+    function finishGraphDrag(svg, pointerId) {
+      if (!graphDrag || graphDrag.svg !== svg || graphDrag.pointerId !== pointerId) return;
+      graphDrag = null;
+      svg.classList.remove("is-dragging");
+      if (svg.hasPointerCapture(pointerId)) svg.releasePointerCapture(pointerId);
+    }
+
+    function enableGraphDragging(svg) {
+      // SVG 자체에 이벤트를 연결해야 점이 다시 그려져도 드래그가 이어집니다.
+      svg.addEventListener("pointerdown", (event) => {
+        if (graphDrag || !latestState || !event.isPrimary || event.button !== 0) return;
+        if (!event.target.closest("[data-drag-handle]")) return;
+        const geometry = chartGeometry.get(svg);
+        const pointerX = pointerXInChart(svg, event);
+        if (!geometry || pointerX === null) return;
+
+        event.preventDefault();
+        const selectedPixelX = geometry.left + ((latestState.x0 + geometry.range) / (2 * geometry.range)) * geometry.width;
+        graphDrag = { svg, pointerId: event.pointerId, offsetX: pointerX - selectedPixelX };
+        svg.classList.add("is-dragging");
+        // 점이나 그래프 밖으로 포인터가 나가도 손을 뗄 때까지 이동을 받습니다.
+        svg.setPointerCapture(event.pointerId);
+      });
+      svg.addEventListener("pointermove", moveGraphPoint);
+      svg.addEventListener("pointerup", (event) => {
+        if (graphDrag && graphDrag.svg === svg) moveGraphPoint(event);
+        finishGraphDrag(svg, event.pointerId);
+      });
+      svg.addEventListener("pointercancel", (event) => finishGraphDrag(svg, event.pointerId));
+      svg.addEventListener("lostpointercapture", (event) => finishGraphDrag(svg, event.pointerId));
+    }
+
+    function updateLabelsAndFormulas(state, names) {
+      const fExpression = polynomialHtml(coefficientTerms(state.coefficients, 0), names.variable);
+      const d1Expression = polynomialHtml(coefficientTerms(state.coefficients, 1), names.variable);
+      const d2Expression = polynomialHtml(coefficientTerms(state.coefficients, 2), names.variable);
+
+      elements.formulaF.innerHTML = `${names.fName} = ${fExpression}`;
+      elements.formulaD1.innerHTML = `${names.d1Name} = ${d1Expression}`;
+      elements.formulaD2.innerHTML = `${names.d2Name} = ${d2Expression}`;
+      elements.graphFormulaF.innerHTML = `${names.fName} = ${fExpression}`;
+      elements.graphFormulaD1.innerHTML = `${names.d1Name} = ${d1Expression}`;
+      elements.graphFormulaD2.innerHTML = `${names.d2Name} = ${d2Expression}`;
+
+      elements.formulaLabelF.textContent = state.mode === "motion" ? "위치함수" : "원함수";
+      elements.formulaLabelD1.textContent = state.mode === "motion" ? "속도: 위치함수를 한 번 미분" : "도함수: 각 항의 지수를 앞으로 곱하고 지수를 1 줄임";
+      elements.formulaLabelD2.textContent = state.mode === "motion" ? "가속도: 속도를 한 번 더 미분" : "이계도함수: 도함수를 한 번 더 미분";
+
+      elements.valueLabelF.textContent = `${names.fShort}(${names.point})`;
+      elements.valueLabelD1.textContent = `${names.d1Short}(${names.point})`;
+      elements.valueLabelD2.textContent = `${names.d2Short}(${names.point})`;
+      elements.valueF.textContent = formatNumber(state.values.f);
+      elements.valueD1.textContent = formatNumber(state.values.d1);
+      elements.valueD2.textContent = formatNumber(state.values.d2);
+
+      const pointText = formatNumber(state.x0);
+      const liveF = `${names.fShort}(${pointText}) = ${formatNumber(state.values.f)}`;
+      const liveD1 = `${names.d1Short}(${pointText}) = ${formatNumber(state.values.d1)}`;
+      const liveD2 = `${names.d2Short}(${pointText}) = ${formatNumber(state.values.d2)}`;
+      elements.graphPointSymbol.textContent = `관찰할 ${names.point}`;
+      elements.graphPointValue.value = pointText;
+      elements.graphLiveF.textContent = liveF;
+      elements.graphLiveD1.textContent = liveD1;
+      elements.graphLiveD2.textContent = liveD2;
+      elements.graphSelectionF.textContent = `선택한 점: (${pointText}, ${formatNumber(state.values.f)}) · ${liveF}`;
+      elements.graphSelectionD1.textContent = `선택한 점: (${pointText}, ${formatNumber(state.values.d1)}) · ${liveD1}`;
+      elements.graphSelectionD2.textContent = `선택한 점: (${pointText}, ${formatNumber(state.values.d2)}) · ${liveD2}`;
+
+      elements.pointSymbol.textContent = `관찰할 ${names.point}`;
+      elements.legendF.textContent = state.mode === "motion" ? "s(t): 위치" : "f(x): 원함수";
+      elements.legendD1.textContent = state.mode === "motion" ? "v(t): 속도" : "f′(x): 기울기";
+      elements.legendD2.textContent = state.mode === "motion" ? "a(t): 가속도" : "f″(x): 기울기의 변화";
+      elements.chartTitleF.textContent = state.mode === "motion" ? "위치함수 s(t)" : "원함수 f(x)";
+      elements.chartTitleD1.textContent = state.mode === "motion" ? "속도 v(t)" : "도함수 f′(x)";
+      elements.chartTitleD2.textContent = state.mode === "motion" ? "가속도 a(t)" : "이계도함수 f″(x)";
+    }
+
+    function render() {
+      updatePointRange();
+      const state = readState();
+      if (!state) {
+        latestState = null;
+        return null;
+      }
+      latestState = state;
+      elements.xSlider.value = String(state.x0);
+      elements.graphXSlider.value = String(state.x0);
+
+      const names = currentNames(state.mode);
+      updateLabelsAndFormulas(state, names);
+      updateExplanations(state, names);
+
+      drawChart(elements.chartF, "f", state, names.fShort, "--f-color");
+      drawChart(elements.chartD1, "d1", state, names.d1Short, "--d1-color");
+      drawChart(elements.chartD2, "d2", state, names.d2Short, "--d2-color");
+      return state;
+    }
+
+    function scheduleRender() {
+      if (renderQueued) return;
+      renderQueued = true;
+      requestAnimationFrame(() => {
+        renderQueued = false;
+        render();
+      });
+    }
+
+    elements.preset.addEventListener("change", () => {
+      if (elements.preset.value !== "custom") applyPreset(elements.preset.value);
+    });
+
+    elements.coefficientInputs.forEach((input) => {
+      input.addEventListener("input", () => {
+        setCustomPreset();
+        scheduleRender();
+      });
+    });
+
+    elements.mode.addEventListener("change", scheduleRender);
+
+    elements.graphRange.addEventListener("change", () => {
+      updatePointRange();
+      scheduleRender();
+    });
+
+    // input은 손을 떼기 전에도 발생하므로 드래그하는 동안 그래프가 바뀝니다.
+    // 두 슬라이더는 같은 관찰점 입력값을 사용해 항상 함께 움직입니다.
+    [elements.xSlider, elements.graphXSlider].forEach((slider) => {
+      slider.addEventListener("input", () => {
+        elements.xNumber.value = slider.value;
+        scheduleRender();
+      });
+    });
+
+    elements.xNumber.addEventListener("input", () => {
+      const value = Number(elements.xNumber.value);
+      const range = Number(elements.graphRange.value);
+      if (Number.isFinite(value) && value >= -range && value <= range) {
+        elements.xSlider.value = String(value);
+      }
+      scheduleRender();
+    });
+
+    elements.resetButton.addEventListener("click", () => applyPreset(lastPreset));
+
+    elements.zeroButton.addEventListener("click", () => {
+      elements.xNumber.value = "0";
+      elements.xSlider.value = "0";
+      render();
+    });
+
+    const TESTS = {
+      general: {
+        preset: "cubicMinus",
+        x0: 2,
+        expected: { f: 2, d1: 9, d2: 12, inflection: false },
+        summary: "일반값"
+      },
+      boundary: {
+        preset: "cubic",
+        x0: 0,
+        expected: { f: 0, d1: 0, d2: 0, inflection: true, direction: "− → +" },
+        summary: "경계값"
+      },
+      exception: {
+        preset: "quartic",
+        x0: 0,
+        expected: { f: 0, d1: 0, d2: 0, inflection: false, direction: "+ → +" },
+        summary: "예외값"
+      }
+    };
+
+    function valuesMatch(actual, expected) {
+      return nearlyZero(actual.f - expected.f)
+        && nearlyZero(actual.d1 - expected.d1)
+        && nearlyZero(actual.d2 - expected.d2);
+    }
+
+    function runVerification(testName) {
+      const test = TESTS[testName];
+      if (!test) return;
+
+      elements.mode.value = "function";
+      elements.graphRange.value = "3";
+      updatePointRange();
+      elements.xNumber.value = String(test.x0);
+      elements.xSlider.value = String(test.x0);
+      applyPreset(test.preset);
+
+      const state = latestState || render();
+      if (!state) return;
+      const inflection = inflectionAt(state.coefficients, state.x0);
+      const numberPass = valuesMatch(state.values, test.expected);
+      const inflectionPass = inflection.changes === test.expected.inflection;
+      const directionPass = !test.expected.direction || inflection.direction === test.expected.direction;
+      const pass = numberPass && inflectionPass && directionPass;
+      const output = document.getElementById(`test-output-${testName}`);
+
+      const valueSummary = `앱: (${formatNumber(state.values.f)}, ${formatNumber(state.values.d1)}, ${formatNumber(state.values.d2)})`;
+      const pointSummary = testName === "general"
+        ? ""
+        : `, 부호 ${inflection.direction}, ${inflection.changes ? "변곡점" : "변곡점 아님"}`;
+      output.textContent = `${pass ? "일치" : "불일치"} — ${valueSummary}${pointSummary}`;
+      output.classList.toggle("pass", pass);
+      output.classList.toggle("fail", !pass);
+      elements.testMessage.textContent = `${test.summary} 검증을 실행했습니다. 손계산 예상과 앱 결과가 ${pass ? "일치합니다." : "다릅니다. 입력과 계산식을 확인하세요."}`;
+
+      document.getElementById("formula-title").scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    document.querySelectorAll("[data-test]").forEach((button) => {
+      button.addEventListener("click", () => runVerification(button.dataset.test));
+    });
+
+    const resizeObserver = new ResizeObserver(() => {
+      if (latestState) scheduleRender();
+    });
+    [elements.chartF, elements.chartD1, elements.chartD2].forEach((svg) => {
+      enableGraphDragging(svg);
+      resizeObserver.observe(svg.parentElement);
+    });
+
+    // 페이지를 처음 열었을 때 기본 함수 f(x)=x³−3x를 바로 그립니다.
+    updatePointRange();
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>3D Coordinate Lab</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#1f2937;--sub:#667085;--border:#d9dee8;--accent:#2563eb;--danger:#b91c1c}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,"Malgun Gothic",sans-serif;background:var(--bg);color:var(--text);line-height:1.5}.wrap{max-width:1050px;margin:auto;padding:16px}h1{font-size:clamp(1.45rem,4vw,2.1rem);margin:0 0 6px}h2{font-size:1.1rem;margin:0 0 10px}.intro{color:var(--sub);margin:0 0 16px}.grid{display:grid;grid-template-columns:320px 1fr;gap:14px}.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}.full{grid-column:1/-1}label{display:block;font-weight:700;margin:10px 0 5px}input,button{width:100%;min-height:42px;border:1px solid #c7ceda;border-radius:9px;padding:8px 10px;font-size:1rem;background:#fff}button{cursor:pointer;background:var(--accent);color:#fff;border:none;font-weight:700;margin-top:10px}.help{font-size:.88rem;color:var(--sub)}.coord{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.ratio{display:grid;grid-template-columns:1fr 1fr;gap:6px}.error{display:none;margin-top:10px;padding:9px;border-radius:8px;background:#fff1f2;border:1px solid #fecdd3;color:var(--danger)}.formula,.explain{margin-top:10px;padding:11px;border-radius:9px;background:#f8fbff;border-left:4px solid var(--accent);font-size:.93rem}canvas{display:block;width:100%;height:auto;background:#fff;border:1px solid var(--border);border-radius:10px}.results{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.box{border:1px solid var(--border);border-radius:9px;padding:9px;background:#fbfcfe}.box span{display:block;color:var(--sub);font-size:.82rem}.box strong{font-size:1rem;word-break:break-word}.verify{padding:10px;border:1px solid #d7e3f8;border-radius:9px;background:#f8fbff}ol{padding-left:20px}@media(max-width:800px){.grid{grid-template-columns:1fr}}@media(max-width:480px){.wrap{padding:10px}.results{grid-template-columns:1fr}.coord{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>기하: 3D Coordinate Lab</h1>
+<p class="intro">3차원 좌표에서 두 점 사이의 거리와 내분점의 위치를 계산하고, 내분비 변화에 따른 점의 움직임을 확인합니다.</p>
+<div class="grid">
+<section class="card">
+<h2>① 좌표와 내분비 입력</h2>
+<label>점 A (x₁, y₁, z₁)</label><div class="coord"><input id="x1" type="number" min="-20" max="20" value="0"><input id="y1" type="number" min="-20" max="20" value="0"><input id="z1" type="number" min="-20" max="20" value="0"></div>
+<label>점 B (x₂, y₂, z₂)</label><div class="coord"><input id="x2" type="number" min="-20" max="20" value="6"><input id="y2" type="number" min="-20" max="20" value="8"><input id="z2" type="number" min="-20" max="20" value="10"></div>
+<label>내분비 m:n</label><div class="ratio"><input id="m" type="number" min="0.0001" max="1000" step="1" value="1"><input id="n" type="number" min="0.0001" max="1000" step="1" value="1"></div>
+<p class="help">좌표 범위: -20 ≤ x,y,z ≤ 20<br>내분비: m,n은 0보다 큰 값</p>
+<button id="calc">계산하기</button><div id="err" class="error"></div>
+<div class="formula"><b>거리 공식</b><br>AB = √((x₂-x₁)² + (y₂-y₁)² + (z₂-z₁)²)<br><br><b>내분점 공식</b><br>P = (nA + mB)/(m+n)<br>xₚ=(nx₁+mx₂)/(m+n)<br>yₚ=(ny₁+my₂)/(m+n)<br>zₚ=(nz₁+mz₂)/(m+n)</div>
+</section>
+<section class="card"><h2>② 3차원 시각화</h2><canvas id="scene" width="800" height="500"></canvas><p class="help">마우스로 드래그하면 시점을 회전할 수 있습니다. 휴대폰에서는 손가락으로 좌우·상하로 드래그해 보세요.</p><div class="explain"><b>읽는 방법</b><br>A와 B를 연결한 선분 위에 P를 표시합니다. m:n을 바꾸면 P의 좌표와 위치가 함께 변합니다. 그림은 3차원 좌표를 화면에 투영한 학습용 그림이므로 정확한 판단은 좌표와 공식으로 함께 확인하세요.</div></section>
+<section class="card full"><h2>③ 계산 결과</h2><div class="results"><div class="box"><span>두 점 사이 거리 AB</span><strong id="distance">-</strong></div><div class="box"><span>내분비 m:n</span><strong id="ratio">-</strong></div><div class="box"><span>내분점 P x</span><strong id="px">-</strong></div><div class="box"><span>내분점 P y</span><strong id="py">-</strong></div><div class="box"><span>내분점 P z</span><strong id="pz">-</strong></div><div class="box"><span>좌표 입력 범위</span><strong>-20 ~ 20</strong></div></div><div id="meaning" class="verify" style="margin-top:10px;display:none"></div></section>
+<section class="card full"><h2>④ 직접 검증하기</h2><ol><li><b>경계값 테스트:</b> 좌표 중 일부를 -20 또는 20으로 입력하고 계산이 정상인지 확인합니다.</li><li><b>일반값 테스트:</b> 두 점과 내분비를 정한 뒤 거리 공식과 내분점 공식에 직접 대입하여 웹앱 결과와 비교합니다.</li><li><b>내분비 변화 테스트:</b> 같은 A,B를 유지하고 1:1, 1:2, 1:5처럼 내분비만 바꾸어 P의 좌표와 그림의 이동을 비교합니다.</li></ol><p class="help">예시값 3개를 직접 손계산해 웹앱과 비교하는 것이 가장 중요한 검증 방법입니다.</p></section>
+</div></div>
+<script>
+/* =========================================
+   초보자 수정 영역
+   - 좌표 입력 범위: HTML의 min, max를 수정하세요.
+   - 거리와 내분점 공식은 아래 함수에 그대로 대응합니다.
+   - 화면에 표시되는 소수점 자릿수는 DECIMALS를 수정하세요.
+   ========================================= */
+const DECIMALS=6;
+const $=id=>document.getElementById(id);
+function fmt(v){return Number(v).toFixed(DECIMALS).replace(/\.?0+$/,'');}
+function read(){
+  const ids=['x1','y1','z1','x2','y2','z2','m','n']; const v={};
+  ids.forEach(id=>v[id]=Number($(id).value));
+  if(ids.some(id=>!Number.isFinite(v[id]))) throw Error('모든 입력값을 숫자로 입력하세요.');
+  for(const id of ids.slice(0,6)) if(v[id]<-20||v[id]>20) throw Error('각 좌표는 -20 이상 20 이하로 입력하세요.');
+  if(v.m<=0||v.n<=0) throw Error('내분비 m:n에서 m과 n은 0보다 커야 합니다.');
+  return v;
+}
+function distance(v){
+  const dx=v.x2-v.x1,dy=v.y2-v.y1,dz=v.z2-v.z1;
+  return Math.sqrt(dx*dx+dy*dy+dz*dz);
+}
+function internalPoint(v){
+  const d=v.m+v.n;
+  return {x:(v.n*v.x1+v.m*v.x2)/d,y:(v.n*v.y1+v.m*v.y2)/d,z:(v.n*v.z1+v.m*v.z2)/d};
+}
+function calculate(){
+  $('err').style.display='none';
+  try{
+    const v=read(),p=internalPoint(v),d=distance(v);
+    $('distance').textContent=fmt(d);$('ratio').textContent=fmt(v.m)+' : '+fmt(v.n);
+    $('px').textContent=fmt(p.x);$('py').textContent=fmt(p.y);$('pz').textContent=fmt(p.z);
+    $('meaning').style.display='block';
+    $('meaning').innerHTML='계산된 내분점은 <b>('+fmt(p.x)+', '+fmt(p.y)+', '+fmt(p.z)+')</b>입니다. 내분비를 바꾸면 두 끝점의 좌표에 적용되는 가중치가 달라져 P의 위치도 달라집니다.';
+    draw(v,p);
+  }catch(e){$('err').textContent=e.message;$('err').style.display='block';}
+}
+function draw(v,p){
+  const c=$('scene'),ctx=c.getContext('2d'),W=c.width,H=c.height;
+  ctx.clearRect(0,0,W,H); ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H);
+
+  /*
+   * ==============================
+   * 초보자 수정 영역: 3차원 시점
+   * yaw = 좌우 회전, pitch = 위아래 회전입니다.
+   * 마우스/손가락으로 회전하면 이 값이 바뀝니다.
+   * ==============================
+   */
+  const scale=Math.min(W,H)/58;
+  const ox=W/2, oy=H/2+40;
+
+  function rotate3D(x,y,z){
+    const cy=Math.cos(view.yaw), sy=Math.sin(view.yaw);
+    const cp=Math.cos(view.pitch), sp=Math.sin(view.pitch);
+    const xr=cy*x-sy*z;
+    const zr=sy*x+cy*z;
+    const yr=cp*y-sp*zr;
+    const zr2=sp*y+cp*zr;
+    return {x:xr,y:yr,z:zr2};
+  }
+
+  function proj(x,y,z){
+    const r=rotate3D(x,y,z);
+    // 원근감을 살리기 위한 간단한 깊이 보정
+    const depth=Math.max(0.65,1+r.z/90);
+    return {X:ox+r.x*scale*depth,Y:oy-r.y*scale*depth,depth:depth,z:r.z};
+  }
+
+  const O=proj(0,0,0);
+  const A=proj(v.x1,v.y1,v.z1);
+  const B=proj(v.x2,v.y2,v.z2);
+  const P=proj(p.x,p.y,p.z);
+
+  // 축의 끝점
+  const AX=proj(14,0,0), AY=proj(0,14,0), AZ=proj(0,0,14);
+  const NX=proj(-14,0,0), NY=proj(0,-14,0), NZ=proj(0,0,-14);
+
+  // 바닥 느낌을 주는 보조 격자: z=0 평면
+  for(let q=-20;q<=20;q+=5){
+    line(ctx,proj(q,-20,0),proj(q,20,0),'#e5e7eb',1);
+    line(ctx,proj(-20,q,0),proj(20,q,0),'#e5e7eb',1);
+  }
+
+  // 세 축을 양방향으로 표시
+  line(ctx,NX,AX,'#9ca3af',2);
+  line(ctx,NY,AY,'#9ca3af',2);
+  line(ctx,NZ,AZ,'#9ca3af',2);
+
+  ctx.fillStyle='#475569'; ctx.font='15px Arial';
+  ctx.fillText('x',AX.X+6,AX.Y);
+  ctx.fillText('y',AY.X+6,AY.Y);
+  ctx.fillText('z',AZ.X+6,AZ.Y);
+  ctx.fillText('-x',NX.X-20,NX.Y);
+  ctx.fillText('-y',NY.X-20,NY.Y);
+  ctx.fillText('-z',NZ.X-20,NZ.Y);
+
+  // A-B 선분
+  line(ctx,A,B,'#374151',4);
+
+  // 각 점에서 x,y,z축 방향으로 내린 보조선을 그려 깊이를 느끼게 함
+  drawDropLines(v,p,ctx,proj);
+
+  // 먼 점부터 그린 뒤 가까운 점을 나중에 그리는 간단한 깊이 표현
+  const points=[
+    {pt:A,color:'#dc2626',label:'A',z:A.z},
+    {pt:B,color:'#16a34a',label:'B',z:B.z},
+    {pt:P,color:'#7c3aed',label:'P',z:P.z}
+  ].sort((a,b)=>a.z-b.z);
+
+  points.forEach(item=>point3D(ctx,item.pt,item.color,item.label,item.pt.depth));
+
+  // 정보 표시
+  ctx.fillStyle='#111827'; ctx.font='bold 16px Arial';
+  ctx.fillText('A —— P —— B',20,28);
+  ctx.font='13px Arial'; ctx.fillStyle='#64748b';
+  ctx.fillText('드래그: 시점 회전 · x,y,z축과 보조선을 함께 확인',20,H-16);
+}
+
+function drawDropLines(v,p,ctx,proj){
+  const pts=[
+    {x:v.x1,y:v.y1,z:v.z1,color:'#fca5a5'},
+    {x:v.x2,y:v.y2,z:v.z2,color:'#86efac'},
+    {x:p.x,y:p.y,z:p.z,color:'#c4b5fd'}
+  ];
+  pts.forEach(q=>{
+    // z축 성분을 0으로 보내는 선과, x/y를 각각 0으로 보내는 선을 함께 표시
+    line(ctx,proj(q.x,q.y,0),proj(q.x,q.y,q.z),q.color,1.5);
+    line(ctx,proj(q.x,0,0),proj(q.x,q.y,0),q.color,1);
+  });
+}
+
+function line(ctx,a,b,color,width){
+  ctx.strokeStyle=color; ctx.lineWidth=width; ctx.beginPath();
+  ctx.moveTo(a.X,a.Y); ctx.lineTo(b.X,b.Y); ctx.stroke();
+}
+
+function point3D(ctx,p,color,label,depth){
+  // 가까운 점은 조금 크게 보여 깊이감을 줌
+  const radius=6+Math.max(0,depth-0.8)*5;
+  ctx.fillStyle=color; ctx.beginPath(); ctx.arc(p.X,p.Y,radius,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#111827'; ctx.font='bold 15px Arial'; ctx.fillText(label,p.X+9,p.Y-9);
+}
+
+// 시점 회전 상태
+const view={yaw:-0.55,pitch:0.50};
+let dragging=false,lastX=0,lastY=0;
+
+function updateView(dx,dy){
+  view.yaw+=dx*0.008;
+  view.pitch+=dy*0.008;
+  view.pitch=Math.max(-1.15,Math.min(1.15,view.pitch));
+  calculate();
+}
+
+// 마우스 드래그
+$('scene').addEventListener('mousedown',e=>{
+  dragging=true; lastX=e.clientX; lastY=e.clientY;
+});
+window.addEventListener('mousemove',e=>{
+  if(!dragging)return;
+  updateView(e.clientX-lastX,e.clientY-lastY);
+  lastX=e.clientX; lastY=e.clientY;
+});
+window.addEventListener('mouseup',()=>dragging=false);
+
+// 휴대폰 터치 드래그
+$('scene').addEventListener('touchstart',e=>{
+  if(e.touches.length!==1)return;
+  dragging=true; lastX=e.touches[0].clientX; lastY=e.touches[0].clientY;
+},{passive:true});
+$('scene').addEventListener('touchmove',e=>{
+  if(!dragging || e.touches.length!==1)return;
+  const x=e.touches[0].clientX, y=e.touches[0].clientY;
+  updateView(x-lastX,y-lastY);
+  lastX=x; lastY=y;
+  e.preventDefault();
+},{passive:false});
+$('scene').addEventListener('touchend',()=>dragging=false);
+
+$('calc').addEventListener('click',calculate);
+document.querySelectorAll('input').forEach(x=>x.addEventListener('keydown',e=>{if(e.key==='Enter')calculate();}));
+calculate();
+</script>
+</body></html>

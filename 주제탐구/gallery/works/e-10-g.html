@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>이차곡선 접선 탐구실 · 기하</title>
+<meta name="description" content="원·타원·포물선의 접점 치환과 중근 조건을 직접 비교하는 기하 탐구 도구">
+<style>
+/* 수정 위치 1: 화면 색은 아래 변수에서 바꿀 수 있습니다. */
+:root{--ink:#263342;--muted:#667587;--accent:#345bb3;--light:#edf2fc;--line:#dde4ed;--bg:#f5f6fa;--gold:#b87925}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.7 system-ui,-apple-system,"Noto Sans KR",sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}header{max-width:1440px;margin:auto;padding:25px 36px 18px;display:flex;justify-content:space-between;align-items:center}.brand{font-size:23px;font-weight:800;letter-spacing:-1px}.brand span{color:var(--accent)}.badge{font-size:12px;padding:5px 13px;border:1px solid var(--line);border-radius:22px;background:white}main{max-width:1440px;margin:auto;padding:0 36px 45px}.intro{padding:12px 0 25px}.eyebrow{font-size:11px;font-weight:800;letter-spacing:2px;color:var(--accent)}h1{font-size:33px;letter-spacing:-1px;line-height:1.35;margin:8px 0 10px}p{margin:7px 0;color:var(--muted)}.layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:20px}.panel{background:#fff;border:1px solid var(--line);border-radius:17px;padding:21px;min-width:0}.controls{position:sticky;top:15px;align-self:start}.step{color:var(--accent);font-size:11px;font-weight:800;letter-spacing:1px}h2{font-size:16px;margin:4px 0 15px}h3{font-size:14px;margin:0 0 10px}label{display:block;font-size:13px;font-weight:650;margin:14px 0 6px}select,input[type=number]{width:100%;padding:8px 10px;border:1px solid #b9c9df;border-radius:8px;background:#fff;color:var(--ink)}input[type=range]{width:100%;accent-color:var(--accent)}.row{display:flex;align-items:center;justify-content:space-between;gap:12px}.row input{width:95px}.limits{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}.divider{border-top:1px solid var(--line);margin:19px 0}.preset{width:100%;text-align:left;background:#f7f9fd;color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:10px 12px;margin:6px 0}.preset small{display:block;font-size:11px;color:var(--muted)}.preset:hover{border-color:var(--accent);background:var(--light)}.button{background:var(--accent);border:0;border-radius:8px;color:#fff;padding:10px 14px}.subtle{color:var(--accent);background:var(--light)}.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.cards{display:grid;grid-template-columns:1.1fr 1.1fr 1fr;gap:12px;margin-bottom:15px}.stat{background:#fff;border:1px solid var(--line);border-radius:13px;padding:14px 18px}.stat span{font-size:11px;color:var(--muted)}.stat strong{display:block;font-size:21px;line-height:1.5;overflow-wrap:anywhere}.stat.primary{background:var(--accent);border-color:var(--accent);color:white}.stat.primary span{color:#dfe8ff}.charts{display:grid;grid-template-columns:1fr 1fr;gap:15px}.chart{padding:17px 12px 10px}.chart-title{display:flex;justify-content:space-between;align-items:center;padding:0 5px}.chart-title h2{font-size:14px;margin:0}.chart-title span{font-size:10px;color:var(--muted)}canvas{width:100%;height:320px;display:block}.legend{font-size:11px;color:var(--muted);padding:5px;display:flex;gap:13px;flex-wrap:wrap}.dot{display:inline-block;width:8px;height:8px;background:var(--accent);border-radius:50%;margin-right:4px}.gold{background:var(--gold)}.notice{background:var(--light);border-left:3px solid var(--accent);border-radius:5px;padding:12px 16px;font-size:13px;margin:15px 0}.formula{font-family:Georgia,serif;font-size:20px;color:var(--accent);margin:7px 0;overflow-wrap:anywhere}.fine{font-size:11px;color:var(--muted);margin-top:9px}.mathsteps{display:grid;grid-template-columns:1fr 1fr;gap:16px}.mathsteps>div{border-bottom:1px solid var(--line);padding:8px 0 15px}.tablewrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}th{font-size:11px;color:var(--muted);background:#f7f9fc}.lower{display:grid;grid-template-columns:1.15fr 1fr;gap:20px;margin-top:20px}details{padding:11px 0;border-bottom:1px solid var(--line)}summary{cursor:pointer;font-weight:650;font-size:14px}details p,details li{font-size:13px}ol{padding-left:23px;color:var(--muted)}textarea{width:100%;min-height:110px;padding:11px;border:1px solid #b9c9df;border-radius:9px;resize:vertical}.check{display:flex;gap:8px;align-items:flex-start;font-size:13px;font-weight:400}.check input{margin-top:6px;accent-color:var(--accent)}.status{font-size:12px;min-height:20px;color:var(--accent)}.error{color:#a2393b}.testrow{font-size:12px;padding:6px 0;border-bottom:1px solid var(--line)}footer{font-size:11px;color:var(--muted);margin-top:20px}[hidden]{display:none!important}:focus-visible{outline:3px solid #c7d7ff;outline-offset:2px}@media(max-width:1050px){.charts{grid-template-columns:1fr}.layout{grid-template-columns:245px minmax(0,1fr)}.cards{gap:8px}.stat{padding:12px}.stat strong{font-size:18px}.mathsteps,.lower{grid-template-columns:1fr}}@media(max-width:650px){header{padding:18px 16px}.brand{font-size:20px}.badge{font-size:10px}main{padding:0 15px 30px}h1{font-size:27px}.layout{grid-template-columns:1fr}.controls{position:static}.panel{padding:17px}.chart{padding:13px 8px}.cards{grid-template-columns:1fr 1fr}.stat:last-child{grid-column:1/-1}.stat:last-child strong{display:inline-block;margin-left:12px}canvas{height:300px}}
+</style>
+</head>
+<body>
+<header><div class="brand"><span>◯</span> 이차곡선 접선 탐구실</div><div class="badge">기하 · 접점 치환과 중근</div></header>
+<main>
+<section class="intro"><div class="eyebrow">CONIC LAB / GEOMETRY</div><h1>접점 치환은 왜 성립할까?</h1><p>접점을 옮기며 접선의 식, 연립방정식, 판별식이 연결되는 과정을 확인하세요.</p></section>
+<div class="layout">
+<aside class="panel controls"><span class="step">01 · 조건 정하기</span><h2>곡선과 접점</h2>
+<label for="type">이차곡선</label><select id="type"><option value="circle">원 · x² + y² = r²</option><option value="ellipse">타원 · x²/a² + y²/b² = 1</option><option value="parabola">포물선 · y² = 4px</option></select>
+<div id="rWrap"><label for="radius">반지름 r (0.25~6)</label><input id="radius" type="number" min="0.25" max="6" step="0.25" value="5"></div>
+<div id="ellipseWrap" hidden><label for="axisA">x축 방향 반축 a (0.25~6)</label><input id="axisA" type="number" min="0.25" max="6" step="0.25" value="3"><label for="axisB">y축 방향 반축 b (0.25~6)</label><input id="axisB" type="number" min="0.25" max="6" step="0.25" value="2"></div>
+<div id="pWrap" hidden><label for="focusP">포물선의 p (0.25~6)</label><input id="focusP" type="number" min="0.25" max="6" step="0.25" value="1"></div>
+<div id="angleWrap"><div class="row"><label for="angle">접점 각도 θ (도)</label><input id="angle" type="number" min="0" max="360" step="any" value="53.13010235415598"></div><input id="angleRange" type="range" min="0" max="360" step="0.1" value="53.13010235415598" aria-label="접점 각도 슬라이더"><div class="limits"><span>0°</span><span>360°</span></div></div>
+<div id="tWrap" hidden><div class="row"><label for="paramT">접점 매개변수 t</label><input id="paramT" type="number" min="-3" max="3" step="0.01" value="1"></div><input id="tRange" type="range" min="-3" max="3" step="0.01" value="1" aria-label="포물선 접점 슬라이더"><div class="limits"><span>−3</span><span>3</span></div></div>
+<p id="parameterMeaning" class="fine"></p><div id="inputStatus" class="status" role="status"></div>
+<div class="divider"></div><span class="step">02 · 세 가지 검증</span>
+<button class="preset" data-example="0">A. 원의 일반 접점<small>x²+y²=25 · (3, 4)</small></button>
+<button class="preset" data-example="1">B. 타원의 수직 접선<small>x²/9+y²/4=1 · (3, 0)</small></button>
+<button class="preset" data-example="2">C. 포물선의 꼭짓점<small>y²=4x · (0, 0)</small></button>
+<button class="button subtle" id="reset">처음 조건으로</button>
+</aside>
+<section>
+<div class="cards" aria-live="polite"><div class="stat"><span>접점 P(x₁, y₁)</span><strong id="pointValue">—</strong></div><div class="stat primary"><span>판별식 D = B² − 4AC</span><strong id="discValue">—</strong></div><div class="stat"><span>서로 다른 실교점</span><strong id="intersectionValue">—</strong></div></div>
+<div class="charts"><div class="panel chart"><div class="chart-title"><h2>이차곡선과 접선</h2><span>두 축의 단위 길이는 동일</span></div><canvas id="conicCanvas" role="img" aria-label="이차곡선, 접점과 접선의 그래프"></canvas><div class="legend"><span><i class="dot"></i>이차곡선</span><span><i class="dot gold"></i>접선 · 접점</span></div></div><div class="panel chart"><div class="chart-title"><h2>연립해서 얻은 이차식</h2><span id="polyAxisLabel"></span></div><canvas id="polyCanvas" role="img" aria-label="연립한 이차식의 그래프와 중근"></canvas><div class="legend"><span><i class="dot"></i>Q(w) = Aw²+Bw+C</span><span>◎ 중근</span></div></div></div>
+<div class="notice" id="notice" aria-live="polite"></div>
+<div class="panel"><span class="step">03 · 치환에서 중근까지</span><div class="mathsteps"><div><h3>① 곡선 위의 점</h3><div class="formula" id="curveEquation"></div><p id="pointCheck" class="fine"></p></div><div><h3>② 접점 치환</h3><div id="replacement"></div><div class="formula" id="tangentEquation"></div></div><div><h3>③ 접선을 곡선에 대입</h3><p id="substitution"></p><div class="formula" id="polynomial"></div><p class="fine">계산을 편하게 하려고 식 전체에 0이 아닌 수를 곱해도 근과 D=0 여부는 같습니다.</p></div><div><h3>④ 판별식과 중근</h3><div class="formula" id="rootEquation"></div><p id="discExplanation"></p></div></div>
+<div class="tablewrap"><table><thead><tr><th>확인 항목</th><th>계산 결과</th><th>판정 기준</th></tr></thead><tbody id="checks"></tbody></table></div><p class="fine">화면은 소수 여섯째 자리까지 표시합니다. ‘≈0’은 부동소수점 계산 오차를 고려한 표시이며, 정확한 접선식에서는 D=0입니다.</p></div>
+</section></div>
+<section class="lower"><div class="panel"><span class="step">수학적 설명과 검증</span><h2>공식 뒤에 있는 중근 조건</h2>
+<details><summary>왜 x²→xx₁, x→(x+x₁)/2일까?</summary><p>이차식 F(x,y)=Ax²+By²+Dx+Ey+F₀=0 위의 점 P(x₁,y₁)를 지나는 직선을 (x,y)=(x₁,y₁)+u(v₁,v₂)로 놓습니다. 대입하면 상수항은 F(P)=0이므로 없어지고, u의 일차항 계수는 (2Ax₁+D)v₁+(2By₁+E)v₂입니다. 접점 u=0이 중근이 되려면 이 계수가 0이어야 합니다.</p><p>이 조건을 직선 위의 (x,y)에 대해 쓰면 (2Ax₁+D)(x−x₁)+(2By₁+E)(y−y₁)=0입니다. 여기에 F(P)=0을 이용하여 정리하고 2로 나누면 Axx₁+Byy₁+D(x+x₁)/2+E(y+y₁)/2+F₀=0을 얻습니다. 제곱항은 곱으로, 일차항은 두 좌표의 평균으로 바뀌는 이유입니다. 여기서는 원·타원·포물선처럼 퇴화하지 않은 곡선을 다룹니다.</p></details>
+<details><summary>A · x²+y²=25, P(3,4)</summary><p>접점 조건은 3²+4²=25입니다. 치환하면 3x+4y=25이고, y=(25−3x)/4를 곡선에 대입하면 16x²+(25−3x)²=400입니다. 정리하면 25x²−150x+225=25(x−3)²=0입니다.</p><p>D=(−150)²−4·25·225=0, 중근 x=3, y=4입니다. 앱은 양변을 16으로 나눈 동치인 이차식을 표시합니다. 반지름 기울기 4/3과 접선 기울기 −3/4의 곱도 −1입니다.</p></details>
+<details><summary>B · x²/9+y²/4=1, P(3,0)</summary><p>접선은 3x/9=1, 즉 x=3입니다. 이를 대입하면 1+y²/4=1이므로 y²/4=0입니다. D=0이고 y=0이 중근입니다. 수직 접선은 y=mx+k로 표현할 수 없으므로, x=3을 대입해 y에 관한 방정식으로 확인합니다.</p></details>
+<details><summary>C · y²=4x, P(0,0)</summary><p>접선 공식 yy₁=2p(x+x₁)에 p=1, x₁=y₁=0을 넣으면 0=2x, 즉 x=0입니다. 곡선과 연립하면 y²=0이므로 y=0은 중근이고 D=0입니다. 꼭짓점에서도 접선 공식은 성립합니다.</p></details>
+<details><summary>추가 확인 · 포물선의 일반 접점</summary><p>포물선 y²=4x에서 t=1을 선택하면 P(1,2)입니다. 접선은 2y=2(x+1), 즉 y=x+1이고, 연립하면 (x+1)²=4x, 따라서 (x−1)²=0입니다. x→(x+x₁)/2라는 일차항 치환도 이 사례에서 확인할 수 있습니다.</p></details>
+<details><summary>기획 요약 · 바꿀 것과 확인할 것</summary><div class="tablewrap"><table><tr><th>항목</th><th>이 탐구의 선택</th></tr><tr><td>확인할 주장</td><td>곡선 위 접점에 치환을 적용한 직선과 곡선을 연립하면 접점이 중근이다.</td></tr><tr><td>입력</td><td>곡선 종류, r·a·b·p (0.25~6), θ (0~360°), t (−3~3)</td></tr><tr><td>출력</td><td>접선, 연립식, 판별식, 중근, 두 그래프</td></tr><tr><td>최소 기능</td><td>조건 변경과 접선·중근 계산, 세 예시 비교</td></tr><tr><td>불필요한 기능</td><td>로그인, 서버, 데이터베이스, 보고서 자동 작성</td></tr></table></div></details>
+<button class="button subtle" id="test" style="margin-top:14px">예시 3개 자동 비교</button><div id="testResults" aria-live="polite"></div><p class="fine">자동 비교는 프로그램 검사이며 직접 손계산한 기록을 대신하지 않습니다.</p>
+</div><div class="panel"><span class="step">직접 검증</span><h2>나의 확인 노트</h2><p style="font-size:13px">아래 계산을 직접 마친 뒤 체크하세요.</p><label class="check"><input id="check0" type="checkbox">A. 3x+4y=25를 대입해 25(x−3)²=0을 얻었다.</label><label class="check"><input id="check1" type="checkbox">B. 수직 접선 x=3을 대입해 y²/4=0을 얻었다.</label><label class="check"><input id="check2" type="checkbox">C. 꼭짓점의 접선 x=0을 대입해 y²=0을 얻었다.</label><label for="notes">관찰 · 수정 · 새 질문</label><textarea id="notes" placeholder="예: 왜 수직 접선에서는 x 대신 y에 관한 이차방정식을 사용해야 할까?"></textarea><div class="actions"><button class="button" id="save">노트 저장</button><button class="button subtle" id="export">검증 기록 내려받기</button><button class="button subtle" id="download">index.html 내려받기</button></div><div class="status" id="noteStatus" role="status"></div><p class="fine">노트는 이 브라우저에만 저장됩니다. 제출하려면 검증 기록을 내려받아 보관하세요.</p>
+<details open><summary>로그인 없이 실행하는 방법 · 3단계</summary><ol><li>‘index.html 내려받기’를 눌러 한 파일을 저장합니다.</li><li>저장된 index.html을 Chrome·Edge 등 웹브라우저로 엽니다. 휴대폰에서는 파일 앱의 ‘다른 앱으로 열기’를 사용할 수 있습니다.</li><li>A·B·C 예시를 눌러 결과를 확인하고, 조건을 바꿔 탐구합니다. 저장된 HTML은 외부 서버·로그인·데이터베이스 없이 실행됩니다.</li></ol><p class="fine">공유 주소의 접근 제한과 내려받은 HTML의 실행 조건은 별개입니다.</p></details>
+</div></section><footer>탐구 범위: 중심이 원점인 원·축에 평행한 타원·오른쪽으로 열린 포물선. 곡선 위 접점은 매개변수로 생성합니다. 퇴화 이차곡선과 쌍곡선은 이번 버전의 범위에 포함하지 않습니다.</footer>
+</main>
+<script>
+'use strict';
+// 수정 위치 2: 기본값과 세 검증 예시입니다. 크기 값은 양수여야 합니다.
+const DEFAULT={type:'circle',r:5,a:3,b:2,p:1,angle:Math.atan2(4,3)*180/Math.PI,t:1};
+const EXAMPLES=[{...DEFAULT},{...DEFAULT,type:'ellipse',angle:0},{...DEFAULT,type:'parabola',t:0}];
+const state={...DEFAULT};
+const $=id=>document.getElementById(id);
+function fmt(n){return Math.abs(n)<5e-10?'0':Number(n.toFixed(6)).toString()}
+function sn(n){return n<0?'− '+fmt(-n):'+ '+fmt(n)}
+function sci(n){return Math.abs(n)<1e-15?'0':Math.abs(n).toExponential(2)}
+function clean(n){return Math.abs(n)<1e-13?0:n}
+// 수정 위치 3: 곡선 F(x,y)=qx*x²+qy*y²+lx*x+c0와 접선 Lx*x+Ly*y=C를 만듭니다.
+// 접점을 곡선 위에서 생성하므로, 좌표를 독립적으로 입력했을 때의 조건 위반을 피합니다.
+function model(s){
+ let x,y,qx,qy,lx,c0,Lx,Ly,C;
+ if(s.type==='parabola'){
+  x=s.p*s.t*s.t;y=2*s.p*s.t;qx=0;qy=1;lx=-4*s.p;c0=0;
+  Lx=-2*s.p;Ly=y;C=2*s.p*x;
+ }else{
+  const angle=s.angle*Math.PI/180;
+  const ax=s.type==='circle'?s.r:s.a,by=s.type==='circle'?s.r:s.b;
+  x=clean(ax*Math.cos(angle));y=clean(by*Math.sin(angle));lx=0;
+  if(s.type==='circle'){qx=1;qy=1;c0=-s.r*s.r;Lx=x;Ly=y;C=s.r*s.r;}
+  else{qx=1/(s.a*s.a);qy=1/(s.b*s.b);c0=-1;Lx=x*qx;Ly=y*qy;C=1;}
+ }
+ // 수정 위치 4: 수직 접선을 처리합니다. 더 큰 계수로 나누어 계산 오차도 줄입니다.
+ // Ly로 나눌 수 있으면 y=m*x+k를 대입하고, 그렇지 않으면 x=m*y+k를 대입합니다.
+ let variable,m,k,A,B,Cq;
+ if(Math.abs(Ly)>=Math.abs(Lx)){
+  variable='x';m=-Lx/Ly;k=C/Ly;
+  A=qx+qy*m*m;B=2*qy*m*k+lx;Cq=qy*k*k+c0;
+ }else{
+  variable='y';m=-Ly/Lx;k=C/Lx;
+  A=qx*m*m+qy;B=2*qx*m*k+lx*m;Cq=qx*k*k+lx*k+c0;
+ }
+ const disc=B*B-4*A*Cq,root=-B/(2*A),expectedRoot=variable==='x'?x:y;
+ const scale=1+Math.abs(B*B)+Math.abs(4*A*Cq);
+ return {x,y,qx,qy,lx,c0,Lx,Ly,C,variable,m,k,A,B,Cq,disc,root,expectedRoot,
+  curveResidual:qx*x*x+qy*y*y+lx*x+c0,lineResidual:Lx*x+Ly*y-C,
+  tangentOK:A>0&&Math.abs(disc)<1e-10*scale&&Math.abs(root-expectedRoot)<1e-8*(1+Math.abs(expectedRoot))};
+}
+let current=model(state);
+function tangentText(d){if(Math.abs(d.Ly)<1e-12)return 'x = '+fmt(d.C/d.Lx);if(Math.abs(d.Lx)<1e-12)return 'y = '+fmt(d.C/d.Ly);return fmt(d.Lx)+'x '+sn(d.Ly)+'y = '+fmt(d.C)}
+// 수정 위치 5: 그래프 공통 좌표계. 원이 타원처럼 보이지 않도록 왼쪽은 같은 축척을 사용합니다.
+function graph(canvas,xmin,xmax,ymin,ymax,equal){
+ const w=canvas.clientWidth,h=canvas.clientHeight,p={l:43,r:16,t:22,b:29},dw=w-p.l-p.r,dh=h-p.t-p.b;
+ if(equal){const scale=Math.max((xmax-xmin)/dw,(ymax-ymin)/dh),cx=(xmin+xmax)/2,cy=(ymin+ymax)/2;xmin=cx-scale*dw/2;xmax=cx+scale*dw/2;ymin=cy-scale*dh/2;ymax=cy+scale*dh/2;}
+ const ratio=window.devicePixelRatio||1;canvas.width=w*ratio;canvas.height=h*ratio;const c=canvas.getContext('2d');c.scale(ratio,ratio);
+ const v={xmin,xmax,ymin,ymax,X:x=>p.l+(x-xmin)/(xmax-xmin)*dw,Y:y=>h-p.b-(y-ymin)/(ymax-ymin)*dh};
+ c.fillStyle='#fbfcff';c.fillRect(0,0,w,h);c.font='10px system-ui';c.lineWidth=1;
+ function step(span){const raw=span/5,base=10**Math.floor(Math.log10(raw)),q=raw/base;return(q<=1?1:q<=2?2:q<=5?5:10)*base;}
+ const sx=step(xmax-xmin),sy=step(ymax-ymin);
+ for(let x=Math.ceil(xmin/sx)*sx;x<=xmax;x+=sx){c.strokeStyle='#e5eaf3';c.beginPath();c.moveTo(v.X(x),p.t);c.lineTo(v.X(x),h-p.b);c.stroke();c.fillStyle='#79879a';c.fillText(fmt(x),v.X(x)-6,h-9);}
+ for(let y=Math.ceil(ymin/sy)*sy;y<=ymax;y+=sy){c.strokeStyle='#e5eaf3';c.beginPath();c.moveTo(p.l,v.Y(y));c.lineTo(w-p.r,v.Y(y));c.stroke();c.fillStyle='#79879a';c.fillText(fmt(y),3,v.Y(y)+3);}
+ c.strokeStyle='#9babc0';c.beginPath();c.moveTo(v.X(0),p.t);c.lineTo(v.X(0),h-p.b);c.moveTo(p.l,v.Y(0));c.lineTo(w-p.r,v.Y(0));c.stroke();
+ c.save();c.beginPath();c.rect(p.l,p.t,dw,dh);c.clip();return {c,v};
+}
+function plot(c,v,fn,start,end,color,width=2.5){c.strokeStyle=color;c.lineWidth=width;c.beginPath();for(let i=0;i<=500;i++){const pt=fn(start+(end-start)*i/500);const X=Math.max(-10000,Math.min(10000,v.X(pt[0]))),Y=Math.max(-10000,Math.min(10000,v.Y(pt[1])));i?c.lineTo(X,Y):c.moveTo(X,Y);}c.stroke();}
+function dot(c,v,x,y,label){c.fillStyle='#b87925';c.strokeStyle='#fff';c.lineWidth=2;c.beginPath();c.arc(v.X(x),v.Y(y),5,0,2*Math.PI);c.fill();c.stroke();c.fillStyle='#865818';c.font='bold 11px system-ui';c.fillText(label,v.X(x)+9,v.Y(y)-9);}
+function draw(){
+ const s=state,d=current;let xmin,xmax,ymin,ymax;
+ if(s.type==='parabola'){const extent=Math.max(1.4,Math.abs(s.t)+.7);xmin=-s.p*.6;xmax=s.p*extent*extent;ymin=-2*s.p*extent;ymax=2*s.p*extent;}
+ else{const a=s.type==='circle'?s.r:s.a,b=s.type==='circle'?s.r:s.b;xmin=-a*1.3;xmax=a*1.3;ymin=-b*1.3;ymax=b*1.3;}
+ let {c,v}=graph($('conicCanvas'),xmin,xmax,ymin,ymax,true);
+ if(s.type==='parabola'){const ext=Math.max(1.4,Math.abs(s.t)+.7);plot(c,v,t=>[s.p*t*t,2*s.p*t],-ext,ext,'#345bb3');}
+ else{const a=s.type==='circle'?s.r:s.a,b=s.type==='circle'?s.r:s.b;plot(c,v,t=>[a*Math.cos(t),b*Math.sin(t)],0,2*Math.PI,'#345bb3');}
+ if(Math.abs(d.Ly)>=Math.abs(d.Lx))plot(c,v,x=>[x,d.m*x+d.k],v.xmin,v.xmax,'#b87925',2);
+ else plot(c,v,y=>[d.m*y+d.k,y],v.ymin,v.ymax,'#b87925',2);
+ dot(c,v,d.x,d.y,'P');c.restore();
+ const range=Math.max(1,Math.abs(d.root)*.6),ymaxQ=d.A*range*range*1.3;
+ ({c,v}=graph($('polyCanvas'),d.root-range,d.root+range,-ymaxQ*.12,ymaxQ,false));
+ // 접선일 때 Q(w)=A(w-root)²라는 동치 형태를 사용하여 그래프의 상쇄 오차를 줄입니다.
+ plot(c,v,w=>[w,d.A*(w-d.root)**2-d.disc/(4*d.A)],v.xmin,v.xmax,'#345bb3');dot(c,v,d.root,0,`${d.variable}=${fmt(d.root)}`);c.restore();
+}
+function render(){
+ const s=state,d=current=model(s);$('pointValue').textContent=`(${fmt(d.x)}, ${fmt(d.y)})`;$('discValue').textContent=d.disc===0?'0':d.tangentOK?'≈ 0':fmt(d.disc);$('intersectionValue').textContent=d.tangentOK?'1개 · 중근':'검증 필요';
+ $('polyAxisLabel').textContent=`가로축 ${d.variable} · 세로축 Q(${d.variable})`;
+ $('curveEquation').textContent=s.type==='circle'?`x²+y²=${fmt(s.r*s.r)}`:s.type==='ellipse'?`x²/${fmt(s.a*s.a)}+y²/${fmt(s.b*s.b)}=1`:`y²=${fmt(4*s.p)}x`;
+ $('pointCheck').textContent=`접점 대입 잔차 |F(P)| = ${sci(d.curveResidual)}`;
+ $('replacement').textContent=s.type==='parabola'?'y² → yy₁, x → (x+x₁)/2':'x² → xx₁, y² → yy₁';
+ $('tangentEquation').textContent=tangentText(d);
+ $('substitution').textContent=(d.variable==='x'?'y':'x')+` = ${fmt(d.m)}${d.variable} ${sn(d.k)}를 곡선에 대입합니다.`;
+ $('polynomial').textContent=`${fmt(d.A)}${d.variable}² ${sn(d.B)}${d.variable} ${sn(d.Cq)} = 0`;
+ $('rootEquation').textContent=`${d.variable} = −B/(2A) = ${fmt(d.root)}`;
+ $('discExplanation').textContent=`D = (${fmt(d.B)})² − 4×(${fmt(d.A)})×(${fmt(d.Cq)}) ≈ 0. 중근은 접점의 ${d.variable}좌표와 같습니다.`;
+ const checks=[['접점이 곡선 위에 있는가',sci(d.curveResidual),'F(P)=0'],['접선이 접점을 지나는가',sci(d.lineResidual),'L(P)=0'],['판별식은 0인가',sci(d.disc),'정확한 식에서 D=0'],['중근이 접점 좌표와 같은가',sci(d.root-d.expectedRoot),'|중근−접점 좌표|=0']];
+ $('checks').innerHTML=checks.map(row=>'<tr>'+row.map(t=>`<td>${t}</td>`).join('')+'</tr>').join('');
+ $('notice').textContent=Math.abs(d.Ly)<1e-12?'수직 접선입니다. y=mx+k 대신 x를 y의 식으로 나타내어 연립하므로, 기울기로 나누지 않아도 중근을 확인할 수 있습니다.':'직선과 곡선을 연립한 이차식의 판별식이 0이고, 중근이 접점 좌표와 일치하는지 함께 확인하세요.';
+ $('parameterMeaning').textContent=s.type==='parabola'?'접점은 (pt², 2pt)입니다. 사이트에서 쓰는 포물선 계수 a를 여기서는 타원의 a와 구별하려고 p로 표시합니다.':s.type==='circle'?'접점은 (r cosθ, r sinθ)입니다. 항상 원 위에 있도록 정합니다.':'접점은 (a cosθ, b sinθ)입니다. 항상 타원 위에 있도록 정합니다.';draw();
+}
+// 수정 위치 6: 입력 범위를 바꿀 때는 HTML의 min/max와 아래 범위를 함께 수정합니다.
+const fields=[['radius','r',.25,6],['axisA','a',.25,6],['axisB','b',.25,6],['focusP','p',.25,6],['angle','angle',0,360],['paramT','t',-3,3]];
+function sync(){ $('type').value=state.type;fields.forEach(([id,key])=>$(id).value=state[key]);$('angleRange').value=state.angle;$('tRange').value=state.t;$('rWrap').hidden=state.type!=='circle';$('ellipseWrap').hidden=state.type!=='ellipse';$('pWrap').hidden=state.type!=='parabola';$('angleWrap').hidden=state.type==='parabola';$('tWrap').hidden=state.type!=='parabola';$('inputStatus').textContent='';render(); }
+fields.forEach(([id,key,min,max])=>$(id).addEventListener('input',()=>{const val=$(id).valueAsNumber;if(!Number.isFinite(val)||val<min||val>max){$('inputStatus').textContent=`${min}~${max} 범위의 숫자를 입력하세요. 그래프는 마지막 유효한 조건을 유지합니다.`;return;}state[key]=val;$('inputStatus').textContent='';if(key==='angle')$('angleRange').value=val;if(key==='t')$('tRange').value=val;render();}));
+$('type').onchange=()=>{state.type=$('type').value;sync();};$('angleRange').oninput=()=>{state.angle=Number($('angleRange').value);$('angle').value=state.angle;render();};$('tRange').oninput=()=>{state.t=Number($('tRange').value);$('paramT').value=state.t;render();};
+// 수정 위치 7: 예시 버튼과 실제 계산값 비교입니다. 기대값은 독립적인 손계산 식에서 정합니다.
+document.querySelectorAll('[data-example]').forEach(btn=>btn.onclick=()=>{Object.assign(state,EXAMPLES[Number(btn.dataset.example)]);sync();});$('reset').onclick=()=>{Object.assign(state,DEFAULT);sync();};
+$('test').onclick=()=>{const expected=[{x:3,y:4,variable:'x',root:3},{x:3,y:0,variable:'y',root:0},{x:0,y:0,variable:'y',root:0}];$('testResults').innerHTML=EXAMPLES.map((s,i)=>{const d=model(s),e=expected[i],ok=d.tangentOK&&Math.abs(d.x-e.x)<1e-10&&Math.abs(d.y-e.y)<1e-10&&d.variable===e.variable&&Math.abs(d.root-e.root)<1e-10;return `<div class="testrow">${ok?'✓ 일치':'✕ 점검 필요'} · ${'ABC'[i]} : 중근 ${e.variable}=${fmt(e.root)}, D≈0</div>`;}).join('');};
+// 수정 위치 8: 노트 저장과 내려받기. 외부 서버로 보내는 기능은 없습니다.
+function noteData(){return {checks:[0,1,2].map(i=>$('check'+i).checked),notes:$('notes').value};}
+function download(name,content,mime){const url=URL.createObjectURL(new Blob([content],{type:mime})),link=document.createElement('a');link.href=url;link.download=name;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+$('save').onclick=()=>{try{localStorage.setItem('conic-notes-v1',JSON.stringify(noteData()));$('noteStatus').textContent='이 브라우저에 저장했어요.';}catch{$('noteStatus').textContent='저장이 제한되어 있어요. 검증 기록을 내려받아 주세요.';}};
+$('export').onclick=()=>{const note=noteData(),d=current;download('conic-verification.txt',`기하 · 이차곡선 접선 검증\n${$('curveEquation').textContent}\n접점: ${$('pointValue').textContent}\n접선: ${tangentText(d)}\n연립식: ${$('polynomial').textContent}\n판별식(수치): ${d.disc}\n중근: ${d.variable}=${fmt(d.root)}\n\n직접 손계산 확인(사용자 표시):\n${note.checks.map((v,i)=>'ABC'[i]+': '+(v?'확인함':'미확인')).join('\n')}\n\n관찰 기록:\n${note.notes}`,'text/plain;charset=utf-8');$('noteStatus').textContent='검증 기록을 내려받았어요.';};
+$('download').onclick=()=>{const copy=document.documentElement.cloneNode(true);copy.querySelector('#notes').textContent='';copy.querySelectorAll('input[type=checkbox]').forEach(el=>el.removeAttribute('checked'));download('index.html','<!doctype html>\n'+copy.outerHTML,'text/html;charset=utf-8');$('noteStatus').textContent='index.html을 웹브라우저에서 열어 사용하세요.';};
+try{const note=JSON.parse(localStorage.getItem('conic-notes-v1'));if(note){$('notes').value=note.notes||'';[0,1,2].forEach(i=>$('check'+i).checked=!!note.checks?.[i]);}}catch{}
+new ResizeObserver(draw).observe($('conicCanvas'));sync();
+</script>
+</body></html>

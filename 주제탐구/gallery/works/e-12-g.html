@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>좌표축 회전과 이차곡선 탐구</title>
+
+<style>
+    /* =====================================================
+       [초보자 수정 위치 ①]
+       아래 부분은 웹앱의 색상, 글자 크기, 여백 등을 수정하는 곳입니다.
+       ===================================================== */
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        font-family: Arial, "Noto Sans KR", sans-serif;
+        background: #f5f6f8;
+        color: #222;
+        line-height: 1.6;
+    }
+
+    .container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 26px;
+        margin-bottom: 8px;
+    }
+
+    h2 {
+        font-size: 20px;
+        margin-top: 0;
+    }
+
+    .intro {
+        color: #555;
+        margin-bottom: 20px;
+    }
+
+    .card {
+        background: white;
+        border-radius: 14px;
+        padding: 20px;
+        margin-bottom: 18px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .input-area {
+        display: grid;
+        grid-template-columns: 1fr 120px;
+        gap: 15px;
+        align-items: center;
+    }
+
+    input[type="number"] {
+        width: 100%;
+        padding: 10px;
+        font-size: 17px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+    }
+
+    input[type="range"] {
+        width: 100%;
+    }
+
+    .angle-value {
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    .equation {
+        background: #f1f3f5;
+        padding: 15px;
+        border-radius: 10px;
+        font-family: "Times New Roman", serif;
+        font-size: 20px;
+        overflow-x: auto;
+    }
+
+    .important {
+        font-weight: bold;
+    }
+
+    .warning {
+        color: #b00020;
+        font-weight: bold;
+        margin-top: 10px;
+    }
+
+    .success {
+        color: #176b36;
+        font-weight: bold;
+    }
+
+    .graph-wrap {
+        text-align: center;
+    }
+
+    canvas {
+        width: 100%;
+        max-width: 650px;
+        height: auto;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        background: white;
+    }
+
+    .two-column {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+    }
+
+    .coefficient {
+        font-size: 18px;
+        margin: 7px 0;
+    }
+
+    .test-box {
+        border-left: 4px solid #555;
+        padding-left: 12px;
+        margin-top: 10px;
+    }
+
+    .small {
+        font-size: 14px;
+        color: #666;
+    }
+
+    @media (max-width: 700px) {
+        .container {
+            padding: 12px;
+        }
+
+        h1 {
+            font-size: 22px;
+        }
+
+        .two-column {
+            grid-template-columns: 1fr;
+        }
+
+        .input-area {
+            grid-template-columns: 1fr;
+        }
+
+        .equation {
+            font-size: 17px;
+        }
+    }
+</style>
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <h1>좌표축 회전과 이차곡선의 성질 탐구</h1>
+
+    <p class="intro">
+        회전각을 바꾸면서 이차곡선의 방정식 계수와 교차항이
+        어떻게 변하는지 확인하고, 회전 전후의 그래프를 비교합니다.
+    </p>
+
+
+    <!-- =====================================================
+         입력 영역
+         ===================================================== -->
+
+    <div class="card">
+
+        <h2>1. 회전각 입력</h2>
+
+        <div class="input-area">
+
+            <div>
+                <input
+                    type="range"
+                    id="angleSlider"
+                    min="0"
+                    max="360"
+                    step="1"
+                    value="0"
+                >
+
+                <p class="small">
+                    입력 범위: 0° ~ 360°
+                </p>
+            </div>
+
+            <div>
+                <input
+                    type="number"
+                    id="angleInput"
+                    min="0"
+                    max="360"
+                    step="1"
+                    value="0"
+                >
+            </div>
+
+        </div>
+
+        <p>
+            현재 회전각:
+            <span id="angleText" class="angle-value">0°</span>
+        </p>
+
+        <p id="inputMessage" class="small"></p>
+
+    </div>
+
+
+    <!-- =====================================================
+         수학식 설명
+         ===================================================== -->
+
+    <div class="card">
+
+        <h2>2. 사용한 수학식</h2>
+
+        <p>
+            원래 이차곡선은 다음과 같이 설정했습니다.
+        </p>
+
+        <div class="equation">
+            x² / 9 + y² / 4 = 1
+        </div>
+
+        <p>
+            좌표축을 θ만큼 회전시켰다고 생각하고
+            다음 치환을 사용합니다.
+        </p>
+
+        <div class="equation">
+            x = u cosθ − v sinθ
+            <br>
+            y = u sinθ + v cosθ
+        </div>
+
+        <p>
+            이 식을 원래 방정식에 대입하면
+            새로운 좌표 u, v에 대한 방정식이 만들어집니다.
+        </p>
+
+        <div class="equation">
+            (u cosθ − v sinθ)² / 9
+            +
+            (u sinθ + v cosθ)² / 4
+            = 1
+        </div>
+
+        <p>
+            특히 uv 교차항의 계수를 확인합니다.
+        </p>
+
+        <div class="equation">
+            B' = B cos(2θ) − (A − C) sin(2θ)
+        </div>
+
+        <p class="small">
+            여기서 원래 식 x²/9 + y²/4 = 1에서는
+            A = 1/9, B = 0, C = 1/4입니다.
+            따라서 웹앱에서는 이 값을 이용하여 B'를 계산합니다.
+        </p>
+
+    </div>
+
+
+    <!-- =====================================================
+         계수 출력
+         ===================================================== -->
+
+    <div class="card">
+
+        <h2>3. 회전 후 방정식의 계수</h2>
+
+        <div class="two-column">
+
+            <div>
+                <p class="coefficient">
+                    u²의 계수:
+                    <span id="coefU2">0</span>
+                </p>
+
+                <p class="coefficient">
+                    uv의 계수:
+                    <span id="coefUV">0</span>
+                </p>
+
+                <p class="coefficient">
+                    v²의 계수:
+                    <span id="coefV2">0</span>
+                </p>
+            </div>
+
+            <div>
+
+                <p>
+                    교차항 계수 B':
+                </p>
+
+                <div class="equation">
+                    B' =
+                    <span id="formulaB">0</span>
+                </div>
+
+                <p id="crossMessage"></p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         그래프
+         ===================================================== -->
+
+    <div class="card graph-wrap">
+
+        <h2>4. 그래프 비교</h2>
+
+        <canvas id="graph" width="650" height="500"></canvas>
+
+        <p class="small">
+            실선: 원래 타원<br>
+            점선: 회전된 좌표에서 나타난 타원
+        </p>
+
+        <p id="graphMessage"></p>
+
+    </div>
+
+
+    <!-- =====================================================
+         보존되는 성질
+         ===================================================== -->
+
+    <div class="card">
+
+        <h2>5. 회전변환에서 무엇이 보존되는가?</h2>
+
+        <div class="two-column">
+
+            <div>
+
+                <p>
+                    <span class="important">거리</span>
+                    → 보존됨
+                </p>
+
+                <p>
+                    <span class="important">각도</span>
+                    → 보존됨
+                </p>
+
+                <p>
+                    <span class="important">평행성</span>
+                    → 보존됨
+                </p>
+
+            </div>
+
+            <div>
+
+                <p>
+                    <span class="important">면적</span>
+                    → 보존됨
+                </p>
+
+                <p>
+                    <span class="important">중점</span>
+                    → 보존됨
+                </p>
+
+                <p>
+                    <span class="important">곡선의 모양과 크기</span>
+                    → 보존됨
+                </p>
+
+            </div>
+
+        </div>
+
+        <p class="small">
+            중요한 점은 '방정식의 계수'와 '실제 도형의 기하적 성질'을
+            구분하는 것입니다. 좌표계를 바꾸면 같은 도형도 다른 식으로
+            표현될 수 있습니다.
+        </p>
+
+    </div>
+
+
+    <!-- =====================================================
+         손계산 검증
+         ===================================================== -->
+
+    <div class="card">
+
+        <h2>6. 손계산과 웹앱 결과 비교</h2>
+
+        <p>
+            다음 세 가지 입력을 직접 계산한 뒤 웹앱 결과와 비교해 보세요.
+        </p>
+
+
+        <div class="test-box">
+
+            <p>
+                <strong>① 경계값: θ = 0°</strong>
+            </p>
+
+            <p>
+                cos(0°) = 1, sin(0°) = 0을 이용하여
+                원래 방정식과 같은 결과가 나오는지 확인합니다.
+            </p>
+
+        </div>
+
+
+        <div class="test-box">
+
+            <p>
+                <strong>② 일반값: θ = 30°</strong>
+            </p>
+
+            <p>
+                cos(60°), sin(60°)을 이용해
+                B'를 직접 계산한 뒤 웹앱의 B'와 비교합니다.
+            </p>
+
+        </div>
+
+
+        <div class="test-box">
+
+            <p>
+                <strong>③ 특수값: θ = 45°</strong>
+            </p>
+
+            <p>
+                2θ = 90°가 되므로 cos(90°), sin(90°)을 이용하여
+                B'를 직접 계산합니다.
+                이 값이 실제 웹앱에서 표시되는 값과 같은지 확인합니다.
+            </p>
+
+        </div>
+
+        <p class="small">
+            이 세 결과를 직접 계산해서 일치하는지 확인하는 것이
+            이 웹앱의 핵심 검증 과정입니다.
+        </p>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* ============================================================
+   [초보자 수정 위치 ②]
+   기본 이차곡선의 계수입니다.
+
+   x²/9 + y²/4 = 1
+
+   따라서
+   A = 1/9
+   B = 0
+   C = 1/4
+
+   다른 이차곡선을 실험하고 싶다면 이 부분을 수정할 수 있습니다.
+   ============================================================ */
+
+const A = 1 / 9;
+const B = 0;
+const C = 1 / 4;
+
+
+/* ============================================================
+   HTML 요소 가져오기
+   ============================================================ */
+
+const slider = document.getElementById("angleSlider");
+const angleInput = document.getElementById("angleInput");
+
+const angleText = document.getElementById("angleText");
+const inputMessage = document.getElementById("inputMessage");
+
+const coefU2 = document.getElementById("coefU2");
+const coefUV = document.getElementById("coefUV");
+const coefV2 = document.getElementById("coefV2");
+
+const formulaB = document.getElementById("formulaB");
+const crossMessage = document.getElementById("crossMessage");
+
+const canvas = document.getElementById("graph");
+const ctx = canvas.getContext("2d");
+
+const graphMessage = document.getElementById("graphMessage");
+
+
+/* ============================================================
+   숫자를 보기 좋게 만드는 함수
+   ============================================================ */
+
+function niceNumber(value) {
+
+    if (Math.abs(value) < 0.0000001) {
+        return "0";
+    }
+
+    return value.toFixed(5);
+}
+
+
+/* ============================================================
+   각도 입력 처리
+   ============================================================ */
+
+function setAngle(value) {
+
+    let angle = Number(value);
+
+    /*
+       잘못된 입력을 확인합니다.
+    */
+
+    if (!Number.isFinite(angle)) {
+
+        inputMessage.textContent =
+            "각도를 숫자로 입력해 주세요.";
+
+        return;
+    }
+
+    if (angle < 0 || angle > 360) {
+
+        inputMessage.textContent =
+            "입력 범위는 0° 이상 360° 이하입니다.";
+
+        return;
+    }
+
+    inputMessage.textContent =
+        "입력이 정상적으로 설정되었습니다.";
+
+    slider.value = angle;
+    angleInput.value = angle;
+
+    update(angle);
+}
+
+
+/* ============================================================
+   슬라이더와 숫자 입력 연결
+   ============================================================ */
+
+slider.addEventListener("input", function() {
+
+    setAngle(slider.value);
+
+});
+
+
+angleInput.addEventListener("input", function() {
+
+    setAngle(angleInput.value);
+
+});
+
+
+/* ============================================================
+   회전 후 계수 계산
+   ============================================================ */
+
+function update(angleDegree) {
+
+    /*
+       JavaScript의 sin, cos 함수는
+       라디안(rad)을 사용합니다.
+
+       따라서
+       각도 × π / 180
+       으로 바꿉니다.
+    */
+
+    const theta = angleDegree * Math.PI / 180;
+
+
+    /*
+       2차식의 계수 변화 공식
+
+       A' = A cos²θ + B sinθ cosθ + C sin²θ
+
+       B' = B cos(2θ) - (A-C) sin(2θ)
+
+       C' = A sin²θ - B sinθ cosθ + C cos²θ
+
+       이번 앱에서는 B=0입니다.
+    */
+
+    const cosT = Math.cos(theta);
+    const sinT = Math.sin(theta);
+
+    const Anew =
+        A * cosT * cosT
+        + B * sinT * cosT
+        + C * sinT * sinT;
+
+    const Bnew =
+        B * Math.cos(2 * theta)
+        - (A - C) * Math.sin(2 * theta);
+
+    const Cnew =
+        A * sinT * sinT
+        - B * sinT * cosT
+        + C * cosT * cosT;
+
+
+    /*
+       계산 결과 화면에 표시
+    */
+
+    angleText.textContent =
+        angleDegree + "°";
+
+    coefU2.textContent =
+        niceNumber(Anew);
+
+    coefUV.textContent =
+        niceNumber(Bnew);
+
+    coefV2.textContent =
+        niceNumber(Cnew);
+
+    formulaB.textContent =
+        niceNumber(Bnew);
+
+
+    /*
+       교차항에 대한 설명
+    */
+
+    if (Math.abs(Bnew) < 0.000001) {
+
+        crossMessage.textContent =
+            "현재 계산에서 uv 교차항의 계수가 0에 가깝습니다.";
+
+        crossMessage.className = "success";
+
+    } else {
+
+        crossMessage.textContent =
+            "현재 방정식에는 uv 교차항이 존재합니다.";
+
+        crossMessage.className = "warning";
+    }
+
+
+    /*
+       그래프 다시 그리기
+    */
+
+    drawGraph(angleDegree, Anew, Bnew, Cnew);
+
+}
+
+
+/* ============================================================
+   그래프 그리기
+   ============================================================ */
+
+function drawGraph(angleDegree, Anew, Bnew, Cnew) {
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+
+    /*
+       그래프의 중심과 확대 정도입니다.
+
+       [초보자 수정 위치 ③]
+       그래프를 크게/작게 보고 싶으면 scale 값을 수정하세요.
+    */
+
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+
+    const scale = 55;
+
+
+    /* 좌표를 화면 좌표로 바꾸는 함수 */
+
+    function screenX(x) {
+        return centerX + x * scale;
+    }
+
+    function screenY(y) {
+        return centerY - y * scale;
+    }
+
+
+    /* ========================================================
+       좌표축
+       ======================================================== */
+
+    ctx.beginPath();
+
+    ctx.moveTo(0, centerY);
+    ctx.lineTo(canvas.width, centerY);
+
+    ctx.moveTo(centerX, 0);
+    ctx.lineTo(centerX, canvas.height);
+
+    ctx.strokeStyle = "#999";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+
+    /* ========================================================
+       원래 타원 그리기
+
+       x²/9 + y²/4 = 1
+
+       x = 3cos(t)
+       y = 2sin(t)
+       ======================================================== */
+
+    ctx.beginPath();
+
+    for (let i = 0; i <= 360; i++) {
+
+        const t = i * Math.PI / 180;
+
+        const x = 3 * Math.cos(t);
+        const y = 2 * Math.sin(t);
+
+        const sx = screenX(x);
+        const sy = screenY(y);
+
+        if (i === 0) {
+            ctx.moveTo(sx, sy);
+        } else {
+            ctx.lineTo(sx, sy);
+        }
+    }
+
+    ctx.strokeStyle = "#222";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+
+    /* ========================================================
+       회전된 타원
+
+       원래 타원의 점
+
+       x = 3cos(t)
+       y = 2sin(t)
+
+       을 θ만큼 회전합니다.
+
+       X = x cosθ - y sinθ
+       Y = x sinθ + y cosθ
+
+       ======================================================== */
+
+    const theta =
+        angleDegree * Math.PI / 180;
+
+    ctx.beginPath();
+
+    for (let i = 0; i <= 360; i++) {
+
+        const t = i * Math.PI / 180;
+
+        const x = 3 * Math.cos(t);
+        const y = 2 * Math.sin(t);
+
+        const X =
+            x * Math.cos(theta)
+            - y * Math.sin(theta);
+
+        const Y =
+            x * Math.sin(theta)
+            + y * Math.cos(theta);
+
+        const sx = screenX(X);
+        const sy = screenY(Y);
+
+        if (i === 0) {
+            ctx.moveTo(sx, sy);
+        } else {
+            ctx.lineTo(sx, sy);
+        }
+    }
+
+    /*
+       점선으로 회전된 타원을 표시합니다.
+    */
+
+    ctx.setLineDash([8, 6]);
+
+    ctx.strokeStyle = "#555";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.setLineDash([]);
+
+
+    /* ========================================================
+       그래프 설명
+       ======================================================== */
+
+    if (angleDegree === 0) {
+
+        graphMessage.textContent =
+            "θ=0°에서는 회전 전후의 타원이 같은 위치에 있습니다.";
+
+    } else {
+
+        graphMessage.textContent =
+            "회전각이 변하면서 타원의 방향이 달라집니다. " +
+            "하지만 타원의 크기와 모양은 그대로입니다.";
+    }
+
+}
+
+
+/* ============================================================
+   프로그램 시작
+   ============================================================ */
+
+update(0);
+
+</script>
+
+</body>
+</html>

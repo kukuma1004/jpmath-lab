@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>포물선의 반사 성질 탐구</title>
+<style>
+body{margin:0;background:#eaf6ff;color:#182338;font:16px/1.55 Arial,'Malgun Gothic',sans-serif}main{max-width:1050px;margin:auto;padding:20px}
+header,.card{background:white;border:1px solid #d2e4f5;border-radius:16px;padding:20px;margin-bottom:16px}header{background:#d7edff}
+.layout{display:grid;grid-template-columns:280px 1fr;gap:16px}.field{margin:14px 0}label{display:block;font-weight:bold}input[type=range]{width:100%}input[type=number]{width:100%;padding:8px;box-sizing:border-box}
+canvas{width:100%;height:auto;border:1px solid #dce8f3;border-radius:10px}.stats{display:flex;gap:10px;flex-wrap:wrap}.stat{background:#f0f7ff;padding:10px;border-radius:10px;flex:1;min-width:130px}
+.formula{background:#f4f8fc;padding:10px;border-left:4px solid #2672ce;margin:8px 0;font-family:Cambria,serif}
+button{padding:9px 12px;border:1px solid #b9cde2;border-radius:8px;background:white;cursor:pointer}
+small,.hint{color:#5c6d82}@media(max-width:760px){.layout{grid-template-columns:1fr}}
+</style>
+<main>
+<header><h1>포물선의 초점과 반사 성질</h1>
+<p>포물선 <b>y² = 4px</b>에서 축과 평행하게 입사한 광선이 반사 후 초점을 지나는지 벡터와 거리로 확인합니다.</p></header>
+<div class="layout">
+<section class="card"><h2>입력 조건</h2>
+<div class="field"><label>초점 거리 p: <span id="pv">2.0</span></label><input id="p" type="range" min=".5" max="5" step=".1" value="2"></div>
+<div class="field"><label>접점 매개변수 t: <span id="tv">1.0</span></label><input id="t" type="range" min="-2.5" max="2.5" step=".1" value="1"></div>
+<div class="field"><label>초점 통과 판정 허용 오차</label><input id="tol" type="number" min=".000001" step=".0001" value=".001"></div>
+<p class="hint">접점 P=(pt², 2pt), 초점 F=(p,0)입니다. p는 양수여야 합니다.</p>
+<button id="reset">기본값 복원</button>
+</section>
+<section class="card"><h2>광선 경로</h2><canvas id="plot" width="800" height="480"></canvas>
+<div class="stats"><div class="stat"><small>초점 F</small><div id="focus">—</div></div><div class="stat"><small>접점 P</small><div id="point">—</div></div><div class="stat"><small>초점까지 거리</small><div id="dist">—</div></div></div><p id="status"></p></section>
+</div>
+<section class="card"><h2>계산에 사용한 수학</h2>
+<div class="formula">포물선: y²=4px　　초점: F=(p,0)</div>
+<div class="formula">접점: P=(pt²,2pt)　　법선 방향벡터: n=(1,−t)</div>
+<div class="formula">반사 방향벡터: r = d − 2[(d·n)/(n·n)]n, 입사 방향 d=(−1,0)</div>
+<p>반사 공식은 입사 방향에서 법선 방향 성분을 두 배만큼 빼는 식입니다. 웹앱은 반사 광선의 직선과 초점 사이 최단 거리를 계산합니다. 결과는 수학적 모델의 계산값이며 실험 결과가 아닙니다.</p>
+</section>
+<section class="card"><h2>손계산과 웹앱 결과 검증</h2>
+<p>아래 세 입력값 각각에 대해 P와 F를 손으로 구하고, 벡터 반사 공식으로 방향을 계산한 뒤 웹앱의 좌표와 거리를 비교하세요.</p>
+<table><tr><th>유형</th><th>p</th><th>t</th><th>확인 사항</th></tr>
+<tr><td>꼭짓점</td><td>0.5</td><td>0</td><td>꼭짓점의 접선·반사 방향</td></tr>
+<tr><td>일반 위치</td><td>2</td><td>1</td><td>접점·법선·반사 방향</td></tr>
+<tr><td>대칭 위치</td><td>2</td><td>−1</td><td>위쪽·아래쪽 결과의 대칭성</td></tr></table>
+<p class="hint">예외 테스트: p=0은 포물선을 정의하지 않으므로 실제 입력 범위에서 제외합니다. 첫 버전은 포물선만 다루며 타원과 쌍곡선은 추후 확장할 수 있습니다.</p>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const fmt=n=>(Math.abs(n)<1e-10?0:n).toFixed(5).replace(/\.?0+$/,'');
+function draw(){
+ const p=+$('p').value,t=+$('t').value,tol=+$('tol').value;
+ $('pv').textContent=p.toFixed(1);$('tv').textContent=t.toFixed(1);
+ if(!(p>0)||!(tol>0)||!Number.isFinite(tol)){ $('status').textContent='입력 오류: p와 허용 오차는 0보다 큰 값이어야 합니다.';return;}
+ const P={x:p*t*t,y:2*p*t},F={x:p,y:0},d={x:-1,y:0},n={x:1,y:-t};
+ const dot=d.x*n.x+d.y*n.y,nn=n.x*n.x+n.y*n.y;
+ const r={x:d.x-2*dot*n.x/nn,y:d.y-2*dot*n.y/nn};
+ const rl=Math.hypot(r.x,r.y);r.x/=rl;r.y/=rl;
+ const dist=Math.abs((F.x-P.x)*r.y-(F.y-P.y)*r.x);
+ $('focus').textContent='('+fmt(F.x)+', '+fmt(F.y)+')';$('point').textContent='('+fmt(P.x)+', '+fmt(P.y)+')';$('dist').textContent=dist.toExponential(3);
+ $('status').textContent=(dist<=tol?'판정: 초점 통과 조건 만족. ':'판정: 허용 오차 초과. ')+'거리 '+dist.toExponential(3)+' / 허용 오차 '+tol;
+ $('status').style.color=dist<=tol?'#167044':'#a15a00';
+ const c=$('plot'),ctx=c.getContext('2d'),W=c.width,H=c.height;ctx.clearRect(0,0,W,H);ctx.fillStyle='#fbfdff';ctx.fillRect(0,0,W,H);
+ const xmax=Math.max(4,p*4,P.x+2),ymax=Math.max(3,Math.abs(P.y)*1.4,2*Math.sqrt(p*xmax)*1.05),xmin=-.5,scale=Math.min((W-80)/(xmax-xmin),(H-70)/(2*ymax)),X=x=>45+(x-xmin)*scale,Y=y=>H/2-y*scale;
+ ctx.strokeStyle='#e5edf6';ctx.lineWidth=1;for(let x=0;x<=xmax;x++){ctx.beginPath();ctx.moveTo(X(x),15);ctx.lineTo(X(x),H-15);ctx.stroke()}for(let y=-Math.floor(ymax);y<=Math.floor(ymax);y++){ctx.beginPath();ctx.moveTo(20,Y(y));ctx.lineTo(W-15,Y(y));ctx.stroke()}
+ ctx.strokeStyle='#718096';ctx.beginPath();ctx.moveTo(20,Y(0));ctx.lineTo(W-15,Y(0));ctx.moveTo(X(0),15);ctx.lineTo(X(0),H-15);ctx.stroke();
+ ctx.strokeStyle='#2672ce';ctx.lineWidth=3;for(const sign of [-1,1]){ctx.beginPath();for(let i=0;i<=300;i++){let x=xmax*i/300,y=sign*2*Math.sqrt(p*x);i?ctx.lineTo(X(x),Y(y)):ctx.moveTo(X(x),Y(y));}ctx.stroke()}
+ ctx.strokeStyle='#e2a02b';ctx.setLineDash([7,5]);ctx.lineWidth=2;ctx.beginPath();if(Math.abs(t)<1e-8){ctx.moveTo(X(0),15);ctx.lineTo(X(0),H-15)}else{ctx.moveTo(X(xmin),Y(P.y+(xmin-P.x)/t));ctx.lineTo(X(xmax),Y(P.y+(xmax-P.x)/t))}ctx.stroke();ctx.setLineDash([]);
+ // Incoming ray from right toward the contact.
+ ctx.strokeStyle='#159b7b';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(X(Math.min(xmax,P.x+2)),Y(P.y));ctx.lineTo(X(P.x),Y(P.y));ctx.stroke();
+ const L=Math.hypot(F.x-P.x,F.y-P.y)*1.7+1;ctx.strokeStyle='#db4777';ctx.beginPath();ctx.moveTo(X(P.x),Y(P.y));ctx.lineTo(X(P.x+r.x*L),Y(P.y+r.y*L));ctx.stroke();
+ function point(x,y,col,label){ctx.fillStyle=col;ctx.beginPath();ctx.arc(X(x),Y(y),5,0,Math.PI*2);ctx.fill();ctx.fillText(label,X(x)+8,Y(y)-8)}
+ ctx.font='bold 14px Arial';point(F.x,F.y,'#7c3aed','F');point(P.x,P.y,'#dc2626','P');ctx.fillStyle='#159b7b';ctx.fillText('입사 광선',X(Math.min(xmax,P.x+1.2)),Y(P.y)-10);ctx.fillStyle='#db4777';ctx.fillText('반사 광선',X(P.x+r.x*L),Y(P.y+r.y*L)-10);ctx.fillStyle='#e2a02b';ctx.fillText('접선',W-70,35);
+}
+$('p').addEventListener('input',draw);$('t').addEventListener('input',draw);$('tol').addEventListener('input',draw);
+$('reset').onclick=()=>{$('p').value=2;$('t').value=1;$('tol').value='.001';draw()};draw();
+</script></html>

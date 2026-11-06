@@ -1,5 +1,6 @@
 import {motionDesignFor} from './motion-designs.js';
 import {enhanceMotionSVG} from './motion-effects.js';
+import {refreshMathFrame,refreshFrameDrawing} from './refresh-models.js';
 
 // All coordinates below are explanatory models, never a student's measured output.
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -158,7 +159,9 @@ function surface(s){
 export function motionFrameFor(work,phase){
   const design=motionDesignFor(work),s=Math.max(0,Math.min(6,Math.trunc(phase))),family=design.family;
   let drawing;
-  if(['zoom','secant','join','ratio','mean-value','chain','curvature','extrema','restore','restore-quadratic','antiderivative'].includes(family))drawing=curve(family,s);
+  const refreshed=refreshMathFrame(family,s*2,s);
+  if(refreshed)drawing=refreshFrameDrawing(refreshed);
+  else if(['zoom','secant','join','ratio','mean-value','chain','curvature','extrema','restore','restore-quadratic','antiderivative'].includes(family))drawing=curve(family,s);
   else if(['line-plane','overlap','minimum','plane-distance'].includes(family))drawing=planeScene(family,s);
   else if(['sphere-slice','sphere-extreme','dimension'].includes(family))drawing=sphere(family,s);
   else if(['focal','conic-boundary'].includes(family))drawing=conics(family,s);

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>기하 탐구 | 타원과 쌍곡선의 경계</title>
+<style>
+  /* [수정 위치 1] 전체 색상과 글꼴 */
+  :root {
+    --bg: #f4f6fa; --card: #ffffff; --ink: #172033; --muted: #64748b;
+    --line: #dce3ee; --blue: #2563eb; --purple: #7c3aed;
+    --green: #087f5b; --orange: #b45309; --red: #b42318;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    line-height: 1.55;
+  }
+  .wrap { width: min(100% - 28px, 1050px); margin: 0 auto; padding: 24px 0 44px; }
+  header { margin-bottom: 18px; }
+  h1 { font-size: clamp(1.45rem, 5vw, 2.15rem); line-height: 1.25; margin: 0 0 8px; }
+  h2 { font-size: 1.12rem; margin: 0 0 12px; }
+  p { margin: 7px 0; }
+  .sub { color: var(--muted); font-size: .96rem; }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+    padding: 18px; margin: 14px 0; box-shadow: 0 3px 12px rgba(20,35,60,.035);
+  }
+  .inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  label { display: block; font-weight: 650; margin-bottom: 6px; }
+  select, input {
+    width: 100%; min-height: 46px; border: 1px solid #bdc9da; border-radius: 10px;
+    padding: 10px 12px; font: inherit; color: var(--ink); background: white;
+  }
+  input:focus, select:focus, button:focus { outline: 3px solid rgba(37,99,235,.18); border-color: var(--blue); }
+  .field small { display:block; color: var(--muted); margin-top: 5px; }
+  .actions { display:flex; flex-wrap:wrap; gap:8px; margin-top: 14px; }
+  button {
+    border: 1px solid var(--line); background: #f8fafc; color: var(--ink);
+    border-radius: 10px; padding: 10px 13px; font: inherit; font-weight: 650; cursor: pointer;
+  }
+  button.primary { background: var(--blue); color:white; border-color:var(--blue); }
+  button:active { transform: translateY(1px); }
+  .notice { padding: 11px 13px; border-radius: 10px; background:#eff6ff; color:#1e40af; font-size:.93rem; margin-top:12px; }
+  .error { background:#fff1f0; color:var(--red); }
+  .result-title { display:flex; align-items:center; flex-wrap:wrap; gap:9px; }
+  .status { display:inline-block; border-radius:999px; padding:4px 10px; font-weight:750; font-size:.86rem; background:#e8f1ff; color:#1d4ed8; }
+  .status.good { background:#e7f7ef; color:var(--green); }
+  .status.edge { background:#fff4df; color:var(--orange); }
+  .status.none { background:#fff0ef; color:var(--red); }
+  .math {
+    font-family: "Times New Roman", serif; font-size:1.08rem; background:#f8fafc;
+    border:1px solid var(--line); padding:11px 13px; border-radius:10px; overflow-wrap:anywhere;
+  }
+  .grid2 { display:grid; grid-template-columns: minmax(0,1.25fr) minmax(250px,.85fr); gap:14px; align-items:start; }
+  /* 그래프는 SVG 기본 그림을 먼저 보여 주고, JavaScript가 실행되면 캔버스가 덮어 그립니다. */
+  .graph-stage { position:relative; width:100%; height:min(68vw,430px); min-height:280px; border:1px solid var(--line); border-radius:12px; overflow:hidden; background:#fff; }
+  .graph-stage svg { display:block; width:100%; height:100%; }
+  .graph-stage canvas { position:absolute; inset:0; display:block; width:100%; height:100%; background:transparent; border:0; border-radius:0; touch-action:pan-y; }
+  .legend { display:flex; flex-wrap:wrap; gap:12px; font-size:.88rem; color:var(--muted); margin-top:9px; }
+  .dot { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:5px; }
+  .detail { color:var(--muted); font-size:.94rem; }
+  .keyvals { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .kv { background:#f8fafc; border:1px solid var(--line); border-radius:10px; padding:10px; }
+  .kv b { display:block; font-size:.82rem; color:var(--muted); }
+  .kv span { font-weight:700; overflow-wrap:anywhere; }
+  table { border-collapse:collapse; width:100%; font-size:.92rem; }
+  th,td { border-bottom:1px solid var(--line); padding:10px 8px; text-align:left; vertical-align:top; }
+  th { color:var(--muted); font-weight:700; }
+  .small { color:var(--muted); font-size:.88rem; }
+  ul { padding-left:20px; margin:8px 0; }
+  .footer { color:var(--muted); font-size:.85rem; text-align:center; margin-top:22px; }
+  @media (max-width:720px) {
+    .grid2 { grid-template-columns:1fr; }
+    .card { padding:15px; }
+    .inputs { gap:9px; }
+    th,td { padding:8px 5px; }
+  }
+  @media (max-width:390px) {
+    .inputs { grid-template-columns:1fr; }
+    .wrap { width:min(100% - 20px, 1050px); }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>두 초점 거리의 합·차로 알아보는 타원과 쌍곡선</h1>
+    <p class="sub">기하 수학 탐구 웹앱 · 입력값을 바꾸며 존재 조건과 퇴화 경계를 직접 확인해 보세요.</p>
+  </header>
+
+  <section class="card">
+    <h2>① 조건 입력</h2>
+    <div class="inputs">
+      <div class="field">
+        <label for="kind">곡선 종류</label>
+        <select id="kind">
+          <option value="ellipse">타원: 두 거리의 합</option>
+          <option value="hyperbola">쌍곡선: 두 거리 차의 절댓값</option>
+        </select>
+        <small>초점은 x축 위 F₁(-c, 0), F₂(c, 0)에 고정합니다.</small>
+      </div>
+      <div class="field">
+        <label for="a">상수 a (양수)</label>
+        <input id="a" type="number" min="0.01" max="100" step="0.1" value="5">
+        <small>거리의 합 또는 차의 절댓값은 2a입니다.</small>
+      </div>
+      <div class="field">
+        <label for="c">초점 중심에서 초점까지의 거리 c (양수)</label>
+        <input id="c" type="number" min="0.01" max="100" step="0.1" value="3">
+        <small>두 초점 사이의 거리는 2c입니다.</small>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="primary" id="updateBtn">계산 및 그래프 갱신</button>
+      <button id="resetBtn">초기값으로</button>
+      <button id="example1">예시 1 · 경계</button>
+      <button id="example2">예시 2 · 타원</button>
+      <button id="example3">예시 3 · 쌍곡선</button>
+    </div>
+    <div id="inputMessage" class="notice" role="status">입력 범위: a, c 모두 0보다 크고 100 이하인 수입니다.</div>
+  </section>
+
+  <section class="card">
+    <div class="result-title">
+      <h2 style="margin:0">② 판정 결과</h2>
+      <span id="status" class="status">계산 대기</span>
+    </div>
+    <p id="summary" style="margin-top:12px">값을 입력하고 계산 버튼을 눌러 주세요.</p>
+    <div class="math" id="definition">정의: 타원 PF₁ + PF₂ = 2a / 쌍곡선 |PF₁ − PF₂| = 2a</div>
+    <div class="keyvals" style="margin-top:12px">
+      <div class="kv"><b>두 초점</b><span id="foci">F₁(-c, 0), F₂(c, 0)</span></div>
+      <div class="kv"><b>두 초점 사이 거리</b><span id="distance">2c</span></div>
+      <div class="kv"><b>표준방정식의 b²</b><span id="bSquared">계산 대기</span></div>
+      <div class="kv"><b>주요 성질</b><span id="features">계산 대기</span></div>
+    </div>
+  </section>
+
+  <section class="grid2">
+    <div class="card">
+      <h2>③ 좌표평면 그래프</h2>
+      <div class="graph-stage">
+        <!-- JavaScript가 실행되지 않는 미리보기에서도 기본 타원이 보이도록 넣은 SVG 그림 -->
+        <svg id="staticFallback" viewBox="0 0 640 420" role="img" aria-label="기본 예시 타원 x제곱 나누기 25 더하기 y제곱 나누기 16은 1">
+          <rect x="0" y="0" width="640" height="420" fill="#ffffff"/>
+          <g stroke="#edf1f6" stroke-width="1">
+            <path d="M50 30V390 M80 30V390 M110 30V390 M140 30V390 M170 30V390 M200 30V390 M230 30V390 M260 30V390 M290 30V390 M320 30V390 M350 30V390 M380 30V390 M410 30V390 M440 30V390 M470 30V390 M500 30V390 M530 30V390 M560 30V390 M590 30V390"/>
+            <path d="M30 30H610 M30 60H610 M30 90H610 M30 120H610 M30 150H610 M30 180H610 M30 210H610 M30 240H610 M30 270H610 M30 300H610 M30 330H610 M30 360H610 M30 390H610"/>
+          </g>
+          <g stroke="#64748b" stroke-width="2"><path d="M30 210H610 M320 30V390"/></g>
+          <g fill="#475569" font-size="13" font-family="sans-serif"><text x="600" y="198">x</text><text x="331" y="43">y</text><text x="330" y="226">0</text></g>
+          <ellipse cx="320" cy="210" rx="150" ry="120" fill="none" stroke="#2563eb" stroke-width="4"/>
+          <g fill="#dc2626"><circle cx="230" cy="210" r="6"/><circle cx="410" cy="210" r="6"/></g>
+          <g fill="#991b1b" font-size="14" font-family="sans-serif"><text x="205" y="195">F₁</text><text x="418" y="195">F₂</text></g>
+          <text x="320" y="405" text-anchor="middle" fill="#64748b" font-size="12">기본 예시: a=5, c=3, b=4</text>
+        </svg>
+        <canvas id="graph" aria-label="입력값에 따라 바뀌는 타원 또는 쌍곡선 그래프"></canvas>
+      </div>
+      <div class="legend">
+        <span><i class="dot" style="background:#2563eb"></i>곡선 또는 퇴화 자취</span>
+        <span><i class="dot" style="background:#dc2626"></i>초점</span>
+        <span><i class="dot" style="background:#7c3aed"></i>점근선(쌍곡선)</span>
+      </div>
+      <p class="small">그래프는 입력값에 맞춰 자동으로 다시 그려집니다. 화면에 표시된 좌표 범위 밖의 곡선은 보이지 않을 수 있습니다.</p>
+    </div>
+    <div class="card">
+      <h2>④ 수학식과 의미</h2>
+      <div id="equation" class="math">표준방정식이 여기에 표시됩니다.</div>
+      <div id="explanation" class="detail" style="margin-top:12px">계산 후 각 조건이 뜻하는 바를 설명합니다.</div>
+      <div id="reflection" class="notice" style="margin-top:12px">
+        반사 성질: 타원은 한 초점에서 출발한 빛이나 파동이 곡선에 반사된 뒤 다른 초점을 향하는 성질이 있습니다. 쌍곡선에서는 한 초점에서 온 경로의 연장선이 다른 초점과 관련되는 반사 성질이 나타납니다.
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>⑤ 손계산과 웹앱 결과 비교하기</h2>
+    <p class="small">아래는 직접 검증할 수 있도록 준비한 예시 입력입니다. 실제 탐구 결과로 기록하기 전에 웹앱에서 각각 눌러 보고 손으로 계산한 값과 비교하세요.</p>
+    <table>
+      <thead><tr><th>구분</th><th>입력</th><th>손계산 확인</th><th>기대 판정</th></tr></thead>
+      <tbody>
+        <tr><td>경계</td><td>타원, a=3, c=3</td><td>2a=6, 2c=6</td><td>선분으로 퇴화</td></tr>
+        <tr><td>일반값</td><td>타원, a=5, c=3</td><td>b²=25−9=16, b=4</td><td>타원</td></tr>
+        <tr><td>일반값</td><td>쌍곡선, a=2, c=3</td><td>b²=9−4=5</td><td>쌍곡선</td></tr>
+      </tbody>
+    </table>
+    <p class="notice">검증 기록 예시 형식: 입력값 → 손계산 → 웹앱 판정 → 그래프와 일치 여부 → 오류가 있으면 수정한 내용. 위 표는 테스트용 예시이며, 네가 실제로 실행해 확인한 결과만 탐구 보고서에 기록하세요.</p>
+  </section>
+
+  <section class="card">
+    <h2>⑥ 계산 원리 이해하기</h2>
+    <ul>
+      <li><b>타원:</b> 두 초점까지 거리의 합이 2a로 일정합니다. 삼각부등식에 따라 a&gt;c이면 타원, a=c이면 선분, a&lt;c이면 자취가 없습니다.</li>
+      <li><b>쌍곡선:</b> 두 초점까지 거리의 차의 절댓값이 2a로 일정합니다. 역삼각부등식에 따라 0&lt;a&lt;c이면 쌍곡선, a=c이면 두 반직선, a&gt;c이면 자취가 없습니다.</li>
+      <li><b>타원의 표준방정식:</b> x²/a² + y²/b² = 1, b²=a²−c² (a&gt;c).</li>
+      <li><b>쌍곡선의 표준방정식:</b> x²/a² − y²/b² = 1, b²=c²−a² (c&gt;a).</li>
+      <li><b>점근선:</b> 가로 방향 쌍곡선의 점근선은 y=±(b/a)x입니다. 타원에는 점근선이 없습니다.</li>
+    </ul>
+    <p class="small">주의: 양변을 제곱해 식을 정리할 때는 원래 거리 조건을 만족하는지 확인해야 합니다. 표준방정식만 확인하는 것으로 거리 정의의 검증이 끝나는 것은 아닙니다.</p>
+  </section>
+
+  <p class="footer">이 웹앱은 입력값에 따른 수학적 조건을 확인하는 학습용 도구입니다. 결과를 직접 손계산으로 검증해 보세요.</p>
+</div>
+
+<script>
+/* =========================================================
+   [수정 위치 2] 입력값의 허용 범위
+   필요하면 MAX_VALUE를 바꾸되, 그래프 표시 범위도 함께 확인하세요.
+   ========================================================= */
+const MAX_VALUE = 100;
+
+const $ = (id) => document.getElementById(id);
+const canvas = $("graph");
+const ctx = canvas.getContext("2d");
+
+function fmt(n) {
+  if (!Number.isFinite(n)) return "계산할 수 없음";
+  return Number(n.toFixed(4)).toString();
+}
+function setStatus(text, type) {
+  $("status").textContent = text;
+  $("status").className = "status " + (type || "");
+}
+
+/* 입력값 검사: 0 이하, 빈칸, 너무 큰 값은 계산하지 않습니다. */
+function readInputs() {
+  const a = Number($("a").value);
+  const c = Number($("c").value);
+  if ($("a").value.trim() === "" || $("c").value.trim() === "" ||
+      !Number.isFinite(a) || !Number.isFinite(c)) {
+    throw new Error("a와 c에 숫자를 입력해 주세요.");
+  }
+  if (a <= 0 || c <= 0) throw new Error("a와 c는 모두 0보다 커야 합니다.");
+  if (a > MAX_VALUE || c > MAX_VALUE) throw new Error("현재 입력 범위는 100 이하입니다.");
+  return { a, c, kind: $("kind").value };
+}
+
+/* [수정 위치 3] 핵심 수학 판정과 결과 설명 */
+function calculate({a, c, kind}) {
+  const isEllipse = kind === "ellipse";
+  const tolerance = 1e-10 * Math.max(1, a, c);
+
+  if (Math.abs(a - c) <= tolerance) {
+    if (isEllipse) {
+      return {
+        type:"edge", label:"경계 · 선분으로 퇴화",
+        summary:"a=c이므로 거리의 합 2a와 초점 사이 거리 2c가 같습니다. 점 P는 두 초점을 잇는 선분 위에 놓입니다.",
+        b2:0, equation:"거리 조건: PF₁ + PF₂ = 2c",
+        explanation:"삼각부등식에서 등호가 성립하는 경우입니다. 일반적인 타원이 아니라 F₁과 F₂를 잇는 선분 전체가 자취입니다.",
+        features:"선분 [−c, c]"
+      };
+    }
+    return {
+      type:"edge", label:"경계 · 두 반직선으로 퇴화",
+      summary:"a=c이므로 거리 차의 절댓값이 초점 사이 거리와 같습니다. 자취는 초점을 잇는 직선에서 바깥쪽으로 뻗는 두 반직선입니다.",
+      b2:0, equation:"거리 조건: |PF₁ − PF₂| = 2c",
+      explanation:"역삼각부등식의 등호가 성립하는 경우입니다. P는 초점 사이 선분의 바깥쪽에 놓이며, 두 초점 사이의 열린 구간은 포함되지 않습니다.",
+      features:"x ≤ −c 또는 x ≥ c"
+    };
+  }
+
+  if (isEllipse) {
+    if (a < c) {
+      return {
+        type:"none", label:"자취 없음",
+        summary:"a<c이므로 2a<2c입니다. 두 초점까지 거리의 합이 두 초점 사이 거리보다 작을 수 없어 조건을 만족하는 점이 없습니다.",
+        b2:null, equation:"2a < 2c",
+        explanation:"삼각부등식 PF₁+PF₂ ≥ F₁F₂=2c에 어긋납니다. 따라서 실수 좌표평면에서 자취가 존재하지 않습니다.",
+        features:"존재하지 않음"
+      };
+    }
+    const b2 = a*a - c*c, b = Math.sqrt(b2);
+    return {
+      type:"good", label:"타원 존재",
+      summary:"a>c이므로 두 초점까지 거리의 합이 초점 사이 거리보다 큽니다. 닫힌 타원이 만들어집니다.",
+      b2, equation:`x²/${fmt(a*a)} + y²/${fmt(b2)} = 1`,
+      explanation:`b²=a²−c²=${fmt(a*a)}−${fmt(c*c)}=${fmt(b2)}이므로 b=${fmt(b)}입니다. 장축의 반지름은 a, 단축의 반지름은 b입니다.`,
+      features:`꼭짓점 (±${fmt(a)}, 0), (0, ±${fmt(b)})`
+    };
+  } else {
+    if (a > c) {
+      return {
+        type:"none", label:"자취 없음",
+        summary:"a>c이므로 2a>2c입니다. 두 거리 차의 절댓값은 두 초점 사이 거리보다 클 수 없어 조건을 만족하는 점이 없습니다.",
+        b2:null, equation:"2a > 2c",
+        explanation:"역삼각부등식 |PF₁−PF₂| ≤ F₁F₂=2c에 어긋납니다. 따라서 실수 좌표평면에서 자취가 존재하지 않습니다.",
+        features:"존재하지 않음"
+      };
+    }
+    const b2 = c*c - a*a, b = Math.sqrt(b2);
+    return {
+      type:"good", label:"쌍곡선 존재",
+      summary:"0<a<c이므로 두 초점까지 거리 차의 절댓값이 초점 사이 거리보다 작습니다. 두 갈래의 열린 쌍곡선이 만들어집니다.",
+      b2, equation:`x²/${fmt(a*a)} − y²/${fmt(b2)} = 1`,
+      explanation:`b²=c²−a²=${fmt(c*c)}−${fmt(a*a)}=${fmt(b2)}이므로 b=${fmt(b)}입니다. 점근선은 y=±(${fmt(b)}/${fmt(a)})x입니다.`,
+      features:`꼭짓점 (±${fmt(a)}, 0), 점근선 기울기 ±${fmt(b/a)}`
+    };
+  }
+}
+
+/* [수정 위치 4] 화면의 수학식·설명 갱신 */
+function renderResult(data, input) {
+  $("summary").textContent = data.summary;
+  $("definition").textContent = input.kind === "ellipse"
+    ? `타원 정의: PF₁ + PF₂ = 2a = ${fmt(2*input.a)}`
+    : `쌍곡선 정의: |PF₁ − PF₂| = 2a = ${fmt(2*input.a)}`;
+  $("foci").textContent = `F₁(${fmt(-input.c)}, 0), F₂(${fmt(input.c)}, 0)`;
+  $("distance").textContent = fmt(2*input.c);
+  $("bSquared").textContent = data.b2 === null ? "해당 없음" : fmt(data.b2);
+  $("features").textContent = data.features;
+  $("equation").textContent = data.equation;
+  $("explanation").textContent = data.explanation;
+  setStatus(data.label, data.type);
+}
+
+/* 그래프 그리기 */
+function drawGraph(input, data) {
+  const rect = canvas.getBoundingClientRect();
+  if (!rect.width || !rect.height) {
+    requestAnimationFrame(() => drawGraph(input, data));
+    return;
+  }
+  const fallback = $("staticFallback");
+  if (fallback) fallback.style.display = "none";
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.max(1, Math.round(rect.width*dpr));
+  canvas.height = Math.max(1, Math.round(rect.height*dpr));
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+
+  const W = rect.width, H = rect.height;
+  ctx.clearRect(0,0,W,H);
+  const a=input.a, c=input.c;
+  const bForScale = data.b2 !== null && data.b2 >= 0 ? Math.sqrt(data.b2) : 0;
+  /* 입력값이 커져도 곡선 전체가 가능한 한 화면 안에 들어오도록 자동 축척 */
+  const extent = Math.max(6, Math.max(a, c, bForScale) * 1.2 + 1);
+  const scale = Math.min((W-48)/(2*extent), (H-48)/(2*extent));
+  const ox=W/2, oy=H/2;
+  const X=x=>ox+x*scale, Y=y=>oy-y*scale;
+
+  /* 격자 */
+  ctx.lineWidth=1; ctx.strokeStyle="#edf1f6";
+  for(let v=-Math.floor(extent); v<=Math.floor(extent); v++){
+    ctx.beginPath(); ctx.moveTo(X(v),Y(-extent)); ctx.lineTo(X(v),Y(extent)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(X(-extent),Y(v)); ctx.lineTo(X(extent),Y(v)); ctx.stroke();
+  }
+  /* 좌표축 */
+  ctx.strokeStyle="#64748b"; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(X(-extent),Y(0)); ctx.lineTo(X(extent),Y(0)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(X(0),Y(-extent)); ctx.lineTo(X(0),Y(extent)); ctx.stroke();
+  ctx.fillStyle="#475569"; ctx.font="12px sans-serif";
+  ctx.fillText("x",X(extent)-10,Y(0)-8); ctx.fillText("y",X(0)+8,Y(-extent)+12);
+  ctx.fillText("0",X(0)+5,Y(0)+15);
+
+  function path(fn, start, end, step, color="#2563eb", width=2.5) {
+    ctx.beginPath(); let begun=false;
+    for(let x=start; x<=end; x+=step){
+      const y=fn(x);
+      if(!Number.isFinite(y) || Math.abs(y)>extent*1.5){ begun=false; continue; }
+      if(!begun){ctx.moveTo(X(x),Y(y));begun=true;} else ctx.lineTo(X(x),Y(y));
+    }
+    ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();
+  }
+  function line(m, color) {
+    ctx.beginPath(); ctx.moveTo(X(-extent),Y(-m*extent)); ctx.lineTo(X(extent),Y(m*extent));
+    ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.setLineDash([6,5]);ctx.stroke();ctx.setLineDash([]);
+  }
+
+  if(data.type==="good" && input.kind==="ellipse"){
+    const b=Math.sqrt(data.b2);
+    path(x=>b*Math.sqrt(Math.max(0,1-x*x/(a*a))),-a,a,Math.max(.01,extent/900));
+    path(x=>-b*Math.sqrt(Math.max(0,1-x*x/(a*a))),-a,a,Math.max(.01,extent/900));
+  } else if(data.type==="good" && input.kind==="hyperbola"){
+    const b=Math.sqrt(data.b2);
+    line(b/a,"#7c3aed"); line(-b/a,"#7c3aed");
+    const xmax=extent;
+    const step=Math.max(.005,extent/1200);
+    /* 오른쪽 가지와 왼쪽 가지 각각 위·아래 곡선을 그립니다. */
+    for(const sign of [-1,1]) {
+      path(x=>sign*b*Math.sqrt(Math.max(0,x*x/(a*a)-1)),a,xmax,step);
+      path(x=>sign*b*Math.sqrt(Math.max(0,x*x/(a*a)-1)),-xmax,-a,step);
+    }
+  } else if(data.type==="edge" && input.kind==="ellipse"){
+    ctx.beginPath();ctx.moveTo(X(-c),Y(0));ctx.lineTo(X(c),Y(0));
+    ctx.strokeStyle="#2563eb";ctx.lineWidth=5;ctx.stroke();
+  } else if(data.type==="edge" && input.kind==="hyperbola"){
+    ctx.beginPath();ctx.moveTo(X(-extent),Y(0));ctx.lineTo(X(-c),Y(0));
+    ctx.moveTo(X(c),Y(0));ctx.lineTo(X(extent),Y(0));
+    ctx.strokeStyle="#2563eb";ctx.lineWidth=5;ctx.stroke();
+  }
+
+  /* 초점 */
+  for(const fx of [-c,c]){
+    ctx.beginPath();ctx.arc(X(fx),Y(0),5,0,Math.PI*2);
+    ctx.fillStyle="#dc2626";ctx.fill();
+  }
+  ctx.fillStyle="#991b1b";ctx.font="12px sans-serif";
+  ctx.fillText("F₁",X(-c)-14,Y(0)-10);ctx.fillText("F₂",X(c)+6,Y(0)-10);
+}
+
+function update() {
+  try {
+    const input=readInputs();
+    const data=calculate(input);
+    $("inputMessage").className="notice";
+    $("inputMessage").textContent="입력값이 올바릅니다. 계산 결과와 그래프를 확인하세요.";
+    renderResult(data,input);
+    drawGraph(input,data);
+  } catch(err) {
+    $("inputMessage").className="notice error";
+    $("inputMessage").textContent=err.message;
+    setStatus("입력 확인 필요","none");
+    $("summary").textContent="올바른 입력값을 넣은 뒤 다시 계산해 주세요.";
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+  }
+}
+
+/* [수정 위치 5] 예시 버튼의 숫자를 바꾸고 싶을 때 이 부분을 수정하세요. */
+function loadExample(kind,a,c) {
+  $("kind").value=kind; $("a").value=a; $("c").value=c; update();
+}
+$("updateBtn").addEventListener("click",update);
+$("resetBtn").addEventListener("click",()=>loadExample("ellipse",5,3));
+$("example1").addEventListener("click",()=>loadExample("ellipse",3,3));
+$("example2").addEventListener("click",()=>loadExample("ellipse",5,3));
+$("example3").addEventListener("click",()=>loadExample("hyperbola",2,3));
+$("kind").addEventListener("change",update);
+$("a").addEventListener("change",update);
+$("c").addEventListener("change",update);
+window.addEventListener("resize",()=>{ try { const i=readInputs(); drawGraph(i,calculate(i)); } catch(e){} });
+
+/* 첫 화면 실행 */
+update();
+</script>
+</body>
+</html>

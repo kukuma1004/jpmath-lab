@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ROOT LAB · 근의 끼임과 데카르트 부호 법칙</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+:root{--red:#e11d48;--red2:#be123c;--ink:#2a1215;--muted:#7c5b60;--line:rgba(190,18,60,.14);--gold:#f59e0b}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR','Space Grotesk',sans-serif;color:var(--ink);min-height:100vh;padding:24px;background:radial-gradient(900px 500px at 10% -10%,rgba(225,29,72,.28),transparent 60%),radial-gradient(800px 520px at 92% 0%,rgba(255,255,255,.95),transparent 55%),radial-gradient(700px 600px at 50% 115%,rgba(190,18,60,.20),transparent 60%),linear-gradient(140deg,#fff1f2 0%,#ffffff 32%,#ffe4e6 58%,#fff7f8 78%,#ffffff 100%);background-attachment:fixed}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 20%,rgba(255,255,255,.6) 45%,transparent 62%);opacity:.5}
+.wrap{max-width:1400px;margin:0 auto;position:relative;z-index:1;display:flex;flex-direction:column;gap:20px}
+.view{display:none;flex-direction:column;gap:18px}
+.view.active{display:flex}
+.glass{background:linear-gradient(160deg,rgba(255,255,255,.95),rgba(255,255,255,.82));border:1px solid rgba(255,255,255,.9);border-radius:24px;padding:24px;box-shadow:0 24px 55px rgba(127,29,29,.13);backdrop-filter:blur(14px);position:relative;overflow:hidden}
+.hero{padding:44px 42px;border-radius:30px;background:linear-gradient(150deg,#fff,#fff5f6 45%,#ffe4e6 100%);border:1px solid #fff;box-shadow:0 32px 75px rgba(190,18,60,.18);position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;right:-110px;top:-130px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fb7185,#e11d48 60%,#9f1239);opacity:.92}
+.hero::after{content:"";position:absolute;right:70px;bottom:-80px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#fecdd3 60%,#fb7185);opacity:.7}
+.kicker{display:inline-flex;gap:8px;align-items:center;background:rgba(225,29,72,.10);color:#be123c;font-weight:900;font-size:.75rem;letter-spacing:.14em;padding:8px 14px;border-radius:999px;position:relative;z-index:2}
+.hero h1{position:relative;z-index:2;margin-top:18px;font-size:clamp(1.9rem,4.4vw,3.2rem);font-weight:900;line-height:1.2;letter-spacing:-.03em;max-width:880px}
+.hero h1 em{font-style:normal;background:linear-gradient(90deg,#e11d48,#fb7185 50%,#be123c);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{position:relative;z-index:2;margin-top:14px;color:#6b4549;max-width:720px;line-height:1.85}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px;position:relative;z-index:2}
+.chips span{font-size:.74rem;font-weight:800;padding:7px 12px;border-radius:999px;background:#fff;border:1px solid var(--line);color:#be123c;box-shadow:0 6px 16px rgba(190,18,60,.07)}
+.menu{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media(max-width:1000px){.menu{grid-template-columns:1fr}}
+.menu-card{cursor:pointer;border-radius:24px;padding:26px;background:linear-gradient(165deg,#fff,#fff5f6);border:1px solid #fff;box-shadow:0 18px 42px rgba(127,29,29,.12);transition:.25s;position:relative;overflow:hidden}
+.menu-card:hover{transform:translateY(-6px);box-shadow:0 28px 56px rgba(190,18,60,.2)}
+.menu-card .num{font-family:'Space Grotesk';font-size:.78rem;font-weight:700;letter-spacing:.2em;color:#be123c}
+.menu-card h3{font-size:1.4rem;font-weight:900;margin:10px 0 8px;line-height:1.35}
+.menu-card p{font-size:.88rem;color:#6b4549;line-height:1.72}
+.menu-card .go{margin-top:16px;display:inline-flex;align-items:center;gap:8px;font-weight:900;color:#fff;background:linear-gradient(90deg,#e11d48,#9f1239);padding:11px 18px;border-radius:999px;font-size:.82rem;box-shadow:0 12px 26px rgba(225,29,72,.28)}
+.menu-card .ring{position:absolute;right:-40px;top:-40px;width:130px;height:130px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(251,113,133,.45),transparent 70%)}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.back{cursor:pointer;border:none;background:#fff;border:1px solid var(--line);color:#be123c;font-weight:900;padding:10px 17px;border-radius:999px;box-shadow:0 8px 18px rgba(190,18,60,.08);font-size:.84rem}
+.back:hover{background:#fff1f2}
+.steps-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.steps-bar .st{display:flex;align-items:center;gap:7px;font-size:.76rem;font-weight:900;color:#c08a90;padding:7px 12px;border-radius:999px;background:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.9)}
+.steps-bar .st b{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:#f3d7db;color:#9f1239;font-size:.7rem}
+.steps-bar .st.on{color:#9f1239;background:#fff;box-shadow:0 6px 16px rgba(190,18,60,.12)}
+.steps-bar .st.on b{background:linear-gradient(135deg,#fb7185,#be123c);color:#fff}
+h2.sec{font-size:1.45rem;font-weight:900;display:flex;align-items:center;gap:10px}
+h2.sec::before{content:"";width:9px;height:24px;border-radius:6px;background:linear-gradient(180deg,#fb7185,#be123c)}
+.sub{color:#6b4549;line-height:1.8;font-size:.94rem}
+.scene{position:relative;border-radius:22px;overflow:hidden;border:1px solid rgba(255,255,255,.25);box-shadow:0 24px 50px rgba(15,23,42,.28)}
+.scene canvas{width:100%;height:clamp(340px,52vh,520px);display:block}
+.qbox{position:absolute;left:22px;top:20px;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);border-radius:16px;padding:14px 18px;max-width:min(520px,82%);box-shadow:0 14px 30px rgba(0,0,0,.22);border:1px solid #fff}
+.qbox b{color:#be123c}
+.qbox .small{font-size:.8rem;color:#6b4549;margin-top:4px}
+.cta{display:flex;justify-content:center;margin-top:6px}
+.bigbtn{cursor:pointer;border:none;border-radius:16px;padding:17px 40px;font-weight:900;font-size:1rem;color:#fff;background:linear-gradient(90deg,#e11d48,#9f1239);box-shadow:0 18px 36px rgba(225,29,72,.32);transition:.2s}
+.bigbtn:hover{transform:translateY(-3px);box-shadow:0 24px 44px rgba(225,29,72,.4)}
+.concept{display:grid;grid-template-columns:1.05fr .95fr;gap:22px;align-items:start}
+@media(max-width:1000px){.concept{grid-template-columns:1fr}}
+.idea{border-radius:18px;padding:18px;background:#fff;border:1px solid var(--line);margin-bottom:12px}
+.idea h3{font-size:1rem;font-weight:900;display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.idea h3 i{width:24px;height:24px;border-radius:8px;display:grid;place-items:center;background:#fff1f2;color:#be123c;font-style:normal;font-size:.75rem;font-weight:900}
+.idea p{font-size:.9rem;color:#5b3a3e;line-height:1.78}
+.idea .math{margin-top:8px;padding:10px 12px;border-radius:11px;background:#fff7f8;border:1px solid rgba(225,29,72,.12);overflow-x:auto}
+.demo{border-radius:18px;padding:14px;background:linear-gradient(180deg,#fff,#fff7f8);border:1px solid var(--line)}
+.demo canvas{width:100%;height:300px;display:block}
+.demo .cap{font-size:.78rem;color:#7c5b60;margin-top:8px;line-height:1.6}
+.keypoint{margin-top:6px;padding:14px 16px;border-radius:14px;background:linear-gradient(90deg,#fff1f2,#fff);border:1px solid rgba(225,29,72,.2);font-weight:800;color:#9f1239;font-size:.9rem;line-height:1.7}
+.warn{margin-top:12px;padding:12px 14px;border-radius:12px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-size:.84rem;line-height:1.72}
+.grid2{display:grid;grid-template-columns:320px minmax(0,1fr);gap:20px}
+@media(max-width:1050px){.grid2{grid-template-columns:1fr}}
+label{display:block;font-size:.79rem;font-weight:800;color:#7f1d1d;margin-bottom:6px}
+select,input[type=number]{width:100%;padding:10px 12px;border-radius:11px;border:1px solid var(--line);background:#fff;color:var(--ink);font-size:.9rem;outline:none}
+select:focus,input:focus{border-color:#e11d48;box-shadow:0 0 0 3px rgba(225,29,72,.13)}
+.roots{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:220px;overflow:auto}
+.rootbox{display:flex;align-items:center;gap:7px;background:#fff6f7;border:1px solid var(--line);border-radius:10px;padding:4px 9px}
+.rootbox b{font-family:'Space Grotesk';font-size:.72rem;color:#be123c}
+.rootbox input{border:none;background:transparent;padding:4px 0}
+.chips2{display:flex;flex-wrap:wrap;gap:6px}
+.chip{cursor:pointer;border:1px solid rgba(225,29,72,.26);background:#fff1f2;color:#9f1239;font-size:.74rem;font-weight:800;padding:7px 11px;border-radius:999px;transition:.2s}
+.chip:hover{background:#ffe4e6}
+.btn{border:none;cursor:pointer;border-radius:12px;padding:12px 15px;font-weight:900;font-size:.88rem;width:100%;transition:.2s}
+.primary{background:linear-gradient(90deg,#e11d48,#9f1239);color:#fff;box-shadow:0 12px 24px rgba(225,29,72,.26)}
+.primary:hover{transform:translateY(-2px)}
+.ghost{background:#fff;color:#9f1239;border:1px solid var(--line)}
+.formula{min-height:60px;display:flex;align-items:center;overflow-x:auto;padding:15px 18px;border-radius:15px;background:linear-gradient(90deg,#fff1f2,#fff);border:1px solid var(--line)}
+.shell{position:relative;height:min(52vh,470px);border-radius:16px;overflow:hidden;background:#fff;border:1px solid var(--line)}
+.shell.small{height:min(38vh,340px)}
+.shell canvas{width:100%;height:100%;display:block}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:9px;font-size:.75rem;color:#6b4549}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.dot{width:9px;height:9px;border-radius:50%}
+#rootTable{position:relative;height:250px;margin-top:10px;border-radius:14px;overflow:hidden;background:linear-gradient(180deg,#fff,#fff5f6);border:1px solid var(--line)}
+.badge-root{position:absolute;transform:translate(-50%,-50%);z-index:3;padding:3px 9px;border-radius:999px;font-size:.7rem;font-weight:900;color:#fff;box-shadow:0 5px 14px rgba(0,0,0,.16);white-space:nowrap}
+.status{padding:12px 16px;border-radius:12px;font-size:.85rem;font-weight:700;border:1px solid}
+.ok{background:#f0fdf4;border-color:#bbf7d0;color:#166534}
+.err{background:#fef2f2;border-color:#fecaca;color:#991b1b}
+.results{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}
+.result{border:1px solid var(--line);border-radius:14px;padding:13px 15px;background:#fff}
+.result h3{font-size:.84rem;color:#be123c;margin-bottom:5px;font-weight:900}
+.result .small{font-size:.74rem;color:#6b4549;margin-top:5px;line-height:1.6}
+.count{font-size:.77rem;color:#6b4549}
+.coef{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.coef span{padding:7px 11px;border-radius:10px;font-weight:900;font-family:'Space Grotesk';font-size:.87rem;border:1px solid var(--line)}
+.pos{background:#e0f2fe;color:#075985;border-color:#bae6fd}
+.neg{background:#ffe4e6;color:#9f1239;border-color:#fecdd3}
+.zero{background:#f1f5f9;color:#475569}
+.game-menu{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+@media(max-width:900px){.game-menu{grid-template-columns:1fr}}
+.gcard{cursor:pointer;border-radius:22px;padding:0;background:#fff;border:1px solid rgba(255,255,255,.9);box-shadow:0 16px 40px rgba(127,29,29,.11);transition:.28s;position:relative;overflow:hidden;display:flex;flex-direction:column}
+.gcard:hover{transform:translateY(-5px);box-shadow:0 28px 58px rgba(190,18,60,.2)}
+.gcard .thumb{height:112px;position:relative;overflow:hidden;background:linear-gradient(135deg,#2a1215,#7f1d1d 55%,#be123c)}
+.gcard .thumb .ring{position:absolute;border-radius:50%;border:1px solid rgba(255,255,255,.22)}
+.gcard .thumb .icon{position:absolute;right:18px;bottom:12px;font-size:2.3rem;filter:drop-shadow(0 6px 12px rgba(0,0,0,.35))}
+.gcard .thumb .no{position:absolute;left:18px;top:14px;font-family:'Space Grotesk';font-weight:700;letter-spacing:.22em;color:rgba(255,255,255,.72);font-size:.72rem}
+.gcard .thumb .mini{position:absolute;left:18px;bottom:16px;display:flex;gap:5px;align-items:flex-end}
+.gcard .thumb .mini i{display:block;width:7px;border-radius:2px;background:rgba(255,255,255,.55)}
+.gcard .body{padding:18px 20px 20px}
+.gcard h3{font-size:1.15rem;font-weight:900;margin-bottom:5px}
+.gcard p{font-size:.85rem;color:#6b4549;line-height:1.65}
+.gcard .meta{display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-size:.76rem;font-weight:800;color:#be123c}
+.gcard .meta .score{background:#fff1f2;padding:5px 10px;border-radius:999px;color:#9f1239;font-family:'Space Grotesk'}
+.ghead{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.ghead h2{font-size:1.35rem;font-weight:900}
+.pill{background:linear-gradient(90deg,#e11d48,#9f1239);color:#fff;font-weight:900;padding:8px 16px;border-radius:999px;font-size:.82rem;box-shadow:0 8px 18px rgba(225,29,72,.25)}
+.prompt{font-weight:800;font-size:1rem;margin:10px 0;line-height:1.65}
+.choices{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:8px}
+.choices button{cursor:pointer;border:1px solid var(--line);background:#fff;border-radius:13px;padding:16px 8px;font-weight:900;color:#9f1239;font-size:.93rem;transition:.15s}
+.choices button:hover{background:#fff1f2;transform:translateY(-2px);box-shadow:0 10px 20px rgba(190,18,60,.12)}
+.choices button.right{background:#dcfce7;border-color:#86efac;color:#166534}
+.choices button.wrong{background:#fee2e2;border-color:#fca5a5;color:#991b1b}
+.feedback{margin-top:12px;font-size:.9rem;font-weight:800;line-height:1.6;min-height:22px}
+.feedback.good{color:#15803d}
+.feedback.bad{color:#b91c1c}
+.g-canvas{width:100%;height:320px;border-radius:16px;background:#fff;border:1px solid var(--line);margin-top:6px;display:block}
+.numin{display:flex;gap:8px;margin-top:10px}
+.numin input{flex:1;font-size:1.1rem;font-weight:900;text-align:center}
+.numin button{width:auto;padding:12px 24px;border-radius:12px;border:none;background:linear-gradient(90deg,#e11d48,#9f1239);color:#fff;font-weight:900;cursor:pointer}
+.streak{display:flex;gap:6px;margin-top:12px}
+.streak i{width:28px;height:9px;border-radius:6px;background:#ffe4e6}
+.streak i.on{background:linear-gradient(90deg,#fb7185,#e11d48)}
+.katex{color:#2a1215}
+.foot{text-align:center;color:#9f6b72;font-size:.76rem;padding:6px 0 20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<section id="home" class="view active">
+  <div class="hero">
+    <div class="kicker">ROOT LAB · 미적분 탐구</div>
+    <h1>근은 <em>어디에</em> 있고,<br>몇 개나 있을까?</h1>
+    <p>롤의 정리는 근 <b>사이</b>에 도함수의 근이 있음을 말하고, 데카르트 부호 법칙은 계수의 부호만으로 근 <b>개수</b>의 상한을 알려줍니다.</p>
+    <div class="chips"><span>근의 끼임</span><span>데카르트 부호 법칙</span><span>중복도</span><span>4개의 미니 게임</span></div>
+  </div>
+  <div class="menu">
+    <article class="menu-card" onclick="go('ch1a')"><div class="ring"></div><div class="num">CHAPTER 01</div><h3>근 사이에 숨은<br>도함수의 근</h3><p>실제 농구 슛 장면에서 시작해 개념을 읽고, 직접 실험합니다.</p><div class="go">시작하기 →</div></article>
+    <article class="menu-card" onclick="go('ch2a')"><div class="ring"></div><div class="num">CHAPTER 02</div><h3>부호만 보고<br>근 개수 예측하기</h3><p>데카르트 부호 법칙과 중복도까지 이해하고 직접 적용합니다.</p><div class="go">시작하기 →</div></article>
+    <article class="menu-card" onclick="go('ch3')"><div class="ring"></div><div class="num">CHAPTER 03</div><h3>근의 게임<br>4 미니 챌린지</h3><p>예측 배틀, 중근 탐정, 미분 지문, 근 소멸 챌린지.</p><div class="go">게임 시작 →</div></article>
+  </div>
+</section>
+
+<section id="ch1a" class="view">
+  <div class="topbar"><button class="back" onclick="go('home')">← 처음으로</button>
+    <div class="steps-bar"><div class="st on"><b>1</b>관찰</div><div class="st"><b>2</b>개념</div><div class="st"><b>3</b>실험</div></div></div>
+  <div class="glass" style="padding:18px">
+    <div class="scene">
+      <canvas id="bbCanvas"></canvas>
+      <div class="qbox"><b>Q. 공이 가장 높은 순간, 높이의 변화율은?</b><div class="small">높이를 \(h(t)\)라 하면 꼭짓점에서 \(h'(t)=0\)입니다.</div></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:16px;align-items:center">
+      <p class="sub" style="max-width:720px;margin:0">릴리스부터 림까지, 공은 하나의 포물선을 그립니다. 최고점에서는 올라가는 변화가 멈추고 내려가기 시작하므로, 순간 변화율이 0이 됩니다.</p>
+      <button class="bigbtn" onclick="go('ch1b')">개념 설명 보기 →</button>
+    </div>
+  </div>
+</section>
+
+<section id="ch1b" class="view">
+  <div class="topbar"><button class="back" onclick="go('ch1a')">← 관찰로</button>
+    <div class="steps-bar"><div class="st"><b>1</b>관찰</div><div class="st on"><b>2</b>개념</div><div class="st"><b>3</b>실험</div></div></div>
+  <div class="glass">
+    <h2 class="sec">근 사이에는 반드시 도함수의 근이 있다</h2>
+    <p class="sub" style="margin-top:8px">롤의 정리와 근의 끼임을 세 문장으로 정리하면 다음과 같습니다.</p>
+    <div class="concept" style="margin-top:18px">
+      <div>
+        <div class="idea"><h3><i>1</i>롤의 정리</h3>
+          <p>함수가 닫힌 구간에서 연속이고 열린 구간에서 미분가능하며, 양 끝의 함숫값이 같으면 구간 안에 \(f'(c)=0\)인 점이 적어도 하나 존재합니다.</p>
+          <div class="math">\[ f(a)=f(b)\ \Longrightarrow\ \exists\,c\in(a,b),\ f'(c)=0 \]</div></div>
+        <div class="idea"><h3><i>2</i>근의 끼임</h3>
+          <p>서로 다른 두 실근 사이에서는 함숫값이 다시 0으로 돌아오므로, 그 사이 어딘가에서 기울기가 0이 됩니다. 따라서 도함수의 근이 원함수의 근 사이에 끼어듭니다.</p>
+          <div class="math">\[ f(\alpha)=f(\beta)=0\ \Longrightarrow\ \exists\,c\in(\alpha,\beta),\ f'(c)=0 \]</div></div>
+        <div class="idea"><h3><i>3</i>중근의 경우</h3>
+          <p>중근에서는 그래프가 축에 접하므로 근 사이 구간이 만들어지지 않습니다. 대신 그 점 자체가 도함수의 근이 됩니다.</p>
+          <div class="math">\[ f(x)=(x-r)^k g(x)\ \Longrightarrow\ f'(r)=0\ (k\ge 2) \]</div></div>
+        <div class="keypoint">핵심 · 근의 개수가 줄어도, 도함수의 근은 “사이” 또는 “중근 자리”에 남습니다.</div>
+      </div>
+      <div class="demo">
+        <canvas id="demo1"></canvas>
+        <div class="cap">예시 \(f(x)=(x+2)(x-1)(x-3)\)의 그래프(빨강)와 도함수(파랑). 노란 점선은 각 근 구간에서 도함수의 근이 존재함을 보여줍니다.</div>
+      </div>
+    </div>
+    <div class="cta" style="margin-top:20px"><button class="bigbtn" onclick="go('ch1c')">직접 해보기 →</button></div>
+  </div>
+</section>
+
+<section id="ch1c" class="view">
+  <div class="topbar"><button class="back" onclick="go('ch1b')">← 개념으로</button>
+    <div class="steps-bar"><div class="st"><b>1</b>관찰</div><div class="st"><b>2</b>개념</div><div class="st on"><b>3</b>실험</div></div></div>
+  <div class="glass">
+    <div class="grid2">
+      <aside>
+        <h2 class="sec" style="font-size:1.1rem">실험 설정</h2>
+        <div style="display:flex;flex-direction:column;gap:14px;margin-top:12px">
+          <div><label for="degreeSelect">다항식 차수</label><select id="degreeSelect"><option value="2">2차</option><option value="3">3차</option><option value="4">4차</option><option value="5" selected>5차</option><option value="6">6차</option></select></div>
+          <div><label for="leadCoeff">최고차항 계수 \(a\)</label><input id="leadCoeff" type="number" value="1" step="0.5" min="-10" max="10"></div>
+          <div><label>프리셋</label><div class="chips2">
+            <button class="chip" onclick="applyPreset([-8,-4,0,3,7],5)">5차 기본</button>
+            <button class="chip" onclick="applyPreset([-4,-4,0,4,4],5)">중근 포함</button>
+            <button class="chip" onclick="applyPreset([-6,-2,2,6],4)">4차 대칭근</button>
+            <button class="chip" onclick="applyPreset([-3,0,3],3)">3차 정석</button></div></div>
+          <div><label>근 직접 입력</label><div id="rootInputs" class="roots"></div></div>
+          <label style="display:flex;align-items:center;gap:8px;font-size:.83rem;color:#7c5b60"><input type="checkbox" id="showGuides" checked onchange="run()" style="width:16px;height:16px;accent-color:#e11d48"> 가이드선 표시</label>
+          <div style="display:flex;flex-direction:column;gap:8px"><button class="btn primary" onclick="run()">그래프 업데이트</button><button class="btn ghost" onclick="resetAll()">초기화</button></div>
+        </div>
+      </aside>
+      <main style="display:flex;flex-direction:column;gap:16px">
+        <div><label>다항식 수식</label><div id="mathDisplay" class="formula"></div></div>
+        <div><label>함수와 도함수</label><div class="shell"><canvas id="mainCanvas"></canvas></div><div class="legend" id="legend"></div></div>
+        <div><label>근 주변 확대</label><div class="shell small"><canvas id="zoomCanvas"></canvas></div></div>
+        <div><label>차수별 실근 타임라인</label><div class="count" id="rootCount"></div><div id="rootTable"></div></div>
+        <div id="message" class="status ok"></div>
+        <div><label>롤의 정리 구간 검증</label><div id="interlaceResults" class="results"></div></div>
+      </main>
+    </div>
+  </div>
+</section>
+
+<section id="ch2a" class="view">
+  <div class="topbar"><button class="back" onclick="go('home')">← 처음으로</button>
+    <div class="steps-bar"><div class="st on"><b>1</b>개념</div><div class="st"><b>2</b>직접 해보기</div></div></div>
+  <div class="glass">
+    <h2 class="sec">계수의 부호가 근의 개수를 알려준다</h2>
+    <p class="sub" style="margin-top:8px">데카르트 부호 법칙은 그래프를 그리지 않고도 양의 실근과 음의 실근의 최대 개수를 알려줍니다.</p>
+    <div class="concept" style="margin-top:18px">
+      <div>
+        <div class="idea"><h3><i>1</i>부호 변화 세기</h3>
+          <p>다항식을 내림차순으로 정리하고, 계수의 부호가 바뀌는 횟수를 셉니다. 계수가 0인 항은 건너뜁니다.</p>
+          <div class="math">\[ x^3-2x^2-x+2 \;\to\; +,\,-,\,-,\,+ \;\to\; V=2 \]</div></div>
+        <div class="idea"><h3><i>2</i>양의 실근의 상한</h3>
+          <p>부호 변화가 \(V\)회이면 양의 실근은 최대 \(V\)개입니다. 중복도를 포함해 세면 실제 개수는 \(V\)와 같은 홀짝을 가집니다.</p>
+          <div class="math">\[ r_+ \le V,\qquad r_+ \equiv V \pmod 2 \]</div></div>
+        <div class="idea"><h3><i>3</i>음의 실근은 \(f(-x)\)로</h3>
+          <p>\(x\)를 \(-x\)로 바꾸면 그래프가 좌우로 뒤집힙니다. 바뀐 식의 부호 변화를 세면 음의 실근의 상한을 얻습니다.</p>
+          <div class="math">\[ r_- \le V(f(-x)) \]</div></div>
+        <div class="warn"><b>주의:</b> 상한일 뿐입니다. 실제 근 개수는 2씩 작을 수 있고, 중복도를 빼고 세면 홀짝 규칙이 깨집니다.</div>
+      </div>
+      <div class="demo">
+        <canvas id="demo2"></canvas>
+        <div class="cap">예시 \(f(x)=x^3-2x^2-x+2\). 계수 부호는 \(+, -, -, +\)이므로 양의 실근은 최대 2개이고, 실제로 \(x=1, 2\) 두 개입니다.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="glass">
+    <h2 class="sec">중복도까지 세어야 정확하다</h2>
+    <p class="sub" style="margin-top:8px">데카르트 부호 법칙은 근을 <b>중복도 포함</b>해서 셀 때 홀짝 규칙이 성립합니다. 중복도는 “그 근이 인수로 몇 번 곱해졌는가”입니다.</p>
+    <div class="concept" style="margin-top:18px">
+      <div>
+        <div class="idea"><h3><i>1</i>중복도의 정의</h3>
+          <p>\(f(x)=(x-r)^k g(x)\)이고 \(g(r)\ne 0\)이면, \(r\)은 \(k\)중근입니다. 그래프는 \(k\)가 짝수면 축에 접하고, 홀수면 축을 통과합니다.</p>
+          <div class="math">\[ f(x)=(x-r)^k g(x),\quad g(r)\ne 0 \]</div></div>
+        <div class="idea"><h3><i>2</i>미분과의 관계</h3>
+          <p>\(k\)중근은 미분하면 \((k-1)\)중근이 됩니다. 그래서 “몇 번 미분해도 근으로 남는가”로 중복도를 확인할 수 있습니다.</p>
+          <div class="math">\[ f(r)=f'(r)=\cdots=f^{(k-1)}(r)=0,\quad f^{(k)}(r)\ne 0 \]</div></div>
+        <div class="idea"><h3><i>3</i>왜 중복도가 중요한가</h3>
+          <p>예를 들어 \(f(x)=(x-1)^2(x+1)\)은 부호 변화가 2회입니다. 중복도 포함 양의 근은 2개이지만, 서로 다른 근은 1개뿐이라 홀짝이 깨져 보입니다.</p>
+          <div class="math">\[ V=2,\quad r_+^{\text{중복도 포함}}=2,\quad r_+^{\text{서로 다른 근}}=1 \]</div></div>
+        <div class="keypoint">정리 · 상한은 중복도와 무관하게 성립하지만, “2씩 줄어든다”는 규칙은 중복도를 포함해 셀 때만 성립합니다.</div>
+      </div>
+      <div class="demo">
+        <canvas id="demo3"></canvas>
+        <div class="cap">\(f(x)=(x-1)^2(x+1)\). \(x=1\)에서는 접하고(2중근), \(x=-1\)에서는 통과합니다. 접하는 근은 도함수에서도 근으로 남습니다.</div>
+      </div>
+    </div>
+    <div class="cta" style="margin-top:20px"><button class="bigbtn" onclick="go('ch2b')">직접 해보기 →</button></div>
+  </div>
+</section>
+
+<section id="ch2b" class="view">
+  <div class="topbar"><button class="back" onclick="go('ch2a')">← 개념으로</button>
+    <div class="steps-bar"><div class="st"><b>1</b>개념</div><div class="st on"><b>2</b>직접 해보기</div></div></div>
+  <div class="glass">
+    <div class="grid2">
+      <aside>
+        <h2 class="sec" style="font-size:1.1rem">실험 설정</h2>
+        <div style="display:flex;flex-direction:column;gap:14px;margin-top:12px">
+          <div><label for="dDegree">다항식 차수</label><select id="dDegree"><option value="2">2차</option><option value="3" selected>3차</option><option value="4">4차</option><option value="5">5차</option><option value="6">6차</option></select></div>
+          <div><label for="dLead">최고차항 계수 \(a\)</label><input id="dLead" type="number" value="1" step="0.5" min="-10" max="10"></div>
+          <div><label>프리셋</label><div class="chips2">
+            <button class="chip" onclick="dPreset([1,2,-1],3,1)">부호 변화 2회</button>
+            <button class="chip" onclick="dPreset([-1,-2,-3],3,1)">부호 변화 0회</button>
+            <button class="chip" onclick="dPreset([1,1,-1],3,1)">중근 포함</button>
+            <button class="chip" onclick="dPreset([-2,-1,1,2],4,1)">4차 대칭근</button></div></div>
+          <div><label>근 직접 입력</label><div id="dRoots" class="roots"></div></div>
+          <div style="display:flex;flex-direction:column;gap:8px"><button class="btn primary" onclick="dRun()">부호 법칙 분석</button><button class="btn ghost" onclick="dPreset([1,2,-1],3,1)">초기화</button></div>
+        </div>
+      </aside>
+      <main style="display:flex;flex-direction:column;gap:16px">
+        <div><label>다항식과 계수 부호</label><div id="dMath" class="formula"></div><div id="dCoef" class="coef"></div></div>
+        <div><label>실근 위치</label><div class="shell"><canvas id="dCanvas"></canvas></div><div class="legend" id="dLegend"></div></div>
+        <div><label>중복도 분석</label><div id="dMult" class="results"></div></div>
+        <div><label>예측과 실제 비교</label><div id="dResults" class="results"></div></div>
+      </main>
+    </div>
+  </div>
+</section>
+
+<section id="ch3" class="view">
+  <div class="topbar"><button class="back" onclick="go('home')">← 처음으로</button><div class="steps-bar"><div class="st on"><b>4</b>게임</div></div></div>
+  <div class="glass"><h2 class="sec">도전할 게임을 선택하세요</h2><p class="sub" style="margin-top:6px">게임마다 문제 유형이 다릅니다. 클릭하면 바로 시작됩니다.</p></div>
+  <div class="game-menu">
+    <article class="gcard" onclick="openGame(1)">
+      <div class="thumb"><div class="no">GAME 01</div><div class="icon">🎯</div>
+        <div class="mini"><i style="height:16px"></i><i style="height:26px"></i><i style="height:38px"></i><i style="height:20px"></i><i style="height:30px"></i></div>
+        <div class="ring" style="width:150px;height:150px;right:-30px;top:-50px"></div></div>
+      <div class="body"><h3>부호 법칙 예측 배틀</h3><p>부호 변화, 양의 근, 음의 근, 가능한 개수를 번갈아 맞히세요.</p><div class="meta"><span>PREDICTION</span><span class="score" id="gm1">0점</span></div></div></article>
+    <article class="gcard" onclick="openGame(2)">
+      <div class="thumb" style="background:linear-gradient(135deg,#1f2937,#7f1d1d 55%,#e11d48)"><div class="no">GAME 02</div><div class="icon">🔍</div>
+        <div class="mini"><i style="height:12px"></i><i style="height:34px"></i><i style="height:22px"></i><i style="height:40px"></i><i style="height:16px"></i></div>
+        <div class="ring" style="width:120px;height:120px;right:40px;top:-40px"></div></div>
+      <div class="body"><h3>중근 탐정</h3><p>그래프의 접함·통과 모양으로 중복도와 근의 성질을 추리하세요.</p><div class="meta"><span>MULTIPLICITY</span><span class="score" id="gm2">0점</span></div></div></article>
+    <article class="gcard" onclick="openGame(3)">
+      <div class="thumb" style="background:linear-gradient(135deg,#0c4a6e,#0369a1 55%,#38bdf8)"><div class="no">GAME 03</div><div class="icon">🧭</div>
+        <div class="mini"><i style="height:28px"></i><i style="height:14px"></i><i style="height:36px"></i><i style="height:22px"></i><i style="height:30px"></i></div>
+        <div class="ring" style="width:160px;height:160px;right:-40px;top:-60px"></div></div>
+      <div class="body"><h3>미분 지문</h3><p>도함수 그래프에서 극값 개수와 극값 여부를 추리세요.</p><div class="meta"><span>FINGERPRINT</span><span class="score" id="gm3">0점</span></div></div></article>
+    <article class="gcard" onclick="openGame(4)">
+      <div class="thumb" style="background:linear-gradient(135deg,#3b0764,#7e22ce 55%,#c084fc)"><div class="no">GAME 04</div><div class="icon">⚡</div>
+        <div class="mini"><i style="height:40px"></i><i style="height:30px"></i><i style="height:20px"></i><i style="height:12px"></i><i style="height:6px"></i></div>
+        <div class="ring" style="width:130px;height:130px;right:30px;top:-50px"></div></div>
+      <div class="body"><h3>근 소멸 챌린지</h3><p>3~5차에서 시작해 미분할 때마다 남는 실근을 예측하세요.</p><div class="meta"><span>STREAK</span><span class="score" id="gm4">0점</span></div></div></article>
+  </div>
+</section>
+
+<section id="game1" class="view">
+  <div class="topbar"><button class="back" onclick="go('ch3')">← 게임 목록</button><div class="steps-bar"><div class="st on"><b>01</b>예측 배틀</div></div></div>
+  <div class="glass">
+    <div class="ghead"><h2>🎯 부호 법칙 예측 배틀</h2><div class="pill" id="g1score">0점</div></div>
+    <p class="prompt" id="g1prompt">문제를 불러오는 중…</p>
+    <div class="coef" id="g1coef"></div>
+    <div class="choices" id="g1choices"></div>
+    <div class="feedback" id="g1fb"></div>
+    <canvas id="g1canvas" class="g-canvas" style="display:none"></canvas>
+  </div>
+</section>
+<section id="game2" class="view">
+  <div class="topbar"><button class="back" onclick="go('ch3')">← 게임 목록</button><div class="steps-bar"><div class="st on"><b>02</b>중근 탐정</div></div></div>
+  <div class="glass">
+    <div class="ghead"><h2>🔍 중근 탐정</h2><div class="pill" id="g2score">0점</div></div>
+    <p class="prompt" id="g2prompt">표시된 근의 중복도는?</p>
+    <canvas id="g2canvas" class="g-canvas"></canvas>
+    <div class="choices" id="g2choices"></div>
+    <div class="feedback" id="g2fb"></div>
+  </div>
+</section>
+<section id="game3" class="view">
+  <div class="topbar"><button class="back" onclick="go('ch3')">← 게임 목록</button><div class="steps-bar"><div class="st on"><b>03</b>미분 지문</div></div></div>
+  <div class="glass">
+    <div class="ghead"><h2>🧭 미분 지문</h2><div class="pill" id="g3score">0점</div></div>
+    <p class="prompt" id="g3prompt">도함수 \(f'\)의 그래프입니다. 원함수 \(f\)의 극값은 몇 개일까?</p>
+    <canvas id="g3canvas" class="g-canvas"></canvas>
+    <div class="choices" id="g3choices"></div>
+    <div class="feedback" id="g3fb"></div>
+  </div>
+</section>
+<section id="game4" class="view">
+  <div class="topbar"><button class="back" onclick="go('ch3')">← 게임 목록</button><div class="steps-bar"><div class="st on"><b>04</b>근 소멸</div></div></div>
+  <div class="glass">
+    <div class="ghead"><h2>⚡ 근 소멸 챌린지</h2><div class="pill" id="g4score">0점</div></div>
+    <p class="prompt" id="g4prompt"></p>
+    <canvas id="g4canvas" class="g-canvas"></canvas>
+    <div class="numin"><input id="g4input" type="number" min="0" max="6" placeholder="개수 입력"><button onclick="g4Submit()">확인</button></div>
+    <div class="streak" id="g4streak"></div>
+    <div class="feedback" id="g4fb"></div>
+  </div>
+</section>
+
+<div class="foot">ROOT LAB · 롤의 정리와 데카르트 부호 법칙 탐구</div>
+</div>
+
+<script>
+"use strict";
+const COLORS=["#e11d48","#fb7185","#f59e0b","#0ea5e9","#8b5cf6","#10b981"];
+const $=id=>document.getElementById(id);
+function renderMath(el){if(window.renderMathInElement){renderMathInElement(el||document.body,{delimiters:[{left:"$$",right:"$$",display:true},{left:"\\[",right:"\\]",display:true},{left:"\\(",right:"\\)",display:false}],throwOnError:false})}}
+document.addEventListener("DOMContentLoaded",()=>{if(window.renderMathInElement)renderMath();else window.addEventListener("load",()=>renderMath())});
+
+function go(id){
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  $(id).classList.add("active");
+  window.scrollTo({top:0,behavior:"smooth"});
+  if(id==="ch1a")setTimeout(startBB,60);
+  if(id==="ch1b")setTimeout(drawDemo1,60);
+  if(id==="ch1c")setTimeout(run,60);
+  if(id==="ch2a")setTimeout(()=>{drawDemo2();drawDemo3()},60);
+  if(id==="ch2b")setTimeout(dRun,60);
+  if(id==="game1")setTimeout(g1New,60);
+  if(id==="game2")setTimeout(newG2,60);
+  if(id==="game3")setTimeout(newG3,60);
+  if(id==="game4")setTimeout(g4New,60);
+  renderMath();
+}
+function openGame(n){go("game"+n)}
+
+/* math core */
+function mul(a,b){const r=Array(a.length+b.length-1).fill(0);for(let i=0;i<a.length;i++)for(let j=0;j<b.length;j++)r[i+j]+=a[i]*b[j];return r}
+function fromRoots(rs,a){let c=[a];for(const r of rs)c=mul(c,[1,-r]);return c}
+function deriv(c){const n=c.length-1;if(n<=0)return[0];return c.slice(0,n).map((v,i)=>v*(n-i))}
+function ev(c,x){let y=0;for(const v of c)y=y*x+v;return y}
+function fmt(x){if(Math.abs(x)<1e-9)return"0";if(Math.abs(x-Math.round(x))<1e-9)return String(Math.round(x));return x.toFixed(3).replace(/0+$/,"").replace(/\.$/,"")}
+function trim(c){let i=0;while(i<c.length-1&&Math.abs(c[i])<1e-12)i++;return c.slice(i)}
+function bisect(c,l,r){let fl=ev(c,l);for(let i=0;i<90;i++){const m=(l+r)/2,fm=ev(c,m);if(Math.abs(fm)<1e-11)return m;if(fl*fm<=0)r=m;else{l=m;fl=fm}}return(l+r)/2}
+function uniq(v){v.sort((a,b)=>a-b);const o=[];for(const x of v)if(!o.length||Math.abs(x-o[o.length-1])>1e-6)o.push(x);return o}
+function rootsOf(c){c=trim(c);const n=c.length-1;if(n<=0)return[];if(n===1)return[-c[1]/c[0]];
+const crit=rootsOf(deriv(c));let b=1;for(const v of c)b=Math.max(b,Math.abs(v)/Math.abs(c[0]));b+=1;
+const pts=[-b,...crit,b],out=[];
+for(const x of crit)if(Math.abs(ev(c,x))<1e-7)out.push(x);
+for(let i=0;i<pts.length-1;i++){const a=pts[i],z=pts[i+1];if(z-a<1e-10)continue;if(ev(c,a)*ev(c,z)<0)out.push(bisect(c,a,z))}
+return uniq(out)}
+function stages(rs,deg,a){const s=[];let c=fromRoots(rs,a);for(let i=0;i<deg;i++){s.push({degree:deg-i,coeffs:c,roots:i===0?uniq([...rs]):rootsOf(c)});c=deriv(c)}return s}
+function polyText(c){const n=c.length-1;let s="f(x) = ",first=true;
+  for(let i=0;i<c.length;i++){const v=c[i],p=n-i;if(Math.abs(v)<1e-10)continue;
+    const a=Math.abs(v),sign=v<0?" - ":(first?"":" + "),coef=Math.abs(a-1)<1e-10&&p>0?"":fmt(a);
+    const term=p===0?fmt(a):p===1?coef+"x":coef+"x^{"+p+"}";s+=sign+term;first=false}
+  return first?"f(x) = 0":s}
+function setup(cv){const d=window.devicePixelRatio||1,r=cv.getBoundingClientRect();const w=Math.max(10,r.width),h=Math.max(10,r.height);cv.width=w*d;cv.height=h*d;const ctx=cv.getContext("2d");ctx.setTransform(d,0,0,d,0,0);return{ctx,w,h}}
+
+/* pretty graph */
+function pretty(cv,coeffs,roots,opt){
+  opt=opt||{};
+  const{ctx,w,h}=setup(cv);
+  const x0=opt.x0!==undefined?opt.x0:-4, x1=opt.x1!==undefined?opt.x1:4;
+  let M=1;for(let i=0;i<=600;i++){const x=x0+(x1-x0)*i/600;M=Math.max(M,Math.abs(ev(coeffs,x)))}
+  M=Math.max(M,1)*1.18;
+  const L=44,R=w-14,T=16,B=h-30,PW=R-L,PH=B-T;
+  const sx=x=>L+(x-x0)/(x1-x0)*PW, sy=y=>T+(M-y)/(2*M)*PH;
+  /* background */
+  const bg=ctx.createLinearGradient(0,0,0,h);
+  bg.addColorStop(0,"#ffffff");bg.addColorStop(1,opt.bgEnd||"#fff5f7");
+  ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
+  /* grid */
+  ctx.strokeStyle="rgba(190,18,60,.07)";ctx.lineWidth=1;
+  for(let i=0;i<=8;i++){const x=L+PW*i/8;ctx.beginPath();ctx.moveTo(x,T);ctx.lineTo(x,B);ctx.stroke()}
+  for(let i=0;i<=6;i++){const y=T+PH*i/6;ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(R,y);ctx.stroke()}
+  /* area fill */
+  const N=520;
+  const grad=ctx.createLinearGradient(0,T,0,B);
+  const c1=opt.color||"#e11d48";
+  grad.addColorStop(0,opt.fill0||"rgba(225,29,72,.22)");
+  grad.addColorStop(1,opt.fill1||"rgba(225,29,72,0)");
+  ctx.beginPath();ctx.moveTo(sx(x0),sy(0));
+  for(let i=0;i<=N;i++){const x=x0+(x1-x0)*i/N;ctx.lineTo(sx(x),sy(ev(coeffs,x)))}
+  ctx.lineTo(sx(x1),sy(0));ctx.closePath();ctx.fillStyle=grad;ctx.fill();
+  /* axes */
+  ctx.strokeStyle="rgba(42,18,21,.35)";ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(L,sy(0));ctx.lineTo(R,sy(0));ctx.stroke();
+  if(x0<=0&&x1>=0){ctx.beginPath();ctx.moveTo(sx(0),T);ctx.lineTo(sx(0),B);ctx.stroke()}
+  /* ticks */
+  ctx.fillStyle="#9f6b72";ctx.font="10px 'Space Grotesk',sans-serif";
+  for(let i=0;i<=4;i++){const x=x0+(x1-x0)*i/4;ctx.fillText(fmt(x),sx(x)-8,B+16)}
+  /* curve */
+  ctx.strokeStyle=c1;ctx.lineWidth=3.2;ctx.shadowColor=c1;ctx.shadowBlur=14;
+  ctx.beginPath();let on=false;
+  for(let i=0;i<=N;i++){const x=x0+(x1-x0)*i/N,y=ev(coeffs,x);
+    if(!Number.isFinite(y)){on=false;continue}
+    const px=sx(x),py=sy(y);if(!on){ctx.moveTo(px,py);on=true}else ctx.lineTo(px,py)}
+  ctx.stroke();ctx.shadowBlur=0;
+  /* roots */
+  roots.forEach(r=>{
+    if(r<x0||r>x1)return;
+    ctx.fillStyle=c1;ctx.beginPath();ctx.arc(sx(r),sy(0),6,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#fff";ctx.lineWidth=2;ctx.stroke();
+    ctx.strokeStyle="rgba(225,29,72,.35)";ctx.lineWidth=1;ctx.beginPath();ctx.arc(sx(r),sy(0),10,0,Math.PI*2);ctx.stroke();
+  });
+  /* highlight */
+  if(opt.highlight!==undefined&&opt.highlight!==null){
+    const r=opt.highlight,px=sx(r),py=sy(0);
+    ctx.save();ctx.setLineDash([4,4]);ctx.strokeStyle="rgba(245,158,11,.7)";
+    ctx.beginPath();ctx.moveTo(px,T);ctx.lineTo(px,B);ctx.stroke();ctx.restore();
+    ctx.fillStyle="#f59e0b";ctx.beginPath();ctx.arc(px,py,9,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(px,py,3.4,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(px,py,15,0,Math.PI*2);ctx.strokeStyle="rgba(245,158,11,.5)";ctx.lineWidth=1.5;ctx.stroke();
+  }
+  /* label */
+  if(opt.label){ctx.fillStyle="#9f1239";ctx.font="700 11px 'Noto Sans KR',sans-serif";ctx.fillText(opt.label,L+6,T+12)}
+}
+
+function drawGraph(cv,list,x0,x1,guides,opts){
+  const{ctx,w,h}=setup(cv);const L=52,R=w-16,T=22,B=h-38,PW=R-L,PH=B-T;
+  let M=1;for(const it of list)for(let i=0;i<=700;i++){const x=x0+(x1-x0)*i/700,y=ev(it.coeffs,x);if(Number.isFinite(y))M=Math.max(M,Math.abs(y))}
+  M=Math.max(M,1)*1.08;
+  const sx=x=>L+(x-x0)/(x1-x0)*PW, sy=y=>T+(M-y)/(2*M)*PH;
+  ctx.clearRect(0,0,w,h);
+  ctx.strokeStyle="rgba(225,29,72,.07)";ctx.lineWidth=1;
+  for(let i=0;i<=10;i++){const x=L+PW*i/10;ctx.beginPath();ctx.moveTo(x,T);ctx.lineTo(x,B);ctx.stroke()}
+  for(let i=0;i<=8;i++){const y=T+PH*i/8;ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(R,y);ctx.stroke()}
+  ctx.strokeStyle="rgba(42,18,21,.42)";ctx.lineWidth=1.4;
+  ctx.beginPath();ctx.moveTo(L,sy(0));ctx.lineTo(R,sy(0));ctx.stroke();
+  if(x0<=0&&x1>=0){ctx.beginPath();ctx.moveTo(sx(0),T);ctx.lineTo(sx(0),B);ctx.stroke()}
+  if(guides&&list.length>1){ctx.save();ctx.setLineDash([4,5]);
+    list[1].roots.forEach(r=>{if(r<x0||r>x1)return;
+      const px=sx(r),py=sy(ev(list[0].coeffs,r));
+      ctx.strokeStyle="rgba(245,158,11,.6)";ctx.beginPath();ctx.moveTo(px-24,py);ctx.lineTo(px+24,py);ctx.stroke();
+      ctx.strokeStyle="rgba(225,29,72,.25)";ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,sy(0));ctx.stroke()});
+    ctx.restore()}
+  const N=900;
+  list.forEach((it,i)=>{const col=opts&&opts.colors?opts.colors[i]:COLORS[i%COLORS.length];
+    ctx.strokeStyle=col;ctx.lineWidth=i===0?3:1.9;ctx.shadowColor=col;ctx.shadowBlur=i===0?12:6;
+    ctx.beginPath();let on=false;
+    for(let k=0;k<=N;k++){const x=x0+(x1-x0)*k/N,y=ev(it.coeffs,x);
+      if(!Number.isFinite(y)){on=false;continue}
+      const px=sx(x),py=sy(y);if(!on){ctx.moveTo(px,py);on=true}else ctx.lineTo(px,py)}
+    ctx.stroke();ctx.shadowBlur=0;ctx.fillStyle=col;
+    it.roots.forEach(r=>{if(r<x0||r>x1)return;ctx.beginPath();ctx.arc(sx(r),sy(0),i===0?5:3.6,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#fff";ctx.lineWidth=1.2;ctx.stroke()})});
+  ctx.fillStyle="#7c5b60";ctx.font="11px 'Space Grotesk',sans-serif";
+  for(let i=0;i<=6;i++){const x=x0+(x1-x0)*i/6;ctx.fillText(fmt(x),sx(x)-10,B+18)}
+}
+
+/* demos */
+function drawDemo1(){
+  const c=fromRoots([-2,1,3],1),d=deriv(c),rd=rootsOf(d),cv=$("demo1");if(!cv)return;
+  drawGraph(cv,[{coeffs:c,roots:[-2,1,3]},{coeffs:d,roots:rd}],-3.6,4.4,true,{colors:["#e11d48","#0ea5e9"]});
+}
+function drawDemo2(){
+  const c=fromRoots([1,2,-1],1),cv=$("demo2");if(!cv)return;
+  pretty(cv,c,rootsOf(c),{x0:-3,x1:4,color:"#e11d48",label:"f(x)=x^3-2x^2-x+2"});
+}
+function drawDemo3(){
+  const c=fromRoots([1,1,-1],1),cv=$("demo3");if(!cv)return;
+  pretty(cv,c,[1,-1],{x0:-3,x1:3,color:"#be123c",highlight:1,label:"f(x)=(x-1)^2(x+1)"});
+}
+
+/* chapter1 tool */
+const DEF=[-8,-4,0,3,7];
+function makeInputs(){const deg=+$("degreeSelect").value;const box=$("rootInputs");box.innerHTML="";
+  for(let i=1;i<=deg;i++){const d=document.createElement("div");d.className="rootbox";
+    d.innerHTML=`<b>r${i}</b><input id="r${i}" type="number" step="0.5" min="-20" max="20">`;box.appendChild(d)}
+  const def=DEF.slice(0,deg);for(let i=1;i<=deg;i++)$("r"+i).value=def[i-1]!==undefined?def[i-1]:i-1}
+function applyPreset(arr,deg){$("degreeSelect").value=deg;makeInputs();arr.forEach((v,i)=>{const el=$("r"+(i+1));if(el)el.value=v});run()}
+function resetAll(){$("degreeSelect").value=5;$("leadCoeff").value=1;makeInputs();run()}
+function run(){
+  try{
+    const deg=+$("degreeSelect").value,a=+$("leadCoeff").value,rs=[];
+    for(let i=1;i<=deg;i++){const v=+$("r"+i).value;if(!Number.isFinite(v))throw new Error(`r${i} 값을 확인해 주세요.`);rs.push(v)}
+    const st=stages(rs,deg,a);
+    const txt=polyText(st[0].coeffs);
+    if(window.katex){try{katex.render(txt,$("mathDisplay"),{throwOnError:false,displayMode:true})}catch(e){$("mathDisplay").textContent=txt}}else $("mathDisplay").textContent=txt;
+    const mn=Math.min(...rs),mx=Math.max(...rs),sp=Math.max(mx-mn,2),m=sp*.16,x0=mn-m,x1=mx+m;
+    drawGraph($("mainCanvas"),st,x0,x1,$("showGuides").checked);
+    drawGraph($("zoomCanvas"),st,x0,x1,false);
+    $("legend").innerHTML=st.map((s,i)=>`<span><i class="dot" style="background:${COLORS[i%COLORS.length]}"></i>${s.degree}차</span>`).join("");
+    const el=$("rootTable");el.innerHTML="";const M=10,W=84;
+    st.forEach((s,row)=>{const col=COLORS[row%COLORS.length];
+      const rowEl=document.createElement("div");
+      Object.assign(rowEl.style,{position:"absolute",left:"0",width:"100%",top:(row*100/deg)+"%",height:(100/deg)+"%",borderBottom:"1px solid rgba(225,29,72,.09)"});el.appendChild(rowEl);
+      const lab=document.createElement("div");
+      Object.assign(lab.style,{position:"absolute",left:"11px",top:(row*100/deg+50/deg)+"%",transform:"translateY(-50%)",fontWeight:"900",fontSize:".75rem",color:col});
+      lab.textContent=s.degree+"차";el.appendChild(lab);
+      [...s.roots].sort((p,q)=>p-q).forEach(r=>{const b=document.createElement("div");b.className="badge-root";
+        b.style.left=(M+((r-x0)/(x1-x0))*W)+"%";b.style.top=(row*100/deg+50/deg)+"%";b.style.background=col;b.textContent=fmt(r);el.appendChild(b)})});
+    for(let i=0;i<=6;i++){const xv=x0+(x1-x0)*i/6,p=M+(i/6)*W;
+      const v=document.createElement("div");Object.assign(v.style,{position:"absolute",left:p+"%",top:"0",bottom:"20px",borderLeft:"1px dashed rgba(225,29,72,.16)"});el.appendChild(v);
+      const t=document.createElement("div");Object.assign(t.style,{position:"absolute",left:p+"%",bottom:"2px",transform:"translateX(-50%)",fontSize:"9.5px",color:"#9f6b72"});t.textContent=fmt(xv);el.appendChild(t)}
+    const total=st.reduce((s,x)=>s+x.roots.length,0);
+    $("rootCount").textContent=`감지된 실근 ${total}개 · 이론상 최대 슬롯 ${deg*(deg+1)/2}개`;
+    let html="";
+    for(let i=0;i<st.length-1;i++){
+      const cur=st[i].roots,nxt=st[i+1].roots;let cnt=0;const det=[];
+      for(let j=0;j<cur.length-1;j++){const a2=cur[j],b2=cur[j+1];
+        const ok=nxt.some(r=>r>a2+1e-5&&r<b2-1e-5);if(ok)cnt++;det.push(`[${fmt(a2)}, ${fmt(b2)}] → ${ok?"성립":"확인 필요"}`)}
+      html+=`<div class="result"><h3>${st[i].degree}차 → ${st[i+1].degree}차</h3><div>인접 실근 구간 <b>${Math.max(0,cur.length-1)}</b>개 중 <b>${cnt}</b>개에서 도함수의 실근이 존재합니다.</div><div class="small">${det.length?det.join("<br>"):"검증 가능한 구간이 없습니다."}</div></div>`}
+    $("interlaceResults").innerHTML=html;
+    $("message").className="status ok";$("message").textContent=`${deg}차 다항식 계산 완료 · 최고차항 계수 a = ${a}`;
+  }catch(e){$("message").className="status err";$("message").textContent=e.message}
+}
+
+/* basketball */
+let bbT=0,bbHold=0,bbRAF=null;
+function startBB(){
+  const cv=$("bbCanvas");if(!cv)return;
+  if(bbRAF)cancelAnimationFrame(bbRAF);
+  const loop=()=>{
+    if(!$("ch1a").classList.contains("active")){bbRAF=null;return}
+    drawBB(cv);
+    if(bbT>=1){bbHold+=1;if(bbHold>45){bbT=0;bbHold=0}}else bbT=Math.min(1,bbT+0.0055);
+    bbRAF=requestAnimationFrame(loop)};
+  loop();
+}
+function drawBall(ctx,x,y,r,rot){
+  const g=ctx.createRadialGradient(x-r*.4,y-r*.45,r*.1,x,y,r*1.05);
+  g.addColorStop(0,"#fcd34d");g.addColorStop(.35,"#fb923c");g.addColorStop(.7,"#ea580c");g.addColorStop(1,"#7c2d12");
+  ctx.save();ctx.translate(x,y);ctx.rotate(rot);
+  ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();
+  ctx.strokeStyle="rgba(50,16,6,.9)";ctx.lineWidth=Math.max(1.1,r*.07);
+  ctx.beginPath();ctx.arc(0,0,r*.97,0,Math.PI*2);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(-r*.97,0);ctx.lineTo(r*.97,0);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(0,-r*.97);ctx.lineTo(0,r*.97);ctx.stroke();
+  ctx.beginPath();ctx.ellipse(0,0,r*.52,r*.97,0,0,Math.PI*2);ctx.stroke();
+  ctx.beginPath();ctx.ellipse(0,0,r*.97,r*.52,0,0,Math.PI*2);ctx.stroke();
+  for(let i=0;i<26;i++){const a=(i*137.5)*Math.PI/180,rr=r*(0.25+((i*37)%70)/100);
+    ctx.fillStyle="rgba(90,30,10,.20)";ctx.beginPath();ctx.arc(Math.cos(a)*rr,Math.sin(a)*rr,r*.045,0,Math.PI*2);ctx.fill()}
+  const sh=ctx.createRadialGradient(-r*.38,-r*.42,r*.04,-r*.3,-r*.35,r*1.0);
+  sh.addColorStop(0,"rgba(255,255,255,.65)");sh.addColorStop(.35,"rgba(255,255,255,.12)");sh.addColorStop(1,"rgba(255,255,255,0)");
+  ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.fillStyle=sh;ctx.fill();ctx.restore();
+}
+function drawBB(cv){
+  const{ctx,w,h}=setup(cv);
+  const bg=ctx.createLinearGradient(0,0,0,h);
+  bg.addColorStop(0,"#0b1220");bg.addColorStop(.4,"#111c2e");bg.addColorStop(.72,"#1e293b");bg.addColorStop(1,"#0f172a");
+  ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
+  for(let i=0;i<3;i++){const gx=w*(0.2+i*0.3);
+    const rg=ctx.createRadialGradient(gx,-40,10,gx,h*.55,w*.42);
+    rg.addColorStop(0,"rgba(255,255,255,.16)");rg.addColorStop(1,"rgba(255,255,255,0)");
+    ctx.fillStyle=rg;ctx.fillRect(0,0,w,h)}
+  for(let i=0;i<120;i++){const x=(i*83)%w,y=50+((i*47)%(h*.30));
+    ctx.fillStyle=`rgba(148,163,184,${0.03+((i%7)*0.008)})`;ctx.beginPath();ctx.arc(x,y,5+(i%3)*2,0,Math.PI*2);ctx.fill()}
+  const floorY=h*0.82;
+  const fg=ctx.createLinearGradient(0,floorY,0,h);
+  fg.addColorStop(0,"#c2813f");fg.addColorStop(.35,"#9a5b25");fg.addColorStop(1,"#5c3312");
+  ctx.fillStyle=fg;ctx.fillRect(0,floorY,w,h-floorY);
+  for(let i=0;i<14;i++){const y=floorY+(h-floorY)*i/14;ctx.strokeStyle="rgba(60,30,10,.35)";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}
+  for(let i=-8;i<=8;i++){ctx.strokeStyle="rgba(60,30,10,.25)";ctx.beginPath();ctx.moveTo(w/2+i*70,floorY);ctx.lineTo(w/2+i*260,h);ctx.stroke()}
+  ctx.strokeStyle="rgba(255,255,255,.30)";ctx.lineWidth=2.4;
+  ctx.beginPath();ctx.moveTo(0,floorY+2);ctx.lineTo(w,floorY+2);ctx.stroke();
+  ctx.beginPath();ctx.ellipse(w*.28,floorY+40,w*.20,26,0,0,Math.PI*2);ctx.stroke();
+  const hoopX=w*0.78,hoopY=h*0.36;
+  ctx.fillStyle="#1e293b";ctx.fillRect(w*.94,hoopY-100,9,floorY-hoopY+100);
+  ctx.fillStyle="#334155";ctx.fillRect(w*.94-16,floorY-6,42,10);
+  const bbX=hoopX+56,bbY=hoopY-112,bbW=13,bbH=124;
+  ctx.save();ctx.shadowColor="rgba(0,0,0,.6)";ctx.shadowBlur=22;ctx.shadowOffsetY=8;
+  const bg2=ctx.createLinearGradient(bbX,bbY,bbX+bbW,bbY+bbH);
+  bg2.addColorStop(0,"rgba(226,232,240,.45)");bg2.addColorStop(.5,"rgba(148,163,184,.25)");bg2.addColorStop(1,"rgba(226,232,240,.40)");
+  ctx.fillStyle=bg2;ctx.fillRect(bbX,bbY,bbW,bbH);ctx.restore();
+  ctx.strokeStyle="#e2e8f0";ctx.lineWidth=3.5;ctx.strokeRect(bbX,bbY,bbW,bbH);
+  ctx.strokeStyle="rgba(255,255,255,.75)";ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(bbX+3,bbY+8);ctx.lineTo(bbX+3,bbY+bbH-10);ctx.stroke();
+  ctx.strokeStyle="#ef4444";ctx.lineWidth=2.6;ctx.strokeRect(bbX+2,hoopY-48,bbW-4,54);
+  const rimCx=hoopX+4;ctx.lineCap="round";
+  ctx.strokeStyle="#7f1d1d";ctx.lineWidth=9;ctx.beginPath();ctx.ellipse(rimCx,hoopY+2,35,11,0,0,Math.PI*2);ctx.stroke();
+  ctx.strokeStyle="#dc2626";ctx.lineWidth=7;ctx.beginPath();ctx.ellipse(rimCx,hoopY,35,11,0,0,Math.PI*2);ctx.stroke();
+  ctx.strokeStyle="rgba(255,190,190,.7)";ctx.lineWidth=2.2;ctx.beginPath();ctx.ellipse(rimCx,hoopY-2,33,9,0,Math.PI*1.08,Math.PI*1.92);ctx.stroke();
+  const rimL=rimCx-30,rimR=rimCx+34,netBottom=hoopY+58,sway=Math.sin(bbT*14)*2.5;
+  ctx.strokeStyle="rgba(248,250,252,.72)";ctx.lineWidth=1.15;
+  for(let i=0;i<=10;i++){const t=i/10,x0=rimL+(rimR-rimL)*t,x1=rimL+11+(rimR-rimL-22)*t+sway;
+    ctx.beginPath();ctx.moveTo(x0,hoopY);ctx.quadraticCurveTo((x0+x1)/2+sway*.4,hoopY+30,x1,netBottom);ctx.stroke();
+    if(i<10){const t2=(i+1)/10,x2=rimL+11+(rimR-rimL-22)*t2+sway;
+      ctx.beginPath();ctx.moveTo(x0,hoopY);ctx.quadraticCurveTo((x0+x2)/2-sway*.4,hoopY+30,x2,netBottom);ctx.stroke()}}
+  for(let k=1;k<=3;k++){const yy=hoopY+(netBottom-hoopY)*k/4,sh=k*3.2;ctx.beginPath();ctx.moveTo(rimL+sh,yy);ctx.lineTo(rimR-sh,yy);ctx.stroke()}
+  const startX=w*0.13,startY=h*0.60,endX=hoopX-2,endY=hoopY-4,peakY=h*0.14;
+  const path=t=>{const x=startX+(endX-startX)*t;
+    const y=(1-t)*(1-t)*startY+2*(1-t)*t*(2*peakY-(startY+endY)/2)+t*t*endY;return{x,y}};
+  ctx.save();ctx.setLineDash([7,9]);ctx.lineWidth=1.6;ctx.strokeStyle="rgba(255,255,255,.22)";
+  ctx.beginPath();for(let i=0;i<=140;i++){const p=path(i/140);if(i===0)ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y)}ctx.stroke();ctx.restore();
+  let apex=path(0),best=apex.y;
+  for(let i=1;i<=120;i++){const p=path(i/120);if(p.y<best){best=p.y;apex=p}}
+  ctx.fillStyle="rgba(251,191,36,.95)";ctx.beginPath();ctx.arc(apex.x,apex.y,4.5,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="rgba(255,255,255,.9)";ctx.font="700 12px 'Noto Sans KR',sans-serif";ctx.fillText("최고점 · h′(t)=0",apex.x-52,apex.y-13);
+  const p=path(bbT);const k=Math.max(0,Math.min(1,(floorY-p.y)/(floorY-h*.14)));
+  ctx.save();ctx.globalAlpha=0.05+0.26*k;ctx.fillStyle="#000";
+  ctx.beginPath();ctx.ellipse(p.x,floorY+7,20*(0.5+0.6*k),6*(0.5+0.6*k),0,0,Math.PI*2);ctx.fill();ctx.restore();
+  for(let i=1;i<=5;i++){const q=path(Math.max(0,bbT-i*0.010));ctx.globalAlpha=0.10-i*0.014;ctx.fillStyle="#fb923c";
+    ctx.beginPath();ctx.arc(q.x,q.y,14*(1-i*0.08),0,Math.PI*2);ctx.fill()}
+  ctx.globalAlpha=1;drawBall(ctx,p.x,p.y,14.5,bbT*24);
+  const vg=ctx.createRadialGradient(w/2,h/2,h*.35,w/2,h/2,h*.95);
+  vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.42)");
+  ctx.fillStyle=vg;ctx.fillRect(0,0,w,h);
+}
+
+/* chapter2 */
+function signSeq(c){return c.map(v=>v>1e-12?1:(v<-1e-12?-1:0)).filter(s=>s!==0)}
+function changes(seq){let n=0;for(let i=1;i<seq.length;i++)if(seq[i]!==seq[i-1])n++;return n}
+function candidates(v){const o=[];for(let k=v;k>=0;k-=2)o.push(k);return o}
+function multiplicities(rs){
+  const map=new Map();
+  rs.forEach(r=>{const key=Math.round(r*1e6)/1e6;map.set(key,(map.get(key)||0)+1)});
+  return [...map.entries()].map(([r,k])=>({r,k})).sort((a,b)=>a.r-b.r);
+}
+function dMake(){const deg=+$("dDegree").value;const box=$("dRoots");box.innerHTML="";
+  for(let i=1;i<=deg;i++){const d=document.createElement("div");d.className="rootbox";
+    d.innerHTML=`<b>r${i}</b><input id="dr${i}" type="number" step="0.5" min="-20" max="20">`;box.appendChild(d)}
+  const def=[1,2,-1,3,4,5].slice(0,deg);for(let i=1;i<=deg;i++)$("dr"+i).value=def[i-1]}
+function dPreset(arr,deg,lead){$("dDegree").value=deg;dMake();arr.forEach((v,i)=>{const el=$("dr"+(i+1));if(el)el.value=v});$("dLead").value=lead;dRun()}
+function dRun(){
+  try{
+    const deg=+$("dDegree").value,a=+$("dLead").value,rs=[];
+    for(let i=1;i<=deg;i++){const v=+$("dr"+i).value;if(!Number.isFinite(v))throw new Error(`r${i} 값을 확인해 주세요.`);rs.push(v)}
+    const c=fromRoots(rs,a);const txt=polyText(c);
+    if(window.katex){try{katex.render(txt,$("dMath"),{throwOnError:false,displayMode:true})}catch(e){$("dMath").textContent=txt}}else $("dMath").textContent=txt;
+    const seq=signSeq(c),V=changes(seq);
+    const alt=c.map((v,i)=>c[i]*Math.pow(-1,c.length-1-i));
+    const N=changes(signSeq(alt));
+    $("dCoef").innerHTML=c.map(v=>`<span class="${v>1e-12?"pos":(v<-1e-12?"neg":"zero")}">${fmt(v)}</span>`).join("")
+      +`<span class="zero" style="border-color:#f59e0b;color:#92400e">부호 변화 ${V}회</span>`;
+    const real=rootsOf(c);
+    const pos=real.filter(r=>r>1e-7),neg=real.filter(r=>r<-1e-7);
+    const mult=multiplicities(rs);
+    const posWithMult=mult.filter(m=>m.r>0).reduce((s,m)=>s+m.k,0);
+    const negWithMult=mult.filter(m=>m.r<0).reduce((s,m)=>s+m.k,0);
+    const mn=Math.min(...real,0),mx=Math.max(...real,0),sp=Math.max(mx-mn,2),m=sp*.2,x0=mn-m,x1=mx+m;
+    pretty($("dCanvas"),c,real,{x0,x1,color:"#e11d48",label:"f(x)"});
+    $("dLegend").innerHTML=`<span><i class="dot" style="background:${COLORS[0]}"></i>f(x)</span><span><i class="dot" style="background:#0ea5e9"></i>양의 근 ${pos.length}</span><span><i class="dot" style="background:#f59e0b"></i>음의 근 ${neg.length}</span>`;
+    $("dMult").innerHTML=mult.map(mm=>`<div class="result"><h3>${mm.r>0?"양의 근":"음의 근"} · ${fmt(mm.r)}</h3>
+      <div>중복도 <b>${mm.k}</b> · ${mm.k%2===0?"짝수 → 축에 접함":"홀수 → 축을 통과"}</div>
+      <div class="small">${mm.k>1?`미분해도 ${mm.k-1}번까지 근으로 남습니다.`:"단순근이므로 도함수에서는 근이 아닙니다."}</div></div>`).join("")
+      +`<div class="result"><h3>중복도 포함 개수</h3><div>양의 근 <b>${posWithMult}</b>개 · 음의 근 <b>${negWithMult}</b>개</div>
+      <div class="small">데카르트의 홀짝 규칙은 이 중복도 포함 개수를 기준으로 합니다.</div></div>`;
+    const pc=candidates(V),nc=candidates(N);
+    const matchP=pc.includes(posWithMult),matchN=nc.includes(negWithMult);
+    $("dResults").innerHTML=`
+    <div class="result"><h3>① 양의 실근</h3><div>부호 변화 <b>${V}</b>회 → 가능한 개수: <b>${pc.join(", ")}</b></div><div class="small">중복도 포함 ${posWithMult}개 ${matchP?"(예측 범위 안)":"(범위 밖)"} · 서로 다른 근 ${pos.length}개</div></div>
+    <div class="result"><h3>② 음의 실근</h3><div>f(-x) 부호 변화 <b>${N}</b>회 → 가능한 개수: <b>${nc.join(", ")}</b></div><div class="small">중복도 포함 ${negWithMult}개 ${matchN?"(예측 범위 안)":"(범위 밖)"} · 서로 다른 근 ${neg.length}개</div></div>
+    <div class="result"><h3>③ 전체 근</h3><div>서로 다른 실근 <b>${real.length}</b>개 / 차수 <b>${deg}</b>개</div><div class="small">중복도를 포함하면 실근은 총 <b>${rs.length}</b>개입니다.</div></div>`;
+  }catch(e){$("dResults").innerHTML=`<div class="status err">${e.message}</div>`}
+}
+
+/* ============ GAME 1 : varied question types ============ */
+let g1={score:0,ans:0,type:0,c:null};
+function randPoly(){
+  let deg,coeffs;
+  do{
+    deg=3+Math.floor(Math.random()*2);
+    coeffs=[(Math.random()<.5?-1:1)*(1+Math.floor(Math.random()*2))];
+    for(let i=1;i<deg;i++){
+      let v=0;while(v===0)v=Math.floor(Math.random()*7)-3;
+      coeffs.push(v);
+    }
+    let v=0;while(v===0)v=Math.floor(Math.random()*7)-3;
+    coeffs.push(v);
+  }while(changes(signSeq(coeffs))===0&&Math.random()<0.5);
+  return coeffs;
+}
+function g1New(){
+  const c=randPoly();g1.c=c;
+  const V=changes(signSeq(c));
+  const alt=c.map((v,i)=>c[i]*Math.pow(-1,c.length-1-i));
+  const N=changes(signSeq(alt));
+  const type=Math.floor(Math.random()*4);g1.type=type;
+  let prompt="",opts=[],ans=0;
+  if(type===0){prompt="이 다항식의 양의 실근은 최대 몇 개일까?";ans=V;opts=[0,1,2,3]}
+  else if(type===1){prompt="이 다항식의 음의 실근은 최대 몇 개일까?";ans=N;opts=[0,1,2,3]}
+  else if(type===2){prompt="계수의 부호 변화는 몇 회일까?";ans=V;opts=[0,1,2,3]}
+  else{prompt="f(-x)의 부호 변화는 몇 회일까?";ans=N;opts=[0,1,2,3]}
+  g1.ans=ans;
+  $("g1prompt").textContent=prompt;
+  $("g1coef").innerHTML=c.map(v=>`<span class="${v>0?"pos":(v<0?"neg":"zero")}">${fmt(v)}</span>`).join("");
+  $("g1choices").innerHTML=opts.map(o=>`<button onclick="g1Pick(${o},this)">${o}${type>=2?"회":"개"}</button>`).join("");
+  $("g1fb").textContent="";$("g1fb").className="feedback";$("g1canvas").style.display="none";
+}
+function g1Pick(o,btn){
+  const ok=(o===g1.ans);
+  btn.classList.add(ok?"right":"wrong");
+  if(ok){g1.score++;$("g1score").textContent=g1.score+"점";$("gm1").textContent=g1.score+"점";
+    $("g1fb").className="feedback good";$("g1fb").textContent="정답입니다!";}
+  else{$("g1fb").className="feedback bad";$("g1fb").textContent=`정답은 ${g1.ans}입니다.`;}
+  const real=rootsOf(g1.c);const mn=Math.min(-1,...real)-1,mx=Math.max(1,...real)+1;
+  $("g1canvas").style.display="block";
+  pretty($("g1canvas"),g1.c,real,{x0:mn,x1:mx,color:"#e11d48",label:"f(x)"});
+  setTimeout(g1New,2000);
+}
+
+/* ============ GAME 2 : multiplicity types ============ */
+let g2={score:0,k:1,type:0};
+function newG2(){
+  const r=Math.round((Math.random()*6-3)*2)/2;
+  const k=1+Math.floor(Math.random()*4);
+  const others=[r-2.5,r+2.0].filter(x=>Math.abs(x-r)>0.8);
+  const rs=[...others];for(let i=0;i<k;i++)rs.push(r);
+  const c=fromRoots(rs,1);
+  g2.k=k;g2.type=Math.random()<0.5?0:1;
+  if(g2.type===0){
+    $("g2prompt").textContent="노란 점으로 표시된 근의 중복도는?";
+    $("g2choices").innerHTML=[1,2,3,4].map(kk=>`<button onclick="g2Pick(${kk},this)">${kk}중근</button>`).join("");
+  }else{
+    $("g2prompt").textContent="노란 점에서 그래프는 축과 어떻게 만날까?";
+    $("g2choices").innerHTML=[0,1,2].map(i=>`<button onclick="g2Pick(${i},this)">${["접한다","통과한다","접으며 통과한다"][i]}</button>`).join("");
+  }
+  pretty($("g2canvas"),c,[...new Set(rs.map(x=>Math.round(x*1e6)/1e6))],{x0:r-3,x1:r+3,color:"#be123c",highlight:r,bgEnd:"#fff1f3"});
+  $("g2fb").textContent="";$("g2fb").className="feedback";
+}
+function g2Pick(v,btn){
+  let ok=false;
+  if(g2.type===0) ok=(v===g2.k);
+  else{const cls=(g2.k%2===0)?0:(g2.k>=3?2:1);ok=(v===cls)}
+  btn.classList.add(ok?"right":"wrong");
+  if(ok){g2.score++;$("g2score").textContent=g2.score+"점";$("gm2").textContent=g2.score+"점";
+    $("g2fb").className="feedback good";
+    $("g2fb").textContent=`정답! ${g2.k}중근입니다. ${g2.k%2===0?"짝수라 축에 접합니다.":(g2.k===1?"단순근이라 축을 통과합니다.":"홀수라 접으며 통과합니다.")}`;}
+  else{$("g2fb").className="feedback bad";
+    $("g2fb").textContent=`이 근은 ${g2.k}중근입니다. ${g2.k%2===0?"짝수 → 접함":(g2.k===1?"1중근 → 통과":"홀수 → 접으며 통과")}.`;}
+  setTimeout(newG2,2000);
+}
+
+/* ============ GAME 3 : derivative types ============ */
+let g3={score:0,ans:0,type:0};
+function newG3(){
+  const useDouble=Math.random()<0.5;
+  const r1=Math.round((-2+Math.random()*1.2)*10)/10, r2=Math.round((1.2+Math.random()*1.2)*10)/10;
+  const d=useDouble?fromRoots([r1,r1,r2],1):fromRoots([r1,r2],1);
+  const rs=rootsOf(d);
+  const doubleRoot=useDouble?r1:null;
+  const type=Math.random()<0.5?0:1;g3.type=type;
+  if(type===0){
+    let ext=0;for(const r of rs){if(ev(d,r-1e-4)*ev(d,r+1e-4)<0)ext++}
+    g3.ans=ext;
+    $("g3prompt").textContent="도함수 f′의 그래프입니다. 원함수 f의 극값은 몇 개일까?";
+    $("g3choices").innerHTML=[0,1,2,3].map(o=>`<button onclick="g3Pick(${o},this)">${o}개</button>`).join("");
+    pretty($("g3canvas"),d,rs,{x0:-4,x1:4,color:"#0ea5e9",fill0:"rgba(14,165,233,.20)",fill1:"rgba(14,165,233,0)",label:"f′(x)",bgEnd:"#f2fbff"});
+  }else{
+    const target=rs[Math.floor(Math.random()*rs.length)];
+    const isDouble=doubleRoot!==null&&Math.abs(target-doubleRoot)<1e-6;
+    g3.ans=isDouble?0:1;
+    $("g3prompt").innerHTML="노란 점은 \(f'\)의 근입니다. 이 점에서 \(f\)는 극값을 가질까?";
+    $("g3choices").innerHTML=`<button onclick="g3Pick(1,this)">극값이다</button><button onclick="g3Pick(0,this)">극값이 아니다</button>`;
+    pretty($("g3canvas"),d,rs,{x0:-4,x1:4,color:"#0ea5e9",highlight:target,fill0:"rgba(14,165,233,.20)",fill1:"rgba(14,165,233,0)",label:"f′(x)",bgEnd:"#f2fbff"});
+    renderMath($("g3prompt"));
+  }
+  $("g3fb").textContent="";$("g3fb").className="feedback";
+}
+function g3Pick(v,btn){
+  const ok=(v===g3.ans);btn.classList.add(ok?"right":"wrong");
+  if(ok){g3.score++;$("g3score").textContent=g3.score+"점";$("gm3").textContent=g3.score+"점";
+    $("g3fb").className="feedback good";
+    $("g3fb").textContent=g3.type===0?`정답! f′의 근 중 부호가 바뀌는 곳이 ${g3.ans}개이므로 극값도 ${g3.ans}개입니다.`:"정답! f′의 부호가 바뀌지 않으면 극값이 아닙니다.";}
+  else{$("g3fb").className="feedback bad";
+    $("g3fb").textContent=g3.type===0?`정답은 ${g3.ans}개입니다. f′의 근 중 부호가 바뀌는 곳만 극값입니다.`:"f′의 부호가 바뀌지 않는 근은 극값이 아닙니다.";}
+  setTimeout(newG3,2100);
+}
+
+/* ============ GAME 4 ============ */
+let g4={k:4,score:0,streak:0};
+function g4New(){
+  g4.k=3+Math.floor(Math.random()*3);g4.streak=0;
+  $("g4score").textContent=g4.score+"점";$("gm4").textContent=g4.score+"점";
+  g4Render(false);g4Streak();
+  $("g4prompt").innerHTML=`${g4.k}개의 서로 다른 실근을 가진 ${g4.k}차 다항식 \(f\)가 있습니다.<br><b>f′의 서로 다른 실근은 몇 개일까?</b>`;
+  $("g4input").value="";$("g4fb").textContent="";$("g4fb").className="feedback";
+  renderMath($("g4prompt"));
+}
+function g4Roots(k){const out=[];const span=6;for(let i=0;i<k;i++)out.push(-3+i*(span/Math.max(1,k-1)));return out}
+function g4Render(showDeriv){
+  const roots=g4Roots(g4.k);const c=fromRoots(roots,1);
+  if(showDeriv){
+    const d=deriv(c);
+    pretty($("g4canvas"),c,roots,{x0:-4.4,x1:4.4,color:"#e11d48",label:"f(x)"});
+    const cv=$("g4canvas");const{ctx,w,h}=setup(cv);
+  }else{
+    pretty($("g4canvas"),c,roots,{x0:-4.4,x1:4.4,color:"#7e22ce",fill0:"rgba(126,34,206,.18)",fill1:"rgba(126,34,206,0)",label:"f(x)",bgEnd:"#faf5ff"});
+  }
+}
+function g4Streak(){$("g4streak").innerHTML=Array.from({length:5},(_,i)=>`<i class="${i<g4.streak?"on":""}"></i>`).join("")}
+function g4Submit(){
+  const v=+$("g4input").value;
+  if(!Number.isFinite(v)){$("g4fb").textContent="숫자를 입력해 주세요.";return}
+  const ans=g4.k-1;
+  if(v===ans){g4.score++;g4.streak++;$("g4score").textContent=g4.score+"점";$("gm4").textContent=g4.score+"점";
+    $("g4fb").className="feedback good";$("g4fb").textContent=`정답! 근 사이 구간이 ${g4.k-1}개이므로 f′의 근은 ${ans}개입니다.`;}
+  else{g4.streak=0;$("g4fb").className="feedback bad";$("g4fb").textContent=`정답은 ${ans}개입니다. 근 사이 구간마다 롤의 정리에 의해 f′의 근이 하나씩 존재합니다.`;}
+  g4Streak();g4.k=Math.max(1,ans);
+  setTimeout(()=>{
+    if(g4.k>1)$("g4prompt").innerHTML=`이제 ${g4.k}개의 서로 다른 실근을 가진 ${g4.k}차 다항식입니다.<br><b>한 번 더 미분하면 실근은 몇 개일까?</b>`;
+    else $("g4prompt").innerHTML=`<b>실근이 1개 남았습니다. 여기서 한 번 더 미분하면?</b>`;
+    $("g4input").value="";g4Render(false);renderMath($("g4prompt"));
+  },1500);
+}
+
+/* boot */
+makeInputs();
+$("degreeSelect").addEventListener("change",()=>{makeInputs();run()});
+$("dDegree").addEventListener("change",()=>{dMake();dRun()});
+g1New();newG2();newG3();g4New();
+window.addEventListener("resize",()=>{
+  if($("ch1b").classList.contains("active"))drawDemo1();
+  if($("ch1c").classList.contains("active"))run();
+  if($("ch2a").classList.contains("active")){drawDemo2();drawDemo3()}
+  if($("ch2b").classList.contains("active"))dRun();
+  if($("game2").classList.contains("active"))newG2();
+  if($("game3").classList.contains("active"))newG3();
+  if($("game4").classList.contains("active"))g4Render(false);
+});
+window.addEventListener("load",()=>{renderMath();setTimeout(()=>{if($("ch1a").classList.contains("active"))startBB()},200)});
+</script>
+</body>
+</html>

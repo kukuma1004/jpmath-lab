@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>삼차함수 비율 불변성 탐구</title>
+<style>
+  /* [수정 위치 1] 전체 색상과 글꼴을 바꾸려면 아래 :root와 body를 수정하세요. */
+  :root { --ink:#172033; --muted:#64748b; --line:#dbe3ee; --blue:#2563eb; --orange:#ea580c; --green:#15803d; --bg:#f4f7fb; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif; line-height:1.6; }
+  .wrap { width:min(1080px, calc(100% - 28px)); margin:24px auto 48px; }
+  header { background:#14213d; color:white; padding:25px 22px; border-radius:18px; }
+  h1 { margin:0 0 8px; font-size:clamp(22px,4vw,32px); line-height:1.3; }
+  header p { margin:0; color:#dbeafe; }
+  h2 { font-size:20px; margin:0 0 12px; }
+  h3 { font-size:16px; margin:0 0 8px; }
+  .panel { background:white; border:1px solid var(--line); border-radius:16px; padding:18px; margin-top:16px; box-shadow:0 4px 14px rgba(15,23,42,.04); }
+  .formula { background:#f1f5f9; padding:12px 14px; border-radius:10px; overflow-wrap:anywhere; font-family:ui-monospace,monospace; }
+  .inputs { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+  label { display:block; font-weight:650; font-size:14px; margin-bottom:5px; }
+  input { width:100%; min-width:0; padding:11px 10px; border:1px solid #cbd5e1; border-radius:9px; font-size:16px; color:var(--ink); background:white; }
+  input:focus { outline:3px solid #bfdbfe; border-color:var(--blue); }
+  input[type="range"] { padding:0; accent-color:var(--blue); cursor:pointer; touch-action:pan-y; }
+  .slider-card { background:#f8fafc; border:1px solid var(--line); border-radius:11px; padding:10px; min-width:0; }
+  .slider-head { display:flex; justify-content:space-between; gap:8px; align-items:center; }
+  .slider-value { font-weight:750; color:var(--blue); font-variant-numeric:tabular-nums; }
+  .slider-card input { margin:9px 0 2px; border:0; }
+  .canvas-wrap { width:100%; min-width:0; position:relative; }
+  canvas { width:100%; max-width:100%; }
+  .actions { display:flex; flex-wrap:wrap; gap:9px; margin-top:14px; }
+  button { border:0; border-radius:9px; padding:11px 15px; background:var(--blue); color:white; font-size:15px; font-weight:700; cursor:pointer; }
+  button.secondary { background:#e2e8f0; color:#1e293b; }
+  button:focus-visible { outline:3px solid #93c5fd; outline-offset:2px; }
+  .hint,.small { color:var(--muted); font-size:13px; }
+  .error { color:#b91c1c; font-weight:650; margin-top:10px; }
+  .success { color:var(--green); font-weight:700; }
+  .grid { display:grid; grid-template-columns:1.15fr .85fr; gap:16px; align-items:start; }
+  canvas { display:block; width:100%; height:330px; border:1px solid var(--line); border-radius:12px; background:#fff; }
+  .legend { display:flex; flex-wrap:wrap; gap:12px; font-size:13px; margin-top:9px; }
+  .dot { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:5px; }
+  .results { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .metric { padding:13px; border:1px solid var(--line); border-radius:11px; background:#fbfdff; }
+  .metric strong { display:block; font-size:23px; margin-top:3px; }
+  .metric span { color:var(--muted); font-size:13px; }
+  .mathline { padding:10px 0; border-bottom:1px solid #edf1f6; overflow-wrap:anywhere; }
+  .mathline:last-child { border-bottom:0; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th,td { padding:9px 7px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+  th { background:#f8fafc; }
+  .scroll { overflow-x:auto; }
+  .notice { border-left:4px solid #f59e0b; background:#fffbeb; padding:12px 14px; border-radius:8px; font-size:14px; }
+  footer { text-align:center; color:var(--muted); font-size:12px; margin:20px 0; }
+  @media (max-width:720px) {
+    .wrap { width:calc(100% - 20px); margin-top:12px; }
+    .panel { padding:14px; }
+    .inputs { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+    .grid { grid-template-columns:1fr; }
+    canvas { height:290px; }
+  }
+  @media (max-width:380px) { .results { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>삼차함수의 비율 불변성 탐구</h1>
+    <p>극댓값 · 극솟값 · 변곡점 · 같은 높이의 다른 교점을 직접 계산하고 그래프로 확인하기</p>
+  </header>
+
+  <section class="panel">
+    <h2>1. 삼차함수 계수 입력</h2>
+    <div class="formula">f(x) = ax³ + bx² + cx + d</div>
+    <p class="hint">각 계수는 -100 이상 100 이하의 실수를 입력하세요. a는 0이 될 수 없으며, 극댓값과 극솟값이 모두 존재해야 분석할 수 있습니다.</p>
+    <!-- 슬라이더를 움직이면 계수와 그래프가 즉시 함께 바뀝니다. -->
+    <div class="inputs">
+      <div class="slider-card"><div class="slider-head"><label for="a">a (x³)</label><output class="slider-value" id="aValue">1.0</output></div><input id="a" type="range" min="-5" max="5" step="0.1" value="1"><div class="small">범위: -5 ~ 5 (0 제외)</div></div>
+      <div class="slider-card"><div class="slider-head"><label for="b">b (x²)</label><output class="slider-value" id="bValue">0.0</output></div><input id="b" type="range" min="-10" max="10" step="0.1" value="0"><div class="small">범위: -10 ~ 10</div></div>
+      <div class="slider-card"><div class="slider-head"><label for="c">c (x)</label><output class="slider-value" id="cValue">-3.0</output></div><input id="c" type="range" min="-30" max="30" step="0.1" value="-3"><div class="small">범위: -30 ~ 30</div></div>
+      <div class="slider-card"><div class="slider-head"><label for="d">d (상수항)</label><output class="slider-value" id="dValue">0.0</output></div><input id="d" type="range" min="-10" max="10" step="0.1" value="0"><div class="small">범위: -10 ~ 10</div></div>
+    </div>
+    <p class="hint">슬라이더를 좌우로 움직여 보세요. 값이 바뀌는 즉시 함수와 그래프가 다시 계산됩니다. a가 0이거나 두 극점이 존재하지 않는 순간에는 분석 결과 대신 안내가 표시됩니다.</p>
+    <div class="actions">
+      <button class="secondary" id="reset">기본값으로 초기화</button>
+      <button class="secondary" id="example2">예시 2 불러오기</button>
+      <button class="secondary" id="example3">예시 3 불러오기</button>
+    </div>
+    <div id="message" role="status" aria-live="polite" class="error"></div>
+  </section>
+
+  <section class="grid">
+    <div class="panel">
+      <h2>2. 함수 그래프와 주요 지점</h2>
+      <div class="canvas-wrap"><canvas id="graph" aria-label="삼차함수 그래프와 극점 및 변곡점"></canvas></div>
+      <div class="legend">
+        <span><i class="dot" style="background:#2563eb"></i>함수 그래프</span>
+        <span><i class="dot" style="background:#ea580c"></i>극댓값</span>
+        <span><i class="dot" style="background:#16a34a"></i>극솟값</span>
+        <span><i class="dot" style="background:#9333ea"></i>변곡점</span>
+        <span><i class="dot" style="background:#ca8a04"></i>같은 높이의 다른 교점</span>
+      </div>
+      <p class="small">그래프는 계산된 주요 지점이 화면에 들어오도록 자동으로 범위를 조절합니다. 그림은 관계를 이해하기 위한 시각화이며, 정확한 값은 오른쪽 결과표를 기준으로 확인하세요.</p>
+    </div>
+    <div class="panel">
+      <h2>3. 계산 결과</h2>
+      <div class="results">
+        <div class="metric"><span>첫 번째 비율</span><strong id="ratio1">—</strong><span>변곡점~극대 / 극대~다른 교점</span></div>
+        <div class="metric"><span>두 번째 비율</span><strong id="ratio2">—</strong><span>변곡점~극대 / 극대~극소</span></div>
+      </div>
+      <div id="coordinates" style="margin-top:12px"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>4. 사용한 수학식과 의미</h2>
+    <div class="mathline"><b>도함수</b><br>f′(x) = 3ax² + 2bx + c<br><span class="small">기울기가 0인 지점을 찾아 극댓값과 극솟값의 x좌표를 구합니다.</span></div>
+    <div class="mathline"><b>이계도함수</b><br>f″(x) = 6ax + 2b = 0 → 변곡점의 x좌표 x = −b/(3a)<br><span class="small">그래프의 오목·볼록이 바뀌는 변곡점의 위치를 구합니다.</span></div>
+    <div class="mathline"><b>변곡점을 기준으로 한 형태</b><br>u = x − (−b/(3a)), 그러면 f(x) = au³ + pu + q<br><span class="small">좌표를 변곡점만큼 옮기면 이차항이 사라집니다. p와 q는 옮긴 함수에서 계산되는 계수입니다.</span></div>
+    <div class="mathline"><b>극점의 위치</b><br>u = ±r, 여기서 r = √(b²−3ac)/(3|a|)<br><span class="small">변곡점에서 두 극점까지의 수평 거리는 모두 r입니다.</span></div>
+    <div class="mathline"><b>같은 높이의 다른 교점</b><br>극댓값 지점의 변곡점 기준 좌표를 s라고 하면, 다른 교점의 좌표는 u = −2s입니다.<br><span class="small">극댓값을 지나는 수평선과 함수 그래프의 다른 교점을 구한 결과입니다.</span></div>
+    <div class="mathline"><b>두 비율</b><br>첫 번째 = r/(3r) = 1/3<br>두 번째 = r/(2r) = 1/2<br><span class="small">여기서 거리는 모두 x좌표 사이의 수평 거리입니다. y값 차이나 곡선의 길이를 뜻하지 않습니다.</span></div>
+    <p class="notice">주의: 이 웹앱은 삼차함수의 수평 방향 거리 비율을 확인합니다. 그래프 위 두 점 사이의 곡선 길이 또는 두 점 사이의 직선거리를 계산하는 도구는 아닙니다.</p>
+  </section>
+
+  <section class="panel">
+    <h2>5. 예시 3개로 직접 검증하기</h2>
+    <p>아래는 손계산으로 확인할 수 있는 예시 함수입니다. 각 함수의 계수를 직접 입력해 웹앱 결과와 비교해 보세요. 아래 값은 검증용으로 계산한 예시이며, 사용자가 수행한 실험 결과를 의미하지 않습니다.</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>예시</th><th>함수</th><th>변곡점 x</th><th>극댓값 x</th><th>극솟값 x</th><th>같은 높이의 다른 교점 x</th><th>예상 비율</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>x³ − 3x</td><td>0</td><td>−1</td><td>1</td><td>2</td><td>1/3, 1/2</td></tr>
+          <tr><td>2</td><td>2x³ − 24x</td><td>0</td><td>−2</td><td>2</td><td>4</td><td>1/3, 1/2</td></tr>
+          <tr><td>3</td><td>−x³ + 6x² − 9x</td><td>2</td><td>3</td><td>1</td><td>0</td><td>1/3, 1/2</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3 style="margin-top:16px">손계산 검증 방법</h3>
+    <ol>
+      <li>예시 함수에서 f′(x)=0을 풀어 극댓값과 극솟값의 x좌표를 구합니다.</li>
+      <li>f″(x)=0을 풀어 변곡점의 x좌표를 구합니다.</li>
+      <li>극댓값의 y좌표를 함수에 대입해 같은 높이의 다른 교점 x좌표를 구합니다.</li>
+      <li>각 x좌표 사이의 절댓값을 계산해 두 비율을 구합니다.</li>
+      <li>그 결과를 웹앱의 비율 및 좌표와 비교합니다. 세 예시 모두에서 계산 결과가 일치하는지 확인합니다.</li>
+    </ol>
+    <p class="small">예시 1의 손계산: 변곡점 0, 극댓값 x=−1, 극솟값 x=1, 같은 높이의 다른 교점 x=2입니다. 따라서 첫 비율은 1/3, 두 번째 비율은 1/2입니다.</p>
+  </section>
+  <footer>미적분Ⅰ 수학 탐구용 첫 실행 버전 · 모든 계산은 현재 브라우저 안에서 수행됩니다.</footer>
+</div>
+
+<script>
+/* [수정 위치] 슬라이더의 기본값과 계산 방식을 바꾸려면 이 부분을 수정하세요. */
+const DEFAULTS = { a: 1, b: 0, c: -3, d: 0 };
+const $ = (id) => document.getElementById(id);
+let currentData = null;
+
+function f(x,a,b,c,d) { return ((a*x+b)*x+c)*x+d; }
+function format(n) {
+  if (!Number.isFinite(n)) return "계산 불가";
+  const v = Math.abs(n)<1e-10 ? 0 : n;
+  return Number(v.toPrecision(7)).toString();
+}
+function pointText(name,x,y) {
+  return `<div class="mathline"><b>${name}</b>: (${format(x)}, ${format(y)})</div>`;
+}
+
+// 슬라이더 숫자 표시를 갱신합니다.
+function updateSliderLabels() {
+  ["a","b","c","d"].forEach(key => {
+    $(key+"Value").textContent = Number($(key).value).toFixed(1);
+  });
+}
+
+function calculate() {
+  const a=Number($("a").value), b=Number($("b").value);
+  const c=Number($("c").value), d=Number($("d").value);
+  const msg=$("message");
+  updateSliderLabels();
+
+  if (a===0) {
+    msg.className="error";
+    msg.textContent="a가 0이면 삼차함수가 아니므로 a 슬라이더를 0이 아닌 값으로 움직여 주세요.";
+    $("ratio1").textContent="—"; $("ratio2").textContent="—";
+    $("coordinates").textContent="두 극점이 존재하는 계수에서 결과가 표시됩니다.";
+    drawInvalidGraph("a가 0이면 삼차함수가 아닙니다.");
+    return;
+  }
+  const disc=b*b-3*a*c;
+  if (!(disc>0)) {
+    msg.className="error";
+    msg.textContent="현재 계수에서는 서로 다른 두 극점이 없습니다. b²−3ac가 0보다 커지도록 슬라이더를 조절하세요.";
+    $("ratio1").textContent="—"; $("ratio2").textContent="—";
+    $("coordinates").textContent="두 극점이 존재하는 계수에서 결과가 표시됩니다.";
+    drawInvalidGraph("서로 다른 두 극점이 없습니다.");
+    return;
+  }
+
+  // 도함수와 이계도함수에서 얻은 극점·변곡점의 x좌표
+  const h=-b/(3*a);
+  const r=Math.sqrt(disc)/(3*Math.abs(a));
+  const maxX=a>0?h-r:h+r;
+  const minX=a>0?h+r:h-r;
+  const maxY=f(maxX,a,b,c,d), minY=f(minX,a,b,c,d);
+  const infY=f(h,a,b,c,d);
+  // 극댓값 높이에서 중근 하나 외에 남는 교점
+  const otherX=h-2*(maxX-h);
+  const otherY=f(otherX,a,b,c,d);
+  const distInfMax=Math.abs(maxX-h);
+  const distMaxOther=Math.abs(otherX-maxX);
+  const distMaxMin=Math.abs(minX-maxX);
+  const ratio1=distInfMax/distMaxOther;
+  const ratio2=distInfMax/distMaxMin;
+
+  currentData={a,b,c,d,h,r,maxX,minX,maxY,minY,infY,otherX,otherY,ratio1,ratio2};
+  $("ratio1").textContent=format(ratio1);
+  $("ratio2").textContent=format(ratio2);
+  $("coordinates").innerHTML=
+    pointText("극댓값",maxX,maxY)+pointText("극솟값",minX,minY)+
+    pointText("변곡점",h,infY)+pointText("같은 높이의 다른 교점",otherX,otherY)+
+    `<div class="mathline"><b>수평 거리</b><br>변곡점~극댓값: ${format(distInfMax)}<br>극댓값~다른 교점: ${format(distMaxOther)}<br>극댓값~극솟값: ${format(distMaxMin)}</div>`;
+  msg.className="success";
+  msg.textContent="계산 완료: 슬라이더를 움직이면 그래프와 결과가 실시간으로 갱신됩니다.";
+  drawGraph(currentData);
+}
+
+// 그래프를 그릴 공간이 아직 없을 때 안내 문구를 표시합니다.
+function drawInvalidGraph(message) {
+  const canvas=$("graph");
+  const rect=canvas.getBoundingClientRect();
+  const width=Math.max(280,Math.floor(rect.width));
+  const height=Math.max(220,Math.floor(rect.height || 290));
+  const dpr=window.devicePixelRatio||1;
+  canvas.width=Math.round(width*dpr); canvas.height=Math.round(height*dpr);
+  const ctx=canvas.getContext("2d");
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,width,height);
+  ctx.fillStyle="#64748b"; ctx.font="14px sans-serif";
+  ctx.textAlign="center"; ctx.fillText(message,width/2,height/2);
+  ctx.textAlign="start";
+}
+
+function drawGraph(data) {
+  const canvas=$("graph");
+  const rect=canvas.getBoundingClientRect();
+  // CSS 레이아웃 계산이 끝나지 않은 순간에는 다음 화면 갱신 때 다시 그립니다.
+  if (rect.width<20) { requestAnimationFrame(()=>drawGraph(data)); return; }
+  const W=Math.floor(rect.width), H=Math.max(220,Math.floor(rect.height));
+  const dpr=window.devicePixelRatio||1;
+  canvas.width=Math.round(W*dpr); canvas.height=Math.round(H*dpr);
+  const ctx=canvas.getContext("2d");
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,W,H);
+
+  const xs=[data.h,data.maxX,data.minX,data.otherX];
+  let xMin=Math.min(...xs)-1.5, xMax=Math.max(...xs)+1.5;
+  const values=[];
+  for(let i=0;i<=400;i++) {
+    const x=xMin+(xMax-xMin)*i/400;
+    values.push(f(x,data.a,data.b,data.c,data.d));
+  }
+  values.push(data.maxY,data.minY,data.infY,data.otherY);
+  let yMin=Math.min(...values), yMax=Math.max(...values);
+  const yPad=Math.max((yMax-yMin)*0.14,0.5);
+  yMin-=yPad; yMax+=yPad;
+  const left=43,right=12,top=16,bottom=30;
+  const px=x=>left+(x-xMin)/(xMax-xMin)*(W-left-right);
+  const py=y=>top+(yMax-y)/(yMax-yMin)*(H-top-bottom);
+
+  // 격자와 축
+  ctx.strokeStyle="#e8edf4"; ctx.lineWidth=1;
+  for(let i=0;i<=5;i++) {
+    const y=top+(H-top-bottom)*i/5;
+    ctx.beginPath(); ctx.moveTo(left,y); ctx.lineTo(W-right,y); ctx.stroke();
+  }
+  if(xMin<=0 && xMax>=0) {
+    ctx.strokeStyle="#94a3b8"; ctx.beginPath();
+    ctx.moveTo(px(0),top); ctx.lineTo(px(0),H-bottom); ctx.stroke();
+  }
+  if(yMin<=0 && yMax>=0) {
+    ctx.strokeStyle="#94a3b8"; ctx.beginPath();
+    ctx.moveTo(left,py(0)); ctx.lineTo(W-right,py(0)); ctx.stroke();
+  }
+  ctx.fillStyle="#64748b"; ctx.font="11px sans-serif";
+  ctx.fillText("x",W-17,H-8); ctx.fillText("y",8,13);
+
+  // 삼차함수 곡선
+  ctx.strokeStyle="#2563eb"; ctx.lineWidth=2.5; ctx.beginPath();
+  for(let i=0;i<=600;i++) {
+    const x=xMin+(xMax-xMin)*i/600;
+    const y=f(x,data.a,data.b,data.c,data.d);
+    if(i===0) ctx.moveTo(px(x),py(y)); else ctx.lineTo(px(x),py(y));
+  }
+  ctx.stroke();
+
+  // 극댓값을 지나는 수평선
+  ctx.save(); ctx.setLineDash([5,4]); ctx.strokeStyle="#ca8a04";
+  ctx.beginPath(); ctx.moveTo(left,py(data.maxY)); ctx.lineTo(W-right,py(data.maxY)); ctx.stroke(); ctx.restore();
+
+  function mark(x,y,color,label,dx=7,dy=-9) {
+    ctx.fillStyle=color; ctx.beginPath(); ctx.arc(px(x),py(y),5,0,Math.PI*2); ctx.fill();
+    ctx.font="bold 11px sans-serif"; ctx.fillStyle="#172033";
+    ctx.fillText(label,Math.max(2,Math.min(W-100,px(x)+dx)),Math.max(12,Math.min(H-5,py(y)+dy)));
+  }
+  mark(data.maxX,data.maxY,"#ea580c","극대");
+  mark(data.minX,data.minY,"#16a34a","극소");
+  mark(data.h,data.infY,"#9333ea","변곡점",7,15);
+  mark(data.otherX,data.otherY,"#ca8a04","다른 교점",7,15);
+}
+
+function loadValues(values) {
+  Object.entries(values).forEach(([key,value])=>$(key).value=value);
+  calculate();
+}
+
+// 입력 슬라이더를 움직이는 즉시 계산합니다.
+["a","b","c","d"].forEach(key=>$(key).addEventListener("input",calculate));
+$("reset").addEventListener("click",()=>loadValues(DEFAULTS));
+$("example2").addEventListener("click",()=>loadValues({a:2,b:0,c:-24,d:0}));
+$("example3").addEventListener("click",()=>loadValues({a:-1,b:6,c:-9,d:0}));
+window.addEventListener("resize",()=>{ if(currentData) drawGraph(currentData); });
+
+// 페이지의 배치가 끝난 다음 최초 그래프를 그립니다.
+requestAnimationFrame(calculate);
+</script>
+</body>
+</html>

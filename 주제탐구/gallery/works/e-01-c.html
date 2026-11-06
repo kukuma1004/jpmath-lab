@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>리만합 수렴·오차 분석</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#1f2937;--sub:#5b6472;--border:#d9dee8;--accent:#2563eb;--bad:#b91c1c}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,"Malgun Gothic",sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+.wrap{max-width:1100px;margin:auto;padding:16px}h1{font-size:clamp(1.4rem,4vw,2.1rem);margin:0 0 6px}h2{font-size:1.1rem;margin:0 0 10px}.intro{color:var(--sub);margin:0 0 16px}
+.grid{display:grid;grid-template-columns:310px 1fr;gap:14px}.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}.full{grid-column:1/-1}
+label{display:block;font-weight:700;margin:10px 0 5px}input,select,button{width:100%;min-height:42px;border:1px solid #c7ceda;border-radius:9px;padding:8px 10px;font-size:1rem;background:#fff}button{cursor:pointer;background:var(--accent);color:#fff;border:none;font-weight:700;margin-top:10px}.secondary{background:#eef2f7;color:var(--text);border:1px solid var(--border)}
+.range-row{display:grid;grid-template-columns:1fr 90px;gap:8px;align-items:center}.preset{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.preset button{margin-top:6px;min-height:38px;padding:5px;font-size:.9rem}.help,.note{font-size:.88rem;color:var(--sub)}
+.error{display:none;background:#fff1f2;border:1px solid #fecdd3;color:var(--bad);padding:9px;border-radius:8px;margin-top:10px}.formula,.explain{margin-top:10px;padding:11px;border-radius:9px;background:#f8fbff;border-left:4px solid var(--accent);font-size:.93rem}
+canvas{display:block;width:100%;height:auto;border:1px solid var(--border);border-radius:10px;background:#fff}.results{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.box{border:1px solid var(--border);border-radius:9px;padding:9px;background:#fbfcfe}.box span{display:block;color:var(--sub);font-size:.82rem}.box strong{font-size:1rem;word-break:break-word}
+table{width:100%;border-collapse:collapse;min-width:650px;margin-top:12px}th,td{border:1px solid var(--border);padding:8px;text-align:right}th{background:#f1f4f8}th:first-child,td:first-child{text-align:center}.scroll{overflow-x:auto}
+.verify{padding:10px;border:1px solid #d7e3f8;border-radius:9px;background:#f8fbff}.ok{display:none;margin-top:10px;padding:9px;border-radius:8px;background:#f0fdf4;border:1px solid #bbf7d0}
+@media(max-width:800px){.grid{grid-template-columns:1fr}}@media(max-width:480px){.wrap{padding:10px}.results{grid-template-columns:1fr 1fr}.preset{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>미적분Ⅰ: 리만합 수렴·오차 분석</h1>
+<p class="intro">분할 수 <b>n</b>과 표본점에 따라 좌합·우합이 정적분값에 가까워지는 과정을 확인합니다.</p>
+<div class="grid">
+<section class="card">
+<h2>① 입력</h2>
+<label for="fn">함수 선택</label>
+<select id="fn">
+<!-- 초보자 수정: 함수를 추가하려면 option과 JS의 FUNCTIONS를 함께 수정하세요. -->
+<option value="x">f(x)=x</option><option value="x2" selected>f(x)=x²</option><option value="x3">f(x)=x³</option><option value="x4">f(x)=x⁴</option><option value="twoXPlusOne">f(x)=2x+1</option><option value="oneMinusX">f(x)=1-x</option><option value="threeMinusX">f(x)=3-x</option><option value="oneMinusX2">f(x)=1-x²</option><option value="sin">f(x)=sin x</option><option value="exp">f(x)=eˣ</option>
+</select>
+<label for="a">구간 시작값 a</label><input id="a" type="number" min="-10" max="10" step="0.1" value="0">
+<label for="b">구간 끝값 b</label><input id="b" type="number" min="-10" max="10" step="0.1" value="1">
+<div class="help">-10 ≤ a,b ≤ 10, 그리고 a &lt; b</div>
+<label for="n">분할 수 n</label>
+<div class="range-row"><input id="n" type="range" min="1" max="1000" value="10"><input id="nNum" type="number" min="1" max="1000" value="10"></div>
+<div class="help">1 ≤ n ≤ 1000인 정수</div>
+<div class="preset"><button class="secondary" data-n="4">n=4</button><button class="secondary" data-n="10">n=10</button><button class="secondary" data-n="50">n=50</button><button class="secondary" data-n="100">n=100</button></div>
+<label for="sample">표본점</label><select id="sample"><option value="left">왼쪽 끝점(좌합)</option><option value="right">오른쪽 끝점(우합)</option></select>
+<button id="calc">계산하기</button><div id="err" class="error"></div>
+<div class="formula"><b>핵심 수식</b><br>Δx=(b-a)/n<br>좌합 Lₙ=Σf(a+kΔx)Δx, k=0,…,n-1<br>우합 Rₙ=Σf(a+kΔx)Δx, k=1,…,n<br>오차=|리만합-정적분값|</div>
+</section>
+<section class="card"><h2>② 리만합 그림</h2><canvas id="graph" width="800" height="420"></canvas><div class="explain"><b>그림 읽기:</b> 직사각형의 폭은 Δx, 높이는 선택한 표본점에서의 함수값입니다. n을 키우면 직사각형 폭이 작아집니다.</div></section>
+<section class="card full"><h2>③ 계산 결과</h2><div class="results">
+<div class="box"><span>함수</span><strong id="oFn">-</strong></div><div class="box"><span>n</span><strong id="oN">-</strong></div><div class="box"><span>Δx</span><strong id="oDx">-</strong></div><div class="box"><span>좌합</span><strong id="oL">-</strong></div><div class="box"><span>우합</span><strong id="oR">-</strong></div><div class="box"><span>실제 정적분값</span><strong id="oI">-</strong></div><div class="box"><span>좌합 오차</span><strong id="oLE">-</strong></div><div class="box"><span>우합 오차</span><strong id="oRE">-</strong></div><div class="box"><span>표본점</span><strong id="oS">-</strong></div>
+</div><div id="interp" class="ok"></div>
+<div class="scroll"><table><thead><tr><th>n</th><th>좌합</th><th>우합</th><th>실제 적분값</th><th>좌합 오차</th><th>우합 오차</th></tr></thead><tbody id="tbody"></tbody></table></div></section>
+<section class="card full"><h2>④ n과 오차의 관계</h2><canvas id="errorGraph" width="1000" height="400"></canvas><div class="explain">가로축은 n, 세로축은 오차입니다. 아래로 갈수록 실제값에 가까워집니다. 이 그래프는 수렴 현상을 관찰하기 위한 것으로, 수렴 속도의 정확한 이론식을 대신 증명하지 않습니다.</div></section>
+<section class="card full"><h2>⑤ 직접 검증</h2><div class="verify"><b>권장 검증값: n=4, 10, 50</b><br>1) Δx=(b-a)/n을 직접 계산합니다.<br>2) 좌합은 왼쪽 끝점, 우합은 오른쪽 끝점의 함수값을 각각 더합니다.<br>3) 손계산값을 위 표의 웹앱 결과와 비교합니다.<br><br>세 값이 일치하는지 확인한 뒤 탐구 보고서에 검증 과정을 기록하세요.</div><p class="note">주의: 함수는 미리 준비된 목록에서 선택합니다. 이 첫 버전은 외부 서버 없이 브라우저에서만 계산합니다.</p></section>
+</div></div>
+<script>
+/* =====================================================
+   초보자 수정 영역 ①: 사용할 함수와 실제 정적분값
+   fn = 리만합 계산에 쓰는 함수
+   integral = a부터 b까지의 정확한 정적분값
+   ===================================================== */
+const FUNCTIONS={
+ x:{label:'f(x)=x',fn:x=>x,integral:(a,b)=>(b*b-a*a)/2,kind:'증가'},
+ x2:{label:'f(x)=x²',fn:x=>x*x,integral:(a,b)=>(b**3-a**3)/3,kind:'구간에 따라 변함'},
+ x3:{label:'f(x)=x³',fn:x=>x**3,integral:(a,b)=>(b**4-a**4)/4,kind:'증가'},
+ x4:{label:'f(x)=x⁴',fn:x=>x**4,integral:(a,b)=>(b**5-a**5)/5,kind:'구간에 따라 변함'},
+ twoXPlusOne:{label:'f(x)=2x+1',fn:x=>2*x+1,integral:(a,b)=>(b*b+b)-(a*a+a),kind:'증가'},
+ oneMinusX:{label:'f(x)=1-x',fn:x=>1-x,integral:(a,b)=>(b-b*b/2)-(a-a*a/2),kind:'감소'},
+ threeMinusX:{label:'f(x)=3-x',fn:x=>3-x,integral:(a,b)=>(3*b-b*b/2)-(3*a-a*a/2),kind:'감소'},
+ oneMinusX2:{label:'f(x)=1-x²',fn:x=>1-x*x,integral:(a,b)=>(b-b**3/3)-(a-a**3/3),kind:'구간에 따라 변함'},
+ sin:{label:'f(x)=sin x',fn:x=>Math.sin(x),integral:(a,b)=>-Math.cos(b)+Math.cos(a),kind:'구간에 따라 변함'},
+ exp:{label:'f(x)=eˣ',fn:x=>Math.exp(x),integral:(a,b)=>Math.exp(b)-Math.exp(a),kind:'증가'}
+};
+/* 초보자 수정 영역 ②: 화면에 표시할 소수점 자리수 */
+const DEC=8;
+const $=id=>document.getElementById(id); const n=$('n'), nNum=$('nNum');
+function fmt(v){return Number.isFinite(v)?v.toFixed(DEC).replace(/\.0+$|(?<=\.[0-9]*?)0+$/,''):String(v)}
+function input(){const key=$('fn').value,a=Number($('a').value),b=Number($('b').value),nn=Number(nNum.value);if(!Number.isFinite(a)||!Number.isFinite(b))throw Error('a와 b는 숫자로 입력하세요.');if(a<-10||a>10||b<-10||b>10)throw Error('a와 b는 -10 이상 10 이하로 입력하세요.');if(!(a<b))throw Error('반드시 a < b가 되도록 입력하세요.');if(!Number.isInteger(nn)||nn<1||nn>1000)throw Error('n은 1 이상 1000 이하의 정수여야 합니다.');return {key,a,b,n:nn,F:FUNCTIONS[key]}}
+function sums(F,a,b,nn){const dx=(b-a)/nn;let L=0,R=0;for(let k=0;k<nn;k++)L+=F.fn(a+k*dx)*dx;for(let k=1;k<=nn;k++)R+=F.fn(a+k*dx)*dx;return{dx,L,R}}
+function drawRiemann(F,a,b,nn,mode){const c=$('graph'),ctx=c.getContext('2d'),W=c.width,H=c.height,p=45;ctx.clearRect(0,0,W,H);let lo=Infinity,hi=-Infinity;for(let i=0;i<=500;i++){const x=a+(b-a)*i/500,y=F.fn(x);lo=Math.min(lo,y);hi=Math.max(hi,y)};if(lo===hi){lo-=1;hi+=1}const pad=(hi-lo)*.15;lo-=pad;hi+=pad;const X=x=>p+(x-a)/(b-a)*(W-2*p),Y=y=>H-p-(y-lo)/(hi-lo)*(H-2*p);ctx.strokeStyle='#c7ceda';ctx.beginPath();if(lo<=0&&hi>=0){const y=Y(0);ctx.moveTo(p,y);ctx.lineTo(W-p,y)}ctx.stroke();ctx.strokeStyle='rgba(37,99,235,.45)';ctx.fillStyle='rgba(37,99,235,.16)';const dx=(b-a)/nn;for(let k=0;k<Math.min(nn,250);k++){const x0=a+k*dx,x1=x0+dx,sx=mode==='left'?x0:x1,y=F.fn(sx),py0=Y(0),py=Y(y);const top=Math.min(py0,py);ctx.fillRect(X(x0),top,X(x1)-X(x0),Math.abs(py0-py));ctx.strokeRect(X(x0),top,X(x1)-X(x0),Math.abs(py0-py))}ctx.strokeStyle='#111827';ctx.lineWidth=2.4;ctx.beginPath();for(let i=0;i<=500;i++){const x=a+(b-a)*i/500,y=F.fn(x);i?ctx.lineTo(X(x),Y(y)):ctx.moveTo(X(x),Y(y))}ctx.stroke();ctx.fillStyle='#111827';ctx.font='14px Arial';ctx.fillText(F.label,p,20);ctx.fillStyle='#5b6472';ctx.fillText(`${mode==='left'?'좌합':'우합'}, n=${nn}`,p,39);}
+function drawErrors(F,a,b){const c=$('errorGraph'),ctx=c.getContext('2d'),W=c.width,H=c.height,pL=55,pR=20,pT=25,pB=45;ctx.clearRect(0,0,W,H);const exact=F.integral(a,b),N=1000,L=[],R=[];for(let nn=1;nn<=N;nn++){const s=sums(F,a,b,nn);L.push(Math.abs(s.L-exact));R.push(Math.abs(s.R-exact))}let max=Math.max(...L,...R);if(!Number.isFinite(max)||max<=0)max=1;const X=nn=>pL+(nn-1)/(N-1)*(W-pL-pR),Y=e=>H-pB-Math.sqrt(e/max)*(H-pT-pB);ctx.strokeStyle='#dfe4eb';for(let i=0;i<=5;i++){const y=pT+i*(H-pT-pB)/5;ctx.beginPath();ctx.moveTo(pL,y);ctx.lineTo(W-pR,y);ctx.stroke()}ctx.strokeStyle='#7b8492';ctx.beginPath();ctx.moveTo(pL,pT);ctx.lineTo(pL,H-pB);ctx.lineTo(W-pR,H-pB);ctx.stroke();ctx.lineWidth=2;ctx.strokeStyle='#2563eb';ctx.beginPath();L.forEach((e,i)=>i?ctx.lineTo(X(i+1),Y(e)):ctx.moveTo(X(i+1),Y(e)));ctx.stroke();ctx.strokeStyle='#dc2626';ctx.beginPath();R.forEach((e,i)=>i?ctx.lineTo(X(i+1),Y(e)):ctx.moveTo(X(i+1),Y(e)));ctx.stroke();ctx.fillStyle='#2563eb';ctx.font='14px Arial';ctx.fillText('좌합 오차',80,20);ctx.fillStyle='#dc2626';ctx.fillText('우합 오차',165,20);ctx.fillStyle='#5b6472';ctx.fillText('n',W-20,H-15);ctx.fillText('오차',18,25);}
+function table(F,a,b){const ex=F.integral(a,b);$('tbody').innerHTML='';[4,10,50,100].forEach(nn=>{const s=sums(F,a,b,nn),tr=document.createElement('tr');tr.innerHTML=`<td>${nn}</td><td>${fmt(s.L)}</td><td>${fmt(s.R)}</td><td>${fmt(ex)}</td><td>${fmt(Math.abs(s.L-ex))}</td><td>${fmt(Math.abs(s.R-ex))}</td>`;$('tbody').appendChild(tr)})}
+function run(){try{$('err').style.display='none';const q=input(),s=sums(q.F,q.a,q.b,q.n),ex=q.F.integral(q.a,q.b);$('oFn').textContent=q.F.label;$('oN').textContent=q.n;$('oDx').textContent=fmt(s.dx);$('oL').textContent=fmt(s.L);$('oR').textContent=fmt(s.R);$('oI').textContent=fmt(ex);$('oLE').textContent=fmt(Math.abs(s.L-ex));$('oRE').textContent=fmt(Math.abs(s.R-ex));$('oS').textContent=$('sample').value==='left'?'왼쪽 끝점':'오른쪽 끝점';let t=q.F.kind==='증가'?'증가함수이므로 (적절한 구간에서) 좌합과 우합이 실제값의 양쪽에서 나타나는지 확인하세요.':q.F.kind==='감소'?'감소함수이므로 좌합과 우합의 과대·과소 추정 방향을 확인하세요.':'이 함수는 선택한 구간에 따라 증가·감소가 섞일 수 있으므로 계산값을 직접 비교하세요.';$('interp').textContent=t;$('interp').style.display='block';table(q.F,q.a,q.b);drawRiemann(q.F,q.a,q.b,q.n,$('sample').value);drawErrors(q.F,q.a,q.b)}catch(e){$('err').textContent=e.message;$('err').style.display='block';$('interp').style.display='none'}}
+n.addEventListener('input',()=>nNum.value=n.value);nNum.addEventListener('input',()=>{const v=Math.max(1,Math.min(1000,Number(nNum.value)||1));nNum.value=v;n.value=v});document.querySelectorAll('[data-n]').forEach(b=>b.addEventListener('click',()=>{nNum.value=b.dataset.n;n.value=b.dataset.n;run()}));$('calc').addEventListener('click',run);['fn','a','b','sample'].forEach(id=>$(id).addEventListener('change',run));run();
+</script></body></html>

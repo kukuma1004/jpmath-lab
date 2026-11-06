@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>연속 판정기</title>
+<meta name="description" content="미적분Ⅰ 함수의 연속 탐구: 세 조건을 순서대로 판정하고 겉보기 그래프와 비교">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --bg:#faf8f3; --card:#fffefb; --ink:#1d2b26; --muted:#6b706a; --line:#e3ded3;
+  --green:#1f5c4b; --green-soft:#e6efe9; --orange:#d2643a; --orange-soft:#fbeee6;
+  --pass:#2e7d4f; --fail:#c0392b; --na:#9a9d97;
+  --curve:#1f5c4b; --curve2:#d2643a; --grid:#ece8df; --axis:#a9a59b;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:Pretendard,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:15px;line-height:1.55}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 16px 48px}
+header h1{font-size:30px;margin:0 0 4px;letter-spacing:-.02em}
+header p{margin:0;color:var(--muted)}
+.tabs{display:flex;gap:8px;margin:22px 0 18px;flex-wrap:wrap}
+.tab{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:9px 18px;border-radius:999px;font:inherit;font-weight:600;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--green);border-color:var(--green);color:#fff}
+.grid{display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px}
+.card + .card{margin-top:18px}
+h2{font-size:15px;margin:0 0 12px;display:flex;align-items:center;gap:8px}
+h2 .num{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--orange);color:#fff;font-size:12px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:12px;padding:8px 12px;font:inherit;font-size:14px;cursor:pointer;text-align:left;color:var(--ink)}
+.chip small{display:block;color:var(--muted);font-size:12px}
+.chip[aria-pressed="true"]{border-color:var(--green);background:var(--green-soft)}
+.formula{margin-top:14px;background:var(--bg);border-radius:12px;padding:12px 14px;font-family:"Cambria Math","Times New Roman",serif;font-size:17px}
+.formula div{white-space:nowrap;overflow-x:auto}
+.formula .where{font-family:inherit;font-size:13px;color:var(--muted);margin-top:4px;font-family:Pretendard,sans-serif}
+.params{margin-top:14px;display:none}
+.params.on{display:block}
+.slider-row{display:grid;grid-template-columns:28px 1fr 56px;align-items:center;gap:10px;margin:6px 0}
+.slider-row label{font-weight:700;font-family:serif;font-style:italic;font-size:17px}
+.slider-row output{text-align:right;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--green)}
+.diff{margin-top:8px;font-size:14px;background:var(--orange-soft);border-radius:10px;padding:10px 12px}
+.btn{border:1px solid var(--green);background:#fff;color:var(--green);border-radius:10px;padding:7px 12px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;margin-top:8px}
+.btn:hover{background:var(--green-soft)}
+.checks{list-style:none;margin:0;padding:0}
+.checks li{display:grid;grid-template-columns:1fr auto;gap:4px 10px;padding:10px 0;border-top:1px solid var(--line)}
+.checks li:first-child{border-top:0;padding-top:0}
+.checks .t{font-weight:700}
+.checks .why{grid-column:1/-1;color:var(--muted);font-size:13.5px}
+.pill{font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;align-self:start;white-space:nowrap}
+.pill.pass{background:#e3f1e8;color:var(--pass)}
+.pill.fail{background:#f8e2df;color:var(--fail)}
+.pill.na{background:#eeede9;color:var(--na)}
+.verdict{margin-top:14px;padding:12px 14px;border-radius:12px;font-weight:700}
+.verdict.ok{background:#e3f1e8;color:var(--pass)}
+.verdict.no{background:#f8e2df;color:var(--fail)}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:13.5px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right}
+th{color:var(--muted);font-weight:600}
+th:first-child,td:first-child{text-align:left}
+.tablewrap{overflow-x:auto}
+.note{font-size:13px;color:var(--muted);margin-top:10px}
+.graph canvas{width:100%;height:440px;display:block;border-radius:12px;background:#fff;border:1px solid var(--line);touch-action:none}
+@media (max-width:600px){.graph canvas{height:320px}}
+.gctl{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;margin-top:14px}
+.gctl .lbl{font-size:13px;font-weight:600}
+.gctl output{font-size:13px;font-variant-numeric:tabular-nums;color:var(--muted);min-width:110px;text-align:right}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:12px}
+.seg button{border:0;background:#fff;padding:7px 12px;font:inherit;font-size:13px;cursor:pointer;color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--green);color:#fff}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;color:var(--muted);margin-top:10px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.steps{margin:0;padding:0;list-style:none;counter-reset:s}
+.steps li{padding:10px 0 10px 34px;position:relative;border-top:1px solid var(--line);font-size:14px}
+.steps li:first-child{border-top:0;padding-top:2px}
+.steps li::before{counter-increment:s;content:counter(s);position:absolute;left:0;top:10px;width:24px;height:24px;border-radius:50%;background:var(--green);color:#fff;font-size:12px;display:grid;place-items:center}
+.steps li:first-child::before{top:2px}
+.steps b{font-weight:700}
+.steps .sub{color:var(--muted);font-size:13px}
+.hidden{display:none}
+footer{margin-top:28px;color:var(--muted);font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>연속 판정기</h1>
+    <p>미적분Ⅰ 함수의 연속 · 함숫값 존재 → 극한값 존재 → 두 값의 일치를 순서대로 확인합니다</p>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true" data-tab="basic">구간별 함수 · 반례</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="comp">합성함수</button>
+  </div>
+
+  <!-- 탭 1: 구간별 함수 -->
+  <section id="tab-basic">
+    <div class="grid">
+      <div>
+        <div class="card">
+          <h2><span class="num">1</span>함수 고르기</h2>
+          <div class="chips" id="presets"></div>
+          <div class="formula" id="formula"></div>
+          <div class="params" id="params">
+            <div class="slider-row"><label for="pa">a</label><input id="pa" type="range" min="-5" max="5" step="0.5" value="0"><output id="pa-out">0</output></div>
+            <div class="slider-row"><label for="pb">b</label><input id="pb" type="range" min="-5" max="5" step="0.5" value="0"><output id="pb-out">0</output></div>
+            <div class="diff" id="diff"></div>
+            <button class="btn" id="fixA" type="button">연속이 되도록 a 맞추기</button>
+          </div>
+        </div>
+        <div class="card">
+          <h2><span class="num">2</span>연속의 세 조건</h2>
+          <ul class="checks" id="checks"></ul>
+          <div class="verdict" id="verdict"></div>
+        </div>
+        <div class="card">
+          <h2><span class="num">3</span>근삿값 표</h2>
+          <div class="tablewrap"><table id="approx"></table></div>
+          <p class="note">x를 c에 0.1, 0.01, …, 0.000001만큼 가깝게 넣은 값입니다. 식에 c를 바로 대입할 수 없을 때(0/0 등) 이 표로 극한값을 추정합니다.</p>
+        </div>
+      </div>
+      <div class="card graph" id="graph-basic"></div>
+    </div>
+  </section>
+
+  <!-- 탭 2: 합성함수 -->
+  <section id="tab-comp" class="hidden">
+    <div class="grid">
+      <div>
+        <div class="card">
+          <h2><span class="num">1</span>합성함수 고르기</h2>
+          <div class="chips" id="cpresets"></div>
+          <div class="formula" id="cformula"></div>
+        </div>
+        <div class="card">
+          <h2><span class="num">2</span>단계별 판정 근거</h2>
+          <ol class="steps" id="csteps"></ol>
+        </div>
+        <div class="card">
+          <h2><span class="num">3</span>연속의 세 조건</h2>
+          <ul class="checks" id="cchecks"></ul>
+          <div class="verdict" id="cverdict"></div>
+        </div>
+        <div class="card">
+          <h2><span class="num">4</span>표본값</h2>
+          <div class="tablewrap"><table id="csamples"></table></div>
+        </div>
+      </div>
+      <div class="card graph" id="graph-comp"></div>
+    </div>
+  </section>
+
+  <footer>미적분Ⅰ '함수의 연속' 탐구용 웹앱 · 극한값은 다항식 구간이면 대입, 대입이 불가능하면 근삿값으로 구합니다. 근삿값 판정은 추정이므로 표와 함께 확인하세요.</footer>
+</div>
+
+<script>
+'use strict';
+// ───────── 공통 수치 도구 ─────────
+const HS = [1e-1, 1e-2, 1e-3, 1e-4, 1e-5, 1e-6];
+const isNum = v => typeof v === 'number' && isFinite(v);
+
+function fmt(v, digits = 6) {
+  if (!isNum(v)) return '없음';
+  if (Math.abs(v) < 1e-12) v = 0;
+  let s = v.toFixed(digits).replace(/\.?0+$/, '');
+  if (s === '-0') s = '0';
+  return s.replace('-', '−');
+}
+function signed(v) {
+  if (v === 0) return '';
+  return v > 0 ? ` + ${fmt(v)}` : ` − ${fmt(-v)}`;
+}
+
+// 근삿값으로 한쪽 극한 추정. 마지막 세 표본이 한 값으로 모이면 수렴, 아니면 판단 보류.
+// 0/0처럼 대입이 불가능한 경우만 여기로 온다.
+function estimate(samples) {
+  const ys = samples.map(s => s.y);
+  const tail = ys.slice(-3);
+  if (!tail.every(isNum)) return { value: null, note: '근처 값이 정의되지 않음' };
+  const last = tail[tail.length - 1];
+  if (Math.abs(last) > 1e5 && Math.abs(last) > Math.abs(tail[0])) {
+    return { value: null, note: '값이 한없이 커짐(발산)' };
+  }
+  const spread = Math.max(...tail) - Math.min(...tail);
+  if (spread < 1e-3 * (1 + Math.abs(last))) {
+    return { value: Math.round(last * 1e4) / 1e4, note: null };
+  }
+  return { value: null, note: '값이 진동해 한 값으로 모이지 않음' };
+}
+
+function oneSided(fn, c, dir) {
+  const samples = HS.map(h => ({ h, x: c + dir * h, y: fn(c + dir * h) }));
+  const sub = fn(c);
+  if (isNum(sub)) return { value: sub, how: '대입', samples };
+  const est = estimate(samples);
+  return { value: est.value, how: '근삿값', note: est.note, samples };
+}
+
+const same = (a, b) => isNum(a) && isNum(b) && Math.abs(a - b) < 1e-6;
+
+// 세 조건을 순서대로 판정. ③은 ①·②가 모두 통과해야 확인할 수 있다.
+function judge(c, val, L, R, cName, valName = `f(${cName})`) {
+  const rows = [];
+  const v1 = isNum(val);
+  rows.push({
+    t: `① 함숫값 ${valName} 존재`,
+    st: v1 ? 'pass' : 'fail',
+    why: v1 ? `${valName} = ${fmt(val)}` : `x = ${cName}에서 함수가 정의되지 않음`,
+  });
+  const lTxt = isNum(L.value) ? `${fmt(L.value)} (${L.how})` : `없음 (${L.note || '정의 안 됨'})`;
+  const rTxt = isNum(R.value) ? `${fmt(R.value)} (${R.how})` : `없음 (${R.note || '정의 안 됨'})`;
+  const v2 = same(L.value, R.value);
+  rows.push({
+    t: '② 극한값 존재 (좌극한 = 우극한)',
+    st: v2 ? 'pass' : 'fail',
+    why: `좌극한 ${lTxt}, 우극한 ${rTxt}` + (v2 ? '' : (isNum(L.value) && isNum(R.value) ? ' → 두 값이 다름' : '')),
+  });
+  let v3 = null;
+  if (v1 && v2) {
+    v3 = same(L.value, val);
+    rows.push({
+      t: '③ 극한값 = 함숫값',
+      st: v3 ? 'pass' : 'fail',
+      why: `극한값 ${fmt(L.value)}, 함숫값 ${fmt(val)}` + (v3 ? '' : ' → 서로 다름'),
+    });
+  } else {
+    rows.push({
+      t: '③ 극한값 = 함숫값',
+      st: 'na',
+      why: `${!v1 ? '함숫값' : '극한값'}이 없어 비교할 수 없음`,
+    });
+  }
+  const firstFail = rows.find(r => r.st === 'fail');
+  return { rows, ok: !firstFail, firstFail };
+}
+
+function renderChecks(ul, box, res, cName) {
+  const label = { pass: '통과', fail: '실패', na: '확인 불가' };
+  ul.innerHTML = res.rows.map(r =>
+    `<li><span class="t">${r.t}</span><span class="pill ${r.st}">${label[r.st]}</span><span class="why">${r.why}</span></li>`
+  ).join('');
+  box.className = 'verdict ' + (res.ok ? 'ok' : 'no');
+  box.textContent = res.ok
+    ? `x = ${cName}에서 연속`
+    : `x = ${cName}에서 불연속 · 처음 실패한 조건: ${res.firstFail.t.slice(2)}`;
+}
+
+// ───────── 그래프 ─────────
+function niceStep(range) {
+  const raw = range / 6;
+  const p = Math.pow(10, Math.floor(Math.log10(raw)));
+  const m = raw / p;
+  return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * p;
+}
+
+function makeGraph(host) {
+  host.innerHTML = `
+    <h2><span class="num">G</span>그래프</h2>
+    <canvas></canvas>
+    <div class="gctl"><span class="lbl">확대</span><input type="range" min="0" max="100" value="0"><output></output></div>
+    <div class="seg" role="group">
+      <button type="button" data-mode="exact" aria-pressed="true">정의대로 그리기</button>
+      <button type="button" data-mode="connect" aria-pressed="false">점 잇기 (그래프 프로그램 방식)</button>
+    </div>
+    <div class="legend">
+      <span><i style="background:var(--curve)"></i>그래프</span>
+      <span><i style="background:#fff;border:2px solid var(--orange)"></i>극한값 위치(빈 점)</span>
+      <span><i style="background:var(--orange)"></i>함숫값(찬 점)</span>
+    </div>
+    <p class="note mode-note"></p>`;
+  const canvas = host.querySelector('canvas');
+  const zoom = host.querySelector('input');
+  const zoomOut = host.querySelector('output');
+  const note = host.querySelector('.mode-note');
+  let mode = 'exact';
+  let current = null;
+
+  const halfWidth = () => 3 * Math.pow(10, -zoom.value * 3.8 / 100);
+
+  host.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => {
+    mode = b.dataset.mode;
+    host.querySelectorAll('.seg button').forEach(x => x.setAttribute('aria-pressed', x === b));
+    draw();
+  }));
+  zoom.addEventListener('input', draw);
+  window.addEventListener('resize', draw);
+
+  function draw() {
+    if (!current) return;
+    const { m, info } = current;
+    const w = halfWidth();
+    zoomOut.textContent = `x = ${fmt(m.c)} ± ${fmt(w, 4)}`;
+    note.textContent = mode === 'connect'
+      ? '601칸으로 나눈 점을 순서대로 이었습니다. 점이 x = c에 정확히 떨어지지 않으므로 구멍은 사라지고, 끊긴 곳은 세로선으로 이어져 보입니다.'
+      : '경계점 양쪽을 따로 그리고, 극한값은 빈 점, 함숫값은 찬 점으로 표시했습니다.';
+
+    const dpr = window.devicePixelRatio || 1;
+    const W = canvas.clientWidth, H = canvas.clientHeight;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+
+    const x0 = m.c - w, x1 = m.c + w;
+    const f = x => x < m.c ? m.left(x) : x > m.c ? m.right(x) : m.at();
+
+    // 세로 범위: 보이는 구간의 함숫값 + 극한·함숫값 점
+    const N = 601;
+    const samples = [];
+    for (let i = 0; i <= N; i++) { const x = x0 + (x1 - x0) * i / N; samples.push([x, f(x)]); }
+    const ys = samples.map(p => p[1]).concat([info.L, info.R, info.val]).filter(isNum);
+    let y0 = Math.min(...ys), y1 = Math.max(...ys);
+    if (!ys.length) { y0 = -1; y1 = 1; }
+    if (y1 - y0 < 1e-9) { y0 -= 1; y1 += 1; }
+    const pad = (y1 - y0) * 0.15; y0 -= pad; y1 += pad;
+
+    const L = 46, Rm = 14, T = 14, B = 30;
+    const px = x => L + (x - x0) / (x1 - x0) * (W - L - Rm);
+    const py = y => T + (y1 - y) / (y1 - y0) * (H - T - B);
+
+    // 격자와 눈금
+    ctx.font = '11px Pretendard, sans-serif';
+    ctx.fillStyle = '#8b8f88';
+    ctx.lineWidth = 1;
+    const sx = niceStep(x1 - x0), sy = niceStep(y1 - y0);
+    const dx = Math.max(0, -Math.floor(Math.log10(sx))), dy = Math.max(0, -Math.floor(Math.log10(sy)));
+    ctx.strokeStyle = getCss('--grid');
+    for (let x = Math.ceil(x0 / sx) * sx; x <= x1; x += sx) {
+      ctx.beginPath(); ctx.moveTo(px(x), T); ctx.lineTo(px(x), H - B); ctx.stroke();
+      ctx.textAlign = 'center'; ctx.fillText(x.toFixed(dx).replace('-', '−'), px(x), H - B + 16);
+    }
+    for (let y = Math.ceil(y0 / sy) * sy; y <= y1; y += sy) {
+      ctx.beginPath(); ctx.moveTo(L, py(y)); ctx.lineTo(W - Rm, py(y)); ctx.stroke();
+      ctx.textAlign = 'right'; ctx.fillText(y.toFixed(dy).replace('-', '−'), L - 6, py(y) + 4);
+    }
+    ctx.strokeStyle = getCss('--axis');
+    if (y0 < 0 && y1 > 0) { ctx.beginPath(); ctx.moveTo(L, py(0)); ctx.lineTo(W - Rm, py(0)); ctx.stroke(); }
+    if (x0 < 0 && x1 > 0) { ctx.beginPath(); ctx.moveTo(px(0), T); ctx.lineTo(px(0), H - B); ctx.stroke(); }
+
+    // x = c 점선
+    ctx.save();
+    ctx.setLineDash([4, 4]); ctx.strokeStyle = '#d9b9a8';
+    ctx.beginPath(); ctx.moveTo(px(m.c), T); ctx.lineTo(px(m.c), H - B); ctx.stroke();
+    ctx.restore();
+
+    ctx.save();
+    ctx.beginPath(); ctx.rect(L, T, W - L - Rm, H - T - B); ctx.clip();
+    ctx.strokeStyle = getCss('--curve'); ctx.lineWidth = 2.2; ctx.lineJoin = 'round';
+
+    const path = pts => {
+      ctx.beginPath();
+      let pen = false;
+      for (const [x, y] of pts) {
+        if (!isNum(y)) { pen = false; continue; }
+        if (pen) ctx.lineTo(px(x), py(y)); else { ctx.moveTo(px(x), py(y)); pen = true; }
+      }
+      ctx.stroke();
+    };
+
+    if (mode === 'connect') {
+      path(samples);
+    } else {
+      const M = 500;
+      const left = [], right = [];
+      for (let i = 0; i < M; i++) {
+        const t = i / M;
+        left.push([x0 + (m.c - x0) * t, m.left(x0 + (m.c - x0) * t)]);
+        right.push([x1 - (x1 - m.c) * t, m.right(x1 - (x1 - m.c) * t)]);
+      }
+      left.push([m.c - w * 1e-6, m.left(m.c - w * 1e-6)]);
+      right.push([m.c + w * 1e-6, m.right(m.c + w * 1e-6)]);
+      path(left); path(right);
+
+      const dot = (y, filled) => {
+        if (!isNum(y)) return;
+        ctx.beginPath(); ctx.arc(px(m.c), py(y), 5.5, 0, Math.PI * 2);
+        ctx.fillStyle = filled ? getCss('--orange') : '#fff';
+        ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = getCss('--orange'); ctx.stroke();
+      };
+      dot(info.L, false);
+      if (!same(info.L, info.R)) dot(info.R, false);
+      dot(info.val, true);
+    }
+    ctx.restore();
+  }
+
+  return { render(m, info) { current = { m, info }; draw(); }, redraw: draw };
+}
+const cssCache = {};
+function getCss(name) {
+  return cssCache[name] || (cssCache[name] = getComputedStyle(document.documentElement).getPropertyValue(name).trim());
+}
+
+// ───────── 탭 1: 구간별 함수와 반례 ─────────
+const P = { a: 0, b: 0 };
+const PRESETS = [
+  {
+    id: 'hole', name: '① 함숫값만 실패', sub: '0/0이 되는 분수함수', c: 1,
+    left: x => (x * x - 1) / (x - 1), right: x => (x * x - 1) / (x - 1), at: () => NaN,
+    lines: () => ['f(x) = (x² − 1) / (x − 1)'],
+  },
+  {
+    id: 'jump', name: '② 극한값만 실패', sub: '좌극한 ≠ 우극한', c: 1,
+    left: x => x, right: x => x + 1, at: () => 2,
+    lines: () => ['f(x) = x  (x < 1)', 'f(x) = x + 1  (x ≥ 1)'],
+  },
+  {
+    id: 'point', name: '③ 일치만 실패', sub: '함숫값만 따로 정의', c: 1,
+    left: x => x + 1, right: x => x + 1, at: () => 5,
+    lines: () => ['f(x) = x + 1  (x ≠ 1)', 'f(1) = 5'],
+  },
+  {
+    id: 'param', name: '매개변수 조절', sub: 'a, b 슬라이더', c: 1, params: true,
+    left: x => x * x + P.a, right: x => 2 * x + P.b, at: () => 2 + P.b,
+    lines: () => [`f(x) = x²${signed(P.a)}  (x < 1)`, `f(x) = 2x${signed(P.b)}  (x ≥ 1)`],
+  },
+  {
+    id: 'xsin', name: '진동해도 연속', sub: 'x·sin(1/x)', c: 0,
+    left: x => x * Math.sin(1 / x), right: x => x * Math.sin(1 / x), at: () => 0,
+    lines: () => ['f(x) = x·sin(1/x)  (x ≠ 0)', 'f(0) = 0'],
+  },
+  {
+    id: 'sin', name: '근삿값의 한계', sub: 'sin(1/x) · 교과 밖', c: 0,
+    left: x => Math.sin(1 / x), right: x => Math.sin(1 / x), at: () => 0,
+    lines: () => ['f(x) = sin(1/x)  (x ≠ 0)', 'f(0) = 0'],
+  },
+];
+let preset = PRESETS[0];
+
+const $ = id => document.getElementById(id);
+const graphBasic = makeGraph($('graph-basic'));
+
+$('presets').innerHTML = PRESETS.map(p =>
+  `<button class="chip" type="button" data-id="${p.id}">${p.name}<small>${p.sub}</small></button>`).join('');
+$('presets').addEventListener('click', e => {
+  const b = e.target.closest('.chip'); if (!b) return;
+  preset = PRESETS.find(p => p.id === b.dataset.id);
+  updateBasic();
+});
+['pa', 'pb'].forEach(id => $(id).addEventListener('input', () => {
+  P.a = +$('pa').value; P.b = +$('pb').value; updateBasic();
+}));
+$('fixA').addEventListener('click', () => {
+  // 연속 조건 1 + a = 2 + b → a = b + 1
+  const a = P.b + 1;
+  if (a < -5 || a > 5) { $('diff').innerHTML += '<br>a = b + 1이 슬라이더 범위(−5~5)를 벗어납니다. b를 먼저 줄여 주세요.'; return; }
+  P.a = a; $('pa').value = a; updateBasic();
+});
+
+function updateBasic() {
+  document.querySelectorAll('#presets .chip').forEach(b => b.setAttribute('aria-pressed', b.dataset.id === preset.id));
+  const c = preset.c, cName = fmt(c);
+  $('formula').innerHTML = preset.lines().map(l => `<div>${l}</div>`).join('') +
+    `<div class="where">판정 위치: x = ${cName}</div>`;
+  $('params').classList.toggle('on', !!preset.params);
+  $('pa-out').textContent = fmt(P.a); $('pb-out').textContent = fmt(P.b);
+
+  const L = oneSided(preset.left, c, -1);
+  const R = oneSided(preset.right, c, +1);
+  const val = preset.at();
+  if (preset.params) {
+    const d = (1 + P.a) - (2 + P.b);
+    $('diff').innerHTML = `왼쪽 식에 x = 1 대입: 1${signed(P.a)} = <b>${fmt(1 + P.a)}</b> · 오른쪽 식에 대입: 2${signed(P.b)} = <b>${fmt(2 + P.b)}</b><br>` +
+      `차이 d = ${fmt(d)} → ${d === 0 ? '<b>d = 0이므로 연속</b>' : '연속 조건: 1 + a = 2 + b, 즉 a = b + 1'}`;
+  }
+  renderChecks($('checks'), $('verdict'), judge(c, val, L, R, cName), cName);
+
+  $('approx').innerHTML = `<tr><th>c와의 거리 h</th><th>f(${cName} − h)</th><th>f(${cName} + h)</th></tr>` +
+    HS.map((h, i) => `<tr><td>${fmt(h)}</td><td>${fmt(L.samples[i].y)}</td><td>${fmt(R.samples[i].y)}</td></tr>`).join('');
+
+  graphBasic.render(preset, { L: L.value, R: R.value, val });
+}
+
+// ───────── 탭 2: 합성함수 ─────────
+// 바깥 함수 f는 t = p에서 끊기는 구간별 함수, 각 구간 식은 다항식이라 경계가 아니면 대입으로 극한을 구한다.
+const OUTER = {
+  sign: { p: 0, left: t => -1, right: t => 1, at: 1, lines: ['f(t) = −1  (t < 0)', 'f(t) = 1  (t ≥ 0)'] },
+  step: { p: 1, left: t => t + 1, right: t => t + 2, at: 3, lines: ['f(t) = t + 1  (t < 1)', 'f(t) = t + 2  (t ≥ 1)'] },
+};
+const CPRESETS = [
+  { id: 'sq', name: 'g(x) = x²', sub: 'f는 불연속, 합성은 연속', o: 'sign', g: x => x * x, gLine: 'g(x) = x²', c: 0 },
+  { id: 'id', name: 'g(x) = x', sub: '양쪽에서 접근', o: 'sign', g: x => x, gLine: 'g(x) = x', c: 0 },
+  { id: 'neg', name: 'g(x) = −x²', sub: '아래에서만 접근', o: 'sign', g: x => -x * x, gLine: 'g(x) = −x²', c: 0 },
+  { id: 'const', name: 'g(x) = 1', sub: '상수함수', o: 'step', g: x => 1, gLine: 'g(x) = 1', c: 2 },
+];
+let cpreset = CPRESETS[0];
+const graphComp = makeGraph($('graph-comp'));
+
+$('cpresets').innerHTML = CPRESETS.map(p =>
+  `<button class="chip" type="button" data-id="${p.id}">${p.name}<small>${p.sub}</small></button>`).join('');
+$('cpresets').addEventListener('click', e => {
+  const b = e.target.closest('.chip'); if (!b) return;
+  cpreset = CPRESETS.find(p => p.id === b.dataset.id);
+  updateComp();
+});
+
+const outerAt = (o, t) => t < o.p ? o.left(t) : t > o.p ? o.right(t) : o.at;
+const DIR = { above: '위에서(큰 쪽에서)', below: '아래에서(작은 쪽에서)', const: '값이 변하지 않고 계속', mixed: '위아래를 오가며' };
+
+function innerApproach(g, c, dir, Lg) {
+  const ds = [1e-2, 1e-3, 1e-4].map(h => g(c + dir * h) - Lg);
+  if (ds.every(d => d > 1e-15)) return 'above';
+  if (ds.every(d => d < -1e-15)) return 'below';
+  if (ds.every(d => Math.abs(d) <= 1e-15)) return 'const';
+  return 'mixed';
+}
+
+function updateComp() {
+  document.querySelectorAll('#cpresets .chip').forEach(b => b.setAttribute('aria-pressed', b.dataset.id === cpreset.id));
+  const o = OUTER[cpreset.o], g = cpreset.g, c = cpreset.c, cName = fmt(c);
+  $('cformula').innerHTML = o.lines.map(l => `<div>${l}</div>`).join('') + `<div>${cpreset.gLine}</div>` +
+    `<div class="where">판정 대상: f(g(x)), x = ${cName}</div>`;
+
+  const Lg = g(c);  // 안쪽 함수가 다항식·상수라 대입으로 극한을 구한다
+  const side = dir => {
+    const ap = innerApproach(g, c, dir, Lg);
+    let value, how;
+    if (!same(Lg, o.p)) {
+      value = outerAt(o, Lg);
+      how = `t = ${fmt(Lg)}은 f의 경계 t = ${fmt(o.p)}가 아니므로 f에 대입`;
+    } else if (ap === 'above') { value = o.right(o.p); how = `t가 ${fmt(o.p)}에 위에서 다가가므로 f의 <b>우극한</b> 사용`; }
+    else if (ap === 'below') { value = o.left(o.p); how = `t가 ${fmt(o.p)}에 아래에서 다가가므로 f의 <b>좌극한</b> 사용`; }
+    else if (ap === 'const') { value = o.at; how = `g(x)가 계속 ${fmt(o.p)}이므로 f(g(x)) = f(${fmt(o.p)}) = ${fmt(o.at)}로 일정`; }
+    else { value = null; how = '접근 방향을 정할 수 없어 판정 보류'; }
+    return { ap, value, how };
+  };
+  const SL = side(-1), SR = side(+1);
+  const val = outerAt(o, Lg);
+
+  $('csteps').innerHTML = `
+    <li><b>안쪽 함수 g</b><br>x → ${cName}− 일 때 g(x) → ${fmt(Lg)}, ${DIR[SL.ap]}<br>x → ${cName}+ 일 때 g(x) → ${fmt(Lg)}, ${DIR[SR.ap]}</li>
+    <li><b>바깥 함수 f</b><br><span class="sub">왼쪽:</span> ${SL.how}<br><span class="sub">오른쪽:</span> ${SR.how}</li>
+    <li><b>합성함수 f(g(x))</b><br>좌극한 ${fmt(SL.value)} · 우극한 ${fmt(SR.value)} · 함숫값 f(g(${cName})) = f(${fmt(Lg)}) = ${fmt(val)}</li>`;
+
+  const L = { value: SL.value, how: '접근 방향 분석' }, R = { value: SR.value, how: '접근 방향 분석' };
+  renderChecks($('cchecks'), $('cverdict'), judge(c, val, L, R, cName, `f(g(${cName}))`), cName);
+
+  const fg = x => outerAt(o, g(x));
+  const xs = [-0.1, -0.01, -0.001, 0, 0.001, 0.01, 0.1].map(h => c + h);
+  $('csamples').innerHTML = '<tr><th>x</th><th>g(x)</th><th>f(g(x))</th></tr>' +
+    xs.map(x => `<tr><td>${fmt(x)}</td><td>${fmt(g(x))}</td><td>${fmt(fg(x))}</td></tr>`).join('');
+
+  graphComp.render({ c, left: fg, right: fg, at: () => val }, { L: SL.value, R: SR.value, val });
+}
+
+// ───────── 탭 전환 ─────────
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(x => x.setAttribute('aria-selected', x === t));
+  $('tab-basic').classList.toggle('hidden', t.dataset.tab !== 'basic');
+  $('tab-comp').classList.toggle('hidden', t.dataset.tab !== 'comp');
+  // 숨겨진 캔버스는 크기가 0이라 보이는 순간 다시 그린다
+  (t.dataset.tab === 'basic' ? graphBasic : graphComp).redraw();
+}));
+
+updateBasic();
+updateComp();
+</script>
+</body>
+</html>

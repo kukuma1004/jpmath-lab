@@ -1,0 +1,214 @@
+﻿<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Projection Quest 3.0</title>
+<style>
+:root{--bg:#0b1020;--panel:#141d33;--panel2:#1b2944;--line:#2c3b59;--txt:#edf3ff;--muted:#a8b7d2;--a:#7dd3fc;--b:#a78bfa;--good:#86efac;--bad:#fda4af}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 15% 0%,#172647 0,#0b1020 48%);color:var(--txt);font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif;line-height:1.55}
+.wrap{max-width:1100px;margin:auto;padding:22px 16px 60px}.hero{padding:26px 22px;border:1px solid var(--line);border-radius:22px;background:linear-gradient(120deg,#172944,#17203a 65%,#241d46);margin-bottom:18px}
+.kicker{color:var(--a);font-size:.78rem;font-weight:800;letter-spacing:.13em}.hero h1{font-size:clamp(1.8rem,5vw,2.7rem);margin:5px 0}.hero p{color:var(--muted);max-width:760px;margin:8px 0 0}
+nav{display:flex;gap:8px;overflow:auto;padding:5px 0 14px;position:sticky;top:0;background:#0b1020ee;z-index:5}
+nav button,.btn,.choice{border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--txt);padding:10px 14px;font:inherit;cursor:pointer;white-space:nowrap}
+nav button.active,.btn.primary{background:linear-gradient(120deg,#25658a,#55408c);border-color:#7196d0}
+button:hover{filter:brightness(1.15)}button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--a);outline-offset:2px}
+.page{display:none}.page.active{display:block}.card{background:linear-gradient(150deg,var(--panel),#111a2d);border:1px solid var(--line);border-radius:18px;padding:18px;margin:10px 0}
+h2{font-size:1.35rem;margin:0 0 12px}h3{font-size:1.05rem;margin:0 0 7px}.muted{color:var(--muted)}.small{font-size:.88rem;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}.tile{background:var(--panel2);border:1px solid var(--line);border-radius:15px;padding:15px}.tile p{color:var(--muted);margin:5px 0 0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.row>*{flex:0 0 auto}.spacer{flex:1}
+canvas{width:100%;height:330px;background:linear-gradient(145deg,#0d1729,#101d33);border:1px solid var(--line);border-radius:14px;touch-action:none;display:block}
+.canvasbox{min-width:0}.control{display:flex;align-items:center;gap:10px;margin:9px 0}.control label{width:112px;color:var(--muted);font-size:.9rem}.control input{flex:1;min-width:70px;accent-color:#7dd3fc}
+select,input[type=number]{background:#0d1729;color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:8px}
+.output{background:#0b1527;border:1px solid var(--line);border-radius:12px;padding:12px;font-family:ui-monospace,monospace;overflow-wrap:anywhere}
+.projgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.projgrid canvas{height:260px}
+.question{font-size:1.12rem;font-weight:700;margin:10px 0 16px}.choices{display:grid;gap:8px}.choice{text-align:left;white-space:normal}.choice.selected{border-color:var(--a);background:#19334a}.choice.correct{border-color:var(--good)}.choice.wrong{border-color:var(--bad)}
+.feedback{padding:12px;border-radius:12px;margin-top:12px;display:none;background:#10283a;border:1px solid #31566c}.feedback.show{display:block}.feedback.bad{background:#301b2b;border-color:#70404d}
+textarea{width:100%;min-height:130px;background:#0d1729;color:var(--txt);border:1px solid var(--line);border-radius:12px;padding:12px;font:inherit;resize:vertical}
+.tag{display:inline-block;padding:3px 9px;border-radius:999px;background:#203954;color:#b9e8ff;font-size:.78rem;margin-right:6px}
+hr{border:0;border-top:1px solid var(--line);margin:16px 0}.hidden{display:none!important}
+@media(max-width:650px){.wrap{padding:12px 10px 40px}.hero{padding:20px 16px}canvas{height:280px}.projgrid{grid-template-columns:1fr}.projgrid canvas{height:230px}.card{padding:14px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="hero">
+ <div class="kicker">GEOMETRY · SPATIAL PROJECTION</div>
+ <h1>Projection Quest <span style="color:var(--a)">3.0</span></h1>
+ <p>입체도형을 직접 관찰하고, 관찰 방향에 따른 정사영의 변화와 정보의 한계를 탐구하는 공간이다.</p>
+</header>
+<nav id="nav">
+ <button class="active" data-page="home">시작</button>
+ <button data-page="explore">자유 탐구실</button>
+ <button data-page="lab">정사영 실험실</button>
+ <button data-page="missions">도전 과제</button>
+ <button data-page="quiz">종합 문제</button>
+ <button data-page="notes">탐구 기록장</button>
+</nav>
+
+<section id="home" class="page active">
+ <div class="card">
+  <h2>탐구의 핵심</h2>
+  <div class="grid">
+   <div class="tile"><span class="tag">개념 01</span><h3>정사영</h3><p>공간의 점에서 투영 평면에 수선을 내렸을 때 생기는 점을 정사영이라고 한다.</p></div>
+   <div class="tile"><span class="tag">개념 02</span><h3>관찰 방향</h3><p>관찰 방향에 수직인 평면을 화면으로 생각하면, 방향이 달라질 때 화면에 나타나는 모습도 달라진다.</p></div>
+   <div class="tile"><span class="tag">개념 03</span><h3>겹침 조건</h3><p>두 점의 차이 벡터가 관찰 방향과 평행하면 두 점은 화면에서 같은 위치에 투영된다.</p></div>
+   <div class="tile"><span class="tag">개념 04</span><h3>정보의 손실</h3><p>화면에는 깊이 방향의 정보가 남지 않을 수 있어, 하나의 정사영만으로 원래 입체를 확정하기 어렵다.</p></div>
+  </div>
+ </div>
+ <div class="card">
+  <h2>추천 탐구 순서</h2>
+  <div class="grid">
+   <div class="tile"><h3>1. 자유 탐구실</h3><p>도형을 회전하고 꼭짓점의 위치가 어떻게 바뀌는지 살펴본다.</p></div>
+   <div class="tile"><h3>2. 정사영 실험실</h3><p>관찰 방향을 수치로 바꾸고 투영 좌표를 비교한다.</p></div>
+   <div class="tile"><h3>3. 도전 과제·종합 문제</h3><p>그림 해석, 반례, 좌표 계산, 오류 분석을 해결한다.</p></div>
+   <div class="tile"><h3>4. 탐구 기록장</h3><p>발견한 규칙과 그 이유를 정리해 파일로 저장한다.</p></div>
+  </div>
+ </div>
+</section>
+
+<section id="explore" class="page">
+ <div class="card">
+  <div class="row"><div><h2>자유 탐구실</h2><div class="small">문제를 풀 필요 없이 입체도형을 직접 돌려 보며 관찰한다.</div></div><div class="spacer"></div>
+   <select id="shape"><option value="cube">정육면체</option><option value="cuboid">직육면체</option><option value="prism">삼각기둥</option><option value="pyramid">사각뿔</option></select>
+  </div>
+  <div class="grid">
+   <div class="canvasbox"><canvas id="main3d" width="700" height="440"></canvas><div class="small">화면을 드래그하거나 손가락으로 움직여 회전할 수 있다.</div></div>
+   <div>
+    <h3>관찰 설정</h3>
+    <div class="control"><label>가로 회전</label><input id="yaw" type="range" min="-180" max="180" value="35"><span id="yawV">35°</span></div>
+    <div class="control"><label>세로 회전</label><input id="pitch" type="range" min="-85" max="85" value="25"><span id="pitchV">25°</span></div>
+    <div class="row"><button class="btn" id="presetTop">위에서</button><button class="btn" id="presetFront">앞에서</button><button class="btn" id="presetSide">옆에서</button><button class="btn" id="resetView">초기화</button></div>
+    <hr>
+    <label class="small"><input type="checkbox" id="showLabels" checked> 꼭짓점 번호 표시</label>
+    <div class="output" id="vertexInfo">꼭짓점을 선택하면 좌표를 확인할 수 있다.</div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<section id="lab" class="page">
+ <div class="card">
+  <h2>정사영 실험실</h2>
+  <p class="muted">관찰 방향 벡터를 직접 바꾸고, 선택한 공간 점이 화면 좌표로 어떻게 옮겨지는지 확인한다.</p>
+  <div class="grid">
+   <div class="tile">
+    <h3>관찰 방향 벡터 d</h3>
+    <div class="control"><label>x 성분</label><input id="dx" type="range" min="-5" max="5" step=".5" value="1"><b id="dxv">1</b></div>
+    <div class="control"><label>y 성분</label><input id="dy" type="range" min="-5" max="5" step=".5" value="1"><b id="dyv">1</b></div>
+    <div class="control"><label>z 성분</label><input id="dz" type="range" min="-5" max="5" step=".5" value="2"><b id="dzv">2</b></div>
+    <div class="small">세 성분이 모두 0이면 관찰 방향을 정할 수 없다.</div>
+   </div>
+   <div class="tile">
+    <h3>공간 점 P</h3>
+    <div class="control"><label>x 좌표</label><input id="px" type="number" value="2" step=".5"></div>
+    <div class="control"><label>y 좌표</label><input id="py" type="number" value="1" step=".5"></div>
+    <div class="control"><label>z 좌표</label><input id="pz" type="number" value="3" step=".5"></div>
+    <div class="output" id="projResult"></div>
+   </div>
+  </div>
+  <div class="card" style="margin:12px 0 0;background:#101a2d">
+   <h3>계산 원리</h3>
+   <p class="small">d를 단위벡터 u로 바꾼 뒤, P에서 u 방향 성분을 제거하면 투영된 공간 점 Q를 얻는다.</p>
+   <div class="output">Q = P − (P · u)u</div>
+   <p class="small">화면의 2차원 좌표는 화면 평면 위의 서로 수직인 두 기준 방향에 대한 성분으로 나타낸다. 아래 그림은 해당 관찰 방향에서의 투영을 단순화해 표시한다.</p>
+   <canvas id="labCanvas" width="700" height="300"></canvas>
+  </div>
+ </div>
+</section>
+
+<section id="missions" class="page">
+ <div class="card">
+  <h2>도전 과제</h2><p class="muted">각 미션은 서로 다른 사고 과정을 요구한다. 정답을 고르면 이유를 확인할 수 있다.</p>
+  <div id="missionArea"></div>
+ </div>
+</section>
+
+<section id="quiz" class="page">
+ <div class="card">
+  <div class="row"><div><h2>종합 문제</h2><div class="small">좌표 계산, 조건 추론, 반례, 오류 분석, 실생활 적용을 섞은 문제이다.</div></div><div class="spacer"></div><span class="tag" id="qCount">1 / 8</span></div>
+  <div class="row"><span class="tag" id="qType">개념 적용</span><span class="spacer"></span><span class="small" id="score">점수 0</span></div>
+  <div id="qVisual" class="hidden"></div>
+  <div class="question" id="question"></div>
+  <div id="answers" class="choices"></div>
+  <div class="feedback" id="feedback"></div>
+  <div class="row" style="margin-top:14px"><button class="btn" id="hintBtn">힌트 보기</button><span class="spacer"></span><button class="btn primary" id="nextBtn" disabled>다음 문제</button></div>
+  <div id="hint" class="small hidden" style="margin-top:10px"></div>
+  <div id="quizEnd" class="hidden"></div>
+ </div>
+</section>
+
+<section id="notes" class="page">
+ <div class="card">
+  <h2>탐구 기록장</h2>
+  <p class="muted">자유 탐구실이나 실험실에서 발견한 규칙, 의문, 반례를 정리한다. 작성한 내용은 이 기기의 브라우저에 자동 저장된다.</p>
+  <label class="small" for="noteTitle">기록 제목</label><input id="noteTitle" style="width:100%;margin:6px 0 12px" placeholder="예: 관찰 방향과 꼭짓점의 겹침">
+  <label class="small" for="noteBody">관찰한 현상과 수학적 설명</label><textarea id="noteBody" placeholder="어떤 방향에서 관찰했는가? 무엇이 겹치거나 달라졌는가? 그 이유를 좌표나 벡터로 설명해 보자."></textarea>
+  <div class="row" style="margin-top:12px"><button class="btn primary" id="saveNote">기록 저장</button><button class="btn" id="downloadNote">기록 TXT로 내려받기</button><span class="spacer"></span><span id="saveState" class="small"></span></div>
+  <hr><h3>탐구를 확장하는 질문</h3>
+  <ul class="muted">
+   <li>서로 다른 입체도형이 같은 정사영을 만들 수 있는가?</li>
+   <li>관찰 방향을 바꾸면 겹치던 두 점은 언제 분리되는가?</li>
+   <li>서로 다른 여러 방향의 정사영을 함께 사용하면 원래 입체에 대한 정보가 얼마나 늘어나는가?</li>
+  </ul>
+ </div>
+</section>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const V=(x,y,z)=>({x,y,z}), add=(a,b)=>V(a.x+b.x,a.y+b.y,a.z+b.z), sub=(a,b)=>V(a.x-b.x,a.y-b.y,a.z-b.z), mul=(a,s)=>V(a.x*s,a.y*s,a.z*s), dot=(a,b)=>a.x*b.x+a.y*b.y+a.z*b.z, norm=a=>Math.hypot(a.x,a.y,a.z), fmt=n=>Math.abs(n)<1e-8?'0':Number(n.toFixed(3)).toString();
+let yaw=35*Math.PI/180,pitch=25*Math.PI/180, vertices=[],edges=[],selected=-1,score=0,qIndex=0,answered=false;
+const shapes={
+ cube:{v:[[-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1],[-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]],e:[[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]]},
+ cuboid:{v:[[-1.5,-1,-.7],[1.5,-1,-.7],[1.5,1,-.7],[-1.5,1,-.7],[-1.5,-1,.7],[1.5,-1,.7],[1.5,1,.7],[-1.5,1,.7]],e:[[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]]},
+ prism:{v:[[-1,-.9,-1],[1,-.9,-1],[0,1,-1],[-1,-.9,1],[1,-.9,1],[0,1,1]],e:[[0,1],[1,2],[2,0],[3,4],[4,5],[5,3],[0,3],[1,4],[2,5]]},
+ pyramid:{v:[[-1,-1,-.8],[1,-1,-.8],[1,1,-.8],[-1,1,-.8],[0,0,1.5]],e:[[0,1],[1,2],[2,3],[3,0],[0,4],[1,4],[2,4],[3,4]]}
+};
+function buildShape(){let s=shapes[$('shape').value];vertices=s.v.map(p=>V(...p));edges=s.e;selected=-1;$('vertexInfo').textContent='꼭짓점을 선택하면 좌표를 확인할 수 있다.';draw3d()}
+function cameraBasis(){let forward=V(Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch),Math.cos(yaw)*Math.cos(pitch));let right=V(Math.cos(yaw),0,-Math.sin(yaw));let up=V(-Math.sin(yaw)*Math.sin(pitch),Math.cos(pitch),-Math.cos(yaw)*Math.sin(pitch));return{forward,right,up}}
+function project(p,w,h,scale=105){let b=cameraBasis();return{x:w/2+dot(p,b.right)*scale,y:h/2-dot(p,b.up)*scale,depth:dot(p,b.forward)}}
+function draw3d(){let c=$('main3d'),ctx=c.getContext('2d'),w=c.width,h=c.height;ctx.clearRect(0,0,w,h);ctx.strokeStyle='#263b59';ctx.lineWidth=1;for(let x=0;x<w;x+=35){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke()}for(let y=0;y<h;y+=35){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}
+let pts=vertices.map(p=>project(p,w,h,112));edges.forEach(([a,b])=>{let p=pts[a],q=pts[b];ctx.beginPath();ctx.setLineDash((p.depth+q.depth)<0?[]:[5,5]);ctx.strokeStyle='#8bb7df';ctx.lineWidth=2;ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke()});ctx.setLineDash([]);
+pts.forEach((p,i)=>{ctx.beginPath();ctx.arc(p.x,p.y,i===selected?8:5,0,Math.PI*2);ctx.fillStyle=i===selected?'#fbbf24':'#7dd3fc';ctx.fill();if($('showLabels').checked){ctx.fillStyle='#edf3ff';ctx.font='15px sans-serif';ctx.fillText(String(i+1),p.x+8,p.y-8)}})}
+function setAngles(y,p){yaw=y*Math.PI/180;pitch=p*Math.PI/180;$('yaw').value=y;$('pitch').value=p;$('yawV').textContent=y+'°';$('pitchV').textContent=p+'°';draw3d()}
+$('shape').onchange=buildShape;$('yaw').oninput=e=>setAngles(+e.target.value,+$('pitch').value);$('pitch').oninput=e=>setAngles(+$('yaw').value,+e.target.value);
+$('presetTop').onclick=()=>setAngles(0,85);$('presetFront').onclick=()=>setAngles(0,0);$('presetSide').onclick=()=>setAngles(90,0);$('resetView').onclick=()=>setAngles(35,25);$('showLabels').onchange=draw3d;
+let drag=null;const cv=$('main3d');cv.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,moved:false};cv.setPointerCapture(e.pointerId)});cv.addEventListener('pointermove',e=>{if(!drag)return;let dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.abs(dx)+Math.abs(dy)>2)drag.moved=true;setAngles(Math.max(-180,Math.min(180,+$('yaw').value+dx*.45)),Math.max(-85,Math.min(85,+$('pitch').value-dy*.4)));drag.x=e.clientX;drag.y=e.clientY});cv.addEventListener('pointerup',e=>{if(drag&&!drag.moved){let r=cv.getBoundingClientRect(),x=(e.clientX-r.left)*cv.width/r.width,y=(e.clientY-r.top)*cv.height/r.height,pts=vertices.map(p=>project(p,cv.width,cv.height,112));let best=30,idx=-1;pts.forEach((p,i)=>{let d=Math.hypot(p.x-x,p.y-y);if(d<best){best=d;idx=i}});if(idx>=0){selected=idx;$('vertexInfo').textContent=`점 ${idx+1}: (${vertices[idx].x}, ${vertices[idx].y}, ${vertices[idx].z})`;draw3d()}}drag=null});
+function projection(){let d=V(+$('dx').value,+$('dy').value,+$('dz').value),p=V(+$('px').value,+$('py').value,+$('pz').value),dn=norm(d);['dx','dy','dz'].forEach(k=>$(k+'v').textContent=$(k).value);let out=$('projResult'),c=$('labCanvas'),ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);
+if(dn===0){out.textContent='관찰 방향 벡터는 영벡터일 수 없다.';return}
+let u=mul(d,1/dn),q=sub(p,mul(u,dot(p,u)));let helper=Math.abs(u.z)<.9?V(0,0,1):V(0,1,0),e1=V(u.y*helper.z-u.z*helper.y,u.z*helper.x-u.x*helper.z,u.x*helper.y-u.y*helper.x);e1=mul(e1,1/norm(e1));let e2=V(u.y*e1.z-u.z*e1.y,u.z*e1.x-u.x*e1.z,u.x*e1.y-u.y*e1.x);let sx=dot(p,e1),sy=dot(p,e2);
+out.innerHTML=`단위 방향벡터 u = (${fmt(u.x)}, ${fmt(u.y)}, ${fmt(u.z)})<br>투영된 공간 점 Q = (${fmt(q.x)}, ${fmt(q.y)}, ${fmt(q.z)})<br>화면 좌표 = (${fmt(sx)}, ${fmt(sy)})`;
+ctx.strokeStyle='#35506e';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(30,150);ctx.lineTo(670,150);ctx.moveTo(350,20);ctx.lineTo(350,280);ctx.stroke();let x=350+sx*55,y=150-sy*55;ctx.strokeStyle='#7dd3fc';ctx.setLineDash([6,5]);ctx.beginPath();ctx.moveTo(350,150);ctx.lineTo(x,y);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#7dd3fc';ctx.beginPath();ctx.arc(x,y,7,0,7);ctx.fill();ctx.fillStyle='#edf3ff';ctx.font='15px sans-serif';ctx.fillText('투영 좌표 ('+fmt(sx)+', '+fmt(sy)+')',Math.min(450,x+10),Math.max(25,y-10));}
+['dx','dy','dz','px','py','pz'].forEach(id=>$(id).addEventListener('input',projection));
+
+const missions=[
+{tag:'조건 추론',q:'A=(1,2,0), B=(1,2,5)이다. 두 점이 같은 화면 위치에 나타나려면 관찰 방향 d는 어떤 방향이어야 하는가?',a:['(0,0,1)과 평행한 방향','(1,0,0)과 평행한 방향','(0,1,0)과 평행한 방향','세 좌표 성분이 모두 같은 방향'],c:0,why:'B−A=(0,0,5)이므로 관찰 방향은 z축과 평행해야 한다.'},
+{tag:'정보의 한계',q:'위에서 본 정사영이 같은 두 입체도형이 있다. 이 사실만으로 두 입체도형이 합동이라고 결론 내릴 수 있는가?',a:['항상 합동이다','항상 닮음이다','그럴 수 없다. 높이 등 깊이 정보가 다를 수 있다','둘 중 하나는 반드시 평면도형이다'],c:2,why:'윗면 정사영은 높이 방향 정보를 없앤다. 높이가 다른 입체도형도 같은 윗면 정사영을 가질 수 있다.'},
+{tag:'오류 분석',q:'학생이 “정사영에서 두 점이 겹치면 원래 공간에서도 같은 점이다”라고 말했다. 가장 적절한 평가는?',a:['옳다. 정사영은 거리를 보존한다','틀리다. 관찰 방향으로 떨어진 서로 다른 점이 겹칠 수 있다','옳다. 평행한 선분은 항상 길이가 같다','틀리다. 정사영에서는 점이 나타나지 않는다'],c:1,why:'관찰 방향과 평행한 직선 위의 서로 다른 점들은 같은 화면 위치에 투영될 수 있다.'}
+];
+let mi=0;
+function renderMission(){let m=missions[mi],area=$('missionArea');area.innerHTML=`<span class="tag">${m.tag}</span><div class="question">${m.q}</div><div class="choices">${m.a.map((a,i)=>`<button class="choice" data-i="${i}">${a}</button>`).join('')}</div><div class="feedback" id="mf"></div><div class="row" style="margin-top:12px"><span class="spacer"></span><button class="btn primary" id="mn">다음 미션</button></div>`;area.querySelectorAll('.choice').forEach(b=>b.onclick=()=>{area.querySelectorAll('.choice').forEach(x=>x.disabled=true);let ok=+b.dataset.i===m.c;b.classList.add(ok?'correct':'wrong');let f=$('mf');f.textContent=(ok?'핵심을 정확히 짚었다. ':'다시 생각해 볼 부분이 있다. ')+m.why;f.classList.add('show');$('mn').disabled=false});$('mn').onclick=()=>{mi=(mi+1)%missions.length;renderMission()};$('mn').disabled=true}
+renderMission();
+
+const qs=[
+{t:'좌표 계산',q:'관찰 방향이 d=(0,0,1)일 때 P=(3,−2,7)의 정사영을 xy평면 위의 좌표로 나타내면?',a:['(3,−2)','(3,7)','(−2,7)','(0,0)'],c:0,h:'z축 방향으로 바라보면 높이 성분이 화면 좌표에 남는지 생각해 보자.',why:'z축 방향으로 투영하면 x와 y는 유지되고 z 성분은 화면 좌표에서 사라진다.'},
+{t:'겹침 조건',q:'A=(0,1,2), B=(4,1,2)이다. 두 점이 같은 위치에 투영되게 하는 관찰 방향으로 가능한 것은?',a:['(1,0,0)','(0,1,0)','(0,0,1)','(1,1,1)'],c:0,h:'두 점의 차이 벡터 B−A를 먼저 구한 뒤 관찰 방향과 비교하자.',why:'B−A=(4,0,0)이므로 관찰 방향이 x축과 평행하면 두 점이 겹친다.'},
+{t:'정보의 한계',q:'정사영 하나만으로 원래 입체도형을 유일하게 결정하기 어려운 가장 근본적인 이유는?',a:['화면의 색이 달라지기 때문','깊이 방향의 좌표 정보가 사라질 수 있기 때문','정사영에서는 직선이 곡선으로 바뀌기 때문','모든 길이가 반드시 늘어나기 때문'],c:1,h:'3차원 좌표 중 화면에 수직인 방향의 성분이 어떻게 되는지 떠올려 보자.',why:'정사영은 투영 방향 성분을 제거하므로 그 방향의 깊이 정보가 남지 않는다.'},
+{t:'반례 판단',q:'높이가 2인 직육면체와 높이가 5인 직육면체의 밑면 크기와 방향이 같다면, 위에서 본 정사영은 어떻게 되는가?',a:['서로 다른 직사각형이 된다','같은 직사각형이 된다','하나는 선분이 된다','높이가 큰 쪽의 넓이가 더 커진다'],c:1,h:'윗면에서 보는 상황에서는 높이가 화면에 어떤 영향을 주는지 생각하자.',why:'위에서 본 정사영에서는 높이 방향의 차이가 사라지므로 밑면의 크기와 방향이 같으면 정사영도 같다.'},
+{t:'참·거짓 판단',q:'서로 다른 두 점이 같은 위치에 정사영될 수 있다.',a:['참','거짓'],c:0,h:'투영 방향과 평행한 직선 위에 여러 점을 놓아 생각해 보자.',why:'관찰 방향과 평행한 직선 위의 서로 다른 점은 하나의 화면 위치에 겹칠 수 있다.'},
+{t:'조건 비교',q:'관찰 방향을 d에서 2d로 바꾸었다. 정사영 결과는 어떻게 되는가? (d는 영벡터가 아니다.)',a:['방향이 같으므로 정사영은 같다','투영 길이가 두 배가 된다','정사영이 반대쪽으로 뒤집힌다','화면 좌표가 모두 0이 된다'],c:0,h:'방향벡터의 크기와 방향 중 정사영 평면의 방향을 결정하는 것은 무엇인지 구분하자.',why:'2d는 d와 같은 방향을 나타낸다. 정사영 평면의 방향도 같으므로 결과가 변하지 않는다.'},
+{t:'오류 분석',q:'한 학생이 “정사영된 도형의 넓이는 원래 도형의 넓이와 항상 같다”고 주장했다. 이 주장을 반박하는 설명은?',a:['평면이 투영 방향과 기울어져 있으면 넓이가 줄어들 수 있다','정사영에서는 넓이를 정의할 수 없다','모든 정사영은 원래 넓이의 두 배이다','점의 개수가 달라지므로 넓이는 무조건 0이다'],c:0,h:'투영 평면과 도형이 이루는 각도에 따라 길이와 넓이가 어떻게 달라지는지 생각하자.',why:'도형이 투영 평면과 평행하지 않으면 정사영에서 길이와 넓이가 줄어들 수 있다.'},
+{t:'실생활 적용',q:'카메라가 물체를 정면에서 바라보다가 옆으로 이동했을 때, 앞뒤로 떨어진 두 점의 화면상 위치 관계가 달라질 수 있는 이유는?',a:['두 점의 실제 좌표가 자동으로 변하기 때문','관찰 방향이 바뀌어 두 점을 잇는 방향과 관찰 방향의 평행 여부가 달라지기 때문','카메라가 물체의 크기를 바꾸기 때문','정사영은 관찰 방향과 관계가 없기 때문'],c:1,h:'화면에서 겹치는 조건은 두 점의 차이 벡터와 관찰 방향 사이의 관계로 표현할 수 있다.',why:'관찰 방향이 바뀌면 차이 벡터가 관찰 방향과 평행한지 여부가 달라져 화면상 겹침도 달라질 수 있다.'}
+];
+function renderQ(){answered=false;$('qCount').textContent=(qIndex+1)+' / '+qs.length;$('qType').textContent=qs[qIndex].t;$('score').textContent='점수 '+score;$('question').textContent=qs[qIndex].q;$('answers').innerHTML='';qs[qIndex].a.forEach((a,i)=>{let b=document.createElement('button');b.className='choice';b.textContent=a;b.onclick=()=>answer(i,b);$('answers').appendChild(b)});$('feedback').className='feedback';$('feedback').textContent='';$('nextBtn').disabled=true;$('nextBtn').textContent=qIndex===qs.length-1?'결과 보기':'다음 문제';$('hint').classList.add('hidden');$('hint').textContent=qs[qIndex].h;$('quizEnd').classList.add('hidden')}
+function answer(i,b){if(answered)return;answered=true;let q=qs[qIndex],ok=i===q.c;if(ok)score++;[...$('answers').children].forEach((x,j)=>{x.disabled=true;if(j===q.c)x.classList.add('correct');else if(j===i)x.classList.add('wrong')});let f=$('feedback');f.textContent=(ok?'정답이다. ':'정답이 아니다. ')+q.why;f.className='feedback show'+(ok?'':' bad');$('score').textContent='점수 '+score;$('nextBtn').disabled=false}
+$('hintBtn').onclick=()=>{$('hint').classList.toggle('hidden')};$('nextBtn').onclick=()=>{if(qIndex<qs.length-1){qIndex++;renderQ()}else{$('question').textContent='탐구 완료';$('answers').innerHTML='';$('feedback').className='feedback';$('quizEnd').classList.remove('hidden');$('quizEnd').innerHTML=`<div class="tile"><h3>최종 점수: ${score} / ${qs.length}</h3><p>정답을 확인한 뒤, 틀린 문제의 이유를 탐구 기록장에 정리해 보자.</p><button class="btn primary" onclick="qIndex=0;score=0;renderQ()">다시 도전</button></div>`;$('nextBtn').disabled=true}};
+renderQ();
+
+$('saveNote').onclick=()=>{localStorage.setItem('projection-note-title',$('noteTitle').value);localStorage.setItem('projection-note-body',$('noteBody').value);$('saveState').textContent='이 기기에 저장됨'};
+$('noteTitle').value=localStorage.getItem('projection-note-title')||'';$('noteBody').value=localStorage.getItem('projection-note-body')||'';
+$('downloadNote').onclick=()=>{let text='[정사영 탐구 기록]\\n'+$('noteTitle').value+'\\n\\n'+$('noteBody').value;let blob=new Blob(['\ufeff'+text],{type:'text/plain;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='정사영_탐구기록.txt';a.click();URL.revokeObjectURL(a.href)};
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===b.dataset.page))});
+buildShape();projection();
+</script>
+</body></html>

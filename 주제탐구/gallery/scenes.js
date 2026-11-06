@@ -1,11 +1,13 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { inquiry3D, makeInquiry3D, inquiryArt, drawInquiry2D } from './scenes-inquiries.js';
+import {refreshArtSVG} from './refresh-models.js';
 
 const ACCENT=0xe1eea4, LIGHT=0xd6e1c6, GREEN=0x61876b;
 const isSpace=kind=>inquiry3D(kind)||['hero','sphere-slice','sphere-vector','distance','slices','hypersphere','projection','vectors','planes','cone','surface'].includes(kind);
 
 export function artSVG(kind,seed=0){
+  const refreshed=refreshArtSVG(kind);if(refreshed)return refreshed;
   const illustration=inquiryArt(kind);if(illustration)return illustration;
   const path=(d,extra='')=>'<path d="'+d+'" fill="none" stroke="currentColor" stroke-width="1.3" '+extra+'/>';
   const line=(x1,y1,x2,y2,extra='')=>'<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="currentColor" stroke-width="1.1" '+extra+'/>';

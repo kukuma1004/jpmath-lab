@@ -1,4 +1,5 @@
 import {newtonSteps,derivativeCoefficients,interlacedRoots} from './motion-frames.js';
+import {refreshMathFrame} from './refresh-models.js';
 
 // Editorial examples, separate from student records. Coordinates are in one 760 × 470 plane.
 export const SPATIAL_FAMILIES=new Set(['volume','surface','space-points','dimension','ellipsoid','projection','cone-cut','line-plane','minimum','plane-distance','overlap','cone-discriminant','dot','sphere-extreme','sphere-slice']);
@@ -12,6 +13,7 @@ export function tangentRoots(b){
   return roots.sort((a,b)=>a-b);
 }
 export function liveMathFrame(family,time,phase=0){
+  const refreshed=refreshMathFrame(family,time,phase);if(refreshed)return refreshed;
   const paths=[],dots=[],labels=[],values={},wave=studioWave(time),angle=time*.18+.55,s=Math.max(0,Math.min(6,Math.round(phase)));
   const at=list=>{const p=Math.max(0,Math.min(6,phase)),i=Math.floor(p),f=p-i;return list[i]*(1-f)+list[Math.min(6,i+1)]*f};
   const map=(x,y)=>[380+x*88,262-y*53];
