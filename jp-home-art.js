@@ -97,7 +97,7 @@
   function geometry(canvas, t, accent) {
     const s = fit(canvas); if (!s) return;
     const { ctx, w, h } = s;
-    const cx = w / 2, cy = h * .46, R = Math.min(h * .41, w * .44);
+    const cx = w / 2, cy = h * .46, R = Math.min(h * .41, w * .30);
     const yaw = reduce ? .6 : t * .00034;
     const pitch = .5;
 
@@ -145,9 +145,16 @@
     [-1.0, -.5, 0, .5, 1.0].forEach(b => draw(ring(b, 'lat')));
     [0, Math.PI / 3, Math.PI * 2 / 3].forEach(a => draw(ring(a, 'lon')));
 
-    // 지면으로 자른 자리 — 돔 실험실과 같은 이야기
+    // The plane and its intersection use the sphere's own yaw/pitch projection.
+    const cartesian=(x,y,z)=>{const rx=x*Math.cos(yaw)-z*Math.sin(yaw),rz=x*Math.sin(yaw)+z*Math.cos(yaw);return{x:cx+rx*R,y:cy-(y*Math.cos(pitch)-rz*Math.sin(pitch))*R}};
+    const cutHeight=-.25,cutRadius=Math.sqrt(1-cutHeight*cutHeight);
+    const plane=[[-1.2,cutHeight,-1.08],[1.2,cutHeight,-1.08],[1.2,cutHeight,1.08],[-1.2,cutHeight,1.08]].map(p=>cartesian(...p));
+    ctx.beginPath();plane.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.closePath();
+    ctx.fillStyle='rgba(187,169,238,.22)';ctx.fill();
+    ctx.strokeStyle='rgba(237,220,255,.68)';ctx.lineWidth=1;ctx.stroke();
+    // Every section point is on both y=cutHeight and x²+y²+z²=1.
     ctx.save();
-    ctx.beginPath(); ctx.ellipse(cx, cy + R * .42, R * .92, R * .3, 0, 0, Math.PI * 2);
+    ctx.beginPath();for(let i=0;i<=96;i++){const a=i/96*Math.PI*2,p=cartesian(cutRadius*Math.cos(a),cutHeight,cutRadius*Math.sin(a));i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y)}ctx.closePath();
     ctx.fillStyle = 'rgba(255,255,255,.10)'; ctx.fill();
     ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.4; ctx.globalAlpha = .55; ctx.stroke();
     ctx.restore();
@@ -157,41 +164,34 @@
     glow(ctx, accent, 14); ctx.stroke(); noGlow(ctx);
   }
 
-  // ── 경제수학 — 정면에서 본 스카이라인 ──────────────────────────────
-  // 아이소메트릭은 넓고 낮은 카드에서 세로로 넘쳐 잘린다. 정면으로 세우면
-  // 폭을 가득 채우고, 창문 불빛까지 넣으면 도시로 읽힌다.
-  // 건물 높이는 결과 화면과 같은 뜻이다 — 배분한 만큼 자란다.
+  // ── 경제수학 — 같은 성장 모형의 연속 곡선과 구간별 값 ────────────────
   function economy(canvas, t, accent) {
     const s = fit(canvas); if (!s) return;
     const { ctx, w, h } = s;
-    const ground = h - 14, top = 7;
-    const seeds = [.08, .42, .02, .97, .39, .59, .02, .26, .55, .08, .40];
-    const n = seeds.length, gap = 3;
-    const bw = (w - 16 - gap * (n - 1)) / n;
-
-    ctx.strokeStyle = 'rgba(255,255,255,.14)'; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(8, ground + .5); ctx.lineTo(w - 8, ground + .5); ctx.stroke();
-
-    seeds.forEach((base, i) => {
-      const wave = reduce ? 1 : (.97 + .03 * Math.sin(t * .0007 + i * .8));
-      const bh = (ground - top) * base * wave;
-      const x = 8 + i * (bw + gap), y = ground - bh;
-
-      const g = ctx.createLinearGradient(0, y, 0, ground);
-      g.addColorStop(0, accent + 'd9'); g.addColorStop(1, accent + '3a');
-      ctx.fillStyle = g; ctx.fillRect(x, y, bw, bh);
-      ctx.fillStyle = 'rgba(255,255,255,.30)'; ctx.fillRect(x, y, bw, 1.6);   // 옥상 빛
-
-      // 창문
-      ctx.fillStyle = 'rgba(255,255,255,.42)';
-      const cols = 2;
-      for (let r = 0; r * 11 + 9 < bh; r++) {
-        for (let c = 0; c < cols; c++) {
-          if (((i * 13 + r * 7 + c * 3) % 5) > 2) continue;
-          ctx.fillRect(x + bw * .27 + c * bw * .37, y + 6 + r * 11, 2.1, 3);
-        }
-      }
-    });
+    const ground = h - 10, top = 12;
+    const n = 9, gap = 7;
+    const bw = Math.max(2,(w-25)/n-gap);
+    const value = u => (Math.exp(u * 2.4) - 1) / (Math.exp(2.4) - 1);
+    const X=u=>12+u*(w-25),Y=u=>ground-9-value(u)*(ground-top-10);
+    ctx.strokeStyle = 'rgba(255,255,255,.16)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(8,ground);ctx.lineTo(w-8,ground);ctx.stroke();
+    for(let i=0;i<n;i++){
+      const u=(i+1)/n,y=Y(u),bh=ground-y,x=X(u)-bw/2;
+      const g=ctx.createLinearGradient(0,y,0,ground);
+      g.addColorStop(0,'#a7d6bc99');g.addColorStop(1,accent+'16');
+      ctx.fillStyle=g;ctx.fillRect(x,y,bw,bh);
+      ctx.strokeStyle='#d6f3d955';ctx.strokeRect(x,y,bw,bh);
+    }
+    // Growth is shown as one coherent relationship, rather than random skyline motion.
+    ctx.beginPath();
+    for(let i=0;i<=100;i++){const u=i/100,x=X(u),y=Y(u);i?ctx.lineTo(x,y):ctx.moveTo(x,y)}
+    ctx.strokeStyle='#f5efd0';ctx.lineWidth=1.8;glow(ctx,accent,9);ctx.stroke();noGlow(ctx);
+    for(const u of [.25,.5,.75]){ctx.beginPath();ctx.arc(X(u),Y(u),3,0,Math.PI*2);ctx.fillStyle='#fff2ce';ctx.fill()}
+    // Keep the card's motion without changing the growth relationship itself.
+    const scan = reduce ? .65 : .5 + .4 * Math.sin(t * .00045);
+    ctx.beginPath();ctx.arc(X(scan),Y(scan),4,0,Math.PI*2);ctx.fillStyle='#fff7df';glow(ctx,accent,11);ctx.fill();noGlow(ctx);
+    const endX=w-13,endY=top+1;
+    ctx.beginPath();ctx.moveTo(endX-8,endY+4);ctx.lineTo(endX,endY);ctx.lineTo(endX-1,endY+10);ctx.fillStyle='#fff2ce';ctx.fill();
 
     ctx.beginPath(); ctx.moveTo(8, ground); ctx.lineTo(w - 8, ground);
     ctx.strokeStyle = accent + '99'; ctx.lineWidth = 1;

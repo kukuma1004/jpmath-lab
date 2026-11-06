@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="jp-nav-2.css?v=20261104-2">
   <link rel="stylesheet" href="jp-home-2.css?v=6">
   <script src="jp-nav-2.js?v=20261104-2" defer></script>
-  <script src="jp-home-art.js?v=6" defer></script>
+  <script src="jp-home-art.js?v=20261106-2" defer></script>
   <style>
     /* QR 버튼 — 수업 시작할 때마다 쓰는 것이라 머리에 상시로 둔다.
        공용 jp-nav-2.css 는 62개 파일이 함께 읽어서 손대지 않는다(캐시 버전 일괄 상향 회피). */
@@ -33,7 +33,7 @@
     .header-qr svg { width: 15px; height: 15px; fill: currentColor; flex: none; }
     @media (max-width: 430px) { .header-qr { padding: 0 12px; } .header-qr b { display: none; } }
   </style>
-  <link rel="stylesheet" href="jp-studio.css?v=20261106-1">
+  <link rel="stylesheet" href="jp-studio.css?v=20261106-2">
   <script src="jp-studio.js?v=20261104-1" defer></script>
 </head>
 <body class="jp-home">
@@ -147,11 +147,11 @@
       </div>
 
       <nav class="home-quick" aria-label="바로 가기">
-        <a href="games/"><b>게임</b><small>SEED · 잠든 정원에서 깨어나기</small></a>
-        <a href="미적분1/오늘의_미적분.html"><b>오늘의 도전</b><small>오늘의 함수를 깊게 보기</small></a>
-        <a href="수능문제/"><b>수능 문제 탐구</b><small>기출의 조건을 질문으로 바꾸기</small></a>
-        <a href="AI킬러문제/"><b>AI 킬러문제</b><small>새로 만든 문제. 전환을 찾아야 풀린다</small></a>
-        <a href="주제탐구/"><b>주제탐구</b><small>호기심을 탐구로 연결하기</small></a>
+        <a href="games/"><b>게임</b><small>SEED · 잠든 정원에서 깨어나기</small><span class="quick-art" aria-hidden="true"><svg viewBox="0 0 125 125" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g stroke="#96734f"><path fill="#fff7e7" d="m14 76 22-12 22 12-22 12Z"/><path fill="#e5cfaf" d="M14 76v23l22 13V88Z"/><path fill="#cdb490" d="m36 88 22-12v23l-22 13Z"/><path fill="#fff8e9" d="m36 52 22-12 22 12-22 13Z"/><path fill="#e9d5b7" d="M36 52v24l22 13V65Z"/><path fill="#cdb490" d="m58 65 22-13v24L58 89Z"/><path fill="#fff9ed" d="m58 27 22-12 22 12-22 13Z"/><path fill="#e7d1ae" d="M58 27v25l22 13V40Z"/><path fill="#c7ac87" d="m80 40 22-13v49L80 89V65L58 52"/><path fill="#fff8e9" d="m58 89 22-13 22 13-22 12Z"/><path fill="#e9d4b3" d="M58 89v23l22 12v-23Z"/><path fill="#c7ac87" d="m80 101 22-12v23l-22 12Z"/></g></svg></span><span class="quick-arrow" aria-hidden="true">→</span></a>
+        <a href="미적분1/오늘의_미적분.html"><b>오늘의 도전</b><small>오늘의 함수를 깊게 보기</small><span class="quick-art" aria-hidden="true"><svg viewBox="0 0 125 125" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M30 29h62l13 77H17Z"/><path d="m30 35-7 64h73L86 35 M41 35V21c0-10 9-10 9 0v14 M70 35V21c0-10 9-10 9 0v14 M39 67l12 12 24-26"/></svg></span><span class="quick-arrow" aria-hidden="true">→</span></a>
+        <a href="수능문제/"><b>수능 문제 탐구</b><small>기출의 조건을 질문으로 바꾸기</small><span class="quick-art" aria-hidden="true"><svg viewBox="0 0 125 125" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g transform="rotate(11 60 65)"><rect x="27" y="17" width="66" height="91" rx="3"/><path d="M39 35h41 M39 45h26 M39 58h7v7h-7Z M53 61h28 M39 75h7v7h-7Z M53 78h28 M39 92h7v7h-7Z M53 95h20"/></g><path d="m89 92 17-60 6 2-17 60-7 9Z"/></svg></span><span class="quick-arrow" aria-hidden="true">→</span></a>
+        <a href="AI킬러문제/"><b>AI 킬러문제</b><small>새로 만든 문제. 전환을 찾아야 풀린다</small><span class="quick-art" aria-hidden="true"><svg viewBox="0 0 125 125" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M38 85C5 72 15 33 43 24c32-15 68 10 63 37-1 13-12 21-25 25l-3 21 M48 83l10 25 M24 47l22-18 22 3 26 21-19 27-37 5-14-38 51 33-7-48-30 53 56-32-48-24"/><g fill="#f9f1e2"><circle cx="24" cy="47" r="4"/><circle cx="46" cy="29" r="4"/><circle cx="68" cy="32" r="4"/><circle cx="94" cy="53" r="4"/><circle cx="75" cy="80" r="4"/><circle cx="38" cy="85" r="4"/></g></svg></span><span class="quick-arrow" aria-hidden="true">→</span></a>
+        <a href="주제탐구/"><b>주제탐구</b><small>호기심을 탐구로 연결하기</small><span class="quick-art" aria-hidden="true"><svg viewBox="0 0 125 125" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="61" cy="99" rx="51" ry="15" stroke-dasharray="3 3"/><path d="m62 31-29 74 8-7 25-58 27 58 8 7-30-74 M64 23l4-16 5 1-3 17 M48 74h36"/><circle cx="66" cy="31" r="9"/><circle cx="66" cy="31" r="3"/></svg></span><span class="quick-arrow" aria-hidden="true">→</span></a>
       </nav>
     </section>
   </main>

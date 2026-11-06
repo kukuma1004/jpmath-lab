@@ -116,3 +116,91 @@ html.jp-studio body.jp-home .room-space .room-art{left:37%;right:10%;bottom:15px
   html.jp-studio body.jp-home .home-quick b{font-size:13px}
   html.jp-studio body.jp-home .home-quick small{font-size:12px}
 }
+
+/* Dream Loop · activity objects and readable controls, 2026-11-05 */
+html.jp-studio body.jp-home{background:#f5f0e8}
+html.jp-studio body.jp-home .scene-intro.is-compact{padding:90px 4.7vw 27px;gap:4vw;background:radial-gradient(ellipse at 25% 100%,#e4bea126,transparent 55%),#f5f0e8}
+html.jp-studio body.jp-home .intro-copy h1{font-size:clamp(32px,3.65vw,55px);line-height:1.45}
+html.jp-studio body.jp-home .scene-description{max-width:580px;font-size:15px}
+html.jp-studio body.jp-home .studio-frame{background:radial-gradient(ellipse at 50% 40%,#684a292e,transparent 65%),#2b211b;border:1px solid #b8a18570;box-shadow:0 18px 28px -13px #49352260,0 1px 0 #ffffff30 inset}
+html.jp-studio body.jp-home .studio-frame[data-subject=geometry]{background:#1b263e}
+html.jp-studio body.jp-home .studio-frame[data-subject=economics]{background:#203d34}
+.jp-home .studio-subjects button{min-height:40px;font-size:13px}
+.jp-home .studio-control-label,.jp-home .studio-formula{font-size:12px}
+.jp-home .studio-controls input{min-height:32px}
+.jp-home .studio-observation{font-size:12px!important}
+.jp-home .studio-next a{font-size:13px;min-height:40px}
+.jp-home .studio-help{font-size:11px}
+html.jp-studio body.jp-home .home-rooms{padding:8px 4.7vw 25px;background:#f5f0e8}
+html.jp-studio body.jp-home .home-rooms:before{display:none}
+html.jp-studio body.jp-home .rooms-title{font-size:15px;margin-bottom:15px}.jp-home .rooms-title span{font-size:12px}
+html.jp-studio body.jp-home .room-card{height:180px;padding:18px 24px;background:radial-gradient(ellipse at 65% 80%,#83563140,transparent 65%),#302219;box-shadow:0 9px 20px -15px #2b211b80}
+html.jp-studio body.jp-home .room-space{background:radial-gradient(ellipse at 60% 75%,#6f72a538,transparent 65%),#202a43}
+html.jp-studio body.jp-home .room-economy{background:radial-gradient(ellipse at 75% 75%,#4d886440,transparent 65%),#1d3d34}
+html.jp-studio body.jp-home .room-name{font-size:28px;z-index:1}
+html.jp-studio body.jp-home .room-line{font-size:13px;z-index:1}
+html.jp-studio body.jp-home .room-go{font-size:14px;z-index:1}
+html.jp-studio body.jp-home .room-art{position:absolute;left:32%;right:4px;bottom:8px;height:140px;opacity:1;margin:0}
+html.jp-studio body.jp-home .room-art canvas{height:100%}
+html.jp-studio body.jp-home .home-quick{grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-top:22px}
+html.jp-studio body.jp-home .home-quick a{position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;gap:10px;min-height:200px;padding:20px 18px;border:1px solid #cfb79e;border-radius:9px;background:linear-gradient(140deg,#fffaf3,#f5eee2);box-shadow:0 2px 0 #fff inset,0 8px 15px -12px #5e3b25;transition:transform .25s,box-shadow .25s,border-color .25s;color:#30291f}
+html.jp-studio body.jp-home .home-quick a:before{content:'';position:absolute;inset:auto -30% -75% -30%;height:90%;border-radius:50%;background:var(--quick-tint,#e5b391);transform:rotate(-12deg);opacity:.46;z-index:-1}
+html.jp-studio body.jp-home .home-quick a:nth-child(2){--quick-tint:#dec08d}html.jp-studio body.jp-home .home-quick a:nth-child(3){--quick-tint:#b5b398}html.jp-studio body.jp-home .home-quick a:nth-child(4){--quick-tint:#bcb1cf}html.jp-studio body.jp-home .home-quick a:nth-child(5){--quick-tint:#abbf9d}
+html.jp-studio body.jp-home .home-quick b{font:700 clamp(18px,1.65vw,26px)/1.4 'Noto Serif KR',serif;letter-spacing:-.06em;white-space:normal}
+html.jp-studio body.jp-home .home-quick small{font-size:13px;line-height:1.7;color:#514a40;max-width:80%;z-index:1}
+.quick-art{position:absolute;width:105px;height:105px;right:0;bottom:9px;color:#8b6849;filter:drop-shadow(3px 6px 2px #80674922);transform:rotate(-3deg);transform-origin:50% 100%;transition:transform .35s}
+.quick-art svg{width:100%;height:100%;fill:#fff6e4b0}
+.quick-arrow{display:grid;place-items:center;width:36px;height:36px;margin-top:auto;border-radius:50%;background:linear-gradient(135deg,#956a47,#543921);color:#fff7e8;font:26px/1 sans-serif;box-shadow:0 1px 0 #fff7 inset;z-index:2;transition:transform .25s}
+html.jp-studio body.jp-home .home-quick a:is(:hover,:focus-visible){transform:translateY(-4px);border-color:#9d7452;box-shadow:0 14px 24px -15px #694d33}
+.home-quick a:is(:hover,:focus-visible) .quick-art{transform:rotate(3deg) translateY(-4px)}.home-quick a:is(:hover,:focus-visible) .quick-arrow{transform:translateX(4px)}
+html.jp-studio body.jp-home .home-footer{background:#f5f0e8!important;padding:12px 4.7vw!important}
+@media(min-width:981px) and (max-height:790px){html.jp-studio body.jp-home .scene-intro.is-compact{padding-top:80px;padding-bottom:15px}html.jp-studio body.jp-home .room-card{height:150px}html.jp-studio body.jp-home .room-art{height:115px}html.jp-studio body.jp-home .home-quick a{min-height:160px;padding:15px}html.jp-studio body.jp-home .home-quick{margin-top:14px}.quick-art{width:84px;height:84px}.jp-home .studio-subjects button{min-height:36px}}
+@media(max-width:980px){html.jp-studio body.jp-home .home-quick{grid-template-columns:repeat(3,minmax(0,1fr))}html.jp-studio body.jp-home .home-quick a{min-height:190px}html.jp-studio body.jp-home .rooms-grid{grid-template-columns:repeat(3,minmax(0,1fr))}html.jp-studio body.jp-home .room-card{padding:16px}.jp-home .studio-help{display:none}}
+@media(max-width:700px){html.jp-studio body.jp-home .scene-intro.is-compact{padding:100px 6vw 25px;grid-template-columns:1fr;gap:26px}html.jp-studio body.jp-home .intro-copy h1{font-size:clamp(29px,7vw,42px)}html.jp-studio body.jp-home .home-rooms{padding:12px 6vw 25px}html.jp-studio body.jp-home .rooms-grid{grid-template-columns:1fr}html.jp-studio body.jp-home .room-card{height:150px;padding:20px}html.jp-studio body.jp-home .room-art{left:44%;top:10px;height:130px}html.jp-studio body.jp-home .home-quick{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:22px}html.jp-studio body.jp-home .home-quick a{min-height:200px;padding:16px 13px}html.jp-studio body.jp-home .home-quick b{font-size:20px}html.jp-studio body.jp-home .home-quick small{font-size:12px;max-width:100%}.quick-art{width:90px;height:90px;opacity:.85}.quick-arrow{width:34px;height:34px}.jp-home .studio-controls input{min-height:44px}.jp-home .studio-subjects button{min-height:44px}.jp-home .studio-frame{grid-template-rows:auto 183px auto auto}}
+@media(prefers-reduced-motion:reduce){html.jp-studio body.jp-home .home-quick a,.quick-art,.quick-arrow{transition:none!important;animation:none!important;transform:none!important}}
+
+/* Second visual pass: generous type, engraved objects and responsive controls. */
+html.jp-studio body.jp-home .scene-intro.is-compact{background:radial-gradient(ellipse at 22% 92%,#ead8c33d,transparent 54%),#f5f0e8}
+html.jp-studio body.jp-home .scene-intro.is-compact:after{display:block;position:absolute;inset:auto 49% 0 -3%;height:100px;border:0;box-shadow:none;background:url('assets/home-contours.svg') center/100% 100% no-repeat;opacity:.65;pointer-events:none}
+html.jp-studio body.jp-home .intro-copy{padding-bottom:15px}
+html.jp-studio body.jp-home .home-quick b{font-size:clamp(20px,1.85vw,28px);line-height:1.45}
+html.jp-studio body.jp-home .home-quick small{max-width:90%;font-size:14px;line-height:1.65;word-break:keep-all;overflow-wrap:normal}
+html.jp-studio body.jp-home .home-quick a{min-height:212px;border-color:#cbb398;background:linear-gradient(135deg,#fffaf4 15%,#f7efe3 80%);box-shadow:0 0 0 3px #fffaf480 inset,0 10px 19px -15px #614329}
+html.jp-studio body.jp-home .home-quick a:before{inset:auto -20% -78% -30%;height:95%;opacity:.53}
+.quick-art{width:113px;height:113px;right:2px;bottom:10px;filter:drop-shadow(3px 6px 2px #80674930)}
+.quick-art svg{stroke-width:1.15;fill:#fff8eacc}
+.quick-arrow{width:40px;height:40px;box-shadow:0 1px 0 #fff8 inset,0 2px 4px #553b2024}
+html.jp-studio body.jp-home .home-footer{position:relative;margin:0 4.7vw;padding:14px 0!important;border-top:1px solid #d5c7b8!important}
+.jp-home .studio-subjects button[aria-pressed=true]{border-color:#d6ab80a0;box-shadow:0 1px 0 #f6d7b825 inset;background:#d3a2690d}
+.jp-home .studio-control-label output{font-size:14px}
+.jp-home .studio-next a{padding-inline:8px;border-radius:4px;transition:background .2s,color .2s}
+.jp-home .studio-next a:hover{background:#f5d5b013;color:#fff7e8}
+@media(min-width:981px){html.jp-studio body.jp-home .intro-copy h1{font-size:clamp(34px,3.8vw,57px)}html.jp-studio body.jp-home .scene-intro.is-compact{gap:3vw;padding-bottom:32px}html.jp-studio body.jp-home .home-quick a{padding:19px 18px}}
+@media(min-width:981px) and (max-height:790px){html.jp-studio body.jp-home .home-quick a{min-height:178px;padding:14px}.quick-art{width:88px;height:88px}html.jp-studio body.jp-home .home-quick b{font-size:21px}html.jp-studio body.jp-home .home-quick small{font-size:13px}.jp-home .studio-controls input{min-height:32px}}
+@media(max-width:700px){html.jp-studio body.jp-home .scene-intro.is-compact:after{display:none}html.jp-studio body.jp-home .intro-copy{padding-bottom:0}html.jp-studio body.jp-home .home-quick{grid-template-columns:1fr}html.jp-studio body.jp-home .home-quick a{min-height:156px;padding:20px 22px;gap:6px}html.jp-studio body.jp-home .home-quick b{font-size:23px}html.jp-studio body.jp-home .home-quick small{max-width:65%;font-size:14px}.quick-art{width:122px;height:122px;right:4px;bottom:8px;opacity:1}.quick-arrow{width:36px;height:36px;margin-top:9px}html.jp-studio body.jp-home .home-quick a:before{inset:auto -15% -92% -5%;height:110%}html.jp-studio body.jp-home .home-footer{margin-inline:6vw}.jp-home .studio-controls input{min-height:44px}.jp-home .studio-subjects button{min-height:44px}}
+@media(prefers-reduced-motion:reduce){.jp-home .studio-next a{transition:none}}
+
+/* Final material pass: a touchable instrument and distinct paper activity objects. */
+.jp-home .studio-canvas-wrap{background:radial-gradient(ellipse at 53% 58%,#e7ad7520,transparent 63%)}
+.jp-home .studio-frame[data-subject=geometry] .studio-canvas-wrap{background:radial-gradient(ellipse at center,#a7b3ef21,transparent 65%)}
+.jp-home .studio-frame[data-subject=economics] .studio-canvas-wrap{background:radial-gradient(ellipse at 65% 60%,#a9cf9a20,transparent 65%)}
+.jp-home .studio-subjects button{min-height:44px;transition:background .18s,border-color .18s,color .18s}
+.jp-home .studio-subjects button:hover{background:#fff5df12;color:#fff3dc}
+.jp-home .studio-controls input{min-height:44px;filter:drop-shadow(0 2px 3px #0004)}
+.jp-home .studio-controls:focus-within{background:#f6dbb708}
+.jp-home .studio-next a{min-height:44px}
+html.jp-studio body.jp-home .home-quick a:focus-visible{outline:3px solid #765236;outline-offset:4px}
+html.jp-studio body.jp-home .home-quick a:active{transform:translateY(-1px);box-shadow:0 2px 8px #61432925}
+html.jp-studio body.jp-home .home-quick a:nth-child(2) .quick-art{transform:rotate(3deg)}
+html.jp-studio body.jp-home .home-quick a:nth-child(3) .quick-art{transform:rotate(-5deg)}
+html.jp-studio body.jp-home .home-quick a:nth-child(5) .quick-art{transform:rotate(2deg)}
+html.jp-studio body.jp-home .home-quick a:is(:hover,:focus-visible) .quick-art{transform:translateY(-5px) rotate(0)}
+html.jp-studio body.jp-home .room-card:focus-visible{outline:3px solid #9b714b;outline-offset:4px}
+@media(min-width:981px){.jp-home .studio-observation{font-size:13px!important}.jp-home .studio-formula{font-size:13px}.jp-home .studio-help{font-size:12px}}
+@media(max-width:700px){html.jp-studio body.jp-home .home-quick a{min-height:170px}.quick-arrow{width:40px;height:40px}.jp-home .studio-subjects{gap:3px}.jp-home .studio-subjects button{flex:1;padding-inline:8px}.jp-home .studio-formula{top:12px}.jp-home .studio-control-label output{font-size:15px}}
+@media(prefers-reduced-motion:reduce){.jp-home .studio-subjects button{transition:none}html.jp-studio body.jp-home .home-quick a .quick-art{transform:none!important}}
+/* Keep the shared instrument touch target consistent in every subject entrance. */
+html.jp-studio .studio-next a{min-height:44px}
+html.jp-studio .studio-controls input{min-height:44px}
+/* A classic scrollbar must not push a 320px viewport beyond its visible width. */
+html.jp-studio body.jp-studio-hub{min-width:0}
