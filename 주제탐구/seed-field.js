@@ -103,7 +103,7 @@
         (meta.generated || Math.max(0, seeds.length - 108)).toLocaleString('ko-KR') + '개를 함께 싣는다. ' +
         '확장 후보는 <b>검증 전</b>이며 수학 검증과 선생님 검토를 지나야 수업 주제로 확정된다.</p>' +
       // 씨앗밭 아래에 학생들이 올린 탐구가 있다. 여기서 바로 갈 수 있게 한다.
-      '<a class="sd-to-collection" href="#collectionTitle">우리 반이 지금 하고 있는 탐구 보러 가기 ↓</a>';
+      '<a class="sd-to-collection" href="gallery/">우리 반이 남긴 탐구 50개 보러 가기 →</a>';
 
     var list = root.querySelector('.sd-list');
     var countEl = root.querySelector('.sd-count');
