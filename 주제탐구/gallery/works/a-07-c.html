@@ -17,6 +17,9 @@ label{display:block;font-size:.86rem;font-weight:750;margin:10px 0 5px}input,sel
 .tablewrap{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:490px;font-size:.82rem}th,td{padding:9px 8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}th{background:#f5f7fb;color:#4e5b72;font-weight:750}th:first-child,td:first-child{text-align:center}.interpret{padding:13px 14px;background:#f2f6ff;border-left:4px solid var(--blue);border-radius:10px;font-size:.88rem}.guide ol{padding-left:20px;margin:6px 0}.guide li{margin:5px 0}.concept{padding-top:12px;margin-top:13px;border-top:1px solid var(--line)}
 @media(max-width:900px){.wrap{padding:18px 14px 36px}.layout{grid-template-columns:1fr}.controls{position:static;order:1}.main{order:2}.controls .section{margin-top:13px;padding-top:13px}.examples{grid-template-columns:repeat(3,minmax(0,1fr))}.examples button{font-size:.78rem;text-align:center;padding:7px 5px}}
 @media(max-width:560px){.wrap{padding:14px 10px 28px}.panel,.card{padding:14px;border-radius:15px}.mathgrid{grid-template-columns:1fr 1fr}.examples{grid-template-columns:1fr}.examples button{text-align:left;padding:8px 10px}canvas{height:270px}.card-head{align-items:flex-start}}
+
+/* 2026-11-11 전시: 좁은 화면 가로 넘침만 바로잡음. 계산·배치는 그대로 둔다. */
+@media(max-width:700px){.card{min-width:0}}
 </style>
 </head>
 <body>

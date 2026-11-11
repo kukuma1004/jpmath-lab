@@ -15,6 +15,9 @@ canvas{display:block;width:100%;height:auto;border:1px solid var(--border);borde
 table{width:100%;border-collapse:collapse;min-width:650px;margin-top:12px}th,td{border:1px solid var(--border);padding:8px;text-align:right}th{background:#f1f4f8}th:first-child,td:first-child{text-align:center}.scroll{overflow-x:auto}
 .verify{padding:10px;border:1px solid #d7e3f8;border-radius:9px;background:#f8fbff}.ok{display:none;margin-top:10px;padding:9px;border-radius:8px;background:#f0fdf4;border:1px solid #bbf7d0}
 @media(max-width:800px){.grid{grid-template-columns:1fr}}@media(max-width:480px){.wrap{padding:10px}.results{grid-template-columns:1fr 1fr}.preset{grid-template-columns:repeat(2,1fr)}}
+
+/* 2026-11-11 전시: 좁은 화면 가로 넘침만 바로잡음. 계산·배치는 그대로 둔다. */
+@media(max-width:700px){.grid{grid-template-columns:minmax(0,1fr)}.card{min-width:0;overflow-x:auto}}
 </style>
 </head>
 <body>
