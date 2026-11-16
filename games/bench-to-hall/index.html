@@ -315,15 +315,14 @@ body:has(.sim-card)>.footer{display:none}.shell:has(.sim-card) .finance-bar,.she
 .journey-shell .winter-event{padding:22px}.journey-shell .winter-event h2{font-size:24px;margin:14px 0 10px}.journey-shell .winter-event>.small{line-height:1.75}.journey-shell .winter-event .choice{margin-top:9px;padding:13px 14px}.journey-shell .winter-event .choice p{display:block}.journey-shell .winter-event .choice strong{font-size:13px}.journey-shell .winter-event .choice .effect{font-size:11px}.journey-shell .winter-event .between .tag{font-size:10px}
 body:has(.sim-simple){background:#fff}body:has(.sim-simple)>.top,body:has(.sim-simple)>.footer,body:has(.sim-simple) .mobile-tabs,body:has(.sim-simple) .sidebar{display:none}
 body:has(.sim-simple) .shell{max-width:800px;margin:0 auto;padding:0 24px}.sim-simple{display:flex;flex-direction:column;min-height:calc(100dvh - 32px);padding:60px 0 22px;background:#fff;border:0;border-radius:0;overflow:visible}
-.quiet-context{font-size:12px;color:#8290a2;margin:0 0 26px}.season-pulse{width:60px;height:60px;color:#6d91d9;margin:0 0 18px;animation:quiet-breathe 3s ease-in-out infinite}.season-pulse svg{display:block;width:100%;height:100%}
-.sim-simple h1{font-size:clamp(23px,4vw,31px);font-weight:800;line-height:1.4;letter-spacing:-1px;color:#1d2e49;margin:0 0 16px}.quiet-update{min-height:42px;margin-bottom:26px}.quiet-update p{font-size:13px;line-height:1.75;color:#8491a3;margin:0}.quiet-update p:not(:first-child){display:none}.quiet-update time{display:none}
-.quiet-progress{margin:0 0 24px}.sim-simple .progress{height:6px;background:#edf0f6}.sim-simple .progress i{background:#7294e5;transition:width .35s linear}.quiet-progress-caption{display:flex;justify-content:space-between;font-size:11px;color:#96a0af;margin-top:10px}.sim-simple .sim-card-foot{margin-top:auto;padding:0;border:0}.sim-simple .sim-card-foot .btn{width:100%;min-height:48px;background:#f4f5f8;border:0;border-radius:13px;color:#758196;font-weight:600;font-size:12px}
-@keyframes quiet-breathe{0%,100%{transform:translateY(0) rotate(-6deg);opacity:.7}50%{transform:translateY(-4px) rotate(6deg);opacity:1}}
+.quiet-context{font-size:12px}
+.quiet-update p{margin:0}
+.quiet-progress-caption{display:flex;justify-content:space-between;font-size:11px;margin-top:10px}
+.sim-simple .sim-card-foot{padding:0;border:0}
+.sim-simple .sim-card-foot .btn{width:100%;border-radius:13px;font-weight:600;font-size:12px}
 @media(max-width:1023px){.journey-shell .pagehead h1{font-size:23px}.journey-shell .career-deck-action{padding-top:7px!important}.journey-shell .winter-event{padding:17px}.journey-shell .winter-event h2{font-size:22px}.journey-shell .winter-event>.small{font-size:12px}.winter-wallet{margin:0 0 10px;flex-shrink:0}.flow-more{margin:6px 0 0}.flow-tool-grid .btn{font-size:11px}.journey-shell .career-deck-body{min-height:0}.flow-back{flex-shrink:0}
- body.mobile-sim .sim-simple{min-height:0;flex:1;padding:42px 0 10px;overflow:visible}body.mobile-sim .shell{margin-top:0;padding:0 22px}body.mobile-sim .main{gap:0}.quiet-context{font-size:11px;margin-bottom:26px}.season-pulse{width:52px;height:52px}.quiet-update{font-size:12px;min-height:46px}.quiet-update p{font-size:12px}.sim-simple h1{font-size:24px}
+ body.mobile-sim .sim-simple{min-height:0;flex:1;overflow:visible}body.mobile-sim .shell{margin-top:0;padding:0 22px}body.mobile-sim .main{gap:0}
 }
-@media(max-height:580px){.sim-simple,.mobile-sim .sim-simple{padding-top:22px}.quiet-context{margin-bottom:15px}.season-pulse{width:36px;height:36px;margin-bottom:12px}.quiet-update{margin-bottom:15px;min-height:30px}.sim-simple h1{font-size:21px}}
-@media(prefers-reduced-motion:reduce){.season-pulse{animation:none}.sim-simple .progress i{transition:none}}
 </style>
 <style id="simple-summary-density">
 .flow-season-numbers{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding-top:15px;margin-top:15px;border-top:1px solid #e9eef5}.flow-season-numbers small{display:block;color:#8190a4;font-size:10px}.flow-season-numbers strong{display:block;color:#35577f;font-size:20px;font-family:var(--mono);margin-top:3px}
@@ -333,12 +332,190 @@ body:has(.sim-simple) .shell{max-width:800px;margin:0 auto;padding:0 24px}.sim-s
 @media(max-width:360px){.flow-season-numbers strong{font-size:18px}.journey-shell .result-top h2{font-size:20px}.journey-shell .result-top{padding:17px 13px}}
 </style>
 <style>.journey-shell .result-top .award-list{margin:9px 0 0;gap:4px}.journey-shell .result-top .award-chip{font-size:10px;padding:3px 6px}.journey-shell .flow-season-numbers{padding-top:12px;margin-top:12px}</style>
+<style id="bench-visual-r16">
+:root{
+ --bench-ink:#102343;
+ --bench-accent:#315fdb;
+ --bench-mint:#addfd0;
+ --bench-move:cubic-bezier(.22,.7,.24,1);
+}
+#app .main.fadein{animation:none}
+.home-compact .home-season{
+ position:relative;isolation:isolate;overflow:hidden;
+ color:#f5f8ff;background:#132947;border-color:#203b62;
+ box-shadow:0 12px 30px #192c4d1b;
+}
+.home-season::before{
+ content:"";position:absolute;z-index:-1;inset:0;
+ background:
+  linear-gradient(90deg,#102343 20%,#122949e8 48%,#10234330 100%),
+  linear-gradient(0deg,#102343e8,transparent 85%),
+  url("assets/stadium-day-v9.webp") right 53% / 75% auto no-repeat;
+}
+.home-season>.tag{background:#ffffff15;color:#e6eeff;border:1px solid #ffffff28}
+.home-season h2{color:#fff;max-width:90%;text-wrap:balance}
+.home-season .growth-facts>div{background:#ffffff13;border:1px solid #ffffff20}
+.home-season .growth-facts small,.home-season .home-wallet{color:#c3d2e9}
+.home-season .growth-facts strong{color:#fff}
+.home-season>.btn{background:#e9f1ff;color:#142c54}
+.home-season>.btn:hover{background:#fff;color:#142c54}
+.journey-shell .result-top{
+ --result-accent:#335ed8;--result-surface:#eef4ff;
+ position:relative;overflow:hidden;text-align:left;border:1px solid #dce5f3;
+ border-top:4px solid var(--result-accent);
+ background:linear-gradient(132deg,#fff 25%,var(--result-surface));
+}
+.journey-shell .result-top[data-season-tone="good"]{--result-accent:#19816e;--result-surface:#e9f7f2}
+.journey-shell .result-top[data-season-tone="absence"]{--result-accent:#73869b;--result-surface:#f1f5f8}
+.journey-shell .result-top h2{color:var(--bench-ink);text-wrap:balance}
+.journey-shell .result-top .big-ovr{animation:none;color:var(--result-accent);margin:8px 0 0}
+.journey-shell .result-top .big-ovr em{background:#ffffffb8;color:#344c67}
+.journey-shell .flow-season-numbers{text-align:center;gap:5px;border-color:#c9d7e77d}
+.flow-season-numbers>div{padding:6px 2px;border-radius:10px;background:#ffffffa8;min-width:0}
+.flow-season-numbers small{color:#536984}
+.flow-season-numbers strong{color:var(--bench-ink);font-variant-numeric:tabular-nums}
+.journey-shell .winter-event{
+ border-color:#dce5f3;border-inline-start:3px solid #5e83de;
+ background:linear-gradient(160deg,#f7faff,#fff 60%);
+}
+.journey-shell .winter-event .choice[aria-pressed="true"]{background:#e9f1ff;border-color:#80a1ef}
+.journey-shell .winter-wallet{padding-inline:2px}
+#app button.btn,#app .choice,#app .mobile-tab,#modal-root .btn{
+ transition:background-color .16s,border-color .16s,color .16s,opacity .16s;
+}
+#app button.btn:active:not(:disabled),#app .choice:active:not(:disabled),#modal-root .btn:active:not(:disabled){transform:scale(.986)}
+
+body:has(.sim-simple){background:#0d1d36;color:#f2f6ff}
+body:has(.sim-simple) .shell{max-width:900px}
+body:has(.sim-simple) .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
+.sim-simple{
+ background:transparent;color:#f2f6ff;padding:30px 0 24px;
+}
+body.mobile-sim .sim-simple{padding:22px 0 max(10px,env(safe-area-inset-bottom))}
+.season-sequence{margin-block:auto;min-width:0}
+.sim-simple .quiet-context{color:#c0d0e9;margin:0 0 16px;font-weight:700;overflow-wrap:anywhere}
+.season-stage{
+ display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.93fr);align-items:center;
+ gap:clamp(14px,4vw,44px);min-height:0;
+}
+.season-field{
+ --pan-x:0%;--pan-y:0%;--field-zoom:1.08;
+ position:relative;isolation:isolate;overflow:hidden;min-width:0;
+ aspect-ratio:1.18;border-radius:21px;border:1px solid #cde0ff36;
+ background:#284658;
+ box-shadow:0 12px 28px #0004;
+}
+.season-field img,.season-field-camera{
+ position:absolute;inset:0;width:100%;height:100%;
+}
+.season-field img{display:block;object-fit:cover;object-position:50% 55%}
+.season-field-camera{
+ transform:translate(var(--pan-x),var(--pan-y)) scale(var(--field-zoom));
+ transition:transform 1.2s var(--bench-move);
+}
+.season-field::after{
+ content:"";position:absolute;inset:0;pointer-events:none;
+ background:linear-gradient(180deg,#07162916 44%,#071629a6),linear-gradient(115deg,#0a21364d,transparent 57%);
+}
+.sim-simple[data-month="1"] .season-field{--pan-x:1.2%;--pan-y:-1%;--field-zoom:1.12}
+.sim-simple[data-month="2"] .season-field{--pan-x:-2%;--pan-y:-1.8%;--field-zoom:1.15}
+.sim-simple[data-month="3"] .season-field{--pan-x:-.6%;--pan-y:-2.2%;--field-zoom:1.17}
+.sim-simple[data-month="4"] .season-field{--pan-x:1.7%;--pan-y:-.5%;--field-zoom:1.15}
+.sim-simple[data-month="5"] .season-field{--pan-x:0%;--pan-y:0%;--field-zoom:1.08}
+.sim-simple[data-absence] .season-field img{filter:saturate(.57)}
+.season-caption{min-width:0}
+.sim-simple h1{
+ color:#f5f8ff;font-size:clamp(22px,3.8vw,35px);line-height:1.27;
+ letter-spacing:-.035em;margin:0 0 12px;word-break:keep-all;overflow-wrap:anywhere;
+}
+.sim-simple .quiet-update{min-height:3.5em;margin:0}
+.sim-simple .quiet-update p{color:#c0d0e9;font-size:clamp(12px,1.6vw,15px);line-height:1.6;word-break:keep-all;overflow-wrap:anywhere}
+.sim-simple .quiet-progress{margin:22px 0 10px}
+.sim-simple .progress{height:5px;background:#ffffff28}
+.sim-simple .progress i{
+ width:100%;background:var(--bench-mint);border-radius:inherit;transform:scaleX(0);
+ transform-origin:left;transition:transform .19s linear;
+}
+.sim-simple .quiet-progress-caption{color:#c0d0e9;font-variant-numeric:tabular-nums}
+.season-steps{
+ display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;
+ list-style:none;padding:0;margin:0 0 14px;font-size:10px;color:#aabeda;text-align:center;
+}
+.season-steps li{border-radius:5px;padding:4px 0;white-space:nowrap;min-width:0}
+.season-steps .past{color:#c7e3dc}
+.season-steps [aria-current="step"]{color:#122b43;background:#b5ded2;font-weight:800}
+.sim-simple .sim-card-foot .btn{
+ color:#e8effb;background:#ffffff12;border:1px solid #b7c9ec40;min-height:46px;
+}
+.sim-simple .sim-card-foot .btn:hover{background:#ffffff20;color:#fff}
+
+#modal-root .memory-reveal{
+ border-color:#eee6d9;background:linear-gradient(145deg,#fffaf1,#fff 45%);
+}
+#modal-root .memory-reveal .care-art{
+ max-width:min(100%,36dvh,320px);margin:10px auto 0;
+ border-radius:14px;box-shadow:0 0 0 4px #fff,0 0 0 5px #e8dfd0,0 9px 23px #4b3c2927;
+}
+#modal-root .memory-reveal .care-art>img,.afterlife-scene>.afterlife-illustration{animation:none}
+#modal-root .memory-reveal .care-art>img{
+ transform-origin:calc(100% / 6 + var(--care-col) * 100% / 3) calc(25% + var(--care-row) * 50%);
+}
+.memory-reveal .care-art.story-art-ready::after{
+ content:"";position:absolute;inset:0;pointer-events:none;
+ background:linear-gradient(113deg,transparent 27%,#fff 50%,transparent 73%);
+ opacity:0;
+}
+.memory-reveal .care-scene-copy{color:#293a53}
+#modal-root .memory-reveal .btn.full{background:#223d66;color:#fff}
+#modal-root .memory-reveal .btn.full:hover{background:#2d4d7a}
+@media(max-width:600px){
+ .season-stage{grid-template-columns:minmax(104px,.87fr) minmax(0,1.13fr);gap:14px}
+ .season-field{aspect-ratio:.87;border-radius:14px}
+ .sim-simple h1{font-size:clamp(17px,5.3vw,23px);margin-bottom:8px}
+ .sim-simple .quiet-progress{margin-top:19px}
+ .home-season::before{background-size:auto,auto,79% auto}
+}
+@media(max-height:700px){
+ #modal-root .memory-reveal .care-art{max-width:min(100%,30dvh,300px)}
+}
+@media(max-height:600px){
+ body.mobile-sim .sim-simple{padding-top:16px}
+ .sim-simple .quiet-context{margin-bottom:11px}
+ .season-stage .season-field{max-height:35dvh}
+ .sim-simple .quiet-progress{margin-top:15px}
+ .season-steps{margin-bottom:9px}
+}
+@media(prefers-reduced-motion:no-preference){
+ .main[data-view-entry] .home-season,.main[data-view-entry] .winter-event,
+ .main[data-view-entry] .result-top,.sim-simple .season-stage{
+  animation:bench-enter .31s var(--bench-move);
+ }
+ .main[data-view-entry] .flow-season-numbers>div{
+  animation:bench-enter .3s var(--bench-move) backwards;
+ }
+ .flow-season-numbers>div:nth-child(2){animation-delay:.035s}
+ .flow-season-numbers>div:nth-child(3){animation-delay:.07s}
+ .flow-season-numbers>div:nth-child(4){animation-delay:.105s}
+ #modal-root .memory-reveal{animation:bench-enter .28s var(--bench-move)}
+ #modal-root .memory-reveal .story-art-ready>img,.afterlife-scene.story-art-ready>.afterlife-illustration{
+  animation:bench-photo-in .69s var(--bench-move);
+ }
+ .memory-reveal .care-art.story-art-ready::after{animation:bench-photo-light .68s ease-out}
+}
+@media(prefers-reduced-motion:reduce){
+ .season-field-camera,.sim-simple .progress i,#app button.btn,#modal-root .btn{transition:none}
+ #app button.btn:active,#app .choice:active,#modal-root .btn:active{transform:none}
+}
+@keyframes bench-enter{from{opacity:.76;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bench-photo-in{from{opacity:.9;transform:scale(1.038)}to{opacity:1;transform:scale(1)}}
+@keyframes bench-photo-light{0%{opacity:0;transform:translateX(-74%)}30%{opacity:.18}100%{opacity:0;transform:translateX(80%)}}
+</style>
 </head>
 <body>
 <header class="top"><button class="brand" data-action="home" aria-label="벤치에서 전당까지 홈"><span class="brandmark"><svg viewBox="0 0 32 32" width="25" height="25" fill="none" aria-hidden="true"><circle cx="16" cy="16" r="11" stroke="currentColor" stroke-width="1.8"/><path d="M9 6c8 5 8 15 0 20M23 6c-8 5-8 15 0 20M9 10l4-1M10 14l4-1M10 18l4 1M9 22l4 1M23 10l-4-1M22 14l-4-1M22 18l-4 1M23 22l-4 1" stroke="currentColor" stroke-width="1.4"/></svg></span><span>벤치에서 전당까지<span class="brand-sub">FROM BENCH TO LEGEND</span></span></button><nav class="topnav" aria-label="주 메뉴"><button class="navbtn active" data-action="home">나의 커리어</button><button class="navbtn" data-action="history">시즌 기록실</button><button class="navbtn" data-action="hall">명예의 전당</button></nav><div class="top-actions"><a class="hub-link" href="../" aria-label="JP Math Lab 게임 목록으로">JP Math Lab · 게임으로 <span aria-hidden="true">←</span></a><span class="pill"><span class="dot"></span> LOCAL PLAY</span><button class="iconbtn shelf-button" data-action="roster" aria-label="선수 보관함"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 6h7l2 3h9v12H3zM3 6V3h6l2 3h10v3"/></svg></button><button class="iconbtn" data-action="settings" aria-label="저장 및 설정"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3" fill="#191f19"/><circle cx="16" cy="17" r="3" fill="#191f19"/></svg></button></div></header>
-<div id="storage-alert" role="status"></div><div id="app"></div>
-<footer class="footer"><p>⚾ 비공식 팬 게임 · 구단·대회·선수 명칭의 권리는 각 권리자에게 있습니다.<br>모든 경기, 계약, 기사, 팬 반응 및 선수 유사도는 게임 속 가상 결과입니다. 광고·회원가입 없이 이 브라우저에 저장됩니다. 공개 닉네임으로 요약 기록이 자동 등록됩니다. 보관함·설정에서 끌 수 있습니다.</p><b>CAREER SIM / VOL. 02 · BUILD 2026.11.06-R15.0</b></footer>
-<div id="modal-root"></div><div id="toast-root" aria-live="polite"></div><input type="file" id="import-file" accept=".json,application/json" hidden>
+<div id="storage-alert" role="status"></div><div id="app" data-jp-kinetic-own></div>
+<footer class="footer"><p>⚾ 비공식 팬 게임 · 구단·대회·선수 명칭의 권리는 각 권리자에게 있습니다.<br>모든 경기, 계약, 기사, 팬 반응 및 선수 유사도는 게임 속 가상 결과입니다. 광고·회원가입 없이 이 브라우저에 저장됩니다. 공개 닉네임으로 요약 기록이 자동 등록됩니다. 보관함·설정에서 끌 수 있습니다.</p><b>CAREER SIM / VOL. 02 · BUILD 2026.11.16-R16.0</b></footer>
+<div id="modal-root" data-jp-kinetic-own></div><div id="toast-root" aria-live="polite"></div><input type="file" id="import-file" accept=".json,application/json" hidden>
 <script>
 'use strict';
 (() => {
@@ -1209,6 +1386,7 @@ let mobilePageWidth=matchMedia('(max-width:1023px)').matches;
 window.addEventListener('resize',()=>{const phone=matchMedia('(max-width:1023px)').matches;if(phone!==mobilePageWidth){mobilePageWidth=phone;if(state.player&&state.phase!=='setup')render()}else mobilePageSession?.refresh()});
 window.visualViewport?.addEventListener('resize',()=>mobilePageSession?.refresh());
 
+let lastCareerView='';
 function render(){
  clearInterval(simTimer);simTimer=null;document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.action===ui.tab));let html='';
  if(state.phase==='setup'&&ui.tab==='home')html=setupScreen();else{
@@ -1216,7 +1394,14 @@ function render(){
   const content=ui.tab==='roster'?rosterScreen():ui.tab==='hall'?hallScreen():ui.tab==='online'?onlineScreen():ui.tab==='history'?historyScreen():ui.tab==='reactions'?reactionsScreen():ui.tab==='player'?playerScreen():ui.tab==='season'&&p?stage():p?dashboard():hallScreen();
   const focused=ui.tab==='season';html=`<div class="shell ${focused?'journey-shell':''}">${p?sidebar(p):`<aside class="sidebar"><div class="card"><h2>나의 야구 인생</h2><button class="btn full" data-action="home">커리어 시작</button></div></aside>`}<main class="main fadein">${p&&!focused&&ui.tab!=='roster'?mobileProfile(p):''}${p&&!focused&&ui.tab!=='roster'?financeBar(p):''}${p&&!focused&&ui.tab!=='roster'?nationalInviteBanner(p):''}${content}</main></div>${mobileTabs()}`;
  }
- $('#app').innerHTML=html;mountMobilePages();if(state.phase==='sim'&&ui.tab==='season')startProgress();
+ $('#app').innerHTML=html;
+ mountMobilePages();
+ const view=[state.player?.id,state.phase,ui.tab].join(':');
+ if(view!==lastCareerView)$('.main')?.setAttribute('data-view-entry','');
+ lastCareerView=view;
+ const portrait=$('.afterlife-illustration');
+ if(portrait?.complete)markStoryArtReady(portrait);
+ if(state.phase==='sim'&&ui.tab==='season')startProgress();
 }
 function setupScreen(){const titles=['당신의 루키를 골라주세요.','어떤 선수가 될까요?','나만의 무기를 고르세요.','어디에 더 집중할까요?'];let body='';if(ui.step===1){body=`<div class="avatar-preview">${avatar(ui.avatar)}<div><strong>${e(DATA.avatars[ui.avatar])}</strong><p class="muted small">당신의 야구에, 나다운 얼굴.</p><span class="tag" style="margin-top:6px">24종 야구 선수 일러스트</span></div></div><div class="avatar-grid" role="group" aria-label="아바타 선택">${DATA.avatars.map((n,i)=>`<button class="avatar-option ${ui.avatar===i?'selected':''}" data-action="avatar" data-value="${i}" aria-label="${e(n)}" aria-pressed="${ui.avatar===i}">${avatar(i)}</button>`).join('')}</div>`}
 else if(ui.step===2){body=`<div class="formgrid"><div class="span2"><label class="fieldlabel" for="player-name">선수 이름 <span style="color:var(--green)">*</span></label><input id="player-name" name="player-name" maxlength="16" value="${e(ui.name)}" placeholder="전광판에 새겨질 이름" autocomplete="off" required></div><div><label class="fieldlabel" for="hand">투타</label><select id="hand">${['우투우타','우투좌타','좌투좌타','좌투우타','우투양타'].map(n=>`<option ${n===ui.hand?'selected':''}>${n}</option>`).join('')}</select></div><div><label class="fieldlabel" for="nation">대표팀 국적</label><select id="nation">${['대한민국','일본','미국','대만','도미니카공화국','기타'].map(n=>`<option ${n===ui.nation?'selected':''}>${n}</option>`).join('')}</select></div><div><label class="fieldlabel" for="jersey">나의 등번호</label><input id="jersey" type="number" inputmode="numeric" min="1" max="99" step="1" value="${ui.jersey??17}" required></div><div class="span2"><label class="fieldlabel" for="school">출신 고등학교</label><input id="school" maxlength="30" value="${e(ui.school)}" placeholder="드림고등학교" autocomplete="off"></div><div class="span2"><label class="fieldlabel">커리어 포지션 <span class="muted tiny">· 시작 후 유지됩니다</span></label><div class="position-options">${['pitcher','batter','twoWay'].map(t=>`<button class="position-option ${(ui.twoWay?'twoWay':ui.type)===t?'active':''}" data-action="type" data-value="${t}" aria-pressed="${(ui.twoWay?'twoWay':ui.type)===t}"><span style="font-size:23px">${DATA.positions[t].icon}</span><b>${DATA.positions[t].label}</b><small>${t==='twoWay'?'오타니처럼, 타석과 마운드 모두':t==='pitcher'?'마운드 위, 승부의 시작':'타석에서, 흐름을 바꾸다'}</small></button>`).join('')}</div></div>${setupPositionFields()}<p class="tiny muted span2">모든 선수는 한국 고교에서 시작합니다. 국적은 대표팀·대한민국 병역에만 영향을 줍니다. 능력치·잠재력 보너스는 없습니다.</p></div>`}
@@ -1285,9 +1470,72 @@ function nationalInviteBanner(p){const offers=pendingNationalOffers(p);if(!offer
 function openNationalInvitations(){const offers=pendingNationalOffers(state.player);if(!offers.length){closeModal();return}modal(`<div class="between"><span class="tag">국가대표 소집 · ${offers.length}건</span><button class="iconbtn" data-action="close-modal" aria-label="소집 제안 닫기">${icon('close')}</button></div><h2>${state.player.nation==='대한민국'?'태극마크를 달까요?':e(state.player.nation)+' 대표팀에 합류할까요?'}</h2><p class="small muted">참가하면 명성과 피로가 함께 쌓여요. 각 대회의 참가 여부를 직접 선택해 주세요.</p>${offers.map(c=>`<div class="invite-row"><div><strong>${e(c.name)}</strong><p>${c.year} 대표팀 소집</p></div><div class="invite-actions"><button class="btn smallbtn" data-action="national-choice" data-value="${c.id}:join">대표팀 합류</button><button class="btn secondary smallbtn" data-action="national-choice" data-value="${c.id}:club">소속팀 집중</button></div></div>`).join('')}<p class="tiny muted">모든 소집에 답한 뒤 다음 시즌으로 넘어가요.</p>`);$('.modal').classList.add('national-dialog')}
 function clubAccessGuide(p){return `<details class="club-access-guide"><summary>응원단은 언제 만날 수 있나요?</summary><p>남성 아바타 · 21세 이상 · KBO 프로 · 비시즌에 구단 라운지가 열려요. 복무 중이거나 입대 예정이면 복귀 뒤에 만나요.</p><p>${e(clubLifeReason(p)|| (state.phase==='offseason'?'지금 라운지에서 이야기를 시작할 수 있어요.':'이번 시즌을 마치고 비시즌에 만나요.'))}</p><button class="btn secondary smallbtn" data-action="club-lounge">라운지 안내 보기</button></details>`}
 
-function simScreen(){const p=state.player;return `<section class="sim-card sim-simple" aria-label="시즌 진행"><p class="quiet-context">${DATA.startYear+p.season-1} 시즌 · ${e(p.team)}</p><div class="season-pulse" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="22" stroke="currentColor" stroke-width="1.5"/><path d="M18 15c16 9 16 25 0 34M46 15c-16 9-16 25 0 34M20 22l6-2M22 29l6-1M22 36l6 1M20 43l6 2M44 22l-6-2M42 29l-6-1M42 36l-6 1M44 43l-6 2" stroke="currentColor" stroke-width="1.5"/></svg></div><h1 id="sim-label">첫 출전을 준비해요</h1><span id="sim-board" hidden></span><div id="ticker" class="quiet-update" aria-live="polite"></div><div class="quiet-progress"><div id="sim-progress-track" class="progress" role="progressbar" aria-label="시즌 진행" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="sim-progress" style="width:0%"></i></div><div class="quiet-progress-caption"><span id="sim-month">3월 / 개막</span><span id="sim-percent">0%</span></div></div><div class="sim-card-foot"><button class="btn secondary full" data-action="skip">결과로 건너뛰기 ${icon('arrow',14)}</button></div></section>`}
-
-function startProgress(){const p=state.player,r=state.pending.record;const lines=p.type==='batter'?['첫 타석, 긴장 속에서 배트를 고쳐 잡았다.',r.stats.h?'시즌 첫 안타! 더그아웃에서 박수가 터진다.':'좋은 공을 기다리며 선구안을 다듬는다.',r.stats.hr?'시즌 첫 홈런! 타구가 담장을 넘어간다.':'끈질긴 타석, 팀의 찬스를 이어간다.','뜨거운 여름, 끝까지 다음 베이스를 향해.',r.stats.sb?'과감한 스타트! 도루로 기회를 만든다.':'기본기에 집중하며 한 경기를 더 버틴다.','마지막 경기. 한 시즌이 기록으로 남는다.']:['개막, 불펜에서 첫 공을 뿌린다.','첫 탈삼진! 포수와 눈을 맞춘다.','위기에서 잡아낸 삼진, 마운드가 뜨거워진다.','한여름의 마운드, 내 페이스를 지켜낸다.',p.role==='closer'?'9회 마지막 아웃을 잡아냈다.':'이닝을 마치며 벤치의 박수를 받는다.','마지막 투구. 긴 시즌을 마무리한다.'];if(isTwoWay(p)){lines[1]=r.pitchingAbsence?'투구 재활을 이어가며 타석에 선다.':`타석과 마운드의 하루 · ${r.stats.hr}홈런과 ${r.pitching.k}K를 향해.`;lines[4]=`${r.pitching.w}승 · ${r.pitching.ip}이닝, 두 번째 기록지도 쌓여간다.`}if(r.absence)lines.splice(0,6,...['회복과 일상의 루틴을 시작한다.','단계별 재활에 집중한다.','동료들의 응원이 도착했다.','복귀를 서두르지 않고 몸을 점검한다.','다시 그라운드를 향한 시간을 쌓는다.','공백 시즌을 마치고 다음 선택을 준비한다.']);else if(r.injury)lines[3]=`🚑 ${r.injury.name} · ${r.injury.months}개월 이탈`;let last=-1;function tick(){if(state.phase!=='sim')return;const progress=clamp((Date.now()-state.simStart)/36000,0,1),month=Math.min(5,Math.floor(progress*6));if(progress>=1){finishSeason();return}$('#sim-progress').style.width=`${progress*100}%`;$('#sim-progress-track').setAttribute('aria-valuenow',String(Math.round(progress*100)));$('#sim-percent').textContent=`${Math.round(progress*100)}%`;if(month!==last){last=month;$('.sim-card').dataset.month=String(month);document.querySelectorAll('.sim-months [data-step]').forEach((el,i)=>{el.classList.toggle('current',i===month);el.classList.toggle('past',i<month);el.setAttribute('aria-current',i===month?'step':'false')});if($('.film-frame'))$('.film-frame').textContent=String(month+1).padStart(2,'0')+' / 06';if(r.injury&&month>=3&&$('.season-film')){$('.season-film').dataset.rest='true';$('#sim-film-caption').textContent='회복을 준비하는 시간'}$('#sim-month').textContent=`${DATA.months[month]} / ${['개막','기회','도전','경쟁','승부','마무리'][month]}`;$('#sim-label').textContent=(r.absence?['회복 루틴을 시작해요','차근차근 몸을 깨워요','응원을 힘으로 바꿔요','몸 상태를 점검해요','복귀를 준비해요','다음 시즌을 기다려요']:['첫 출전을 준비해요','그라운드에 적응해요','나만의 야구를 찾아요','한 뼘 더 성장해요','끝까지 집중해요','한 시즌을 마무리해요'])[month];$('#sim-board').textContent=month===0?(r.absence?'RETURN ROUTINE':'PLAY BALL'):`${DATA.months[month]} · ${String(month+1).padStart(2,'0')} / 06`;$('#ticker').innerHTML=lines.slice(Math.max(0,month-2),month+1).map((l,i)=>({l,index:Math.max(0,month-2)+i})).reverse().map(({l,index})=>`<p><time>${DATA.months[index]}</time>${e(l)}</p>`).join('')}}tick();if(state.phase==='sim')simTimer=setInterval(tick,180)}
+function simScreen(){
+ const p=state.player,record=state.pending.record;
+ return `<section class="sim-card sim-simple" aria-label="시즌 진행" ${record.absence?'data-absence':''}>
+ <div class="season-sequence">
+  <p class="quiet-context">${DATA.startYear+p.season-1} 시즌 · ${e(p.team)}</p>
+  <div class="season-stage">
+   <div class="season-field" aria-hidden="true">
+    <div class="season-field-camera"><img src="assets/stadium-day-v9.webp" alt="" width="1024" height="1536" decoding="async"></div>
+   </div>
+   <div class="season-caption">
+    <h1 id="sim-label">첫 출전을 준비해요</h1>
+    <div id="ticker" class="quiet-update" aria-live="polite" aria-atomic="true"><p></p></div>
+   </div>
+  </div>
+  <div class="quiet-progress">
+   <div id="sim-progress-track" class="progress" role="progressbar" aria-label="시즌 진행" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="sim-progress"></i></div>
+   <div class="quiet-progress-caption"><span id="sim-month">3월 / 개막</span><span id="sim-percent">0%</span></div>
+  </div>
+  <ol class="season-steps" aria-label="시즌 일정">${DATA.months.map(month=>`<li>${month}</li>`).join('')}</ol>
+ </div>
+  <div class="sim-card-foot"><button class="btn secondary full" data-action="skip">결과로 건너뛰기 ${icon('arrow',14)}</button></div>
+ </section>`;
+}
+function startProgress(){
+ const p=state.player,r=state.pending.record;
+ const lines=p.type==='batter'?['첫 타석, 긴장 속에서 배트를 고쳐 잡았다.',r.stats.h?'시즌 첫 안타! 더그아웃에서 박수가 터진다.':'좋은 공을 기다리며 선구안을 다듬는다.',r.stats.hr?'시즌 첫 홈런! 타구가 담장을 넘어간다.':'끈질긴 타석, 팀의 찬스를 이어간다.','뜨거운 여름, 끝까지 다음 베이스를 향해.',r.stats.sb?'과감한 스타트! 도루로 기회를 만든다.':'기본기에 집중하며 한 경기를 더 버틴다.','마지막 경기. 한 시즌이 기록으로 남는다.']:['개막, 불펜에서 첫 공을 뿌린다.','첫 탈삼진! 포수와 눈을 맞춘다.','위기에서 잡아낸 삼진, 마운드가 뜨거워진다.','한여름의 마운드, 내 페이스를 지켜낸다.',p.role==='closer'?'9회 마지막 아웃을 잡아냈다.':'이닝을 마치며 벤치의 박수를 받는다.','마지막 투구. 긴 시즌을 마무리한다.'];
+ if(isTwoWay(p)){lines[1]=r.pitchingAbsence?'투구 재활을 이어가며 타석에 선다.':`타석과 마운드의 하루 · ${r.stats.hr}홈런과 ${r.pitching.k}K를 향해.`;lines[4]=`${r.pitching.w}승 · ${r.pitching.ip}이닝, 두 번째 기록지도 쌓여간다.`}
+ if(r.absence)lines.splice(0,6,...['회복과 일상의 루틴을 시작한다.','단계별 재활에 집중한다.','동료들의 응원이 도착했다.','복귀를 서두르지 않고 몸을 점검한다.','다시 그라운드를 향한 시간을 쌓는다.','공백 시즌을 마치고 다음 선택을 준비한다.']);else if(r.injury)lines[3]=`🚑 ${r.injury.name} · ${r.injury.months}개월 이탈`;
+ const card=$('.sim-simple'),label=$('#sim-label'),ticker=$('#ticker p'),progressBar=$('#sim-progress'),
+       track=$('#sim-progress-track'),percent=$('#sim-percent'),monthLabel=$('#sim-month'),
+       steps=card.querySelectorAll('.season-steps li'),caption=card.querySelector('.season-caption'),
+       reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
+ const stages=['개막','기회','도전','경쟁','승부','마무리'];
+ const headings=r.absence
+  ? ['회복 루틴을 시작해요','차근차근 몸을 깨워요','응원을 힘으로 바꿔요','몸 상태를 점검해요','복귀를 준비해요','다음 시즌을 기다려요']
+  : ['첫 출전을 준비해요','그라운드에 적응해요','나만의 야구를 찾아요','한 뼘 더 성장해요','끝까지 집중해요','한 시즌을 마무리해요'];
+ let lastMonth=-1;
+ function tick(){
+  if(state.phase!=='sim'||!card.isConnected)return;
+  const progress=clamp((Date.now()-state.simStart)/36000,0,1);
+  if(progress>=1){finishSeason();return}
+  const value=String(Math.round(progress*100));
+  progressBar.style.transform=`scaleX(${progress})`;
+  track.setAttribute('aria-valuenow',value);
+  percent.textContent=value+'%';
+  const month=Math.min(5,Math.floor(progress*6));
+  if(month===lastMonth)return;
+  const initial=lastMonth===-1;
+  lastMonth=month;
+  card.dataset.month=String(month);
+  steps.forEach((step,index)=>{
+   step.classList.toggle('past',index<month);
+   if(index===month)step.setAttribute('aria-current','step');
+   else step.removeAttribute('aria-current');
+  });
+  monthLabel.textContent=`${DATA.months[month]} / ${stages[month]}`;
+  label.textContent=headings[month];
+  ticker.textContent=lines[month];
+  if(!initial&&!reducedMotion.matches)caption.animate?.(
+   [{opacity:.72,transform:'translateY(4px)'},{opacity:1,transform:'translateY(0)'}],
+   {duration:260,easing:'cubic-bezier(.22,.7,.24,1)'}
+  );
+ }
+ tick();
+ if(state.phase==='sim')simTimer=setInterval(tick,180);
+}
 function finishSeason(){if(state.phase!=='sim'||!state.pending)return;clearInterval(simTimer);state.player=state.pending.player;state.pending=null;state.phase='result';ui.resultPane='summary';ui.tab='season';save();render();window.scrollTo({top:0,behavior:'instant'})}
 function nameParticle(name){const n=name.charCodeAt(name.length-1)-0xAC00;return n>=0&&n<=11171&&n%28?'이':'가'}
 function legacyResultScreen(){const p=state.player,r=p.history.at(-1),gain=r.ovr-r.beforeOVR;return `${header('시즌 리포트',`${r.year} · ${e(r.team)} · ${r.age}세`, `<span class="season-date">SEASON ${String(r.season).padStart(2,'0')}</span>`)}<div class="stack"><section class="card result-top"><div class="result-medal">${r.awards.length?'🏆':r.tone==='good'?'✨':'⚾'}</div><div class="eyebrow" style="margin-top:16px">${r.tone==='good'?'A SEASON TO REMEMBER':'ONE MORE CHAPTER'}</div><h2>${r.absence?'다시 그라운드를 기다리며.':r.tone==='good'?'가능성이, 기록이 됐다.':r.tone==='bad'?'성장통도 커리어의 일부.':'또 하나의 시즌을 남겼다.'}</h2><p class="small muted">${e(r.teamResult)} · ${e(r.division)}</p><div class="big-ovr"><span>${r.beforeOVR} →</span> ${displayNumber(r.ovr)}<em>${gain>=0?'+':''}${gain} OVR</em></div>${r.awards.length?`<div class="award-list" style="justify-content:center">${r.awards.map(a=>`<span class="award-chip">🏅 ${e(a)}</span>`).join('')}</div>`:''}</section><section class="card"><div class="between" style="margin-bottom:16px"><h3>이번 시즌의 숫자</h3><span class="tag">${e(r.division)}</span></div>${recordCells(p,r.stats,r.pitching)}<details><summary>원기록 자세히 보기</summary><p class="small muted" style="margin-top:13px">${p.type==='batter'?`타석 ${battingPA(r.stats)} · 타수 ${r.stats.ab}${r.stats.so!==undefined?` · 삼진 ${r.stats.so}`:''} · 안타 ${r.stats.h} · 2루타 ${r.stats.double} · 3루타 ${r.stats.triple} · 볼넷 ${r.stats.bb} · 사구 ${r.stats.hbp} · 희생플라이 ${r.stats.sf}`:`투구 아웃 ${r.stats.outs} · 자책점 ${r.stats.er} · 피안타 ${r.stats.ha} · 볼넷 ${r.stats.bba}`}${isTwoWay(p)?`<br>투구 아웃 ${r.pitching.outs} · 자책점 ${r.pitching.er} · 피안타 ${r.pitching.ha} · 볼넷 ${r.pitching.bba}`:''}<br>성적은 원기록에서 계산합니다. 고교·대학·프로 기록은 기록실에서 구분됩니다.</p></details></section><div class="grid2"><section class="card"><div class="sectiontitle">${icon('chart')} 성장 리포트</div>${statsBars(p,r.before)}${r.notes.map(n=>`<p class="tiny muted" style="margin-top:12px">${e(n)}</p>`).join('')}</section><section class="card"><div class="sectiontitle">${icon('flag')} 시즌의 순간</div><div class="timeline">${r.moments.map((m,i)=>`<div class="timeline-item"><time>HIGHLIGHT 0${i+1}</time><p>${e(m)}</p></div>`).join('')}</div></section></div>${r.competition.length?`<section class="card"><h3>고교 대회 결과</h3><div class="tablewrap"><table><thead><tr><th>전국 고교야구</th><th>팀 성적</th></tr></thead><tbody>${r.competition.map(c=>`<tr><td>${e(c.name)}</td><td style="color:${c.result==='우승'?'var(--gold)':'var(--text)'}">${e(c.result)}</td></tr>`).join('')}</tbody></table></div></section>`:''}${mediaReaction(p,r)}<button class="btn full" data-action="offseason">비시즌으로 · 다음 선택하기 ${icon('arrow')}</button></div>`}
@@ -1318,7 +1566,7 @@ function clubShortcut(){closeModal();if(!state.player)return;if(state.phase==='o
 function openClubMember(id){const p=state.player,info=clubMember(id);if(!info||p.age<21||DATA.careWomen.includes(p.avatar))return;const m=info.member,stats=clubStats(p,id),memories=clubMemoryRows(p,id),latest=memories.at(-1),reason=clubLifeReason(p),used=(p.clubLife?.history||[]).filter(r=>r.season===p.season).length,disabled=state.phase!=='offseason'||reason||stats.lastSeason===p.season||used>=2;modal(`<div class="between"><span class="eyebrow">${e(info.club.team)}</span><button class="iconbtn" data-action="close-modal" aria-label="인물 이야기 닫기">${icon('close')}</button></div><h2>${e(m.name)} <small>${e(m.tag)}</small></h2>${clubPicture(p,id,latest?.look||(stats.memory?'outing':'portrait'))}<p class="club-quote">“${e(m.lines[Math.min(2,stats.meetings)])}”</p><p class="tiny muted">${clubBondLabel(stats.trust)} · 만남 ${stats.meetings}회 · 좋아하는 시간: ${e(DATA.clubActivities[m.favorite].name)}</p><p class="tiny muted">호감도 ${stats.trust} / 100 · 70: 여름 나들이 화보 · 90: 기념 화보<br>조건을 채운 뒤 좋아하는 활동으로 다시 만나면 새 모습이 남아요.</p>${memories.length?`<details><summary>함께 남긴 모습 ${memories.length}종</summary>${memories.map(row=>`<button class="club-memory-link" data-action="club-memory" data-value="${p.clubLife.history.indexOf(row)}">${e(clubLookTitle(row.look||row.scene))} · ${row.year} ›</button>`).join('')}</details>`:''}<div class="club-activities">${clubChoices(id).map(key=>{const a=DATA.clubActivities[key],hurt=key==='sport'&&(p.health?.injury||p.health?.rehabSeason>=p.season);return `<button class="btn secondary full" data-action="club-activity" data-value="${id}:${key}" ${disabled||p.bank<a.price||hurt?'disabled':''}>${e(a.name)} · ${cashMoney(a.price)}원${key===m.favorite?' ♡':''}</button>`}).join('')}</div><p class="tiny muted">${stats.lastSeason===p.season?'이번 겨울에는 이미 만났어요. 다음 겨울을 기다려요.':used>=2?'이번 겨울 나들이 2회를 모두 보냈어요.':reason?e(reason):state.phase!=='offseason'?'비시즌에 나들이 약속을 잡을 수 있어요.':'함께 보내는 시간과 대화로 조금씩 가까워져요.'}</p>`);$('.modal').classList.add('club-dialog')}
 function previewClubOuting(value){const [id,activity]=value.split(':'),p=state.player,info=clubMember(id),a=DATA.clubActivities[activity];if(!info||!a||!clubChoices(id).includes(activity)||state.phase!=='offseason'||clubLifeReason(p)||clubStats(p,id).lastSeason===p.season||(p.clubLife?.history||[]).filter(r=>r.season===p.season).length>=2||p.bank<a.price)return;modal(`<h2>${e(info.member.name)}와 ${e(a.name)}</h2><p class="small muted">오늘의 장소와 식사·문화 활동에 쓰는 나들이 예산이에요.</p><div class="wallet-numbers"><div><small>오늘의 예산</small><b>${cashMoney(a.price)}원</b></div><div><small>다녀온 뒤 내 돈</small><b>${cashMoney(p.bank-a.price)}원</b></div></div><div class="modal-grid"><button class="btn" data-action="club-outing-confirm" data-value="${id}:${activity}">이 약속으로 다녀오기</button><button class="btn secondary" data-action="club-member" data-value="${id}">다른 시간 고르기</button></div>`)}
 function confirmClubOuting(value){if(state.phase!=='offseason')return;const [id,activity]=value.split(':'),before=clone(state.player);if(!meetClubCharacter(state.player,id,activity)){toast('이번 겨울의 일정과 잔액을 확인해 주세요.');return}if(!save()){state.player=before;render();return}render();showClubMemory(state.player.clubLife.history.length-1,true)}
-function showClubMemory(index,fresh=false){const p=state.player,row=p.clubLife?.history[Number(index)];if(!row)return;const info=clubMember(row.npc),stats=clubStats(p,row.npc),count=p.clubLife.history.slice(0,Number(index)+1).filter(r=>r.npc===row.npc).length,m=info.member;modal(`<div class="between"><span class="eyebrow">${fresh?'A DAY TO REMEMBER':'OUR STORY'}</span><button class="iconbtn" data-action="close-modal" aria-label="나들이 추억 닫기">${icon('close')}</button></div><h2>${e(m.name)}와 보낸 하루</h2><p class="tiny muted">${row.year} 겨울 · ${e(info.club.team)} · ${e(DATA.clubActivities[row.activity].name)}<br>${e(clubLookTitle(row.look||row.scene))}</p>${clubPicture(p,row.npc,row.look||row.scene)}<p class="club-quote">“${e(m.lines[Math.min(2,count)])}”</p><p class="small muted">${row.look==='celebration'?'서로를 응원해 온 시간을 특별한 날의 기념 화보로 남겼다.':row.look==='summer'?'서로 편안해진 여름 나들이. 유니폼 밖의 새로운 모습도 추억이 됐다.':row.activity===m.favorite?'좋아하는 시간을 함께 보내며 대화가 한결 편해졌다.':'서로 다른 취향을 알게 된 하루. 이야기를 나누며 천천히 가까워졌다.'}</p><p class="tiny muted">그날의 사이: ${clubBondLabel(row.trust)} · 나들이 ${cashMoney(row.price)}원<br>현재까지 만남 ${stats.meetings}회</p><button class="btn full" data-action="close-modal">추억을 남기고 계속하기</button>`);$('.modal').classList.add('club-dialog')}
+function showClubMemory(index,fresh=false){const p=state.player,row=p.clubLife?.history[Number(index)];if(!row)return;const info=clubMember(row.npc),stats=clubStats(p,row.npc),count=p.clubLife.history.slice(0,Number(index)+1).filter(r=>r.npc===row.npc).length,m=info.member;modal(`<div class="between"><span class="eyebrow">${fresh?'새 추억':'추억 앨범'}</span><button class="iconbtn" data-action="close-modal" aria-label="나들이 추억 닫기">${icon('close')}</button></div><h2>${e(m.name)}와 보낸 하루</h2><p class="tiny muted">${row.year} 겨울 · ${e(info.club.team)} · ${e(DATA.clubActivities[row.activity].name)}<br>${e(clubLookTitle(row.look||row.scene))}</p>${clubPicture(p,row.npc,row.look||row.scene)}<p class="club-quote">“${e(m.lines[Math.min(2,count)])}”</p><p class="small muted">${row.look==='celebration'?'서로를 응원해 온 시간을 특별한 날의 기념 화보로 남겼다.':row.look==='summer'?'서로 편안해진 여름 나들이. 유니폼 밖의 새로운 모습도 추억이 됐다.':row.activity===m.favorite?'좋아하는 시간을 함께 보내며 대화가 한결 편해졌다.':'서로 다른 취향을 알게 된 하루. 이야기를 나누며 천천히 가까워졌다.'}</p><p class="tiny muted">그날의 사이: ${clubBondLabel(row.trust)} · 나들이 ${cashMoney(row.price)}원<br>현재까지 만남 ${stats.meetings}회</p><button class="btn full" data-action="close-modal">추억을 남기고 계속하기</button>`,'club-dialog memory-reveal')}
 document.addEventListener('change',event=>{if(!event.target.matches('[data-club-team]'))return;ui.clubTeam=event.target.value;const inModal=!!$('.modal .club-life');if(inModal)clubShortcut();else render()});
 
 function cashMoney(value){return money(value)}
@@ -1338,7 +1586,7 @@ function confirmBreakthrough(){if(state.phase!=='offseason')return;const before=
 
 function careSceneMeta(row){return DATA.careScenes.find(s=>s.id===row.moment?.scene)||{id:'routine',icon:'⚾',title:'팀과 함께하는 회복 루틴',line:'트레이닝복을 입고 스트레칭과 휴식을 챙겼다. 다음 시즌을 위한 차분한 하루.',after:'야구에 집중하는 평범한 하루도, 소중한 추억.'}}
 function carePicture(p,row){const info=careArtInfo(p,row),meta=careSceneMeta(row);return info?`<figure class="care-art" style="--care-col:${info.column};--care-row:${info.row}"><div class="care-image-fallback">${avatar(p.avatar)}<span>이 장면을 불러오지 못했어요.<br>연결 후 앨범에서 다시 열어 주세요.</span></div><img src="${info.file}" alt="${e(DATA.avatars[p.avatar])}의 ${e(meta.title)} · 성인 선수의 케어·훈련 일러스트" decoding="async"></figure>`:`<div class="care-routine">${avatar(p.avatar)}<span>RECOVERY DAY</span><p>오늘도, 내일의 야구를 준비한다.</p></div>`}
-function showCareMoment(reference,fresh=false){const [season,item]=String(reference).split(':'),p=state.player,row=careMoments(p).find(r=>r.season===Number(season)&&(!item||r.id===item));if(!row)return;const meta=careSceneMeta(row);modal(`<div class="between"><span class="eyebrow">${fresh?'NEW MEMORY':'MY OFFSEASON'}</span><button class="iconbtn" data-action="close-modal" aria-label="특별 장면 닫기">${icon('close')}</button></div><div class="care-scene-title"><h2>${meta.icon} ${e(meta.title)}</h2><p class="tiny muted">${row.year} 겨울 · ${row.moment.age}세 · ${e(DATA.items.find(i=>i.id===row.id).name)}</p></div>${carePicture(p,row)}<p class="care-scene-copy">${e(meta.line)}</p><p class="tiny muted">${e(meta.after)}</p><button class="btn full" data-action="close-modal">${fresh?'앨범에 남기고 계속하기':'닫기'}</button><p class="tiny muted care-caption">구매 효과는 기존 일정대로 적용됩니다. 다시 보기는 추가 보상을 주지 않습니다.</p>`);$('.modal').classList.add('moment-modal')}
+function showCareMoment(reference,fresh=false){const [season,item]=String(reference).split(':'),p=state.player,row=careMoments(p).find(r=>r.season===Number(season)&&(!item||r.id===item));if(!row)return;const meta=careSceneMeta(row);modal(`<div class="between"><span class="eyebrow">${fresh?'새 추억':'추억 앨범'}</span><button class="iconbtn" data-action="close-modal" aria-label="특별 장면 닫기">${icon('close')}</button></div><div class="care-scene-title"><h2>${meta.icon} ${e(meta.title)}</h2><p class="tiny muted">${row.year} 겨울 · ${row.moment.age}세 · ${e(DATA.items.find(i=>i.id===row.id).name)}</p></div>${carePicture(p,row)}<p class="care-scene-copy">${e(meta.line)}</p><p class="tiny muted">${e(meta.after)}</p><button class="btn full" data-action="close-modal">${fresh?'앨범에 남기고 계속하기':'닫기'}</button><p class="tiny muted care-caption">구매 효과는 기존 일정대로 적용됩니다. 다시 보기는 추가 보상을 주지 않습니다.</p>`,'moment-modal memory-reveal')}
 function memoriesScreen(p){const rows=careMoments(p),unique=[...new Map(rows.map(r=>[r.moment.scene,r])).values()].reverse(),adult=unique.filter(r=>!!careArtInfo(p,r)).length,total=careSceneCount(p.avatar);return `<section class="card care-album"><div class="between"><div><span class="eyebrow">BETWEEN THE SEASONS</span><h2>나의 추억 앨범</h2></div><span class="tag">${unique.length}장의 추억</span></div><p class="small muted">케어·훈련 상품을 이용하면 나의 얼굴로 한 장면씩 남습니다. 아직 만나지 않은 장면은 미리 보여주지 않아요.</p>${unique.length?`<div class="care-memory-grid">${unique.map(r=>`<button class="care-memory" data-action="care-memory" data-value="${r.season}:${r.id}">${carePicture(p,r)}<b>${e(careSceneMeta(r).title)}</b><small>${r.year} 겨울 · ${r.moment.age}세</small></button>`).join('')}</div>`:'<div class="care-empty"><span>📷</span><h3>아직은 빈 페이지.</h3><p class="small muted">비시즌 상점에서 케어·해외훈련을 이용해 보세요.<br>이전 구매 기록에 장면을 소급해서 만들지는 않습니다.</p></div>'}<p class="tiny muted">${adult<total?`아직 만나지 않은 성인 케어·훈련 장면 ${total-adult}종 · `:''}21세 미만은 훈련복을 입은 팀 회복 이야기로 남습니다.</p><label class="care-auto"><input type="checkbox" data-care-auto ${showCareAutomatically?'checked':''}> 구매 후 특별 장면 자동으로 보기</label><p class="tiny muted">꺼도 추억은 저장되며 여기에서 다시 볼 수 있어요. 같은 장면은 가장 최근 추억을 표시합니다.</p></section>`}
 function openCareAlbum(){if(!state.player)return;modal(`<div class="between"><span class="eyebrow">MY MEMORIES</span><button class="iconbtn" data-action="close-modal" aria-label="추억 앨범 닫기">${icon('close')}</button></div>${memoriesScreen(state.player)}`);$('.modal').classList.add('moment-modal')}
 function careShopNote(p){const count=careMoments(p).length;return `<div class="care-shop-note"><span>📷 뜻밖의 하루가 추억으로 남을지도.<small>어떤 상품에서 어떤 장면을 만날지는 구매 뒤에 알 수 있어요. 상품의 훈련 효과는 표시된 그대로예요.</small></span><button class="btn subtle" data-action="care-album">추억 ${count}개</button></div>`}
@@ -1407,7 +1655,21 @@ if(page===2){const selected=ui.gloryPane||'club',nav=resultSubNav('glory-pane',[
 if(page===3)body=`<span class="eyebrow">04 / 05 · THE JOURNEY</span><h2>벤치에서 시작한 이야기.</h2>${careerStoryScreen(p)}<details><summary>모든 시즌 기록</summary><div class="timeline" style="margin-top:25px;max-height:290px;overflow-y:auto">${p.history.length?p.history.map(r=>`<div class="timeline-item"><time>${r.year} · ${r.age}세 · OVR ${displayNumber(r.ovr)}</time><h3 style="font-size:12px;margin-top:3px">${e(r.team)} · ${e(r.division)}</h3><p>${e(r.teamResult)} ${r.awards.map(e).join(' · ')}</p></div>`).join(''):'<p class="muted small">경기 기록 없이 새로운 길을 선택했어요.</p>'}</div></details><details style="margin-top:18px"><summary>계약 · 이적의 발자취</summary>${contractHistory(p)}</details>`;
 if(page===4)body=`<span class="eyebrow">05 / 05 · THE LEGACY</span><h2>${vote>=75?'전설의 이름으로.':'기록은, 오래 남는다.'}</h2><p class="small muted">게임 속 명예의 전당 투표율 · 입성 기준 75%</p><div class="vote-number">${vote.toFixed(1)}<span style="font-size:28px">%</span></div><div class="progress"><i style="width:${vote}%"></i></div><div class="notice">${vote>=75?'🏛️ 명예의 전당 입성! 당신의 이름이 전설이 되었습니다.':'이번에는 미입성입니다. 이 커리어는 은퇴 기록 보관함에 남습니다.'}</div><div class="rule"></div>${hallAssessmentReport(p)}<div class="rule"></div>${playerMatchCard(p)}<div class="rule"></div><div class="potential-card"><span class="tag">잠재력 ${potentialInfo(p).grade}등급</span><h3 style="margin:12px 0">나의 성장 특성</h3><p class="small muted">${potentialInfo(p).trait}<br>기본 성장 기준 OVR ${Math.round(p.potential)} · 능력치별 성장 상한 ${potentialInfo(p).ceiling}<br>집중 육성·훈련·출전·건강이 이 천장에 도달하는 속도를 바꿉니다.</p></div>`;
 return `${header('나의 커리어북','당신이 고른 선택, 당신이 남긴 이름.')}<section class="card summary-card">${body}</section><div class="summary-dots" role="group" aria-label="커리어북 페이지">${[0,1,2,3,4].map(i=>`<button class="${page===i?'active':''}" data-action="summary-page" data-value="${i}" aria-label="${i+1}페이지" aria-pressed="${page===i}"></button>`).join('')}</div><div class="between"><button class="btn secondary" data-action="summary-prev" ${page===0?'disabled':''}>이전 페이지</button><button class="btn" data-action="${page===4?'card-image':'summary-next'}">${page===4?'커리어 카드 저장':'다음 페이지'} ${icon(page===4?'download':'arrow')}</button></div><details class="summary-more"><summary>커리어 공유 · 전당 · 새 선수</summary><button class="btn secondary full" style="margin-top:14px" data-action="care-album">📷 커리어의 추억 앨범</button><div class="grid2" style="margin-top:17px"><button class="btn secondary" data-action="share">${icon('ball')} 커리어 공유</button><button class="btn secondary" data-action="hall">${icon('trophy')} 로컬 전당 보기</button></div><button class="btn full" style="margin-top:16px" data-action="online">🌐 내 온라인 순위 보기</button><button class="btn subtle full" style="margin-top:15px" data-action="new-game">새로운 야구 인생 시작 ↗</button></details>`}
-function modal(html){$('#modal-root').innerHTML=`<div class="modalback"><section class="modal" role="dialog" aria-modal="true" aria-label="게임 메뉴" tabindex="-1">${html}</section></div>`;$('.modal').focus()}
+function markStoryArtReady(image){
+ if(!image.naturalWidth)return;
+ image.closest('.memory-reveal .care-art,.afterlife-scene')?.classList.add('story-art-ready');
+}
+document.addEventListener('load',event=>{
+ if(event.target.matches?.('.memory-reveal .care-art>img,.afterlife-illustration'))markStoryArtReady(event.target);
+},true);
+
+function modal(html,variant=''){
+ $('#modal-root').innerHTML=`<div class="modalback"><section class="modal ${variant}" role="dialog" aria-modal="true" aria-label="게임 메뉴" tabindex="-1">${html}</section></div>`;
+ const dialog=$('.modal');
+ dialog.focus({preventScroll:true});
+ const picture=dialog.querySelector('.memory-reveal img');
+ if(picture?.complete)markStoryArtReady(picture);
+}
 function closeModal(){clearInterval(replayTimer);ui.replay=null;$('#modal-root').innerHTML=''}
 // Install and update only this game's app shell. Local saves remain in localStorage.
 let installEvent=null,appRegistration=null;
@@ -1492,6 +1754,7 @@ function openReplay(value){const [season,si,gi]=value.split(':').map(Number),r=s
 
 function quickResultStats(p,r){const values=isTwoWay(p)?[['홈런',r.stats.hr],['OPS',displayRate(r.stats.ops,'batting')],['승리',r.pitching.w],['탈삼진',r.pitching.k]]:p.type==='batter'?[['타율',avg(r.stats.avg)],['홈런',r.stats.hr],['타점',r.stats.rbi],['도루',r.stats.sb]]:[['승–패',r.stats.w+'–'+r.stats.l],['ERA',displayRate(r.stats.era,'pitching')],['이닝',r.stats.ip],['탈삼진',r.stats.k]];return '<div class="flow-season-numbers">'+values.map(([label,value])=>'<div><small>'+e(label)+'</small><strong>'+e(value)+'</strong></div>').join('')+'</div>'}
 function resultScreen(){const p=state.player,r=p.history.at(-1),temp=document.createElement('div');temp.innerHTML=legacyResultScreen();const stack=temp.querySelector('.stack'),parts=Array.from(stack.children),grid=stack.querySelector('.grid2'),media=stack.querySelector('#fan-reactions'),competition=parts.find(x=>x.querySelector('h3')?.textContent==='고교 대회 결과'),items=[['summary','요약'],['numbers','성적'],['growth','성장'],...(r.postseason?[["postseason","가을야구"]]:[]),['moments','순간'],['fans','반응']],pane=items.some(v=>v[0]===ui.resultPane)?ui.resultPane:'summary';
+ parts[0].dataset.seasonTone=r.absence?'absence':r.tone;
  const body=pane==='summary'?retirementNotice(p)+parts[0].outerHTML.replace(/(<div class="big-ovr">[\s\S]*?<\/div>)/,match=>match+quickResultStats(p,r)):pane==='postseason'?postseasonScreen(r):pane==='numbers'?resultNumbersContent(p,r,parts[1]):pane==='growth'?resultGrowthContent(p,r):pane==='moments'?(grid?.children[1]?.outerHTML||'')+(competition?.outerHTML||''):media?.outerHTML||'';
  return `${header('시즌 리포트',`${r.year} · ${e(r.team)} · ${r.age}세`)}${pane!=='summary'?'<button class="flow-back" data-action="deck-result" data-value="summary">‹ 시즌 요약으로</button>':''}<div class="career-deck-body stack">${body}</div>${pane==='summary'?`<details class="flow-more"><summary>성적·성장·반응 자세히 보기</summary><div class="flow-tool-grid">${items.filter(v=>v[0]!=='summary').map(([id,name])=>`<button class="btn secondary" data-action="deck-result" data-value="${id}">${name} ${icon('arrow',14)}</button>`).join('')}</div></details>`:''}<div class="career-deck-action"><button class="btn full" data-action="${p.careerEnd?.status==='retired'?'confirm-retire':'offseason'}">${p.careerEnd?.status==='retired'?'나의 커리어북 열기':'겨울 준비하기'} ${icon('arrow')}</button></div>`}
 function overseasOpportunity(p){if(p.league!=='KBO'||!state.offseason?.market)return '';if(state.offseason.market.selected)return '';const n=registeredSeasons(p),ready=n>=4&&!serving(p)&&!p.service?.plan;return `<section class="card overseas-callout"><span class="tag">NEXT LEAGUE</span><h2>${ready?'해외 구단의 문이 열렸어요.':'다음 무대도 준비해요.'}</h2><p class="small muted">KBO 등록 ${n}/4시즌 · NPB 1군 경쟁 기준 OVR 75 · MLB 1군 경쟁 기준 OVR 81. 더 낮아도 2군·마이너 제안으로 진출할 수 있어요.</p><button class="btn secondary full" data-action="posting-shortcut" ${ready?'':'disabled'}>${ready?'MLB · NPB 제안 바로 받기':'KBO 4등록 시즌 후 포스팅 가능'}</button></section>`}
@@ -1519,7 +1782,7 @@ function compactMarketScreen(p){const m=currentMarket();if(!m)return marketScree
  const domestic=details.filter(v=>/FA|트레이드/.test(v.querySelector('summary')?.textContent||''));return nav+`<section class="card"><h2 style="font-size:22px;margin-bottom:17px">${m.faEligible?'FA · 트레이드':'트레이드 요청'}</h2>${domestic.map(v=>{v.querySelector('summary')?.remove();return v.innerHTML}).join('<div class="rule"></div>')}</section>`;
 }
 
-function dashboard(){const p=state.player,r=p.history.at(-1),year=DATA.startYear+p.season-1,ready=p.league==='KBO'&&registeredSeasons(p)>=4,action=state.phase==='home'?'play':'season',label=state.phase==='home'?'시즌 보내기':state.phase==='result'?'이번 시즌 결과 보기':state.phase==='offseason'?'비시즌 선택 이어가기':state.phase==='retired'?'나의 은퇴북 열기':'진행 중인 시즌 보기';return `${header('나의 커리어',`${year} · ${e(p.team)}`)}<div class="stack home-compact">${retirementNotice(p)}<section class="card home-season"><span class="tag">${e(division(p))} · ${e(positionLabel(p))}</span><h2>${state.phase==='retired'?'벤치에서 시작한,<br>나의 야구 인생.':p.history.length?'다음 한 시즌,<br>무엇을 남길까요?':'벤치에서,<br>첫 시즌을 시작해요.'}</h2><div class="growth-facts"><div><small>OVR</small><strong>${ovr(p)}</strong></div><div><small>나이</small><strong>${p.age}</strong></div><div><small>명성</small><strong class="home-fame">${fame(p)}</strong></div></div><button class="btn full" data-action="${action}">${label} ${icon('arrow')}</button><p class="tiny muted home-wallet">연봉 ${cashMoney(p.salary)}원 · 시즌 종료 때 정산</p>${isPro(p)&&p.history.filter(r=>isPro(r)).length<=1&&!p.shop?.purchases.length?'<p class="notice">첫 프로 자금으로 나에게 투자해요. 시즌을 마친 뒤 위의 🛍️ 상점에서 훈련·장비를 살 수 있어요.</p>':''}</section><details class="home-more" ${matchMedia('(min-width:1024px)').matches?'open':''}><summary>지난 시즌 · 응원단 라운지 · 구단 이야기</summary><div class="home-more-content"><p class="tiny muted">상점에서 훈련·장비·회복을 준비하고, 시즌 기록과 구단 이야기를 둘러보세요.</p>${r?`<section class="card home-last"><div class="between"><h3>지난 시즌</h3><span class="tag">${r.year}</span></div><p>${r.absence?e(r.absence):isTwoWay(p)?`${r.stats.hr}홈런 · ${r.pitching.k}K · ${r.pitching.w}승`:p.type==='batter'?`타율 ${avg(r.stats.avg)} · ${r.stats.hr}홈런 · ${r.stats.sb}도루`:`${r.stats.w}승 ${r.stats.l}패 · ${r.stats.ip}이닝 · ERA ${displayRate(r.stats.era,'pitching')}`}</p><p class="tiny muted">${e(r.teamResult)}</p></section>`:''}${clubAccessGuide(p)}${isPro(p)&&p.age>=21&&!DATA.careWomen.includes(p.avatar)?'<button class="btn secondary full" data-action="club-lounge">☕ 구단 라운지 · 새로운 이야기</button>':''}${isPro(p)?`<button class="btn subtle full" data-action="club-shortcut">🏟️ ${e(p.team)}와의 시간 · 레전드 진척 보기</button>`:''}${ready&&state.phase!=='retired'?`<p class="tiny muted home-tip">🌏 해외 진출 가능 · 비시즌 → 이적 → 해외 진출에서 MLB·NPB 제안을 확인해요.</p>`:!r?'<p class="tiny muted home-tip">하단 선수에서 능력·포지션·성장 경로를 확인해요. 시즌 결과는 탭으로 한 장씩 볼 수 있습니다.</p>':''}</div></details></div>`}
+function dashboard(){const p=state.player,r=p.history.at(-1),year=DATA.startYear+p.season-1,ready=p.league==='KBO'&&registeredSeasons(p)>=4,action=state.phase==='home'?'play':'season',label=state.phase==='home'?'시즌 보내기':state.phase==='result'?'이번 시즌 결과 보기':state.phase==='offseason'?'비시즌 선택 이어가기':state.phase==='retired'?'나의 은퇴북 열기':'진행 중인 시즌 보기';return `${header('나의 커리어',`${year} · ${e(p.team)}`)}<div class="stack home-compact">${retirementNotice(p)}<section class="card home-season"><span class="tag">${e(division(p))} · ${e(positionLabel(p))}</span><h2>${state.phase==='retired'?'벤치에서 시작한,<br> 나의 야구 인생.':p.history.length?'다음 한 시즌,<br> 무엇을 남길까요?':'벤치에서,<br> 첫 시즌을 시작해요.'}</h2><div class="growth-facts"><div><small>OVR</small><strong>${ovr(p)}</strong></div><div><small>나이</small><strong>${p.age}</strong></div><div><small>명성</small><strong class="home-fame">${fame(p)}</strong></div></div><button class="btn full" data-action="${action}">${label} ${icon('arrow')}</button><p class="tiny muted home-wallet">연봉 ${cashMoney(p.salary)}원 · 시즌 종료 때 정산</p>${isPro(p)&&p.history.filter(r=>isPro(r)).length<=1&&!p.shop?.purchases.length?'<p class="notice">첫 프로 자금으로 나에게 투자해요. 시즌을 마친 뒤 위의 🛍️ 상점에서 훈련·장비를 살 수 있어요.</p>':''}</section><details class="home-more" ${matchMedia('(min-width:1024px)').matches?'open':''}><summary>지난 시즌 · 응원단 라운지 · 구단 이야기</summary><div class="home-more-content"><p class="tiny muted">상점에서 훈련·장비·회복을 준비하고, 시즌 기록과 구단 이야기를 둘러보세요.</p>${r?`<section class="card home-last"><div class="between"><h3>지난 시즌</h3><span class="tag">${r.year}</span></div><p>${r.absence?e(r.absence):isTwoWay(p)?`${r.stats.hr}홈런 · ${r.pitching.k}K · ${r.pitching.w}승`:p.type==='batter'?`타율 ${avg(r.stats.avg)} · ${r.stats.hr}홈런 · ${r.stats.sb}도루`:`${r.stats.w}승 ${r.stats.l}패 · ${r.stats.ip}이닝 · ERA ${displayRate(r.stats.era,'pitching')}`}</p><p class="tiny muted">${e(r.teamResult)}</p></section>`:''}${clubAccessGuide(p)}${isPro(p)&&p.age>=21&&!DATA.careWomen.includes(p.avatar)?'<button class="btn secondary full" data-action="club-lounge">☕ 구단 라운지 · 새로운 이야기</button>':''}${isPro(p)?`<button class="btn subtle full" data-action="club-shortcut">🏟️ ${e(p.team)}와의 시간 · 레전드 진척 보기</button>`:''}${ready&&state.phase!=='retired'?`<p class="tiny muted home-tip">🌏 해외 진출 가능 · 비시즌 → 이적 → 해외 진출에서 MLB·NPB 제안을 확인해요.</p>`:!r?'<p class="tiny muted home-tip">하단 선수에서 능력·포지션·성장 경로를 확인해요. 시즌 결과는 탭으로 한 장씩 볼 수 있습니다.</p>':''}</div></details></div>`}
 function positionFocusHint(){const p={type:ui.type,fieldPosition:ui.type==='pitcher'?'P':ui.fieldPosition||'RF',role:ui.pitchingRole||'starter'},names=DATA.positions[ui.type].stats,weights=positionWeights(p),top=weights.map((v,i)=>({i,v})).sort((a,b)=>b.v-a.v).slice(0,2);return `${ui.twoWay?'투타 병행 · ':''}${ui.type==='pitcher'?pitchRole(p).name:fieldRole(p).name} 권장: ${top.map(x=>names[x.i]).join(' · ')}`}
 
 function resultSubNav(action,items,selected,label){return `<nav class="care-nav" aria-label="${label}">${items.map(([id,name])=>`<button data-action="${action}" data-value="${id}" class="${id===selected?'active':''}">${name}</button>`).join('')}</nav>`}
