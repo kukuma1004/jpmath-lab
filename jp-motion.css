@@ -1,5 +1,5 @@
 /* 공통 모션의 세부 표현. 내용과 수학 좌표, 입력 필드는 그대로 둔다. */
-:root{--jp-kinetic-ease:cubic-bezier(.19,1,.28,1)}
+:root{--jp-kinetic-ease:cubic-bezier(.19,1,.28,1);--jp-motion-quick:120ms;--jp-motion-standard:260ms;--jp-motion-slow:580ms}
 html[data-jp-kinetic] :is(a,button,input,select,summary):focus-visible{outline:2px solid currentColor;outline-offset:4px}
 html[data-jp-kinetic] :is(.tab-btn,.view-btn,.mode-btn,.mode-tab,.chapter-tab,[role=tab]){transition:color .24s,background-color .24s,border-color .24s,box-shadow .32s var(--jp-kinetic-ease)}
 html[data-jp-kinetic] :is(.tab-btn,.view-btn,[role=tab])[aria-selected=true],html[data-jp-kinetic] :is(.tab-btn,.view-btn).active{box-shadow:inset 0 -2px currentColor}
@@ -9,6 +9,9 @@ html[data-jp-kinetic] input[type=range]{touch-action:pan-y}
 html[data-jp-kinetic] :is(.eq,.eq-box,.equation,.formula,.math-block){min-width:0;scrollbar-width:thin;scrollbar-color:#9b998f transparent}
 html[data-jp-kinetic] body :is(.katex-display,.formula-scroll){overflow-x:auto;overflow-y:hidden;max-width:100%;scrollbar-width:thin}
 html[data-jp-kinetic] .core-formula>*{min-width:0}
+html[data-jp-kinetic] :is(.primary-action,.primary-button,.start-button,.game-choice,.answer-btn,.choice-btn,.option-btn,.strategy-button,.btn):not(:disabled){transition:transform var(--jp-motion-quick) ease,filter var(--jp-motion-quick) ease,box-shadow var(--jp-motion-standard) var(--jp-kinetic-ease)}
+html[data-jp-kinetic] :is(.primary-action,.primary-button,.start-button,.game-choice,.answer-btn,.choice-btn,.option-btn,.strategy-button,.btn):not(:disabled):active{transform:translateY(1px) scale(.985);filter:brightness(.98)}
+.jp-motion-live{position:fixed!important;inline-size:1px!important;block-size:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important;border:0!important}
 .jp-condition-before{position:fixed;z-index:6;pointer-events:none;overflow:hidden;contain:strict;border-radius:3px}
 .jp-condition-before>svg,.jp-condition-before>canvas{width:100%!important;height:100%!important;display:block!important;pointer-events:none!important}
 .jp-condition-before>span{position:absolute;right:9px;top:8px;padding:3px 7px;border-radius:3px;background:#f3efe6;color:#4e564d;font:500 10px/1.5 'IBM Plex Sans KR',sans-serif;box-shadow:0 0 0 1px #8b8e7e55}
@@ -42,7 +45,7 @@ html[data-jp-kinetic] .core-formula>*{min-width:0}
   .jp-condition-before>span{font-size:11px}
 }
 @media(prefers-reduced-motion:reduce){
-  html[data-jp-kinetic] :is([data-jp-kinetic-enter],.tab-btn,.view-btn,[role=tab],.resource-card,.experience-card,.route-card,.question-card,.practice-card,.game-card){animation:none!important;transition:none!important}
+  html[data-jp-kinetic] :is([data-jp-kinetic-enter],.tab-btn,.view-btn,[role=tab],.resource-card,.experience-card,.route-card,.question-card,.practice-card,.game-card,.primary-action,.primary-button,.start-button,.game-choice,.answer-btn,.choice-btn,.option-btn,.strategy-button,.btn){animation:none!important;transition:none!important}
   html[data-jp-kinetic] [data-jp-rise].jp-pre{opacity:1!important;transform:none!important}
   .jp-condition-before{display:none!important}
 }

@@ -57,10 +57,19 @@
       bossBaseTime() - (api.rec().bossClears || 0) * 2);
 
     const bossSessionId = api.telemetry ? api.telemetry.makeSessionId() : '';
-    let bossSessionPlayIndex = 0, bossActivePlay = null;
+    let bossSessionPlayIndex = 0, bossActivePlay = null, bossHiddenAt = 0;
 
     let boss = {};
-    function stopBossTimer(){boss.running=false;cancelAnimationFrame(boss.raf)}
+    function stopBossTimer(){boss.running=false;bossHiddenAt=0;cancelAnimationFrame(boss.raf)}
+    function handleBossVisibility(){
+      const now=performance.now();
+      if(document.hidden){bossHiddenAt=now;return}
+      if(!bossHiddenAt)return;
+      const pausedFor=now-bossHiddenAt;bossHiddenAt=0;
+      if(!boss.running)return;
+      boss.last=now;
+      if(boss.questionStartedAt)boss.questionStartedAt+=pausedFor;
+    }
     function renderBossHud(){
       const stage=$('[data-boss-stage]');
       if(true){
@@ -106,7 +115,7 @@
       $('[data-boss-stage]').classList.remove('boss-heat-1','boss-heat-2','boss-heat-3','boss-overdrive','boss-flawless');lastComboTier=0;renderBossV2();renderBossHud();boss.raf=requestAnimationFrame(tickBoss)
     }
     function startBossTimer(){stopBossTimer();boss.running=true;boss.last=performance.now();boss.raf=requestAnimationFrame(tickBoss)}
-    function tickBoss(now){if(!boss.running)return;const elapsed=(now-boss.last)/1000;boss.time=Math.max(0,boss.time-elapsed);boss.last=now;if(true&&cfg.mechanic==='continuity-stitch'&&boss.stitches<3&&boss.hp<boss.maxHp){boss.regenBuffer+=elapsed;if(boss.regenBuffer>=1){const ticks=Math.floor(boss.regenBuffer),heal=ticks*(cfg.regenRate+Math.max(0,boss.phase-1)*2);boss.regenBuffer-=ticks;const actual=Math.min(heal,boss.maxHp-boss.hp);boss.hp+=actual;boss.healed+=actual;if(actual>0)launchBossHealFx(actual)}}if(true&&cfg.mechanic==='squeeze-walls'&&boss.questionStartedAt&&!boss.wallCrushed){const questionElapsed=(now-boss.questionStartedAt)/1000,windowLimit=squeezeSafeWindow();boss.wallGap=Math.max(0,100-questionElapsed/windowLimit*100);if(boss.wallGap<=0){boss.wallCrushed=true;boss.time=Math.max(0,boss.time-2);const stage=$('[data-boss-stage]'),monster=$('[data-boss-monster]');stage.classList.add('boss-wall-slam');monster.classList.remove('boss-hit');monster.classList.add('boss-attack');$('[data-boss-mood]').textContent='쌍벽 충돌 · 시간 −2초';launchBossFx(false,0,2);setTimeout(()=>{stage.classList.remove('boss-wall-slam');monster.classList.remove('boss-attack')},620)}}renderBossHud();if(boss.time<=0){finishBossV2(false);return}boss.raf=requestAnimationFrame(tickBoss)}
+    function tickBoss(now){if(!boss.running)return;const elapsed=Math.min(.25,Math.max(0,(now-boss.last)/1000));boss.last=now;if(boss.locked){renderBossHud();boss.raf=requestAnimationFrame(tickBoss);return}boss.time=Math.max(0,boss.time-elapsed);if(true&&cfg.mechanic==='continuity-stitch'&&boss.stitches<3&&boss.hp<boss.maxHp){boss.regenBuffer+=elapsed;if(boss.regenBuffer>=1){const ticks=Math.floor(boss.regenBuffer),heal=ticks*(cfg.regenRate+Math.max(0,boss.phase-1)*2);boss.regenBuffer-=ticks;const actual=Math.min(heal,boss.maxHp-boss.hp);boss.hp+=actual;boss.healed+=actual;if(actual>0)launchBossHealFx(actual)}}if(true&&cfg.mechanic==='squeeze-walls'&&boss.questionStartedAt&&!boss.wallCrushed){const questionElapsed=(now-boss.questionStartedAt)/1000,windowLimit=squeezeSafeWindow();boss.wallGap=Math.max(0,100-questionElapsed/windowLimit*100);if(boss.wallGap<=0){boss.wallCrushed=true;boss.time=Math.max(0,boss.time-2);const stage=$('[data-boss-stage]'),monster=$('[data-boss-monster]');stage.classList.add('boss-wall-slam');monster.classList.remove('boss-hit');monster.classList.add('boss-attack');$('[data-boss-mood]').textContent='쌍벽 충돌 · 시간 −2초';launchBossFx(false,0,2);setTimeout(()=>{stage.classList.remove('boss-wall-slam');monster.classList.remove('boss-attack')},620)}}renderBossHud();if(boss.time<=0){finishBossV2(false);return}boss.raf=requestAnimationFrame(tickBoss)}
     function renderBossV2(){
       if(!boss.running)return;boss.locked=false;const level=bossQuestionLevel(),sideBattle=cfg.mechanic==='side-switch',stitchBattle=cfg.mechanic==='continuity-stitch',squeezeBattle=cfg.mechanic==='squeeze-walls',forbiddenBattle=cfg.mechanic==='forbidden-seal',differenceBattle=cfg.mechanic==='h-collapse',productBattle=cfg.mechanic==='product-blades',sniperBattle=cfg.mechanic==='sniper-lock',stepBattle=cfg.mechanic==='step-lock';if(stitchBattle&&boss.reopenOnNext){boss.stitches=0;boss.reopenOnNext=false;boss.regenBuffer=0}if(squeezeBattle){boss.wallGap=100;boss.wallCrushed=false}if(forbiddenBattle&&boss.resealOnNext){boss.orthodoxSeal=3;boss.resealOnNext=false}if(differenceBattle&&boss.hResetOnNext){boss.hStep=0;boss.hResetOnNext=false}if(stepBattle&&boss.lockResetOnNext){boss.lockStep=0;boss.lockResetOnNext=false}if(sniperBattle&&boss.sniperResetOnNext){boss.sniperLock=0;boss.sniperTarget=null;boss.sniperResetOnNext=false}if(productBattle&&boss.bladesResetOnNext){boss.leftBladeReady=false;boss.rightBladeReady=false;boss.nextBlade='left';boss.productPair=null;boss.bladesResetOnNext=false}$('[data-boss-stage]').classList.remove('boss-stitch-complete','boss-wall-slam','boss-seal-break','boss-forbidden-cast','boss-h-collapse','boss-h-rebound','boss-blade-cross','boss-blade-break','boss-sniper-fire','boss-sniper-miss','boss-step-finish','boss-step-break');boss.q=api.makeBossQuestion(level,boss);if(sideBattle)boss.targetSide=boss.q.side||boss.nextSide;boss.attackGrade=level==='deep'?'A':level==='applied'?'B':'C';boss.questionStartedAt=performance.now();const levelName=api.levels.find(l=>l.id===level).name,directionCue=sideBattle?` · ${boss.targetSide==='left'?'← 좌극한':'우극한 →'}`:stitchBattle?` · 금실 ${boss.stitches}/3`:squeezeBattle?` · 압착 ${squeezeSafeWindow().toFixed(1)}초`:forbiddenBattle?` · 정석 ${3-boss.orthodoxSeal}/3`:differenceBattle?` · h=${hDistanceLabel()}`:productBattle?` · ${boss.nextBlade==='left'?'청록 u′v':'금빛 uv′'}`:sniperBattle?` · 조준 ${sniperLockLabel()}`:stepBattle?` · ${cfg.lockLabel} ${stepLockLabel()}`:'';const body=$('[data-boss-body]');body.innerHTML=`<div class="question-topline"><span>PHASE ${boss.phase} · ${levelName} 문제${directionCue}</span><span data-live-combo></span></div><div class="question-equation"></div><div class="question-prompt"></div><div class="answer-grid"></div>`;
       api.setMath($('div.question-equation',body),boss.q.equation);$('div.question-prompt',body).textContent=boss.q.prompt;$('[data-live-combo]').textContent=`COMBO ${boss.combo}`;const box=$('.answer-grid',body);api.fillAnswers(box,boss.q,(v,b)=>resolveBossV2(v,b));renderBossHud();
@@ -287,6 +296,7 @@ $('[data-boss-body]').innerHTML=`<div class="boss-result-v2${flawless?' boss-res
 
     function mount() {
       $('[data-boss-start]').addEventListener('click', startBossV2);
+      document.addEventListener('visibilitychange', handleBossVisibility);
       reset();
     }
 

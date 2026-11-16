@@ -13,7 +13,9 @@ assert.doesNotMatch(js, /data-boss-body|data-boss-start/,
   '보스 화면은 공용 엔진이 만든다. 페이지가 직접 손대면 안내가 덮인다.');
 const css = fs.readFileSync('기하/기하_내신스킬.css', 'utf8');
 
-assert.match(html, /기하_내신스킬\.js\?v=12/);
+assert.match(html, /기하_공통\.js\?v=7/);
+assert.match(html, /boss-engine\.js\?v=10/);
+assert.match(html, /기하_내신스킬\.js\?v=13/);
 assert.match(html, /기하_내신스킬\.css\?v=6/);
 assert.match(js, /const LEVELS=\[/);
 assert.match(js, /id:'basic'/);

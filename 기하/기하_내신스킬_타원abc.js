@@ -78,7 +78,7 @@
 
   let rush={running:false,time:60,score:0,combo:0,correct:0,q:null,last:0,raf:0};
   function startRush(){rush={running:true,time:60,score:0,combo:0,correct:0,q:null,last:performance.now(),raf:0};$('[data-rush-start]').classList.add('hidden');$('[data-rush-result]').classList.add('hidden');nextRush();rush.raf=requestAnimationFrame(tickRush)}
-  function tickRush(now){if(!rush.running)return;const dt=(now-rush.last)/1000;rush.last=now;rush.time=Math.max(0,rush.time-dt);renderRushHud();if(rush.time<=0){finishRush();return}rush.raf=requestAnimationFrame(tickRush)}
+  function tickRush(now){if(!rush.running)return;const dt=Math.min(.25,Math.max(0,(now-rush.last)/1000));rush.last=now;rush.time=Math.max(0,rush.time-dt);renderRushHud();if(rush.time<=0){finishRush();return}rush.raf=requestAnimationFrame(tickRush)}
   function renderRushHud(){$('[data-rush-time]').textContent=rush.time.toFixed(1);$('[data-rush-score]').textContent=rush.score;$('[data-rush-combo]').textContent=`×${1+Math.floor(rush.combo/3)*.5}`;$('[data-rush-bar]').style.width=`${rush.time/60*100}%`}
   function nextRush(){if(!rush.running)return;rush.q=makeQuestion();$('[data-rush-question]').innerHTML=`<div class="rush-eq">${rush.q.equation}</div><div class="rush-prompt">${rush.q.prompt}</div>`;fillAnswers($('[data-rush-answers]'),rush.q,(choice)=>{if(!rush.running)return;const ok=String(choice)===String(rush.q.correct);if(ok){rush.combo++;rush.correct++;rush.score+=100+Math.min(300,rush.combo*20)}else{rush.combo=0;rush.time=Math.max(0,rush.time-2)}flashRush(ok);renderRushHud();nextRush()})}
   function flashRush(ok){const f=$('[data-rush-flash]');f.textContent=ok?'+ SCORE':'− 2 SEC';f.className=`rush-flash show ${ok?'good':'bad'}`;setTimeout(()=>f.className='rush-flash',340)}
