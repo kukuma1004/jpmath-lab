@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<link data-jp-kinetic-assets rel="stylesheet" href="../../jp-motion.css?v=20261104-2">
+<script src="../../jp-motion.js?v=20261104-2" defer></script>
+
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow,noarchive"/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<title>2024 수능 수학 8번 | 대칭 구간에 남는 항</title>
+<link rel="stylesheet" href="../../vendor/katex/katex.min.css"/>
+<link rel="stylesheet" href="../../jp-dark.css?v=6"/>
+<link rel="stylesheet" href="../../jp-polish.css?v=11"/>
+<script defer src="../../vendor/katex/katex.min.js"></script>
+<script defer src="../../jp-lab-dark.js?v=2"></script>
+<script defer src="../../jp-polish.js?v=20261104-2"></script>
+  <link rel="stylesheet" href="../../jp-nav-2.css?v=20261104-2">
+  <script src="../../jp-nav-2.js?v=20261104-2" data-jp-section="수능·킬러 문제" defer></script>
+<script defer src="./정적분_기출_실험.js"></script>
+<style>
+.tpl-dark .csat-lab canvas{display:block;width:100%;height:clamp(185px,28vh,285px);background:var(--surf);border:1px solid var(--line);border-radius:8px}
+.tpl-dark .csat-lab .lab-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,.48fr);gap:14px;align-items:start}
+.tpl-dark .csat-controls{min-width:0;display:grid;gap:8px;color:var(--t1)}
+.tpl-dark .csat-controls p{margin:0;font-size:.88rem;line-height:1.55}
+.tpl-dark .csat-controls input,.tpl-dark .csat-controls select{width:100%;accent-color:var(--cy)}
+.tpl-dark .csat-controls input[type=range]{min-height:34px;margin:0}
+.tpl-dark .csat-controls select,.tpl-dark .csat-answer input{padding:.46rem .58rem;background:var(--surf);color:var(--t1);border:1px solid var(--line2);border-radius:6px;font:inherit}
+.tpl-dark .csat-readings{display:grid;grid-template-columns:1fr auto;gap:4px 9px;margin:4px 0;align-items:baseline;font-size:.86rem}
+.tpl-dark .csat-readings dt{color:var(--t2)}
+.tpl-dark .csat-readings dd{margin:0;text-align:right;font-weight:700}
+.tpl-dark .csat-track{position:relative;width:calc(100% - 24px);height:3px;margin:12px 12px 22px;background:var(--line2);border-radius:2px}
+.tpl-dark .csat-marker{position:absolute;top:50%;width:12px;height:12px;border-radius:50%;background:var(--am);transform:translate(-50%,-50%)}
+.tpl-dark .csat-track span:not(.csat-marker){position:absolute;top:8px;font-size:11px;transform:translateX(-50%);color:var(--t2)}
+.tpl-dark .csat-answer{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap}
+.tpl-dark .csat-answer input{width:8rem}
+.tpl-dark .csat-feedback{min-height:1.35em;margin:.6rem 0 0}
+.tpl-dark .csat-details{margin-top:12px;padding:.75rem .85rem;background:var(--surf);border:1px solid var(--line);border-radius:8px}
+.tpl-dark .csat-details summary{cursor:pointer;font-weight:700;color:var(--cy)}
+.tpl-dark .csat-details p{margin:.45rem 0 0}
+.tpl-dark .csat-footer{margin:1rem 0;color:var(--t2);font-size:.84rem}
+.tpl-dark .eqrow{max-width:100%;overflow-x:auto}
+@media(max-width:680px){.tpl-dark .csat-lab .lab-body{grid-template-columns:1fr}.tpl-dark .csat-lab canvas{height:185px}}
+</style>
+</head>
+<body class="tpl-dark is-page">
+<header>
+  <div class="hbar"><h1>대칭 구간에 남는 항</h1><span class="src">2024학년도 수능 수학 <b>8번</b> · 3점</span><a class="back" href="../">← 수능 문제</a></div>
+  <nav id="nav" aria-label="탐구 단계"><button type="button" data-step="0" class="on" aria-current="step"><span class="n">01</span>문제 만나기</button><button type="button" data-step="1"><span class="n">02</span>함수식 만들기</button><button type="button" data-step="2"><span class="n">03</span>빠진 점 확인</button><button type="button" data-step="3"><span class="n">04</span>대칭 실험</button><button type="button" data-step="4"><span class="n">05</span>적분과 검산</button></nav>
+  <div class="pbar" aria-hidden="true"><span id="pfill"></span></div>
+</header>
+<main data-csat-chapters>
+<section class="ch on">
+  <p class="eyebrow">STEP 01 · 문제 만나기</p>
+  <h2 class="ct" tabindex="-1">짝수차 항만 남기는 적분</h2>
+  <p class="lede">어떤 항의 적분을 계산해야 하는지 먼저 예상해 보세요.</p>
+  <div class="prob">
+    <div class="prob-head"><span class="yr">2024 수능</span><h4>수학 8번</h4><span class="pts">3점</span></div>
+    <div class="prob-body"><div class="qtext">
+<p>삼차함수 <span class="m" data-k="f">f</span>는 모든 실수 <span class="m" data-k="x">x</span>에서 다음 식을 만족한다.</p>
+<div class="eq"><div class="eqrow"><span class="m md" data-k="xf(x)-f(x)=3x^4-3x">xf(x)-f(x)=3x^4-3x</span></div></div>
+<p><span class="m" data-k="\displaystyle\int_{-2}^{2}f(x)\,dx">\displaystyle\int_{-2}^{2}f(x)\,dx</span>의 값을 골라 보자.</p>
+<div data-csat-quiz="1"><div class="choices"><button type="button" class="choice" aria-pressed="false" data-answer="0">① 12</button><button type="button" class="choice" aria-pressed="false" data-answer="1">② 16</button><button type="button" class="choice" aria-pressed="false" data-answer="2">③ 20</button><button type="button" class="choice" aria-pressed="false" data-answer="3">④ 24</button><button type="button" class="choice" aria-pressed="false" data-answer="4">⑤ 28</button></div><p class="csat-feedback" role="status" data-correct="정답입니다. 각 조건을 어떻게 사용했는지 설명해 보세요."></p></div>
+<p class="csat-footer"><a href="https://wdown.ebsi.co.kr/W61001/01exam/20231116/go3/mathB_1_mun_13GC1N8A.pdf#page=2" target="_blank" rel="noopener noreferrer">평가원 문제지에서 원문 보기</a></p>
+    </div></div>
+  </div>
+  <div class="chnav"><span class="sp"></span><button type="button" class="b" data-advance="1">다음 단계 →</button></div>
+</section>
+<section class="ch">
+  <p class="eyebrow">STEP 02 · 함수식 만들기</p>
+  <h2 class="ct" tabindex="-1">양변에서 같은 인수를 찾아보세요</h2>
+  <p class="lede">좌변과 우변에서 공통으로 묶을 수 있는 인수는 무엇일까요?</p>
+  
+  <div class="card accent">
+    <div data-csat-quiz="1"><div class="choices"><button type="button" class="choice" aria-pressed="false" data-answer="0"><span class="m" data-k="x">x</span></button><button type="button" class="choice" aria-pressed="false" data-answer="1"><span class="m" data-k="x-1">x-1</span></button><button type="button" class="choice" aria-pressed="false" data-answer="2"><span class="m" data-k="x^2+1">x^2+1</span></button></div><p class="csat-feedback" role="status" data-correct="좌변은 (x−1)f(x)이고, 우변의 x³−1에도 x−1이 들어 있습니다."></p></div>
+    <details class="csat-details"><summary>힌트</summary><p>우변에서 <span class="m" data-k="3x">3x</span>를 묶으면 <span class="m" data-k="x^3-1">x^3-1</span>이 남습니다.</p></details>
+    <details class="csat-details"><summary>직관으로 보기</summary><p><b>두 쪽에 공통으로 곱해진 인수</b>를 찾으면 삼차함수의 모습을 한 줄로 드러낼 수 있습니다.</p></details>
+    <details class="csat-details"><summary>논리로 쓰기</summary><div class="eq"><div class="eqrow"><span class="m md" data-k="(x-1)f(x)=3x(x^3-1)=3x(x-1)(x^2+x+1)">(x-1)f(x)=3x(x^3-1)=3x(x-1)(x^2+x+1)</span></div></div></details>
+  </div>
+  <div class="chnav"><button class="b gh" type="button" data-advance="-1">← 이전</button><span class="sp"></span><button type="button" class="b" data-advance="1">다음 단계 →</button></div>
+</section>
+<section class="ch">
+  <p class="eyebrow">STEP 03 · 빠진 점 확인</p>
+  <h2 class="ct" tabindex="-1">x = 1에서 함수값은 어떻게 정해질까요?</h2>
+  <p class="lede">인수를 약분할 수 있는 범위를 먼저 말하고, 남은 한 점을 설명해 보세요.</p>
+  
+  <div class="card accent">
+    <div data-csat-quiz="2"><div class="choices"><button type="button" class="choice" aria-pressed="false" data-answer="0"><span class="m" data-k="f(1)">f(1)</span>은 임의의 실수</button><button type="button" class="choice" aria-pressed="false" data-answer="1"><span class="m" data-k="f(1)=0">f(1)=0</span></button><button type="button" class="choice" aria-pressed="false" data-answer="2"><span class="m" data-k="f(1)=9">f(1)=9</span></button></div><p class="csat-feedback" role="status" data-correct="x≠1에서 구한 다항식의 x→1 극한이 9입니다. 연속이므로 함수값도 9입니다."></p></div>
+    <details class="csat-details"><summary>힌트</summary><p>삼차함수는 모든 실수에서 연속입니다.</p></details>
+    <details class="csat-details"><summary>직관으로 보기</summary><p>그래프 한 점의 값은 양옆에서 다가온 값과 이어집니다.</p></details>
+    <details class="csat-details"><summary>논리로 쓰기</summary><p><span class="m" data-k="x\ne1">x\ne1</span>에서 <span class="m" data-k="f(x)=3x^3+3x^2+3x">f(x)=3x^3+3x^2+3x</span>이다. 두 다항식이 이 점들에서 같으므로 연속성으로 <span class="m" data-k="x=1">x=1</span>에서도 같고, <span class="m" data-k="f(1)=9">f(1)=9</span>이다. 다항식 항등식에서 공통인수를 소거한다고 설명해도 된다.</p></details>
+  </div>
+  <div class="chnav"><button class="b gh" type="button" data-advance="-1">← 이전</button><span class="sp"></span><button type="button" class="b" data-advance="1">다음 단계 →</button></div>
+</section>
+<section class="ch">
+  <p class="eyebrow">STEP 04 · 대칭 실험</p>
+  <h2 class="ct" tabindex="-1">같은 거리의 x와 −x를 짝지어 보세요</h2>
+  <p class="lede">홀수차 항과 짝수차 항의 적분이 각각 어떻게 변하나요?</p>
+  <div class="lab csat-lab" data-csat-lab="symmetry">
+  <div class="lab-head"><h4>같은 거리의 두 넓이 비교하기</h4></div>
+  <div class="lab-body">
+    <div><canvas role="img" aria-label="선택한 항의 좌우 적분을 음영으로 표시한 그래프"></canvas></div>
+    <div class="csat-controls">
+      <p>항을 바꾼 다음 대칭 구간의 끝점 r을 움직여 보세요. x축 위와 아래의 적분을 따로 읽어 봅니다.</p>
+      <label for="student-lab-2-mode">그래프에 표시할 항</label><select id="student-lab-2-mode"><option value="odd">홀수차 항 3x³ + 3x</option><option value="even">짝수차 항 3x²</option><option value="total">전체 f(x)</option></select>
+      <label for="student-lab-2-range">대칭 구간의 끝점 r</label>
+      <input id="student-lab-2-range" type="range" min="0.25" max="2" step="0.05" value="2">
+      <dl class="csat-readings"><dt>끝점 r</dt><dd data-reading="radius"></dd><dt>왼쪽 정적분</dt><dd data-reading="leftIntegral"></dd><dt>오른쪽 정적분</dt><dd data-reading="rightIntegral"></dd><dt>전체 정적분</dt><dd data-reading="totalIntegral"></dd></dl>
+    </div>
+  </div>
+</div>
+  <div class="card accent">
+    <div data-csat-quiz="1"><div class="choices"><button type="button" class="choice" aria-pressed="false" data-answer="0"><span class="m" data-k="3x^3">3x^3</span></button><button type="button" class="choice" aria-pressed="false" data-answer="1"><span class="m" data-k="3x^2">3x^2</span></button><button type="button" class="choice" aria-pressed="false" data-answer="2"><span class="m" data-k="3x">3x</span></button></div><p class="csat-feedback" role="status" data-correct="같은 거리에서 홀수차 항은 상쇄되고 짝수차 항은 더해집니다."></p></div>
+    <details class="csat-details"><summary>힌트</summary><p>홀수차 항은 대칭인 두 점에서 값의 부호가 서로 반대입니다.</p></details>
+    <details class="csat-details"><summary>직관으로 보기</summary><p>홀수차 항의 두 영역은 넓이가 같고 정적분에서 부호가 반대입니다. 짝수차 항의 두 영역은 같은 부호로 더해집니다.</p></details>
+    <details class="csat-details"><summary>논리로 쓰기</summary><div class="eq"><div class="eqrow"><span class="m md" data-k="f(x)+f(-x)=6x^2,\qquad \int_{-r}^{r} f(x)\,dx=\int_0^r6x^2\,dx=2r^3">f(x)+f(-x)=6x^2,\qquad \int_{-r}^{r} f(x)\,dx=\int_0^r6x^2\,dx=2r^3</span></div></div></details>
+  </div>
+  <div class="chnav"><button class="b gh" type="button" data-advance="-1">← 이전</button><span class="sp"></span><button type="button" class="b" data-advance="1">다음 단계 →</button></div>
+</section>
+<section class="ch">
+  <p class="eyebrow">STEP 05 · 적분과 검산</p>
+  <h2 class="ct" tabindex="-1">짝수차 항의 적분으로 마무리하세요</h2>
+  <p class="lede">대칭 구간의 끝점이 2일 때 결과를 계산하고 원래 선택지와 대조해 보세요.</p>
+  
+  <div class="card accent">
+    <div data-csat-quiz="0"><div class="choices"><button type="button" class="choice" aria-pressed="false" data-answer="0">② 16</button><button type="button" class="choice" aria-pressed="false" data-answer="1">③ 20</button><button type="button" class="choice" aria-pressed="false" data-answer="2">④ 24</button></div><p class="csat-feedback" role="status" data-correct="오른쪽 절반의 값은 8이고, 왼쪽 절반을 합한 값은 16입니다."></p></div>
+    <details class="csat-details"><summary>힌트</summary><p><span class="m" data-k="\int_0^2 3x^2\,dx">\int_0^2 3x^2\,dx</span>의 두 배입니다.</p></details>
+    <details class="csat-details"><summary>직관으로 보기</summary><p>오른쪽 포물선 부분의 적분을 구하면 왼쪽에 같은 양이 더해집니다.</p></details>
+    <details class="csat-details"><summary>논리로 쓰기</summary><div class="eq"><div class="eqrow"><span class="m md" data-k="\int_{-2}^{2}f(x)\,dx=2\int_0^2 3x^2\,dx=2[x^3]_0^2=16">\int_{-2}^{2}f(x)\,dx=2\int_0^2 3x^2\,dx=2[x^3]_0^2=16</span></div></div></details>
+  </div>
+  <div class="chnav"><button class="b gh" type="button" data-advance="-1">← 이전</button><span class="sp"></span><button type="button" class="b" data-advance="-4">처음 문제로 돌아가기</button></div>
+</section>
+</main>
+</body>
+</html>
