@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<link data-jp-kinetic-assets rel="stylesheet" href="../../../jp-motion.css?v=20261104-2">
+<script src="../../../jp-motion.js?v=20261104-2" defer></script>
+
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow,noarchive"/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<title>2022 수능 수학 20번 | 교사용 수업 자료</title>
+<script src="../../auth.js" data-classroom-protected></script>
+<link rel="stylesheet" href="../../../vendor/katex/katex.min.css"/>
+<link rel="stylesheet" href="../../../jp-math-typography.css?v=3"/>
+<link rel="stylesheet" href="../../../jp-dark.css?v=6"/>
+<link rel="stylesheet" href="../../../jp-polish.css?v=11"/>
+<script defer src="../../../vendor/katex/katex.min.js"></script>
+<script defer src="../../../jp-lab-dark.js?v=2"></script>
+<script defer src="../../../jp-deck.js"></script>
+<script defer src="../../../jp-polish.js?v=20261104-2"></script>
+<script defer src="../../../수능문제/미적분1/정적분_기출_실험.js"></script>
+<style>
+.tpl-dark .csat-lab canvas{display:block;width:100%;height:clamp(185px,28vh,285px);background:var(--surf);border:1px solid var(--line);border-radius:8px}
+.tpl-dark .csat-lab .lab-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,.48fr);gap:14px;align-items:start}
+.tpl-dark .csat-controls{min-width:0;display:grid;gap:8px;color:var(--t1)}
+.tpl-dark .csat-controls p{margin:0;font-size:.88rem;line-height:1.55}
+.tpl-dark .csat-controls input,.tpl-dark .csat-controls select{width:100%;accent-color:var(--cy)}
+.tpl-dark .csat-controls input[type=range]{min-height:34px;margin:0}
+.tpl-dark .csat-controls select,.tpl-dark .csat-answer input{padding:.46rem .58rem;background:var(--surf);color:var(--t1);border:1px solid var(--line2);border-radius:6px;font:inherit}
+.tpl-dark .csat-readings{display:grid;grid-template-columns:1fr auto;gap:4px 9px;margin:4px 0;align-items:baseline;font-size:.86rem}
+.tpl-dark .csat-readings dt{color:var(--t2)}
+.tpl-dark .csat-readings dd{margin:0;text-align:right;font-weight:700}
+.tpl-dark .csat-track{position:relative;width:calc(100% - 24px);height:3px;margin:12px 12px 22px;background:var(--line2);border-radius:2px}
+.tpl-dark .csat-marker{position:absolute;top:50%;width:12px;height:12px;border-radius:50%;background:var(--am);transform:translate(-50%,-50%)}
+.tpl-dark .csat-track span:not(.csat-marker){position:absolute;top:8px;font-size:11px;transform:translateX(-50%);color:var(--t2)}
+.tpl-dark .csat-answer{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap}
+.tpl-dark .csat-answer input{width:8rem}
+.tpl-dark .csat-feedback{min-height:1.35em;margin:.6rem 0 0}
+.tpl-dark .csat-details{margin-top:12px;padding:.75rem .85rem;background:var(--surf);border:1px solid var(--line);border-radius:8px}
+.tpl-dark .csat-details summary{cursor:pointer;font-weight:700;color:var(--cy)}
+.tpl-dark .csat-details p{margin:.45rem 0 0}
+.tpl-dark .csat-footer{margin:1rem 0;color:var(--t2);font-size:.84rem}
+.tpl-dark .eqrow{max-width:100%;overflow-x:auto}
+@media(max-width:680px){.tpl-dark .csat-lab .lab-body{grid-template-columns:1fr}.tpl-dark .csat-lab canvas{height:185px}}
+</style>
+</head>
+<body class="tpl-dark is-deck">
+<a class="jp-back-link teacher-back" href="../">← 수능 기출 탐구</a>
+<div class="deck">
+<section class="slide slide--title" data-title="문제 만나기">
+  <div class="s-body"><div class="title-layout">
+    <div><p class="eyebrow">2022학년도 대학수학능력시험 수학 20번 · 4점</p>
+    <h1 class="h1 anim-fade-up">경계에서 이어 붙이는 함수</h1><p class="lede">이미 알려진 구간 [0,1]의 값을 다음 구간에서 어떻게 활용할 수 있을까요?</p></div>
+    <div class="card" style="margin-top:0"><p>실수 전체에서 미분가능한 함수 <span class="m" data-k="f">f</span>가 아래 두 조건을 만족한다.</p>
+<div class="eq"><div class="eqrow"><span class="m md" data-k="\begin{aligned}
+\text{(가)}\quad &amp; f(x)=x &amp;&amp;(0\le x\le1)\\
+\text{(나)}\quad &amp; f(x+1)-xf(x)=ax+b &amp;&amp;(x\ge0)
+\end{aligned}">\begin{aligned}
+\text{(가)}\quad &amp; f(x)=x &amp;&amp;(0\le x\le1)\\
+\text{(나)}\quad &amp; f(x+1)-xf(x)=ax+b &amp;&amp;(x\ge0)
+\end{aligned}</span></div></div>
+<p>여기서 <span class="m" data-k="a,b">a,b</span>는 상수이다. <span class="m" data-k="60\displaystyle\int_1^2 f(x)\,dx">60\displaystyle\int_1^2 f(x)\,dx</span>의 값을 구해 보자.</p>
+
+<p class="csat-footer"><a href="https://wdown.ebsi.co.kr/W61001/01exam/20211118/go3/mathB_mun_3GGJA65S.pdf#page=7" target="_blank" rel="noopener noreferrer">평가원 문제지에서 원문 보기</a></p></div>
+  </div></div>
+  <aside class="notes"><p><strong>권장 시간</strong> 35분 · 구간 옮기기 7 / 함수값과 기울기 13 / 적분 8 / 정리 7</p><p>← → 이동, N 교사 노트, S 교사용 창, F 전체화면, O 한눈에 보기.</p><p>첫 화면에서 조건을 표시할 시간을 먼저 주세요. 정답은 풀이 슬라이드와 교사 노트에서 확인할 수 있습니다.</p><p><a href="https://wdown.ebsi.co.kr/W61001/01exam/20211118/go3/math_main_sol_71881A12.pdf" target="_blank" rel="noopener noreferrer">EBSi 정답·풀이</a></p></aside>
+</section>
+<section class="slide" data-title="문제 번역">
+  <div class="s-head"><p class="eyebrow">문제 번역</p><h2 class="ct">어느 구간을 알아야 할까?</h2></div>
+  <div class="s-body">
+    <div class="card accent"><p>이미 주어진 구간과 적분하려는 구간을 수직선에 각각 표시해 보세요.</p></div>
+    
+  </div>
+  <aside class="notes"><p>[0,1]과 [1,2]를 이어 그리게 합니다. 함수 전체를 구하는 대신 적분 구간을 만드는 데 필요한 조건을 찾게 합니다.</p></aside>
+</section>
+<section class="slide" data-title="구간 이동">
+  <div class="s-head"><p class="eyebrow">구간 이동</p><h2 class="ct">x와 x+1이 가리키는 위치</h2></div>
+  <div class="s-body">
+    <div class="card accent"><div class="eq"><div class="eqrow"><span class="m md" data-k="f(1+x)=x^2+ax+b\qquad(0\le x\le1)">f(1+x)=x^2+ax+b\qquad(0\le x\le1)</span></div></div></div>
+    
+  </div>
+  <aside class="notes"><p>좌변의 입력은 [1,2]에 있고, 우변에 대입하는 f(x)의 입력은 [0,1]에 있습니다. 조건 (나)의 정의역 전체에 f(x)=x를 쓰는 실수를 짚습니다.</p></aside>
+</section>
+<section class="slide" data-title="함수값">
+  <div class="s-head"><p class="eyebrow">함수값</p><h2 class="ct">두 식의 공통 경계는 1</h2></div>
+  <div class="s-body">
+    <div class="card accent"><p><span class="m" data-k="f(1)=1">f(1)=1</span>이고, 조건 (나)에 <span class="m" data-k="x=0">x=0</span>을 넣으면 <span class="m" data-k="f(1)=b">f(1)=b</span>이다.</p></div>
+    
+  </div>
+  <aside class="notes"><p>관계식에 x=1을 넣고 f(1)을 얻었다고 하는 학생에게 f(x+1)의 입력값을 묻게 합니다. f(1)=b는 미분하기 전 식에서 확보합니다.</p></aside>
+</section>
+<section class="slide" data-title="경계 실험">
+  <div class="s-head"><p class="eyebrow">경계 실험</p><h2 class="ct">값이 같아도 기울기는 달라질 수 있습니다</h2></div>
+  <div class="s-body">
+    <p class="lede">a를 바꾸어 왼쪽 직선과 오른쪽 곡선이 매끄럽게 이어지는 순간을 찾아 보세요.</p>
+    <div class="lab csat-lab" data-csat-lab="boundary">
+  <div class="lab-head"><h4>같은 점에서 두 기울기 맞추기</h4></div>
+  <div class="lab-body">
+    <div><canvas role="img" aria-label="x=1에서 만나는 왼쪽 직선과 오른쪽 곡선, 오른쪽 접선의 그래프"></canvas></div>
+    <div class="csat-controls">
+      <p>b=1인 상태에서 a를 움직이세요. x=1에서 만나는 두 조각의 왼쪽 기울기와 오른쪽 기울기를 비교합니다.</p>
+      
+      <label for="teacher-lab-3-range">오른쪽의 기울기 a</label>
+      <input id="teacher-lab-3-range" type="range" min="-1" max="3" step="0.1" value="0">
+      <dl class="csat-readings"><dt>왼쪽 기울기</dt><dd data-reading="leftSlope"></dd><dt>오른쪽 기울기</dt><dd data-reading="rightSlope"></dd><dt>경계 판정</dt><dd data-reading="match"></dd></dl>
+    </div>
+  </div>
+</div>
+    
+  </div>
+  <aside class="notes"><p>a=0, 1, 2를 비교합니다. 원점을 기준으로 한 접선과 접합점에서의 접선을 혼동하지 않게 합니다. 그래프 관찰을 차분 몫 계산으로 연결합니다.</p></aside>
+</section>
+<section class="slide" data-title="미분가능">
+  <div class="s-head"><p class="eyebrow">미분가능</p><h2 class="ct">두 한쪽 미분계수가 같아야 합니다</h2></div>
+  <div class="s-body">
+    <div class="card accent"><div class="eq"><div class="eqrow"><span class="m md" data-k="f'_-(1)=1,\qquad f'_+(1)=\lim_{h\to0^+}(h+a)=a">f'_-(1)=1,\qquad f'_+(1)=\lim_{h\to0^+}(h+a)=a</span></div></div></div>
+    
+  </div>
+  <aside class="notes"><p>우미분계수의 분자에 f(1+h)−f(1)을 직접 넣게 합니다. h→0⁺를 쓰면 조건 (나)를 x=0에서 양쪽으로 미분했다고 해석할 여지를 없앱니다.</p></aside>
+</section>
+<section class="slide" data-title="풀이">
+  <div class="s-head"><p class="eyebrow">풀이</p><h2 class="ct">구간과 변수의 기준을 같이 바꿉니다</h2></div>
+  <div class="s-body">
+    <div class="card accent"><div class="eq"><div class="eqrow"><span class="m md" data-k="60\int_1^2 f(x)\,dx=60\int_0^1(u^2+u+1)\,du=110">60\int_1^2 f(x)\,dx=60\int_0^1(u^2+u+1)\,du=110</span></div></div></div>
+    
+  </div>
+  <aside class="notes"><p>u=x−1로 바꾸면 적분 구간도 함께 [0,1]로 바뀝니다. 직접 x²−x+1을 적분하는 방법으로도 같은 값을 검산할 수 있습니다.</p></aside>
+</section>
+<section class="slide" data-title="마무리">
+  <div class="s-head"><p class="eyebrow">마무리</p><h2 class="ct">연속이라는 조건만 주어지면?</h2></div>
+  <div class="s-body">
+    <div class="card accent"><p>b=1까지 얻은 뒤 a와 적분값 <span class="m" data-k="80+30a">80+30a</span>는 어떻게 될까?</p></div>
+    <p class="csat-footer"><a href="../../../수능문제/미적분1/2022수능20번_탐구실.html" target="_blank" rel="noopener noreferrer">학생용 탐구실 열기 →</a></p>
+  </div>
+  <aside class="notes"><p>연속 조건은 b=1을 결정합니다. a의 제한을 없애면 [1,2]의 모양과 60배 한 적분값이 달라집니다. 여기서 60(1/3+a/2+1)=80+30a입니다.</p></aside>
+</section>
+</div>
+<div class="deck-chrome">
+  <div class="chrome-left"><span class="idx"><b id="cNow">1</b> / <span id="cTot">8</span></span><span class="sep"></span><span class="chap" id="chapLabel"></span></div>
+  <div class="chrome-right">
+    <div class="kbd-help">← → 이동 · N 교사 노트 · S 교사용 창 · F 전체화면 · O 한눈에 보기</div>
+    <div aria-label="슬라이드 조작" class="touch-nav">
+      <button aria-label="이전 슬라이드" id="touchPrev" type="button">‹</button>
+      <button id="touchNotes" type="button">교사 노트</button>
+      <button aria-label="다음 슬라이드" id="touchNext" type="button">›</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>

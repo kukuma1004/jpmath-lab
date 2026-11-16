@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<link data-jp-kinetic-assets rel="stylesheet" href="../../../jp-motion.css?v=20261104-2">
+<script src="../../../jp-motion.js?v=20261104-2" defer></script>
+
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow,noarchive"/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<title>2023 수능 수학 20번 | 교사용 수업 자료</title>
+<script src="../../auth.js" data-classroom-protected></script>
+<link rel="stylesheet" href="../../../vendor/katex/katex.min.css"/>
+<link rel="stylesheet" href="../../../jp-math-typography.css?v=3"/>
+<link rel="stylesheet" href="../../../jp-dark.css?v=6"/>
+<link rel="stylesheet" href="../../../jp-polish.css?v=11"/>
+<script defer src="../../../vendor/katex/katex.min.js"></script>
+<script defer src="../../../jp-lab-dark.js?v=2"></script>
+<script defer src="../../../jp-deck.js"></script>
+<script defer src="../../../jp-polish.js?v=20261104-2"></script>
+<script defer src="../../../수능문제/미적분1/정적분_기출_실험.js"></script>
+<style>
+.tpl-dark .csat-lab canvas{display:block;width:100%;height:clamp(185px,28vh,285px);background:var(--surf);border:1px solid var(--line);border-radius:8px}
+.tpl-dark .csat-lab .lab-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,.48fr);gap:14px;align-items:start}
+.tpl-dark .csat-controls{min-width:0;display:grid;gap:8px;color:var(--t1)}
+.tpl-dark .csat-controls p{margin:0;font-size:.88rem;line-height:1.55}
+.tpl-dark .csat-controls input,.tpl-dark .csat-controls select{width:100%;accent-color:var(--cy)}
+.tpl-dark .csat-controls input[type=range]{min-height:34px;margin:0}
+.tpl-dark .csat-controls select,.tpl-dark .csat-answer input{padding:.46rem .58rem;background:var(--surf);color:var(--t1);border:1px solid var(--line2);border-radius:6px;font:inherit}
+.tpl-dark .csat-readings{display:grid;grid-template-columns:1fr auto;gap:4px 9px;margin:4px 0;align-items:baseline;font-size:.86rem}
+.tpl-dark .csat-readings dt{color:var(--t2)}
+.tpl-dark .csat-readings dd{margin:0;text-align:right;font-weight:700}
+.tpl-dark .csat-track{position:relative;width:calc(100% - 24px);height:3px;margin:12px 12px 22px;background:var(--line2);border-radius:2px}
+.tpl-dark .csat-marker{position:absolute;top:50%;width:12px;height:12px;border-radius:50%;background:var(--am);transform:translate(-50%,-50%)}
+.tpl-dark .csat-track span:not(.csat-marker){position:absolute;top:8px;font-size:11px;transform:translateX(-50%);color:var(--t2)}
+.tpl-dark .csat-answer{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap}
+.tpl-dark .csat-answer input{width:8rem}
+.tpl-dark .csat-feedback{min-height:1.35em;margin:.6rem 0 0}
+.tpl-dark .csat-details{margin-top:12px;padding:.75rem .85rem;background:var(--surf);border:1px solid var(--line);border-radius:8px}
+.tpl-dark .csat-details summary{cursor:pointer;font-weight:700;color:var(--cy)}
+.tpl-dark .csat-details p{margin:.45rem 0 0}
+.tpl-dark .csat-footer{margin:1rem 0;color:var(--t2);font-size:.84rem}
+.tpl-dark .eqrow{max-width:100%;overflow-x:auto}
+@media(max-width:680px){.tpl-dark .csat-lab .lab-body{grid-template-columns:1fr}.tpl-dark .csat-lab canvas{height:185px}}
+</style>
+</head>
+<body class="tpl-dark is-deck">
+<a class="jp-back-link teacher-back" href="../">← 수능 기출 탐구</a>
+<div class="deck">
+<section class="slide slide--title" data-title="문제 만나기">
+  <div class="s-body"><div class="title-layout">
+    <div><p class="eyebrow">2023학년도 대학수학능력시험 수학 20번 · 4점</p>
+    <h1 class="h1 anim-fade-up">속도 그래프에서 이동 거리 읽기</h1><p class="lede">두 구간에 서로 다른 종류의 정보가 주어졌습니다. 이동 거리를 구하려면 어떤 함수가 필요할까요?</p></div>
+    <div class="card" style="margin-top:0"><p>수직선 위의 점 P가 움직인다. 시각 <span class="m" data-k="t">t</span>에서의 속도를 <span class="m" data-k="v(t)">v(t)</span>, 가속도를 <span class="m" data-k="a(t)">a(t)</span>라 하자.</p>
+<div class="eq"><div class="eqrow"><span class="m md" data-k="\begin{aligned} v(t)&amp;=2t^3-8t &amp;&amp;(0\le t\le2)\\ a(t)&amp;=6t+4 &amp;&amp;(t\ge2)\end{aligned}">\begin{aligned} v(t)&amp;=2t^3-8t &amp;&amp;(0\le t\le2)\\ a(t)&amp;=6t+4 &amp;&amp;(t\ge2)\end{aligned}</span></div></div>
+<p>시각 0부터 3까지 점 P가 움직인 거리를 구해 보자.</p>
+
+<p class="csat-footer"><a href="https://wdown.ebsi.co.kr/W61001/01exam/20221117/go3/mathC_mun_F255ZF4A.pdf#page=7" target="_blank" rel="noopener noreferrer">평가원 문제지에서 원문 보기</a></p></div>
+  </div></div>
+  <aside class="notes"><p><strong>권장 시간</strong> 35분 · 도입 4 / 속도 복원 9 / 방향 실험 10 / 계산과 정리 12</p><p>← → 이동, N 교사 노트, S 교사용 창, F 전체화면, O 한눈에 보기.</p><p>첫 화면에서 조건을 표시할 시간을 먼저 주세요. 정답은 풀이 슬라이드와 교사 노트에서 확인할 수 있습니다.</p><p><a href="https://wdown.ebsi.co.kr/W61001/01exam/20221117/go3/math_main_hsj_P52NTAX1_1.pdf" target="_blank" rel="noopener noreferrer">EBSi 정답·풀이</a></p></aside>
+</section>
+<section class="slide" data-title="문제 번역">
+  <div class="s-head"><p class="eyebrow">문제 번역</p><h2 class="ct">거리 적분에 넣을 함수는?</h2></div>
+  <div class="s-body">
+    <div class="card accent"><p>0에서 2까지와 2에서 3까지 주어진 정보를 각각 표시하세요.</p></div>
+    
+  </div>
+  <aside class="notes"><p>학생들에게 조건마다 속도인지 가속도인지 표시하게 합니다. 시작점의 절대 위치는 거리를 구하는 데 필요하지 않습니다.</p></aside>
+</section>
+<section class="slide" data-title="경계의 의미">
+  <div class="s-head"><p class="eyebrow">경계의 의미</p><h2 class="ct">t = 2에서 넘겨 줄 값</h2></div>
+  <div class="s-body">
+    <div class="card accent"><div class="eq"><div class="eqrow"><span class="m md" data-k="v(2)=0\qquad a(2)=16">v(2)=0\qquad a(2)=16</span></div></div> 두 수는 각각 무엇을 말할까?</div>
+    
+  </div>
+  <aside class="notes"><p>정지했다는 말과 가속도가 0이라는 말을 구별하게 합니다. 왼쪽에서 v를 미분한 식도 t=2에서 16이어서 가속도 조건과 일치합니다.</p></aside>
+</section>
+<section class="slide" data-title="속도 복원">
+  <div class="s-head"><p class="eyebrow">속도 복원</p><h2 class="ct">기준 속도에 누적 변화를 더합니다</h2></div>
+  <div class="s-body">
+    <div class="card accent"><div class="eq"><div class="eqrow"><span class="m md" data-k="v(t)=v(2)+\int_2^t (6s+4)\,ds=(t-2)(3t+10)">v(t)=v(2)+\int_2^t (6s+4)\,ds=(t-2)(3t+10)</span></div></div></div>
+    
+  </div>
+  <aside class="notes"><p>부정적분으로 3t²+4t+C를 잡는 방법도 받아 줍니다. 상수가 0이라는 응답에는 t=2를 대입하게 합니다. 속도 증가만으로 부호를 확정하기 전에 출발값을 읽습니다.</p></aside>
+</section>
+<section class="slide" data-title="운동 실험">
+  <div class="s-head"><p class="eyebrow">운동 실험</p><h2 class="ct">시각 2에서 어느 쪽으로 돌아설까?</h2></div>
+  <div class="s-body">
+    <p class="lede">슬라이더를 1.9 → 2 → 2.1로 움직여 보세요.</p>
+    <div class="lab csat-lab" data-csat-lab="motion">
+  <div class="lab-head"><h4>점 P의 위치와 누적 거리</h4></div>
+  <div class="lab-body">
+    <div><canvas role="img" aria-label="속도–시간 그래프. 시각 2 전에는 음수이고 시각 2 후에는 양수입니다."></canvas><div class="csat-track" aria-hidden="true"><span style="left:0%">−8</span><span style="left:88.889%">0</span><span style="left:100%">1</span><span class="csat-marker"></span></div></div>
+    <div class="csat-controls">
+      <p>시간을 움직여 점 P가 어느 방향으로 가는지 살펴보세요. 위치의 기준은 출발점을 0으로 잡았습니다.</p>
+      
+      <label for="teacher-lab-3-range">시각 t</label>
+      <input id="teacher-lab-3-range" type="range" min="0" max="3" step="0.01" value="0">
+      <dl class="csat-readings"><dt>시각 t</dt><dd data-reading="time"></dd><dt>방향</dt><dd data-reading="direction"></dd><dt>출발점 기준 위치</dt><dd data-reading="signed"></dd><dt>누적 이동 거리</dt><dd data-reading="distance"></dd></dl>
+    </div>
+  </div>
+</div>
+    
+  </div>
+  <aside class="notes"><p>시간을 2 부근에서 조금씩 움직여 그래프의 부호와 수직선 위 방향을 이어 설명하게 합니다. 움직임이 작을 때는 위치 숫자를 함께 봅니다.</p></aside>
+</section>
+<section class="slide" data-title="부호표">
+  <div class="s-head"><p class="eyebrow">부호표</p><h2 class="ct">음수 구간의 적분은 방향을 담습니다</h2></div>
+  <div class="s-body">
+    <div class="card accent"><div class="eq"><div class="eqrow"><span class="m md" data-k="v(t)&lt;0\ (0&lt;t&lt;2),\qquad v(t)&gt;0\ (2&lt;t\le3)">v(t)&lt;0\ (0&lt;t&lt;2),\qquad v(t)&gt;0\ (2&lt;t\le3)</span></div></div> 정적분의 부호를 거리 계산에 어떻게 반영할까?</div>
+    
+  </div>
+  <aside class="notes"><p>0과 2에서 속도가 0임을 확인한 뒤, 구간을 가르는 시각 2에서 부호가 실제로 바뀐다는 점을 말하게 합니다.</p></aside>
+</section>
+<section class="slide" data-title="풀이">
+  <div class="s-head"><p class="eyebrow">풀이</p><h2 class="ct">변위 1, 이동 거리 17</h2></div>
+  <div class="s-body">
+    <div class="card accent"><div class="eq"><div class="eqrow"><span class="m md" data-k="\int_0^2v(t)\,dt=-8,\quad\int_2^3v(t)\,dt=9,\quad\int_0^3|v(t)|\,dt=17">\int_0^2v(t)\,dt=-8,\quad\int_2^3v(t)\,dt=9,\quad\int_0^3|v(t)|\,dt=17</span></div></div></div>
+    
+  </div>
+  <aside class="notes"><p>절댓값을 적분 밖에 한 번만 씌우면 1이라고 나옵니다. 이 값은 최종 위치에서 출발 위치를 뺀 변위로 해석됩니다. 숫자 두 개를 반드시 운동 방향과 함께 말하게 합니다.</p></aside>
+</section>
+<section class="slide" data-title="마무리">
+  <div class="s-head"><p class="eyebrow">마무리</p><h2 class="ct">출발점으로 돌아오는 순간에도 거리가 있을까?</h2></div>
+  <div class="s-body">
+    <p class="lede">슬라이더에서 다시 출발점을 지나는 시각을 찾아 보세요.</p>
+    <div class="lab csat-lab" data-csat-lab="motion">
+  <div class="lab-head"><h4>점 P의 위치와 누적 거리</h4></div>
+  <div class="lab-body">
+    <div><canvas role="img" aria-label="속도–시간 그래프. 시각 2 전에는 음수이고 시각 2 후에는 양수입니다."></canvas><div class="csat-track" aria-hidden="true"><span style="left:0%">−8</span><span style="left:88.889%">0</span><span style="left:100%">1</span><span class="csat-marker"></span></div></div>
+    <div class="csat-controls">
+      <p>시간을 움직여 점 P가 어느 방향으로 가는지 살펴보세요. 위치의 기준은 출발점을 0으로 잡았습니다.</p>
+      
+      <label for="teacher-lab-6-range">시각 t</label>
+      <input id="teacher-lab-6-range" type="range" min="0" max="3" step="0.01" value="0">
+      <dl class="csat-readings"><dt>시각 t</dt><dd data-reading="time"></dd><dt>방향</dt><dd data-reading="direction"></dd><dt>출발점 기준 위치</dt><dd data-reading="signed"></dd><dt>누적 이동 거리</dt><dd data-reading="distance"></dd></dl>
+    </div>
+  </div>
+</div>
+    <p class="csat-footer"><a href="../../../수능문제/미적분1/2023수능20번_탐구실.html" target="_blank" rel="noopener noreferrer">학생용 탐구실 열기 →</a></p>
+  </div>
+  <aside class="notes"><p>2<t<3에서 위치가 −8에서 1로 증가하므로 돌아오는 시각은 한 번 있습니다. 그때까지의 전체 이동 거리는 16입니다. 정확한 시각 계산은 요구하지 않습니다.</p></aside>
+</section>
+</div>
+<div class="deck-chrome">
+  <div class="chrome-left"><span class="idx"><b id="cNow">1</b> / <span id="cTot">8</span></span><span class="sep"></span><span class="chap" id="chapLabel"></span></div>
+  <div class="chrome-right">
+    <div class="kbd-help">← → 이동 · N 교사 노트 · S 교사용 창 · F 전체화면 · O 한눈에 보기</div>
+    <div aria-label="슬라이드 조작" class="touch-nav">
+      <button aria-label="이전 슬라이드" id="touchPrev" type="button">‹</button>
+      <button id="touchNotes" type="button">교사 노트</button>
+      <button aria-label="다음 슬라이드" id="touchNext" type="button">›</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
