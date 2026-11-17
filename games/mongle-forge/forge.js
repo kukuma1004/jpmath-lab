@@ -18,6 +18,8 @@
   const book = $('book');
   const timeBar = $('time-bar');
   const techniqueFx = $('technique-fx');
+  const finalForm = Forge.forms.at(-1);
+  const finalBoss = Forge.regions.at(-1).boss.name;
   const forgeOdds = $('forge-odds');
   const forgeBonus = $('forge-bonus');
   const forgeHelp = $('forge-help');
@@ -203,7 +205,9 @@
     });
 
     if (run) {
-      $('round-note').textContent = state.level < 2 ? '말랑이를 눌러 검을 휘둘러요.' : '타격 ' + Forge.chainEvery(state) + '회마다 연계 베기가 나가요.';
+      const cadence = Forge.chainEvery(state);
+      $('round-note').textContent = state.level < 2 ? '말랑이를 눌러 검을 휘둘러요.' :
+        cadence === 1 ? '공격할 때마다 연계 베기가 나가요.' : '타격 ' + cadence + '회마다 연계 베기가 나가요.';
       roundButton.textContent = '원정 마치기';
       renderHits();
       tick();
@@ -223,8 +227,8 @@
 
     const won = campaignCompleted();
     $('welcome-art').src = art(won ? 'sword-' + Forge.maxLevel : result?.won ? 'meteor' : 'ore');
-    $('ready-title').textContent = won ? '은하 성운검 완성!' : result ? '별철 +' + fmt(result.earned) : '별철을 찾아 출발!';
-    $('ready-copy').textContent = won ? '은하 용 문지기를 이기고 최고의 대장장이가 됐어요.' :
+    $('ready-title').textContent = won ? finalForm.name + ' 완성!' : result ? '별철 +' + fmt(result.earned) : '별철을 찾아 출발!';
+    $('ready-copy').textContent = won ? finalBoss + '를 이기고 최고의 대장장이가 됐어요.' :
       result ? (result.won ? '문지기를 쓰러뜨렸어요!' : '모은 별철로 검을 강화해 보세요.') :
         Forge.seconds + '초 동안 말랑이를 눌러 검을 휘둘러요.';
     $('round-note').textContent = result ? (result.bonus ? '목표 달성 보너스 +' + fmt(result.bonus) + ' 별철' : '모은 별철은 바로 보관돼요.') : '말랑이를 쓰러뜨려 별철을 모아요.';
@@ -373,7 +377,7 @@
   }
 
   function animateTechnique(name) {
-    if (!name || reduced.matches) return;
+    if (!name || reduced.matches || techniqueFx.firstElementChild?.classList.contains(name)) return;
     const effect = element('span', 'technique ' + name);
     effect.append(element('i', 'technique-shape'), element('i', 'technique-shape'), element('i', 'technique-shape'));
     techniqueFx.replaceChildren(effect);
@@ -407,7 +411,7 @@
   function checkEnding() {
     if (endingShown || !campaignCompleted()) return;
     endingShown = true;
-    tell('은하 성운검을 완성하고 은하 용 문지기를 격파했어요!');
+    tell(finalForm.name + '을 완성하고 ' + finalBoss + '를 격파했어요!');
   }
 
   function finishRun() {

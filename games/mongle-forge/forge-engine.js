@@ -14,10 +14,17 @@ const Forge = (() => {
     { cost: 1550, chance: 100 }, { cost: 1950, chance: 98 }, { cost: 2450, chance: 97 },
     { cost: 3100, chance: 95 }, { cost: 3800, chance: 93 }, { cost: 4600, chance: 90 },
     { cost: 5600, chance: 88 }, { cost: 6800, chance: 85 },
+    { cost: 8300, chance: 100 }, { cost: 10200, chance: 99 }, { cost: 12400, chance: 99 },
+    { cost: 15000, chance: 98 }, { cost: 18000, chance: 98 }, { cost: 21700, chance: 97 },
+    { cost: 26000, chance: 97 }, { cost: 31000, chance: 96 }, { cost: 37000, chance: 95 },
+    { cost: 44000, chance: 94 }, { cost: 52500, chance: 93 }, { cost: 62000, chance: 92 },
   ];
   const maxLevel = upgradesByLevel.length;
   const recoveryBonus = 12;
-  const damage = [1, 2, 3, 4, 5, 7, 9, 11, 14, 18, 23, 30, 38, 46, 56, 68, 83, 100, 120, 143, 170];
+  const damage = [
+    1, 2, 3, 4, 5, 7, 9, 11, 14, 18, 23, 30, 38, 46, 56, 68, 83, 100, 120, 143, 170,
+    204, 245, 294, 352, 421, 503, 600, 715, 851, 1012, 1203, 1429,
+  ];
 
   const forms = [
     { level: 0, name: '연습용 나무검', perk: '누른 대상에게 기본 베기', pattern: 'single', color: '#ffe3ad' },
@@ -30,6 +37,12 @@ const Forge = (() => {
     { level: 16, name: '오로라 파도검', perk: '빛의 물결 · 전체를 베고 가로·세로줄에 공격력 100%', pattern: 'all', effect: 'aurora', fullPower: 'cross', color: '#9ef5dc' },
     { level: 18, name: '일식 고리검', perk: '일식 고리 · 원정장 전체에 공격력 100%', pattern: 'all', effect: 'eclipse', fullPower: 'all', color: '#ffd18c' },
     { level: 20, name: '은하 성운검', perk: '은하 소용돌이 · 원정장 전체에 공격력 150%', pattern: 'all', effect: 'galaxy', fullPower: 'all', multiplier: 1.5, color: '#e5c8ff' },
+    { level: 22, name: '뇌운 갈퀴검', perk: '낙뢰 · 전체 150%, 같은 세로줄 185%', pattern: 'all', effect: 'lightning', fullPower: 'column', multiplier: 1.85, splashMultiplier: 1.5, color: '#fff5aa' },
+    { level: 24, name: '심해 닻검', perk: '해류 · 전체 150%, 같은 가로·세로줄 185%', pattern: 'all', effect: 'anchor', fullPower: 'cross', multiplier: 1.85, splashMultiplier: 1.5, color: '#9cfbf0' },
+    { level: 26, name: '중력 렌즈검', perk: '중력 압축 · 전체 165%, 붙어 있는 상하좌우 215%', pattern: 'all', effect: 'gravity', fullPower: 'near', multiplier: 2.15, splashMultiplier: 1.65, color: '#fbc0ff' },
+    { level: 28, name: '빙하 성채검', perk: '빙하 파쇄 · 원정장 전체에 공격력 215%', pattern: 'all', effect: 'glacier', fullPower: 'all', multiplier: 2.15, color: '#b8f0ff' },
+    { level: 30, name: '시계태엽검', perk: '시간 가속 · 연계가 더 자주 발동하고 전체에 230%', pattern: 'all', effect: 'clockwork', fullPower: 'all', multiplier: 2.3, cadence: 3, color: '#ffe4a3' },
+    { level: 32, name: '새벽 왕관검', perk: '여명 개화 · 가속 연계로 원정장 전체에 공격력 250%', pattern: 'all', effect: 'dawn', fullPower: 'all', multiplier: 2.5, cadence: 3, color: '#ffdbaa' },
   ];
 
   const regions = [
@@ -72,6 +85,30 @@ const Forge = (() => {
         { name: '별구름 꼬마 용', art: 'nebula-dragon', hp: 110, reward: 240 },
       ],
       boss: { name: '은하 용 문지기', art: 'nebula-dragon', hp: 980, reward: 1480 },
+    },
+    {
+      name: '천둥 협곡', texture: 'storm', level: 20, goal: 20, bonus: 1200,
+      enemies: [
+        { name: '구름귀 토끼', art: 'cloud-hare', hp: 150, reward: 730 },
+        { name: '뇌운 산양', art: 'storm-ram', hp: 235, reward: 1160 },
+      ],
+      boss: { name: '번개뿔 문지기', art: 'storm-ram', hp: 2200, reward: 8500 },
+    },
+    {
+      name: '유리 해구', texture: 'trench', level: 24, goal: 22, bonus: 3100,
+      enemies: [
+        { name: '유리 지느러미', art: 'deep-seal', hp: 300, reward: 1750 },
+        { name: '초롱 꼬마 오징어', art: 'trench-squid', hp: 440, reward: 2650 },
+      ],
+      boss: { name: '해구 등불 문지기', art: 'trench-squid', hp: 5000, reward: 23500 },
+    },
+    {
+      name: '여명 궁정', texture: 'dawn', level: 28, goal: 24, bonus: 6800,
+      enemies: [
+        { name: '햇살 날개새', art: 'dawn-bird', hp: 640, reward: 4300 },
+        { name: '왕관 꼬마 용', art: 'crown-dragon', hp: 1000, reward: 6200 },
+      ],
+      boss: { name: '여명 용 문지기', art: 'crown-dragon', hp: 12000, reward: 56000 },
     },
   ];
 
@@ -137,8 +174,8 @@ const Forge = (() => {
     return damage[state.level] + state.polish * 2;
   }
 
-  function chainEvery(state) {
-    return 4 - state.echo;
+  function chainEvery(state, form = forms[formIndex(state.level)]) {
+    return (form.cadence ?? 4) - state.echo;
   }
 
   function enhancement(state, from = state.level) {
@@ -206,6 +243,7 @@ const Forge = (() => {
       const rowDistance = Math.abs(row - Math.floor(neighbor / 3));
       const columnDistance = Math.abs(column - neighbor % 3);
       if (pattern === 'row') return rowDistance === 0;
+      if (pattern === 'column') return columnDistance === 0;
       if (pattern === 'near') return rowDistance + columnDistance === 1;
       if (pattern === 'cross') return rowDistance === 0 || columnDistance === 0;
       return pattern === 'all';
@@ -216,15 +254,16 @@ const Forge = (() => {
     if (!run.spots[index]) return null;
     run.turns += 1;
     const form = forms[formIndex(state.level)];
-    const chain = form.pattern !== 'single' && run.turns % chainEvery(state) === 0;
+    const chain = form.pattern !== 'single' && run.turns % chainEvery(state, form) === 0;
     const targets = chain ? [index, ...splashTargets(form.pattern, index)] : [index];
     const basePower = power(state);
     const strength = chain && form.multiplier ? Math.ceil(basePower * form.multiplier) : basePower;
     const fullPowerTargets = chain && form.fullPower ? splashTargets(form.fullPower, index) : [];
+    const splashStrength = Math.ceil(form.splashMultiplier ? basePower * form.splashMultiplier : strength * 0.6);
     const hits = targets.map((target, order) => {
       const enemy = run.spots[target];
       const fullPowerHit = order === 0 || fullPowerTargets.includes(target);
-      const points = fullPowerHit ? strength : Math.max(1, Math.ceil(strength * 0.6));
+      const points = fullPowerHit ? strength : splashStrength;
       enemy.hp = Math.max(0, enemy.hp - points);
       const killed = enemy.hp === 0;
       const reward = killed ? enemy.reward : 0;
