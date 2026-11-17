@@ -1,145 +1,131 @@
 import * as T from './vendor/three.module.min.js';
-import { track } from './track.js';
+import { track } from './track.js?v=4';
 
-const mat = (color, roughness = .68) => new T.MeshStandardMaterial({ color, roughness });
-const rubber = mat(0x111626);
-const trim = mat(0x233149, .46);
-const glassTop = mat(0x306a82, .26);
-const light = new T.MeshBasicMaterial({ color: 0xfff0b7 });
-const orange = new T.MeshBasicMaterial({ color: 0xf95f39 });
-const white = mat(0xfff1d5, .48);
 const box = new T.BoxGeometry();
-const tire = new T.CylinderGeometry(.48, .48, .40, 12);
-const hub = new T.CylinderGeometry(.24, .24, .045, 10);
-const liveries = [
-  { body: 0xf99d24, stripes: 0xffedb0, dark: 0xa5492b, nose: .58, wing: 2.13, round: 1.0, number: '27' },
-  { body: 0xf24843, stripes: 0xffe2c7, dark: 0x922b3c, nose: .78, wing: 2.26, round: .68, number: '08' },
-  { body: 0x2fd2d4, stripes: 0xe1f7dc, dark: 0x246c9c, nose: .83, wing: 1.89, round: 1.12, number: '51' },
-  { body: 0x8d7bfa, stripes: 0xe9c7ff, dark: 0x5351a0, nose: .45, wing: 2.18, round: 1.29, number: '13' },
-  { body: 0xf4ed7a, stripes: 0xd6f3c2, dark: 0x4c9072, nose: .64, wing: 1.95, round: .88, number: '35' }
+const tire = new T.CylinderGeometry(.37, .37, .22, 28);
+const rim = new T.CylinderGeometry(.258, .258, .022, 24);
+const tube = new T.CylinderGeometry(1, 1, 1, 20);
+const designRows = [
+  ['vector', '27', 0xe99a25, 0xffeed1, .55, .10, 1.16],
+  ['raptor', '08', 0xc92c27, 0xf8c5ac, .68, -.12, 1.13],
+  ['vortex', '51', 0xe7e6dc, 0x32aea9, .53, -.03, 1.08],
+  ['nova', '13', 0x175cc7, 0xffc45c, .47, .24, 1.22],
+  ['pulse', '35', 0x278b78, 0xf4de70, .50, .12, 1.12]
 ];
+const liveries = designRows.map(([id, number, body, stripe, cabin, offset, roof]) =>
+  ({id, number, body, stripe, cabin, offset, roof}));
 
-function shell(rows) {
-  const model = [];
-  const bands = [[-1, 0], [1, 0], [.91, .62], [.58, 1], [-.58, 1], [-.91, .62]];
-  for (const [z, w, low, high] of rows) {
-    for (const [x, t] of bands) model.push(new T.Vector3(x * w, T.MathUtils.lerp(low, high, t), z));
-  }
-  const positions = [];
-  function triangle(a, b, c) { positions.push(...model[a].toArray(), ...model[b].toArray(), ...model[c].toArray()); }
-  for (let i = 0; i < rows.length - 1; i++) {
-    for (let j = 0; j < 6; j++) {
-      const a = i * 6 + j;
-      const b = i * 6 + (j + 1) % 6;
-      triangle(a, b, a + 6);
-      triangle(b, b + 6, a + 6);
+// Sample longitudinal sections with shared vertices so highlights flow around the arches.
+function loft(rows, section) {
+  const centers = new T.CatmullRomCurve3(rows.map(([z, w, base]) => new T.Vector3(w, base, z)), false, 'catmullrom', .36);
+  const heights = new T.CatmullRomCurve3(rows.map(([z, , , top], i) => new T.Vector3(i, top, z)), false, 'catmullrom', .36);
+  const vertices = [], indices = [];
+  const steps = (rows.length - 1) * 4, n = section.length;
+  for (let i = 0; i <= steps; i++) {
+    const mid = centers.getPoint(i / steps), high = heights.getPoint(i / steps).y;
+    for (const [x, y] of section) vertices.push(x * mid.x, mid.y + (high - mid.y) * y, mid.z);
+    if (i === steps) continue;
+    for (let j = 0; j < n; j++) {
+      const a = i * n + j, b = i * n + (j + 1) % n;
+      indices.push(a, b, a + n, b, b + n, a + n);
     }
   }
-  for (let i = 1; i < 5; i++) {
-    triangle(0, i + 1, i);
-    const last = rows.length * 6 - 6;
-    triangle(last, last + i, last + i + 1);
+  for (let j = 1; j < n - 1; j++) {
+    indices.push(0, j + 1, j, steps * n, steps * n + j, steps * n + j + 1);
   }
-  const geometry = new T.BufferGeometry();
-  geometry.setAttribute('position', new T.Float32BufferAttribute(positions, 3));
-  geometry.computeVertexNormals();
-  return geometry;
+  const g = new T.BufferGeometry();
+  g.setAttribute('position', new T.Float32BufferAttribute(vertices, 3));
+  g.setIndex(indices);
+  g.computeVertexNormals();
+  return g;
 }
-
-// The static body and wheel details share draw calls by surface.
-function buildBody(model, design, reflection) {
-  const paint = new T.MeshPhysicalMaterial({
-    color: design.body, roughness: .25, clearcoat: .92, clearcoatRoughness: .21,
-    envMap: reflection, envMapIntensity: 1.05
-  });
-  const glass = new T.MeshPhysicalMaterial({
-    color: 0x163452, roughness: .24, clearcoat: .58, clearcoatRoughness: .18,
-    envMap: reflection, envMapIntensity: .76
-  });
-  const stripe = mat(design.stripes, .41);
-  const lower = mat(design.dark, .52);
-  const buckets = new Map();
-  const transform = new T.Object3D();
-  function part(material, geometry, x, y, z, sx = 1, sy = 1, sz = 1, rx = 0, ry = 0, rz = 0) {
-    transform.position.set(x, y, z);
-    transform.scale.set(sx, sy, sz);
-    transform.rotation.set(rx, ry, rz);
+const bodySection = [[-.76,0],[.76,0],[.97,.14],[1,.39],[.97,.62],[.87,.81],[.67,.94],[.37,.99],[0,1],[-.37,.99],[-.67,.94],[-.87,.81],[-.97,.62],[-1,.39],[-.97,.14]];
+const dome = [[-.92,0],[.92,0],[1,.1],[.96,.35],[.84,.60],[.65,.82],[.38,.96],[0,1],[-.38,.96],[-.65,.82],[-.84,.60],[-.96,.35],[-1,.1]];
+const dark = new T.MeshStandardMaterial({color:0x181e24, roughness:.36, metalness:.4});
+const rubber = new T.MeshStandardMaterial({color:0x101114, roughness:.93});
+const metal = new T.MeshStandardMaterial({color:0x888e94, roughness:.28, metalness:.67});
+const headlight = new T.MeshBasicMaterial({color:0xe1faff});
+const taillight = new T.MeshBasicMaterial({color:0xff2b27, toneMapped:false});
+function buildBody(model, d, envMap) {
+  const paint = new T.MeshPhysicalMaterial({color:d.body, metalness:.55, roughness:.24, clearcoat:1, clearcoatRoughness:.11, envMap, envMapIntensity:1.1});
+  const glass = new T.MeshPhysicalMaterial({color:0x263945, metalness:.73, roughness:.13, clearcoat:1, envMap, envMapIntensity:1.28});
+  const stripe = new T.MeshStandardMaterial({color:d.stripe, metalness:.23, roughness:.32});
+  const buckets = new Map(), transform = new T.Object3D();
+  function part(material, geometry, x=0, y=0, z=0, sx=1, sy=1, sz=1, rx=0, ry=0, rz=0) {
+    transform.position.set(x,y,z);
+    transform.scale.set(sx,sy,sz);
+    transform.rotation.set(rx,ry,rz);
     transform.updateMatrix();
     const g = (geometry.index ? geometry.toNonIndexed() : geometry.clone()).applyMatrix4(transform.matrix);
-    const bucket = buckets.get(material) || { positions: [], normals: [] };
-    bucket.positions.push(...g.getAttribute('position').array);
-    bucket.normals.push(...g.getAttribute('normal').array);
-    buckets.set(material, bucket);
+    const bucket = buckets.get(material) || {positions:[], normals:[]};
+    for (const value of g.attributes.position.array) bucket.positions.push(value);
+    for (const value of g.attributes.normal.array) bucket.normals.push(value);
+    buckets.set(material,bucket);
     g.dispose();
   }
-  function block(material, ...args) { part(material, box, ...args); }
-  const chassis = shell([[-2.04, .96, .27, .71], [-1.55, 1.03, .26, .90],
-    [-.21, .91, .24, .90], [.82, .72, .24, .76], [1.71, design.nose, .24, .54], [2.10, design.nose * .72, .28, .45]]);
-  part(paint, chassis, 0, 0, 0);
-  chassis.dispose();
-  const canopy = shell([[-.97, .53, .82, .99], [-.46, .52, .85, 1.29 * design.round],
-    [.02, .43, .83, 1.24 * design.round], [.59, .29, .74, .84]]);
-  part(glass, canopy, 0, 0, 0);
-  canopy.dispose();
-
-  block(lower, 0, .26, -.24, 1.65, .24, 3.55);
-  block(trim, 0, .30, 1.75, 2.54, .16, .57);
-  block(paint, 0, .39, 1.84, 2.52, .12, .33);
-  block(stripe, 0, .459, 1.92, 2.40, .025, .068);
-  block(stripe, 0, .55, 1.42, .285, .044, .85, .19);
-  block(glassTop, 0, (1.29 * design.round + 1.24 * design.round) / 2 + .008, -.22, .24, .025, .46, -.05);
-  block(trim, 0, .35, -1.93, 2.10, .23, .34);
-  block(paint, 0, 1.09, -1.60, design.wing, .14, .56, -.09);
-  block(stripe, 0, 1.11, -1.39, design.wing * .91, .044, .125);
-  for (const side of [-1, 1]) {
-    // Thin painted shoulders trace the canopy and catch the low sun.
-    block(paint, side * .485, .91, -.32, .085, .085, .92, .075, side * .13);
-    block(stripe, side * .44, .771, .68, .062, .035, .78, .20, side * .19);
-    block(trim, side * .48, .49, -2.10, .40, .30, .18);
-    block(lower, side * .63, .78, -1.67, .17, .62, .18, -.16);
-    block(trim, side * design.wing / 2, 1.12, -1.61, .11, .35, .68, -.09);
-    block(paint, side * .86, .53, -.56, .61, .39, 1.31, 0, side * .035);
-    block(stripe, side * .91, .735, -.37, .35, .047, .93);
-    block(lower, side * 1.135, .58, -.50, .065, .17, .76);
-    block(trim, side * .89, .555, .093, .39, .20, .085);
-    for (const ventZ of [-.83, -.69, -.55]) {
-      block(trim, side * .91, .76, ventZ, .27, .016, .048);
-    }
-    block(light, side * .86, .45, 1.97, .42, .07, .055);
-    block(orange, side * .74, .64, -2.04, .31, .10, .069);
-    block(white, side * .44, .41, -2.085, .17, .15, .14);
-    for (const z of [-1.34, 1.18]) {
-      part(rubber, tire, side * 1.03, .49, z, 1, z < 0 ? 1.18 : .86, 1, 0, 0, Math.PI / 2);
-      part(stripe, hub, side * 1.24, .49, z, 1, 1, 1, 0, 0, Math.PI / 2);
-    }
+  const block = (mat,...args) => part(mat,box,...args);
+  function skin(mat,rows,section=bodySection,x=0,z=0) {
+    const g=loft(rows,section);
+    part(mat,g,x,0,z);
+    g.dispose();
   }
-  for (const [material, { positions, normals }] of buckets) {
-    const geometry = new T.BufferGeometry();
-    geometry.setAttribute('position', new T.Float32BufferAttribute(positions, 3));
-    geometry.setAttribute('normal', new T.Float32BufferAttribute(normals, 3));
-    const mesh = new T.Mesh(geometry, material);
-    mesh.receiveShadow = Boolean(material.isMeshStandardMaterial);
-    model.add(mesh);
+  const power=d.id==='raptor', compact=d.id==='nova';
+  skin(dark,[[-2.09,1.01,.15,.43],[-1.53,1.09,.13,.48],[-.25,.99,.13,.40],[1.34,1.07,.13,.43],[2.12,.97,.13,.22]]);
+  skin(paint,[[-2.01,.96,.44,.73],[-1.77,1.04,.39,.80],[-1.15,1.01,.35,.82],[-.42,.88,.26,.76],[.45,.82,.29,.67],[1.20,.98,.29,power?.71:.57],[1.85,.97,.22,.43],[2.06,.82,.20,.31]]);
+  // Long separate wheel fairings leave deep venturi channels alongside the cockpit.
+  for (const side of [-1,1]) {
+    skin(paint,[[-2.03,.17,.44,.68],[-1.79,.27,.43,.88],[-1.36,.31,.54,power?1.02:.98],[-1.03,.29,.47,.94],[-.62,.19,.27,.78],[-.16,.10,.24,.51],[.39,.085,.27,.48],[.76,.18,.40,.71],[1.16,.275,.55,compact?.99:.92],[1.46,.28,.53,.89],[1.81,.23,.30,.69],[2.02,.16,.23,.48]],dome,side*.866);
+    block(dark,side*1.025,.245,0,.15,.095,1.30,0,side*.045);
+    for (const z of [-1.31,1.23]) {
+      part(rubber,tire,side*1.015,.38,z,1,1,1,0,0,Math.PI/2);
+      part(metal,rim,side*1.124,.38,z,1,1,1,0,0,Math.PI/2);
+      part(dark,rim,side*1.137,.38,z,.86,.55,.86,0,0,Math.PI/2);
+      for (let i=0;i<7;i++) {
+        const a=i*Math.PI*2/7;
+        block(metal,side*1.148,.38+.11*Math.cos(a),z+.11*Math.sin(a),.013,.19,.035,a+.24);
+      }
+    }
+    for (let i=0;i<5;i++) {
+      const z=-1.63+i*.074, y=(power?1.02:.98)-.043*Math.pow((z+1.35)/.34,2);
+      block(dark,side*.865,y+.006,z,.31,.014,.044);
+    }
+    block(dark,side*.865,.613,1.91,.30,.045,.19,.63,side*.11);
+    for (let i=0;i<2;i++) block(headlight,side*(.833+i*.081),.633,1.925,.027,.018,.185,.63,side*.11);
+    block(dark,side*.74,.586,-2.018,.55,.154,.12,0,side*.11,side*.068);
+    for (let i=0;i<7;i++) block(taillight,side*(.53+i*.066),.597+i*.004,-2.085+i*.006,.052,.035,.02);
+    part(metal,tube,side*.29,.385,-2.035,.106,.19,.095,Math.PI/2);
+    part(rubber,tube,side*.29,.385,-2.134,.076,.016,.067,Math.PI/2);
+    for(const x of [.48,.87]) block(dark,side*x,.228,-1.94,.036,.25,.34,-.12,side*.08);
   }
-  const label = document.createElement('canvas');
-  label.width = 128;
-  label.height = 128;
-  const ctx = label.getContext('2d');
-  ctx.fillStyle = '#fff1d1';
-  ctx.fillRect(4, 18, 120, 92);
-  ctx.fillStyle = '#192332';
-  ctx.font = 'italic 900 76px Arial';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(design.number, 62, 68);
-  const texture = new T.CanvasTexture(label);
-  texture.colorSpace = T.SRGBColorSpace;
-  const decal = new T.Mesh(new T.PlaneGeometry(.72, .70), new T.MeshBasicMaterial({ map: texture, transparent: true,
-    polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1, depthWrite: false }));
-  decal.rotation.x = -Math.PI / 2 + .21;
-  decal.rotation.z = Math.PI;
-  decal.position.set(0, .758, .77);
+  skin(glass,[[-1.21,.22,.755,.802],[-.93,d.cabin*.81,.765,d.roof*.87],[-.52,d.cabin,.70,d.roof*.985],[-.16,d.cabin,.70,d.roof],[.27,d.cabin*.92,.66,d.roof*.94],[.65,d.cabin*.73,.63,.91],[.91,d.cabin*.46,.63,.70]],dome,0,d.offset);
+  // Flying buttresses taper from the rear wheel shoulders to the cabin roof.
+  for(const side of [-1,1]) {
+    skin(paint,[[-1.67,.061,.762,.817],[-1.27,.098,.768,.884],[-.89,.082,.767,d.roof*.845],[-.55,.046,.757,d.roof*.87],[-.23,.023,.745,d.roof*.82]],dome,side*d.cabin*.77,d.offset);
+  }
+  skin(stripe,[[-2.019,.187,.733,.738],[-1.77,.19,.802,.807],[-1.49,.188,.818,.824],[-1.25,.175,.824,.829],[-1.08,.13,.817,.822]]);
+  if(power || compact || d.id==='vortex') {
+    const h=power?1.12:compact?1.03:.98;
+    for (const side of [-1,1]) {
+      block(dark,side*.63,(h+.73)/2,-1.75,.046,h-.72,.20,-.22);
+      block(paint,side*1.055,h,-1.79,.046,.16,.40,-.11);
+    }
+    block(dark,0,h,-1.78,2.1,.055,power?.39:.26,-.10);
+  }
+  const decalCanvas=document.createElement('canvas');
+  decalCanvas.width=128; decalCanvas.height=96;
+  const ctx=decalCanvas.getContext('2d');
+  ctx.fillStyle='#1a1a1c'; ctx.font='italic 900 74px Arial'; ctx.textAlign='center'; ctx.fillText(d.number,62,75);
+  const texture=new T.CanvasTexture(decalCanvas); texture.colorSpace=T.SRGBColorSpace;
+  const decal=new T.Mesh(new T.PlaneGeometry(.34,.32),new T.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false}));
+  decal.rotation.set(-Math.PI/2-.054,0,Math.PI);
+  decal.position.set(0,.829,-1.55);
   model.add(decal);
+  for(const [material, bucket] of buckets) {
+    const g=new T.BufferGeometry();
+    g.setAttribute('position',new T.Float32BufferAttribute(bucket.positions,3));
+    g.setAttribute('normal',new T.Float32BufferAttribute(bucket.normals,3));
+    model.add(new T.Mesh(g,material));
+  }
 }
 
 function carReflection() {
@@ -219,30 +205,56 @@ export function buildCars(scene) {
     const model = new T.Group();
     const shadow = new T.Mesh(shadowGeometry, shadowMaterial);
     shadow.renderOrder = 2;
-    buildBody(model, design, reflection);
+    const body = new T.Group();
+    buildBody(body, design, reflection);
+    model.add(body);
     const jets = new T.Group();
     if (id === 0) {
       for (const side of [-1, 1]) {
         const flame = new T.Mesh(jetGeometry, exhaust);
-        flame.position.set(side * .48, .49, -2.14);
+        flame.position.set(side * .29, .385, -2.14);
         jets.add(flame);
       }
       model.add(jets);
     }
     scene.add(shadow, model);
-    return { model, shadow, jets };
+    return { model, shadow, jets, body, id: design.id };
   });
 }
 
+export function selectVehicle(visuals, id) {
+  const player = visuals[0];
+  const other = visuals.find(v => v.id === id);
+  if (!other || player === other) return;
+  const previous = player.body, previousId = player.id;
+  player.model.add(other.body);
+  other.model.add(previous);
+  player.body = other.body;
+  player.id = other.id;
+  other.body = previous;
+  other.id = previousId;
+}
+
 const sample = {};
-export function driveCar(visual, car, boosting, elapsed) {
-  const p = track.sample(car.distance, sample);
+const touchdown = {};
+export function driveCar(visual, car, boosting, elapsed, course = track) {
+  const p = course.sample(car.distance, sample);
   const x = p.x - p.dz * car.lane;
   const z = p.z + p.dx * car.lane;
   const y = p.y + p.bank * car.lane;
   const heading = Math.atan2(p.dx, p.dz) - car.slip;
+  let pitch = Math.atan(p.slope);
+  if (car.flight) {
+    const { launch, span } = car.flight;
+    const flightProgress = (car.distance - launch) / span;
+    course.sample(launch + span, touchdown);
+    pitch = T.MathUtils.lerp(T.MathUtils.clamp(car.pitch, -.34, .23),
+      Math.atan(touchdown.slope), T.MathUtils.smoothstep(flightProgress, .76, 1));
+  }
   visual.model.position.set(x, y + car.air + .04, z);
-  visual.model.rotation.set(-Math.atan(p.slope), heading, Math.atan(-p.bank) - car.slip * .19, 'YXZ');
+  visual.model.rotation.set(-pitch, heading, Math.atan(-p.bank) - car.slip * .19, 'YXZ');
+  const marker = (car.distance % course.length + course.length) % course.length;
+  visual.shadow.visible = !course.gaps.some(gap => gap.start <= marker && marker < gap.end);
   const cast = 1.85 + car.air * .84;
   const offsetX = -.78 * cast;
   const offsetZ = .63 * cast;

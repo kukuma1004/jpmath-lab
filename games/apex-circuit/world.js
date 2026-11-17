@@ -1,12 +1,12 @@
 import * as T from './vendor/three.module.min.js';
-import { courseFrame, coursePoint, track } from './track.js';
+import { grain, alpine, metropolis, coastalBridge, roadFurniture } from './world-landmarks.js?v=4';
+import { courseFrame, coursePoint, track } from './track.js?v=4';
 
 const box = new T.BoxGeometry();
 const dummy = new T.Object3D();
 const surface = (color, roughness = 0.82) => new T.MeshStandardMaterial({ color, roughness });
 const unlit = color => new T.MeshBasicMaterial({ color });
-const asphalt = surface(0x464650);
-const steel = surface(0x353d53);
+const steel = new T.MeshStandardMaterial({color:0x6c7984,roughness:.43,metalness:.34,side:T.DoubleSide});
 const concrete = surface(0xadb5a8);
 const white = surface(0xffecd2);
 const red = surface(0xe45b44);
@@ -71,24 +71,24 @@ function combineStaticBoxes(scene) {
   }
 }
 
-function at(distance, lane, height, ...scale) {
-  return { ...courseFrame(distance, lane, height), scale };
-}
-
 function terrainTransform(x, y, z, sx, sy, sz, yaw = 0) {
   return { position: new T.Vector3(x, y, z), rotation: new T.Euler(0, yaw, 0), scale: [sx, sy, sz] };
 }
 
-function strip(parent, material, left, right, low, high, step = 1.7) {
+function strip(track, parent, material, left, right, low, high, step = 1.7) {
+  const point = track.point || coursePoint;
   const sections = Math.ceil(track.length / step);
+  const gaps = track.gaps || [];
+  const distances = [...new Set([...Array.from({length: sections + 1}, (_,i) => i * track.length / sections),
+    ...gaps.flatMap(g => [g.start, g.end])])].sort((a,b) => a-b);
   const positions = [];
   const uv = [];
   const indices = [];
-  for (let i = 0; i <= sections; i++) {
-    const d = i / sections * track.length;
-    positions.push(...coursePoint(d, left, low).toArray(), ...coursePoint(d, right, high).toArray());
-    uv.push(0, d / 7, 1, d / 7);
-    if (i === sections) continue;
+  for (let i = 0; i < distances.length; i++) {
+    const d = distances[i];
+    positions.push(...point(d, left, low).toArray(), ...point(d, right, high).toArray());
+    uv.push(0, d / 7, Math.abs(right-left)/7, d / 7);
+    if (i === distances.length - 1 || gaps.some(g => d >= g.start && d < g.end)) continue;
     const j = i * 2;
     indices.push(j, j + 1, j + 2, j + 1, j + 3, j + 2);
   }
@@ -102,64 +102,76 @@ function strip(parent, material, left, right, low, high, step = 1.7) {
   return mesh;
 }
 
-function paintTexture() {
-  const tile = document.createElement('canvas');
-  tile.width = 256;
-  tile.height = 256;
-  const ctx = tile.getContext('2d');
-  const rng = randomFrom(9821);
-  const image = ctx.createImageData(tile.width, tile.height);
-  for (let y = 0; y < tile.height; y++) {
-    for (let x = 0; x < tile.width; x++) {
-      const edgeShade = 30 * Math.pow(Math.abs(x / 128 - 1), 5);
-      const wander = Math.sin(y * Math.PI / 128) * 2.5;
-      const tread = Math.exp(-Math.pow((x - 81 - wander) / 6, 2)) +
-        Math.exp(-Math.pow((x - 172 - wander) / 7, 2));
-      const grit = rng();
-      const value = Math.floor(187 + grit * 65 - edgeShade - 30 * tread + (grit > .98 ? 12 : 0));
-      const i = (y * tile.width + x) * 4;
-      image.data.set([value, value, value, 255], i);
-    }
+function road(scene, track, theme) {
+  const frame = track.frame || courseFrame;
+  const point = track.point || coursePoint;
+  const at = (distance, lane, height, ...scale) => ({ ...frame(distance, lane, height), scale });
+  const asphalt = surface(theme === 'metro' ? 0x889aa9 : 0xbdbac1, theme === 'metro' ? .27 : .84);
+  asphalt.map = grain(theme === 'metro' ? 'wet-asphalt' : 'asphalt-grain');
+  if(theme === 'metro'){
+    asphalt.onBeforeCompile = shader => {
+      shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>', `
+        #include <map_fragment>
+        float u = vMapUv.x * 3.0;
+        float v = vMapUv.y;
+        float breakup = texture2D(map,vMapUv*1.52).r;
+        float rim = pow(clamp(abs(fract(u/6.0)*2.0-1.0),0.0,1.0),2.8);
+        float reflection = pow(max(0.,cos(v*2.12+sin(u*3.+v)*.35)),3.5)*rim;
+        vec3 neon=mix(vec3(.11,.28,.43),vec3(.38,.13,.23),.5+.5*sin(v*.37));
+        diffuseColor.rgb += neon * reflection * (.24+.76*breakup);
+      `);
+    };
   }
-  ctx.putImageData(image, 0, 0);
-  const tex = new T.CanvasTexture(tile);
-  tex.colorSpace = T.SRGBColorSpace;
-  tex.wrapT = T.RepeatWrapping;
-  tex.anisotropy = 4;
-  return tex;
-}
-
-function road(scene) {
-  asphalt.map = paintTexture();
+  if(theme !== 'metro'){
+    asphalt.onBeforeCompile = shader => {
+      shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>', `
+        #include <map_fragment>
+        float lane=vMapUv.x*7.0;
+        float longitudinal=vMapUv.y;
+        float rubber=abs(fract((lane+.16*sin(longitudinal*.49))/3.72)-.5);
+        float wear=(1.-smoothstep(.045,.15,abs(rubber-.23)));
+        float grit=texture2D(map,vMapUv*2.73+vec2(.38,.63)).r;
+        float repairTint=texture2D(map,vMapUv*.29).g;
+        diffuseColor.rgb*=1.24+grit*.88+repairTint*.62-wear*.20;
+        diffuseColor.rgb+=vec3(.017,.016,.015)*(1.-wear*.55);
+      `);
+    };
+  }
+  const width = track.halfWidth;
+  const absent = (d, radius = 0) => track.gaps?.some(g => d + radius > g.start && d - radius < g.end);
   steel.side = T.DoubleSide;
-  strip(scene, asphalt, -7.5, 7.5, 0, 0).receiveShadow = true;
-  strip(scene, steel, -7.9, 7.9, -0.68, -0.68);
+  strip(track, scene, asphalt, -width, width, 0, 0).receiveShadow = true;
+  strip(track, scene, steel, -width-.4, width+.4, -0.68, -0.68);
   for (const side of [-1, 1]) {
-    strip(scene, steel, side * 7.89, side * 7.89, -0.68, 0.08);
-    const edge = (side * 7.46);
-    strip(scene, concrete, edge - .26, edge + .26, 0.08, 0.08);
-    const guard = side * 7.99;
-    strip(scene, concrete, guard - .14, guard + .14, 0.68, 0.68);
-    strip(scene, steel, guard - .10, guard + .10, 0.41, 0.41);
-    strip(scene, white, side * 6.9 - .06, side * 6.9 + .06, 0.018, 0.018);
+    strip(track, scene, steel, side * (width+.39), side * (width+.39), -0.68, 0.08);
+    const edge = (side * (width-.04));
+    strip(track, scene, concrete, edge - .26, edge + .26, 0.08, 0.08);
+    const guard = side * (width+.49);
+    // Folded galvanized W-beam, with a bright upper lip and dark recessed waist.
+    for (const [a,b,ya,yb] of [[.03,.14,.76,.70],[.14,.04,.70,.56],[.04,.13,.56,.47],[.13,.03,.47,.36]]) {
+      strip(track, scene, steel, guard - side*a, guard - side*b, ya, yb);
+    }
+    strip(track, scene, steel, guard - .10, guard + .10, 0.41, 0.41);
+    strip(track, scene, white, side * (width-.6) - .06, side * (width-.6) + .06, 0.018, 0.018);
   }
   const curbs = [[], []], posts = [], seams = [], piers = [], crossbeams = [];
   const segments = Math.ceil(track.length / 1.55);
   for (let i = 0; i < segments; i++) {
     const distance = i * track.length / segments;
+    if (absent(distance, .8)) continue;
     for (const side of [-1, 1]) {
       const p = track.sample(distance);
       if (Math.abs(p.curve) > .017 || distance < 65)
-        curbs[Math.floor(i / 2) % 2].push(at(distance, side * 7.27, .07, .44, .12, 1.48));
-      if (i % 3 === 0) posts.push(at(distance, side * 8, .37, .24, .78, .24));
+        curbs[Math.floor(i / 2) % 2].push(at(distance, side * (width-.23), .07, .44, .12, 1.48));
+      if (i % 3 === 0) posts.push(at(distance, side * (width+.5), .37, .24, .78, .24));
     }
     if (i % 4 === 0) seams.push(at(distance, 0, .016, .09, .018, 2.05));
     if (i % 8 !== 0) continue;
     const p = track.sample(distance);
-    if (p.y < 2 && p.z > 22) continue;
+    if (theme === 'summit' || p.y < 2 && p.z > 22) continue;
     crossbeams.push(at(distance, 0, -0.9, 13.6, .8, 1.4));
     for (const lane of [-4.9, 4.9]) {
-      const pos = coursePoint(distance, lane);
+      const pos = point(distance, lane);
       const height = pos.y + 7.3;
       piers.push(terrainTransform(pos.x, pos.y - height / 2 - .55, pos.z, 1.07, height, 1.07,
         Math.atan2(p.dx, p.dz)));
@@ -199,7 +211,7 @@ function road(scene) {
   const chevrons = [];
   for (let d = 10; d < track.length; d += 6) {
     const p = track.sample(d);
-    if (Math.abs(p.curve) < .038) continue;
+    if (absent(d, .6) || Math.abs(p.curve) < .038) continue;
     chevrons.push(at(d, Math.sign(p.curve) * 7.98, .9, .18, .79, 1.05));
   }
   batch(scene, amber, chevrons);
@@ -284,8 +296,8 @@ function placard(text, width, height, background = '#162b3c', foreground = '#f7e
   return new T.Mesh(new T.PlaneGeometry(width, height), new T.MeshBasicMaterial({ map: tex, side: T.DoubleSide }));
 }
 
-function gantry(scene) {
-  const start = courseFrame(1.8);
+function gantry(scene, course, label) {
+  const start = (course.frame || courseFrame)(1.8);
   const group = new T.Group();
   group.position.copy(start.position);
   group.rotation.copy(start.rotation);
@@ -297,7 +309,7 @@ function gantry(scene) {
   block(group, red, 0, 5.09, 0, 17.8, 1.68, 1.62);
   block(group, ink, 0, 4.19, 0, 6.5, .36, 1.5);
   for (const z of [-.832, .832]) {
-    const face = placard('SUNSET PIER', 13.6, 1.61);
+    const face = placard(label, 13.6, 1.61);
     face.rotation.y = z < 0 ? Math.PI : 0;
     face.position.set(0, 5.22, z);
     group.add(face);
@@ -559,12 +571,13 @@ function water(scene) {
   return material.uniforms.uTime;
 }
 
-function sky(scene) {
+function sky(scene, night, mountain) {
   const material = new T.ShaderMaterial({
     side: T.BackSide, depthWrite: false,
     uniforms: {
-      uSun: { value: sunDirection }, uHorizon: { value: new T.Color(0xe69783) },
-      uOrange: { value: new T.Color(0xffce80) }, uSky: { value: new T.Color(0x617896) },
+      uSun: { value: night ? new T.Vector3(-.25,.38,-.88).normalize() : sunDirection }, uHorizon: { value: new T.Color(night ? 0x494772 : mountain ? 0xf0c8ac : 0xe69783) },
+      uOrange: { value: new T.Color(night ? 0x5a6486 : 0xffce80) }, uSky: { value: new T.Color(night ? 0x080f29 : mountain ? 0x365e82 : 0x617896) },
+      uNight: {value: night ? 1 : 0},
     },
     vertexShader: `
       varying vec3 vDir;
@@ -574,19 +587,25 @@ function sky(scene) {
       }`,
     fragmentShader: `
       uniform vec3 uSun, uHorizon, uOrange, uSky;
+      uniform float uNight;
       varying vec3 vDir;
+      float cloudNoise(vec2 p) {
+        vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f);
+        vec4 h=fract(sin(vec4(dot(i,vec2(127.1,311.7)))+vec4(0.,127.1,311.7,438.8))*43758.54);
+        return mix(mix(h.x,h.y,f.x),mix(h.z,h.w,f.x),f.y);
+      }
       void main() {
         vec3 ray = normalize(vDir);
         float h = smoothstep(-0.03, 0.49, ray.y);
         float sun = max(0.0, dot(ray, uSun));
         vec3 col = mix(uHorizon, uSky, h);
         col = mix(col, uOrange, pow(sun, 15.0) * 0.72);
-        float band = sin(ray.y * 152.0 + sin(ray.x * 10.3) * 2.1) * (sin(ray.x * 27.0 + 1.3) * .38 + .62);
-        float cloud = smoothstep(.28, .71, band) * smoothstep(.015, .051, ray.y)
+        float band = cloudNoise(ray.xz/max(.04,ray.y+.18)*3.6 + ray.y*18.)*.64 + cloudNoise(ray.xz/max(.04,ray.y+.18)*11.2)*.36;
+        float cloud = smoothstep(.47, .72, band) * smoothstep(.015, .051, ray.y)
           * (1.0 - smoothstep(.18, .35, ray.y));
-        col = mix(col, vec3(.43, .18, .15), cloud * .23);
-        col += vec3(.48, .24, .09) * pow(sun, 150.0);
-        col += vec3(1.55, 1.04, .59) * smoothstep(.99912, .99942, sun);
+        col = mix(col, mix(vec3(.56, .39, .32),vec3(.10,.11,.21),uNight), cloud * .39);
+        col += mix(vec3(.48, .24, .09),vec3(.04,.07,.12),uNight) * pow(sun, 150.0);
+        col += mix(vec3(1.55, 1.04, .59),vec3(.75,.83,.95),uNight) * smoothstep(.99912, .99942, sun);
         gl_FragColor = vec4(col, 1.0);
         #include <tonemapping_fragment>
         #include <colorspace_fragment>
@@ -597,13 +616,15 @@ function sky(scene) {
   scene.add(dome);
 }
 
-export function buildWorld(scene) {
-  scene.fog = new T.FogExp2(0xd4aa92, .00125);
+export function buildWorld(scene, course = track) {
+  const theme = course.id || 'sunset';
+  const night = theme === 'metro', mountain = theme === 'summit';
+  scene.fog = new T.FogExp2(night ? 0x343854 : mountain ? 0xabb9bf : 0xd4aa92, night ? .0041 : mountain ? .0026 : .00125);
   scene.background = new T.Color(0xd4bfa8);
-  sky(scene);
-  const waves = water(scene);
-  scene.add(new T.HemisphereLight(0xffe8ca, 0x639aaf, 1.05));
-  const sun = new T.DirectionalLight(0xffcb8d, 3.4);
+  sky(scene, night, mountain);
+  const waves = night || mountain ? {value: 0} : water(scene);
+  scene.add(new T.HemisphereLight(night ? 0x97c2ff : 0xffe8ca, night ? 0x71628b : 0x639aaf, 1.05));
+  const sun = new T.DirectionalLight(night ? 0xb3dcff : mountain ? 0xffe3bf : 0xffcb8d, night ? 1.7 : 3.4);
   sun.target.position.set(-21, 0, -18);
   sun.position.copy(sun.target.position).addScaledVector(sunDirection, 115);
   sun.position.y = 99;
@@ -618,14 +639,17 @@ export function buildWorld(scene) {
   const rim = new T.DirectionalLight(0xb5dfff, 1.00);
   rim.position.set(-85, 48, 90);
   scene.add(rim);
-  scenery(scene, waves);
-  const lights = gantry(scene);
+  if (mountain) alpine(scene, course, waves);
+  else if (night) metropolis(scene, course);
+  else { scenery(scene, waves); coastalBridge(scene); }
+  roadFurniture(scene, course, theme);
+  const lights = gantry(scene, course, mountain ? 'SKYLINE DROP' : night ? 'MIDNIGHT RING' : 'SUNSET PIER');
   combineStaticBoxes(scene);
   scene.traverse(object => {
     if (!object.isMesh || !object.material.isMeshStandardMaterial) return;
-    object.castShadow = true;
+    object.castShadow = !object.userData.distant;
     object.receiveShadow = true;
   });
-  road(scene);
+  road(scene, course, theme);
   return { waves, lights, sun };
 }

@@ -70,6 +70,10 @@ export function createAudio(enabled) {
       case 'wall': case 'bump': tap(124, 33, .19, .22, 'sawtooth'); break;
       case 'drift': tap(240, 820, .28, .17, 'triangle'); break;
       case 'overtake': tap(510, 980, .14, .12, 'triangle'); break;
+      case 'launch':
+        tap(188, 451, .25, .15, 'triangle');
+        tap(95, 62, .28, .10, 'sine', .08);
+        break;
       case 'land': tap(80, 27, .16, .2, 'triangle'); break;
       case 'lap': tap(520, 780, .32, .17, 'triangle'); break;
       case 'finish':

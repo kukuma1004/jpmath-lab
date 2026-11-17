@@ -4,14 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#131d29">
-  <meta name="description" content="노을 지는 바닷가에서 미니카 다섯 대가 펼치는 3랩 아케이드 레이싱.">
+  <meta name="description" content="차량과 코스를 선택해 다섯 대가 겨루는 3랩 아케이드 레이스에 도전하세요.">
   <title>에이펙스 서킷 · JP Math Lab</title>
   <link rel="icon" type="image/png" href="./icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;1,800;1,900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./style.css?v=3">
-  <script type="module" src="./game.js?v=3"></script>
+  <link rel="stylesheet" href="./style.css?v=4">
+  <script type="module" src="./game.js?v=4"></script>
 </head>
 <body data-state="loading">
   <canvas id="world" aria-hidden="true"></canvas>
@@ -31,16 +31,15 @@
 
   <main id="game-screen" aria-label="에이펙스 서킷">
     <section class="start-screen" aria-labelledby="game-title">
+      <h1 id="game-title" lang="en" aria-label="에이펙스 서킷">APEX <span>CIRCUIT</span></h1>
       <div class="start-content">
-        <div class="course-label">
-          <span class="finish-flag" aria-hidden="true"></span>
-          <span class="course-name">선셋 피어</span>
-          <span class="course-spec">3랩 · 5대</span>
+        <fieldset class="garage-group"><legend>차량 선택</legend><div class="garage-options" id="vehicle-options"></div></fieldset>
+        <fieldset class="garage-group"><legend>코스 선택</legend><div class="garage-options" id="course-options"></div></fieldset>
+        <p id="garage-description"></p>
+        <div class="garage-launch">
+          <button type="button" id="start" class="race-button">레이스 시작 <span aria-hidden="true">↗</span></button>
+          <p class="menu-record">내 최고 랩 <strong id="menu-best">—</strong></p>
         </div>
-        <h1 id="game-title" lang="en" aria-label="에이펙스 서킷">APEX <span>CIRCUIT</span></h1>
-        <p class="start-description">해안 트랙을 달리는 미니카 레이싱. <br class="desktop-break">코너에서 드리프트로 충전하고, 부스터로 추월하세요.</p>
-        <button type="button" id="start" class="race-button">레이스 시작 <span aria-hidden="true">↗</span></button>
-        <p class="menu-record">내 최고 랩 <strong id="menu-best">—</strong></p>
       </div>
       <div class="instructions">
         <span class="auto-drive"><i aria-hidden="true"></i> 자동 가속</span>
@@ -102,7 +101,7 @@
     <div class="overlay result-screen">
       <section class="session-panel" role="dialog" aria-modal="true" aria-labelledby="result-title">
         <div class="result-heading">
-          <div><p class="result-course">선셋 피어</p><h2 id="result-title">완주!</h2></div>
+          <div><p class="result-course" id="result-course">선셋 피어</p><h2 id="result-title">완주!</h2></div>
           <p class="result-place"><strong id="result-rank">5</strong><span>위 / 5</span></p>
         </div>
         <dl class="result-stats">

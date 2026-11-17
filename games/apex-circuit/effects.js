@@ -1,5 +1,4 @@
 import * as T from './vendor/three.module.min.js';
-import { track } from './track.js';
 
 const sparkEvents = new Set(['wall', 'bump', 'land', 'drift', 'boost']);
 const sparkCount = 72;
@@ -39,7 +38,7 @@ export function createEffects(scene) {
   const clouds = Array.from({ length: smokeCount }, () => ({ life: 0, x: 0, y: 0, z: 0 }));
   let sparkIndex = 0, trailIndex = 0, cloudIndex = 0, timer = 0;
   const p = {};
-  function event(name, car, reduced) {
+  function event(name, car, reduced, track) {
     if (reduced || !sparkEvents.has(name)) return;
     track.sample(car.distance, p);
     const x = p.x - p.dz * car.lane;
@@ -56,7 +55,7 @@ export function createEffects(scene) {
       });
     }
   }
-  function update(race, dt, time, reduced, active) {
+  function update(race, dt, time, reduced, active, track) {
     root.visible = active && !reduced;
     if (!root.visible) return;
     const car = race.cars[0];

@@ -1,6 +1,12 @@
 const LAPS = 3;
-const CRUISE_SPEED = 34;
-const BOOST_SPEED = 56;
+export const vehicleSpecs = [
+  { id: 'vector', name: '벡터 GT', type: '밸런스', description: '가속과 코너링이 고르게 잡힌 투어링 쿠페.',
+    accent: '#ffca61', topSpeed: 56, cruiseSpeed: 34, grip: 1, acceleration: 18 },
+  { id: 'raptor', name: '랩터 RS', type: '파워', description: '긴 직선에서 최고속도를 살리기 좋은 레이서.',
+    accent: '#ff654d', topSpeed: 62, cruiseSpeed: 35.6, grip: .84, acceleration: 17 },
+  { id: 'nova', name: '노바 스프린트', type: '핸들링', description: '가벼운 차체로 연속 코너를 파고드는 경량 스포츠카.',
+    accent: '#77aaff', topSpeed: 52, cruiseSpeed: 33.4, grip: 1.22, acceleration: 21 }
+];
 const BOOST_START = 0.15;
 const BOOST_DRAIN = 0.40;
 const CHARGE_RATE = 0.105;
@@ -60,6 +66,9 @@ function resetCar(car, distance, lane) {
   car.lateralSpeed = 0;
   car.slip = 0;
   car.air = 0;
+  car.airborne = false;
+  car.pitch = null;
+  car.flight = null;
   car.finished = false;
   car.time = null;
 }
@@ -70,7 +79,7 @@ function compareCars(first, second) {
   return second.distance - first.distance || first.id - second.id;
 }
 
-export function createRace(track) {
+export function createRace(track, vehicle = vehicleSpecs[0]) {
   const finishDistance = track.length * LAPS;
   const laneLimit = track.halfWidth - CAR_WIDTH * 0.52;
   const player = createCar(0, "나");
@@ -84,7 +93,7 @@ export function createRace(track) {
   let wallContact = false;
   let bumpCooldown = 0;
   let lapStart = null;
-  let driftCharge = 0, driftCooldown = 0, previousAir = 0;
+  let driftCharge = 0, driftCooldown = 0;
 
   const race = {
     cars,
@@ -124,7 +133,7 @@ export function createRace(track) {
     wallContact = false;
     bumpCooldown = 0;
     lapStart = null;
-    driftCharge = driftCooldown = previousAir = 0;
+    driftCharge = driftCooldown = 0;
     race.drifting = race.drafting = false;
     race.driftPower = race.impact = 0;
     race.time = 0;
@@ -156,9 +165,9 @@ export function createRace(track) {
     const curve = course.curve;
     const edge = Math.abs(player.lane) >= laneLimit - 0.2;
     const pressingRail = edge && Math.sign(player.lane) === Math.sign(steer);
-    const cornerSpeed = CRUISE_SPEED * (1 - Math.min(0.15, Math.abs(curve) * 2.25));
-    let targetSpeed = boosting ? BOOST_SPEED : cornerSpeed;
-    race.drifting = brake && !pressingRail && Math.abs(steer) > .2 && player.speed > 23 && player.air < .24;
+    const cornerSpeed = vehicle.cruiseSpeed * (1 - Math.min(0.15, Math.abs(curve) * 2.25));
+    let targetSpeed = boosting ? vehicle.topSpeed : cornerSpeed;
+    race.drifting = brake && !pressingRail && Math.abs(steer) > .2 && player.speed > 23 && !player.airborne;
     if (brake) targetSpeed = race.drifting ? 26 : 18;
     race.drafting = !brake && cars.slice(1).some(car => {
       const gap = lapDifference(car.distance - player.distance, track.length);
@@ -169,14 +178,14 @@ export function createRace(track) {
       ? driftCharge : 0;
     driftCharge = race.drifting ? Math.min(1.3, driftCharge + dt) : 0;
     if (pressingRail) targetSpeed *= 0.78;
-    const acceleration = player.speed < targetSpeed ? (boosting ? 30 : 18) : (brake ? 45 : 25);
+    const acceleration = player.speed < targetSpeed ? (boosting ? 1.67 : 1) * vehicle.acceleration : (brake ? 45 : 25);
     player.speed = approach(player.speed, targetSpeed, acceleration * dt);
 
     // Faster corners push outward. Braking restores grip and slows the drift.
-    const drift = clamp(curve * player.speed ** 2 * (brake ? 0.065 : 0.155), -11, 11);
+    const drift = clamp(curve * player.speed ** 2 * (brake ? 0.065 : 0.155) / vehicle.grip, -11, 11);
     const centering = Math.abs(steer) < 0.05 ? -player.lane * 0.41 : 0;
-    const lateralTarget = steer * (race.drifting ? 13 : 18) + drift + centering;
-    player.lateralSpeed = approach(player.lateralSpeed, lateralTarget, dt * (brake ? 82 : 66));
+    const lateralTarget = player.airborne ? steer * 6 : steer * (race.drifting ? 13 : 18) + drift + centering;
+    player.lateralSpeed = approach(player.lateralSpeed, lateralTarget, dt * (player.airborne ? 16 : brake ? 82 : 66) * vehicle.grip);
     player.lane += player.lateralSpeed * dt;
     player.slip = Math.atan2(player.lateralSpeed, Math.max(18, player.speed)) * (race.drifting ? 1.35 : .7);
 
@@ -185,7 +194,7 @@ export function createRace(track) {
       player.lateralSpeed = 0;
       driftCharge = 0;
       race.drifting = false;
-      if (!wallContact) {
+      if (!wallContact && !player.airborne) {
         player.speed *= 0.79;
         events.push("wall");
       }
@@ -194,7 +203,7 @@ export function createRace(track) {
       if (Math.abs(player.lane) < laneLimit - 0.5) wallContact = false;
       if (earnedDrift > 0) {
         race.boost = Math.min(1, race.boost + earnedDrift * .22);
-        player.speed = Math.min(BOOST_SPEED, player.speed + 8);
+        player.speed = Math.min(vehicle.topSpeed, player.speed + 8);
         driftCooldown = .7;
         events.push('drift');
       }
@@ -203,10 +212,8 @@ export function createRace(track) {
 
     const previous = player.distance;
     advanceDistance(player, curve, dt);
-    const grounded = updateAir(player);
+    const grounded = updateAir(player, previous);
     if (grounded) chargeAtPads();
-    if (previousAir > .24 && player.air <= .24) events.push('land');
-    previousAir = player.air;
     updateLap(previous, dt);
   }
 
@@ -229,7 +236,7 @@ export function createRace(track) {
     car.speed = approach(car.speed, target, dt * 19);
     const previous = car.distance;
     advanceDistance(car, course.curve, dt);
-    updateAir(car);
+    updateAir(car, previous);
 
     if (!car.finished && car.distance >= finishDistance) {
       car.finished = true;
@@ -237,7 +244,34 @@ export function createRace(track) {
     }
   }
 
-  function updateAir(car) {
+  function updateAir(car, previous) {
+    const wasAirborne = car.airborne;
+    car.pitch = null;
+    for (const gap of track.gaps || []) {
+      const lapBase = Math.floor((car.distance - gap.start) / track.length) * track.length;
+      const launch = lapBase + gap.start;
+      if (previous < launch && car.distance >= launch) {
+        const runway = gap.end - gap.start;
+        const span = runway + clamp(car.speed * .25, 4, 16);
+        const startY = track.sample(launch).y;
+        const endY = track.sample(launch + span).y;
+        // Arcade launch assist guarantees a catch even when braking at the lip.
+        const rise = clamp(7 + car.speed * .12, 8, 14);
+        car.flight = {launch, span, startY, endY, rise};
+      }
+    }
+    if (car.flight) {
+      const {launch, span, startY, endY, rise} = car.flight;
+      const t = clamp((car.distance - launch) / span, 0, 1);
+      // A quadratic world-height arc connects the lip to the lower catch road.
+      const y = startY + (endY - startY) * t + 4 * rise * t * (1 - t);
+      car.air = Math.max(0, y - track.sample(car.distance, preview).y);
+      car.pitch = Math.atan((endY - startY + 4 * rise * (1 - 2 * t)) / span);
+      car.airborne = t < 1;
+      if (!car.airborne) { car.flight = null; car.pitch = null; }
+      if (car === player && wasAirborne !== car.airborne) events.push(car.airborne ? 'launch' : 'land');
+      return !car.airborne;
+    }
     let height = 0;
     for (const ramp of track.ramps) {
       const fromRamp = mod(car.distance - ramp.start, track.length);
@@ -247,7 +281,9 @@ export function createRace(track) {
       }
     }
     car.air = height;
-    return height < 0.24;
+    car.airborne = height >= .24;
+    if (car === player && wasAirborne !== car.airborne) events.push(car.airborne ? 'launch' : 'land');
+    return !car.airborne;
   }
 
   function chargeAtPads() {

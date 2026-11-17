@@ -430,3 +430,65 @@ body.is-drafting:not(.is-boosting)::after { opacity: .24; }
 body.is-drifting .boost-track { box-shadow: 0 0 13px #ffb846; }
 body.is-drifting .boost-caption { color: #ffc65b; }
 @media (prefers-reduced-motion: reduce) { body::after { display:none; } }
+
+/* Garage selections leave the right-hand side open for the live vehicle. */
+[data-state="menu"] .shade {
+  background: linear-gradient(90deg,#0c121bed 0%,#10151deb 24%,#10151da8 38%,transparent 62%),
+    linear-gradient(0deg,#0a121bd4,transparent 18%,transparent 85%,#0a121b69);
+}
+.start-screen { gap: clamp(16px, 4vh, 38px); padding-bottom: 35px; }
+.start-screen h1 { margin: 0; font-size: clamp(58px, 6.8vw, 108px); letter-spacing: -.035em; }
+.start-screen h1 span { font-size: 1em; color: #ffcf57; }
+.start-content { width: min(36vw, 448px); min-width: 306px; }
+.garage-group { margin: 0 0 14px; padding: 0; border: 0; min-inline-size: 0; }
+.garage-group legend { padding: 0 0 5px; color: #e5e7e6; font-size: 12px; font-weight: 700; }
+.garage-options { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 5px; }
+.garage-options button {
+  position: relative; display: flex; flex-direction: column; justify-content: center;
+  align-items: flex-start; gap: 3px; min-height: 55px; padding: 7px 9px;
+  border: 1px solid #82909d77; background: #131b24ed; pointer-events: auto; color: #eff0ed;
+}
+.garage-options button[aria-pressed="true"] { border-color: #ffcf57; background: #332d20f5; }
+.garage-options button[aria-pressed="true"]::after {
+  content: ''; position: absolute; right: 3px; top: 3px; width: 6px; height: 6px;
+  background: #ffcf57; clip-path: polygon(0 0,100% 0,100% 100%);
+}
+.garage-options button:hover { border-color: #fff3d2; }
+.garage-options strong { font-size: clamp(11px,1.04vw,15px); font-weight: 800; line-height: 1.35; word-break: keep-all; }
+.garage-options small { color: #ced4d6; font-size: 10px; }
+.garage-options [data-vehicle] { border-inline-start: 3px solid var(--swatch, #ffcf57); }
+.garage-options [data-course] { align-items: center; }
+.garage-options svg { height: 28px; width: 62px; stroke: #bac6cb; stroke-width: 1.6; fill: none; stroke-linejoin: round; }
+.garage-options [aria-pressed="true"] svg { stroke: #ffd56c; }
+#garage-description { margin: -4px 0 15px; color: #dce2e4; font-size: 12px; min-height: 1.5em; text-shadow: 0 1px 4px #000; word-break: keep-all; }
+.garage-launch { display: flex; align-items: center; gap: 18px; }
+.garage-launch .race-button { flex: 1; }
+.garage-launch .race-button::before { background: #ffcf57; }
+.garage-launch .menu-record { flex-direction: column; align-items: flex-start; gap: 1px; margin: 0; font-size: 10px; min-width: 58px; }
+@media (max-width: 740px) and (orientation: portrait) {
+  [data-state="menu"] .shade {
+    background: linear-gradient(180deg,#0a111a86,transparent 24%,transparent 39%,#0a111a9c 54%,#0a111afa 78%);
+  }
+  .start-screen { inset-block-start: calc(var(--top) + 52px); padding-bottom: 31px; gap: 0; }
+  .start-screen h1 { position: absolute; top: 0; font-size: clamp(38px, 10vw, 66px); line-height: .92; }
+  .start-screen h1 span { display: inline; }
+  .start-content { width: 100%; min-width: 0; }
+  .garage-options strong { font-size: 12px; }
+  .garage-group { margin-bottom: 9px; }
+  .garage-options button { min-height: 46px; }
+  .garage-launch .race-button { min-height: 45px; }
+  #garage-description { margin: 0 0 8px; font-size: 11px; }
+  .start-screen .instructions { font-size: 10px; }
+}
+@media (max-height: 620px) and (orientation: landscape) {
+  .start-screen { inset-block-start: calc(var(--top) + 46px); justify-content: center; gap: 8px; padding-bottom: 25px; }
+  .start-screen h1 { font-size: clamp(29px,7vh,44px); }
+  .start-screen h1 span { display: inline; }
+  .garage-group { margin-bottom: 5px; }
+  .garage-group legend { font-size: 10px; padding-bottom: 2px; }
+  .garage-options button { min-height: 44px; padding: 3px 7px; gap: 0; }
+  .garage-options [data-course] { flex-direction: row; align-items: center; gap: 3px; }
+  .garage-options svg { height: 17px; width: 26px; flex: none; }
+  #garage-description { margin: 3px 0 5px; font-size: 10px; }
+  .garage-launch .race-button { min-height: 44px; padding-block: 3px; }
+}

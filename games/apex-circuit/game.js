@@ -1,10 +1,11 @@
 import * as T from './vendor/three.module.min.js';
-import { track } from './track.js';
-import { createRace } from './race.js?v=3';
-import { buildWorld } from './world.js?v=3';
-import { buildCars, driveCar } from './cars.js?v=3';
-import { createAudio } from './audio.js?v=3';
-import { createEffects } from './effects.js?v=3';
+import { tracks } from './track.js?v=4';
+import { createRace, vehicleSpecs } from './race.js?v=4';
+import { buildWorld } from './world.js?v=4';
+import { buildCars, driveCar, selectVehicle } from './cars.js?v=4';
+import { createAudio } from './audio.js?v=4';
+import { createEffects } from './effects.js?v=4';
+import { bindGarage } from './garage.js?v=4';
 
 const byId = id => document.getElementById(id);
 const formatTime = seconds => {
@@ -15,6 +16,8 @@ const formatTime = seconds => {
 };
 const recordKey = 'jp-apex-circuit-lap';
 const soundKey = 'jp-apex-circuit-sound';
+const courseKey = 'jp-apex-circuit-course';
+const vehicleKey = 'jp-apex-circuit-vehicle';
 function read(key) {
   try { return localStorage.getItem(key); } catch { return null; }
 }
@@ -26,7 +29,7 @@ function setText(element, text) {
   if (element.textContent !== value) element.textContent = value;
 }
 
-function drawMap(canvas) {
+function drawMap(canvas, track) {
   const ctx = canvas.getContext('2d');
   const samples = Array.from({ length: 161 }, (_, i) => track.sample(i * track.length / 160));
   const minX = Math.min(...samples.map(p => p.x));
@@ -45,6 +48,17 @@ function drawMap(canvas) {
     ctx.lineWidth = 3;
     ctx.lineJoin = 'round';
     ctx.stroke(course);
+    for (const gap of track.gaps) {
+      const a = track.sample(gap.start);
+      const b = track.sample(gap.end);
+      ctx.beginPath();
+      ctx.moveTo(x(a.x), y(a.z));
+      ctx.lineTo(x(b.x), y(b.z));
+      ctx.strokeStyle = '#f5b660';
+      ctx.setLineDash([3, 3]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
     const origin = samples[0];
     ctx.fillStyle = '#f7f0d8';
     ctx.fillRect(x(origin.x) - 1.3, y(origin.z) - 4.3, 2.6, 8.6);
@@ -72,35 +86,51 @@ function createCamera() {
   const target = new T.Vector3();
   const desired = new T.Vector3();
   const aim = new T.Vector3();
-  const menuPosition = new T.Vector3(-112, 26, 67);
-  const p = {}, preview = {};
+  const p = {}, preview = {}, trailing = {};
   let ready = false;
-  function update(race, state, animateTime, dt, reduced, snap = false) {
+  function update(track, race, state, animateTime, dt, reduced, snap = false) {
     const portrait = camera.aspect < .95;
     const isMenu = state === 'menu';
     const player = race.cars[0];
+    track.sample(player.distance, p);
     let fov;
     if (isMenu) {
-      const drift = reduced ? 0 : Math.sin(animateTime * .31) * 1.3;
-      desired.copy(menuPosition);
-      desired.x += drift;
-      if (portrait) {
-        desired.set(-99 + drift, 36, 63);
-        aim.set(-64, -3, 43);
-      } else {
-        aim.set(-75, 5.1, 20);
-      }
-      fov = portrait ? 51 : 55;
+      const drift = reduced ? 0 : Math.sin(animateTime * .35) * .62;
+      const ahead = portrait ? 9.5 : 8.4;
+      const flank = (portrait ? 6.75 : 6.4) + drift;
+      desired.set(p.x + p.dx * ahead - p.dz * flank, p.y + (portrait ? 4.2 : 3.8),
+        p.z + p.dz * ahead + p.dx * flank);
+      const rightX = desired.z - p.z;
+      const rightZ = p.x - desired.x;
+      const offset = portrait ? 0.10 : 3.06;
+      const scale = offset / Math.hypot(rightX, rightZ);
+      aim.set(p.x - rightX * scale, p.y + (portrait ? -2.0 : .37), p.z - rightZ * scale);
+      fov = portrait ? 49 : 46;
     } else {
-      track.sample(player.distance, p);
-      track.sample(player.distance + (portrait ? 7.8 : 8.0), preview);
-      const follow = portrait ? 17.0 : 19.6;
-      const shoulder = portrait ? 1.4 : 5.1;
-      const height = portrait ? 27.0 : 21.6;
-      desired.set(p.x - p.dx * follow + p.dz * shoulder, p.y + height + player.air * .25,
-        p.z - p.dz * follow - p.dx * shoulder);
-      aim.set(preview.x, preview.y + 0.9, preview.z);
-      fov = (portrait ? 54 : 48) + (race.boosting && !reduced ? 4.0 : 0);
+      const marker = (player.distance % track.length + track.length) % track.length;
+      let dropView = 0;
+      if (!reduced) {
+        for (const gap of track.gaps) {
+          const entry = T.MathUtils.smoothstep(marker, gap.start - 22, gap.start + 2);
+          const exit = 1 - T.MathUtils.smoothstep(marker, gap.end + 1, gap.end + 30);
+          dropView = Math.max(dropView, entry * exit);
+        }
+      }
+      const follow = T.MathUtils.lerp(portrait ? 17 : 20.5, portrait ? 13.0 : 10.7, dropView);
+      const shoulder = T.MathUtils.lerp(portrait ? 1.4 : 4.8, .72, dropView);
+      const height = T.MathUtils.lerp(portrait ? 25.5 : 18.2, portrait ? 10.1 : 6.2, dropView);
+      const laneFollow = player.lane * (.40 + .54 * dropView);
+      const carX = p.x - p.dz * laneFollow;
+      const carZ = p.z + p.dx * laneFollow;
+      const carY = p.y + p.bank * laneFollow + player.air;
+      track.sample(player.distance - follow, trailing);
+      track.sample(player.distance + T.MathUtils.lerp(9, 19, dropView), preview);
+      desired.set(carX - p.dx * follow + p.dz * shoulder, Math.max(carY + height, trailing.y + 3.6),
+        carZ - p.dz * follow - p.dx * shoulder);
+      const upcoming = T.MathUtils.clamp(preview.y + .95, carY - 5.6, carY + 9);
+      const aimY = T.MathUtils.lerp(upcoming, carY - height * .68, dropView);
+      aim.set(preview.x - p.dz * laneFollow, aimY, preview.z + p.dx * laneFollow);
+      fov = (portrait ? 54 : 49) + (race.boosting && !reduced ? 4.0 : 0) + dropView * 2;
     }
     const blend = snap || !ready ? 1 : 1 - Math.exp(-(isMenu ? 3.6 : 14.2) * dt);
     camera.position.lerp(desired, blend);
@@ -130,19 +160,22 @@ function setup() {
   renderer.shadowMap.type = T.PCFShadowMap;
   renderer.shadowMap.autoUpdate = false;
   renderer.shadowMap.needsUpdate = true;
-  const scene = new T.Scene();
-  const { waves, lights, sun } = buildWorld(scene);
-  if (innerWidth < 850) sun.shadow.mapSize.set(1024, 1024);
-  const vehicles = buildCars(scene);
-  const effects = createEffects(scene);
+  const worldCache = new Map();
+  const carLayer = new T.Group();
+  const vehicles = buildCars(carLayer);
+  const effects = createEffects(carLayer);
+  const garageKey = new T.DirectionalLight(0xffe2c2, 1);
+  garageKey.position.set(45, 54, 40);
+  carLayer.add(garageKey);
   const view = createCamera();
-  const race = createRace(track);
   const audio = createAudio(read(soundKey) !== 'off');
-  const map = drawMap(byId('minimap'));
+  let track = tracks.find(course => course.id === read(courseKey)) || tracks[0];
+  let vehicle = vehicleSpecs.find(spec => spec.id === read(vehicleKey)) || vehicleSpecs[0];
+  let race, map, activeWorld;
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const nodes = Object.fromEntries(['start', 'pause', 'resume', 'retry', 'play-again', 'menu', 'sound', 'rank',
     'lap', 'race-time', 'speed', 'boost-fill', 'boost-value', 'countdown', 'feedback', 'result-rank',
-    'result-time', 'result-lap', 'result-best', 'menu-best'].map(id => [id, byId(id)]));
+    'result-time', 'result-lap', 'result-best', 'result-course', 'menu-best'].map(id => [id, byId(id)]));
   const measured = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) && new URLSearchParams(location.search).has('qa');
   const controls = [...document.querySelectorAll('[data-control]')];
   const keyControls = new Map([['ArrowLeft', 'left'], ['KeyA', 'left'], ['ArrowRight', 'right'], ['KeyD', 'right'],
@@ -152,13 +185,58 @@ function setup() {
   const input = { steer: 0, brake: false, boost: false };
   const fixed = 1 / 60;
   let state = 'loading', pausedState = 'racing';
-  let best = Number(read(recordKey)) || null;
+  let best = null;
   let countdown = 3, previousBeat = 0, startFlash = 0;
-  let feedbackTime = 0, worldTime = 0, signalTime = 0;
+  let feedbackTime = 0, feedbackPriority = 0, worldTime = 0, signalTime = 0;
   let accumulator = 0, lastFrame = performance.now(), frame = 0;
   let manual = false, snap = true, resizePending = true, visualOnly = false;
   let lastHUD = '', lastMapUpdate = -1, lastStateRendered;
   const projected = new T.Vector3();
+
+  function lapKey() {
+    return track === tracks[0] ? recordKey : `${recordKey}:${track.id}`;
+  }
+  function loadSelection() {
+    let nextWorld = worldCache.get(track.id);
+    if (!nextWorld) {
+      const scene = new T.Scene();
+      const environment = buildWorld(scene, track);
+      if (innerWidth < 850) environment.sun.shadow.mapSize.set(1024, 1024);
+      nextWorld = { scene, ...environment };
+      worldCache.set(track.id, nextWorld);
+    }
+    if (activeWorld !== nextWorld) {
+      activeWorld = nextWorld;
+      activeWorld.scene.add(carLayer);
+      activeWorld.sun.shadow.needsUpdate = true;
+      renderer.shadowMap.needsUpdate = true;
+      map = drawMap(byId('minimap'), track);
+    }
+    selectVehicle(vehicles, vehicle.id);
+    race = createRace(track, vehicle);
+    best = Number(read(lapKey())) || null;
+    lastMapUpdate = -1;
+    lastHUD = '';
+    worldTime = 0;
+    setText(nodes['result-course'], track.name);
+    showMenu(false);
+    render(0);
+  }
+  const garage = bindGarage({
+    tracks, vehicleSpecs,
+    onCourse(id) {
+      if (state !== 'menu') return;
+      track = tracks.find(course => course.id === id) || track;
+      save(courseKey, track.id);
+      loadSelection();
+    },
+    onVehicle(id) {
+      if (state !== 'menu') return;
+      vehicle = vehicleSpecs.find(spec => spec.id === id) || vehicle;
+      save(vehicleKey, vehicle.id);
+      loadSelection();
+    }
+  });
 
   function updateSound() {
     nodes.sound.setAttribute('aria-pressed', String(audio.enabled));
@@ -188,6 +266,7 @@ function setup() {
   }
   function clearMessage() {
     feedbackTime = 0;
+    feedbackPriority = 0;
     setText(nodes.feedback, '');
   }
   function change(next) {
@@ -241,7 +320,7 @@ function setup() {
   function finish() {
     if (race.bestLap !== null && (best === null || race.bestLap < best)) {
       best = race.bestLap;
-      save(recordKey, best);
+      save(lapKey(), best);
     }
     setText(nodes['result-rank'], race.place);
     setText(nodes['result-time'], formatTime(race.time));
@@ -256,17 +335,25 @@ function setup() {
     setText(nodes.countdown, beat);
     audio.signal('ready');
   }
-  function note(message, duration = .94) {
+  function note(message, duration = .94, priority = 0) {
+    if (feedbackTime > 0 && priority < feedbackPriority) return;
     feedbackTime = duration;
+    feedbackPriority = priority;
     setText(nodes.feedback, message);
   }
   function playEvent(event) {
     audio.signal(event);
-    effects.event(event, race.cars[0], motion.matches);
+    effects.event(event, race.cars[0], motion.matches, track);
     switch (event) {
       case 'drift': note('드리프트 충전 + 터보!', .9); break;
       case 'overtake': note('추월!', .65); break;
-      case 'land': note('착지!', .45); break;
+      case 'launch': {
+        const marker = (race.cars[0].distance % track.length + track.length) % track.length;
+        const gap = track.gaps.find(item => marker >= item.start - .8 && marker <= item.end);
+        note(gap ? `${gap.drop}m 드롭` : '도약!', .94, 1);
+        break;
+      }
+      case 'land': note('착지!', .58, 1); break;
       case 'charge': note('부스터 충전'); break;
       case 'boost': note('부스터 작동', .58); break;
       case 'wall': note('가드레일 접촉', .68); break;
@@ -316,18 +403,25 @@ function setup() {
   function render(dt) {
     if (resizePending) resize();
     if (!['paused', 'results'].includes(state) && !motion.matches && !visualOnly) worldTime += dt;
+    const { waves, lights, scene } = activeWorld;
     waves.value = worldTime;
     const boosting = state === 'racing' && race.boosting;
     document.body.classList.toggle('is-boosting', boosting);
     document.body.classList.toggle('is-drifting', state === 'racing' && race.drifting);
     document.body.classList.toggle('is-drafting', state === 'racing' && race.drafting);
-    effects.update(race, state === 'racing' && !visualOnly ? dt : 0, worldTime, motion.matches, state === 'racing');
+    effects.update(race, state === 'racing' && !visualOnly ? dt : 0, worldTime, motion.matches, state === 'racing', track);
     for (const [i, material] of lights.entries()) {
       const lit = state === 'countdown' && i < previousBeat * 2;
       material.color.set(signalTime > 0 ? 0x30fcc0 : lit ? 0xff622d : 0x4f2f34);
     }
-    race.cars.forEach((car, index) => driveCar(vehicles[index], car, boosting && index === 0, motion.matches ? 0 : worldTime));
-    if (state !== 'paused' || snap) view.update(race, state === 'paused' ? pausedState : state, worldTime, dt, motion.matches, snap);
+    garageKey.visible = state === 'menu';
+    race.cars.forEach((car, index) => {
+      const visual = vehicles[index];
+      const visible = state !== 'menu' || index === 0;
+      visual.model.visible = visual.shadow.visible = visible;
+      if (visible) driveCar(visual, car, boosting && index === 0, motion.matches ? 0 : worldTime, track);
+    });
+    if (state !== 'paused' || snap) view.update(track, race, state === 'paused' ? pausedState : state, worldTime, dt, motion.matches, snap);
     snap = false;
     audio.drive(race.cars[0].speed, boosting, state === 'racing' || state === 'countdown');
     hud();
@@ -338,6 +432,7 @@ function setup() {
       projected.copy(vehicles[0].model.position).project(view.camera);
       window.__THREE_GAME_DIAGNOSTICS__ = {
         frame, score: race.progress, complete: race.finished, state, time: race.time, place: race.place,
+        course: track.id, vehicle: vehicle.id,
         player: { ...race.cars[0] }, boost: race.boost, boosting, lap: race.lap, input: { ...input },
         projected: { x: (1 + projected.x) * .5, y: (1 - projected.y) * .5 },
         render: { ...renderer.info.render }, memory: { ...renderer.info.memory },
@@ -412,12 +507,13 @@ function setup() {
   world.addEventListener('webglcontextrestored', () => {
     resizePending = true;
     renderer.shadowMap.needsUpdate = true;
-    sun.shadow.needsUpdate = true;
+    activeWorld.sun.shadow.needsUpdate = true;
   });
 
   if (measured) {
     window.__apexQA = {
-      track, race,
+      get track() { return track; },
+      get race() { return race; },
       freeze(value = true) { manual = value; },
       step(frames = 1, snapCamera = false) {
         for (let i = 0; i < frames; i++) tick(fixed);
@@ -428,8 +524,8 @@ function setup() {
     };
   }
   updateSound();
-  showMenu(false);
-  render(0);
+  garage(vehicle.id, track.id);
+  loadSelection();
   requestAnimationFrame(animate);
 }
 
