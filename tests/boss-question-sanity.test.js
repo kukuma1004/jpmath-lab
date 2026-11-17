@@ -728,6 +728,17 @@ function checkCommon(q) {
   // 소수가 그대로 나오면 계산 도중 값이 새어 나온 것이다.
   const decimal = [String(q.correct), ...q.choices].find((c) => /\d\.\d{3,}/.test(String(c)));
   if (decimal) return `보기에 소수가 그대로 나온다: ${decimal}`;
+  // 구간의 판관은 예전에 정답과 -정답을 나란히 두었다. 그러면 학생이 적분을
+  // 하지 않고 피적분함수의 부호만 본 뒤 절댓값이 같은 선지를 고를 수 있다.
+  // 정적분 계산 문제는 네 선지가 모두 정답과 같은 부호이고 크기는 서로 달라야 한다.
+  if (/^DEFINITE INTEGRAL/.test(q.type || '') && want !== null) {
+    if (want === 0) return '부호만 보고 찍을 수 있는 정답 0이 나왔다';
+    const nums = q.choices.map(toNum);
+    if (nums.some((n) => n === null)) return '정적분 보기에 숫자가 아닌 값이 있다';
+    if (nums.some((n) => Math.sign(n) !== Math.sign(want))) return '계수 부호만으로 선지를 줄일 수 있다';
+    const magnitudes = nums.map((n) => Math.abs(n));
+    if (new Set(magnitudes).size !== magnitudes.length) return '절댓값이 같은 선지 쌍이 있다';
+  }
   for (const [where, text] of [['식', q.equation], ['보기', q.choices.join(' ')], ['해설', q.explanation || '']]) {
     for (const t of (text.match(/√([0-9]+)/g) || [])) {
       const r = Math.sqrt(Number(t.slice(1)));

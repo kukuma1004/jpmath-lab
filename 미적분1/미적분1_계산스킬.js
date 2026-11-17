@@ -121,6 +121,42 @@
     }
   };
 
+  // 정적분 보기는 부호만 보고 찍을 수 없게 만든다. 예전에는 정답과 -정답을
+  // 늘 한 쌍으로 넣어, 피적분함수의 계수 부호만 확인해도 두 보기로 줄었다.
+  // 이제 F(b)를 그대로 쓰기, F(a)를 빼지 않고 더하기, f의 끝값을 쓰기 같은
+  // 실제 계산 실수에서 후보를 만들되 정답과 같은 부호만 남긴다. 따라서 부호를
+  // 알아도 네 보기가 모두 남고, F(b)-F(a)를 끝까지 계산해야 한다.
+  const numericValue=v=>{const r=asRatio(v);return r?r[0]/r[1]:Number(v)};
+  const integralDistractors=(c,a,b,correct)=>{
+    const target=Number(correct),targetSign=Math.sign(target),F=P.i(c);
+    if(!targetSign)throw new Error('정적분 선지 생성에는 0이 아닌 정답이 필요합니다.');
+    const mistakes=shuffle([
+      P.at(F,b),                         // 아래끝 F(a)를 빼지 않음
+      P.at(F,a),                         // 아래끝값만 계산
+      P.at(F,b)+P.at(F,a),               // F(b)-F(a)를 F(b)+F(a)로 계산
+      P.at(c,b)-P.at(c,a),               // 원시함수 대신 피적분함수의 끝값을 뺌
+      (b-a)*P.at(c,a),                   // 왼쪽 끝값×구간 길이
+      (b-a)*P.at(c,b)                    // 오른쪽 끝값×구간 길이
+    ]);
+    const span=Math.max(1,Math.abs(b-a));
+    // 실제 실수 후보가 겹치는 작은 수에서도 네 보기를 안정적으로 채운다.
+    // 분수 후보는 새 지수로 나누는 계수를 한 번 더/덜 적용한 오답에 해당한다.
+    mistakes.push(
+      target-targetSign*span,target+targetSign*span,
+      target+targetSign*(span+1),2*target,3*target,
+      frac(target,2),frac(3*target,2),frac(2*target,3)
+    );
+    const out=[];
+    for(const value of mistakes){
+      const n=numericValue(value);
+      if(!Number.isFinite(n)||Math.sign(n)!==targetSign||Math.abs(n-target)<1e-10)continue;
+      if(out.some(v=>Math.abs(numericValue(v)-n)<1e-10))continue;
+      out.push(value);
+      if(out.length===3)break;
+    }
+    return out;
+  };
+
   // ── 난이도 ────────────────────────────────────────────────────────────
   // 기본은 지금까지의 문제를 그대로 둔다. 응용·심화는 "계수와 차수가 늘 같아서
   // 답이 그대로 나오는" 문제를 깨는 데 목적이 있다.
@@ -576,16 +612,22 @@
 
   levelMakers.definite_integral={
     applied(){
-      const c=[nonzero(-4,4),2*nonzero(-3,3),3*pick([1,2,-1])],a=ri(0,2),b=a+ri(1,3);
-      const correct=P.def(c,a,b);
-      const q=Q('DEFINITE INTEGRAL · 이차 피적분',`∫[${a}→${b}] (${P.text(c)}) dx`,'정적분의 값은?',correct,[P.at(c,b),correct+b,-correct],
+      let c,a,b,correct;
+      do{
+        c=[nonzero(-4,4),2*nonzero(-3,3),3*pick([1,2,-1])];a=ri(0,2);b=a+ri(1,3);
+        correct=P.def(c,a,b);
+      }while(correct===0);
+      const q=Q('DEFINITE INTEGRAL · 이차 피적분',`∫[${a}→${b}] (${P.text(c)}) dx`,'정적분의 값은?',correct,integralDistractors(c,a,b,correct),
         `원시함수 ${P.text(P.i(c))}에 ${b}와 ${a}를 대입해 빼면 ${correct}입니다.`);
       q.check={k:'defint',c:c,a:a,b:b};return q;
     },
     deep(){
-      const c=[nonzero(-3,3),0,3*pick([1,-1]),4*pick([1,-1])],a=-ri(1,2),b=ri(1,2);
-      const correct=P.def(c,a,b);
-      const q=Q('DEFINITE INTEGRAL · 음수 구간 포함',`∫[${num(a)}→${b}] (${P.text(c)}) dx`,'정적분의 값은?',correct,[-correct,P.at(c,b)-P.at(c,a),0],
+      let c,a,b,correct;
+      do{
+        c=[nonzero(-3,3),0,3*pick([1,-1]),4*pick([1,-1])];a=-ri(1,2);b=ri(1,2);
+        correct=P.def(c,a,b);
+      }while(correct===0);
+      const q=Q('DEFINITE INTEGRAL · 음수 구간 포함',`∫[${num(a)}→${b}] (${P.text(c)}) dx`,'정적분의 값은?',correct,integralDistractors(c,a,b,correct),
         `원시함수 ${P.text(P.i(c))}에 위끝 ${b}와 아래끝 ${num(a)}를 대입해 빼면 ${correct}입니다.`);
       q.check={k:'defint',c:c,a:a,b:b};return q;
     }
@@ -848,7 +890,8 @@
         return Q('INITIAL VALUE',`F′(x)=${A}x,  F(0)=${c}`,'F(1)의 값은?',correct,[A+c,A/2,c],`F(x)=${A/2}x²+C이고 F(0)=${c}이므로 C=${c}, F(1)=${correct}입니다.`);
       case'definite_integral':
         A=2*ri(1,4);b=ri(1,5);correct=A*b*b/2;
-        return Q('DEFINITE INTEGRAL',`∫[0→${b}] ${A}x dx`,'정적분의 값은?',correct,[A*b,A*b*b,correct-b],`원시함수 ${A/2}x²에 ${b}와 0을 대입하면 ${correct}입니다.`);
+        c=[0,A];
+        return Q('DEFINITE INTEGRAL',`∫[0→${b}] ${A}x dx`,'정적분의 값은?',correct,integralDistractors(c,0,b,correct),`원시함수 ${A/2}x²에 ${b}와 0을 대입하면 ${correct}입니다.`);
       case'integral_symmetry':{
         /* 예전에는 홀함수만 물어 답이 언제나 0이었다. 아이들이 적분을 하지 않고
            0을 눌렀다. 홀함수에 상수를 얹거나 짝함수를 섞는다. */
