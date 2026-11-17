@@ -43,6 +43,7 @@
 .boss-start-copy{padding:24px 10px;text-align:center}
 .boss-start-copy strong{display:block;margin-bottom:8px;font:900 27px var(--font-display)}
 .boss-start-copy p{margin:0;color:var(--muted);font-size:12px;line-height:1.6}
+.boss-start-rule{display:inline-block;margin-top:13px;padding:7px 11px;border:1px solid #d5c89d;border-radius:999px;background:#fff9e8;color:#6e5215;font:800 10px/1.35 var(--font-mono)}
 .boss-status{margin-top:12px;padding:12px 14px;border-radius:13px;font-size:12px;line-height:1.55}
 .boss-status.good{background:#EAF6F0;color:#205E41}
 .boss-status.bad{background:#FFF0EC;color:#913521}
@@ -59,6 +60,8 @@
 
 .boss-limit-copy{display:block;margin-top:10px;color:rgba(255,255,255,.68);font-size:12px;text-align:right}
 .boss-limit-copy b{color:#fff;font-size:13px}
+.boss-clear-copy{display:block;margin-top:11px;padding:8px 10px;border:1px solid rgba(255,209,92,.32);border-radius:10px;background:rgba(255,209,92,.08);color:#ffe29b;font:700 10px/1.45 var(--font-mono);text-align:center;transition:.2s ease}
+.boss-clear-copy.ready{border-color:rgba(96,226,167,.65);background:rgba(56,181,126,.16);color:#9ff0c9;box-shadow:0 0 18px rgba(56,181,126,.12)}
 
 .boss-combat-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:16px}
 .boss-combat-stats div{padding:10px 8px;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:rgba(255,255,255,.045);text-align:center}

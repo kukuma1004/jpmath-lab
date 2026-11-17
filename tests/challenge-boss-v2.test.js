@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
+const vm = require('node:vm');
 
 function read(path) {
   return fs.readFileSync(path, 'utf8');
@@ -15,6 +16,23 @@ const skillJs = read('미적분1/미적분1_계산스킬.js');
 const skillCss = read('보스전/boss-engine.css');
 // 보스 전투는 공용 엔진이 맡는다. 엔진 내부를 보는 검사는 이 파일에서 읽는다.
 const engine = read('보스전/boss-engine.js');
+
+/* HP를 깎는 것과 클리어 자격을 분리한다. 무작위로 눌러 우연히 맞혀도
+   정답 수·정답률·마지막 연속 정답을 함께 채우지 못하면 승리할 수 없다. */
+{
+  const box = { window: {} };
+  vm.runInNewContext(engine, box);
+  const policy = box.window.JPBossEngine.clearPolicy;
+  assert.ok(policy, '공용 엔진이 클리어 정책을 공개해야 한다.');
+  assert.equal(policy.check('basic', { correct: 6, attempts: 8, combo: 3 }).ok, true, '기본은 6정답·70%·3연속이면 통과한다.');
+  assert.equal(policy.check('basic', { correct: 6, attempts: 10, combo: 3 }).ok, false, '기본도 정답률 60%로는 클리어할 수 없다.');
+  assert.equal(policy.check('basic', { correct: 16, attempts: 23, combo: 3 }).ok, false, '표시는 70%로 반올림돼도 실제 70% 미만이면 통과시키지 않는다.');
+  assert.equal(policy.check('applied', { correct: 7, attempts: 9, combo: 3 }).ok, true, '응용은 7정답·75%·3연속을 요구한다.');
+  assert.equal(policy.check('applied', { correct: 7, attempts: 10, combo: 3 }).ok, false, '응용에서 70%는 부족하다.');
+  assert.equal(policy.check('deep', { correct: 8, attempts: 10, combo: 4 }).ok, true, '심화는 8정답·80%·4연속을 요구한다.');
+  assert.equal(policy.check('deep', { correct: 8, attempts: 10, combo: 3 }).ok, false, '심화는 마지막 4연속 정답도 채워야 한다.');
+  assert.equal(policy.check('deep', { correct: 5, attempts: 20, combo: 1 }).ok, false, '무작위 선택 수준은 절대 통과하지 못한다.');
+}
 
 for (const source of [home, nav]) {
   assert.match(source, /오늘의 도전/, '전역 도전 메뉴에 오늘의 도전이 있어야 한다.');
@@ -172,6 +190,14 @@ assert.match(engine, /바로 다시 도전/);
 assert.match(skillJs, /params\.get\('mode'\)==='boss'/);
 assert.match(skillJs, /calculus-skill-boss-differentiate-polynomial/);
 assert.match(engine, /telemetry\.finishPlay/);
+
+/* 엄격한 클리어 게이트가 실제 전투 판정과 화면에 연결되어야 한다. */
+assert.match(engine, /blockedByProof=nextHp<=0&&!proof\.ok/, 'HP가 0이 되어도 클리어 증명을 다시 확인해야 한다.');
+assert.match(engine, /boss\.hp=requiresFinisher\|\|blockedByProof\?Math\.max\(1,nextHp\)/, '증명이 부족하면 보스 HP를 1 남겨야 한다.');
+assert.match(engine, /if\(cleared&&!bossClearProof\(\)\.ok\)/, '최종 승리 함수에서도 우회 클리어를 막아야 한다.');
+assert.match(engine, /Math\.round\(boss\.maxHp\*\.03\)/, '일반 보스도 오답이면 최대 HP의 3%를 회복해야 한다.');
+assert.match(engine, /data-boss-clear/, '전투 화면에 클리어 조건과 현재 진척이 보여야 한다.');
+assert.match(engine, /정답률 \$\{finalAccuracy\}%/, '전투 결과에 최종 정답률을 보여야 한다.');
 
 /* 손맛.
 
