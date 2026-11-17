@@ -7,7 +7,7 @@ for (const file of [
   '주제탐구/seeds-bank.js',
   '주제탐구/seeds.js',
   '주제탐구/seed-expand.js',
-  '주제탐구/seeds-catalog-2000.js'
+  '주제탐구/seeds-catalog-4000.js'
 ]) {
   vm.runInContext(fs.readFileSync(file, 'utf8'), context, { filename: file });
 }
@@ -15,20 +15,35 @@ for (const file of [
 const catalog = context.window.JPSeedCatalog;
 const meta = context.window.JPSeedCatalogMeta;
 
-assert.equal(catalog.length, 2000, '학생용 씨앗 카탈로그는 정확히 2,000개여야 한다.');
-assert.equal(context.window.JPSeeds.all().length, 2000, '공통 데이터 API도 2,000개를 반환해야 한다.');
+// 기존 2,000개 링크와 질문은 수업 자료에서 이미 쓰고 있으므로 그대로 남아야 한다.
+const legacyContext = vm.createContext({ window: {} });
+for (const file of [
+  '주제탐구/seeds-bank.js', '주제탐구/seeds.js', '주제탐구/seed-expand.js',
+  '주제탐구/seeds-catalog-2000.js'
+]) {
+  vm.runInContext(fs.readFileSync(file, 'utf8'), legacyContext, { filename: file });
+}
+const currentById = new Map(catalog.map(seed => [seed.id, seed]));
+for (const legacy of legacyContext.window.JPSeedCatalog) {
+  assert.ok(currentById.has(legacy.id), `기존 씨앗 ${legacy.id}가 4,000개 판에서 사라졌다.`);
+  assert.equal(currentById.get(legacy.id).question, legacy.question,
+    `기존 씨앗 ${legacy.id}의 질문이 바뀌었다.`);
+}
+
+assert.equal(catalog.length, 4000, '학생용 씨앗 카탈로그는 정확히 4,000개여야 한다.');
+assert.equal(context.window.JPSeeds.all().length, 4000, '공통 데이터 API도 4,000개를 반환해야 한다.');
 assert.equal(meta.curated, 108, '기존 엄선 씨앗 108개를 보존해야 한다.');
-assert.equal(meta.generated, 1892, '확장 후보는 1,892개여야 한다.');
-assert.equal(meta.baseTopics, 200, '핵심 수학 주제 200개를 유지해야 한다.');
+assert.equal(meta.generated, 3892, '확장 후보는 3,892개여야 한다.');
+assert.equal(meta.baseTopics, 403, '핵심 수학 주제는 403개여야 한다.');
 assert.equal(meta.lenses.length, 10, '탐구 렌즈는 10종이어야 한다.');
 
 const ids = new Set(catalog.map(seed => seed.id));
 const questions = new Set(catalog.map(seed => seed.question.replace(/[\s\p{P}\p{S}]/gu, '').toLowerCase()));
-assert.equal(ids.size, 2000, '씨앗 ID가 중복되면 안 된다.');
-assert.equal(questions.size, 2000, '표기만 다른 동일 질문을 허용하지 않는다.');
+assert.equal(ids.size, 4000, '씨앗 ID가 중복되면 안 된다.');
+assert.equal(questions.size, 4000, '표기만 다른 동일 질문을 허용하지 않는다.');
 
 const generatedText = catalog
-  .filter(seed => seed.src === 'seed2000')
+  .filter(seed => seed.src === 'seed2000' || seed.src === 'seed4000')
   .map(seed => [seed.title, seed.question, seed.act, seed.next].join(' '))
   .join('\n');
 for (const malformed of ['이유은', '의미은', '관계은', '횟수을', '변수을', '비을', '이유를 만족']) {
@@ -41,7 +56,7 @@ function hasBatchim(text) {
 }
 
 const quotedParticle = /‘([^’]+)’(이라는|라는|과|와|을|를)/g;
-for (const seed of catalog.filter(item => item.src === 'seed2000')) {
+for (const seed of catalog.filter(item => item.src === 'seed2000' || item.src === 'seed4000')) {
   const fields = [seed.question, seed.act, seed.next];
   for (const text of fields) {
     for (const match of text.matchAll(quotedParticle)) {
@@ -65,7 +80,8 @@ for (const seed of catalog) {
 }
 
 for (const subject of ['calc', 'geo', 'econ', 'algebra', 'prob', 'common', 'ai', 'culture']) {
-  assert.ok(catalog.some(seed => seed.subject === subject), `${subject} 씨앗이 하나 이상 필요하다.`);
+  assert.equal(catalog.filter(seed => seed.subject === subject).length, 500,
+    `${subject} 씨앗은 정확히 500개여야 한다.`);
 }
 
 for (const topic of [
@@ -77,10 +93,10 @@ for (const topic of [
 }
 
 const html = fs.readFileSync('주제탐구/index.html', 'utf8');
-assert.ok(html.indexOf('seeds-catalog-2000.js') > html.indexOf('seeds.js'), '카탈로그는 기본 사전 다음에 읽어야 한다.');
+assert.ok(html.indexOf('seeds-catalog-4000.js') > html.indexOf('seeds.js'), '카탈로그는 기본 사전 다음에 읽어야 한다.');
 // 확장 씨앗은 파일에 담겨 오지 않고 확장기가 만든다. 순서가 뒤집히면 카탈로그가 비어 버린다.
 assert.ok(html.indexOf('seed-expand.js') > -1, '확장기를 불러와야 한다.');
-assert.ok(html.indexOf('seeds-catalog-2000.js') > html.indexOf('seed-expand.js'), '카탈로그는 확장기 다음에 읽어야 한다.');
-assert.ok(html.indexOf('seed-field.js') > html.indexOf('seeds-catalog-2000.js'), '학생 화면은 카탈로그 다음에 읽어야 한다.');
+assert.ok(html.indexOf('seeds-catalog-4000.js') > html.indexOf('seed-expand.js'), '카탈로그는 확장기 다음에 읽어야 한다.');
+assert.ok(html.indexOf('seed-field.js') > html.indexOf('seeds-catalog-4000.js'), '학생 화면은 카탈로그 다음에 읽어야 한다.');
 
-console.log('seed-catalog-2000 tests: OK');
+console.log('seed-catalog-4000 tests: OK');

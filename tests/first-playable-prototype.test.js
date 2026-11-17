@@ -243,7 +243,8 @@ assert.match(
 );
 // 뱅크 씨앗 96개는 이제 카탈로그 안에 들어 있다. 같은 것을 두 번 보내지 않는다.
 assert.doesNotMatch(inquiryHtml, /seeds-bank\.js/, '뱅크 파일을 따로 더 보내지 않는다.');
-assert.match(inquiryHtml, /seeds-catalog-2000\.js/, '씨앗은 카탈로그로 받는다.');
+assert.match(inquiryHtml, /seeds-catalog-4000\.js/, '씨앗은 4,000개 카탈로그로 받는다.');
+assert.match(inquiryHtml, /deep-dive-generator\.js/, '모든 씨앗의 탐구 설계 생성기를 불러야 한다.');
 
 
 // 급과 제작 순위는 학생 화면에 없다. 감추는 것이 아니라 아예 그리지 않는다.
@@ -265,7 +266,8 @@ assert.match(deepDiveJs, /jp-deep-dive-unlocked/, '깊이 탐구가 실리면 �
 const ddJs = fs.readFileSync('주제탐구/deep-dive.js', 'utf8');
 assert.doesNotMatch(ddJs, /보상형|광고 1회|영구 해금|dd-disabled/, '광고·잠금 화면이 남아 있으면 안 된다.');
 assert.doesNotMatch(ddJs, /requestUnlock/, '광고 해금 어댑터를 들어냈다.');
-assert.match(ddJs, /pendingTemplate/, '아직 안 쓴 씨앗은 준비 중이라고 알려야 한다.');
+assert.doesNotMatch(ddJs, /pendingTemplate|준비 중인 구조 보기/, '모든 씨앗은 실제 깊이 탐구를 열어야 한다.');
+assert.match(ddJs, /JPDeepDiveGenerator\.build/, '작성본이 없는 씨앗은 공용 생성기로 설계해야 한다.');
 // 실험 위젯은 그 씨앗을 위해 만든 것이 있을 때만 붙어야 한다.
 assert.match(ddJs, /item\.experiment === 'fov'/, '실험 위젯은 씨앗이 요청할 때만 붙인다.');
 
@@ -312,8 +314,31 @@ for (const [id, item] of Object.entries(dives)) {
   }
 }
 
+// 작성본이 없는 씨앗도 같은 필수 구조를 모두 갖춰야 한다.
+const allSeedCtx = { window: {} };
+vm.createContext(allSeedCtx);
+for (const file of ['주제탐구/seeds-bank.js', '주제탐구/seeds.js',
+  '주제탐구/seed-expand.js', '주제탐구/seeds-catalog-4000.js']) {
+  vm.runInContext(fs.readFileSync(file, 'utf8'), allSeedCtx);
+}
+const allSeeds = allSeedCtx.window.JPSeeds.all();
+const generatorCtx = { window: {} };
+generatorCtx.window.window = generatorCtx.window;
+vm.createContext(generatorCtx);
+vm.runInContext(fs.readFileSync('주제탐구/deep-dive-generator.js', 'utf8'), generatorCtx);
+for (const seed of allSeeds) {
+  const item = dives[seed.id] || generatorCtx.window.JPDeepDiveGenerator.build(seed);
+  for (const field of NEEDED) {
+    assert.ok(item[field], `${seed.id}의 전체 깊이 탐구 ${field}가 비어 있다.`);
+  }
+  assert.equal(item.questionLadder.length, 4, `${seed.id}의 질문 사다리는 4단이다.`);
+  for (const row of item.dataRows) {
+    assert.equal(row.length, item.dataColumns.length, `${seed.id}의 자료표 열 수가 맞아야 한다.`);
+  }
+}
+
 // 표의 수는 tools/check-deep-dives.js 가 다시 계산해 맞춰 본다.
 assert.ok(fs.existsSync('주제탐구/tools/check-deep-dives.js'), '표를 검산하는 도구가 있어야 한다.');
 
-console.log(`깊이 탐구 ${Object.keys(dives).length} / ${merged.length}`);
+console.log(`깊이 탐구 ${allSeeds.length} / ${allSeeds.length} (교사 작성 ${Object.keys(dives).length})`);
 console.log('first playable prototype tests: ok');

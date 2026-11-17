@@ -182,9 +182,12 @@
   }
 
   function buildSeed(base, lens) {
+    var isLegacy = Number(base.code) <= 200;
+    var prefix = isLegacy ? 'JP2K' : 'JP4K';
+    var id = prefix + '-' + base.subject.toUpperCase() + '-' + base.code + '-' + lens.id;
     var seed = {
-      id: 'JP2K-' + base.subject.toUpperCase() + '-' + base.code + '-' + lens.id,
-      src: 'seed2000',
+      id: id,
+      src: isLegacy ? 'seed2000' : 'seed4000',
       grade: 'B',
       subject: base.subject,
       title: lens.label + ' \u00b7 ' + base.topic,
@@ -207,8 +210,7 @@
       sourceNote: SOURCE_NOTE,
       asset: {
         label: '\uc774 \uc528\uc557\uc73c\ub85c \ud0d0\uad6c \uc2dc\uc791',
-        href: 'inquiry.html?seed=' + encodeURIComponent('JP2K-' + base.subject.toUpperCase() +
-          '-' + base.code + '-' + lens.id)
+        href: 'inquiry.html?seed=' + encodeURIComponent(id)
       }
     };
     var cls = classifySeed(seed);

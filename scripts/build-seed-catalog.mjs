@@ -238,10 +238,111 @@ const GROUPS = {
   ]
 };
 
-const BASES = Object.values(GROUPS).flat();
+const CORE_BASES = Object.values(GROUPS).flat();
 
-if (BASES.length !== 200) {
-  throw new Error(`Expected 200 base topics, received ${BASES.length}`);
+if (CORE_BASES.length !== 200) {
+  throw new Error(`Expected 200 legacy base topics, received ${CORE_BASES.length}`);
+}
+
+// 2,000개 판의 질문과 ID는 그대로 두고, 부족한 교과에만 새 기본 주제를
+// 보탠다. 한 기본 주제는 아래의 여섯 탐구 방향과 결합되어 서로 다른
+// 질문이 된다. 제목만 바꾸는 증식이 아니라, 움직일 조건과 핵심 개념도
+// 함께 달라지도록 구성했다.
+const EXPANSION_MOVES = [
+  ['조건 하나를 바꿀 때 나타나는 전환점', '조건', '조건의 범위'],
+  ['식·표·그래프가 같은 결론을 주는 조건', '표현', '표현 방법'],
+  ['실제 자료와 이론값의 차이를 설명하는 방법', '오차', '자료의 크기와 오차'],
+  ['최적 선택이 달라지는 경계', '최적화', '목표와 제약조건'],
+  ['반례가 생기는 가장 작은 조건', '반례', '가정의 개수'],
+  ['규칙을 더 넓은 상황으로 확장하는 방법', '일반화', '변수와 차원']
+];
+
+const EXPANSION_FAMILIES = {
+  geo: [
+    ['삼각형의 여러 중심과 자취', '삼각형의 중심,자취', '꼭짓점과 변의 위치'],
+    ['원과 직선의 위치 관계', '원,접선', '중심과 직선 사이 거리'],
+    ['공간도형을 평면에 투영하는 방법', '공간도형,정사영', '관찰 방향'],
+    ['벡터로 만드는 도형의 넓이와 부피', '벡터,행렬식', '벡터의 방향과 크기'],
+    ['좌표변환 뒤에도 보존되는 도형의 성질', '좌표변환,불변량', '이동·회전·확대'],
+    ['최단경로와 반사의 기하', '최단거리,반사', '출발점과 장애물'],
+    ['곡면 위의 거리와 평면 거리의 차이', '곡면,측지선', '곡률과 두 점의 위치']
+  ],
+  econ: [
+    ['가격 변화와 수요량의 반응', '수요함수,탄력성', '가격과 소득'],
+    ['생산량과 비용·수익의 관계', '비용함수,수익함수', '생산량과 고정비'],
+    ['복리와 실질 구매력의 변화', '복리,물가', '이자율과 물가상승률'],
+    ['위험과 수익을 함께 보는 자산 선택', '기댓값,분산', '투자 비중과 상관계수'],
+    ['세금과 보조금이 시장균형에 미치는 영향', '시장균형,세금', '세율과 보조금'],
+    ['한정된 예산을 여러 선택에 나누는 방법', '예산제약,최적화', '예산과 선호']
+  ],
+  algebra: [
+    ['다항식의 계수와 근의 배열', '다항식,근과 계수', '차수와 계수'],
+    ['지수·로그 함수의 성장 비교', '지수함수,로그함수', '밑과 초기값'],
+    ['수열의 규칙과 점화식의 관계', '수열,점화식', '초기항과 변화 규칙'],
+    ['행렬이 만드는 연립방정식과 변환', '행렬,연립방정식', '행렬의 성분과 차원']
+  ],
+  prob: [
+    ['표본 크기와 추정의 정확도', '표본,추정', '표본 크기와 표집 방법'],
+    ['조건부확률과 정보의 갱신', '조건부확률,베이즈 정리', '사전확률과 새 정보'],
+    ['확률분포의 모양과 대표값', '확률분포,기댓값', '모수와 꼬리'],
+    ['두 변수의 관계와 인과의 구분', '상관,회귀', '자료의 범위와 숨은 변수']
+  ],
+  common: [
+    ['일차·이차함수의 계수와 그래프', '함수,그래프', '계수와 정의역'],
+    ['방정식과 부등식이 나타내는 해의 영역', '방정식,부등식', '계수와 상수항'],
+    ['경우의 수를 빠짐없이 세는 구조', '경우의 수,분류', '선택 단계와 중복'],
+    ['집합과 명제로 조건을 정리하는 방법', '집합,명제', '조건과 진리값'],
+    ['좌표와 거리로 도형을 설명하는 방법', '좌표,거리', '점의 위치와 축'],
+    ['수열에서 반복과 성장 규칙을 찾는 방법', '수열,규칙성', '항 번호와 변화량'],
+    ['측정값의 단위와 근삿값이 계산에 미치는 영향', '근삿값,오차', '단위와 유효숫자']
+  ],
+  ai: [
+    ['그래프에서 연결과 경로를 찾는 알고리즘', '그래프,알고리즘', '정점·간선과 가중치'],
+    ['데이터를 벡터로 바꾸고 유사도를 재는 방법', '벡터,유사도', '특징과 가중치'],
+    ['분류 기준과 오류 사이의 균형', '분류,혼동행렬', '임계값과 자료 불균형'],
+    ['암호와 나머지 연산의 구조', '암호,합동식', '키와 법'],
+    ['학습 데이터와 모델의 일반화', '모델,일반화', '자료량과 모델 복잡도']
+  ],
+  culture: [
+    ['음악의 리듬과 음정 속 비율', '비율,주기', '박자와 주파수'],
+    ['건축의 대칭과 구조 안정성', '대칭,기하', '하중과 반복 단위'],
+    ['미술의 원근법과 투영', '원근법,투영', '시점과 소실점'],
+    ['스포츠 기록과 공정한 순위', '통계,순위', '평가 지표와 가중치'],
+    ['지도와 지구를 평면에 나타내는 방법', '지도투영,왜곡', '투영법과 지역'],
+    ['달력·문양·게임에서 나타나는 주기', '주기,합동식', '반복 길이와 시작점'],
+    ['사회적 선택과 투표 규칙', '투표,사회선택', '선호 순서와 집계 방식'],
+    ['언어와 이야기 속 수학적 구조', '패턴,논리', '기호와 서사 순서']
+  ]
+};
+
+const EXPANSION_COUNTS = {
+  geo: 8, econ: 34, algebra: 24, prob: 22,
+  common: 42, ai: 30, culture: 43
+};
+
+function buildExpansionBases(subject, families, count) {
+  const rows = [];
+  for (const family of families) {
+    for (const move of EXPANSION_MOVES) {
+      rows.push([
+        subject,
+        `${family[0]}에서 ${move[0]}`,
+        `${family[1]},${move[1]}`,
+        `${family[2]}과 ${move[2]}`
+      ]);
+    }
+  }
+  if (rows.length < count) throw new Error(`Not enough expansion bases for ${subject}`);
+  return rows.slice(0, count);
+}
+
+const EXPANSION_BASES = Object.entries(EXPANSION_COUNTS).flatMap(([subject, count]) =>
+  buildExpansionBases(subject, EXPANSION_FAMILIES[subject], count)
+);
+const BASES = CORE_BASES.concat(EXPANSION_BASES);
+
+if (BASES.length !== 403) {
+  throw new Error(`Expected 403 base topics, received ${BASES.length}`);
 }
 
 function hasBatchim(text) {
@@ -406,11 +507,12 @@ for (let lensIndex = 0; lensIndex < LENSES.length; lensIndex += 1) {
   for (const base of baseObjects) {
     const question = lens.question(base);
     if (curatedQuestions.has(normalizeKey(question))) continue;
-    const id = `JP2K-${base.subject.toUpperCase()}-${base.code}-${lens.id}`;
+    const isLegacy = Number(base.code) <= 200;
+    const id = `${isLegacy ? 'JP2K' : 'JP4K'}-${base.subject.toUpperCase()}-${base.code}-${lens.id}`;
     baseIndexById.set(id, baseObjects.indexOf(base));
     generatedPool.push({
       id,
-      src: 'seed2000',
+      src: isLegacy ? 'seed2000' : 'seed4000',
       grade: 'B',
       subject: base.subject,
       title: `${lens.label} · ${base.topic}`,
@@ -435,15 +537,14 @@ for (let lensIndex = 0; lensIndex < LENSES.length; lensIndex += 1) {
   }
 }
 
-const TARGET = 2000;
-const generatedNeeded = TARGET - curated.length;
-if (generatedPool.length < generatedNeeded) {
-  throw new Error(`Not enough generated seeds: need ${generatedNeeded}, have ${generatedPool.length}`);
-}
-
-const nineLensCore = generatedPool.filter(seed => seed.lens !== 'DESIGN');
-const designCandidates = generatedPool.filter(seed => seed.lens === 'DESIGN');
-const designNeeded = generatedNeeded - nineLensCore.length;
+// 기존 2,000개에서 선택했던 1,892개는 그대로 보존한다. 이후 새 기본
+// 주제에서만 부족분을 채워, 학생이 저장해 둔 링크와 수업 자료의 ID가
+// 달라지지 않게 한다.
+const legacyPool = generatedPool.filter(seed => baseIndexById.get(seed.id) < 200);
+const nineLensCore = legacyPool.filter(seed => seed.lens !== 'DESIGN');
+const designCandidates = legacyPool.filter(seed => seed.lens === 'DESIGN');
+const legacyGeneratedNeeded = 2000 - curated.length;
+const designNeeded = legacyGeneratedNeeded - nineLensCore.length;
 const priorityDesignTopics = new Set([
   '미분하면 다항식의 차수가 하나 내려가는 이유',
   '자연상수 e를 정의하는 서로 다른 방법',
@@ -467,7 +568,42 @@ for (const candidate of designCandidates) {
     chosenDesignIds.add(candidate.id);
   }
 }
-const generated = [...nineLensCore, ...balancedDesign];
+const legacyGenerated = [...nineLensCore, ...balancedDesign];
+if (legacyGenerated.length !== legacyGeneratedNeeded) {
+  throw new Error(`Legacy selection changed: ${legacyGenerated.length} vs ${legacyGeneratedNeeded}`);
+}
+
+const TARGET_PER_SUBJECT = 500;
+const SUBJECTS = ['calc', 'geo', 'econ', 'algebra', 'prob', 'common', 'ai', 'culture'];
+const chosenIds = new Set(legacyGenerated.map(seed => seed.id));
+const generated = legacyGenerated.slice();
+
+for (const subject of SUBJECTS) {
+  const curatedCount = curated.filter(seed => seed.subject === subject).length;
+  const legacyCount = legacyGenerated.filter(seed => seed.subject === subject).length;
+  const needed = TARGET_PER_SUBJECT - curatedCount - legacyCount;
+  if (needed < 0) throw new Error(`${subject} exceeds target before expansion`);
+
+  const candidates = generatedPool
+    .filter(seed => seed.subject === subject && !chosenIds.has(seed.id) && baseIndexById.get(seed.id) >= 200)
+    .sort((a, b) => {
+      const baseDiff = baseIndexById.get(a.id) - baseIndexById.get(b.id);
+      return baseDiff || LENSES.findIndex(lens => lens.id === a.lens) - LENSES.findIndex(lens => lens.id === b.lens);
+    });
+  if (candidates.length < needed) {
+    throw new Error(`Not enough ${subject} seeds: need ${needed}, have ${candidates.length}`);
+  }
+  for (const seed of candidates.slice(0, needed)) {
+    generated.push(seed);
+    chosenIds.add(seed.id);
+  }
+}
+
+const TARGET = TARGET_PER_SUBJECT * SUBJECTS.length;
+const generatedNeeded = TARGET - curated.length;
+if (generated.length !== generatedNeeded) {
+  throw new Error(`Generated count mismatch: ${generated.length} vs ${generatedNeeded}`);
+}
 
 // 확장 씨앗은 파일에 담아 보내지 않는다. 브라우저가 BASES 와 picks 로
 // 다시 만든다. 그래서 같은 코드로 여기서도 만들어 보고, 하나라도
@@ -519,7 +655,7 @@ const counts = catalog.reduce((acc, seed) => {
 }, { subject: {}, origin: {}, grade: {}, stage: {}, track: {} });
 
 const metadata = {
-  version: '2026.08.31',
+  version: '2026.11.17',
   total: catalog.length,
   curated: curated.length,
   generated: catalog.length - curated.length,
@@ -537,7 +673,7 @@ const metadata = {
 
 const js = `/* AUTO-GENERATED by scripts/build-seed-catalog.mjs\n` +
   `   총 ${catalog.length}개: 기존 큐레이션 ${curated.length} + 확장 ${catalog.length - curated.length}.\n` +
-  `   확장 ${catalog.length - curated.length}개는 담지 않는다. BASES 200개와 picks 로\n` +
+  `   확장 ${catalog.length - curated.length}개는 담지 않는다. BASES ${BASES.length}개와 picks 로\n` +
   `   seed-expand.js 가 브라우저에서 만든다. 그래서 파일이 작다.\n` +
   `   직접 수정하지 말고 생성기의 BASES/LENSES를 수정한다. */\n` +
   `(function () {\n  'use strict';\n` +
@@ -553,12 +689,12 @@ const js = `/* AUTO-GENERATED by scripts/build-seed-catalog.mjs\n` +
   `    window.JPSeeds.all = function () { return catalog.slice(); };\n` +
   `    window.JPSeeds.catalogMeta = metadata;\n` +
   `    window.JPSeeds.GRADE.B = { rank: 5, desc: '교사 검토 전 확장 후보' };\n` +
-  `    window.JPSeeds.source = 'JP Math Lab Seed Catalog 2000 · 2026.08.31';\n` +
+  `    window.JPSeeds.source = 'JP Math Lab Seed Catalog 4000 · 2026.11.17';\n` +
   `  }\n}());\n`;
 
-fs.writeFileSync(path.join(TOPIC_DIR, 'seeds-catalog-2000.js'), js, 'utf8');
+fs.writeFileSync(path.join(TOPIC_DIR, 'seeds-catalog-4000.js'), js, 'utf8');
 fs.writeFileSync(
-  path.join(TOPIC_DIR, 'seeds-catalog-2000.meta.json'),
+  path.join(TOPIC_DIR, 'seeds-catalog-4000.meta.json'),
   `${JSON.stringify(metadata, null, 2)}\n`,
   'utf8'
 );

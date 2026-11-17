@@ -1,12 +1,18 @@
-/* 학생용 Deep Dive 화면.
-   잠금도 광고도 없다. 먼저 107개를 다 만들고, 잠금은 나중에 정한다.
-   내용은 deep-dives/*.js 가 실어 준다. 아직 안 쓴 씨앗은 구조만 보여 준다. */
+/* 학생용 Deep Dive 화면. 교사가 쓴 deep-dives 항목을 우선 사용하고,
+   나머지 모든 씨앗은 deep-dive-generator.js가 실제 탐구 설계로 바꾼다. */
 (function () {
   'use strict';
 
   var catalog = window.JPDeepDives || { items: {}, sampleId: '' };
   var layer = null;
   var lastFocus = null;
+  var seedMap = {};
+
+  function refreshSeeds() {
+    seedMap = {};
+    if (!window.JPSeeds || !window.JPSeeds.all) return;
+    window.JPSeeds.all().forEach(function (seed) { seedMap[seed.id] = seed; });
+  }
 
   function esc(value) {
     return String(value == null ? '' : value).replace(/[&<>"']/g, function (c) {
@@ -43,30 +49,29 @@
     return layer;
   }
 
-  // 광고도 잠금도 없다. 아직 안 만든 것은 안 만들었다고 적는다.
-  function pendingTemplate(seedId, title) {
-    return '<div class="dd-locked-view">' +
-      '<p class="dd-kicker">STUDENT DEEP DIVE</p>' +
-      '<div class="dd-lock-symbol" aria-hidden="true">✎</div>' +
-      '<h2 id="ddTitle">' + esc(title || '깊이 탐구') + '</h2>' +
-      '<p class="dd-lead">이 씨앗의 깊이 탐구는 아직 쓰지 않았다. 아래 구조로 채워 넣는 중이다.</p>' +
-      '<div class="dd-locked-grid">' +
-        ['질문 정교화', '핵심 수학', '직접 실험', '데이터·그래프', '검증·반례', '보고서 구조'].map(function (x) {
-          return '<span>' + x + '</span>';
-        }).join('') +
-      '</div>' +
-      '<p class="dd-status"><b>씨앗 번호</b> ' + esc(seedId) + '</p>' +
-      '<p class="dd-fine">주제 탐색과 깊이 탐구는 모두 무료다.</p>' +
-    '</div>';
-  }
-
-  function section(label, title, body, extra) {
-    return '<section class="dd-section' + (extra ? ' ' + extra : '') + '">' +
+  function section(id, label, title, body, extra) {
+    return '<section id="' + id + '" class="dd-section' + (extra ? ' ' + extra : '') + '">' +
       '<p class="dd-section-label">' + esc(label) + '</p>' +
       '<h3>' + esc(title) + '</h3>' + body + '</section>';
   }
 
-  function sampleTemplate(item) {
+  function topicVisual(seed, item) {
+    var subject = (seed && seed.subject) || item.subject || 'common';
+    var shapes = {
+      calc: '<path d="M18 117 C58 104 68 28 120 52 S180 119 246 36"/><path class="dd-v-dash" d="M18 94 H250"/>',
+      geo: '<circle cx="130" cy="72" r="48"/><path d="M25 127 L130 24 L239 127 Z M50 127 L130 72 L214 127"/><circle class="dd-v-dot" cx="130" cy="72" r="5"/>',
+      econ: '<path d="M24 120 C72 104 116 75 235 28"/><path d="M24 36 C95 56 155 94 235 119"/><circle class="dd-v-dot" cx="131" cy="77" r="6"/>',
+      algebra: '<path d="M22 94 C70 18 105 18 132 94 S196 170 242 55"/><path class="dd-v-dash" d="M18 94 H248 M132 15 V135"/>',
+      prob: '<path class="dd-v-dash" d="M28 115 C60 112 78 88 92 57 S126 18 143 57 S183 113 242 115"/><circle class="dd-v-dot" cx="143" cy="57" r="5"/>',
+      common: '<path d="M20 120 L65 82 L104 96 L148 38 L191 65 L240 24"/><path class="dd-v-dash" d="M20 120 H246"/>',
+      ai: '<path d="M36 38 L95 68 L148 30 L218 58 L188 116 L111 118 L36 38 M95 68 L111 118 M148 30 L188 116"/><circle class="dd-v-dot" cx="95" cy="68" r="5"/><circle class="dd-v-dot" cx="188" cy="116" r="5"/>',
+      culture: '<path d="M130 18 L153 62 L202 56 L168 91 L181 138 L130 116 L79 138 L92 91 L58 56 L107 62 Z"/><circle class="dd-v-dash" cx="130" cy="79" r="52"/>'
+    };
+    return '<svg class="dd-topic-visual dd-v-' + esc(subject) + '" viewBox="0 0 260 150" aria-hidden="true">' +
+      (shapes[subject] || shapes.common) + '</svg>';
+  }
+
+  function sampleTemplate(item, seed) {
     var table = '<div class="dd-table-wrap"><table><thead><tr>' + item.dataColumns.map(function (x) {
       return '<th>' + esc(x) + '</th>';
     }).join('') + '</tr></thead><tbody>' + item.dataRows.map(function (row) {
@@ -110,22 +115,46 @@
       }).join('') + '</div></div></div>', '']);
 
     return '<header class="dd-hero">' +
-        '<p class="dd-kicker">' + esc(item.badge) + '</p>' +
+        '<div class="dd-hero-copy"><p class="dd-kicker">' + esc(item.badge) + '</p>' +
         '<h2 id="ddTitle">' + esc(item.title) + '</h2>' +
-        '<p>' + esc(item.subtitle) + '</p>' +
+        '<p>' + esc(item.subtitle) + '</p></div>' + topicVisual(seed, item) +
         '<div class="dd-refined"><span>정교화된 질문</span><strong>' +
           esc(item.refinedQuestion) + '</strong></div>' +
+        '<div class="dd-start"><span>지금 바로 할 첫 행동</span><p>' + esc(item.firstAction || item.plan[0]) + '</p>' +
+          '<div><button type="button" data-dd-copy>탐구 설계 복사</button><button type="button" data-dd-print>인쇄하기</button></div></div>' +
       '</header>' +
+      '<nav class="dd-journey" aria-label="깊이 탐구 차례" style="--dd-parts:' + parts.length + '">' +
+        parts.map(function (x, i) {
+          return '<button type="button" data-dd-jump="dd-part-' + (i + 1) + '"><b>' + (i + 1) + '</b><span>' + esc(x[0]) + '</span></button>';
+        }).join('') + '</nav>' +
       parts.map(function (x, i) {
         var no = (i + 1 < 10 ? '0' : '') + (i + 1);
-        return section(no + ' · ' + x[0], x[1], x[2], x[3]);
+        return section('dd-part-' + (i + 1), no + ' · ' + x[0], x[1], x[2], x[3]);
       }).join('') +
       // 아직 실험실 페이지가 없는 과목도 있다. 없으면 없다고 적는다.
       '<footer class="dd-footer"><p>이제 설명을 읽는 데서 멈추지 말고 값을 움직여 확인하세요.</p>' +
-        (item.asset
+        (item.asset && !item.generated
           ? '<a href="' + esc(item.asset.href) + '">' + esc(item.asset.label) + ' →</a>'
-          : '<span class="dd-noasset">이 주제의 실험실은 아직 없다. 직접 만들어 볼 차례다.</span>') +
+          : '<a href="inquiry.html?seed=' + encodeURIComponent(item.seedId || (seed && seed.id) || '') + '">이 씨앗으로 내 탐구 시작 →</a>') +
       '</footer>';
+  }
+
+  function copyPlan(item) {
+    var text = [
+      '[탐구 질문] ' + item.refinedQuestion,
+      '', '[왜 탐구할까] ' + item.why,
+      '', '[탐구 순서]', item.plan.map(function (x, i) { return (i + 1) + '. ' + x; }).join('\n'),
+      '', '[확인할 것]', item.checks.map(function (x) { return '- ' + x; }).join('\n'),
+      '', '[보고서 구조]', item.report.map(function (x) { return '- ' + x; }).join('\n')
+    ].join('\n');
+    function fallback() {
+      var area = document.createElement('textarea'); area.value = text; document.body.appendChild(area);
+      area.select(); document.execCommand('copy'); area.remove(); return Promise.resolve();
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).catch(fallback);
+    }
+    return fallback();
   }
 
   function experimentTemplate() {
@@ -210,13 +239,31 @@
 
   function open(seedId, title) {
     ensureLayer();
+    refreshSeeds();
     lastFocus = document.activeElement;
+    var seed = seedMap[seedId];
     var item = catalog.items[seedId];
+    if (!item && seed && window.JPDeepDiveGenerator) item = window.JPDeepDiveGenerator.build(seed);
+    if (!item) return;
+    if (!item.seedId) item.seedId = seedId;
+    if (!item.subject && seed) item.subject = seed.subject;
     var content = layer.querySelector('.dd-content');
-    content.innerHTML = item ? sampleTemplate(item) : pendingTemplate(seedId, title);
+    content.innerHTML = sampleTemplate(item, seed || { title: title });
     layer.hidden = false;
     document.body.classList.add('dd-open');
     setupExperiment(content);
+    content.querySelector('[data-dd-copy]').addEventListener('click', function (event) {
+      copyPlan(item).then(function () {
+        event.currentTarget.textContent = '복사됨 ✓';
+      });
+    });
+    content.querySelector('[data-dd-print]').addEventListener('click', function () { window.print(); });
+    content.querySelectorAll('[data-dd-jump]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        var target = content.querySelector('#' + button.dataset.ddJump);
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
     layer.querySelector('.dd-close').focus();
   }
 
@@ -228,14 +275,11 @@
   }
 
   function cardCta(seed) {
-    var ready = !!catalog.items[seed.id];
-    return '<div class="sd-deep-entry' + (ready ? ' is-sample' : '') + '">' +
+    return '<div class="sd-deep-entry is-sample">' +
       '<div><span>DEEP DIVE</span>' +
-      '<p>' + (ready
-        ? '질문을 실험과 보고서까지 발전시키는 전체 과정이다.'
-        : '아직 쓰지 않았다. 구조만 볼 수 있다.') + '</p></div>' +
+      '<p>질문을 첫 실험·자료·반례·보고서까지 발전시키는 전체 과정이다.</p></div>' +
       '<button type="button" data-deep-dive-open="' + esc(seed.id) + '" data-seed-title="' + esc(seed.title) + '">' +
-        (ready ? '깊이 탐구 열어보기 →' : '준비 중인 구조 보기 ↗') + '</button></div>';
+        '깊이 탐구 열어보기 →</button></div>';
   }
 
   function registerProtectedItem(item) {
@@ -249,7 +293,8 @@
 
   // 이 씨앗의 Deep Dive 가 열려 있는가.
   function isOpen(seedId) {
-    return !!catalog.items[seedId];
+    refreshSeeds();
+    return !!seedMap[seedId];
   }
 
   document.addEventListener('click', function (event) {

@@ -1,5 +1,5 @@
-/* 씨앗밭 — 2,000개 탐구 씨앗을 교과·출발점·탐구 방식으로 거르고 말로 찾는다.
-   데이터는 seeds-catalog-2000.js 에 모인다. 이 파일은 한 번에 필요한 카드만 그린다.
+/* 씨앗밭 — 4,000개 탐구 씨앗을 교과·출발점·탐구 방식으로 거르고 말로 찾는다.
+   데이터는 seeds-catalog-4000.js 에 모인다. 이 파일은 한 번에 필요한 카드만 그린다.
 
    씨앗은 출처마다 가진 항목이 다르다. 마이닝 씨앗은 교육과정 관계와
    입구/천장 급을 갖고, 뱅크 씨앗은 상황·화면·Lab 을 갖는다.
@@ -53,9 +53,37 @@
       return seeds.filter(function (s) { return pick(s) === value; }).length;
     }
 
+    var featuredSubjects = ['calc', 'geo', 'prob'];
+    var featured = featuredSubjects.map(function (subject) {
+      return seeds.find(function (seed) { return seed.subject === subject && seed.origin === 'curated'; }) ||
+        seeds.find(function (seed) { return seed.subject === subject; });
+    }).filter(Boolean);
+
+    function featuredCard(seed) {
+      var profile = DB.SUBJECT[seed.subject];
+      return '<article class="sd-feature" style="--sd-accent:' + profile.color + '">' +
+        '<span class="sd-subject">' + esc(profile.label) + '</span>' +
+        '<h3>' + esc(seed.question || seed.title) + '</h3>' +
+        '<p>' + esc(seed.phenomenon || seed.situation || seed.act || '') + '</p>' +
+        '<button type="button" data-deep-dive-open="' + esc(seed.id) + '" data-seed-title="' + esc(seed.title) + '">깊이 탐구 미리보기 →</button>' +
+      '</article>';
+    }
+
     root.innerHTML =
+      '<section class="sd-overview" aria-label="탐구 씨앗 안내">' +
+        '<div><p>QUESTION ATLAS · 2026</p><h3>' + seeds.length.toLocaleString('ko-KR') + '개의 질문,<br>여덟 개의 수학 방</h3></div>' +
+        '<p>관심 분야와 탐구 방식을 고르면 지금 시작할 수 있는 질문을 만난다. 모든 씨앗에는 <b>질문 사다리·첫 실험·자료표·반례·보고서 구조</b>가 연결되어 있다.</p>' +
+      '</section>' +
+      '<section class="sd-guide" aria-label="탐구 주제 찾는 순서">' +
+        '<div class="sd-guide-title"><span>탐구 길잡이</span><b>세 단계로<br>내 질문 찾기</b></div>' +
+        '<div><i>1</i><b>관심 분야</b><span>끌리는 수학의 방을 고른다.</span></div>' +
+        '<div><i>2</i><b>탐구 방식</b><span>증명·실험·반례 중 길을 고른다.</span></div>' +
+        '<div><i>3</i><b>난이도</b><span>지금 아는 수학에서 시작한다.</span></div>' +
+      '</section>' +
+      '<section class="sd-featured"><div class="sd-section-title"><h3>추천 탐구 씨앗 3선</h3><p>서로 다른 방식으로 시작해 보는 대표 질문</p></div>' +
+        '<div class="sd-feature-grid">' + featured.map(featuredCard).join('') + '</div></section>' +
       '<div class="sd-controls">' +
-        '<div class="sd-row"><span class="sd-row-label">교과</span><div class="sd-chips">' +
+        '<div class="sd-row"><span class="sd-row-label">관심</span><div class="sd-chips">' +
           chip('subject', 'all', '전체', seeds.length, true) +
           subjects.map(function (k) {
             return chip('subject', k, DB.SUBJECT[k].label,
@@ -65,14 +93,14 @@
         // 학교급과 출발은 각각 세 개뿐이라 한 줄에 나란히 둔다. 줄이 늘면
         // 씨앗밭이 그만큼 길어지고 아래 학생 탐구가 밀린다.
         '<div class="sd-row sd-row-pair">' +
-          '<span class="sd-row-label">학교급</span><div class="sd-chips">' +
+          '<span class="sd-row-label">난이도</span><div class="sd-chips">' +
             chip('stage', 'all', '전체', seeds.length, true) +
             stages.map(function (item) {
               return chip('stage', item.key, item.label,
                 count(function (s) { return s.stage; }, item.key), false, item.title);
             }).join('') +
           '</div>' +
-          '<span class="sd-row-label sd-row-label-2">출발</span><div class="sd-chips">' +
+          '<span class="sd-row-label sd-row-label-2">출발점</span><div class="sd-chips">' +
             chip('track', 'all', '전체', seeds.length, true) +
             tracks.map(function (item) {
               return chip('track', item.key, item.label,
@@ -94,7 +122,7 @@
             'aria-label="씨앗 찾기">' +
         '</div>' +
       '</div>' +
-      '<div class="sd-result-head"><p class="sd-count" aria-live="polite"></p>' +
+      '<div class="sd-result-head"><div><h3>탐구 씨앗 전체</h3><p class="sd-count" aria-live="polite"></p></div>' +
         '<button type="button" class="sd-random">무작위 10개 만나기</button></div>' +
       '<div class="sd-list"></div>' +
       '<button type="button" class="sd-more" hidden>10개 더 보기</button>' +
@@ -142,11 +170,11 @@
       var head = s.question || s.title;
       var sub = s.question ? s.title : '';
       var lead = s.phenomenon || s.situation || '';
-      var body =
-        (lead ? '<p class="sd-phenom">' + esc(lead) + '</p>' : '') +
-        '<dl class="sd-meta">' +
+      var action = s.act || s.lab || '대표 사례를 만들고 조건을 하나씩 바꾸어 비교한다.';
+      var outputs = (s.concepts || []).slice(0, 3);
+      if (!outputs.length) outputs = ['탐구 기록', '표·그래프', '새 질문'];
+      var details = '<dl class="sd-meta">' +
           row('화면', s.scene ? esc(s.scene) : '') +
-          row('해보는 것', s.act || s.lab ? esc(s.act || s.lab) : '') +
           row('학생 예측', s.predict ? esc(s.predict) : '') +
           row('충돌', s.conflict ? esc(s.conflict) : '') +
           row('반전', s.twist ? esc(s.twist) : '') +
@@ -159,25 +187,23 @@
           row('메모', s.notes && s.notes.length
             ? s.notes.map(function (n) { return esc(n); }).join('<br>') : '') +
           row('확인 필요', s.caution ? '<b class="sd-caution">' + esc(s.caution) + '</b>' : '') +
-        '</dl>' +
-        (window.JPDeepDiveUI ? window.JPDeepDiveUI.cardCta(s) : '') +
-        '<div class="sd-foot">' +
-          (s.asset
-            ? '<a class="sd-go" href="' + esc(s.asset.href) + '">' +
-                esc(s.asset.label) + ' →</a>'
-            : '<span class="sd-nolab">아직 만들지 않았다</span>') +
-          '<code class="sd-id" title="' + esc(DB.SOURCE[s.src] || '') + '">' +
-            esc(s.id) + '</code>' +
-        '</div>';
+        '</dl>';
 
-      return '<details class="sd-seed" style="--sd-accent:' + DB.SUBJECT[s.subject].color + '">' +
-        '<summary>' +
+      return '<article class="sd-seed" style="--sd-accent:' + DB.SUBJECT[s.subject].color + '">' +
+        '<header>' +
           '<span class="sd-line">' + badges(s) + '</span>' +
           '<span class="sd-question">' + esc(head) + '</span>' +
           (sub ? '<span class="sd-title">' + esc(sub) + '</span>' : '') +
-        '</summary>' +
-        '<div class="sd-body">' + body + '</div>' +
-      '</details>';
+        '</header>' +
+        '<div class="sd-body">' +
+          (lead ? '<div class="sd-card-row sd-why"><b>왜 탐구할까</b><p>' + esc(lead) + '</p></div>' : '') +
+          '<div class="sd-card-row sd-action"><b>첫 실험</b><p>' + esc(action) + '</p></div>' +
+          '<div class="sd-card-row sd-output"><b>예상 결과물</b>' + tags(outputs, 'sd-tag') + '</div>' +
+          '<details class="sd-more-detail"><summary>씨앗 정보 더 보기</summary>' + details + '</details>' +
+          (window.JPDeepDiveUI ? window.JPDeepDiveUI.cardCta(s) : '') +
+          '<code class="sd-id" title="' + esc(DB.SOURCE[s.src] || '') + '">' + esc(s.id) + '</code>' +
+        '</div>' +
+      '</article>';
     }
 
     // 찾기는 씨앗의 글자 전부를 훑는다. 개념 이름으로도, 상황의 낱말로도 걸린다.
