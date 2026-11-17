@@ -555,6 +555,17 @@ assert.match(csat, /AI킬러문제\/index\.html/, '기출 목록에서 킬러문
 assert.match(read('AI킬러문제/index.html'), /수능문제\/index\.html/, '킬러문제 목록에서 기출로 가는 길이 있어야 한다.');
 assert.match(read('AI킬러문제/index.html'), /기출이 아닙니다/, '기출이 아니라는 것을 밝혀야 한다.');
 
+// 목록은 단순 카드 나열이 아니라, 세트 전체를 조망하고 시작점을 고르는 메인 허브다.
+const killerHome = read('AI킬러문제/index.html');
+assert.match(killerHome, /class="killer-home-page"/, '학생용 목록에 최신 메인 화면 범위가 있어야 한다.');
+assert.match(killerHome, /CHALLENGE CONTROL ROOM/, '첫 화면에 도전 관제실 정체성이 보여야 한다.');
+assert.match(killerHome, /id="featuredList"/, '세트별 추천 문제가 첫 화면에 있어야 한다.');
+assert.match(killerHome, /id="setMap"/, '세트로 바로 가는 도전 지도가 있어야 한다.');
+assert.match(killerHome, /data-total/, '전체 문항 수를 데이터에서 계산해 보여 줘야 한다.');
+const killerProblem = read('AI킬러문제/문제.html');
+assert.match(killerProblem, /class="killer-problem-page"/, '문항 화면도 최신 디자인 범위를 써야 한다.');
+assert.match(killerProblem, /class="turn-map"/, '학생이 원할 때만 여는 전환 지도가 있어야 한다.');
+
 // 메뉴에도 따로 걸려 있어야 찾아갈 수 있다
 assert.match(read('jp-nav-2.js'), /AI킬러문제\//, '메뉴에 AI 킬러문제가 걸려 있어야 한다.');
 assert.match(read('index.html'), /AI킬러문제\//, '메인에 AI 킬러문제가 걸려 있어야 한다.');

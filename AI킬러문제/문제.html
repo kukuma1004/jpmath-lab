@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="../vendor/katex/katex.min.css"/>
 <link rel="stylesheet" href="../jp-math-typography.css?v=4"/>
 <link rel="stylesheet" href="../jp-polish.css?v=11"/>
-<link rel="stylesheet" href="killer.css?v=1"/>
+<link rel="stylesheet" href="killer.css?v=20261117-2"/>
 <script defer src="../vendor/katex/katex.min.js"></script>
 <script defer src="../jp-polish.js?v=20261104-2"></script>
 <link rel="stylesheet" href="../jp-nav-2.css?v=20261104-2">
@@ -23,7 +23,7 @@
 <script defer src="문제2.js?v=1"></script>
 <script defer src="문제3.js?v=1"></script>
 </head>
-<body>
+<body class="killer-problem-page">
 
 <p class="breadcrumb"><a href="../index.html">JP Math Lab</a> / <a href="index.html">AI 킬러문제</a> / <span id="crumb">문항</span></p>
 
@@ -91,6 +91,11 @@ window.addEventListener('DOMContentLoaded', function(){
       <details class="hint-box">
         <summary>막히면 여기를 한 번</summary>
         <div class="body">${item.hint}</div>
+      </details>
+
+      <details class="turn-map">
+        <summary><span>TURNING POINT</span> 문제의 전환 지도 보기</summary>
+        <ol>${item.turn.split('→').map((step) => `<li>${esc(step.trim())}</li>`).join('')}</ol>
       </details>
     </article>`;
 
