@@ -5,7 +5,7 @@ const box = new T.BoxGeometry();
 const dummy = new T.Object3D();
 const surface = (color, roughness = 0.82) => new T.MeshStandardMaterial({ color, roughness });
 const unlit = color => new T.MeshBasicMaterial({ color });
-const asphalt = surface(0x374157);
+const asphalt = surface(0x4a4f62);
 const steel = surface(0x353d53);
 const concrete = surface(0xadb5a8);
 const white = surface(0xffecd2);
@@ -19,7 +19,8 @@ const stone = surface(0x835958);
 const trim = surface(0xead5a5);
 const green = surface(0x3d7967);
 const moss = surface(0x599774);
-const sunDirection = new T.Vector3(0.64, 0.23, -0.74).normalize();
+const sunDirection = new T.Vector3(.78, .11, -.63).normalize();
+const seaLevel = -7.86;
 
 function randomFrom(seed) {
   return () => {
@@ -98,20 +99,24 @@ function strip(parent, material, left, right, low, high, step = 1.7) {
   geometry.computeVertexNormals();
   const mesh = new T.Mesh(geometry, material);
   parent.add(mesh);
+  return mesh;
 }
 
 function paintTexture() {
   const tile = document.createElement('canvas');
   tile.width = 256;
-  tile.height = 128;
+  tile.height = 256;
   const ctx = tile.getContext('2d');
   const rng = randomFrom(9821);
   const image = ctx.createImageData(tile.width, tile.height);
   for (let y = 0; y < tile.height; y++) {
     for (let x = 0; x < tile.width; x++) {
-      const edgeShade = 24 * Math.pow(Math.abs(x / 128 - 1), 5);
-      const tire = 9 * Math.exp(-Math.pow((x - 83) / 6, 2)) + 9 * Math.exp(-Math.pow((x - 173) / 6, 2));
-      const value = Math.floor(213 + rng() * 36 - edgeShade - tire);
+      const edgeShade = 30 * Math.pow(Math.abs(x / 128 - 1), 5);
+      const wander = Math.sin(y * Math.PI / 128) * 2.5;
+      const tread = Math.exp(-Math.pow((x - 81 - wander) / 6, 2)) +
+        Math.exp(-Math.pow((x - 172 - wander) / 7, 2));
+      const grit = rng();
+      const value = Math.floor(219 + grit * 24 - edgeShade - 22 * tread + (grit > .98 ? 12 : 0));
       const i = (y * tile.width + x) * 4;
       image.data.set([value, value, value, 255], i);
     }
@@ -127,7 +132,7 @@ function paintTexture() {
 function road(scene) {
   asphalt.map = paintTexture();
   steel.side = T.DoubleSide;
-  strip(scene, asphalt, -7.5, 7.5, 0, 0);
+  strip(scene, asphalt, -7.5, 7.5, 0, 0).receiveShadow = true;
   strip(scene, steel, -7.9, 7.9, -0.68, -0.68);
   for (const side of [-1, 1]) {
     strip(scene, steel, side * 7.89, side * 7.89, -0.68, 0.08);
@@ -209,7 +214,7 @@ function road(scene) {
   batch(scene, amber, launch);
 }
 
-function island(scene, x, z, rx, rz, top, seed) {
+function island(scene, x, z, rx, rz, top, seed, coast) {
   const rng = randomFrom(seed);
   const layers = [[.65, top], [.88, top - .24], [.96, top - 1.03],
     [.98, T.MathUtils.lerp(top, -6.8, .55)], [1.045, -6.7], [1.10, -7.85], [1.18, -8.2]];
@@ -240,6 +245,22 @@ function island(scene, x, z, rx, rz, top, seed) {
   geometry.setAttribute('color', new T.Float32BufferAttribute(tints, 3));
   geometry.computeVertexNormals();
   scene.add(new T.Mesh(geometry, new T.MeshStandardMaterial({ vertexColors: true, roughness: .94, side: T.DoubleSide })));
+  const foamRim = rings[5];
+  for (let i = 0; i < sides; i++) {
+    const a = foamRim[i];
+    const b = foamRim[(i + 1) % sides];
+    const widthA = 2.7 + Math.sin(i * 6.283 / sides * 3 + seed) * .8;
+    const widthB = 2.7 + Math.sin((i + 1) * 6.283 / sides * 3 + seed) * .8;
+    const outer = (v, width) => new T.Vector2(v.x - x, v.z - z).setLength(width).add(new T.Vector2(v.x, v.z));
+    const oa = outer(a, widthA);
+    const ob = outer(b, widthB);
+    const u = i / sides;
+    const v = (i + 1) / sides;
+    const foamY = seaLevel + .017;
+    coast.positions.push(a.x, foamY, a.z, oa.x, foamY, oa.y, b.x, foamY, b.z,
+      oa.x, foamY, oa.y, ob.x, foamY, ob.y, b.x, foamY, b.z);
+    coast.uvs.push(u, 0, u, 1, v, 0, u, 1, v, 1, v, 0);
+  }
 }
 
 function placard(text, width, height, background = '#162b3c', foreground = '#f7e6af') {
@@ -379,16 +400,15 @@ function lighthouse(scene) {
   scene.add(light);
 }
 
-function scenery(scene) {
-  island(scene, -19, -50, 42, 29, 4.2, 11);
-  island(scene, -62, -42, 21, 23, 2.15, 29);
-  island(scene, -97, 12, 23, 24, -.65, 38);
-  island(scene, -29, 27, 45, 12, -1.96, 55);
-  island(scene, -44, -88, 7.3, 5.3, 4.1, 70);
-  island(scene, 40, -11, 21, 18, -.15, 84);
-  island(scene, -15, 95, 28, 14, -3.3, 161);
-  island(scene, 148, -74, 32, 20, -1.7, 85);
-  island(scene, -136, -138, 41, 12, -1.8, 16);
+function scenery(scene, waves) {
+  const coast = { positions: [], uvs: [] };
+  for (const terrain of [[-19, -50, 42, 29, 4.2, 11], [-62, -42, 21, 23, 2.15, 29],
+    [-97, 12, 23, 24, -.65, 38], [-29, 27, 45, 12, -1.96, 55], [-44, -88, 7.3, 5.3, 4.1, 70],
+    [40, -11, 21, 18, -.15, 84], [-15, 95, 28, 14, -3.3, 161], [148, -74, 32, 20, -1.7, 85],
+    [-136, -138, 41, 12, -1.8, 16]]) {
+    island(scene, ...terrain, coast);
+  }
+  shoreFoam(scene, coast, waves);
   const rocks = [], brush = [];
   const rng = randomFrom(55914);
   const clusters = [[-20, -50, 27, 16, 4], [-83, -24, 9, 6, 1], [40, -9, 8, 7, 0], [-97, 12, 8, 10, -.9], [-15, 95, 17, 8, -3.2]];
@@ -447,10 +467,50 @@ function scenery(scene) {
   harbor(scene);
 }
 
+function shoreFoam(scene, coast, waves) {
+  const geometry = new T.BufferGeometry();
+  geometry.setAttribute('position', new T.Float32BufferAttribute(coast.positions, 3));
+  geometry.setAttribute('uv', new T.Float32BufferAttribute(coast.uvs, 2));
+  const material = new T.ShaderMaterial({
+    side: T.DoubleSide, depthWrite: false, transparent: true, forceSinglePass: true,
+    uniforms: { uTime: waves, uColor: { value: new T.Color(0xc8fff0) } },
+    vertexShader: `
+      varying vec2 vUv;
+      varying vec2 vWorld;
+      void main() {
+        vUv = uv;
+        vWorld = position.xz;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+      }`,
+    fragmentShader: `
+      uniform float uTime;
+      uniform vec3 uColor;
+      varying vec2 vUv;
+      varying vec2 vWorld;
+      void main() {
+        float tide = sin(uTime * 1.2 + sin(vUv.x * 43.982) * 0.58) * .15;
+        float broken = .62 + sin(vWorld.x * 1.63 - vWorld.y * 1.74 + uTime) * .18
+          + sin(vWorld.x * .87 + vWorld.y * 1.32 - uTime * .7) * .16;
+        float primary = (vUv.y - .22 - tide) * 6.4;
+        float secondary = (vUv.y - .59 - tide * 1.32) * 13.0;
+        float front = exp(-primary * primary);
+        float fringe = exp(-secondary * secondary);
+        float fade = smoothstep(.02, .19, vUv.y) * (1.0 - smoothstep(.65, .98, vUv.y));
+        gl_FragColor = vec4(uColor, (front * .31 + fringe * .11) * broken * fade);
+        #include <tonemapping_fragment>
+        #include <colorspace_fragment>
+      }`,
+  });
+  const foam = new T.Mesh(geometry, material);
+  foam.renderOrder = 1;
+  scene.add(foam);
+}
+
 function water(scene) {
   const material = new T.ShaderMaterial({
-    uniforms: { uTime: { value: 0 }, uSun: { value: sunDirection }, uInk: { value: new T.Color(0x147187) },
-      uWave: { value: new T.Color(0x51bda9) }, uGold: { value: new T.Color(0xf6a765) } },
+    uniforms: { uTime: { value: 0 }, uSun: { value: sunDirection }, uInk: { value: new T.Color(0x105366) },
+      uWave: { value: new T.Color(0x59c6b6) }, uGold: { value: new T.Color(0xecbe85) },
+      uHorizon: { value: new T.Color(0xe69783) } },
     vertexShader: `
       varying vec3 vWorld;
       void main() {
@@ -459,27 +519,40 @@ function water(scene) {
       }`,
     fragmentShader: `
       uniform float uTime;
-      uniform vec3 uSun, uInk, uWave, uGold;
+      uniform vec3 uSun, uInk, uWave, uGold, uHorizon;
       varying vec3 vWorld;
       void main() {
         vec2 p = vWorld.xz;
-        float wave = sin(p.x * .18 + p.y * .28 + uTime * .68) + sin(p.x * .12 - p.y * .28 - uTime * .92);
-        float flow = sin(p.x * .08 - p.y * .13 + uTime * .48);
-        float grain = sin(p.y * 1.53 + sin(p.x * .31 + uTime * .96) * 2.8 + p.x * .24 + uTime * 1.17);
-        float crest = smoothstep(.86, .99, grain) * smoothstep(.44, .98, flow);
+        float crossSwell = p.x * .14 - p.y * .21 + uTime * .65;
+        float mainSwell = p.x * .082 + p.y * .31 - uTime * .87;
+        float run = p.x * .22 - p.y * .54;
+        float ripple = run + sin(crossSwell * .52) * 2.6 + uTime * 1.32;
+        float wind = sin(p.x * .91 + p.y * .22 - uTime * .72 + cos(crossSwell * .58) * 2.7);
+        float chop = sin(ripple * 1.82 + wind) * (.57 + wind * .43);
+        float distanceFade = 1.0 - smoothstep(65.0, 250.0, distance(vWorld, cameraPosition));
+        vec3 flowNormal = normalize(vec3(
+          (cos(crossSwell) * .027 + cos(ripple) * .022) * distanceFade, 1.0,
+          (cos(mainSwell) * .054 + cos(ripple) * .037) * distanceFade));
         vec3 view = normalize(vWorld - cameraPosition);
-        float distanceFade = 1.0 - smoothstep(120.0, 500.0, distance(vWorld, cameraPosition));
-        vec3 col = mix(uInk, uWave, .38 + wave * .035 * distanceFade + flow * .14);
-        float gleam = pow(max(0.0, dot(normalize(vec3(view.x + wave * .03, -view.y, view.z)), uSun)), 18.0);
-        col += uGold * gleam * (.47 + .44 * crest) + vec3(.045, .10, .10) * crest * distanceFade;
-        col = mix(uGold * 0.64 + uInk * 0.25, col, smoothstep(0.008, 0.27, -view.y));
+        vec3 reflection = reflect(view, flowNormal);
+        float gloss = max(0.0, dot(reflection, uSun));
+        float reflectionFalloff = pow(1.0 - clamp(-dot(view, flowNormal), 0.0, 1.0), 3.0);
+        float beam = pow(gloss, 18.0) * .56 + pow(gloss, 85.0) * (.46 + .48 * chop);
+        float wash = .38 + cos(crossSwell * .28 + cos(mainSwell * .35)) * .12 + .047 * sin(mainSwell);
+        vec3 col = mix(uInk, uWave, wash);
+        col = mix(col, uGold * .75 + uInk * .15, reflectionFalloff * .78);
+        float crest = smoothstep(.69, .98, chop) * smoothstep(.16, .8, sin(run * .1 + crossSwell * .4));
+        col += uGold * beam + vec3(.028, .068, .066) * crest * distanceFade;
+        float horizonGlow = pow(max(0.0, dot(view, uSun)), 16.0);
+        vec3 haze = mix(uHorizon, uGold, horizonGlow * .7);
+        col = mix(haze + uGold * beam * .26, col, smoothstep(0.0, .063, -view.y));
         gl_FragColor = vec4(col, 1.0);
         #include <tonemapping_fragment>
         #include <colorspace_fragment>
       }`
   });
   const plate = new T.Mesh(new T.PlaneGeometry(2400, 2400), material);
-  plate.position.y = -7.86;
+  plate.position.y = seaLevel;
   plate.rotation.x = -Math.PI / 2;
   scene.add(plate);
   return material.uniforms.uTime;
@@ -489,8 +562,8 @@ function sky(scene) {
   const material = new T.ShaderMaterial({
     side: T.BackSide, depthWrite: false,
     uniforms: {
-      uSun: { value: sunDirection }, uHorizon: { value: new T.Color(0xe2a78e) },
-      uOrange: { value: new T.Color(0xffd48e) }, uSky: { value: new T.Color(0x718da9) },
+      uSun: { value: sunDirection }, uHorizon: { value: new T.Color(0xe69783) },
+      uOrange: { value: new T.Color(0xffce80) }, uSky: { value: new T.Color(0x617896) },
     },
     vertexShader: `
       varying vec3 vDir;
@@ -503,38 +576,55 @@ function sky(scene) {
       varying vec3 vDir;
       void main() {
         vec3 ray = normalize(vDir);
-        float h = smoothstep(-0.03, 0.63, ray.y);
+        float h = smoothstep(-0.03, 0.49, ray.y);
         float sun = max(0.0, dot(ray, uSun));
         vec3 col = mix(uHorizon, uSky, h);
-        col = mix(col, uOrange, pow(sun, 12.0) * 0.72);
-        col += vec3(1.5, 0.89, 0.43) * smoothstep(0.9980, 0.9986, sun);
-        float streak = sin(ray.y * 128.0 + sin(ray.x * 7.5) * 2.5) * sin(ray.x * 24.0 + 1.3);
-        col += vec3(0.16, 0.11, 0.087) * smoothstep(0.43, 0.9, streak) * (1.0 - smoothstep(0.23, 0.51, ray.y)) * h;
+        col = mix(col, uOrange, pow(sun, 15.0) * 0.72);
+        float band = sin(ray.y * 152.0 + sin(ray.x * 10.3) * 2.1) * (sin(ray.x * 27.0 + 1.3) * .38 + .62);
+        float cloud = smoothstep(.28, .71, band) * smoothstep(.015, .051, ray.y)
+          * (1.0 - smoothstep(.18, .35, ray.y));
+        col = mix(col, vec3(.43, .18, .15), cloud * .23);
+        col += vec3(.48, .24, .09) * pow(sun, 150.0);
+        col += vec3(1.55, 1.04, .59) * smoothstep(.99912, .99942, sun);
         gl_FragColor = vec4(col, 1.0);
         #include <tonemapping_fragment>
         #include <colorspace_fragment>
       }`
   });
   const dome = new T.Mesh(new T.SphereGeometry(900, 20, 12), material);
-  dome.renderOrder = -20;
+  dome.renderOrder = 100;
   scene.add(dome);
 }
 
 export function buildWorld(scene) {
-  scene.fog = new T.FogExp2(0xc7b6a3, .00275);
+  scene.fog = new T.FogExp2(0xd4aa92, .00245);
   scene.background = new T.Color(0xd4bfa8);
   sky(scene);
   const waves = water(scene);
-  scene.add(new T.HemisphereLight(0xffeed5, 0x779dc0, 1.72));
-  const sun = new T.DirectionalLight(0xffc591, 2.55);
-  sun.position.copy(sunDirection).multiplyScalar(140);
-  scene.add(sun);
-  const rim = new T.DirectionalLight(0xc5dfff, 1.03);
+  scene.add(new T.HemisphereLight(0xffebd4, 0x83b2cc, 1.42));
+  const sun = new T.DirectionalLight(0xffc180, 2.65);
+  sun.target.position.set(-21, 0, -18);
+  sun.position.copy(sun.target.position).addScaledVector(sunDirection, 115);
+  sun.position.y = 99;
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  Object.assign(sun.shadow.camera, { left: -123, right: 123, top: 97, bottom: -97, near: 15, far: 290 });
+  sun.shadow.bias = -.00019;
+  sun.shadow.normalBias = .19;
+  sun.shadow.autoUpdate = false;
+  sun.shadow.needsUpdate = true;
+  scene.add(sun, sun.target);
+  const rim = new T.DirectionalLight(0xb5dfff, 1.00);
   rim.position.set(-85, 48, 90);
   scene.add(rim);
-  scenery(scene);
-  road(scene);
+  scenery(scene, waves);
   const lights = gantry(scene);
   combineStaticBoxes(scene);
-  return { waves, lights };
+  scene.traverse(object => {
+    if (!object.isMesh || !object.material.isMeshStandardMaterial) return;
+    object.castShadow = true;
+    object.receiveShadow = true;
+  });
+  road(scene);
+  return { waves, lights, sun };
 }

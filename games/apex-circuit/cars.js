@@ -4,7 +4,6 @@ import { track } from './track.js';
 const mat = (color, roughness = .68) => new T.MeshStandardMaterial({ color, roughness });
 const rubber = mat(0x111626);
 const trim = mat(0x233149, .46);
-const glass = mat(0x183f66, .24);
 const glassTop = mat(0x306a82, .26);
 const light = new T.MeshBasicMaterial({ color: 0xfff0b7 });
 const orange = new T.MeshBasicMaterial({ color: 0xf95f39 });
@@ -49,8 +48,15 @@ function shell(rows) {
 }
 
 // The static body and wheel details share draw calls by surface.
-function buildBody(model, design) {
-  const paint = mat(design.body, .35);
+function buildBody(model, design, reflection) {
+  const paint = new T.MeshPhysicalMaterial({
+    color: design.body, roughness: .32, clearcoat: .62, clearcoatRoughness: .21,
+    envMap: reflection, envMapIntensity: .67
+  });
+  const glass = new T.MeshPhysicalMaterial({
+    color: 0x163452, roughness: .24, clearcoat: .58, clearcoatRoughness: .18,
+    envMap: reflection, envMapIntensity: .76
+  });
   const stripe = mat(design.stripes, .41);
   const lower = mat(design.dark, .52);
   const buckets = new Map();
@@ -80,6 +86,7 @@ function buildBody(model, design) {
   block(lower, 0, .26, -.24, 1.65, .24, 3.55);
   block(trim, 0, .30, 1.75, 2.54, .16, .57);
   block(paint, 0, .39, 1.84, 2.52, .12, .33);
+  block(stripe, 0, .459, 1.92, 2.40, .025, .068);
   block(stripe, 0, .55, 1.42, .285, .044, .85, .19);
   block(glassTop, 0, (1.29 * design.round + 1.24 * design.round) / 2 + .008, -.22, .24, .025, .46, -.05);
   block(trim, 0, .35, -1.93, 2.10, .23, .34);
@@ -90,7 +97,11 @@ function buildBody(model, design) {
     block(trim, side * design.wing / 2, 1.12, -1.61, .11, .35, .68, -.09);
     block(paint, side * .86, .53, -.56, .61, .39, 1.31, 0, side * .035);
     block(stripe, side * .91, .735, -.37, .35, .047, .93);
+    block(lower, side * 1.135, .58, -.50, .065, .17, .76);
     block(trim, side * .89, .555, .093, .39, .20, .085);
+    for (const ventZ of [-.83, -.69, -.55]) {
+      block(trim, side * .91, .76, ventZ, .27, .016, .048);
+    }
     block(light, side * .86, .45, 1.97, .42, .07, .055);
     block(orange, side * .74, .64, -2.04, .31, .10, .069);
     block(white, side * .44, .41, -2.085, .17, .15, .14);
@@ -103,7 +114,9 @@ function buildBody(model, design) {
     const geometry = new T.BufferGeometry();
     geometry.setAttribute('position', new T.Float32BufferAttribute(positions, 3));
     geometry.setAttribute('normal', new T.Float32BufferAttribute(normals, 3));
-    model.add(new T.Mesh(geometry, material));
+    const mesh = new T.Mesh(geometry, material);
+    mesh.receiveShadow = Boolean(material.isMeshStandardMaterial);
+    model.add(mesh);
   }
   const label = document.createElement('canvas');
   label.width = 128;
@@ -126,6 +139,29 @@ function buildBody(model, design) {
   model.add(decal);
 }
 
+function carReflection() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 128;
+  const ctx = canvas.getContext('2d');
+  const sky = ctx.createLinearGradient(0, 0, 0, 128);
+  sky.addColorStop(0, '#5b87b4');
+  sky.addColorStop(.39, '#b7d2e4');
+  sky.addColorStop(.49, '#eab789');
+  sky.addColorStop(.54, '#3d5758');
+  sky.addColorStop(1, '#152334');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, 256, 128);
+  ctx.fillStyle = '#fff1ce';
+  ctx.fillRect(13, 31, 62, 19);
+  ctx.fillStyle = '#dcefff';
+  ctx.fillRect(128, 21, 65, 10);
+  const light = new T.CanvasTexture(canvas);
+  light.colorSpace = T.SRGBColorSpace;
+  light.mapping = T.EquirectangularReflectionMapping;
+  return light;
+}
+
 function blobMaterial() {
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = 64;
@@ -140,6 +176,7 @@ function blobMaterial() {
 }
 
 export function buildCars(scene) {
+  const reflection = carReflection();
   const shadowGeometry = new T.PlaneGeometry(4.0, 5.4).rotateX(-Math.PI / 2);
   const shadowMaterial = blobMaterial();
   const plumeGeometry = new T.ConeGeometry(.20, 1, 7).rotateX(-Math.PI / 2).translate(0, 0, -.50);
@@ -147,7 +184,7 @@ export function buildCars(scene) {
     const model = new T.Group();
     const shadow = new T.Mesh(shadowGeometry, shadowMaterial);
     shadow.renderOrder = 2;
-    buildBody(model, design);
+    buildBody(model, design, reflection);
     const jets = new T.Group();
     if (id === 0) {
       for (const side of [-1, 1]) {

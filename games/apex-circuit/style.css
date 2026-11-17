@@ -37,7 +37,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid white; outline-offset
 }
 [data-state="menu"] .shade {
   background:
-    linear-gradient(180deg,#101a256e 0%,transparent 20%,transparent 71%,#101a25c9 100%),
+    linear-gradient(180deg,#101a2540 0%,transparent 23%,transparent 71%,#101a25c9 100%),
     linear-gradient(105deg,#101a25f5 0%,#101a25de 23%,#101a2575 41%,transparent 64%);
 }
 .is-boosting .shade {

@@ -1,8 +1,8 @@
 import * as T from './vendor/three.module.min.js';
 import { track } from './track.js';
 import { createRace } from './race.js';
-import { buildWorld } from './world.js';
-import { buildCars, driveCar } from './cars.js';
+import { buildWorld } from './world.js?v=2';
+import { buildCars, driveCar } from './cars.js?v=2';
 import { createAudio } from './audio.js';
 
 const byId = id => document.getElementById(id);
@@ -71,7 +71,7 @@ function createCamera() {
   const target = new T.Vector3();
   const desired = new T.Vector3();
   const aim = new T.Vector3();
-  const menuPosition = new T.Vector3(-106, 35, 66);
+  const menuPosition = new T.Vector3(-112, 26, 67);
   const p = {}, preview = {};
   let ready = false;
   function update(race, state, animateTime, dt, reduced, snap = false) {
@@ -87,9 +87,9 @@ function createCamera() {
         desired.set(-99 + drift, 36, 63);
         aim.set(-64, -3, 43);
       } else {
-        aim.set(-74, 3.5, 17);
+        aim.set(-75, 5.1, 20);
       }
-      fov = portrait ? 51 : 48;
+      fov = portrait ? 51 : 55;
     } else {
       track.sample(player.distance, p);
       track.sample(player.distance + (portrait ? 10.8 : 12.7), preview);
@@ -120,8 +120,13 @@ function setup() {
   renderer.outputColorSpace = T.SRGBColorSpace;
   renderer.toneMapping = T.NeutralToneMapping;
   renderer.toneMappingExposure = .97;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = T.PCFShadowMap;
+  renderer.shadowMap.autoUpdate = false;
+  renderer.shadowMap.needsUpdate = true;
   const scene = new T.Scene();
-  const { waves, lights } = buildWorld(scene);
+  const { waves, lights, sun } = buildWorld(scene);
+  if (innerWidth < 850) sun.shadow.mapSize.set(1024, 1024);
   const vehicles = buildCars(scene);
   const view = createCamera();
   const race = createRace(track);
@@ -388,7 +393,11 @@ function setup() {
     event.preventDefault();
     pause();
   });
-  world.addEventListener('webglcontextrestored', () => { resizePending = true; });
+  world.addEventListener('webglcontextrestored', () => {
+    resizePending = true;
+    renderer.shadowMap.needsUpdate = true;
+    sun.shadow.needsUpdate = true;
+  });
 
   if (measured) {
     window.__apexQA = {
