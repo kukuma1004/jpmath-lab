@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#131d29">
+  <meta name="description" content="노을 지는 바닷가에서 미니카 다섯 대가 펼치는 3랩 아케이드 레이싱.">
+  <title>에이펙스 서킷 · JP Math Lab</title>
+  <link rel="icon" type="image/png" href="./icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;1,800;1,900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./game.js"></script>
+</head>
+<body data-state="loading">
+  <canvas id="world" aria-hidden="true"></canvas>
+  <div class="shade" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <a class="room-link" href="../"><span aria-hidden="true">←</span> JP Math Lab <span class="room-label">게임룸</span></a>
+    <div class="top-actions">
+      <button type="button" id="sound" class="tool-button" aria-label="게임 소리" aria-pressed="false">
+        <span class="sound-icon" aria-hidden="true"></span><span class="sound-label" aria-hidden="true"></span>
+      </button>
+      <button type="button" id="pause" class="tool-button" aria-label="일시정지">
+        <span class="pause-icon" aria-hidden="true"></span>
+      </button>
+    </div>
+  </header>
+
+  <main id="game-screen" aria-label="에이펙스 서킷">
+    <section class="start-screen" aria-labelledby="game-title">
+      <div class="start-content">
+        <div class="course-label">
+          <span class="finish-flag" aria-hidden="true"></span>
+          <span class="course-name">선셋 피어</span>
+          <span class="course-spec">3랩 · 5대</span>
+        </div>
+        <h1 id="game-title" lang="en" aria-label="에이펙스 서킷">APEX <span>CIRCUIT</span></h1>
+        <p class="start-description">해안 트랙을 달리는 미니카 레이싱. <br class="desktop-break">충전 패드를 밟고 직선에서 부스터로 추월하세요.</p>
+        <button type="button" id="start" class="race-button">레이스 시작 <span aria-hidden="true">↗</span></button>
+        <p class="menu-record">내 최고 랩 <strong id="menu-best">—</strong></p>
+      </div>
+      <div class="instructions">
+        <span class="auto-drive"><i aria-hidden="true"></i> 자동 가속</span>
+        <span class="keyboard-guide"><kbd>←</kbd><kbd>→</kbd> 조향</span>
+        <span class="keyboard-guide"><kbd>↓</kbd> 브레이크</span>
+        <span class="keyboard-guide"><kbd>Space</kbd> 부스터</span>
+        <span class="touch-guide">화면 아래 버튼으로 조작</span>
+      </div>
+    </section>
+
+    <section class="race-hud" aria-label="경주 계기판">
+      <div class="race-stats">
+        <div class="rank-stat">
+          <span class="stat-label">순위</span>
+          <div><strong id="rank">5</strong><small>/ 5</small></div>
+        </div>
+        <div class="lap-stat">
+          <span class="stat-label">랩</span>
+          <div><strong id="lap">1</strong><small>/ 3</small></div>
+        </div>
+        <div class="time-stat">
+          <span class="stat-label">기록</span>
+          <strong id="race-time">0:00.00</strong>
+        </div>
+      </div>
+      <div class="map-frame">
+        <canvas id="minimap" width="176" height="112" aria-label="코스와 차량 위치 지도"></canvas>
+      </div>
+      <div class="telemetry">
+        <div class="speed-stat"><strong id="speed">0</strong><small>KM/H</small></div>
+        <div class="boost-gauge" aria-label="부스터">
+          <div class="boost-caption"><span>부스터</span><span><strong id="boost-value">0</strong>%</span></div>
+          <div class="boost-track"><div id="boost-fill"></div></div>
+        </div>
+      </div>
+      <div id="countdown" role="status" aria-label="출발 카운트다운"></div>
+      <div id="feedback" role="status"></div>
+    </section>
+
+    <div class="touch-controls" aria-label="화면 조작">
+      <div class="touch-pair">
+        <button type="button" data-control="left" aria-label="왼쪽으로 조향"><span aria-hidden="true">‹</span></button>
+        <button type="button" data-control="right" aria-label="오른쪽으로 조향"><span aria-hidden="true">›</span></button>
+      </div>
+      <div class="touch-pair action-controls">
+        <button type="button" data-control="brake">브레이크</button>
+        <button type="button" data-control="boost">부스터</button>
+      </div>
+    </div>
+
+    <div class="overlay pause-screen">
+      <section class="session-panel" role="dialog" aria-modal="true" aria-labelledby="pause-title">
+        <h2 id="pause-title">일시정지</h2>
+        <button type="button" id="resume" class="race-button">계속 달리기 <span aria-hidden="true">↗</span></button>
+        <button type="button" id="retry" class="secondary-button">처음부터 다시</button>
+      </section>
+    </div>
+
+    <div class="overlay result-screen">
+      <section class="session-panel" role="dialog" aria-modal="true" aria-labelledby="result-title">
+        <div class="result-heading">
+          <div><p class="result-course">선셋 피어</p><h2 id="result-title">완주!</h2></div>
+          <p class="result-place"><strong id="result-rank">5</strong><span>위 / 5</span></p>
+        </div>
+        <dl class="result-stats">
+          <div><dt>완주 기록</dt><dd id="result-time">—</dd></div>
+          <div><dt>이번 최고 랩</dt><dd id="result-lap">—</dd></div>
+          <div><dt>내 최고 랩</dt><dd id="result-best">—</dd></div>
+        </dl>
+        <div class="result-actions">
+          <button type="button" id="play-again" class="race-button">다시 달리기 <span aria-hidden="true">↗</span></button>
+          <button type="button" id="menu" class="secondary-button">시작 화면으로</button>
+        </div>
+      </section>
+    </div>
+
+    <div class="overlay loading-screen">
+      <section class="session-panel">
+        <p id="loading-message" role="status">트랙을 불러오는 중</p>
+        <a class="secondary-button error-link" href="../">게임룸 돌아가기</a>
+      </section>
+    </div>
+    <noscript><p class="noscript">레이스를 시작하려면 브라우저에서 자바스크립트를 켜 주세요.</p></noscript>
+  </main>
+</body>
+</html>
