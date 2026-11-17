@@ -6,9 +6,9 @@
   <meta name="theme-color" content="#fbf5e7">
   <meta name="description" content="짧은 원정에서 별철을 모아 검을 +12까지 강화하세요. 제이피매쓰랩의 검 강화 증분게임, 몽글 대장간.">
   <title>몽글 대장간 · JP Math Lab</title>
-  <link rel="stylesheet" href="forge.css">
-  <script src="forge-engine.js" defer></script>
-  <script src="forge.js" defer></script>
+  <link rel="stylesheet" href="forge.css?v=2">
+  <script src="forge-engine.js?v=2" defer></script>
+  <script src="forge.js?v=2" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#arena">원정장으로 바로가기</a>
@@ -74,7 +74,13 @@
             <div class="weapon-heading"><h2 id="weapon-name">연습용 나무검</h2><span id="power">공격력 1</span></div>
             <p id="weapon-perk">누른 대상에게 기본 베기</p>
             <div class="level-track" id="level-track" aria-label="검의 형태 변화 단계"></div>
-            <button class="upgrade button" id="strengthen" type="button"></button>
+            <div class="forge-odds" id="forge-odds" hidden>
+              <span>성공 확률 <strong id="forge-chance"></strong></span>
+              <span id="forge-bonus" hidden></span>
+            </div>
+            <button class="upgrade button" id="strengthen" type="button" aria-describedby="forge-odds forge-help"></button>
+            <p class="forge-help" id="forge-help" hidden></p>
+            <p class="forge-outcome" id="forge-outcome" role="status" aria-live="polite"></p>
             <p class="next-form" id="next-form"></p>
             <a class="return-link" href="#arena">원정장 돌아가기 <span aria-hidden="true">↑</span></a>
           </div>

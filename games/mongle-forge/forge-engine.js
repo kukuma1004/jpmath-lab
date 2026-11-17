@@ -6,7 +6,13 @@ const Forge = (() => {
   const intervalMs = 5000;
   const offlineLimit = 8 * 60 * 60 * 1000;
   const maxShards = 1_000_000_000_000;
-  const prices = [16, 32, 56, 88, 135, 190, 275, 390, 530, 710, 940, 1230];
+  const upgradesByLevel = [
+    { cost: 16, chance: 100 }, { cost: 32, chance: 90 }, { cost: 56, chance: 82 },
+    { cost: 88, chance: 72 }, { cost: 135, chance: 63 }, { cost: 190, chance: 54 },
+    { cost: 275, chance: 47 }, { cost: 390, chance: 40 }, { cost: 530, chance: 34 },
+    { cost: 710, chance: 28 }, { cost: 940, chance: 22 }, { cost: 1230, chance: 16 },
+  ];
+  const recoveryBonus = 12;
   const damage = [1, 2, 3, 4, 5, 7, 9, 11, 14, 18, 23, 30, 38];
 
   const forms = [
@@ -57,12 +63,15 @@ const Forge = (() => {
 
   function restore(raw, now = Date.now()) {
     const stored = raw && typeof raw === 'object' ? raw : {};
-    const level = integer(stored.level, prices.length);
+    const level = integer(stored.level, upgradesByLevel.length);
+    const next = upgradesByLevel[level];
+    const maxMisses = next ? Math.ceil((100 - next.chance) / recoveryBonus) : 0;
     const region = integer(stored.region, regions.length - 1);
     const cleared = regions.map((_, i) => Boolean(stored.cleared?.[i]));
     return {
       shards: integer(stored.shards, maxShards),
       level,
+      forgeMisses: integer(stored.forgeMisses, maxMisses),
       region: regions[region].level <= level ? region : 0,
       cleared,
       polish: integer(stored.polish, upgrades.polish.prices.length),
@@ -102,9 +111,29 @@ const Forge = (() => {
     return 4 - state.echo;
   }
 
+  function enhancement(state) {
+    const next = upgradesByLevel[state.level];
+    if (!next) return null;
+    const chance = Math.min(100, next.chance + state.forgeMisses * recoveryBonus);
+    return { cost: next.cost, chance, bonus: chance - next.chance };
+  }
+
+  function enhance(state, random = Math.random) {
+    const offer = enhancement(state);
+    if (!offer || state.shards < offer.cost) return null;
+    state.shards -= offer.cost;
+    const succeeded = offer.chance === 100 || random() < offer.chance / 100;
+    if (succeeded) {
+      state.level += 1;
+      state.forgeMisses = 0;
+    } else {
+      state.forgeMisses += 1;
+    }
+    return { succeeded, spent: offer.cost };
+  }
+
   function purchase(state, id, now = Date.now()) {
-    const levels = id === 'level' ? prices : upgrades[id]?.prices;
-    const cost = levels?.[state[id]];
+    const cost = upgrades[id]?.prices[state[id]];
     if (cost === undefined || state.shards < cost || state.level < (upgrades[id]?.unlock ?? 0)) return false;
     if (id === 'miner') {
       collectPassive(state, now);
@@ -193,8 +222,8 @@ const Forge = (() => {
   }
 
   return {
-    seconds, saveKey, prices, forms, regions, upgrades,
-    restore, collectPassive, formIndex, power, chainEvery, purchase, begin, strike, finish,
+    seconds, saveKey, forms, regions, upgrades, recoveryBonus,
+    restore, collectPassive, formIndex, power, chainEvery, enhancement, enhance, purchase, begin, strike, finish,
   };
 })();
 
