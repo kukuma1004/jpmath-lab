@@ -6,9 +6,9 @@
   <meta name="theme-color" content="#fbf5e7">
   <meta name="description" content="짧은 원정에서 별철을 모아 검을 +12까지 강화하세요. 제이피매쓰랩의 검 강화 증분게임, 몽글 대장간.">
   <title>몽글 대장간 · JP Math Lab</title>
-  <link rel="stylesheet" href="forge.css?v=2">
-  <script src="forge-engine.js?v=2" defer></script>
-  <script src="forge.js?v=2" defer></script>
+  <link rel="stylesheet" href="forge.css?v=3">
+  <script src="forge-engine.js?v=3" defer></script>
+  <script src="forge.js?v=3" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#arena">원정장으로 바로가기</a>
@@ -78,7 +78,8 @@
               <span>성공 확률 <strong id="forge-chance"></strong></span>
               <span id="forge-bonus" hidden></span>
             </div>
-            <button class="upgrade button" id="strengthen" type="button" aria-describedby="forge-odds forge-help"></button>
+            <p class="reset-risk" id="reset-risk" hidden>실패 시 검 +0으로 초기화 · 별철 소모</p>
+            <button class="upgrade button" id="strengthen" type="button" aria-describedby="forge-odds reset-risk forge-help"></button>
             <p class="forge-help" id="forge-help" hidden></p>
             <p class="forge-outcome" id="forge-outcome" role="status" aria-live="polite"></p>
             <p class="next-form" id="next-form"></p>

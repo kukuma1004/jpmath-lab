@@ -134,6 +134,7 @@ h1, h2, h3, p { margin: 0; }
 .forge-odds { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 3px 8px; padding: 7px 9px; margin-bottom: 8px; background: #f8f0db; border-radius: 6px; color: #685333; font-size: 12px; font-weight: 700; }
 .forge-odds strong { margin-left: 4px; color: #473416; font-size: 16px; font-variant-numeric: tabular-nums; }
 #forge-bonus { color: #466345; font-size: 11px; white-space: nowrap; }
+.weapon-details .reset-risk { color: #87432d; font-weight: 800; margin: 0 0 8px; }
 .weapon-details .forge-help { margin-top: 8px; }
 .weapon-details .forge-outcome:empty { margin: 0; }
 .weapon-details .forge-outcome:not(:empty) { margin-top: 8px; padding: 6px 8px; border-radius: 6px; font-weight: 800; }

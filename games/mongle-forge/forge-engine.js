@@ -7,10 +7,10 @@ const Forge = (() => {
   const offlineLimit = 8 * 60 * 60 * 1000;
   const maxShards = 1_000_000_000_000;
   const upgradesByLevel = [
-    { cost: 16, chance: 100 }, { cost: 32, chance: 90 }, { cost: 56, chance: 82 },
-    { cost: 88, chance: 72 }, { cost: 135, chance: 63 }, { cost: 190, chance: 54 },
-    { cost: 275, chance: 47 }, { cost: 390, chance: 40 }, { cost: 530, chance: 34 },
-    { cost: 710, chance: 28 }, { cost: 940, chance: 22 }, { cost: 1230, chance: 16 },
+    { cost: 16, chance: 100 }, { cost: 32, chance: 100 }, { cost: 56, chance: 99 },
+    { cost: 88, chance: 98 }, { cost: 135, chance: 96 }, { cost: 190, chance: 93 },
+    { cost: 275, chance: 90 }, { cost: 390, chance: 86 }, { cost: 530, chance: 80 },
+    { cost: 710, chance: 73 }, { cost: 940, chance: 62 }, { cost: 1230, chance: 45 },
   ];
   const recoveryBonus = 12;
   const damage = [1, 2, 3, 4, 5, 7, 9, 11, 14, 18, 23, 30, 38];
@@ -64,18 +64,24 @@ const Forge = (() => {
   function restore(raw, now = Date.now()) {
     const stored = raw && typeof raw === 'object' ? raw : {};
     const level = integer(stored.level, upgradesByLevel.length);
-    const next = upgradesByLevel[level];
-    const maxMisses = next ? Math.ceil((100 - next.chance) / recoveryBonus) : 0;
+    const bestLevel = Math.max(level, integer(stored.bestLevel, upgradesByLevel.length));
+    const savedMisses = Array.isArray(stored.forgeMissesByLevel) ? stored.forgeMissesByLevel : null;
+    const forgeMissesByLevel = upgradesByLevel.map(({ chance }, step) => {
+      const maxMisses = Math.ceil((100 - chance) / recoveryBonus);
+      const saved = savedMisses ? savedMisses[step] : step === level ? stored.forgeMisses : 0;
+      return integer(saved, maxMisses);
+    });
     const region = integer(stored.region, regions.length - 1);
     const cleared = regions.map((_, i) => Boolean(stored.cleared?.[i]));
     return {
       shards: integer(stored.shards, maxShards),
       level,
-      forgeMisses: integer(stored.forgeMisses, maxMisses),
-      region: regions[region].level <= level ? region : 0,
+      bestLevel,
+      forgeMissesByLevel,
+      region: regions[region].level <= bestLevel ? region : 0,
       cleared,
       polish: integer(stored.polish, upgrades.polish.prices.length),
-      echo: level < 2 ? 0 : integer(stored.echo, upgrades.echo.prices.length),
+      echo: bestLevel < upgrades.echo.unlock ? 0 : integer(stored.echo, upgrades.echo.prices.length),
       miner: integer(stored.miner, upgrades.miner.prices.length),
       paidAt: Number.isFinite(stored.paidAt) ? Math.min(now, Math.max(0, stored.paidAt)) : now,
     };
@@ -111,30 +117,33 @@ const Forge = (() => {
     return 4 - state.echo;
   }
 
-  function enhancement(state) {
-    const next = upgradesByLevel[state.level];
+  function enhancement(state, from = state.level) {
+    const next = upgradesByLevel[from];
     if (!next) return null;
-    const chance = Math.min(100, next.chance + state.forgeMisses * recoveryBonus);
+    const chance = Math.min(100, next.chance + state.forgeMissesByLevel[from] * recoveryBonus);
     return { cost: next.cost, chance, bonus: chance - next.chance };
   }
 
   function enhance(state, random = Math.random) {
-    const offer = enhancement(state);
+    const from = state.level;
+    const offer = enhancement(state, from);
     if (!offer || state.shards < offer.cost) return null;
     state.shards -= offer.cost;
     const succeeded = offer.chance === 100 || random() < offer.chance / 100;
     if (succeeded) {
-      state.level += 1;
-      state.forgeMisses = 0;
+      state.level = from + 1;
+      state.bestLevel = Math.max(state.bestLevel, state.level);
+      state.forgeMissesByLevel[from] = 0;
     } else {
-      state.forgeMisses += 1;
+      state.forgeMissesByLevel[from] += 1;
+      state.level = 0;
     }
     return { succeeded, spent: offer.cost };
   }
 
   function purchase(state, id, now = Date.now()) {
     const cost = upgrades[id]?.prices[state[id]];
-    if (cost === undefined || state.shards < cost || state.level < (upgrades[id]?.unlock ?? 0)) return false;
+    if (cost === undefined || state.shards < cost || state.bestLevel < (upgrades[id]?.unlock ?? 0)) return false;
     if (id === 'miner') {
       collectPassive(state, now);
       state.paidAt = now;

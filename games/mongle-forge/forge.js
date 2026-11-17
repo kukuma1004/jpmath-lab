@@ -21,7 +21,8 @@
   const forgeBonus = $('forge-bonus');
   const forgeHelp = $('forge-help');
   const forgeOutcome = $('forge-outcome');
-  forgeHelp.textContent = '실패하면 별철 소모 · 다음 시도 +' + Forge.recoveryBonus + '%p (최대 100%)';
+  const resetRisk = $('reset-risk');
+  forgeHelp.textContent = '같은 단계에 다시 도전할 때 +' + Forge.recoveryBonus + '%p (최대 100%)';
   let storageFailed = false;
   let enhancing = false;
   let visibleForm = -1;
@@ -81,7 +82,7 @@
     const requirement = element('small', '');
     button.append(name, requirement);
     button.addEventListener('click', () => {
-      if (run || state.level < region.level || state.region === index) return;
+      if (run || state.bestLevel < region.level || state.region === index) return;
       state.region = index;
       result = null;
       save();
@@ -138,9 +139,9 @@
       $('weapon-name').textContent = form.name;
       $('weapon-stage').dataset.form = form.pattern;
       $('weapon-stage').style.setProperty('--spark', form.color);
-      $('book-count').textContent = (index + 1) + '/' + Forge.forms.length;
       $('weapon-perk').textContent = form.perk;
     }
+    $('book-count').textContent = (Forge.formIndex(state.bestLevel) + 1) + '/' + Forge.forms.length;
     $('level').textContent = '+' + state.level;
     $('power').textContent = '공격력 ' + Forge.power(state);
     levelMarkers.forEach((marker, i) => {
@@ -161,7 +162,9 @@
     $('forge-link').hidden = !available;
     strengthen.textContent = offer ? '+' + (state.level + 1) + ' 강화 · ' + fmt(offer.cost) + ' 별철' : '최고 강화 +12';
     forgeOdds.hidden = !offer;
-    forgeHelp.hidden = !offer || offer.chance === 100;
+    const risky = offer && offer.chance < 100;
+    resetRisk.hidden = !risky;
+    forgeHelp.hidden = !risky;
     if (offer) {
       $('forge-chance').textContent = offer.chance + '%';
       forgeBonus.hidden = offer.bonus === 0;
@@ -172,7 +175,7 @@
       const upgrade = Forge.upgrades[id];
       const level = state[id];
       const price = upgrade.prices[level];
-      const locked = state.level < (upgrade.unlock ?? 0);
+      const locked = state.bestLevel < (upgrade.unlock ?? 0);
       row.name.textContent = upgrade.name + (level ? ' +' + level : '');
       row.button.disabled = Boolean(run) || locked || price === undefined || state.shards < price;
       row.cost.textContent = locked ? '검 +' + upgrade.unlock : price === undefined ? '완료' : fmt(price);
@@ -188,7 +191,7 @@
     $('ready-card').hidden = active;
     $('run-stats').hidden = !active;
     choices.forEach(({ button, requirement }, i) => {
-      const locked = state.level < Forge.regions[i].level;
+      const locked = state.bestLevel < Forge.regions[i].level;
       button.disabled = active || locked;
       button.setAttribute('aria-pressed', String(i === state.region));
       requirement.textContent = locked ? '검 +' + Forge.regions[i].level : state.cleared[i] ? '✓' : '';
@@ -260,11 +263,17 @@
     tell(Forge.upgrades[id].name + ' +' + state[id] + ' 완료!');
   }
 
-  function applyEnhancement() {
+  function applyEnhancement(from) {
     if (run) return;
     if (!storageFailed) state = readStoredSave() ?? state;
-    const target = state.level + 1;
-    const prior = Forge.formIndex(state.level);
+    if (state.level !== from) {
+      render();
+      tell('다른 탭에서 검이 바뀌었어요. 강화 단계를 확인해 주세요.');
+      return;
+    }
+    const previousBest = state.bestLevel;
+    const target = from + 1;
+    const prior = Forge.formIndex(from);
     const attempt = Forge.enhance(state);
     if (!attempt) {
       render();
@@ -275,15 +284,16 @@
     render();
     forgeOutcome.dataset.result = attempt.succeeded ? 'success' : 'failure';
     if (!attempt.succeeded) {
-      const nextChance = Forge.enhancement(state).chance;
-      forgeOutcome.textContent = '+' + target + ' 강화 실패 · 별철 −' + fmt(attempt.spent) + ' · 다음 ' + nextChance + '%';
+      const retry = Forge.enhancement(state, from);
+      forgeOutcome.textContent = '+' + target + ' 강화 실패! +0 나무검으로 돌아갔어요. 별철 −' + fmt(attempt.spent)
+        + ' · +' + target + ' 재도전 확률 ' + retry.chance + '%';
       animateForge(false, true);
       return;
     }
 
     const form = Forge.forms[Forge.formIndex(state.level)];
     const changed = Forge.formIndex(state.level) !== prior;
-    const unlocked = Forge.regions.find(region => region.level === state.level);
+    const unlocked = Forge.regions.find(region => region.level === state.level && region.level > previousBest);
     const reward = changed ? ' · ' + form.name + ' 획득' : '';
     const region = unlocked ? ' · ' + unlocked.name + ' 개방' : '';
     forgeOutcome.textContent = '+' + target + ' 강화 성공!' + reward + region;
@@ -293,11 +303,12 @@
 
   async function tryEnhance() {
     if (run || enhancing) return;
+    const from = state.level;
     enhancing = true;
     strengthen.disabled = true;
     try {
-      if (navigator.locks) await navigator.locks.request(Forge.saveKey, applyEnhancement);
-      else applyEnhancement();
+      if (navigator.locks) await navigator.locks.request(Forge.saveKey, () => applyEnhancement(from));
+      else applyEnhancement(from);
     } finally {
       enhancing = false;
       renderMoney();
@@ -416,7 +427,7 @@
   strengthen.addEventListener('click', tryEnhance);
 
   function showBook() {
-    const visible = Forge.formIndex(state.level);
+    const visible = Forge.formIndex(state.bestLevel);
     $('sword-book').replaceChildren(...Forge.forms.map((form, index) => {
       const item = element('li', 'collection-item');
       const discovered = index <= visible;
