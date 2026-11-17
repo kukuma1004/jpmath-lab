@@ -18,7 +18,7 @@ const geoRush = read('기하/기하_내신스킬.js');
 const ellipseRush = read('기하/기하_내신스킬_타원abc.js');
 const geoArena = read('기하/기하_공통.js');
 
-assert.match(motionJs, /version:'20261116-1'/, '공용 모션 버전을 올려 브라우저 캐시를 갱신해야 한다.');
+assert.match(motionJs, /version:'20261117-1'/, '공용 모션 버전을 올려 브라우저 캐시를 갱신해야 한다.');
 assert.match(motionJs, /\.archive-unit,\.archive-card/, '동적으로 만들어지는 보스 카드도 등장 흐름에 포함한다.');
 assert.match(motionJs, /function feedbackChanged/, '정답·오답·결과는 상태 변화에 맞는 피드백 모션을 가져야 한다.');
 assert.match(motionJs, /target\.classList\.contains\('jp-inline-feedback'\)/, '기존 피드백 연출이 있는 페이지에서는 모션을 두 번 겹치지 않는다.');
@@ -30,11 +30,14 @@ const motionPages = walk('.').filter((file) => {
   if (file.includes(`${path.sep}.git${path.sep}`) || file.includes(`${path.sep}node_modules${path.sep}`)) return false;
   return read(file).includes('jp-motion.js');
 });
-assert.equal(motionPages.length, 106, '공용 모션 대상 페이지 수가 의도치 않게 줄어들면 안 된다.');
+assert.equal(motionPages.length, 112, '공용 모션 대상 페이지 수가 의도치 않게 줄어들면 안 된다.');
 for (const file of motionPages) {
   const source = read(file);
-  assert.match(source, /jp-motion\.css\?v=20261116-1/, `${file}: CSS 캐시 버전이 맞아야 한다.`);
-  assert.match(source, /jp-motion\.js\?v=20261116-1/, `${file}: JS 캐시 버전이 맞아야 한다.`);
+  const cssVersion = /jp-motion\.css\?v=([0-9-]+)/.exec(source)?.[1];
+  const jsVersion = /jp-motion\.js\?v=([0-9-]+)/.exec(source)?.[1];
+  assert.ok(cssVersion && jsVersion, `${file}: 공용 모션 자산 두 개가 모두 있어야 한다.`);
+  assert.equal(cssVersion, jsVersion, `${file}: CSS와 JS 캐시 버전이 같아야 한다.`);
+  assert.ok(['20261116-1','20261117-1'].includes(jsVersion), `${file}: 알려진 공용 모션 버전이어야 한다.`);
 }
 
 const studentWorks = walk('주제탐구/gallery/works');

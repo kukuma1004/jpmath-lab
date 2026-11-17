@@ -83,6 +83,41 @@
   /* 아직 페이지가 없는 보스의 skillId 를 여기 적는다. 지금은 비어 있다 —
      64종이 모두 실제로 싸울 수 있다. 예전에는 반대로 "되는 것" 을 적었는데,
      보스를 만들 때마다 목록이 길어지기만 하고 빠뜨리기도 쉬웠다. */
+  /* 2022 개정 교육과정의 일반 선택 과목 두 개를 같은 명단에 잇는다.
+     외형은 가벼운 SVG 문장으로 만들고 실제 전투는 공용 step-lock 엔진을 쓴다. */
+  const algebra=[
+    ['unit_exp_log','AU1','지수함수와 로그함수 총력전','지수로그의 쌍두룡','네 갈래 개념 봉인을 연속으로 해제한다.','지수 탑과 로그 거울','#a96042','aˣ↔log'],
+    ['unit_trig','AU2','삼각함수 총력전','단위원의 대조율사','회전과 파동의 네 관문을 통과한다.','단위원과 파동 왕관','#5a68ad','θ'],
+    ['unit_sequence','AU3','수열 총력전','무한수열의 기록자','등차·등비·합·귀납을 한 기록으로 잇는다.','수열 계단과 무한 두루마리','#397e6b','Σ∞'],
+    ['exponent','A01','지수의 확장과 법칙','지수의 증식체','지수법칙을 연속으로 연결해야 증식을 멈춘다.','거듭제곱 가지와 성장핵','#b85d43','aⁿ'],
+    ['logarithm','A02','로그의 뜻과 성질','로그의 역행자','로그식을 지수식으로 뒤집어 봉인을 푼다.','거울 문양과 로그 나선','#a96c36','log'],
+    ['exponential','A03','지수함수의 그래프','성장의 폭주목','증가와 감소 방향을 읽어 성장 고리를 자른다.','빠르게 자라는 함수 나무','#c26048','2ˣ'],
+    ['log_function','A04','로그함수와 역함수','역함수의 거울수','지수와 로그의 대응을 맞혀 거울을 깬다.','y=x 거울과 두 함수','#96603f','↔'],
+    ['angle','T01','일반각과 호도법','호도법의 회전왕','각도와 라디안을 바꾸며 회전 봉인을 연다.','π 각인 회전판','#596fbd','π'],
+    ['trig','T02','삼각함수와 단위원','단위원의 감시자','좌표에서 사인과 코사인을 정확히 읽는다.','단위원 눈과 좌표 창','#4f73b9','sin'],
+    ['trig_graph','T03','삼각함수의 그래프','주기파의 조율사','주기를 맞춰 흔들리는 파동을 안정시킨다.','겹친 파동 현','#5966a8','∿'],
+    ['cosine_law','T04','사인법칙과 코사인법칙','코사인의 삼각기사','변과 맞은편 각을 연결해 삼각 방패를 깬다.','삼각 방패와 코사인 검','#7060a9','△'],
+    ['arithmetic','S01','등차수열','등차의 행진병','일정한 차이를 찾아 행진 간격을 무너뜨린다.','등간격 수열 병사','#3a8d78','+d'],
+    ['geometric','S02','등비수열','등비의 증폭자','공비의 거듭제곱을 끊어 증폭을 막는다.','배율 고리와 증폭핵','#2c846c','×r'],
+    ['series','S03','수열의 합','합의 축적왕','첫항과 끝항을 묶어 누적 갑옷을 벗긴다.','Σ 왕관과 합의 층','#39806d','Σ'],
+    ['induction','S04','수학적 귀납법','귀납의 계단지기','첫 계단과 다음 계단을 모두 세워야 올라간다.','무한 계단과 k+1 열쇠','#467d68','k+1']
+  ];
+  const statistics=[
+    ['unit_counting','PU1','경우의 수 총력전','경우의 수 미궁왕','순열·조합·중복의 미궁을 연속으로 통과한다.','갈라지는 선택 미궁','#875c96','P·C·H'],
+    ['unit_probability','PU2','확률 총력전','불확실성의 지배자','사건·조건·독립의 확률을 다시 계산한다.','확률 안개와 사건핵','#ae604b','P(?)'],
+    ['unit_statistics','PU3','통계 총력전','분포와 추정의 관측자','분포에서 표본과 추정까지 네 관문을 잇는다.','종곡선 망원경','#347b88','μ±σ'],
+    ['permutation','C01','순열','순열의 미궁지기','순서가 바뀔 때마다 미궁 통로가 달라진다.','자리마다 갈라지는 미궁','#9a5b8f','P'],
+    ['combination','C02','조합','조합의 선별자','순서를 지워 같은 선택을 하나로 모은다.','겹친 선택 카드','#8d6096','C'],
+    ['repetition','C03','중복조합','중복의 복제왕','같은 종류의 복제를 별과 막대로 정리한다.','복제 구슬과 칸막이','#7d5c9c','H'],
+    ['probability','P01','확률의 뜻과 덧셈정리','사건의 분기수','표본공간의 가지를 정확히 세어야 한다.','사건 나무와 확률 눈','#b0614e','P(A)'],
+    ['conditional','P02','조건부확률','조건의 가면술사','조건이 바뀔 때마다 표본공간 가면을 바꾼다.','겹친 두 사건 가면','#b56f45','B|A'],
+    ['independence','P03','독립과 종속','독립시행의 도박사','확률의 곱이 맞을 때만 주사위 방패가 열린다.','두 주사위와 곱셈 방패','#a95c52','A⊥B'],
+    ['binomial','D01','이항분포','이항분포의 군단장','성공 횟수의 평균과 분산으로 군단을 해산한다.','성공 실패 군단','#337f8f','B(n,p)'],
+    ['normal','D02','정규분포','정규곡선의 종지기','평균 중심의 대칭과 표준화를 읽는다.','종 모양 갑옷과 z창','#39778f','N'],
+    ['sample_mean','D03','표본평균의 분포','표본평균의 채집자','표본이 커질수록 좁아지는 분포를 포착한다.','작은 표본 구슬과 평균망','#2f7686','x̄'],
+    ['confidence','D04','모평균의 추정','신뢰구간의 추정자','신뢰수준에 맞는 오차한계로 중심을 겨눈다.','양쪽 오차 날개와 μ핵','#397c7b','±']
+  ];
+
   const PLANNED=[];
 
   /* 단원. 보스전 홀이 이것으로 명단을 나눈다. 코드가 이미 단원을 말하고
@@ -91,8 +126,10 @@
   const CALC_UNITS={U:'대단원 총력전',L:'극한과 연속',D:'미분법',G:'도함수의 활용',I:'적분'};
   const unitOf=(subject,code)=>{
     // U 로 시작하는 것은 과목을 가리지 않고 대단원 총력전이다
-    if(code[0]==='U')return '대단원 총력전';
+    if(code[0]==='U'||code[1]==='U')return '대단원 총력전';
     if(subject==='calculus')return CALC_UNITS[code[0]]||'기타';
+    if(subject==='algebra')return code[0]==='A'?'지수함수와 로그함수':code[0]==='T'?'삼각함수':code[0]==='S'?'수열':'대단원 총력전';
+    if(subject==='statistics')return code[0]==='C'?'경우의 수':code[0]==='P'?'확률':code[0]==='D'?'통계':'대단원 총력전';
     const n=Number(code.slice(1));
     return n<=12?'이차곡선':n<=23?'공간도형과 공간좌표':'벡터';
   };
@@ -176,24 +213,32 @@
     sphere_vector:'spherical-vector-nebula-dragon.webp'
   };
 
+  function symbolArt(name,symbol,palette){
+    const safe=String(name).replace(/[<>&]/g,'');
+    const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" rx="28" fill="#111b22"/><circle cx="96" cy="82" r="64" fill="${palette}" opacity=".32"/><path d="M28 142 48 54 96 20l48 34 20 88-40 32H68Z" fill="none" stroke="${palette}" stroke-width="7"/><circle cx="96" cy="83" r="38" fill="#101820" stroke="${palette}" stroke-width="4"/><text x="96" y="95" text-anchor="middle" fill="white" font-size="24" font-family="Arial" font-weight="700">${symbol}</text><text x="96" y="181" text-anchor="middle" fill="white" font-size="11" font-family="sans-serif">${safe}</text></svg>`;
+    return'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)
+  }
   function make(subject,row,index){
-    const [skillId,code,skillTitle,name,mechanic,visual,palette]=row;
+    const [skillId,code,skillTitle,name,mechanic,visual,palette,symbol]=row;
+    const folder=subject==='calculus'?'미적분1/미적분1_계산스킬':subject==='geometry'?'기하/기하_내신스킬':subject==='algebra'?'대수/연산스킬':'확률과통계/연산스킬';
     return {
       id:`${subject}-${skillId}`,
       subject,
       order:index+1,
       skillId,code,skillTitle,name,mechanic,visual,palette,
       unit:unitOf(subject,code),
-      thumb:THUMB_DIR+THUMBS[skillId],
+      thumb:THUMBS[skillId]?THUMB_DIR+THUMBS[skillId]:symbolArt(name,symbol||code,palette),
       status:PLANNED.includes(skillId)?'planned':'playable',
-      href:`../${subject==='calculus'?'미적분1/미적분1_계산스킬':'기하/기하_내신스킬'}.html?id=${skillId}&mode=boss`
+      href:`../${folder}.html?id=${skillId}&mode=boss`
     };
   }
 
   const bosses=[
     ...calculus.map((row,index)=>make('calculus',row,index)),
-    ...geometry.map((row,index)=>make('geometry',row,index))
+    ...geometry.map((row,index)=>make('geometry',row,index)),
+    ...algebra.map((row,index)=>make('algebra',row,index)),
+    ...statistics.map((row,index)=>make('statistics',row,index))
   ];
 
-  window.JPBossCatalog={version:'2.2',total:bosses.length,bosses};
+  window.JPBossCatalog={version:'3.0',total:bosses.length,bosses};
 })();

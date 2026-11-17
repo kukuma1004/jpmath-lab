@@ -41,6 +41,8 @@
               <a href="${siteHref('미적분1/')}"><strong>미적분Ⅰ</strong><small>변화를 움직여 보기</small></a>
               <a href="${siteHref('기하/')}"><strong>기하</strong><small>공간을 직접 만지기</small></a>
               <a href="${siteHref('경제수학/')}"><strong>경제수학</strong><small>계산하고 선택하기</small></a>
+              <a href="${siteHref('대수/')}"><strong>대수</strong><small>성장과 회전을 움직이기</small></a>
+              <a href="${siteHref('확률과통계/')}"><strong>확률과 통계</strong><small>불확실성을 실험하기</small></a>
             </div>
           </section>
           <section class="menu-group" style="--group-index:1">

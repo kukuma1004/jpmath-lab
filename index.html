@@ -14,8 +14,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="jp-nav-2.css?v=20261104-2">
-  <link rel="stylesheet" href="jp-home-2.css?v=6">
-  <script src="jp-nav-2.js?v=20261104-2" defer></script>
+  <link rel="stylesheet" href="jp-home-2.css?v=7">
+  <script src="jp-nav-2.js?v=20261117-1" defer></script>
   <script src="jp-home-art.js?v=20261106-2" defer></script>
   <style>
     /* QR 버튼 — 수업 시작할 때마다 쓰는 것이라 머리에 상시로 둔다.
@@ -72,6 +72,8 @@
           <a href="미적분1/"><strong>미적분Ⅰ</strong><small>변화를 움직여 보기</small></a>
           <a href="기하/"><strong>기하</strong><small>공간을 직접 만지기</small></a>
           <a href="경제수학/"><strong>경제수학</strong><small>계산하고 선택하기</small></a>
+          <a href="대수/"><strong>대수</strong><small>성장과 회전을 움직이기</small></a>
+          <a href="확률과통계/"><strong>확률과 통계</strong><small>불확실성을 실험하기</small></a>
         </div>
       </section>
 
@@ -124,7 +126,7 @@
     </section>
 
     <section class="home-rooms" data-scene="rooms" data-header-theme="light" aria-labelledby="roomsTitle">
-      <p class="rooms-title" id="roomsTitle"><span>THREE ROOMS</span> 어디부터 볼까요</p>
+      <p class="rooms-title" id="roomsTitle"><span>FIVE ROOMS</span> 어디부터 볼까요</p>
       <div class="rooms-grid">
         <a class="room-card room-calculus" href="미적분1/">
           <span class="room-name">미적분Ⅰ</span>
@@ -143,6 +145,18 @@
           <span class="room-line">계산하고 선택하기</span>
           <span class="room-art"><canvas id="artEconomy" aria-hidden="true"></canvas></span>
           <span class="room-go">들어가기 <i aria-hidden="true">&#8594;</i></span>
+        </a>
+        <a class="room-card room-algebra" href="대수/">
+          <span class="room-name">대수</span>
+          <span class="room-line">성장·회전·규칙을 움직이기</span>
+          <span class="room-art" aria-hidden="true"><svg viewBox="0 0 360 120"><path d="M15 98C70 95 88 86 125 72s58-31 88-55"/><path d="M25 100 145 27" class="soft"/><circle cx="125" cy="72" r="6"/><path d="M235 92c25-60 65-60 104 0"/><text x="252" y="32">aˣ</text><text x="302" y="78">Σ</text></svg></span>
+          <span class="room-go">들어가기 <i aria-hidden="true">→</i></span>
+        </a>
+        <a class="room-card room-statistics" href="확률과통계/">
+          <span class="room-name">확률과 통계</span>
+          <span class="room-line">가능성과 데이터를 실험하기</span>
+          <span class="room-art" aria-hidden="true"><svg viewBox="0 0 360 120"><g class="bars"><path d="M25 103V87M49 103V65M73 103V42M97 103V27M121 103V48M145 103V75"/></g><path d="M174 102C202 102 207 24 250 24s49 78 84 78"/><circle cx="250" cy="24" r="5"/><text x="180" y="26">μ</text><text x="305" y="49">σ</text></svg></span>
+          <span class="room-go">들어가기 <i aria-hidden="true">→</i></span>
         </a>
       </div>
 

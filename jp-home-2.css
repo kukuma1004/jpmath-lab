@@ -518,6 +518,7 @@
   display:block; width:100%; height:clamp(84px,12vh,124px);
   pointer-events:none;   /* 카드 전체가 링크다. 그림은 눈으로만 */
 }
+.room-art svg{display:block;width:100%;height:clamp(84px,12vh,124px);fill:none;stroke:var(--room-accent);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.room-art svg .soft{opacity:.35;stroke-dasharray:7 7}.room-art svg text{fill:var(--room-accent);stroke:none;font:700 18px 'IBM Plex Mono',monospace}.room-art svg .bars path{stroke-width:11;opacity:.55}
 .room-go{
   margin-top:auto; padding-top:9px; font:600 11.5px/1 'IBM Plex Mono',monospace;
   color:var(--room-accent); display:flex; align-items:center; gap:6px;
@@ -527,6 +528,7 @@
 .room-calculus{ --room-accent:#e8845f }
 .room-space{ --room-accent:#93a6ff }
 .room-economy{ --room-accent:#5fc9a6 }
+.room-algebra{--room-accent:#d58a57}.room-statistics{--room-accent:#b68bd1}
 
 .home-quick{ display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(8px,1.1vw,12px); }
 .home-quick a{
@@ -548,6 +550,7 @@
 .rooms-grid .room-card:nth-child(1){ animation-delay:.06s }
 .rooms-grid .room-card:nth-child(2){ animation-delay:.14s }
 .rooms-grid .room-card:nth-child(3){ animation-delay:.22s }
+.rooms-grid .room-card:nth-child(4){animation-delay:.30s}.rooms-grid .room-card:nth-child(5){animation-delay:.38s}
 .home-quick a:nth-child(1){ animation-delay:.30s }
 .home-quick a:nth-child(2){ animation-delay:.35s }
 .home-quick a:nth-child(3){ animation-delay:.40s }
@@ -609,6 +612,7 @@
 .room-calculus{background:linear-gradient(150deg,#fffaf7,#f9ece5);--room-accent:#c85f3e}
 .room-space{background:linear-gradient(150deg,#fafaff,#eceefe);--room-accent:#596bd8}
 .room-economy{background:linear-gradient(150deg,#fffdf7,#f3efcf);--room-accent:#337d66}
+.room-algebra{background:linear-gradient(150deg,#fffaf5,#f4e3d5);--room-accent:#b9673c}.room-statistics{background:linear-gradient(150deg,#fdfaff,#eee5f4);--room-accent:#81579a}
 .room-line{color:#5d6b66}.room-go{color:var(--room-accent)}
 .room-card:hover,.room-card:focus-visible{background:#fff;border-color:var(--room-accent);box-shadow:0 22px 54px rgba(38,54,48,.14),0 0 0 1px color-mix(in srgb,var(--room-accent) 35%,transparent) inset}
 .home-quick a{border-color:rgba(25,49,45,.11);color:#23332d;background:rgba(255,255,255,.55)}

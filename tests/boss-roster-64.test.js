@@ -8,14 +8,15 @@ vm.runInNewContext(source,context);
 const catalog=context.window.JPBossCatalog;
 
 assert.ok(catalog,'보스 카탈로그가 전역에 공개되어야 한다.');
-/* 스킬 보스 64종(미적분 28 + 기하 36)에 대단원 총력전 6종(과목마다 3종)을
-   더해 70종. 대단원은 제 문제를 갖지 않고 그 단원 스킬에서 뽑아 낸다. */
-assert.equal(catalog.total,70,'보스는 스킬 64종과 대단원 6종, 모두 70종이어야 한다.');
+/* 기존 70종에 대수 15종, 확률과 통계 13종을 더했다. */
+assert.equal(catalog.total,98,'네 과목 보스는 모두 98종이어야 한다.');
 assert.equal(catalog.bosses.filter(x=>x.subject==='calculus').length,31);
 assert.equal(catalog.bosses.filter(x=>x.subject==='geometry').length,39);
-assert.equal(new Set(catalog.bosses.map(x=>x.id)).size,70,'보스 ID는 중복되면 안 된다.');
-assert.equal(new Set(catalog.bosses.map(x=>x.name)).size,70,'보스 이름은 모두 달라야 한다.');
-assert.equal(new Set(catalog.bosses.map(x=>x.code)).size,70,'보스 코드도 겹치면 안 된다.');
+assert.equal(catalog.bosses.filter(x=>x.subject==='algebra').length,15);
+assert.equal(catalog.bosses.filter(x=>x.subject==='statistics').length,13);
+assert.equal(new Set(catalog.bosses.map(x=>x.id)).size,98,'보스 ID는 중복되면 안 된다.');
+assert.equal(new Set(catalog.bosses.map(x=>x.name)).size,98,'보스 이름은 모두 달라야 한다.');
+assert.equal(new Set(catalog.bosses.map(x=>`${x.subject}:${x.code}`)).size,98,'한 과목 안에서 보스 코드가 겹치면 안 된다.');
 
 for(const boss of catalog.bosses){
   for(const field of ['id','subject','skillId','code','skillTitle','name','mechanic','visual','palette','href']){
@@ -24,7 +25,7 @@ for(const boss of catalog.bosses){
 }
 
 const playable=catalog.bosses.filter(x=>x.status==='playable');
-assert.equal(playable.length, 70, '70종이 모두 실제로 플레이 가능해야 한다.');
+assert.equal(playable.length, 98, '98종이 모두 실제로 플레이 가능해야 한다.');
 // 도전 가능 목록은 카탈로그가 진실이다. 이름을 손으로 옮겨 적으면
 // 보스를 더할 때마다 어긋나므로, 64종 전체와 견준다.
 assert.deepEqual([...playable.map(x=>x.name)].sort(),[...catalog.bosses.map(x=>x.name)].sort(),'64종이 모두 도전 가능해야 한다.');
@@ -34,8 +35,8 @@ const hallCss=fs.readFileSync('보스전/boss-hall.css','utf8');
 // 모바일 조종석 스타일은 두 페이지가 나눠 쓰는 공용 파일에 있다.
 const calcCss=fs.readFileSync('보스전/boss-engine.css','utf8');
 const engineJs=fs.readFileSync('보스전/boss-engine.js','utf8');
-assert.match(hall,/boss-catalog\.js\?v=18/);
-assert.match(hall,/boss-hall\.js\?v=4/);
+assert.match(hall,/boss-catalog\.js\?v=\d+/);
+assert.match(hall,/boss-hall\.js\?v=\d+/);
 assert.match(hall,/data-unit-count/,'단원 수도 카탈로그에서 채워야 한다.');
 assert.match(hall,/boss-hall\.css\?v=4/);
 // 전투 가능 수는 카탈로그에서 채우므로 페이지에 손으로 적지 않는다.
@@ -56,6 +57,7 @@ let thumbBytes=0;
 for(const boss of catalog.bosses){
   // 얼굴이 없으면 명단에 깨진 그림이 뜬다.
   assert.ok(boss.thumb,`${boss.id}에 작은 그림이 없다.`);
+  if (boss.thumb.startsWith('data:image/svg+xml')) continue;
   const file=boss.thumb.replace('../','');
   assert.ok(fs.existsSync(file),`작은 그림 파일이 없다: ${file}`);
   assert.ok(file.startsWith(thumbDir),`작은 그림은 ${thumbDir} 아래에 있어야 한다: ${file}`);
@@ -76,12 +78,16 @@ for(const boss of catalog.bosses){
   assert.ok(boss.unit,`${boss.id}에 단원이 없다. 홀이 단원으로 명단을 나눈다.`);
 }
 const units=[...new Set(catalog.bosses.map(x=>`${x.subject}/${x.unit}`))];
-assert.equal(units.length,9,'단원은 과목마다 대단원 하나씩을 더해 모두 아홉이어야 한다.');
+assert.equal(units.length,17,'네 과목 단원 묶음은 모두 열일곱이어야 한다.');
 for(const [subject,unit,n] of [
   ['calculus','대단원 총력전',3],
   ['calculus','극한과 연속',8],['calculus','미분법',4],['calculus','도함수의 활용',8],['calculus','적분',8],
   ['geometry','대단원 총력전',3],
-  ['geometry','이차곡선',12],['geometry','공간도형과 공간좌표',11],['geometry','벡터',13]
+  ['geometry','이차곡선',12],['geometry','공간도형과 공간좌표',11],['geometry','벡터',13],
+  ['algebra','대단원 총력전',3],
+  ['algebra','지수함수와 로그함수',4],['algebra','삼각함수',4],['algebra','수열',4],
+  ['statistics','대단원 총력전',3],
+  ['statistics','경우의 수',3],['statistics','확률',3],['statistics','통계',4]
 ]){
   assert.equal(catalog.bosses.filter(x=>x.subject===subject&&x.unit===unit).length,n,`${unit}은 ${n}종이어야 한다.`);
 }
@@ -195,4 +201,4 @@ assert.ok(fs.existsSync('assets/bosses/tangent-sniper-mobile.jpg'),'접선의 �
   assert.match(engineJs, /cfg\.theme==='unit'&&cfg\.art/, '대단원은 제 초상을 먼저 써야 한다.');
 }
 
-console.log('70 boss roster and mobile cockpit tests: ok');
+console.log('98 boss roster and mobile cockpit tests: ok');

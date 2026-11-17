@@ -13,15 +13,15 @@
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=Noto+Serif+KR:wght@700;900&amp;display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../jp-nav-2.css?v=20261104-2">
   <link rel="stylesheet" href="boss-hall.css?v=4">
-  <script src="../jp-nav-2.js?v=20261104-2" data-jp-section="보스전" defer></script>
+  <script src="../jp-nav-2.js?v=20261117-1" data-jp-section="보스전" defer></script>
   <style>
     /* 직접 고르기 입구. boss-hall.css 를 건드리면 그 파일을 읽는 다른 쪽까지
        캐시 버전을 올려야 해서 이 파일 안에만 둔다. */
     .hero-jump-custom{margin-left:10px;border-color:currentColor}
     @media(max-width:620px){.hero-jump-custom{margin:10px 0 0;display:inline-flex}}
   </style>
-  <script src="boss-catalog.js?v=18" defer></script>
-  <script src="boss-hall.js?v=4" defer></script>
+  <script src="boss-catalog.js?v=19" defer></script>
+  <script src="boss-hall.js?v=5" defer></script>
 </head>
 <body>
   <main>
@@ -39,7 +39,7 @@
 
 
     <section class="boss-roadmap" aria-labelledby="roadmapTitle">
-      <header><p>BOSS ROSTER 2.2</p><h2 id="roadmapTitle">보스 명단</h2><span>미적분 <b data-calculus-total>28</b>종과 기하 <b data-geometry-total>36</b>종. 과목을 고르고 단원으로 건너뛰세요. 이름만 다른 복제품이 아니라 외형과 전투 규칙이 수학 개념을 드러내도록 설계했습니다.</span></header>
+      <header><p>BOSS ROSTER 3.0</p><h2 id="roadmapTitle">보스 명단</h2><span>미적분·기하에 대수와 확률과 통계가 합류했습니다. 과목을 고르고 단원으로 건너뛰세요. 이름만 다른 복제품이 아니라 전투 규칙이 수학 개념을 드러내도록 설계했습니다.</span></header>
       <div class="roster-summary" aria-label="보스 현황">
         <div><span>보스</span><strong><i data-boss-total>64</i>종</strong></div>
         <div><span>단원</span><strong><i data-unit-count>8</i>개</strong></div>
@@ -48,6 +48,8 @@
       <div class="roster-toolbar" role="group" aria-label="과목별 보스 보기">
         <button class="active" type="button" data-boss-filter="calculus" aria-pressed="true">미적분Ⅰ <i data-calculus-total>28</i></button>
         <button type="button" data-boss-filter="geometry" aria-pressed="false">기하 <i data-geometry-total>36</i></button>
+        <button type="button" data-boss-filter="algebra" aria-pressed="false">대수 <i data-algebra-total>15</i></button>
+        <button type="button" data-boss-filter="statistics" aria-pressed="false">확률과 통계 <i data-statistics-total>13</i></button>
         <button type="button" data-boss-filter="all" aria-pressed="false">전체 <i data-boss-total>64</i></button>
       </div>
       <nav class="unit-bar" data-unit-bar aria-label="단원 바로가기"></nav>

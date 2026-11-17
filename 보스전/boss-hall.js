@@ -15,14 +15,16 @@
   const catalog=window.JPBossCatalog;
   if(!catalog)return;
   const bosses=catalog.bosses;
-  const SUBJECTS={calculus:'미적분Ⅰ',geometry:'기하'};
-  const counts={calculus:bosses.filter(x=>x.subject==='calculus').length,geometry:bosses.filter(x=>x.subject==='geometry').length};
+  const SUBJECTS={calculus:'미적분Ⅰ',geometry:'기하',algebra:'대수',statistics:'확률과 통계'};
+  const counts=Object.fromEntries(Object.keys(SUBJECTS).map(subject=>[subject,bosses.filter(x=>x.subject===subject).length]));
   const playable=bosses.filter(x=>x.status==='playable').length;
 
   const setAll=(sel,text)=>document.querySelectorAll(sel).forEach(el=>{el.textContent=text});
   setAll('[data-boss-total]',catalog.total);
   setAll('[data-calculus-total]',counts.calculus);
   setAll('[data-geometry-total]',counts.geometry);
+  setAll('[data-algebra-total]',counts.algebra);
+  setAll('[data-statistics-total]',counts.statistics);
   setAll('[data-boss-playable]',playable);
   // 단원 수도 카탈로그에서 센다. 손으로 적어 두면 단원을 더할 때 낡는다.
   setAll('[data-unit-count]',new Set(bosses.map(x=>`${x.subject}/${x.unit}`)).size);

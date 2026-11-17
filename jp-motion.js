@@ -4,8 +4,8 @@
   if(window.JPKinetic)return;
   const media=matchMedia('(prefers-reduced-motion: reduce)'),root=document.documentElement;
   const path=(()=>{try{return decodeURIComponent(location.pathname)}catch{return location.pathname}})();
-  const kind=path.includes('/수업창고/')?'teacher':path.includes('/주제탐구/gallery/')?'exhibition':path.includes('/주제탐구/')?'research':path.includes('/수능문제/')||path.includes('/AI킬러문제/')?'problem':path.includes('/games/')||path.includes('/보스전/')||/게임|세계시장|\/live\//.test(path)?'game':/\/미적분1\/|\/기하\/|\/경제수학\//.test(path)?'lab':'entrance';
-  const theme=path.includes('/기하/')?'space':path.includes('/경제수학/')?'economy':path.includes('/미적분1/')?'motion':kind==='teacher'?'teacher':'inquiry';
+  const kind=path.includes('/수업창고/')?'teacher':path.includes('/주제탐구/gallery/')?'exhibition':path.includes('/주제탐구/')?'research':path.includes('/수능문제/')||path.includes('/AI킬러문제/')?'problem':path.includes('/games/')||path.includes('/보스전/')||/게임|세계시장|\/live\//.test(path)?'game':/\/미적분1\/|\/기하\/|\/경제수학\/|\/대수\/|\/확률과통계\//.test(path)?'lab':'entrance';
+  const theme=path.includes('/기하/')?'space':path.includes('/경제수학/')?'economy':path.includes('/대수/')?'algebra':path.includes('/확률과통계/')?'statistics':path.includes('/미적분1/')?'motion':kind==='teacher'?'teacher':'inquiry';
   root.dataset.jpKinetic=kind;root.dataset.jpKineticTheme=theme;
   const PANEL='.tab-panel,.tab-pane,[data-panel],[data-page],section.ch,.scene,.slide,.chapter,.deck-slide,.main-panel,.calc-section,.skill-section,.game-panel,.daily-play,.daily-result,#page-theory,#page-lab,#page-game';
   const BLOCK='.theory-section,.lesson-block,.step-block,.concept-box,.theorem-box,.prob,.problem-card,.question-card,.q-card,.lab,.lab-card,.graph-card,.lab-graph-card,.visual-card,.eq-box,.ex-card,.resource-card,.route-card,.experience-card,.game-card,.summary-card,.request-card,.curator-section,.term-card,.practice-card,.card,.box,.function-ticket,.decision-step,.strategy-card,.result-summary,.archive-unit,.archive-card';
@@ -131,6 +131,6 @@
     if(!window.jpMotionFeedback)window.jpMotionFeedback=(type,message)=>{let live=document.getElementById('jp-motion-live');if(!live){live=document.createElement('div');live.id='jp-motion-live';live.className='jp-motion-live';live.dataset.jpKineticOwn='';live.setAttribute('role','status');live.setAttribute('aria-live',type==='error'?'assertive':'polite');document.body.append(live)}live.textContent='';requestAnimationFrame(()=>{live.textContent=message})};
     root.dataset.jpKineticReady='true';root.dataset.jpKineticReduced=String(quiet());
   }
-  window.JPKinetic={version:'20261116-1',kind,refresh:()=>queueScan(document.body)};
+  window.JPKinetic={version:'20261117-1',kind,refresh:()=>queueScan(document.body)};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
