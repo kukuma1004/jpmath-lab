@@ -17,6 +17,7 @@
   const status = $('status');
   const book = $('book');
   const timeBar = $('time-bar');
+  const techniqueFx = $('technique-fx');
   const forgeOdds = $('forge-odds');
   const forgeBonus = $('forge-bonus');
   const forgeHelp = $('forge-help');
@@ -137,10 +138,13 @@
       $('weapon').src = art('sword-' + form.level);
       $('weapon').alt = form.name;
       $('weapon-name').textContent = form.name;
-      $('weapon-stage').dataset.form = form.pattern;
+      $('weapon-stage').dataset.form = form.effect ?? form.pattern;
       $('weapon-stage').style.setProperty('--spark', form.color);
       $('weapon-perk').textContent = form.perk;
     }
+    const charged = form.level >= 12 && state.level > form.level;
+    $('weapon-stage').toggleAttribute('data-charge', charged);
+    scene.toggleAttribute('data-charge', charged);
     $('book-count').textContent = (Forge.formIndex(state.bestLevel) + 1) + '/' + Forge.forms.length;
     $('level').textContent = '+' + state.level;
     $('power').textContent = '공격력 ' + Forge.power(state);
@@ -160,7 +164,7 @@
     const available = !run && offer && state.shards >= offer.cost;
     strengthen.disabled = !available || enhancing;
     $('forge-link').hidden = !available;
-    strengthen.textContent = offer ? '+' + (state.level + 1) + ' 강화 · ' + fmt(offer.cost) + ' 별철' : '최고 강화 +12';
+    strengthen.textContent = offer ? '+' + (state.level + 1) + ' 강화 · ' + fmt(offer.cost) + ' 별철' : '최고 강화 +' + Forge.maxLevel;
     forgeOdds.hidden = !offer;
     const risky = offer && offer.chance < 100;
     resetRisk.hidden = !risky;
@@ -187,7 +191,8 @@
     const active = Boolean(run);
     scene.className = 'scene ' + region.texture + (active ? ' active' : '');
     $('field-title').textContent = region.name;
-    $('field-factor').textContent = state.cleared[state.region] ? '문지기 격파' : ['첫 원정지', '두 번째 원정지', '마지막 원정지'][state.region];
+    $('field-factor').textContent = state.cleared[state.region] ? '문지기 격파' :
+      region.level ? '검 +' + region.level + '에서 개방' : '첫 원정지';
     $('ready-card').hidden = active;
     $('run-stats').hidden = !active;
     choices.forEach(({ button, requirement }, i) => {
@@ -206,6 +211,7 @@
     }
 
     timeBar.style.transform = 'scaleX(1)';
+    techniqueFx.replaceChildren();
     $('remaining').textContent = Forge.seconds + '초';
     scene.style.setProperty('--wave', '#fff1ad');
     for (const [index, slot] of spots.entries()) {
@@ -215,10 +221,10 @@
       slot.button.classList.toggle('preview-hole', nearCenter);
     }
 
-    const won = state.level === 12 && state.cleared[2];
-    $('welcome-art').src = art(won ? 'sword-12' : result?.won ? 'meteor' : 'ore');
-    $('ready-title').textContent = won ? '별꼬리 성검 완성!' : result ? '별철 +' + fmt(result.earned) : '별철을 찾아 출발!';
-    $('ready-copy').textContent = won ? '마지막 문지기를 넘어 최고의 대장장이가 됐어요.' :
+    const won = campaignCompleted();
+    $('welcome-art').src = art(won ? 'sword-' + Forge.maxLevel : result?.won ? 'meteor' : 'ore');
+    $('ready-title').textContent = won ? '은하 성운검 완성!' : result ? '별철 +' + fmt(result.earned) : '별철을 찾아 출발!';
+    $('ready-copy').textContent = won ? '은하 용 문지기를 이기고 최고의 대장장이가 됐어요.' :
       result ? (result.won ? '문지기를 쓰러뜨렸어요!' : '모은 별철로 검을 강화해 보세요.') :
         Forge.seconds + '초 동안 말랑이를 눌러 검을 휘둘러요.';
     $('round-note').textContent = result ? (result.bonus ? '목표 달성 보너스 +' + fmt(result.bonus) + ' 별철' : '모은 별철은 바로 보관돼요.') : '말랑이를 쓰러뜨려 별철을 모아요.';
@@ -366,6 +372,16 @@
     });
   }
 
+  function animateTechnique(name) {
+    if (!name || reduced.matches) return;
+    const effect = element('span', 'technique ' + name);
+    effect.append(element('i', 'technique-shape'), element('i', 'technique-shape'), element('i', 'technique-shape'));
+    techniqueFx.replaceChildren(effect);
+    effect.addEventListener('animationend', event => {
+      if (event.target === effect) effect.remove();
+    });
+  }
+
   function attack(index) {
     if (!run || pauseTime !== null) return;
     if (Date.now() >= run.until) {
@@ -378,14 +394,20 @@
     renderMoney();
     renderHits();
     scene.style.setProperty('--wave', hit.color);
-    scene.dataset.pattern = Forge.forms[Forge.formIndex(state.level)].pattern;
+    const form = Forge.forms[Forge.formIndex(state.level)];
+    scene.dataset.pattern = form.effect ?? form.pattern;
+    animateTechnique(hit.effect);
     hit.hits.forEach((target, i) => animateHit(target, hit.chain && i > 0));
   }
 
+  function campaignCompleted() {
+    return state.level === Forge.maxLevel && state.cleared[Forge.regions.length - 1];
+  }
+
   function checkEnding() {
-    if (endingShown || state.level < 12 || !state.cleared[2]) return;
+    if (endingShown || !campaignCompleted()) return;
     endingShown = true;
-    tell('별꼬리 성검을 완성하고 달빛 문지기를 격파했어요!');
+    tell('은하 성운검을 완성하고 은하 용 문지기를 격파했어요!');
   }
 
   function finishRun() {
