@@ -68,6 +68,9 @@ export function createAudio(enabled) {
         tap(990, 1140, .23, .17, 'triangle', .11);
         break;
       case 'wall': case 'bump': tap(124, 33, .19, .22, 'sawtooth'); break;
+      case 'drift': tap(240, 820, .28, .17, 'triangle'); break;
+      case 'overtake': tap(510, 980, .14, .12, 'triangle'); break;
+      case 'land': tap(80, 27, .16, .2, 'triangle'); break;
       case 'lap': tap(520, 780, .32, .17, 'triangle'); break;
       case 'finish':
         [523.25, 659.25, 783.99, 1046.50].forEach((note, i) => tap(note, note, .3, .21, 'triangle', .11 * i));

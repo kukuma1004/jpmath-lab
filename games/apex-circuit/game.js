@@ -1,9 +1,10 @@
 import * as T from './vendor/three.module.min.js';
 import { track } from './track.js';
-import { createRace } from './race.js';
-import { buildWorld } from './world.js?v=2';
-import { buildCars, driveCar } from './cars.js?v=2';
-import { createAudio } from './audio.js';
+import { createRace } from './race.js?v=3';
+import { buildWorld } from './world.js?v=3';
+import { buildCars, driveCar } from './cars.js?v=3';
+import { createAudio } from './audio.js?v=3';
+import { createEffects } from './effects.js?v=3';
 
 const byId = id => document.getElementById(id);
 const formatTime = seconds => {
@@ -92,11 +93,12 @@ function createCamera() {
       fov = portrait ? 51 : 55;
     } else {
       track.sample(player.distance, p);
-      track.sample(player.distance + (portrait ? 10.8 : 12.7), preview);
-      const follow = portrait ? 15.5 : 16.0;
-      const height = portrait ? 29.0 : 28.7;
-      desired.set(p.x - p.dx * follow + p.dz * 1.4, p.y + height + player.air * .25,
-        p.z - p.dz * follow - p.dx * 1.4);
+      track.sample(player.distance + (portrait ? 7.8 : 8.0), preview);
+      const follow = portrait ? 17.0 : 19.6;
+      const shoulder = portrait ? 1.4 : 5.1;
+      const height = portrait ? 27.0 : 21.6;
+      desired.set(p.x - p.dx * follow + p.dz * shoulder, p.y + height + player.air * .25,
+        p.z - p.dz * follow - p.dx * shoulder);
       aim.set(preview.x, preview.y + 0.9, preview.z);
       fov = (portrait ? 54 : 48) + (race.boosting && !reduced ? 4.0 : 0);
     }
@@ -104,6 +106,10 @@ function createCamera() {
     camera.position.lerp(desired, blend);
     target.lerp(aim, blend);
     camera.lookAt(target);
+    if (!isMenu && !reduced) {
+      camera.rotateZ(-player.slip * .065 + Math.sin(animateTime * 58) * race.impact * .009);
+      camera.position.y += Math.sin(animateTime * 73) * race.impact * .12;
+    }
     const next = T.MathUtils.lerp(camera.fov, fov, blend);
     if (Math.abs(next - camera.fov) > .01) {
       camera.fov = next;
@@ -119,7 +125,7 @@ function setup() {
   const renderer = new T.WebGLRenderer({ canvas: world, antialias: true, powerPreference: 'high-performance' });
   renderer.outputColorSpace = T.SRGBColorSpace;
   renderer.toneMapping = T.NeutralToneMapping;
-  renderer.toneMappingExposure = .97;
+  renderer.toneMappingExposure = 1.08;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = T.PCFShadowMap;
   renderer.shadowMap.autoUpdate = false;
@@ -128,6 +134,7 @@ function setup() {
   const { waves, lights, sun } = buildWorld(scene);
   if (innerWidth < 850) sun.shadow.mapSize.set(1024, 1024);
   const vehicles = buildCars(scene);
+  const effects = createEffects(scene);
   const view = createCamera();
   const race = createRace(track);
   const audio = createAudio(read(soundKey) !== 'off');
@@ -191,6 +198,7 @@ function setup() {
   }
   function showMenu(focus) {
     race.reset();
+    effects.reset();
     clearControls();
     clearMessage();
     setText(nodes['menu-best'], formatTime(best));
@@ -203,6 +211,7 @@ function setup() {
   function start() {
     audio.unlock();
     race.reset();
+    effects.reset();
     clearControls();
     clearMessage();
     accumulator = 0;
@@ -253,7 +262,11 @@ function setup() {
   }
   function playEvent(event) {
     audio.signal(event);
+    effects.event(event, race.cars[0], motion.matches);
     switch (event) {
+      case 'drift': note('드리프트 충전 + 터보!', .9); break;
+      case 'overtake': note('추월!', .65); break;
+      case 'land': note('착지!', .45); break;
       case 'charge': note('부스터 충전'); break;
       case 'boost': note('부스터 작동', .58); break;
       case 'wall': note('가드레일 접촉', .68); break;
@@ -306,6 +319,9 @@ function setup() {
     waves.value = worldTime;
     const boosting = state === 'racing' && race.boosting;
     document.body.classList.toggle('is-boosting', boosting);
+    document.body.classList.toggle('is-drifting', state === 'racing' && race.drifting);
+    document.body.classList.toggle('is-drafting', state === 'racing' && race.drafting);
+    effects.update(race, state === 'racing' && !visualOnly ? dt : 0, worldTime, motion.matches, state === 'racing');
     for (const [i, material] of lights.entries()) {
       const lit = state === 'countdown' && i < previousBeat * 2;
       material.color.set(signalTime > 0 ? 0x30fcc0 : lit ? 0xff622d : 0x4f2f34);

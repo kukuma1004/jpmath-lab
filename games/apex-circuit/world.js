@@ -5,7 +5,7 @@ const box = new T.BoxGeometry();
 const dummy = new T.Object3D();
 const surface = (color, roughness = 0.82) => new T.MeshStandardMaterial({ color, roughness });
 const unlit = color => new T.MeshBasicMaterial({ color });
-const asphalt = surface(0x4a4f62);
+const asphalt = surface(0x464650);
 const steel = surface(0x353d53);
 const concrete = surface(0xadb5a8);
 const white = surface(0xffecd2);
@@ -116,7 +116,7 @@ function paintTexture() {
       const tread = Math.exp(-Math.pow((x - 81 - wander) / 6, 2)) +
         Math.exp(-Math.pow((x - 172 - wander) / 7, 2));
       const grit = rng();
-      const value = Math.floor(219 + grit * 24 - edgeShade - 22 * tread + (grit > .98 ? 12 : 0));
+      const value = Math.floor(187 + grit * 65 - edgeShade - 30 * tread + (grit > .98 ? 12 : 0));
       const i = (y * tile.width + x) * 4;
       image.data.set([value, value, value, 255], i);
     }
@@ -508,8 +508,8 @@ function shoreFoam(scene, coast, waves) {
 
 function water(scene) {
   const material = new T.ShaderMaterial({
-    uniforms: { uTime: { value: 0 }, uSun: { value: sunDirection }, uInk: { value: new T.Color(0x105366) },
-      uWave: { value: new T.Color(0x59c6b6) }, uGold: { value: new T.Color(0xecbe85) },
+    uniforms: { uTime: { value: 0 }, uSun: { value: sunDirection }, uInk: { value: new T.Color(0x04445b) },
+      uWave: { value: new T.Color(0x269e9e) }, uGold: { value: new T.Color(0xecbe85) },
       uHorizon: { value: new T.Color(0xe69783) } },
     vertexShader: `
       varying vec3 vWorld;
@@ -526,9 +526,10 @@ function water(scene) {
         float crossSwell = p.x * .14 - p.y * .21 + uTime * .65;
         float mainSwell = p.x * .082 + p.y * .31 - uTime * .87;
         float run = p.x * .22 - p.y * .54;
-        float ripple = run + sin(crossSwell * .52) * 2.6 + uTime * 1.32;
+        float ripple = run * 1.72 + sin(crossSwell * .52) * 2.6 + uTime * 1.32;
         float wind = sin(p.x * .91 + p.y * .22 - uTime * .72 + cos(crossSwell * .58) * 2.7);
-        float chop = sin(ripple * 1.82 + wind) * (.57 + wind * .43);
+        float facets = abs(fract(ripple * .63 + wind * .19) * 2.0 - 1.0);
+        float chop = facets * (.61 + wind * .39);
         float distanceFade = 1.0 - smoothstep(65.0, 250.0, distance(vWorld, cameraPosition));
         vec3 flowNormal = normalize(vec3(
           (cos(crossSwell) * .027 + cos(ripple) * .022) * distanceFade, 1.0,
@@ -542,7 +543,7 @@ function water(scene) {
         vec3 col = mix(uInk, uWave, wash);
         col = mix(col, uGold * .75 + uInk * .15, reflectionFalloff * .78);
         float crest = smoothstep(.69, .98, chop) * smoothstep(.16, .8, sin(run * .1 + crossSwell * .4));
-        col += uGold * beam + vec3(.028, .068, .066) * crest * distanceFade;
+        col += uGold * beam * .69 + vec3(.23, .33, .23) * crest * distanceFade;
         float horizonGlow = pow(max(0.0, dot(view, uSun)), 16.0);
         vec3 haze = mix(uHorizon, uGold, horizonGlow * .7);
         col = mix(haze + uGold * beam * .26, col, smoothstep(0.0, .063, -view.y));
@@ -597,12 +598,12 @@ function sky(scene) {
 }
 
 export function buildWorld(scene) {
-  scene.fog = new T.FogExp2(0xd4aa92, .00245);
+  scene.fog = new T.FogExp2(0xd4aa92, .00125);
   scene.background = new T.Color(0xd4bfa8);
   sky(scene);
   const waves = water(scene);
-  scene.add(new T.HemisphereLight(0xffebd4, 0x83b2cc, 1.42));
-  const sun = new T.DirectionalLight(0xffc180, 2.65);
+  scene.add(new T.HemisphereLight(0xffe8ca, 0x639aaf, 1.05));
+  const sun = new T.DirectionalLight(0xffcb8d, 3.4);
   sun.target.position.set(-21, 0, -18);
   sun.position.copy(sun.target.position).addScaledVector(sunDirection, 115);
   sun.position.y = 99;

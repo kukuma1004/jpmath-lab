@@ -1,6 +1,6 @@
 const LAPS = 3;
 const CRUISE_SPEED = 34;
-const BOOST_SPEED = 50;
+const BOOST_SPEED = 56;
 const BOOST_START = 0.15;
 const BOOST_DRAIN = 0.40;
 const CHARGE_RATE = 0.105;
@@ -84,6 +84,7 @@ export function createRace(track) {
   let wallContact = false;
   let bumpCooldown = 0;
   let lapStart = null;
+  let driftCharge = 0, driftCooldown = 0, previousAir = 0;
 
   const race = {
     cars,
@@ -100,6 +101,7 @@ export function createRace(track) {
     boost: 0.66,
     boosting: false,
     finished: false,
+    drifting: false, drafting: false, driftPower: 0, impact: 0,
     step,
     reset,
   };
@@ -122,6 +124,9 @@ export function createRace(track) {
     wallContact = false;
     bumpCooldown = 0;
     lapStart = null;
+    driftCharge = driftCooldown = previousAir = 0;
+    race.drifting = race.drafting = false;
+    race.driftPower = race.impact = 0;
     race.time = 0;
     race.progress = 0;
     race.lapProgress = 0;
@@ -153,7 +158,16 @@ export function createRace(track) {
     const pressingRail = edge && Math.sign(player.lane) === Math.sign(steer);
     const cornerSpeed = CRUISE_SPEED * (1 - Math.min(0.15, Math.abs(curve) * 2.25));
     let targetSpeed = boosting ? BOOST_SPEED : cornerSpeed;
-    if (brake) targetSpeed = 18;
+    race.drifting = brake && !pressingRail && Math.abs(steer) > .2 && player.speed > 23 && player.air < .24;
+    if (brake) targetSpeed = race.drifting ? 26 : 18;
+    race.drafting = !brake && cars.slice(1).some(car => {
+      const gap = lapDifference(car.distance - player.distance, track.length);
+      return gap > 4.4 && gap < 19 && Math.abs(car.lane - player.lane) < 1.5;
+    });
+    if (race.drafting && !boosting) { targetSpeed += 4; race.boost = Math.min(1, race.boost + dt * .10); }
+    const earnedDrift = !race.drifting && !pressingRail && driftCharge >= .5 && driftCooldown <= 0
+      ? driftCharge : 0;
+    driftCharge = race.drifting ? Math.min(1.3, driftCharge + dt) : 0;
     if (pressingRail) targetSpeed *= 0.78;
     const acceleration = player.speed < targetSpeed ? (boosting ? 30 : 18) : (brake ? 45 : 25);
     player.speed = approach(player.speed, targetSpeed, acceleration * dt);
@@ -161,27 +175,38 @@ export function createRace(track) {
     // Faster corners push outward. Braking restores grip and slows the drift.
     const drift = clamp(curve * player.speed ** 2 * (brake ? 0.065 : 0.155), -11, 11);
     const centering = Math.abs(steer) < 0.05 ? -player.lane * 0.41 : 0;
-    const lateralTarget = steer * 18 + drift + centering;
+    const lateralTarget = steer * (race.drifting ? 13 : 18) + drift + centering;
     player.lateralSpeed = approach(player.lateralSpeed, lateralTarget, dt * (brake ? 82 : 66));
     player.lane += player.lateralSpeed * dt;
-    player.slip = Math.atan2(player.lateralSpeed, Math.max(18, player.speed)) * 0.7;
+    player.slip = Math.atan2(player.lateralSpeed, Math.max(18, player.speed)) * (race.drifting ? 1.35 : .7);
 
     if (Math.abs(player.lane) > laneLimit) {
       player.lane = Math.sign(player.lane) * laneLimit;
       player.lateralSpeed = 0;
+      driftCharge = 0;
+      race.drifting = false;
       if (!wallContact) {
         player.speed *= 0.79;
         events.push("wall");
       }
       wallContact = true;
-    } else if (Math.abs(player.lane) < laneLimit - 0.5) {
-      wallContact = false;
+    } else {
+      if (Math.abs(player.lane) < laneLimit - 0.5) wallContact = false;
+      if (earnedDrift > 0) {
+        race.boost = Math.min(1, race.boost + earnedDrift * .22);
+        player.speed = Math.min(BOOST_SPEED, player.speed + 8);
+        driftCooldown = .7;
+        events.push('drift');
+      }
     }
+    race.driftPower = driftCharge / 1.3;
 
     const previous = player.distance;
     advanceDistance(player, curve, dt);
     const grounded = updateAir(player);
     if (grounded) chargeAtPads();
+    if (previousAir > .24 && player.air <= .24) events.push('land');
+    previousAir = player.air;
     updateLap(previous, dt);
   }
 
@@ -300,12 +325,18 @@ export function createRace(track) {
     if (race.finished) return;
 
     race.time += dt;
+    driftCooldown -= dt;
+    race.impact = Math.max(0, race.impact - dt * 3.8);
+    const oldPlace = race.place;
     bumpCooldown -= dt;
     advancePlayer(dt, clamp(steer, -1, 1), brake, boost);
     for (let i = 0; i < RIVALS.length; i++) advanceRival(cars[i + 1], RIVALS[i], dt);
     if (race.finished) race.time = player.time;
     else settleContact();
     updateOrder();
+    if (race.place < oldPlace && race.time > 2 && !race.finished) events.push('overtake');
+    if (events.includes('wall') || events.includes('bump')) race.impact = 1;
+    if (events.includes('land')) race.impact = .55;
   }
 
   reset();

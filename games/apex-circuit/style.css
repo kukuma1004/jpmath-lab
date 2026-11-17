@@ -418,3 +418,15 @@ kbd {
   .race-button { min-height: 46px; }
   .menu-record { margin-top: 6px; }
 }
+/* Peripheral streaks communicate acceleration without covering the racing line. */
+body::after {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 2; opacity: 0;
+  background: repeating-conic-gradient(from 5deg at 50% 43%, transparent 0deg 12deg, rgba(255,232,153,.3) 12.05deg 12.3deg, transparent 12.5deg 25deg);
+  mask-image: radial-gradient(ellipse at 50% 43%, transparent 40%, #000 100%);
+  transition: opacity .18s ease;
+}
+body.is-boosting::after { opacity: .8; }
+body.is-drafting:not(.is-boosting)::after { opacity: .24; }
+body.is-drifting .boost-track { box-shadow: 0 0 13px #ffb846; }
+body.is-drifting .boost-caption { color: #ffc65b; }
+@media (prefers-reduced-motion: reduce) { body::after { display:none; } }

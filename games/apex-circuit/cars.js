@@ -7,7 +7,6 @@ const trim = mat(0x233149, .46);
 const glassTop = mat(0x306a82, .26);
 const light = new T.MeshBasicMaterial({ color: 0xfff0b7 });
 const orange = new T.MeshBasicMaterial({ color: 0xf95f39 });
-const blue = new T.MeshBasicMaterial({ color: 0x29efea });
 const white = mat(0xfff1d5, .48);
 const box = new T.BoxGeometry();
 const tire = new T.CylinderGeometry(.48, .48, .40, 12);
@@ -50,8 +49,8 @@ function shell(rows) {
 // The static body and wheel details share draw calls by surface.
 function buildBody(model, design, reflection) {
   const paint = new T.MeshPhysicalMaterial({
-    color: design.body, roughness: .32, clearcoat: .62, clearcoatRoughness: .21,
-    envMap: reflection, envMapIntensity: .67
+    color: design.body, roughness: .25, clearcoat: .92, clearcoatRoughness: .21,
+    envMap: reflection, envMapIntensity: 1.05
   });
   const glass = new T.MeshPhysicalMaterial({
     color: 0x163452, roughness: .24, clearcoat: .58, clearcoatRoughness: .18,
@@ -93,6 +92,10 @@ function buildBody(model, design, reflection) {
   block(paint, 0, 1.09, -1.60, design.wing, .14, .56, -.09);
   block(stripe, 0, 1.11, -1.39, design.wing * .91, .044, .125);
   for (const side of [-1, 1]) {
+    // Thin painted shoulders trace the canopy and catch the low sun.
+    block(paint, side * .485, .91, -.32, .085, .085, .92, .075, side * .13);
+    block(stripe, side * .44, .771, .68, .062, .035, .78, .20, side * .19);
+    block(trim, side * .48, .49, -2.10, .40, .30, .18);
     block(lower, side * .63, .78, -1.67, .17, .62, .18, -.16);
     block(trim, side * design.wing / 2, 1.12, -1.61, .11, .35, .68, -.09);
     block(paint, side * .86, .53, -.56, .61, .39, 1.31, 0, side * .035);
@@ -162,24 +165,56 @@ function carReflection() {
   return light;
 }
 
-function blobMaterial() {
+function shadowStamp() {
   const canvas = document.createElement('canvas');
-  canvas.width = canvas.height = 64;
+  canvas.width = 96;
+  canvas.height = 160;
   const ctx = canvas.getContext('2d');
-  const fill = ctx.createRadialGradient(32, 32, 7, 32, 32, 31);
-  fill.addColorStop(0, 'rgba(10,16,29,.76)');
-  fill.addColorStop(.64, 'rgba(10,16,29,.38)');
-  fill.addColorStop(1, 'rgba(10,16,29,0)');
-  ctx.fillStyle = fill;
-  ctx.fillRect(0, 0, 64, 64);
-  return new T.MeshBasicMaterial({ map: new T.CanvasTexture(canvas), transparent: true, depthWrite: false });
+  ctx.fillStyle = '#130e21';
+  ctx.shadowColor = '#130e21';
+  ctx.shadowBlur = 10;
+  // One continuous contact silhouette with the wheel lobes left visible.
+  ctx.fillRect(18, 22, 60, 114);
+  ctx.fillRect(10, 29, 76, 21);
+  ctx.fillRect(8, 104, 80, 25);
+  ctx.fillRect(10, 125, 76, 10);
+  const texture = new T.CanvasTexture(canvas);
+  texture.colorSpace = T.SRGBColorSpace;
+  return new T.MeshBasicMaterial({map: texture, transparent: true, opacity: .40, depthWrite: false});
+}
+
+function exhaustMaterial() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 96;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  const pixels = ctx.createImageData(canvas.width, canvas.height);
+  for (let y = 0; y < canvas.height; y++) {
+    const t = y / (canvas.height - 1);
+    const width = .30 * Math.pow(1 - t, .78) + .013;
+    for (let x = 0; x < canvas.width; x++) {
+      const radius = Math.abs((x + .5) / canvas.width - .5) / width;
+      const heat = Math.exp(-radius * radius * 3.1) * Math.pow(1 - t, 1.8);
+      const amber = Math.max(0, 1 - t * 4.8);
+      const i = (y * canvas.width + x) * 4;
+      pixels.data[i] = Math.min(255, 42 + heat * 620 + amber * 245);
+      pixels.data[i + 1] = 255 - amber * 48;
+      pixels.data[i + 2] = 226 - amber * 163 + heat * 35;
+      pixels.data[i + 3] = 255 * Math.exp(-radius * radius * 1.7) * Math.min(1, (1 - t) * 3);
+    }
+  }
+  ctx.putImageData(pixels, 0, 0);
+  const texture = new T.CanvasTexture(canvas);
+  texture.colorSpace = T.SRGBColorSpace;
+  return new T.MeshBasicMaterial({map: texture, transparent: true, depthWrite: false, toneMapped: false, side: T.DoubleSide});
 }
 
 export function buildCars(scene) {
   const reflection = carReflection();
-  const shadowGeometry = new T.PlaneGeometry(4.0, 5.4).rotateX(-Math.PI / 2);
-  const shadowMaterial = blobMaterial();
-  const plumeGeometry = new T.ConeGeometry(.20, 1, 7).rotateX(-Math.PI / 2).translate(0, 0, -.50);
+  const shadowGeometry = new T.PlaneGeometry(3.45, 5.8).rotateX(-Math.PI / 2);
+  const shadowMaterial = shadowStamp();
+  const exhaust = exhaustMaterial();
+  const jetGeometry = new T.PlaneGeometry(1.43, 4.6).rotateX(Math.PI / 2).translate(0, 0, -2.3);
   return liveries.map((design, id) => {
     const model = new T.Group();
     const shadow = new T.Mesh(shadowGeometry, shadowMaterial);
@@ -188,8 +223,8 @@ export function buildCars(scene) {
     const jets = new T.Group();
     if (id === 0) {
       for (const side of [-1, 1]) {
-        const flame = new T.Mesh(plumeGeometry, blue);
-        flame.position.set(side * .44, .43, -2.13);
+        const flame = new T.Mesh(jetGeometry, exhaust);
+        flame.position.set(side * .48, .49, -2.14);
         jets.add(flame);
       }
       model.add(jets);
@@ -208,13 +243,20 @@ export function driveCar(visual, car, boosting, elapsed) {
   const heading = Math.atan2(p.dx, p.dz) - car.slip;
   visual.model.position.set(x, y + car.air + .04, z);
   visual.model.rotation.set(-Math.atan(p.slope), heading, Math.atan(-p.bank) - car.slip * .19, 'YXZ');
-  visual.shadow.position.set(x, y + .046, z);
+  const cast = 1.85 + car.air * .84;
+  const offsetX = -.78 * cast;
+  const offsetZ = .63 * cast;
+  const groundHeight = p.slope * (p.dx * offsetX + p.dz * offsetZ)
+    + p.bank * (-p.dz * offsetX + p.dx * offsetZ);
+  visual.shadow.position.set(x + offsetX, y + groundHeight + .064, z + offsetZ);
   visual.shadow.rotation.set(-Math.atan(p.slope), heading, Math.atan(-p.bank), 'YXZ');
   const spread = 1 + car.air * .15;
-  visual.shadow.scale.set(spread, 1, spread);
+  visual.shadow.scale.set(spread * 1.05, 1, spread * 1.16);
   visual.jets.visible = boosting;
   for (let i = 0; i < visual.jets.children.length; i++) {
     const jet = visual.jets.children[i];
-    jet.scale.z = 3.6 + Math.sin(elapsed * 32 + i) * .44;
+    jet.scale.x = 1.1 + .11 * Math.sin(elapsed * 47 + i);
+    jet.scale.z = .97 + .075 * Math.sin(elapsed * 39 + i) + .04 * Math.sin(elapsed * 63);
+    jet.rotation.y = car.slip * .42;
   }
 }

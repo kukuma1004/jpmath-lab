@@ -10,8 +10,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;1,800;1,900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./style.css?v=2">
-  <script type="module" src="./game.js?v=2"></script>
+  <link rel="stylesheet" href="./style.css?v=3">
+  <script type="module" src="./game.js?v=3"></script>
 </head>
 <body data-state="loading">
   <canvas id="world" aria-hidden="true"></canvas>
@@ -38,16 +38,16 @@
           <span class="course-spec">3랩 · 5대</span>
         </div>
         <h1 id="game-title" lang="en" aria-label="에이펙스 서킷">APEX <span>CIRCUIT</span></h1>
-        <p class="start-description">해안 트랙을 달리는 미니카 레이싱. <br class="desktop-break">충전 패드를 밟고 직선에서 부스터로 추월하세요.</p>
+        <p class="start-description">해안 트랙을 달리는 미니카 레이싱. <br class="desktop-break">코너에서 드리프트로 충전하고, 부스터로 추월하세요.</p>
         <button type="button" id="start" class="race-button">레이스 시작 <span aria-hidden="true">↗</span></button>
         <p class="menu-record">내 최고 랩 <strong id="menu-best">—</strong></p>
       </div>
       <div class="instructions">
         <span class="auto-drive"><i aria-hidden="true"></i> 자동 가속</span>
         <span class="keyboard-guide"><kbd>←</kbd><kbd>→</kbd> 조향</span>
-        <span class="keyboard-guide"><kbd>↓</kbd> 브레이크</span>
+        <span class="keyboard-guide"><kbd>↓</kbd> + 조향 드리프트</span>
         <span class="keyboard-guide"><kbd>Space</kbd> 부스터</span>
-        <span class="touch-guide">화면 아래 버튼으로 조작</span>
+        <span class="touch-guide">브레이크 + 방향으로 드리프트</span>
       </div>
     </section>
 
