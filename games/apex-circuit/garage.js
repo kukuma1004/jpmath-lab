@@ -21,6 +21,27 @@ function courseOutline(track) {
 
 export function bindGarage({ vehicleSpecs, tracks, onVehicle, onCourse }) {
   const description = document.getElementById('garage-description');
+  const brands = { apex: 'APEX', tesla: '테슬라', hyundai: '현대', audi: '아우디' };
+  const brandOf = spec => spec.brand || 'apex';
+  const selectedByBrand = new Map();
+  const brandButtons = [];
+  for (const [brand, label] of Object.entries(brands)) {
+    const first = vehicleSpecs.find(spec => brandOf(spec) === brand);
+    if (!first) continue;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.dataset.brand = brand;
+    button.textContent = label;
+    button.addEventListener('click', () => {
+      const id = selectedByBrand.get(brand) || first.id;
+      if (id === vehicleId) return;
+      select(id, courseId);
+      onVehicle(id);
+    });
+    brandButtons.push(button);
+  }
+  document.getElementById('brand-options').replaceChildren(...brandButtons);
+
   function choices(items, key, onChange) {
     const container = document.getElementById(key + '-options');
     const buttons = items.map(item => {
@@ -36,10 +57,10 @@ export function bindGarage({ vehicleSpecs, tracks, onVehicle, onCourse }) {
       button.append(name);
       if (key === 'vehicle') {
         const type = document.createElement('small');
-        const topSpeed = Math.round(item.topSpeed * 3.6);
-        type.textContent = `${item.type} · ${topSpeed}km/h`;
-        button.title = item.description;
-        button.append(type);
+        button.dataset.make = brandOf(item);
+        type.textContent = item.cosmetic ? item.bodyClass || '' : [item.type, Number.isFinite(item.topSpeed) ? Math.round(item.topSpeed * 3.6) + 'km/h' : ''].filter(Boolean).join(' · ');
+        button.title = item.description || item.name;
+        if (type.textContent) button.append(type);
       } else {
         const outline = courseOutline(item);
         if (outline) button.prepend(outline);
@@ -59,9 +80,16 @@ export function bindGarage({ vehicleSpecs, tracks, onVehicle, onCourse }) {
   const vehicles = choices(vehicleSpecs, 'vehicle', onVehicle);
   const courses = choices(tracks, 'course', onCourse);
   function select(vehicle, course) {
-    vehicleId = vehicle;
     courseId = course;
-    for (const button of vehicles) button.setAttribute('aria-pressed', String(button.dataset.vehicle === vehicle));
+    const spec = vehicleSpecs.find(item => item.id === vehicle) || vehicleSpecs[0];
+    const brand = brandOf(spec);
+    vehicleId = spec.id;
+    selectedByBrand.set(brand, vehicleId);
+    for (const button of brandButtons) button.setAttribute('aria-pressed', String(button.dataset.brand === brand));
+    for (const button of vehicles) {
+      button.hidden = button.dataset.make !== brand;
+      button.setAttribute('aria-pressed', String(button.dataset.vehicle === vehicleId));
+    }
     for (const button of courses) button.setAttribute('aria-pressed', String(button.dataset.course === course));
     const track = tracks.find(item => item.id === course);
     description.textContent = track?.description || '';

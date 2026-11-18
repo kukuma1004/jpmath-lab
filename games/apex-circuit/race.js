@@ -1,11 +1,29 @@
 const LAPS = 3;
+const roadTuning = { cosmetic: true, topSpeed: 56, cruiseSpeed: 34, grip: 1, acceleration: 18 };
+const roadVehicles = [
+  { id: 'model-s', brand: 'tesla', name: 'Model S', bodyClass: '패스트백',
+    description: '낮고 긴 지붕선과 넓은 앞차체.', accent: '#e0e5df' },
+  { id: 'model-3', brand: 'tesla', name: 'Model 3', bodyClass: '세단',
+    description: '짧은 앞뒤 오버행과 날렵한 전조등.', accent: '#e04a49' },
+  { id: 'model-x', brand: 'tesla', name: 'Model X', bodyClass: 'SUV',
+    description: '높은 차체와 넓은 파노라마 유리.', accent: '#bccacf' },
+  { id: 'model-y', brand: 'tesla', name: 'Model Y', bodyClass: '크로스오버',
+    description: '쿠페형 지붕선과 가로로 이어진 램프.', accent: '#417acc' },
+  { id: 'cybertruck', brand: 'tesla', name: 'Cybertruck', bodyClass: '픽업',
+    description: '삼각형 실루엣과 스테인리스 외판.', accent: '#c3ced5' },
+  { id: 'ioniq-5-n', brand: 'hyundai', name: '아이오닉 5 N', bodyClass: '해치백',
+    description: '픽셀 램프와 붉은 범퍼 라인.', accent: '#9dbad7' },
+  { id: 'rs-etron-gt', brand: 'audi', name: 'RS e-tron GT', bodyClass: '그란 투리스모',
+    description: '넓고 낮은 차체와 검은색 전면부.', accent: '#75a791' }
+];
 export const vehicleSpecs = [
-  { id: 'vector', name: '벡터 GT', type: '밸런스', description: '가속과 코너링이 고르게 잡힌 투어링 쿠페.',
+  { id: 'vector', brand: 'apex', name: '벡터 GT', type: '밸런스', description: '가속과 코너링이 고르게 잡힌 투어링 쿠페.',
     accent: '#ffca61', topSpeed: 56, cruiseSpeed: 34, grip: 1, acceleration: 18 },
-  { id: 'raptor', name: '랩터 RS', type: '파워', description: '긴 직선에서 최고속도를 살리기 좋은 레이서.',
+  { id: 'raptor', brand: 'apex', name: '랩터 RS', type: '파워', description: '긴 직선에서 최고속도를 살리기 좋은 레이서.',
     accent: '#ff654d', topSpeed: 62, cruiseSpeed: 35.6, grip: .84, acceleration: 17 },
-  { id: 'nova', name: '노바 스프린트', type: '핸들링', description: '가벼운 차체로 연속 코너를 파고드는 경량 스포츠카.',
-    accent: '#77aaff', topSpeed: 52, cruiseSpeed: 33.4, grip: 1.22, acceleration: 21 }
+  { id: 'nova', brand: 'apex', name: '노바 스프린트', type: '핸들링', description: '가벼운 차체로 연속 코너를 파고드는 경량 스포츠카.',
+    accent: '#77aaff', topSpeed: 52, cruiseSpeed: 33.4, grip: 1.22, acceleration: 21 },
+  ...roadVehicles.map(vehicle => ({ ...roadTuning, ...vehicle }))
 ];
 const BOOST_START = 0.15;
 const BOOST_DRAIN = 0.40;

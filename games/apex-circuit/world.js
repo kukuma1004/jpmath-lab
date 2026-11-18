@@ -1,6 +1,7 @@
+import { frontier } from './world-frontiers.js?v=6';
 import * as T from './vendor/three.module.min.js';
 import { grain, alpine, metropolis, coastalBridge, roadFurniture } from './world-landmarks.js?v=4';
-import { courseFrame, coursePoint, track } from './track.js?v=4';
+import { courseFrame, coursePoint, track } from './track.js?v=5';
 
 const box = new T.BoxGeometry();
 const dummy = new T.Object3D();
@@ -106,7 +107,7 @@ function road(scene, track, theme) {
   const frame = track.frame || courseFrame;
   const point = track.point || coursePoint;
   const at = (distance, lane, height, ...scale) => ({ ...frame(distance, lane, height), scale });
-  const asphalt = surface(theme === 'metro' ? 0x889aa9 : 0xbdbac1, theme === 'metro' ? .27 : .84);
+  const asphalt = surface(theme === 'frost' ? 0x9fbdc8 : theme === 'redrock' ? 0xc8af9d : theme === 'metro' ? 0x889aa9 : 0xbdbac1, theme === 'metro' ? .27 : .84);
   asphalt.map = grain(theme === 'metro' ? 'wet-asphalt' : 'asphalt-grain');
   if(theme === 'metro'){
     asphalt.onBeforeCompile = shader => {
@@ -571,12 +572,12 @@ function water(scene) {
   return material.uniforms.uTime;
 }
 
-function sky(scene, night, mountain) {
+function sky(scene, night, mountain, theme) {
   const material = new T.ShaderMaterial({
     side: T.BackSide, depthWrite: false,
     uniforms: {
-      uSun: { value: night ? new T.Vector3(-.25,.38,-.88).normalize() : sunDirection }, uHorizon: { value: new T.Color(night ? 0x494772 : mountain ? 0xf0c8ac : 0xe69783) },
-      uOrange: { value: new T.Color(night ? 0x5a6486 : 0xffce80) }, uSky: { value: new T.Color(night ? 0x080f29 : mountain ? 0x365e82 : 0x617896) },
+      uSun: { value: night ? new T.Vector3(-.25,.38,-.88).normalize() : sunDirection }, uHorizon: { value: new T.Color(night ? 0x494772 : theme === 'frost' ? 0xc6deeb : theme === 'redrock' ? 0xf0b083 : mountain ? 0xf0c8ac : 0xe69783) },
+      uOrange: { value: new T.Color(night ? 0x5a6486 : 0xffce80) }, uSky: { value: new T.Color(night ? 0x080f29 : theme === 'frost' ? 0x345782 : theme === 'redrock' ? 0x688aa5 : mountain ? 0x365e82 : 0x617896) },
       uNight: {value: night ? 1 : 0},
     },
     vertexShader: `
@@ -619,12 +620,13 @@ function sky(scene, night, mountain) {
 export function buildWorld(scene, course = track) {
   const theme = course.id || 'sunset';
   const night = theme === 'metro', mountain = theme === 'summit';
-  scene.fog = new T.FogExp2(night ? 0x343854 : mountain ? 0xabb9bf : 0xd4aa92, night ? .0041 : mountain ? .0026 : .00125);
+  const extra = theme === 'frost' || theme === 'redrock';
+  scene.fog = new T.FogExp2(theme === 'frost' ? 0xc4d9e5 : theme === 'redrock' ? 0xe1ab85 : night ? 0x343854 : mountain ? 0xabb9bf : 0xd4aa92, night ? .0041 : mountain ? .0026 : .00125);
   scene.background = new T.Color(0xd4bfa8);
-  sky(scene, night, mountain);
-  const waves = night || mountain ? {value: 0} : water(scene);
-  scene.add(new T.HemisphereLight(night ? 0x97c2ff : 0xffe8ca, night ? 0x71628b : 0x639aaf, 1.05));
-  const sun = new T.DirectionalLight(night ? 0xb3dcff : mountain ? 0xffe3bf : 0xffcb8d, night ? 1.7 : 3.4);
+  sky(scene, night, mountain, theme);
+  const waves = extra || night || mountain ? {value: 0} : water(scene);
+  scene.add(new T.HemisphereLight(night ? 0x97c2ff : extra ? 0xd4e8ff : 0xffe8ca, night ? 0x71628b : 0x639aaf, 1.05));
+  const sun = new T.DirectionalLight(night ? 0xb3dcff : theme === 'frost' ? 0xf9f2df : theme === 'redrock' ? 0xffdfb8 : mountain ? 0xffe3bf : 0xffcb8d, night ? 1.7 : 3.4);
   sun.target.position.set(-21, 0, -18);
   sun.position.copy(sun.target.position).addScaledVector(sunDirection, 115);
   sun.position.y = 99;
@@ -639,11 +641,12 @@ export function buildWorld(scene, course = track) {
   const rim = new T.DirectionalLight(0xb5dfff, 1.00);
   rim.position.set(-85, 48, 90);
   scene.add(rim);
-  if (mountain) alpine(scene, course, waves);
+  if (extra) frontier(scene, course, {block,surface,placard,grain});
+  else if (mountain) alpine(scene, course, waves);
   else if (night) metropolis(scene, course);
   else { scenery(scene, waves); coastalBridge(scene); }
   roadFurniture(scene, course, theme);
-  const lights = gantry(scene, course, mountain ? 'SKYLINE DROP' : night ? 'MIDNIGHT RING' : 'SUNSET PIER');
+  const lights = gantry(scene, course, theme === 'frost' ? 'FROST PASS' : theme === 'redrock' ? 'RED ROCK CANYON' : mountain ? 'SKYLINE DROP' : night ? 'MIDNIGHT RING' : 'SUNSET PIER');
   combineStaticBoxes(scene);
   scene.traverse(object => {
     if (!object.isMesh || !object.material.isMeshStandardMaterial) return;

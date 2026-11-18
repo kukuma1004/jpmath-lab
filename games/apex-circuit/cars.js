@@ -1,5 +1,6 @@
 import * as T from './vendor/three.module.min.js';
-import { track } from './track.js?v=4';
+import { track } from './track.js?v=5';
+import { buildRoadCar } from './road-cars.js?v=5';
 
 const box = new T.BoxGeometry();
 const tire = new T.CylinderGeometry(.37, .37, .22, 28);
@@ -201,7 +202,7 @@ export function buildCars(scene) {
   const shadowMaterial = shadowStamp();
   const exhaust = exhaustMaterial();
   const jetGeometry = new T.PlaneGeometry(1.43, 4.6).rotateX(Math.PI / 2).translate(0, 0, -2.3);
-  return liveries.map((design, id) => {
+  const visuals = liveries.map((design, id) => {
     const model = new T.Group();
     const shadow = new T.Mesh(shadowGeometry, shadowMaterial);
     shadow.renderOrder = 2;
@@ -220,11 +221,37 @@ export function buildCars(scene) {
     scene.add(shadow, model);
     return { model, shadow, jets, body, id: design.id };
   });
+  visuals[0].roadBodies = new Map();
+  visuals[0].reflection = reflection;
+  return visuals;
 }
 
-export function selectVehicle(visuals, id) {
+export function selectVehicle(visuals, vehicle, roadRoster) {
   const player = visuals[0];
-  const other = visuals.find(v => v.id === id);
+  for (const visual of visuals) {
+    visual.roadBody?.removeFromParent();
+    visual.roadBody = null;
+    visual.roadId = null;
+    visual.body.visible = !vehicle.cosmetic;
+  }
+  if (vehicle.cosmetic) {
+    const selected = roadRoster.findIndex(spec => spec.id === vehicle.id);
+    for (const [index, visual] of visuals.entries()) {
+      const { id } = roadRoster[(selected + index) % roadRoster.length];
+      let body = player.roadBodies.get(id);
+      if (!body) {
+        body = buildRoadCar(id, player.reflection);
+        player.roadBodies.set(id, body);
+      }
+      visual.model.add(body);
+      visual.roadBody = body;
+      visual.roadId = id;
+    }
+    player.jets.position.z = vehicle.id === 'cybertruck' ? -.29 : -.10;
+    return;
+  }
+  player.jets.position.z = 0;
+  const other = visuals.find(v => v.id === vehicle.id);
   if (!other || player === other) return;
   const previous = player.body, previousId = player.id;
   player.model.add(other.body);

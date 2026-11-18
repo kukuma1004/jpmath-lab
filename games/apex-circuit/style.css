@@ -492,3 +492,42 @@ body.is-drifting .boost-caption { color: #ffc65b; }
   #garage-description { margin: 3px 0 5px; font-size: 10px; }
   .garage-launch .race-button { min-height: 44px; padding-block: 3px; }
 }
+
+.brand-options {
+  display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 2px;
+  margin-bottom: 6px; background: #101822df; border-bottom: 1px solid #b0bec952;
+}
+.brand-options button {
+  min-height: 44px; padding: 4px; border: 0; border-bottom: 2px solid transparent;
+  color: #c1ccd3; background: transparent; font-size: 13px; font-weight: 750; pointer-events: auto;
+}
+.brand-options button:hover { color: #fff; background: #283239; }
+.brand-options button[aria-pressed="true"] { color: #ffcf57; border-bottom-color: currentColor; }
+#course-options { grid-template-columns: repeat(5,minmax(0,1fr)); }
+#course-options button { padding: 5px 2px; text-align: center; }
+#course-options strong { font-size: 11px; line-height: 1.24; }
+#course-options svg { width: min(100%,58px); }
+#vehicle-options button { min-height: 44px; gap: 1px; }
+#vehicle-options small { line-height: 1.25; }
+@media (max-width: 740px) and (orientation: portrait) {
+  .brand-options { margin-bottom: 4px; }
+  #vehicle-options button { padding: 4px 6px; }
+  #course-options svg { height: 19px; }
+}
+@media (max-height: 620px) and (orientation: landscape) {
+  .start-screen { gap: 4px; padding-bottom: 21px; }
+  .start-content { width: min(54vw,480px); min-width: 0; }
+  .brand-options { margin-bottom: 3px; }
+  #vehicle-options { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(0,1fr); }
+  #vehicle-options button { padding: 3px; }
+  #vehicle-options strong { font-size: 11px; }
+  #vehicle-options small { font-size: 9px; }
+  #course-options button { flex-direction: column; gap: 1px; }
+  #course-options svg { height: 15px; }
+}
+@media (max-height: 390px) and (orientation: landscape) {
+  .start-screen { padding-bottom: 18px; }
+  .start-screen h1 { font-size: 25px; }
+  .start-screen .instructions { font-size: 10px; padding-top: 1px; }
+  .garage-group { margin-bottom: 3px; }
+}

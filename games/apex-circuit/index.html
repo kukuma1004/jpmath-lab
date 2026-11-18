@@ -10,8 +10,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;1,800;1,900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./style.css?v=4">
-  <script type="module" src="./game.js?v=4"></script>
+  <link rel="stylesheet" href="./style.css?v=5">
+  <script type="module" src="./game.js?v=5"></script>
 </head>
 <body data-state="loading">
   <canvas id="world" aria-hidden="true"></canvas>
@@ -33,7 +33,7 @@
     <section class="start-screen" aria-labelledby="game-title">
       <h1 id="game-title" lang="en" aria-label="에이펙스 서킷">APEX <span>CIRCUIT</span></h1>
       <div class="start-content">
-        <fieldset class="garage-group"><legend>차량 선택</legend><div class="garage-options" id="vehicle-options"></div></fieldset>
+        <fieldset class="garage-group"><legend>차량 선택</legend><div class="brand-options" id="brand-options" role="group" aria-label="브랜드"></div><div class="garage-options" id="vehicle-options" role="group" aria-label="모델"></div></fieldset>
         <fieldset class="garage-group"><legend>코스 선택</legend><div class="garage-options" id="course-options"></div></fieldset>
         <p id="garage-description"></p>
         <div class="garage-launch">

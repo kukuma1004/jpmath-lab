@@ -1,11 +1,11 @@
 import * as T from './vendor/three.module.min.js';
-import { tracks } from './track.js?v=4';
-import { createRace, vehicleSpecs } from './race.js?v=4';
-import { buildWorld } from './world.js?v=4';
-import { buildCars, driveCar, selectVehicle } from './cars.js?v=4';
+import { tracks } from './track.js?v=5';
+import { createRace, vehicleSpecs } from './race.js?v=5';
+import { buildWorld } from './world.js?v=5';
+import { buildCars, driveCar, selectVehicle } from './cars.js?v=5';
 import { createAudio } from './audio.js?v=4';
 import { createEffects } from './effects.js?v=4';
-import { bindGarage } from './garage.js?v=4';
+import { bindGarage } from './garage.js?v=5';
 
 const byId = id => document.getElementById(id);
 const formatTime = seconds => {
@@ -18,6 +18,7 @@ const recordKey = 'jp-apex-circuit-lap';
 const soundKey = 'jp-apex-circuit-sound';
 const courseKey = 'jp-apex-circuit-course';
 const vehicleKey = 'jp-apex-circuit-vehicle';
+const roadRoster = vehicleSpecs.filter(spec => spec.cosmetic);
 function read(key) {
   try { return localStorage.getItem(key); } catch { return null; }
 }
@@ -88,7 +89,7 @@ function createCamera() {
   const aim = new T.Vector3();
   const p = {}, preview = {}, trailing = {};
   let ready = false;
-  function update(track, race, state, animateTime, dt, reduced, snap = false) {
+  function update(track, race, vehicle, state, animateTime, dt, reduced, snap = false) {
     const portrait = camera.aspect < .95;
     const isMenu = state === 'menu';
     const player = race.cars[0];
@@ -96,16 +97,18 @@ function createCamera() {
     let fov;
     if (isMenu) {
       const drift = reduced ? 0 : Math.sin(animateTime * .35) * .62;
-      const ahead = portrait ? 9.5 : 8.4;
-      const flank = (portrait ? 6.75 : 6.4) + drift;
-      desired.set(p.x + p.dx * ahead - p.dz * flank, p.y + (portrait ? 4.2 : 3.8),
+      const ahead = vehicle.cosmetic ? (portrait ? 10.65 : 6.2) : (portrait ? 9.5 : 8.4);
+      const flank = (vehicle.cosmetic ? (portrait ? 7.4 : 6.65) : (portrait ? 6.75 : 6.4)) + drift;
+      const height = vehicle.cosmetic ? (portrait ? 4.6 : 3.15) : (portrait ? 4.2 : 3.8);
+      desired.set(p.x + p.dx * ahead - p.dz * flank, p.y + height,
         p.z + p.dz * ahead + p.dx * flank);
       const rightX = desired.z - p.z;
       const rightZ = p.x - desired.x;
-      const offset = portrait ? 0.10 : 3.06;
+      const offset = portrait ? .10 : vehicle.cosmetic ? 1.75 : 3.06;
       const scale = offset / Math.hypot(rightX, rightZ);
-      aim.set(p.x - rightX * scale, p.y + (portrait ? -2.0 : .37), p.z - rightZ * scale);
-      fov = portrait ? 49 : 46;
+      const aimHeight = vehicle.cosmetic ? (portrait ? -1.8 : .77) : (portrait ? -2.0 : .37);
+      aim.set(p.x - rightX * scale, p.y + aimHeight, p.z - rightZ * scale);
+      fov = vehicle.cosmetic ? (portrait ? 49 : 44) : (portrait ? 49 : 46);
     } else {
       const marker = (player.distance % track.length + track.length) % track.length;
       let dropView = 0;
@@ -212,7 +215,7 @@ function setup() {
       renderer.shadowMap.needsUpdate = true;
       map = drawMap(byId('minimap'), track);
     }
-    selectVehicle(vehicles, vehicle.id);
+    selectVehicle(vehicles, vehicle, roadRoster);
     race = createRace(track, vehicle);
     best = Number(read(lapKey())) || null;
     lastMapUpdate = -1;
@@ -421,7 +424,7 @@ function setup() {
       visual.model.visible = visual.shadow.visible = visible;
       if (visible) driveCar(visual, car, boosting && index === 0, motion.matches ? 0 : worldTime, track);
     });
-    if (state !== 'paused' || snap) view.update(track, race, state === 'paused' ? pausedState : state, worldTime, dt, motion.matches, snap);
+    if (state !== 'paused' || snap) view.update(track, race, vehicle, state === 'paused' ? pausedState : state, worldTime, dt, motion.matches, snap);
     snap = false;
     audio.drive(race.cars[0].speed, boosting, state === 'racing' || state === 'countdown');
     hud();
@@ -432,7 +435,8 @@ function setup() {
       projected.copy(vehicles[0].model.position).project(view.camera);
       window.__THREE_GAME_DIAGNOSTICS__ = {
         frame, score: race.progress, complete: race.finished, state, time: race.time, place: race.place,
-        course: track.id, vehicle: vehicle.id,
+        course: track.id, vehicle: vehicle.id, model: vehicles[0].roadId || vehicles[0].id,
+        grid: vehicles.map(visual => visual.roadId || visual.id),
         player: { ...race.cars[0] }, boost: race.boost, boosting, lap: race.lap, input: { ...input },
         projected: { x: (1 + projected.x) * .5, y: (1 - projected.y) * .5 },
         render: { ...renderer.info.render }, memory: { ...renderer.info.memory },
@@ -521,6 +525,26 @@ function setup() {
         render(Math.min(frames, 6) * fixed);
       },
       visualOnly() { visualOnly = true; },
+      previewBounds() {
+        const player = vehicles[0];
+        const model = player.roadBody || player.body;
+        const corner = new T.Vector3();
+        const bounds = { left: 1, right: 0, top: 1, bottom: 0 };
+        model.traverse(piece => {
+          if (!piece.isMesh) return;
+          const positions = piece.geometry.getAttribute('position');
+          for (let index = 0; index < positions.count; index++) {
+            corner.fromBufferAttribute(positions, index).applyMatrix4(piece.matrixWorld).project(view.camera);
+            const x = (1 + corner.x) / 2;
+            const y = (1 - corner.y) / 2;
+            bounds.left = Math.min(bounds.left, x);
+            bounds.right = Math.max(bounds.right, x);
+            bounds.top = Math.min(bounds.top, y);
+            bounds.bottom = Math.max(bounds.bottom, y);
+          }
+        });
+        return bounds;
+      }
     };
   }
   updateSound();

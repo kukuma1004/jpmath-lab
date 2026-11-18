@@ -22,6 +22,19 @@ const metroPoints = [
   [-122,1,21], [-113,1,42]
 ];
 
+const frostPoints = [
+  [-66,9,65],[-16,10,65],[56,12,62],[93,15,47],[99,18,20],
+  [80,22,10],[44,24,13],[28,25,0],[35,27,-19],[79,29,-34],
+  [92,30,-53],[82,28,-72],[48,24,-74],[6,19,-54],[-22,17,-53],
+  [-49,15,-76],[-83,12,-76],[-101,9,-54],[-88,7,-31],[-53,7,-17],
+  [-49,7,0],[-73,8,17],[-103,8,28],[-105,8,49]
+];
+const redrockPoints = [
+  [-74,4,53],[-12,5,53],[57,8,47],[104,12,28],[126,15,-2],
+  [121,17,-30],[91,18,-62],[54,16,-76],[14,12,-69],[-19,8,-49],
+  [-52,6,-44],[-90,6,-62],[-117,9,-58],[-133,12,-36],
+  [-120,13,-12],[-91,10,2],[-84,8,16],[-102,5,31],[-100,4,45]
+];
 function makeCourse(meta, points, setup) {
   const line = new T.CatmullRomCurve3(points.map(v => new T.Vector3(...v)), true, 'centripetal');
   line.arcLengthDivisions = 1600;
@@ -89,7 +102,11 @@ export const tracks = [
     (length, at) => ({ pads: [{distance: 40, lane: 2.7}, {distance: at(7), lane: 0}, {distance: length - 80, lane: -3}],
       gaps: [{start: at(9), end: at(10), drop: 22}] })),
   makeCourse({ id: 'metro', name: '미드나이트 링', subtitle: '심야 도심', description: '젖은 대로에서 가속하고 연속 직각 코너를 드리프트로 연결하세요.', halfWidth: 7 }, metroPoints,
-    (length, at) => ({ pads: [{distance: 56, lane: 2.8}, {distance: at(8), lane: -2.8}, {distance: at(15), lane: 2}, {distance: at(19), lane: -2.8}] }))
+    (length, at) => ({ pads: [{distance: 56, lane: 2.8}, {distance: at(8), lane: -2.8}, {distance: at(15), lane: 2}, {distance: at(19), lane: -2.8}] })),
+  makeCourse({ id: 'frost', name: '프로스트 패스', subtitle: '빙하 저수지', description: '댐을 건너 눈 덮인 고갯길의 연속 헤어핀을 공략하세요.', halfWidth: 7.4 }, frostPoints,
+    (length, at) => ({ pads: [{distance: 44, lane: -2.8}, {distance: at(7)+6, lane: 2}, {distance: at(13), lane: -3}, {distance: at(20)+6, lane: 2.6}] })),
+  makeCourse({ id: 'redrock', name: '레드록 캐니언', subtitle: '사암 채석장', description: '붉은 암벽 사이의 긴 고속 코너를 지나 채석장 굽잇길로 진입하세요.', halfWidth: 8.1 }, redrockPoints,
+    (length, at) => ({ pads: [{distance: 39, lane: 2.9}, {distance: at(4)+4, lane: -3}, {distance: at(8), lane: 2.5}, {distance: at(14)+6, lane: -2.7}] }))
 ];
 export const track = tracks[0];
 export const coursePoint = track.point;
