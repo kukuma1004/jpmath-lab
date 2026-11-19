@@ -5,7 +5,7 @@ const profiles = {
   'model-s': { color: 0xe4e7ec, w: 1.08, l: 4.72, h: .86, r: .39, ax: 1.46,
     roof: [[-.92,.015,.72],[-.72,.12,.83],[-.36,.46,.81],[-.11,.55,.79],[.13,.49,.75],[.44,.04,.84]],
     noseSweep: .24, tailSweep: .15, wheel: 10 },
-  'model-3': { color: 0xbc222c, w: 1.01, l: 4.27, h: .86, r: .36, ax: 1.30,
+  'model-3': { color: 0xbc222c, w: 1.01, l: 4.40, h: .86, r: .378, ax: 1.36,
     roof: [[-.87,.025,.72],[-.69,.15,.80],[-.38,.50,.80],[-.09,.61,.76],[.15,.55,.75],[.49,.04,.85]],
     noseSweep: .30, tailSweep: .19, wheel: 5 },
   'model-x': { color: 0xbfc5ca, w: 1.15, l: 4.68, h: 1.05, r: .43, ax: 1.44,
@@ -44,10 +44,17 @@ export function buildRoadCar(id) {
     batches.set(m, { pos: [], normal: [] });
     return m;
   }
-  const paint = material(p.color, truck ? .78 : .43, truck ? .225 : .21, 0, truck ? 0 : .60);
-  const glass = material(0x405569,.77,.064,0,.92), black = material(0x121820,.24,.49);
-  const tire = material(0x181b20,.03,.86), alloy = material(0xb0b7bc,.76,.28);
+  const paint = material(p.color, truck ? .67 : .54, truck ? .28 : .155, 0, truck ? 0 : .94);
+  const glass = material(0x34424c,.26,.09,0,.9), black = material(0x121820,.24,.49);
+  const tire = material(0x181b20,.03,.86), alloy = material(truck?0x87929b:0x89939e,.78,.24);
   const led = material(0xe6faff,.15,.24,0xc5edff), red = material(0xcf1826,.18,.25,0xab0810);
+  const rotor=material(0x58595a,.68,.39);
+  const caliper=material(gt||hatch||model3?0xb82e22:0x414953,.34,.36);
+  const cabin = material(0x232830,.06,.72);
+  glass.transparent = true;
+  glass.opacity = truck ? .84 : .78;
+  glass.depthWrite = false;
+  glass.forceSinglePass = true;
   const trim = hatch ? material(0xf04727,.32,.32) : black;
   // Brushed sheet varies mainly across the rolling direction. Object-space
   // coordinates keep the grain attached to each panel while the car turns.
@@ -79,7 +86,7 @@ export function buildRoadCar(id) {
       diffuseColor.rgb *= 1. + shoulder * (.14 - .51 * seam);
     `);
   }
-  glass.envMapIntensity = 1.14;
+  glass.envMapIntensity = .85;
   surfaceFinish(glass, `
     float skyBand = smoothstep(.9, 1.8, vPanel.y);
     diffuseColor.rgb *= mix(vec3(.49,.61,.75), vec3(.94,1.12,1.32), skyBand);
@@ -120,14 +127,18 @@ export function buildRoadCar(id) {
   const rings = sectionZ.map(z=>{
     const u=z/half, end=Math.abs(u);
     const rounding = Math.pow(Math.max(0,(end-.69)/.31),2);
-    const width=w*(1-(truck?.065:hatch?.085:gt?.16:.16)*rounding);
+    const waist=truck?0:(hatch?.018:.036)*Math.exp(-Math.pow(u/.44,2));
+    const width=w*(1-waist-(truck?.065:hatch?.085:gt?.16:.16)*rounding);
     const dz=Math.min(Math.abs(z-p.ax),Math.abs(z+p.ax));
-    const arch=p.r+.045;
-    const lower=dz<=arch ? p.r+Math.sqrt(Math.max(0,arch*arch-dz*dz)) : .29;
-    const top=p.h+(truck ? -.115*u : -.12*Math.max(0,u))-.073*Math.pow(end,6);
-    const fender = truck ? 0 : (gt?.095:.075)*Math.exp(-Math.pow(dz/.52,2));
+    const arch=p.r+.034;
+    const floor=truck?.30:gt?.19:.22;
+    const lower=dz<=arch ? p.r+Math.sqrt(Math.max(0,arch*arch-dz*dz)) : floor;
+    const top=p.h+(truck ? -.115*u : -.145*Math.max(0,u))-(truck?.046:.105)*Math.pow(end,5);
+    const fender = truck ? 0 : (gt?.113:.093)*Math.exp(-Math.pow(dz/.52,2));
     const shoulder=Math.max(lower+.026,top-.07+fender);
-    const corners=[[truck?.92:.87,lower],[.977,lower*.40+shoulder*.60],[1,shoulder],
+    const archBlend=1-T.MathUtils.smoothstep(dz,arch,arch+.10);
+    const skirtWidth=T.MathUtils.lerp(truck?.95:.955,.995,archBlend);
+    const corners=[[skirtWidth,lower],[T.MathUtils.lerp(truck?.982:hatch?.96:.923,.998,archBlend),lower*.51+shoulder*.49],[1,shoulder],
       [.945,Math.max(top+fender,shoulder+.026)],[.74,top+.040+fender*.55],[.46,top+.060],[0,top+.064]];
     function panel(sign,[x,y]) {
       const sweep = truck || hatch ? Math.max(0,(x-.64)/.36) : Math.pow(x,2.4);
@@ -144,8 +155,20 @@ export function buildRoadCar(id) {
   }
   body.setAttribute('position',new T.Float32BufferAttribute(vertices,3)); body.setIndex(indices);
   if(truck) {
-    const facets=body.toNonIndexed(); facets.computeVertexNormals(); collect(paint,facets); body.dispose();
+    // Keep the folds between sheets crisp while letting each sheet reflect as one panel.
+    for(let j=0;j<n-1;j++) smoothPanel(paint,rings.map(row=>[row[j],row[j+1]]));
+    body.dispose();
   } else { body.computeVertexNormals(); collect(paint,body); }
+  // A turned-in metal flange and the dark wheelhouse close the opening behind each tire.
+  for (const side of [-1,1]) {
+    const idx=side<0?0:n-1;
+    for(let i=1;i<rings.length;i++){
+      const a=rings[i-1][idx],b=rings[i][idx];
+      const inset=(pt,dx,dy)=>[pt[0]-side*dx,pt[1]+dy,pt[2]];
+      quad(paint,a,b,inset(b,.030,.004),inset(a,.030,.004));
+      quad(black,inset(a,.030,.004),inset(b,.030,.004),inset(b,.26,-.04),inset(a,.26,-.04));
+    }
+  }
   const crest = rings.map(ring=>ring.slice(2,-2));
   const knots = crest[0].map(p=>p[0]/crest[0].at(-1)[0]);
   function crossPoint(row,u) {
@@ -163,7 +186,8 @@ export function buildRoadCar(id) {
     function point(u,v,lift) {
       const [,top,z]=crossPoint(row,u);
       // The low edge tucks under; the narrow bevel catches the key light.
-      const section=v<=.78 ? T.MathUtils.lerp(-.12,.048,v/.78) : T.MathUtils.lerp(.048,0,(v-.78)/.22);
+      const section=truck ? (v<=.78 ? T.MathUtils.lerp(-.12,.048,v/.78) : T.MathUtils.lerp(.048,0,(v-.78)/.22))
+        : -.088*(1-v)**3 + .043*Math.sin(Math.PI*v);
       return [u*width*(.94+.06*v),T.MathUtils.lerp(.27,top,v),z+direction*(section+lift)];
     }
     function band(m,profile,lift=.010) {
@@ -193,12 +217,25 @@ export function buildRoadCar(id) {
     function stripe(m,from,to,low,high,lift) {
       band(m,[[from,low,high],[to,low,high]],lift);
     }
-    stripe(paint,-1,1,0,1,0);
+    if(truck) stripe(paint,-1,1,0,1,0);
+    else {
+      const across=[...new Set([...knots,...Array.from({length:33},(_,i)=>i/16-1)])].sort((a,b)=>a-b);
+      const rows=Array.from({length:13},(_,i)=>across.map(u=>point(u,i/12,0)));
+      smoothPanel(paint,direction>0?rows.reverse():rows);
+    }
     for(const side of [-1,1]) {
       const [lower,mid,shoulder]=side<0?ring:ring.slice().reverse();
       const bottom=point(side,0,0), bevel=point(side,.78,0);
       quad(paint,lower,mid,bevel,bottom);
       triangle(paint,mid,shoulder,bevel);
+    }
+    const lipUs=[...new Set([-1,...knots,1])].sort((a,b)=>a-b);
+    for(let j=1;j<lipUs.length;j++){
+      const a=point(lipUs[j-1],0,.003), b=point(lipUs[j],0,.003);
+      const edge=pt=>[pt[0]*1.012,pt[1]-.038,pt[2]+direction*.036];
+      const under=pt=>[pt[0]*.94,pt[1]-.039,pt[2]-direction*.18];
+      quad(black,a,b,edge(b),edge(a));
+      quad(black,edge(a),edge(b),under(b),under(a));
     }
     return {band,stripe};
   }
@@ -215,7 +252,7 @@ export function buildRoadCar(id) {
       for(let i=1;i<rows.length;i++) {
         const a=rows[i-1], b=rows[i];
         const taper=row=>T.MathUtils.smoothstep(row.z,end,1);
-        const inner=row=>.981-innerOffset*taper(row);
+        const inner=row=>.981-(innerOffset+.095)*taper(row);
         const outer=row=>.992-.030*taper(row);
         quad(black,at(a,inner(a),.012),at(a,outer(a),.012),at(b,outer(b),.012),at(b,inner(b),.012));
         const beamIn=row=>T.MathUtils.lerp(inner(row),outer(row),.27);
@@ -225,39 +262,92 @@ export function buildRoadCar(id) {
     }
   }
   function cabinSection([u,rise,roofW]) {
-    const z=u*half, base=p.h+.005-.12*Math.max(0,u);
-    return [[-.92*w,base,z],[-roofW*w,base+rise,z],[-roofW*w*.75,base+rise+(truck?0:.036),z],
-      [roofW*w*.75,base+rise+(truck?0:.036),z],[roofW*w,base+rise,z],[.92*w,base,z]];
+    const z=u*half, base=p.h+.021-.137*Math.max(0,u);
+    const height=rise*(truck?.88:hatch?.96:xModel||yModel?.94:.85);
+    const belt=truck?.929:.919-.065*Math.pow(Math.abs(u),2);
+    const bow=truck?0:.095*Math.sin(u*Math.PI*.78);
+    return [[-belt*w,base,z],[-roofW*w,base+height,z],[-roofW*w*.75,base+height+(truck?0:.043),z+bow],
+      [roofW*w*.75,base+height+(truck?0:.043),z+bow],[roofW*w,base+height,z],[belt*w,base,z]];
   }
   const roofProfile=[];
-  for(let i=0;i<p.roof.length-1;i++) {
-    const a=p.roof[i], b=p.roof[i+1];
-    roofProfile.push(a);
-    if(!truck && i>0 && i<p.roof.length-2) {
-      const prev=p.roof[i-1], next=p.roof[i+2];
-      roofProfile.push(a.map((v,k)=>(v+b[k])/2+(v+b[k]-prev[k]-next[k])/16));
-    }
+  const roofCurve=new T.CatmullRomCurve3(p.roof.map(([u,r,x])=>new T.Vector3(u,r,x)),false,'centripetal');
+  const steps=truck?1:7;
+  for(let i=0;i<(p.roof.length-1)*steps;i++) {
+    roofProfile.push(i%steps===0?p.roof[i/steps]:roofCurve.getPoint(i/((p.roof.length-1)*steps)).toArray());
   }
   roofProfile.push(p.roof.at(-1));
   const canopy=roofProfile.map(cabinSection);
-  for(let i=1;i<canopy.length;i++) {
-    const a=canopy[i-1], b=canopy[i];
-    for(let j=0;j<5;j++) {
-      const bed=truck && i===1;
-      const roofPanel=i>1 && i<canopy.length-1 && (hatch || gt);
-      quad(bed ? black : roofPanel && j>0 && j<4 ? paint : glass,a[j],b[j],b[j+1],a[j+1]);
+  // The broad daylight opening reveals the dashboard, paired headrests and rear shelf.
+  const cabinRear = p.roof[truck ? 1 : 0][0] + .05;
+  const cabinFront = p.roof.at(-1)[0] - .08;
+  box(cabin,0,p.h-.14,half*(cabinRear+cabinFront)*.5,w*1.60,.08,half*(cabinFront-cabinRear));
+  box(cabin,0,p.h-.12,half*(cabinFront-.13),w*1.38,.095,half*.18);
+  for(const rowZ of [-.39,.07]){
+    for(const side of [-1,1]){
+      const seatX=side*w*.46, seatZ=half*rowZ;
+      const back=new T.SphereGeometry(1,12,8).scale(.237,.215,.092).rotateX(-.12);
+      collect(cabin,back.translate(seatX,p.h+.065,seatZ));
+      collect(cabin,new T.SphereGeometry(1,12,8).scale(.119,.080,.064)
+        .translate(seatX,p.h+.270,seatZ-.035));
     }
-    for(const [bottom,top] of [[0,1],[5,4]]) {
-      rod(paint,a[top],b[top],truck?.019:.016);
-      rod(truck || hatch ? black : alloy,a[bottom],b[bottom],.008);
-      const pillar=roofProfile[i]===p.roof[3];
-      if(i===1 || i===canopy.length-1 || (!truck && pillar)) {
-        rod(pillar?black:paint,b[bottom],b[top],pillar?.023:.018);
+  }
+  function blend(a,b,t){return a.map((v,k)=>T.MathUtils.lerp(v,b[k],t));}
+  function smoothPanel(mat, rows){
+    const geo=new T.BufferGeometry(), indices=[],count=rows[0].length;
+    for(let i=1;i<rows.length;i++) for(let j=1;j<count;j++){
+      const a=(i-1)*count+j-1,b=i*count+j-1;
+      indices.push(a,b,b+1,a,b+1,a+1);
+    }
+    geo.setAttribute('position',new T.Float32BufferAttribute(rows.flat(2),3));
+    geo.setIndex(indices);geo.computeVertexNormals();collect(mat,geo);
+  }
+  for(const side of [-1,1]){
+    const low=side<0?0:5,high=side<0?1:4;
+    const sideRows=canopy.map((row,i)=>{
+      const bot=row[low],top=row[high],rise=roofProfile[i][1];
+      return [0,.33,.70,1].map(t=>{
+        const pt=blend(bot,top,t);
+        if(!truck) pt[0]+=side*Math.sin(Math.PI*t)*.032*Math.min(1,rise/.30);
+        return pt;
+      });
+    });
+    if(truck) {
+      for(let i=1;i<sideRows.length;i++)
+        quad(i===1?paint:glass,sideRows[i-1][0],sideRows[i][0],sideRows[i][3],sideRows[i-1][3]);
+    } else smoothPanel(glass,sideRows);
+    for(let i=1;i<canopy.length;i++){
+      const a=canopy[i-1],b=canopy[i],u=(roofProfile[i-1][0]+roofProfile[i][0])*.5;
+      const quarterCut = hatch ? -.69 : -.56;
+      const pillarDepth = truck ? .081 : .081+.90*(1-T.MathUtils.smoothstep(u,quarterCut-.18,quarterCut));
+      const lower=(row,t)=>{const pt=blend(row[high],row[low],t);pt[0]+=side*.010;return pt;};
+      const inner=row=>blend(row[high],row[side<0?2:3],truck?.09:.22);
+      const edge=row=>[row[high][0]+side*.005,row[high][1]+.006,row[high][2]];
+      quad(paint,inner(a),inner(b),edge(b),edge(a));
+      quad(paint,edge(a),edge(b),lower(b,pillarDepth),lower(a,pillarDepth));
+      rod(truck||hatch?black:alloy,a[low],b[low],truck?.007:.009);
+    }
+    const pillarAt=truck?-.04:hatch?-.18:-.19;
+    if(!truck){
+      let k=roofProfile.findIndex(v=>v[0]>pillarAt);
+      const row=canopy[k], bot=row[low],top=row[high];
+      const pt=(t,dz)=>{const v=blend(bot,top,t);v[0]+=side*(.012+Math.sin(Math.PI*t)*.035);v[2]+=dz;return v;};
+      for(let j=0;j<3;j++){
+        const t=j/3,v=(j+1)/3;
+        quad(black,pt(t,-.040),pt(t,.039),pt(v,.039),pt(v,-.040));
       }
     }
   }
+  const upperRows=canopy.map(row=>[row[1],row[2],blend(row[2],row[3],.5),row[3],row[4]]);
+  if(!truck) for(const row of upperRows) row[2][1]+=.015;
+  const topFinish=i=>truck&&i===1?black:(hatch||gt)&&roofProfile[i][0]>-.55&&roofProfile[i][0]<=.15?paint:glass;
+  let run=0;
+  for(let i=1;i<upperRows.length;i++){
+    if(i===upperRows.length-1||topFinish(i)!==topFinish(i+1)){
+      smoothPanel(topFinish(i),upperRows.slice(run,i+1));run=i;
+    }
+  }
   // The ceramic frit follows the windshield perimeter. A wiper rests just inside the cowl.
-  const frontGlass=canopy.at(-2), cowl=canopy.at(-1);
+  const windStart=canopy.length-1-steps;
   function windshield(u,t,lift) {
     const edge=u<0 ? 1 : 4, center=u<0 ? 2 : 3;
     const q=Math.abs(u);
@@ -266,7 +356,9 @@ export function buildRoadCar(id) {
       return q<.75 ? T.MathUtils.lerp(middle,row[center][k],q/.75)
         : T.MathUtils.lerp(row[center][k],row[edge][k],(q-.75)/.25);
     }
-    return [0,1,2].map(k=>T.MathUtils.lerp(section(frontGlass,k),section(cowl,k),t)+(k===1?lift:0));
+    const pos=windStart+t*steps, i=Math.floor(pos), j=Math.min(i+1,canopy.length-1);
+    return [0,1,2].map(k=>T.MathUtils.lerp(section(canopy[i],k),section(canopy[j],k),pos-i)
+      +(k===1?lift+(truck?0:.015*Math.max(0,1-q/.75)):0));
   }
   for(const [lo,hi,t0,t1] of [[-1,1,.954,1],[-1,1,0,.016],[-1,-.978,0,1],[.978,1,0,1]]) {
     for(let i=0;i<6;i++){
@@ -299,21 +391,29 @@ export function buildRoadCar(id) {
   }
   for(const side of [-1,1]) {
     const x=side*w;
-    const sillSpan=p.ax-p.r-.012;
+    const sillSpan=p.ax-p.r-(truck?.044:.085);
     for(let i=0;i<8;i++) {
       const a=sillSpan*(i/4-1), b=sillSpan*((i+1)/4-1);
-      quad(black,sidePoint(side,.32,a,.012),sidePoint(side,.32,b,.012),sidePoint(side,.43,b,.012),sidePoint(side,.43,a,.012));
+      const sill=truck||hatch||xModel||yModel?black:paint;
+      quad(sill,sidePoint(side,.265,a,.010),sidePoint(side,.265,b,.010),sidePoint(side,.32,b,.019),sidePoint(side,.32,a,.019));
+      if(!truck && !hatch) {
+        const sweep=z=>.322+.067*(z/sillSpan)**2;
+        quad(paint,sidePoint(side,.30,a,.016),sidePoint(side,.30,b,.016),
+          sidePoint(side,sweep(b),b,.025),sidePoint(side,sweep(a),a,.025));
+      }
+      if(truck) quad(black,sidePoint(side,.30,a,.020),sidePoint(side,.30,b,.020),
+        sidePoint(side,.398,b,.011),sidePoint(side,.398,a,.011));
       if(hatch) quad(trim,sidePoint(side,.35,a,.018),sidePoint(side,.35,b,.018),sidePoint(side,.385,b,.018),sidePoint(side,.385,a,.018));
     }
     // The shut lines follow the changing cross-section instead of floating as straight rods.
     for(const z of [-p.ax*.60,.035,p.ax*.57]) {
-      const top=p.h-.105, bottom=.43;
+      const top=p.h-.073, bottom=.34;
       for(let i=0;i<6;i++) {
         const a=T.MathUtils.lerp(top,bottom,i/6), b=T.MathUtils.lerp(top,bottom,(i+1)/6);
         const taper=y=>z*(.95+.05*(y-bottom)/(top-bottom));
         const za=taper(a), zb=taper(b);
-        quad(black,sidePoint(side,a,za-.006,.012),sidePoint(side,a,za+.006,.012),
-          sidePoint(side,b,zb+.006,.012),sidePoint(side,b,zb-.006,.012));
+        quad(black,sidePoint(side,a,za-.0035,.009),sidePoint(side,a,za+.0035,.009),
+          sidePoint(side,b,zb+.0035,.009),sidePoint(side,b,zb-.0035,.009));
       }
     }
     if(hatch || gt) {
@@ -326,6 +426,7 @@ export function buildRoadCar(id) {
       }
     }
     for(const door of [-.45,.46]) {
+      if(truck) continue;
       const y=p.h-.153;
       const [hx,hy,hz]=sidePoint(side,y,door,.009);
       box(black,hx,hy,hz,.012,.036,.145);
@@ -339,14 +440,24 @@ export function buildRoadCar(id) {
       const crossSection=[[.69,-.125],[.88,-.130],[.974,-.101],[1,-.055],[1,.064],[.973,.103],[.872,.128],[.69,.135]];
       const rubber=new T.LatheGeometry(crossSection.map(([r,dx])=>new T.Vector2(r*p.r,dx)),32);
       collect(tire,rubber.rotateZ(-Math.PI/2).translate(center,p.r,axle));
-      disk(black,p.r*.763,.025,outer);
+      disk(black,p.r*.763,.024,outer);
+      disk(rotor,p.r*.555,.012,outer+side*.018,32);
+      const discRing=new T.TorusGeometry(p.r*.488,.006,4,32).rotateY(Math.PI/2);
+      collect(black,discRing.translate(outer+side*.028,p.r,axle));
+      collect(caliper,new T.SphereGeometry(1,10,6).scale(.014,p.r*.225,p.r*.090)
+        .translate(outer+side*.028,p.r+.035,axle-p.r*.45));
       const lip=new T.TorusGeometry(p.r*.714,.011,5,28).rotateY(Math.PI/2);
       collect(truck?black:alloy,lip.translate(outer+side*.018,p.r,axle));
       if(truck || hatch || xModel || yModel) {
-        const count=truck?6:18;
+        const count=truck?4:18;
         const arc=(i,radius,shift)=>[x*1.005+side*shift,p.r+radius*Math.sin(Math.PI*i/count),axle+radius*Math.cos(Math.PI*i/count)];
         for(let i=0;i<count;i++) {
-          quad(black,arc(i,p.r+.024,.009),arc(i+1,p.r+.024,.009),arc(i+1,p.r+.092,-.013),arc(i,p.r+.092,-.013));
+          const innerRadius=p.r+(truck?.045:.024), outerRadius=p.r+(truck?.128:.092);
+          const offset=truck?.047:.009;
+          quad(black,arc(i,innerRadius,offset),arc(i+1,innerRadius,offset),
+            arc(i+1,outerRadius,truck?.018:-.013),arc(i,outerRadius,truck?.018:-.013));
+          if(truck) quad(black,arc(i,innerRadius,offset),arc(i+1,innerRadius,offset),
+            arc(i+1,innerRadius,-.045),arc(i,innerRadius,-.045));
         }
       }
       const point=(r,a,offset)=>[outer+side*offset,p.r+r*Math.sin(a),axle+r*Math.cos(a)];
@@ -356,11 +467,38 @@ export function buildRoadCar(id) {
         const end=point(p.r*.69,a+.10,.033);
         quad(truck?black:alloy,point(.065,a-.31,.044),mid,end,point(p.r*.69,a+(truck?.67:.28),.033));
         quad(truck?black:alloy,point(.065,a-.31,.044),point(p.r*.69,a+(truck?.67:.28),.033),point(p.r*.41,a+.39,.043),point(.065,a+.47,.044));
+        if(truck){
+          quad(rotor,point(p.r*.24,a-.14,.049),point(p.r*.59,a+.04,.052),
+            point(p.r*.67,a+.22,.045),point(p.r*.38,a+.21,.048));
+        }
+        if(model3||gt||modelS){
+          const fork=(r,angle,offset)=>point(r*p.r,a+angle,offset);
+          quad(alloy,fork(.39,.13,.046),fork(.68,-.235,.034),fork(.699,-.139,.034),fork(.48,.18,.047));
+        }
         if(truck || gt) {
           rod(alloy,point(p.r*.38,a+(truck?.17:.25),.045),point(p.r*.65,a+(truck?.25:.39),.040),.006,4);
         }
       }
-      disk(black,p.r*(truck?.235:.169),.041,outer+side*.042,truck?7:20);
+      disk(truck?black:rotor,p.r*(truck?.235:.169),.041,outer+side*.042,truck?7:20);
+      for(let j=0;j<5;j++){
+        const a=j*Math.PI*2/5;
+        collect(alloy,new T.CylinderGeometry(.009,.009,.012,6).rotateZ(Math.PI/2)
+          .translate(outer+side*.066,p.r+.043*Math.sin(a),axle+.043*Math.cos(a)));
+      }
+    }
+  }
+  // Hood reveals run along the fender break, turning inward as the bumper rolls away.
+  if(!truck){
+    for(const side of [-1,1]){
+      let last;
+      for(let i=0;i<sectionZ.length;i++){
+        const u=sectionZ[i]/half;
+        if(u<p.roof.at(-1)[0] || u>.97) continue;
+        const k=side*(.77-.20*T.MathUtils.smoothstep(u,.55,1));
+        const pt=crossPoint(crest[i],k);pt[1]+=.004;
+        if(last) rod(black,last,pt,.005,4);
+        last=pt;
+      }
     }
   }
   function pair(face,m,profile,lift) {
@@ -368,13 +506,13 @@ export function buildRoadCar(id) {
     face.band(m,profile.slice().reverse().map(([u,low,high])=>[-u,low,high]),lift);
   }
 
-  front.band(black,[[-.87,.08,.26],[-.67,.13,.37],[.67,.13,.37],[.87,.08,.26]]);
+  front.band(black,[[-.93,.055,.14],[-.71,.065,.30],[0,.072,.36],[.71,.065,.30],[.93,.055,.14]],.032);
   rear.band(black,[[-.88,.14,.29],[-.62,.08,.31],[.62,.08,.31],[.88,.14,.29]]);
   if(truck) {
     front.stripe(black,-.98,.98,.75,.885);
     front.stripe(led,-.972,.972,.807,.862,.021);
     front.band(black,[[-.995,.035,.32],[-.76,.028,.45],[.76,.028,.45],[.995,.035,.32]],.017);
-    front.stripe(paint,-.78,.78,.22,.245,.027);
+    front.stripe(rotor,-.72,.72,.19,.22,.027);
     rear.stripe(black,-.96,.96,.78,.88);
     rear.stripe(red,-.945,.945,.811,.856,.021);
     rear.band(black,[[-.98,.025,.37],[-.70,.025,.39],[.70,.025,.39],[.98,.025,.37]],.019);
@@ -389,7 +527,8 @@ export function buildRoadCar(id) {
       quad(paint,[k*.929,p.h+.052,-half*.96],[sail[0]+side*.021,sail[1]+.012,sail[2]],
         [k*.923,p.h+.017,-half*.55],[k*.93,p.h+.008,-half*.94]);
       const pillarZ=half*.025;
-      rod(black,[k*.923,p.h+.027,pillarZ],[k*.837,p.h+.681,pillarZ],.019,4);
+      const pillarTop=blend(peak,nose,(pillarZ-peak[2])/(nose[2]-peak[2]));
+      rod(black,[k*.923,p.h+.027,pillarZ],[pillarTop[0]+side*.008,pillarTop[1]-.008,pillarZ],.019,4);
     }
     for(let i=0;i<9;i++) {
       const t=i/10, a=canopy[0][2], b=canopy[1][2];

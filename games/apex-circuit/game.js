@@ -2,7 +2,7 @@ import * as T from './vendor/three.module.min.js';
 import { tracks } from './track.js?v=5';
 import { createRace, vehicleSpecs } from './race.js?v=5';
 import { buildWorld } from './world.js?v=7';
-import { buildCars, driveCar, selectVehicle } from './cars.js?v=7';
+import { buildCars, driveCar, selectVehicle } from './cars.js?v=8';
 import { createAudio } from './audio.js?v=4';
 import { createEffects } from './effects.js?v=4';
 import { bindGarage } from './garage.js?v=5';
