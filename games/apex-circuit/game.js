@@ -1,19 +1,14 @@
 import * as T from './vendor/three.module.min.js';
 import { tracks } from './track.js?v=5';
 import { createRace, vehicleSpecs } from './race.js?v=5';
-import { buildWorld } from './world.js?v=5';
-import { buildCars, driveCar, selectVehicle } from './cars.js?v=5';
+import { buildWorld } from './world.js?v=6';
+import { buildCars, driveCar, selectVehicle } from './cars.js?v=6';
 import { createAudio } from './audio.js?v=4';
 import { createEffects } from './effects.js?v=4';
 import { bindGarage } from './garage.js?v=5';
+import { bindRanking, formatTime } from './ranking.js?v=1';
 
 const byId = id => document.getElementById(id);
-const formatTime = seconds => {
-  if (seconds === null) return '—';
-  const centis = Math.floor(seconds * 100 + 1e-6);
-  const part = number => String(number).padStart(2, '0');
-  return `${Math.floor(centis / 6000)}:${part(Math.floor(centis / 100) % 60)}.${part(centis % 100)}`;
-};
 const recordKey = 'jp-apex-circuit-lap';
 const soundKey = 'jp-apex-circuit-sound';
 const courseKey = 'jp-apex-circuit-course';
@@ -23,7 +18,19 @@ function read(key) {
   try { return localStorage.getItem(key); } catch { return null; }
 }
 function save(key, value) {
-  try { localStorage.setItem(key, value); } catch { /* Play remains available in private contexts. */ }
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+function lapKey(courseId) {
+  return courseId === tracks[0].id ? recordKey : `${recordKey}:${courseId}`;
+}
+function readBestLap(courseId) {
+  const best = Number(read(lapKey(courseId)));
+  return Number.isFinite(best) && best > 0 ? best : null;
 }
 function setText(element, text) {
   const value = String(text);
@@ -196,9 +203,11 @@ function setup() {
   let lastHUD = '', lastMapUpdate = -1, lastStateRendered;
   const projected = new T.Vector3();
 
-  function lapKey() {
-    return track === tracks[0] ? recordKey : `${recordKey}:${track.id}`;
-  }
+  const recordFinish = bindRanking({
+    tracks, vehicleSpecs, read, save, canPublish: !measured,
+    getCourse: () => track.id,
+    getBest: id => id === track.id ? best : readBestLap(id)
+  });
   function loadSelection() {
     let nextWorld = worldCache.get(track.id);
     if (!nextWorld) {
@@ -217,7 +226,7 @@ function setup() {
     }
     selectVehicle(vehicles, vehicle, roadRoster);
     race = createRace(track, vehicle);
-    best = Number(read(lapKey())) || null;
+    best = readBestLap(track.id);
     lastMapUpdate = -1;
     lastHUD = '';
     worldTime = 0;
@@ -323,8 +332,9 @@ function setup() {
   function finish() {
     if (race.bestLap !== null && (best === null || race.bestLap < best)) {
       best = race.bestLap;
-      save(lapKey(), best);
+      save(lapKey(track.id), best);
     }
+    recordFinish(track.id, vehicle.id, race.time, race.bestLap);
     setText(nodes['result-rank'], race.place);
     setText(nodes['result-time'], formatTime(race.time));
     setText(nodes['result-lap'], formatTime(race.bestLap));
@@ -483,6 +493,9 @@ function setup() {
     }
     for (const name of ['pointerup', 'pointercancel', 'lostpointercapture']) button.addEventListener(name, end);
   }
+  document.addEventListener('contextmenu', event => {
+    if (event.target instanceof Element && event.target.closest('button, #world')) event.preventDefault();
+  });
   window.addEventListener('keydown', event => {
     if (event.altKey || event.metaKey || event.ctrlKey) return;
     if (['KeyP', 'Escape'].includes(event.code) && !event.repeat) {

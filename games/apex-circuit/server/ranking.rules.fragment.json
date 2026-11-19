@@ -1,0 +1,36 @@
+{
+  "apexCircuitV1": {
+    "$course": {
+      "$metric": {
+        ".read": "($course == 'sunset' || $course == 'summit' || $course == 'metro' || $course == 'frost' || $course == 'redrock') && ($metric == 'total' || $metric == 'lap') && (($metric == 'total' && query.orderByChild == 'time') || ($metric == 'lap' && query.orderByChild == 'lap')) && query.limitToFirst != null && query.limitToFirst > 0 && query.limitToFirst <= 100",
+        ".indexOn": [
+          "time",
+          "lap"
+        ],
+        "$uid": {
+          ".read": "auth != null && $uid == auth.uid",
+          ".write": "auth != null && $uid == auth.uid && ($course == 'sunset' || $course == 'summit' || $course == 'metro' || $course == 'frost' || $course == 'redrock') && ($metric == 'total' || $metric == 'lap') && (!newData.exists() || !data.exists() || ($metric == 'total' && newData.child('time').val() < data.child('time').val()) || ($metric == 'lap' && newData.child('lap').val() < data.child('lap').val()) || (newData.child('time').val() == data.child('time').val() && newData.child('lap').val() == data.child('lap').val() && newData.child('model').val() == data.child('model').val() && newData.child('nickname').val() != data.child('nickname').val()))",
+          ".validate": "newData.hasChildren(['nickname','model','time','lap','submittedAt']) && newData.child('lap').val()*3 <= newData.child('time').val()",
+          "nickname": {
+            ".validate": "newData.isString() && newData.val().matches(/^[가-힣ㄱ-ㅎㅏ-ㅣA-Za-z0-9 _.-]{1,12}$/) && newData.val().matches(/.*[^ ].*/)"
+          },
+          "model": {
+            ".validate": "(newData.val() == 'vector' || newData.val() == 'raptor' || newData.val() == 'nova' || newData.val() == 'model-s' || newData.val() == 'model-3' || newData.val() == 'model-x' || newData.val() == 'model-y' || newData.val() == 'cybertruck' || newData.val() == 'ioniq-5-n' || newData.val() == 'rs-etron-gt')"
+          },
+          "time": {
+            ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 1500 && newData.val() <= 360000"
+          },
+          "lap": {
+            ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 500 && newData.val() <= 120000"
+          },
+          "submittedAt": {
+            ".validate": "newData.isNumber() && newData.val() == now"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    }
+  }
+}

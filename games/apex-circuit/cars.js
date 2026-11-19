@@ -1,6 +1,6 @@
 import * as T from './vendor/three.module.min.js';
 import { track } from './track.js?v=5';
-import { buildRoadCar } from './road-cars.js?v=5';
+import { buildRoadCar } from './road-cars.js?v=6';
 
 const box = new T.BoxGeometry();
 const tire = new T.CylinderGeometry(.37, .37, .22, 28);

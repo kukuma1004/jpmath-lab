@@ -1,6 +1,6 @@
-import { frontier } from './world-frontiers.js?v=6';
+import { frontier } from './world-frontiers.js?v=7';
 import * as T from './vendor/three.module.min.js';
-import { grain, alpine, metropolis, coastalBridge, roadFurniture } from './world-landmarks.js?v=4';
+import { grain, alpine, metropolis, coastalBridge, roadFurniture } from './world-landmarks.js?v=5';
 import { courseFrame, coursePoint, track } from './track.js?v=5';
 
 const box = new T.BoxGeometry();
@@ -22,6 +22,13 @@ const green = surface(0x3d7967);
 const moss = surface(0x599774);
 const sunDirection = new T.Vector3(.78, .11, -.63).normalize();
 const seaLevel = -7.86;
+const roadStyles = {
+  sunset: { curb: 0xdf6946, pale: 0xf5ddac, shoulder: 0x9b8870, signal: 0xd65337, sign: '#332a37', dust: [.20, .12, .07] },
+  summit: { curb: 0xe8aa45, pale: 0xf9e2a4, shoulder: 0x9e9686, signal: 0xbc842b, sign: '#293744', dust: [.18, .15, .11] },
+  metro: { curb: 0x3e8792, pale: 0xb8dce3, shoulder: 0x476277, signal: 0x36889c, sign: '#102c3e' },
+  frost: { curb: 0x367782, pale: 0xe5f3f0, shoulder: 0x7996a4, signal: 0x42778f, sign: '#163746', dust: [.29, .38, .41] },
+  redrock: { curb: 0xc18243, pale: 0xf8d99b, shoulder: 0xa17958, signal: 0xb26835, sign: '#3e2b27', dust: [.32, .19, .11] },
+};
 
 function randomFrom(seed) {
   return () => {
@@ -107,6 +114,8 @@ function road(scene, track, theme) {
   const frame = track.frame || courseFrame;
   const point = track.point || coursePoint;
   const at = (distance, lane, height, ...scale) => ({ ...frame(distance, lane, height), scale });
+  const style = roadStyles[theme];
+  const width = track.halfWidth;
   const asphalt = surface(theme === 'frost' ? 0x9fbdc8 : theme === 'redrock' ? 0xc8af9d : theme === 'metro' ? 0x889aa9 : 0xbdbac1, theme === 'metro' ? .27 : .84);
   asphalt.map = grain(theme === 'metro' ? 'wet-asphalt' : 'asphalt-grain');
   if(theme === 'metro'){
@@ -124,6 +133,8 @@ function road(scene, track, theme) {
     };
   }
   if(theme !== 'metro'){
+    asphalt.customProgramCacheKey = () => 'road-wear-' + theme;
+    const dustColor = style.dust.map(value => value.toFixed(2)).join(',');
     asphalt.onBeforeCompile = shader => {
       shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>', `
         #include <map_fragment>
@@ -135,25 +146,31 @@ function road(scene, track, theme) {
         float repairTint=texture2D(map,vMapUv*.29).g;
         diffuseColor.rgb*=1.24+grit*.88+repairTint*.62-wear*.20;
         diffuseColor.rgb+=vec3(.017,.016,.015)*(1.-wear*.55);
+        float drift = abs(lane-${width.toFixed(2)}) + .27*sin(longitudinal*2.+lane*.6) + .25*repairTint;
+        float shoulder = smoothstep(${(width-1.48).toFixed(2)},${(width-.12).toFixed(2)},drift);
+        diffuseColor.rgb=mix(diffuseColor.rgb,vec3(${dustColor})*(.60+.95*grit),shoulder*.72);
       `);
     };
   }
-  const width = track.halfWidth;
   const absent = (d, radius = 0) => track.gaps?.some(g => d + radius > g.start && d - radius < g.end);
+  const curb = surface(style.curb, .72);
+  const curbWhite = surface(style.pale);
+  const shoulder = surface(style.shoulder);
+  shoulder.map = grain('concrete-grain');
   steel.side = T.DoubleSide;
   strip(track, scene, asphalt, -width, width, 0, 0).receiveShadow = true;
   strip(track, scene, steel, -width-.4, width+.4, -0.68, -0.68);
   for (const side of [-1, 1]) {
     strip(track, scene, steel, side * (width+.39), side * (width+.39), -0.68, 0.08);
     const edge = (side * (width-.04));
-    strip(track, scene, concrete, edge - .26, edge + .26, 0.08, 0.08);
+    strip(track, scene, shoulder, edge - .26, edge + .26, 0.08, 0.08);
     const guard = side * (width+.49);
     // Folded galvanized W-beam, with a bright upper lip and dark recessed waist.
     for (const [a,b,ya,yb] of [[.03,.14,.76,.70],[.14,.04,.70,.56],[.04,.13,.56,.47],[.13,.03,.47,.36]]) {
       strip(track, scene, steel, guard - side*a, guard - side*b, ya, yb);
     }
     strip(track, scene, steel, guard - .10, guard + .10, 0.41, 0.41);
-    strip(track, scene, white, side * (width-.6) - .06, side * (width-.6) + .06, 0.018, 0.018);
+    strip(track, scene, curbWhite, side * (width-.64) - .066, side * (width-.64) + .066, 0.018, 0.018);
   }
   const curbs = [[], []], posts = [], seams = [], piers = [], crossbeams = [];
   const segments = Math.ceil(track.length / 1.55);
@@ -178,8 +195,8 @@ function road(scene, track, theme) {
         Math.atan2(p.dx, p.dz)));
     }
   }
-  batch(scene, red, curbs[0]);
-  batch(scene, white, curbs[1]);
+  batch(scene, curb, curbs[0]);
+  batch(scene, curbWhite, curbs[1]);
   batch(scene, concrete, posts);
   batch(scene, surface(0x9cabb1), seams);
   batch(scene, surface(0x8f9291), piers);
@@ -209,13 +226,6 @@ function road(scene, track, theme) {
   batch(scene, surface(0x225d5d), outlines);
   batch(scene, aqua, arrows);
 
-  const chevrons = [];
-  for (let d = 10; d < track.length; d += 6) {
-    const p = track.sample(d);
-    if (absent(d, .6) || Math.abs(p.curve) < .038) continue;
-    chevrons.push(at(d, Math.sign(p.curve) * 7.98, .9, .18, .79, 1.05));
-  }
-  batch(scene, amber, chevrons);
   const launch = [];
   for (const ramp of track.ramps) {
     for (let n = 0; n < 9; n++) {
@@ -302,18 +312,30 @@ function gantry(scene, course, label) {
   const group = new T.Group();
   group.position.copy(start.position);
   group.rotation.copy(start.rotation);
+  const style = roadStyles[course.id];
+  const panel = surface(style.signal, .42);
+  const panelTrim = surface(style.pale, .63);
   for (const x of [-8.4, 8.4]) {
-    block(group, ink, x, 2.5, 0, .89, 5, 1.42);
-    block(group, red, x, 2.38, -.67, .47, 4.6, .15);
-    block(group, white, x, 4.88, 0, 1.12, .22, 1.7);
+    block(group, ink, x, 2.44, 0, .89, 4.89, 1.42);
+    block(group, panel, x, 2.65, -.72, .49, 4.12, .15);
+    block(group, panelTrim, x, 4.88, 0, 1.12, .22, 1.7);
+    block(group, steel, x, .27, 0, 1.28, .54, 1.84);
+    for (const y of [.72, 1.04, 1.36]) block(group, panelTrim, x, y, -.82, .51, .12, .08);
   }
-  block(group, red, 0, 5.09, 0, 17.8, 1.68, 1.62);
+  block(group, panel, 0, 5.09, 0, 17.8, 1.68, 1.62);
+  block(group, steel, 0, 6.02, 0, 18.1, .18, 1.81);
   block(group, ink, 0, 4.19, 0, 6.5, .36, 1.5);
   for (const z of [-.832, .832]) {
-    const face = placard(label, 13.6, 1.61);
+    const face = placard(label, 13.6, 1.53, style.sign);
     face.rotation.y = z < 0 ? Math.PI : 0;
     face.position.set(0, 5.22, z);
     group.add(face);
+    for (const x of [-7.5, 7.5]) {
+      for (const y of [4.69, 5.07, 5.45]) {
+        const grille = block(group, ink, x, y, z, .69, .14, .08);
+        grille.rotation.z = x < 0 ? -.31 : .31;
+      }
+    }
   }
   const lights = [];
   for (let x = -2.4; x < 2.5; x += 1.2) {

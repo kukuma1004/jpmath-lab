@@ -1,82 +1,206 @@
 import * as T from './vendor/three.module.min.js';
+import { instances, matrix, nearest, noise, pathSamples, pineCrown, random } from './world-landmarks.js?v=5';
 
 // The road carries its own banks. Fit the adjoining landscape below its lowest edge.
-function landscape(scene, course, frost, grain) {
-  const road = [];
-  for (let d = 0; d < course.length; d += 3) road.push(course.sample(d));
-  const positions = [], colors = [];
+function landscape(scene, course, frost, grain, road) {
+  const size = 111, step = 4.5, span = (size - 1) * step * .5;
+  const positions = new Float32Array(size * size * 3);
+  const colors = new Float32Array(positions.length);
+  const triangles = [];
   const tint = new T.Color();
-  const grid = [];
-  const size = 111, step = 4.5;
+  const low = new T.Color(frost ? 0x8dabbc : 0xa4684c);
+  const high = new T.Color(frost ? 0xe7f2f2 : 0xd6a472);
   for (let iz = 0; iz < size; iz++) {
     for (let ix = 0; ix < size; ix++) {
-      const x = (ix - 55) * step, z = (iz - 55) * step;
-      let nearest, squared = Infinity;
-      for (const p of road) {
-        const r = (p.x-x)**2 + (p.z-z)**2;
-        if (r < squared) { squared = r; nearest = p; }
-      }
-      const distance = Math.sqrt(squared);
-      const ridge = Math.abs(Math.sin(.024*x+.017*z)*Math.cos(.019*z-.011*x));
-      const wave = Math.sin(.051*x-.037*z) + Math.cos(.073*z+.019*x);
-      let height = frost ? 2 + ridge*ridge*85 + wave*5 : 1 + Math.floor((ridge*47+wave*3)/6)*6;
+      const x = ix * step - span, z = iz * step - span;
+      const verge = nearest(x,z,road);
+      const ripple = noise(x*.073,z*.092);
+      const warp = (noise(x*.029,z*.034) - .5) * 2.1;
+      const ridge = Math.abs(Math.sin(.024*x+.017*z+warp)*Math.cos(.019*z-.011*x-warp*.6));
+      const wave = (ripple - .5)*7 + Math.cos(.073*z+.019*x)*2.1;
+      const bank = course.halfWidth;
+      let height = frost ? 2 + ridge*ridge*79 + wave : 2 + Math.floor((ridge*48+wave)/5)*5 + ripple*1.8;
       // The dam retains a low basin on the outside of the start straight.
-      if (frost && z > 44 && z < 130 && Math.abs(x)<87) height = -9 + wave;
+      if (frost && z > 42 && z < 133 && Math.abs(x)<87) height = -9 + wave*.31;
       if (!frost) {
-        const bench = Math.max(Math.abs(x-9)/41,Math.abs(z-6)/20);
+        const bench = Math.max(Math.abs(x-9)/38,Math.abs(z-6)/22);
         height = T.MathUtils.lerp(6.6,height,T.MathUtils.smoothstep(bench,.85,1.5));
       }
-      const shoulder = nearest.y - 3.9;
-      height = T.MathUtils.lerp(shoulder, height, T.MathUtils.smoothstep(distance,12,46));
-      if (frost && z > 65 && Math.abs(x)<50) height = Math.min(height,-8);
-      grid.push([x,height,z]);
+      const shoulder = verge.height - 2.9 + (ripple-.5)*.58;
+      height = T.MathUtils.lerp(shoulder, height, T.MathUtils.smoothstep(verge.distance,bank+3,39));
+      if (frost && z > 66 && z < 127 && Math.abs(x)<58) height = Math.min(height,-8);
+      const index = iz*size+ix, p = index*3;
+      positions.set([x,height,z],p);
+      tint.copy(low).lerp(high, .38 + .48*ripple).toArray(colors,p);
+      if (ix < size-1 && iz < size-1) {
+        triangles.push(index,index+size,index+1,index+1,index+size,index+size+1);
+      }
     }
   }
-  function face(a,b,c) {
-    positions.push(...a,...b,...c);
-    const y = (a[1]+b[1]+c[1])/3;
-    const slope = Math.max(a[1],b[1],c[1])-Math.min(a[1],b[1],c[1]);
-    tint.setHex(frost ? slope>4.7 ? 0x788998 : 0xd3e4e8 :
-      [0xaa7765,0xc69372,0xd1a783,0xaf8068][Math.abs(Math.floor(y/5))%4]);
-    tint.multiplyScalar(.94+.06*Math.sin(a[0]*.15+b[2]*.29));
-    for(let j=0;j<3;j++) colors.push(tint.r,tint.g,tint.b);
-  }
-  for(let iz=0;iz<size-1;iz++) for(let ix=0;ix<size-1;ix++) {
-    const a=iz*size+ix, b=a+size;
-    face(grid[a],grid[b],grid[a+1]); face(grid[a+1],grid[b],grid[b+1]);
-  }
   const geometry = new T.BufferGeometry();
-  geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));
-  geometry.setAttribute('color',new T.Float32BufferAttribute(colors,3));
+  geometry.setAttribute('position',new T.BufferAttribute(positions,3));
+  geometry.setAttribute('color',new T.BufferAttribute(colors,3));
+  geometry.setIndex(triangles);
   geometry.computeVertexNormals();
-  // Project stone in terrain space so steep cuttings retain their grain.
+  const terrain = new T.Mesh(geometry, frontierStone(frost,grain));
+  terrain.userData.distant = true;
+  scene.add(terrain);
+  return (x,z) => {
+    const a = T.MathUtils.clamp((x+span)/step,0,size-1.001);
+    const b = T.MathUtils.clamp((z+span)/step,0,size-1.001);
+    const ix = Math.floor(a), iz = Math.floor(b);
+    const u = a-ix, v = b-iz;
+    const index = (iz*size+ix)*3+1;
+    const h00 = positions[index], h10 = positions[index+3];
+    const h01 = positions[index+size*3], h11 = positions[index+size*3+3];
+    return u+v <= 1 ? h00+(h10-h00)*u+(h01-h00)*v : h11+(h01-h11)*(1-u)+(h10-h11)*(1-v);
+  };
+}
+
+function frontierStone(frost, grain) {
+  // World-space grain keeps cuttings and loose boulders on the same scale.
   const rock = new T.MeshStandardMaterial({vertexColors:true, roughness:.94});
   rock.customProgramCacheKey = () => frost ? 'snow-pass' : 'quarry-strata';
   rock.onBeforeCompile = shader => {
     shader.uniforms.rockTile = {value:grain('slate-rock')};
-    shader.vertexShader = 'varying vec3 frontierPoint;\n' + shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nfrontierPoint=position;');
+    shader.vertexShader = 'varying vec3 frontierPoint;\n' + shader.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>
+      vec4 frontierWorld=vec4(position,1.);
+      #ifdef USE_INSTANCING
+        frontierWorld=instanceMatrix*frontierWorld;
+      #endif
+      frontierPoint=(modelMatrix*frontierWorld).xyz;
+    `);
     shader.fragmentShader = 'varying vec3 frontierPoint; uniform sampler2D rockTile;\n' + shader.fragmentShader.replace('#include <color_fragment>', `#include <color_fragment>
       vec3 p=frontierPoint;
       vec3 n=normalize(cross(dFdx(p),dFdy(p)));
       vec3 w=pow(abs(n),vec3(4.0)); w/=max(.001,w.x+w.y+w.z);
-      float grain=dot(w,vec3(texture2D(rockTile,p.zy*.19).r,texture2D(rockTile,p.xz*.19).r,texture2D(rockTile,p.xy*.19).r));
-      float seam=p.y*.81+sin(p.x*.095)+cos(p.z*.065);
-      ${frost ? 'float drift=smoothstep(.48,.94,abs(n.y)+grain*.23); diffuseColor.rgb=mix(vec3(.26,.32,.37)*(.65+grain),diffuseColor.rgb*(.84+.36*grain),drift);' :
-      'float band=smoothstep(.32,.93,sin(seam)); diffuseColor.rgb*=mix(vec3(.69,.58,.53),vec3(1.1,1.04,.92),band)*(.80+.60*grain);'}
+      float grain=dot(w,vec3(texture2D(rockTile,p.zy*.32).r,texture2D(rockTile,p.xz*.32).r,texture2D(rockTile,p.xy*.32).r));
+      float erosion=texture2D(rockTile,p.xz*.061).g;
+      float seam=p.y*1.34+p.x*.021-p.z*.038+erosion*1.2;
+      ${frost ? 'float drift=smoothstep(.43,.82,abs(n.y)+erosion*.23); diffuseColor.rgb=mix(vec3(.19,.25,.29)*(.68+grain),diffuseColor.rgb*(.81+.64*grain),drift);' :
+      'float band=smoothstep(.25,.9,sin(seam))*(1.-abs(n.y)*.66); diffuseColor.rgb*=mix(vec3(1.02,.96,.89),vec3(.63,.49,.41),band)*(.72+.80*grain);'}
     `);
   };
-  scene.add(new T.Mesh(geometry,rock));
+  return rock;
+}
+
+function outcrop() {
+  const rng = random(6710), verts = [], colors = [];
+  const profile = [[-.52,.94],[-.25,1],[-.10,.84],[.07,.88],[.17,.64],[.31,.60],[.5,.37]];
+  const directions = Array.from({length:8}, (_,i) => {
+    const angle = i*Math.PI/4;
+    const radius = .71 + rng()*.29;
+    return [Math.cos(angle)*radius,Math.sin(angle)*radius];
+  });
+  const rings = profile.map(([y,r]) => directions.map(([x,z]) =>
+    [x*r+.14*y,y+(rng()-.5)*.062,z*r-.13*y]));
+  const tone = new T.Color(0xd7a076);
+  const face = (a,b,c,level) => {
+    verts.push(...a,...b,...c);
+    const shade = level*(.86+rng()*.14);
+    for (let i=0;i<3;i++) colors.push(tone.r*shade,tone.g*shade,tone.b*shade);
+  };
+  for (let j=0;j<rings.length-1;j++) {
+    for (let i=0;i<directions.length;i++) {
+      const n=(i+1)%directions.length;
+      face(rings[j][i],rings[j+1][i],rings[j][n],j%2 ? .75 : .96);
+      face(rings[j][n],rings[j+1][i],rings[j+1][n],j%2 ? .79 : 1);
+      if (j===rings.length-2) face([.07,.51,-.065],rings[j+1][n],rings[j+1][i],1.08);
+    }
+  }
+  const geo=new T.BufferGeometry();
+  geo.setAttribute('position',new T.Float32BufferAttribute(verts,3));
+  geo.setAttribute('color',new T.Float32BufferAttribute(colors,3));
+  geo.computeVertexNormals();
+  return geo;
+}
+
+function plantTuft() {
+  const rng = random(213), verts = [];
+  for (let i=0;i<7;i++) {
+    const a=i*.898+rng()*.4, reach=.32+rng()*.5;
+    const x=Math.cos(a)*reach,z=Math.sin(a)*reach,h=.53+rng()*.45;
+    verts.push(-z*.12,0,x*.12,x*.63,h*.56,z*.63,z*.12,0,-x*.12,
+      z*.12,0,-x*.12,x*.63,h*.56,z*.63,x,h,z);
+  }
+  const geo=new T.BufferGeometry();
+  geo.setAttribute('position',new T.Float32BufferAttribute(verts,3));
+  geo.computeVertexNormals();
+  return geo;
+}
+
+function vergeDetails(scene, course, frost, grain, road, ground) {
+  const rng=random(frost ? 37172 : 8029);
+  const rocks=[], drifts=[], crowns=[], trunks=[], tufts=[], columns=[];
+  for (let d=12; d<course.length; d+=12.25) {
+    for (const side of [-1,1]) {
+      const lane=course.halfWidth+3.3;
+      const place=(offset,spread) => course.point(d+(rng()-.5)*spread,side*(lane+offset));
+      for (let i=0;i<3;i++) {
+        const {x,z}=place(i*2+rng()*5,10);
+        const radius=.37+rng()*1.33;
+        if (nearest(x,z,road).distance<course.halfWidth+2+radius) continue;
+        const y=ground(x,z);
+        if (frost && y<-6.7) continue;
+        rocks.push(matrix(x,y-.11,z,radius*1.45,radius*.72,radius,rng()*6.28));
+        if (frost && i!==0) drifts.push(matrix(x,y+radius*.27,z,radius*1.30,radius*.41,radius*.86,rng()*6.28));
+        if (!frost && i!==1) tufts.push(matrix(x+.16,y,z-.56,.78,.23+rng()*.59,.78,rng()*6.28));
+      }
+      if (frost) {
+        // Leave the water and road edge open. Pines collect on higher snow-covered benches.
+        for (let i=0;i<3;i++) {
+          const {x,z}=place(5+rng()*26,19);
+          const h=2.7+rng()*4.1;
+          const y=ground(x,z);
+          if (y<1 || nearest(x,z,road).distance<lane+1.8+h*.24 || Math.abs(ground(x+1,z)-y)>1.27) continue;
+          trunks.push(matrix(x,y+.23*h,z,.08*h,.59*h,.08*h));
+          crowns.push(matrix(x,y+.55*h,z,.24*h,.90*h,.24*h,rng()*6.28));
+        }
+      } else if (Math.floor(d/12.25)%3===1) {
+        // Eroded stacks rise from the cutting beyond the outside of the racing line.
+        for (let i=0;i<3;i++) {
+          const {x,z}=place(3+i*3.4+rng()*5,9.1);
+          const radius=1.25+rng()*1.19, h=2.8+rng()*7.1;
+          if(nearest(x,z,road).distance<lane+radius*1.6) continue;
+          columns.push(matrix(x,ground(x,z)+h*.21,z,radius*1.38,h,radius,rng()*6.28));
+        }
+      }
+    }
+  }
+  const rockGeo=new T.IcosahedronGeometry(1,0);
+  const cube=new T.BoxGeometry();
+  const material=(color, options={})=>new T.MeshStandardMaterial({color,roughness:.94,...options});
+  const props=[
+    instances(scene,rockGeo,material(frost ? 0x6a7881 : 0x9e654b),rocks),
+    instances(scene,rockGeo,material(0xcadfe6),drifts),
+    instances(scene,cube,material(0x524943),trunks),
+    instances(scene,pineCrown(435,true,true),material(0x9eb7ad,{vertexColors:true,side:T.DoubleSide}),crowns),
+    instances(scene,plantTuft(),material(0x887452,{side:T.DoubleSide}),tufts),
+    instances(scene,outcrop(),frontierStone(false,grain),columns)
+  ];
+  for (const mesh of props) if (mesh) mesh.userData.distant=true;
 }
 
 export function frontier(scene,course,{block,surface,placard,grain}) {
   const frost = course.id==='frost';
-  landscape(scene,course,frost,grain);
+  const road=pathSamples(course,3);
+  const ground=landscape(scene,course,frost,grain,road);
+  vergeDetails(scene,course,frost,grain,road,ground);
   const dark = surface(frost ? 0x465b69 : 0x573d37);
   const body = surface(frost ? 0x9cacb5 : 0xc79565);
   body.map = grain('concrete-grain');
   const paint = surface(frost ? 0xe6a74f : 0xd8a446);
   if(frost) {
-    block(scene,surface(0x7aaeba,.29),0,-6.8,100,115,.6,63);
+    const ice=surface(0x77adb9,.47);
+    ice.map=grain('slate-rock');
+    ice.onBeforeCompile = shader => {
+      shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>', `
+        float frost=texture2D(map,vMapUv*vec2(11.,6.)).r;
+        float cloud=texture2D(map,vMapUv*vec2(3.,2.)).g;
+        diffuseColor.rgb*=.68+frost*.59+cloud*.48;
+      `);
+    };
+    block(scene,ice,0,-6.8,100,115,.6,62);
     // Ribbed downstream face below the open crest road.
     for(let d=10;d<121;d+=5) {
       const p=course.point(d,5.5,-10.4);
@@ -96,9 +220,11 @@ export function frontier(scene,course,{block,surface,placard,grain}) {
     // Snow stakes punctuate the pass and give the bare snowfield scale.
     for(let d=0;d<course.length;d+=22) {
       for(const side of [-1,1]) {
-        const p=course.point(d,side*(course.halfWidth+1.35),0);
-        block(scene,dark,p.x,p.y+.95,p.z,.14,2.7,.14);
-        block(scene,paint,p.x,p.y+2.24,p.z,.19,.52,.19);
+      const p=course.point(d,side*(course.halfWidth+1.3),0);
+      const base=Math.min(p.y-.12,ground(p.x,p.z));
+      block(scene,dark,p.x,(p.y+1.8+base)/2,p.z,.13,p.y+1.8-base,.13);
+      block(scene,paint,p.x,p.y+1.64,p.z,.19,.31,.19);
+      block(scene,surface(0xfbe2a7),p.x,p.y+1.37,p.z,.17,.08,.17);
       }
     }
   } else {
@@ -131,11 +257,12 @@ export function frontier(scene,course,{block,surface,placard,grain}) {
     }
   }
   const signs = frost ? ['DAM 01','SWITCHBACK','NORTH PASS'] : ['QUARRY 04','RIM BEND','CUTBACK'];
-  for(const [i,ratio] of [.14,.39,.71].entries()) {
-    const d=course.length*ratio, lane=course.halfWidth+2.8;
+  for(const [i,ratio] of [.17,.39,.71].entries()) {
+    const d=course.length*ratio, lane=course.halfWidth+4.0;
     const p=course.point(d,lane,2.8), v=course.sample(d);
     const panel=placard(signs[i],5.6,1.45,frost?'#174862':'#512c20','#fff1be');
     panel.position.copy(p); panel.rotation.y=Math.atan2(-v.dx,-v.dz);scene.add(panel);
-    block(scene,dark,p.x,p.y-1.6,p.z,.24,3.1,.24);
+    const base=Math.min(p.y-1,ground(p.x,p.z));
+    block(scene,dark,p.x,(base+p.y)/2,p.z,.24,p.y-base,.24);
   }
 }

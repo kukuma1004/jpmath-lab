@@ -12,11 +12,16 @@ export function grain(name) {
 }
 const UP = new T.Vector3(0,1,0);
 const cube = new T.BoxGeometry();
-function pineCrown(seed, compact) {
+export function pineCrown(seed, compact, snowy = false) {
   const rng=random(seed), positions=[],tints=[];
   const face=(a,b,c,tone)=>{
     positions.push(...a,...b,...c);
-    for(const t of [tone*.76,tone*.97,tone])tints.push(t*.89,t,t*.94);
+    for(const t of [tone*.76,tone*.97,tone]) {
+      if (snowy) {
+        const coat = T.MathUtils.smoothstep(t, .55, .87);
+        tints.push(t*.42 + coat*.46, t*.64 + coat*.25, t*.59 + coat*.35);
+      } else tints.push(t*.89,t,t*.94);
+    }
   };
   // Branch fans taper in tiers, with a hanging tip on either side of the central spine.
   const tiers=compact?4:5, fans=compact?5:8;
@@ -36,10 +41,10 @@ function pineCrown(seed, compact) {
 }
 const mat = (color, roughness=.78) => new T.MeshStandardMaterial({color,roughness});
 const glow = color => new T.MeshBasicMaterial({color});
-function random(seed) {
+export function random(seed) {
   return () => ((seed = (Math.imul(seed,1664525)+1013904223) >>> 0) / 4294967296);
 }
-function instances(scene, geometry, material, items) {
+export function instances(scene, geometry, material, items) {
   if (!items.length) return;
   const mesh = new T.InstancedMesh(geometry, material, items.length);
   items.forEach((m,i) => mesh.setMatrixAt(i,m));
@@ -47,17 +52,17 @@ function instances(scene, geometry, material, items) {
   scene.add(mesh);
   return mesh;
 }
-function matrix(x,y,z,w,h,d,yaw=0) {
+export function matrix(x,y,z,w,h,d,yaw=0) {
   return new T.Matrix4().compose(new T.Vector3(x,y,z),new T.Quaternion().setFromAxisAngle(UP,yaw),new T.Vector3(w,h,d));
 }
 function beam(a,b,w,d=w) {
   const direction = b.clone().sub(a);
   return new T.Matrix4().compose(a.clone().lerp(b,.5),new T.Quaternion().setFromUnitVectors(UP,direction.clone().normalize()),new T.Vector3(w,direction.length(),d));
 }
-function pathSamples(course) {
-  return Array.from({length:Math.ceil(course.length/2)},(_,i)=>course.sample(i*2));
+export function pathSamples(course, step = 2) {
+  return Array.from({length:Math.ceil(course.length/step)},(_,i)=>course.sample(i*step));
 }
-function nearest(x,z,path) {
+export function nearest(x,z,path) {
   let best=Infinity, height=0;
   for (const p of path) {
     const d=(x-p.x)**2+(z-p.z)**2;
@@ -69,7 +74,7 @@ function hash(x,z) {
   const n=Math.sin(x*127.1+z*311.7)*43758.5453;
   return n-Math.floor(n);
 }
-function noise(x,z) {
+export function noise(x,z) {
   const i=Math.floor(x),j=Math.floor(z);
   const u=T.MathUtils.smoothstep(x-i,0,1),v=T.MathUtils.smoothstep(z-j,0,1);
   return T.MathUtils.lerp(T.MathUtils.lerp(hash(i,j),hash(i+1,j),u),T.MathUtils.lerp(hash(i,j+1),hash(i+1,j+1),u),v);
@@ -472,4 +477,51 @@ export function roadFurniture(scene,course,theme){
   instances(scene,cube,glow(0xffb044),pads);
   instances(scene,cube,mat(0xffb335),stripes);
   instances(scene,cube,mat(0xf4af40),hazard);
+  bendSigns(scene, course, night);
+}
+
+function bendSigns(scene, course, night) {
+  const bodies = [], brackets = [], faces = [[], []];
+  const width = course.halfWidth;
+  for (let d = 11; d < course.length; d += 8.5) {
+    const { curve } = course.sample(d + 2);
+    if (Math.abs(curve) < .036 || course.gaps.some(g => d > g.start - 15 && d < g.end + 9)) continue;
+    const side = Math.sign(curve);
+    const base = course.point(d, side * (width + .73), .24);
+    const face = course.point(d, side * (width + .73), 1.45);
+    const { dx, dz } = course.sample(d);
+    const yaw = Math.atan2(dx, dz) + Math.PI + side * .27;
+    const mount = face.clone().addScaledVector(new T.Vector3(Math.sin(yaw), 0, Math.cos(yaw)), -.048);
+    brackets.push(beam(base, face, .094));
+    bodies.push(matrix(mount.x, mount.y, mount.z, 1.28, .67, .07, yaw));
+    faces[side < 0 ? 1 : 0].push(matrix(face.x, face.y, face.z, 1.23, .62, 1, yaw));
+  }
+  instances(scene, cube, mat(0x4e5659), brackets);
+  instances(scene, cube, mat(0x30393e), bodies);
+  for (const [index, items] of faces.entries()) {
+    if (!items.length) continue;
+    const canvas = document.createElement('canvas');
+    canvas.width = 128;
+    canvas.height = 64;
+    const g = canvas.getContext('2d');
+    g.fillStyle = night ? '#dbebce' : '#ffd180';
+    g.fillRect(0, 0, 128, 64);
+    if (index === 0) {
+      g.translate(128, 0);
+      g.scale(-1, 1);
+    }
+    g.fillStyle = '#262a29';
+    g.beginPath();
+    g.moveTo(30, 11);
+    g.lineTo(67, 11);
+    g.lineTo(101, 32);
+    g.lineTo(67, 53);
+    g.lineTo(30, 53);
+    g.lineTo(64, 32);
+    g.closePath();
+    g.fill();
+    const map = new T.CanvasTexture(canvas);
+    map.colorSpace = T.SRGBColorSpace;
+    instances(scene, new T.PlaneGeometry(), new T.MeshBasicMaterial({ map }), items);
+  }
 }
