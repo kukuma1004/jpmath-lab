@@ -8,6 +8,8 @@
   --spark: #f6d19a;
 }
 * { box-sizing: border-box; }
+html, body, .forge-panel { touch-action: manipulation; }
+.strengthen, .strengthen * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 body { margin: 0; background: radial-gradient(ellipse at 37% 29%, #39413e38, transparent 58%), #191e22; min-width: 0; }
 button { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }

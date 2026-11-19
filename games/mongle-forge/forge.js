@@ -120,7 +120,7 @@
     $('chance-reset').textContent = percent(offer.reset);
     $('chance-shatter').textContent = percent(offer.shatter);
     $('chance-bar').style.gridTemplateColumns = [offer.success, offer.reset, offer.shatter].map(weight => weight + 'fr').join(' ');
-    $('risk-copy').textContent = offer.success === 10000 ? '이번 단계는 확정 성공이에요.' : '실패하면 별철이 소모돼요. 파괴되면 새 검을 제작해야 해요.';
+    $('risk-copy').textContent = offer.success === 10000 ? '이번 단계는 확정 성공이에요.' : '초기화는 +0에서 바로 재강화 · 파괴는 제작비를 내고 새 검 제작';
     $('forge-bonus').hidden = offer.bonus === 0 || state.broken;
     $('forge-bonus').textContent = '이 단계의 실패 보정 +' + percent(offer.bonus).replace('%', '%p');
     if (!affordable) {
@@ -223,10 +223,10 @@
       copy = form.index !== previous.index || form.awakening !== previous.awakening ? form.name + (form.awakening > 0n ? ' · 각성 ' + fmt(form.awakening) : '') + '을 발견했어요.' : '한 번 더 벼릴 준비가 됐어요.';
     } else if (event.kind === 'reset') {
       title = '강화 실패 · +0으로';
-      copy = level(target) + ' 재도전 보정 +' + percent(Forge.recoveryBonus).replace('%', '%p') + '. 나무검부터 다시 벼려요.';
+      copy = '나무검 +0에서 바로 다시 강화할 수 있어요. ' + level(target) + ' 재도전 보정 +' + percent(Forge.recoveryBonus).replace('%', '%p');
     } else if (event.kind === 'shatter') {
       title = '쨍그랑! 검이 깨졌어요.';
-      copy = '별철 ' + fmt(event.spent ?? Forge.cost(target)) + ' 소모 · 새 검을 제작해 다시 도전하세요.';
+      copy = '강화비 ' + fmt(event.spent ?? Forge.cost(target)) + ' 별철 소모 · 제작비 ' + fmt(Forge.preview(state).cost) + ' 별철로 새 검을 만드세요.';
     } else {
       title = '새 검이 준비됐어요.';
       copy = '+0에서 다시 시작해요. 최고 기록 ' + level(state.bestLevel);
@@ -252,6 +252,39 @@
       }, delay);
     }
   }
+
+  const forgePanel = document.querySelector('.forge-panel');
+  let tapStart = null;
+
+  forgePanel.addEventListener('touchstart', event => {
+    tapStart = null;
+    if (event.touches.length !== 1) return;
+    const touch = event.touches[0];
+    const bounds = button.getBoundingClientRect();
+    if (touch.clientX >= bounds.left && touch.clientX <= bounds.right &&
+        touch.clientY >= bounds.top && touch.clientY <= bounds.bottom) {
+      tapStart = { x: touch.clientX, y: touch.clientY, identifier: touch.identifier };
+    }
+  }, { passive: true, capture: true });
+
+  forgePanel.addEventListener('touchmove', event => {
+    if (!tapStart) return;
+    const touch = event.touches[0];
+    if (event.touches.length !== 1 || Math.hypot(touch.clientX - tapStart.x, touch.clientY - tapStart.y) > 12) {
+      tapStart = null;
+    }
+  }, { passive: true, capture: true });
+
+  forgePanel.addEventListener('touchcancel', () => { tapStart = null; }, { passive: true, capture: true });
+  forgePanel.addEventListener('touchend', event => {
+    const start = tapStart;
+    tapStart = null;
+    if (!start || event.touches.length !== 0 || !event.cancelable) return;
+    const touch = Array.from(event.changedTouches).find(point => point.identifier === start.identifier);
+    if (!touch || Math.hypot(touch.clientX - start.x, touch.clientY - start.y) > 12) return;
+    event.preventDefault();
+    if (!button.disabled) button.click();
+  }, { passive: false, capture: true });
 
   button.addEventListener('click', attempt);
   $('open-book').addEventListener('click', () => {
