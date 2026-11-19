@@ -2,537 +2,283 @@
 
 (() => {
   const $ = id => document.getElementById(id);
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   const number = new Intl.NumberFormat('ko-KR');
-  const fmt = value => number.format(value);
-  const art = name => 'assets/' + name + '.webp';
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
-  const keyboard = ['1', '2', '3', 'q', 'w', 'e', 'a', 's', 'd'];
-  const spots = [];
-  const choices = [];
-  const shopButtons = new Map();
-  const levelMarkers = [];
-  const scene = $('scene');
-  const roundButton = $('round-button');
-  const strengthen = $('strengthen');
-  const status = $('status');
+  const percent = value => (value / 100).toLocaleString('ko-KR', { maximumFractionDigits: 2 }) + '%';
+  const asset = name => 'assets/' + name + '.webp';
+  const stage = $('weapon-stage');
+  const weapon = $('weapon');
+  const button = $('strengthen');
   const book = $('book');
-  const timeBar = $('time-bar');
-  const techniqueFx = $('technique-fx');
-  const finalForm = Forge.forms.at(-1);
-  const finalBoss = Forge.regions.at(-1).boss.name;
-  const forgeOdds = $('forge-odds');
-  const forgeBonus = $('forge-bonus');
-  const forgeHelp = $('forge-help');
-  const forgeOutcome = $('forge-outcome');
-  const resetRisk = $('reset-risk');
-  forgeHelp.textContent = '같은 단계에 다시 도전할 때 +' + Forge.recoveryBonus + '%p (최대 100%)';
-  let storageFailed = false;
-  let enhancing = false;
-  let visibleForm = -1;
-  let endingShown = false;
-  let run = null;
-  let pauseTime = null;
-  let result = null;
-  let state = readSave();
-  const returnedWith = Forge.collectPassive(state);
+  const fx = $('technique-fx');
+  const labels = { success: '강화 성공', reset: '+0 초기화', shatter: '검 파괴', reforge: '새 검 제작' };
+  let state = Forge.restore(null);
+  let storageOkay = true;
+  let busy = false;
+  let bookSignature = '';
+  let lastHistory = '';
+  let shownWeapon = '';
+  let outcomeTimer;
 
-  function readStoredSave() {
+  function fmt(value) {
+    const digits = value.toString();
+    if (digits.length <= 12) return number.format(value);
+    return digits[0] + '.' + digits.slice(1, 3) + 'e' + (digits.length - 1);
+  }
+
+  function level(value) {
+    return '+' + fmt(value);
+  }
+
+  function node(tag, className, text) {
+    const element = document.createElement(tag);
+    element.className = className;
+    if (text !== undefined) element.textContent = text;
+    return element;
+  }
+
+  function loadStored() {
+    if (!storageOkay) return { next: state, original: null };
     try {
-      const saved = JSON.parse(localStorage.getItem(Forge.saveKey));
-      return saved ? Forge.restore(saved) : null;
+      const original = localStorage.getItem(Forge.saveKey);
+      const raw = original ? JSON.parse(original) : null;
+      return { next: Forge.restore(raw), original: raw && raw.version !== 2 ? original : null };
     } catch {
-      return null;
+      storageOkay = false;
+      return { next: state, original: null };
     }
   }
 
-  function readSave() {
-    return readStoredSave() ?? Forge.restore(null);
-  }
-
-  function save() {
+  function persist(next, original) {
     try {
-      localStorage.setItem(Forge.saveKey, JSON.stringify(state));
-      storageFailed = false;
+      if (original && !localStorage.getItem(Forge.backupKey)) localStorage.setItem(Forge.backupKey, original);
+      localStorage.setItem(Forge.saveKey, Forge.serialize(next));
     } catch {
-      storageFailed = true;
-      status.textContent = '이 브라우저에서 저장할 수 없어요. 현재 탭에서 플레이할 수 있어요.';
+      storageOkay = false;
     }
+    $('storage-status').textContent = storageOkay ? '이 브라우저에 자동 저장돼요.' : '브라우저 저장 공간을 사용할 수 없어요. 현재 탭에서 플레이할 수 있어요.';
   }
 
-  function tell(message) {
-    status.textContent = storageFailed ? message + ' · 브라우저 저장 불가' : message;
-  }
-
-  function element(tag, className, text) {
-    const node = document.createElement(tag);
-    node.className = className;
-    if (text !== undefined) node.textContent = text;
-    return node;
-  }
-
-  function image(name, alt = '') {
-    const img = element('img', '');
-    img.src = art(name);
-    img.alt = alt;
-    img.draggable = false;
-    return img;
-  }
-
-  Forge.regions.forEach((region, index) => {
-    const button = element('button', 'location');
-    button.type = 'button';
-    const name = element('span', '', region.name);
-    const requirement = element('small', '');
-    button.append(name, requirement);
-    button.addEventListener('click', () => {
-      if (run || state.bestLevel < region.level || state.region === index) return;
-      state.region = index;
-      result = null;
-      save();
+  async function transaction(action) {
+    const update = () => {
+      const { next, original } = loadStored();
+      Forge.collectPassive(next);
+      const event = action?.(next);
+      persist(next, original);
+      state = next;
       render();
-    });
-    $('locations').append(button);
-    choices.push({ button, requirement });
-  });
-
-  Forge.forms.forEach(form => {
-    const marker = element('span', '', '+' + form.level);
-    $('level-track').append(marker);
-    levelMarkers.push(marker);
-  });
-
-  for (const [id, upgrade] of Object.entries(Forge.upgrades)) {
-    const button = element('button', 'shop-item');
-    button.type = 'button';
-    button.append(image(upgrade.art));
-    const copy = element('span', 'shop-copy');
-    const name = element('b', '', upgrade.name);
-    const effect = element('small', '', upgrade.text);
-    copy.append(name, effect);
-    const cost = element('span', 'shop-cost');
-    button.append(copy, cost);
-    button.addEventListener('click', () => buy(id));
-    $('upgrades').append(button);
-    shopButtons.set(id, { button, cost, name });
-  }
-
-  for (let index = 0; index < 9; index += 1) {
-    const button = element('button', 'foe');
-    button.type = 'button';
-    button.style.setProperty('--bob', (-index * 0.38) + 's');
-    const img = image('sprout');
-    const key = element('kbd', 'spot-key', keyboard[index].toUpperCase());
-    key.setAttribute('aria-hidden', 'true');
-    const hp = element('span', 'hp');
-    const bar = element('span', 'hp-fill');
-    hp.append(bar);
-    button.append(img, hp, key);
-    button.addEventListener('click', () => attack(index));
-    $('spots').append(button);
-    spots.push({ button, img, hp, bar, art: 'sprout' });
+      return event;
+    };
+    return navigator.locks ? navigator.locks.request(Forge.saveKey, update) : update();
   }
 
   function renderWeapon() {
-    const index = Forge.formIndex(state.level);
-    const form = Forge.forms[index];
-    if (index !== visibleForm) {
-      visibleForm = index;
-      $('weapon').src = art('sword-' + form.level);
-      $('weapon').alt = form.name;
-      $('weapon-name').textContent = form.name;
-      $('weapon-stage').dataset.form = form.effect ?? form.pattern;
-      $('weapon-stage').style.setProperty('--spark', form.color);
-      $('weapon-perk').textContent = form.perk;
+    const form = Forge.formAt(state.level);
+    const name = state.broken ? '깨진 검' : form.name;
+    const src = asset(state.broken ? 'broken-sword' : 'sword-' + form.level);
+    if (src !== shownWeapon) {
+      weapon.src = src;
+      shownWeapon = src;
     }
-    const charged = form.level >= 12 && state.level > form.level;
-    $('weapon-stage').toggleAttribute('data-charge', charged);
-    scene.toggleAttribute('data-charge', charged);
-    $('book-count').textContent = (Forge.formIndex(state.bestLevel) + 1) + '/' + Forge.forms.length;
-    $('level').textContent = '+' + state.level;
-    $('power').textContent = '공격력 ' + Forge.power(state);
-    levelMarkers.forEach((marker, i) => {
-      marker.classList.toggle('unlocked', i <= index);
-      marker.classList.toggle('current', i === index);
-    });
-    const next = Forge.forms[index + 1];
-    $('next-form').textContent = next
-      ? '+' + next.level + '에서 ' + next.name + '으로 변해요'
-      : '모든 검의 형태를 발견했어요!';
+    weapon.alt = name;
+    $('weapon-name').textContent = name;
+    $('level').textContent = state.broken ? '파괴' : level(state.level);
+    $('best').textContent = level(state.bestLevel);
+    $('best').title = '+' + state.bestLevel;
+    stage.dataset.broken = String(state.broken);
+    stage.dataset.motif = form.effect;
+    stage.style.setProperty('--spark', form.color);
+    stage.style.setProperty('--aura-angle', Number(state.level % 12n) * 7 + 'deg');
+    stage.dataset.awakened = String(form.awakening > 0n);
+    $('awakening').hidden = state.broken || form.awakening === 0n;
+    $('awakening').textContent = '각성 ' + fmt(form.awakening);
+    $('stage-state').textContent = state.broken ? '새 검 제작 필요' : '끝없는 강화';
+    const nextForm = Forge.formAt(form.next);
+    $('next-form').textContent = state.broken ? '다시 벼릴 불꽃이 남아 있어요.' :
+      level(form.next) + '에서 ' + nextForm.name + (nextForm.awakening > 0n ? ' · 각성 ' + fmt(nextForm.awakening) : '');
+    const discovered = Forge.forms.filter(entry => entry.level <= state.bestLevel).length;
+    $('book-count').textContent = discovered + '/' + Forge.forms.length;
   }
 
-  function renderMoney() {
+  function renderControls() {
+    const offer = Forge.preview(state);
+    const rate = Forge.income(state);
+    const affordable = state.shards >= offer.cost;
+    const cooling = Date.now() - state.lastAt < Forge.cooldown;
     $('wallet').textContent = fmt(state.shards);
-    const offer = Forge.enhancement(state);
-    const available = !run && offer && state.shards >= offer.cost;
-    strengthen.disabled = !available || enhancing;
-    $('forge-link').hidden = !available;
-    strengthen.textContent = offer ? '+' + (state.level + 1) + ' 강화 · ' + fmt(offer.cost) + ' 별철' : '최고 강화 +' + Forge.maxLevel;
-    forgeOdds.hidden = !offer;
-    const risky = offer && offer.chance < 100;
-    resetRisk.hidden = !risky;
-    forgeHelp.hidden = !risky;
-    if (offer) {
-      $('forge-chance').textContent = offer.chance + '%';
-      forgeBonus.hidden = offer.bonus === 0;
-      forgeBonus.textContent = '실패 보정 +' + offer.bonus + '%p';
-    }
-    $('passive').textContent = '자동 채굴 ' + (24 * state.miner) + '/분';
-    for (const [id, row] of shopButtons) {
-      const upgrade = Forge.upgrades[id];
-      const level = state[id];
-      const price = upgrade.prices[level];
-      const locked = state.bestLevel < (upgrade.unlock ?? 0);
-      row.name.textContent = upgrade.name + (level ? ' +' + level : '');
-      row.button.disabled = Boolean(run) || locked || price === undefined || state.shards < price;
-      row.cost.textContent = locked ? '검 +' + upgrade.unlock : price === undefined ? '완료' : fmt(price);
-    }
-  }
-
-  function renderBoard() {
-    const region = Forge.regions[state.region];
-    const active = Boolean(run);
-    scene.className = 'scene ' + region.texture + (active ? ' active' : '');
-    $('field-title').textContent = region.name;
-    $('field-factor').textContent = state.cleared[state.region] ? '문지기 격파' :
-      region.level ? '검 +' + region.level + '에서 개방' : '첫 원정지';
-    $('ready-card').hidden = active;
-    $('run-stats').hidden = !active;
-    choices.forEach(({ button, requirement }, i) => {
-      const locked = state.bestLevel < Forge.regions[i].level;
-      button.disabled = active || locked;
-      button.setAttribute('aria-pressed', String(i === state.region));
-      requirement.textContent = locked ? '검 +' + Forge.regions[i].level : state.cleared[i] ? '✓' : '';
-    });
-
-    if (run) {
-      const cadence = Forge.chainEvery(state);
-      $('round-note').textContent = state.level < 2 ? '말랑이를 눌러 검을 휘둘러요.' :
-        cadence === 1 ? '공격할 때마다 연계 베기가 나가요.' : '타격 ' + cadence + '회마다 연계 베기가 나가요.';
-      roundButton.textContent = '원정 마치기';
-      renderHits();
-      tick();
-      return;
-    }
-
-    timeBar.style.transform = 'scaleX(1)';
-    techniqueFx.replaceChildren();
-    $('remaining').textContent = Forge.seconds + '초';
-    scene.style.setProperty('--wave', '#fff1ad');
-    for (const [index, slot] of spots.entries()) {
-      const nearCenter = index === 4;
-      const enemy = region.enemies[index % 2];
-      showSpot(slot, enemy, false);
-      slot.button.classList.toggle('preview-hole', nearCenter);
-    }
-
-    const won = campaignCompleted();
-    $('welcome-art').src = art(won ? 'sword-' + Forge.maxLevel : result?.won ? 'meteor' : 'ore');
-    $('ready-title').textContent = won ? finalForm.name + ' 완성!' : result ? '별철 +' + fmt(result.earned) : '별철을 찾아 출발!';
-    $('ready-copy').textContent = won ? finalBoss + '를 이기고 최고의 대장장이가 됐어요.' :
-      result ? (result.won ? '문지기를 쓰러뜨렸어요!' : '모은 별철로 검을 강화해 보세요.') :
-        Forge.seconds + '초 동안 말랑이를 눌러 검을 휘둘러요.';
-    $('round-note').textContent = result ? (result.bonus ? '목표 달성 보너스 +' + fmt(result.bonus) + ' 별철' : '모은 별철은 바로 보관돼요.') : '말랑이를 쓰러뜨려 별철을 모아요.';
-    roundButton.replaceChildren(document.createTextNode(result ? '다시 원정 ' : '원정 시작 '), element('span', 'arrow', '→'));
-    roundButton.lastChild.setAttribute('aria-hidden', 'true');
-  }
-
-  function showSpot(slot, enemy, active) {
-    if (slot.art !== enemy.art) {
-      slot.art = enemy.art;
-      slot.img.src = art(enemy.art);
-    }
-    slot.button.disabled = !active;
-    slot.button.classList.toggle('boss', Boolean(enemy.boss));
-    slot.hp.hidden = !active || enemy.maxHp <= 1;
-    if (active) {
-      slot.button.setAttribute('aria-label', enemy.name + ', 체력 ' + enemy.hp + ' / ' + enemy.maxHp);
-      slot.bar.style.transform = 'scaleX(' + enemy.hp / enemy.maxHp + ')';
+    $('wallet').title = state.shards.toString();
+    $('income').textContent = '+' + fmt(rate) + ' /초';
+    $('attempt-cost').textContent = fmt(offer.cost) + ' 별철';
+    $('attempt-title').textContent = state.broken ? '다시, 나무검부터' : level(offer.target) + '에 도전';
+    $('probabilities').hidden = state.broken;
+    $('broken-copy').hidden = !state.broken;
+    $('button-label').textContent = busy ? '벼리는 중…' : state.broken ? '새 검 제작' : '강화하기';
+    $('button-icon').textContent = state.broken ? '↻' : '✦';
+    button.disabled = busy || cooling || !affordable;
+    button.dataset.reforge = String(state.broken);
+    $('chance-success').textContent = percent(offer.success);
+    $('chance-reset').textContent = percent(offer.reset);
+    $('chance-shatter').textContent = percent(offer.shatter);
+    $('chance-bar').style.gridTemplateColumns = [offer.success, offer.reset, offer.shatter].map(weight => weight + 'fr').join(' ');
+    $('risk-copy').textContent = offer.success === 10000 ? '이번 단계는 확정 성공이에요.' : '실패하면 별철이 소모돼요. 파괴되면 새 검을 제작해야 해요.';
+    $('forge-bonus').hidden = offer.bonus === 0 || state.broken;
+    $('forge-bonus').textContent = '이 단계의 실패 보정 +' + percent(offer.bonus).replace('%', '%p');
+    if (!affordable) {
+      const seconds = (offer.cost - state.shards + rate - 1n) / rate;
+      $('waiting').textContent = '별철이 모이고 있어요 · 약 ' + fmt(seconds) + '초 뒤 도전';
+    } else {
+      $('waiting').textContent = busy || cooling ? '불꽃이 가라앉는 중이에요.' : '스페이스바로도 ' + (state.broken ? '제작' : '강화') + '할 수 있어요.';
     }
   }
 
-  function renderHits() {
-    run.spots.forEach((enemy, index) => {
-      spots[index].button.classList.remove('preview-hole');
-      showSpot(spots[index], enemy, true);
-    });
-    $('earned').textContent = fmt(run.earned);
-    $('goal-label').firstChild.textContent = run.bossAppeared ? '문지기 ' : '문지기까지 ';
-    $('goal').textContent = run.bossDefeated ? '격파!' : run.bossAppeared ? '등장!' : Math.max(0, run.region.goal - run.kills) + '마리';
+  function renderHistory() {
+    $('attempts').textContent = fmt(state.attempts);
+    $('shattered').textContent = fmt(state.shattered);
+    const signature = JSON.stringify(state.history);
+    if (lastHistory === signature) return;
+    lastHistory = signature;
+    $('empty-history').hidden = state.history.length > 0;
+    if (state.history[0]) showOutcome(state.history[0], false);
+    $('history').replaceChildren(...state.history.map(entry => {
+      const item = node('li', 'history-item ' + entry.kind);
+      const from = BigInt(entry.from);
+      const target = BigInt(entry.target);
+      item.append(
+        node('span', 'history-symbol', entry.kind === 'success' ? '✦' : entry.kind === 'shatter' ? '✕' : '↻'),
+        node('strong', '', labels[entry.kind]),
+        node('span', 'history-levels', entry.kind === 'reforge' ? '새 검 +0' : level(from) + ' → ' + (entry.kind === 'success' ? level(target) : entry.kind === 'shatter' ? '파괴' : '+0')),
+      );
+      return item;
+    }));
+  }
+
+  function renderBook() {
+    const signature = state.bestLevel.toString();
+    if (signature === bookSignature) return;
+    bookSignature = signature;
+    $('sword-book').replaceChildren(...Forge.forms.map(form => {
+      const unlocked = state.bestLevel >= form.level;
+      const item = node('li', 'collection-item' + (unlocked ? '' : ' undiscovered'));
+      const image = node('img', '');
+      image.src = asset('sword-' + form.level);
+      image.alt = '';
+      image.width = 140;
+      image.height = 120;
+      image.loading = 'lazy';
+      item.append(image, node('span', 'book-level', level(form.level)), node('strong', '', unlocked ? form.name : '미발견'), node('small', '', unlocked ? form.detail : '이 단계에 도달하면 발견해요.'));
+      return item;
+    }));
   }
 
   function render() {
     renderWeapon();
-    renderMoney();
-    renderBoard();
+    renderControls();
+    renderHistory();
+    if (book.open) renderBook();
   }
 
-  function buy(id) {
-    if (run || !Forge.purchase(state, id)) return;
-    save();
-    render();
-    tell(Forge.upgrades[id].name + ' +' + state[id] + ' 완료!');
-  }
-
-  function applyEnhancement(from) {
-    if (run) return;
-    if (!storageFailed) state = readStoredSave() ?? state;
-    if (state.level !== from) {
-      render();
-      tell('다른 탭에서 검이 바뀌었어요. 강화 단계를 확인해 주세요.');
-      return;
+  function animateEvent(event) {
+    clearTimeout(outcomeTimer);
+    stage.dataset.outcome = event.kind;
+    fx.replaceChildren();
+    $('forge-fx').replaceChildren();
+    if (!reducedMotion.matches) {
+      const form = Forge.formAt(state.level);
+      if (event.kind === 'success') {
+        const effect = node('span', 'technique ' + form.effect);
+        effect.append(node('i', 'technique-shape'), node('i', 'technique-shape'), node('i', 'technique-shape'));
+        fx.append(effect);
+        effect.addEventListener('animationend', action => {
+          if (action.target === effect) effect.remove();
+        });
+      }
+      const particles = node('span', 'forge-particles ' + event.kind);
+      for (let index = 0; index < 8; index += 1) {
+        const particle = node('i', '');
+        particle.style.setProperty('--angle', (index * 45 + 15) + 'deg');
+        particles.append(particle);
+      }
+      $('forge-fx').append(particles);
+      particles.addEventListener('animationend', action => {
+        if (action.target === particles) particles.remove();
+      });
     }
-    const previousBest = state.bestLevel;
-    const target = from + 1;
-    const prior = Forge.formIndex(from);
-    const attempt = Forge.enhance(state);
-    if (!attempt) {
-      render();
-      return;
-    }
-
-    save();
-    render();
-    forgeOutcome.dataset.result = attempt.succeeded ? 'success' : 'failure';
-    if (!attempt.succeeded) {
-      const retry = Forge.enhancement(state, from);
-      forgeOutcome.textContent = '+' + target + ' 강화 실패! +0 나무검으로 돌아갔어요. 별철 −' + fmt(attempt.spent)
-        + ' · +' + target + ' 재도전 확률 ' + retry.chance + '%';
-      animateForge(false, true);
-      return;
-    }
-
-    const form = Forge.forms[Forge.formIndex(state.level)];
-    const changed = Forge.formIndex(state.level) !== prior;
-    const unlocked = Forge.regions.find(region => region.level === state.level && region.level > previousBest);
-    const reward = changed ? ' · ' + form.name + ' 획득' : '';
-    const region = unlocked ? ' · ' + unlocked.name + ' 개방' : '';
-    forgeOutcome.textContent = '+' + target + ' 강화 성공!' + reward + region;
-    animateForge(changed);
-    checkEnding();
-  }
-
-  async function tryEnhance() {
-    if (run || enhancing) return;
-    const from = state.level;
-    enhancing = true;
-    strengthen.disabled = true;
-    try {
-      if (navigator.locks) await navigator.locks.request(Forge.saveKey, () => applyEnhancement(from));
-      else applyEnhancement(from);
-    } finally {
-      enhancing = false;
-      renderMoney();
-    }
-  }
-
-  function animateForge(changed, failed = false) {
-    if (reduced.matches) return;
-    const weapon = $('weapon');
-    weapon.getAnimations().forEach(animation => animation.cancel());
-    if (failed) {
+    outcomeTimer = setTimeout(() => {
+      delete stage.dataset.outcome;
+      fx.replaceChildren();
       $('forge-fx').replaceChildren();
-      weapon.animate([
-        { transform: 'translateX(0) rotate(0)' },
-        { transform: 'translateX(-5px) rotate(-6deg)', offset: 0.28 },
-        { transform: 'translateX(4px) rotate(3deg)', offset: 0.62 },
-        { transform: 'translateX(0) rotate(0)' },
-      ], { duration: 260, easing: 'cubic-bezier(.2,.72,.36,1)' });
-      return;
+    }, 1100);
+  }
+
+  function showOutcome(event, animate = true) {
+    const target = BigInt(event.target);
+    const box = $('outcome');
+    box.dataset.kind = event.kind;
+    let title;
+    let copy;
+    if (event.kind === 'success') {
+      const form = Forge.formAt(state.level);
+      title = level(target) + ' 강화 성공!';
+      const previous = Forge.formAt(BigInt(event.from));
+      copy = form.index !== previous.index || form.awakening !== previous.awakening ? form.name + (form.awakening > 0n ? ' · 각성 ' + fmt(form.awakening) : '') + '을 발견했어요.' : '한 번 더 벼릴 준비가 됐어요.';
+    } else if (event.kind === 'reset') {
+      title = '강화 실패 · +0으로';
+      copy = level(target) + ' 재도전 보정 +' + percent(Forge.recoveryBonus).replace('%', '%p') + '. 나무검부터 다시 벼려요.';
+    } else if (event.kind === 'shatter') {
+      title = '쨍그랑! 검이 깨졌어요.';
+      copy = '별철 ' + fmt(event.spent ?? Forge.cost(target)) + ' 소모 · 새 검을 제작해 다시 도전하세요.';
+    } else {
+      title = '새 검이 준비됐어요.';
+      copy = '+0에서 다시 시작해요. 최고 기록 ' + level(state.bestLevel);
     }
-    const duration = changed ? 720 : 350;
-    weapon.animate([
-      { transform: 'translateY(0) scale(1) rotate(0)' },
-      { transform: 'translateY(4px) scale(.89) rotate(-8deg)', offset: 0.18 },
-      { transform: 'translateY(-11px) scale(1.1) rotate(8deg)', offset: 0.48 },
-      { transform: 'translateY(0) scale(1) rotate(0)' },
-    ], { duration, easing: 'cubic-bezier(.2,.75,.32,1)' });
-    const effect = element('span', changed ? 'forge-burst evolved' : 'forge-burst', '✧');
-    $('forge-fx').replaceChildren(effect);
-    effect.addEventListener('animationend', () => effect.remove(), { once: true });
+    $('outcome-title').textContent = title;
+    $('outcome-copy').textContent = copy;
+    if (animate) animateEvent(event);
   }
 
-  function animateHit(hit, chain) {
-    const slot = spots[hit.target];
-    const img = slot.img;
-    if (!reduced.matches) {
-      img.getAnimations().forEach(animation => animation.cancel());
-      img.animate([
-        { transform: 'scale(1) rotate(0)' },
-        { transform: 'scale(.82,1.06) rotate(-12deg) translateX(-4px)', offset: 0.25 },
-        { transform: 'scale(1.1,.95) rotate(4deg)', offset: 0.62 },
-        { transform: 'scale(1) rotate(0)' },
-      ], { duration: 235, easing: 'cubic-bezier(.2,.7,.3,1)' });
+  async function attempt() {
+    if (busy) return;
+    busy = true;
+    renderControls();
+    let event;
+    try {
+      event = await transaction(next => Forge.act(next));
+      if (event) showOutcome(event);
+    } finally {
+      const delay = event ? Math.max(0, Forge.cooldown - (Date.now() - event.at)) : 0;
+      setTimeout(() => {
+        busy = false;
+        renderControls();
+      }, delay);
     }
-    if (reduced.matches) return;
-    const fx = element('span', chain ? 'hit-flare chain' : 'hit-flare');
-    const col = hit.target % 3;
-    const row = Math.floor(hit.target / 3);
-    fx.style.left = (100 / 3 * (col + 0.5)) + '%';
-    fx.style.top = (100 / 3 * (row + 0.5)) + '%';
-    fx.append(element('i', 'slash'), element('i', 'spark'), element('b', 'gain', hit.reward ? '+' + hit.reward : '−' + hit.points));
-    $('fx').append(fx);
-    fx.addEventListener('animationend', event => {
-      if (event.target === fx) fx.remove();
-    });
   }
 
-  function animateTechnique(name) {
-    if (!name || reduced.matches || techniqueFx.firstElementChild?.classList.contains(name)) return;
-    const effect = element('span', 'technique ' + name);
-    effect.append(element('i', 'technique-shape'), element('i', 'technique-shape'), element('i', 'technique-shape'));
-    techniqueFx.replaceChildren(effect);
-    effect.addEventListener('animationend', event => {
-      if (event.target === effect) effect.remove();
-    });
-  }
-
-  function attack(index) {
-    if (!run || pauseTime !== null) return;
-    if (Date.now() >= run.until) {
-      finishRun();
-      return;
-    }
-    const hit = Forge.strike(state, run, index);
-    if (!hit) return;
-    if (hit.total) save();
-    renderMoney();
-    renderHits();
-    scene.style.setProperty('--wave', hit.color);
-    const form = Forge.forms[Forge.formIndex(state.level)];
-    scene.dataset.pattern = form.effect ?? form.pattern;
-    animateTechnique(hit.effect);
-    hit.hits.forEach((target, i) => animateHit(target, hit.chain && i > 0));
-  }
-
-  function campaignCompleted() {
-    return state.level === Forge.maxLevel && state.cleared[Forge.regions.length - 1];
-  }
-
-  function checkEnding() {
-    if (endingShown || !campaignCompleted()) return;
-    endingShown = true;
-    tell(finalForm.name + '을 완성하고 ' + finalBoss + '를 격파했어요!');
-  }
-
-  function finishRun() {
-    if (!run) return;
-    const bonus = Forge.finish(state, run);
-    result = { earned: run.earned, bonus, won: run.bossDefeated };
-    const restoreFocus = $('spots').contains(document.activeElement);
-    run = null;
-    pauseTime = null;
-    save();
-    render();
-    if (restoreFocus) roundButton.focus({ preventScroll: true });
-    tell('원정 종료 · 별철 ' + fmt(result.earned) + '개 획득' + (result.won ? ' · 문지기 격파' : ''));
-    checkEnding();
-  }
-
-  function tick() {
-    if (!run) return;
-    const remaining = run.until - (pauseTime ?? Date.now());
-    if (remaining <= 0) {
-      finishRun();
-      return;
-    }
-    const seconds = Math.ceil(remaining / 1000);
-    const time = seconds + '초';
-    if ($('remaining').textContent !== time) $('remaining').textContent = time;
-    timeBar.style.transform = 'scaleX(' + (remaining / (Forge.seconds * 1000)) + ')';
-  }
-
-  roundButton.addEventListener('click', () => {
-    if (run) {
-      finishRun();
-      return;
-    }
-    run = Forge.begin(state, Date.now());
-    render();
-    tell('원정 시작! 말랑이를 눌러 공격하세요.');
-  });
-  strengthen.addEventListener('click', tryEnhance);
-
-  function showBook() {
-    const visible = Forge.formIndex(state.bestLevel);
-    $('sword-book').replaceChildren(...Forge.forms.map((form, index) => {
-      const item = element('li', 'collection-item');
-      const discovered = index <= visible;
-      item.classList.toggle('undiscovered', !discovered);
-      item.append(
-        image('sword-' + form.level),
-        element('span', 'book-level', '+' + form.level),
-        element('strong', '', discovered ? form.name : '미발견'),
-        element('small', '', discovered ? form.perk : '강화하면 도감에 등록돼요'),
-      );
-      return item;
-    }));
+  button.addEventListener('click', attempt);
+  $('open-book').addEventListener('click', () => {
+    renderBook();
     book.showModal();
-    updatePause();
-  }
-  $('open-book').addEventListener('click', showBook);
-  book.addEventListener('close', updatePause);
-
+  });
   document.addEventListener('keydown', event => {
-    if (!run || event.repeat || event.altKey || event.ctrlKey || event.metaKey || book.open) return;
-    const key = event.key.toLowerCase();
-    const numeric = '123456789'.indexOf(key);
-    const mapped = keyboard.indexOf(key);
-    const index = key.length === 1 && numeric !== -1 ? numeric : mapped;
-    if (index < 0) return;
+    if (event.code !== 'Space' || event.repeat || event.ctrlKey || event.altKey || event.metaKey || book.open) return;
+    if (event.target instanceof HTMLButtonElement || event.target instanceof HTMLInputElement) return;
     event.preventDefault();
-    attack(index);
+    if (!button.disabled) attempt();
   });
-
-  function updatePause() {
-    if (document.hidden || book.open) {
-      if (run && pauseTime === null) pauseTime = Date.now();
-      return;
-    }
-    if (run && pauseTime !== null) run.until += Date.now() - pauseTime;
-    pauseTime = null;
-  }
-
-  document.addEventListener('visibilitychange', () => {
-    updatePause();
-    if (document.hidden) return;
-    const income = Forge.collectPassive(state);
-    if (income > 0) {
-      save();
-      renderMoney();
-      tell('채굴기가 별철 ' + fmt(income) + '개를 모았어요.');
-    }
-    tick();
-  });
-
   addEventListener('storage', event => {
-    if (event.key !== Forge.saveKey) return;
-    const latest = readSave();
-    if (run && ['level', 'polish', 'echo', 'region'].every(id => state[id] === latest[id])) {
-      state = latest;
-      renderMoney();
-      return;
+    if (event.key !== Forge.saveKey || !event.newValue) return;
+    try {
+      state = Forge.restore(JSON.parse(event.newValue));
+      render();
+    } catch {
+      $('storage-status').textContent = '다른 탭의 저장 내용을 읽을 수 없어요.';
     }
-    run = null;
-    pauseTime = null;
-    result = null;
-    state = latest;
-    forgeOutcome.textContent = '';
-    render();
-    tell('다른 탭에 저장된 진행 상황을 불러왔어요.');
   });
-
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) transaction();
+  });
   setInterval(() => {
-    if (document.hidden) return;
-    tick();
-    if (Forge.collectPassive(state) > 0) {
-      save();
-      renderMoney();
-    }
-  }, 100);
+    if (!document.hidden) transaction();
+  }, 1000);
 
-  render();
-  if (returnedWith > 0) {
-    save();
-    tell('쉬는 동안 채굴기가 별철 ' + fmt(returnedWith) + '개를 모았어요.');
-  }
+  transaction();
 })();

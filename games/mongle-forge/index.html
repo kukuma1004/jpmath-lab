@@ -3,106 +3,85 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#fbf5e7">
-  <meta name="description" content="짧은 원정에서 별철을 모아 검을 +32까지 강화하세요. 제이피매쓰랩의 검 강화 증분게임, 몽글 대장간.">
-  <title>몽글 대장간 · JP Math Lab</title>
-  <link rel="stylesheet" href="forge.css?v=5">
-  <script src="forge-engine.js?v=5" defer></script>
-  <script src="forge.js?v=5" defer></script>
+  <meta name="theme-color" content="#191e22">
+  <meta name="description" content="한 번 더, 어디까지 갈까. 강화 제한 없이 검을 벼리고 실패와 파괴를 넘어 최고 기록에 도전하는 몽글 대장간.">
+  <title>몽글 대장간 · 끝없는 강화</title>
+  <link rel="stylesheet" href="forge-effects.css?v=infinite-1">
+  <link rel="stylesheet" href="forge.css?v=infinite-1">
+  <script src="forge-engine.js?v=infinite-1" defer></script>
+  <script src="forge.js?v=infinite-1" defer></script>
 </head>
 <body>
-  <a class="skip-link" href="#arena">원정장으로 바로가기</a>
+  <a class="skip-link" href="#strengthen">강화 버튼으로 바로가기</a>
   <header class="site-header">
-    <div class="header-inner">
-      <a class="back" href="../"><span aria-hidden="true">←</span> 게임 목록</a>
-      <a class="lab" href="../../" aria-label="JP Math Lab 홈">JP Math Lab</a>
-      <button class="book-button" id="open-book" type="button">검 도감 <span id="book-count">1/16</span></button>
-    </div>
+    <a class="back" href="../"><span aria-hidden="true">←</span> 게임 목록</a>
+    <a class="lab" href="../../">JP Math Lab</a>
+    <button class="quiet-button" id="open-book" type="button">검 도감 <span id="book-count">1/20</span></button>
   </header>
 
   <main class="shell">
     <header class="intro">
-      <div class="intro-title">
-        <img src="assets/sword-0.webp" alt="" width="70" height="70">
-        <div><h1>몽글 대장간</h1><p>말랑이들을 콕콕! 원정에서 모은 별철로 나만의 검을 강화해요.</p></div>
-      </div>
-      <div class="wallet">
-        <img src="assets/ore.webp" alt="" width="42" height="42">
-        <div><span>보유 별철</span><strong id="wallet">0</strong></div>
-      </div>
+      <div><p class="eyebrow">끝없는 강화</p><h1>몽글 대장간</h1></div>
+      <div class="record"><span>최고 기록</span><strong id="best">+0</strong><span class="record-mark" aria-hidden="true">✦</span></div>
     </header>
 
-    <div class="layout">
-      <section class="surface main-card" id="arena" aria-labelledby="field-title">
-        <div class="card-header">
-          <div class="field-heading"><h2 id="field-title">클로버 숲</h2><span id="field-factor">첫 원정지</span></div>
-          <div class="clock"><span aria-hidden="true">◷</span><span id="remaining">25초</span></div>
+    <div class="forge-layout">
+      <section class="weapon-stage" id="weapon-stage" aria-label="지금 벼리는 검">
+        <div class="stage-top"><div><span id="awakening" class="awakening" hidden></span><h2 id="weapon-name">연습용 나무검</h2></div><span class="stage-state" id="stage-state">강화 준비</span></div>
+        <div class="weapon-orbit" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="weapon-wrap" id="weapon-wrap">
+          <img id="weapon" src="assets/sword-0.webp" alt="연습용 나무검" width="360" height="360" fetchpriority="high">
         </div>
-        <div class="locations" id="locations" role="group" aria-label="원정지 선택"></div>
-        <p class="visually-hidden" id="instructions">말랑이를 눌러 공격하세요. 키보드는 숫자 1부터 9까지, 또는 1·2·3, Q·W·E, A·S·D로 각 줄을 공격할 수 있어요.</p>
-        <div class="scene field" id="scene" aria-describedby="instructions">
-          <div class="scene-progress" aria-hidden="true"><div id="time-bar"></div></div>
-          <div id="run-stats" class="run-stats" hidden>
-            <span>별철 <b id="earned">0</b></span>
-            <span id="goal-label">문지기까지 <b id="goal">8마리</b></span>
-          </div>
-          <div id="spots" class="spots"></div>
-          <div id="technique-fx" class="technique-fx" aria-hidden="true"></div>
-          <div id="fx" class="scene-fx" aria-hidden="true"></div>
-          <div id="ready-card" class="ready-card">
-            <img id="welcome-art" src="assets/ore.webp" alt="" width="61" height="61">
-            <h3 id="ready-title">별철을 찾아 출발!</h3>
-            <p id="ready-copy">25초 동안 말랑이를 눌러 검을 휘둘러요.</p>
-          </div>
-        </div>
-        <div class="round-actions">
-          <p id="round-note">말랑이를 쓰러뜨려 별철을 모아요.</p>
-          <a class="forge-link" id="forge-link" href="#weapon-card" hidden>강화하러 가기 <span aria-hidden="true">↓</span></a>
-          <button id="round-button" class="primary button" type="button">원정 시작 <span aria-hidden="true">→</span></button>
+        <div class="technique-fx" id="technique-fx" aria-hidden="true"></div>
+        <div class="forge-fx" id="forge-fx" aria-hidden="true"></div>
+        <div class="stage-bottom">
+          <p class="weapon-level" id="level">+0</p>
+          <p class="next-form" id="next-form"></p>
         </div>
       </section>
 
-      <aside class="sidebar" aria-label="검 강화와 공방">
-        <section class="surface weapon-card" id="weapon-card" aria-labelledby="weapon-name">
-          <div class="weapon-stage" id="weapon-stage">
-            <span class="level" id="level">+0</span>
-            <div class="forge-halo" aria-hidden="true"></div>
-            <span class="twinkle t1" aria-hidden="true">✦</span><span class="twinkle t2" aria-hidden="true">✧</span><span class="twinkle t3" aria-hidden="true">✧</span>
-            <img id="weapon" src="assets/sword-0.webp" alt="연습용 나무검" width="222" height="165">
-            <div id="forge-fx" aria-hidden="true"></div>
-          </div>
-          <div class="weapon-details">
-            <div class="weapon-heading"><h2 id="weapon-name">연습용 나무검</h2><span id="power">공격력 1</span></div>
-            <p id="weapon-perk">누른 대상에게 기본 베기</p>
-            <div class="level-track" id="level-track" aria-label="검의 형태 변화 단계"></div>
-            <div class="forge-odds" id="forge-odds" hidden>
-              <span>성공 확률 <strong id="forge-chance"></strong></span>
-              <span id="forge-bonus" hidden></span>
-            </div>
-            <p class="reset-risk" id="reset-risk" hidden>실패 시 검 +0으로 초기화 · 별철 소모</p>
-            <button class="upgrade button" id="strengthen" type="button" aria-describedby="forge-odds reset-risk forge-help"></button>
-            <p class="forge-help" id="forge-help" hidden></p>
-            <p class="forge-outcome" id="forge-outcome" role="status" aria-live="polite"></p>
-            <p class="next-form" id="next-form"></p>
-            <a class="return-link" href="#arena">원정장 돌아가기 <span aria-hidden="true">↑</span></a>
-          </div>
-        </section>
+      <section class="forge-panel" aria-label="강화와 제작">
+        <div class="resources">
+          <img src="assets/ore.webp" alt="" width="40" height="40">
+          <div><span>보유 별철</span><strong id="wallet">120</strong></div>
+        </div>
+        <div class="attempt-heading"><h2 id="attempt-title">+1에 도전</h2><span id="attempt-cost">16 별철</span></div>
 
-        <section class="surface shop" aria-labelledby="shop-title">
-          <div class="shop-heading"><h2 id="shop-title">보조 강화</h2><span id="passive"></span></div>
-          <div id="upgrades"></div>
-        </section>
-      </aside>
+        <div id="probabilities">
+          <div class="chance-bar" id="chance-bar" aria-hidden="true"><i></i><i></i><i></i></div>
+          <dl class="chances">
+            <div class="chance-success"><dt>성공</dt><dd id="chance-success">100%</dd></div>
+            <div class="chance-reset"><dt>+0 초기화</dt><dd id="chance-reset">0%</dd></div>
+            <div class="chance-shatter"><dt>검 파괴</dt><dd id="chance-shatter">0%</dd></div>
+          </dl>
+          <p class="risk-copy" id="risk-copy">초반 세 단계는 확정 성공이에요.</p>
+          <p class="pity" id="forge-bonus" hidden></p>
+        </div>
+
+        <div id="broken-copy" class="broken-copy" hidden><h3>검이 산산이 부서졌어요.</h3><p>새 검을 제작하면 +0에서 다시 시작해요.</p></div>
+        <button class="strengthen" id="strengthen" type="button" aria-describedby="probabilities broken-copy"><span id="button-label">강화하기</span><span aria-hidden="true" id="button-icon">✦</span></button>
+        <p class="waiting" id="waiting">스페이스바로도 강화할 수 있어요.</p>
+        <div class="outcome" id="outcome" role="status" aria-live="polite"><strong id="outcome-title">한 번 더, 어디까지 갈까.</strong><p id="outcome-copy">별철을 모아 검의 다음 모습을 발견하세요.</p></div>
+        <div class="smelter">
+          <img src="assets/mill.webp" alt="" width="35" height="35">
+          <div><span>자동 제련</span><strong id="income">+12 /초</strong><small>쉬는 동안에도 최대 8시간</small></div>
+          <span class="smelter-light" aria-hidden="true"></span>
+        </div>
+      </section>
     </div>
-    <footer class="game-footer">
-      <p>PC에서는 숫자 1~9 또는 <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> · <kbd>Q</kbd><kbd>W</kbd><kbd>E</kbd> · <kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>로 공격할 수 있어요.</p>
-      <p class="status" id="status" role="status" aria-live="polite">이 브라우저에 진행 상황이 자동 저장돼요.</p>
-    </footer>
-    <noscript><p>몽글 대장간을 플레이하려면 브라우저에서 자바스크립트를 켜 주세요.</p></noscript>
+
+    <section class="journey" aria-labelledby="history-title">
+      <div class="journey-heading"><h2 id="history-title">불꽃의 기록</h2><p><span>강화 <b id="attempts">0</b>회</span><span>파괴 <b id="shattered">0</b>회</span></p></div>
+      <ol class="history" id="history"></ol>
+      <p class="empty-history" id="empty-history">첫 강화를 하면 이곳에 기록돼요.</p>
+    </section>
+    <footer><p id="storage-status">이 브라우저에 자동 저장돼요.</p><span>최고 기록이 높아지면 자동 제련량도 늘어나요.</span></footer>
+    <noscript><p>강화를 시작하려면 브라우저에서 자바스크립트를 켜 주세요.</p></noscript>
   </main>
 
   <dialog id="book" aria-labelledby="book-title">
-    <div class="dialog-top"><h2 id="book-title">검 도감</h2><form method="dialog"><button class="book-button" type="submit">닫기</button></form></div>
+    <div class="dialog-top"><div><p class="eyebrow">발견한 검의 원형</p><h2 id="book-title">몽글의 무기고</h2></div><form method="dialog"><button class="quiet-button" type="submit">닫기</button></form></div>
+    <p class="book-intro">+49부터 열 가지 원형이 네 단계마다 순환하며 각성이 쌓여요. 강화는 계속 이어집니다.</p>
     <ul class="collection" id="sword-book"></ul>
   </dialog>
 </body>

@@ -1,305 +1,192 @@
 'use strict';
 
 const Forge = (() => {
-  const seconds = 25;
   const saveKey = 'jp-math-lab:mongle-forge:v1';
-  const intervalMs = 5000;
+  const backupKey = saveKey + ':before-infinite';
+  const cooldown = 680;
   const offlineLimit = 8 * 60 * 60 * 1000;
-  const maxShards = 1_000_000_000_000;
-  const upgradesByLevel = [
-    { cost: 16, chance: 100 }, { cost: 32, chance: 100 }, { cost: 56, chance: 99 },
-    { cost: 88, chance: 98 }, { cost: 135, chance: 96 }, { cost: 190, chance: 93 },
-    { cost: 275, chance: 90 }, { cost: 390, chance: 86 }, { cost: 530, chance: 80 },
-    { cost: 710, chance: 73 }, { cost: 940, chance: 62 }, { cost: 1230, chance: 45 },
-    { cost: 1550, chance: 100 }, { cost: 1950, chance: 98 }, { cost: 2450, chance: 97 },
-    { cost: 3100, chance: 95 }, { cost: 3800, chance: 93 }, { cost: 4600, chance: 90 },
-    { cost: 5600, chance: 88 }, { cost: 6800, chance: 85 },
-    { cost: 8300, chance: 100 }, { cost: 10200, chance: 99 }, { cost: 12400, chance: 99 },
-    { cost: 15000, chance: 98 }, { cost: 18000, chance: 98 }, { cost: 21700, chance: 97 },
-    { cost: 26000, chance: 97 }, { cost: 31000, chance: 96 }, { cost: 37000, chance: 95 },
-    { cost: 44000, chance: 94 }, { cost: 52500, chance: 93 }, { cost: 62000, chance: 92 },
+  const recoveryBonus = 800;
+  const costs = [
+    16, 32, 56, 88, 135, 190, 275, 390, 530, 710, 940, 1230,
+    1550, 1950, 2450, 3100, 3800, 4600, 5600, 6800, 8300, 10200,
+    12400, 15000, 18000, 21700, 26000, 31000, 37000, 44000, 52500, 62000,
   ];
-  const maxLevel = upgradesByLevel.length;
-  const recoveryBonus = 12;
-  const damage = [
-    1, 2, 3, 4, 5, 7, 9, 11, 14, 18, 23, 30, 38, 46, 56, 68, 83, 100, 120, 143, 170,
-    204, 245, 294, 352, 421, 503, 600, 715, 851, 1012, 1203, 1429,
+  const chances = [
+    10000, 10000, 10000, 9500, 9000, 8500, 8000, 7500, 7000, 6500,
+    6000, 5600, 5200, 4900, 4600, 4300, 4000, 3800, 3600, 3400,
+    3200, 3000, 2900, 2800, 2700, 2600, 2500, 2400, 2300, 2200, 2100, 2000,
   ];
-
   const forms = [
-    { level: 0, name: '연습용 나무검', perk: '누른 대상에게 기본 베기', pattern: 'single', color: '#ffe3ad' },
-    { level: 2, name: '클로버 잎새검', perk: '잎새 베기 · 옆칸 한 곳을 함께 타격', pattern: 'side', color: '#bcffac' },
-    { level: 4, name: '꽃비 초승검', perk: '꽃비 베기 · 같은 줄을 통째로 타격', pattern: 'row', color: '#ffb4d6' },
-    { level: 6, name: '서리수정 대검', perk: '서리 파동 · 붙어 있는 상하좌우 타격', pattern: 'near', color: '#a7e7ff' },
-    { level: 9, name: '달그림자 월검', perk: '달빛 파동 · 가로와 세로를 통째로 타격', pattern: 'cross', color: '#d2bcff' },
-    { level: 12, name: '별꼬리 성검', perk: '별비 베기 · 원정장 전체를 타격', pattern: 'all', color: '#fff2b0' },
-    { level: 14, name: '혜성 쌍날검', perk: '쌍혜성 · 전체를 베고 같은 가로줄에 공격력 100%', pattern: 'all', effect: 'comet', fullPower: 'row', color: '#ffdb8d' },
-    { level: 16, name: '오로라 파도검', perk: '빛의 물결 · 전체를 베고 가로·세로줄에 공격력 100%', pattern: 'all', effect: 'aurora', fullPower: 'cross', color: '#9ef5dc' },
-    { level: 18, name: '일식 고리검', perk: '일식 고리 · 원정장 전체에 공격력 100%', pattern: 'all', effect: 'eclipse', fullPower: 'all', color: '#ffd18c' },
-    { level: 20, name: '은하 성운검', perk: '은하 소용돌이 · 원정장 전체에 공격력 150%', pattern: 'all', effect: 'galaxy', fullPower: 'all', multiplier: 1.5, color: '#e5c8ff' },
-    { level: 22, name: '뇌운 갈퀴검', perk: '낙뢰 · 전체 150%, 같은 세로줄 185%', pattern: 'all', effect: 'lightning', fullPower: 'column', multiplier: 1.85, splashMultiplier: 1.5, color: '#fff5aa' },
-    { level: 24, name: '심해 닻검', perk: '해류 · 전체 150%, 같은 가로·세로줄 185%', pattern: 'all', effect: 'anchor', fullPower: 'cross', multiplier: 1.85, splashMultiplier: 1.5, color: '#9cfbf0' },
-    { level: 26, name: '중력 렌즈검', perk: '중력 압축 · 전체 165%, 붙어 있는 상하좌우 215%', pattern: 'all', effect: 'gravity', fullPower: 'near', multiplier: 2.15, splashMultiplier: 1.65, color: '#fbc0ff' },
-    { level: 28, name: '빙하 성채검', perk: '빙하 파쇄 · 원정장 전체에 공격력 215%', pattern: 'all', effect: 'glacier', fullPower: 'all', multiplier: 2.15, color: '#b8f0ff' },
-    { level: 30, name: '시계태엽검', perk: '시간 가속 · 연계가 더 자주 발동하고 전체에 230%', pattern: 'all', effect: 'clockwork', fullPower: 'all', multiplier: 2.3, cadence: 3, color: '#ffe4a3' },
-    { level: 32, name: '새벽 왕관검', perk: '여명 개화 · 가속 연계로 원정장 전체에 공격력 250%', pattern: 'all', effect: 'dawn', fullPower: 'all', multiplier: 2.5, cadence: 3, color: '#ffdbaa' },
+    { level: 0n, name: '연습용 나무검', effect: 'ember', color: '#f5d398', detail: '작은 나무검에서 시작되는 끝없는 도전' },
+    { level: 2n, name: '클로버 잎새검', effect: 'leaf', color: '#a7edb7', detail: '새싹을 닮은 칼날과 부드러운 잎빛' },
+    { level: 4n, name: '꽃비 초승검', effect: 'blossom', color: '#ffb8ce', detail: '휘어진 칼날에 꽃비가 내려앉아요' },
+    { level: 6n, name: '서리수정 대검', effect: 'glacier', color: '#a4e6ff', detail: '묵직한 수정 칼날에 서리가 맺혀요' },
+    { level: 9n, name: '달그림자 월검', effect: 'eclipse', color: '#d9baff', detail: '초승달 모양 칼날을 감싸는 달빛' },
+    { level: 12n, name: '별꼬리 성검', effect: 'comet', color: '#ffe7a2', detail: '별 모양 손잡이에서 빛이 퍼져요' },
+    { level: 14n, name: '혜성 쌍날검', effect: 'comet', color: '#ffd29d', detail: '두 갈래 칼날과 나란히 흐르는 혜성' },
+    { level: 16n, name: '오로라 파도검', effect: 'aurora', color: '#a7f7da', detail: '물결 칼날 위에서 넘실거리는 오로라' },
+    { level: 18n, name: '일식 고리검', effect: 'eclipse', color: '#ffcd98', detail: '칼날의 빈 고리에서 피어나는 일식' },
+    { level: 20n, name: '은하 성운검', effect: 'galaxy', color: '#dfbfff', detail: '떠 있는 수정 조각 주위를 도는 별빛' },
+    { level: 22n, name: '뇌운 갈퀴검', effect: 'lightning', color: '#fff2a5', detail: '세 갈래 갈퀴를 따라 뻗는 번개' },
+    { level: 24n, name: '심해 닻검', effect: 'anchor', color: '#a2f4e6', detail: '깊은 바다의 닻을 닮은 푸른 칼날' },
+    { level: 26n, name: '중력 렌즈검', effect: 'gravity', color: '#eabbff', detail: '텅 빈 렌즈 안으로 모여드는 빛' },
+    { level: 28n, name: '빙하 성채검', effect: 'glacier', color: '#bcefff', detail: '작은 성채처럼 층층이 자란 얼음' },
+    { level: 30n, name: '시계태엽검', effect: 'clockwork', color: '#ffddaa', detail: '황금 톱니와 두 칼날이 새기는 시간' },
+    { level: 32n, name: '새벽 왕관검', effect: 'dawn', color: '#ffcfac', detail: '왕관 모양 깃날에서 열리는 새벽' },
+    { level: 36n, name: '별문 열쇠검', effect: 'keylight', color: '#b8f4ff', detail: '별 모양 열쇠가 빛의 문을 열어요' },
+    { level: 40n, name: '불사조 톱날검', effect: 'phoenix', color: '#ffb19a', detail: '깃털 톱날을 따라 타오르는 불새' },
+    { level: 44n, name: '궤도 부채검', effect: 'fanblade', color: '#dbbfff', detail: '펼쳐진 다섯 칼날 사이로 흐르는 궤도' },
+    { level: 48n, name: '무한 매듭검', effect: 'infinity', color: '#c6ffe4', detail: '두 번 휘감긴 칼날로 이어지는 무한' },
   ];
 
-  const regions = [
-    {
-      name: '클로버 숲', texture: 'field', level: 0, goal: 8, bonus: 6,
-      enemies: [
-        { name: '잎싹 말랑이', art: 'sprout', hp: 1, reward: 2 },
-        { name: '잎꼬리 말랑이', art: 'fox', hp: 3, reward: 5 },
-      ],
-      boss: { name: '클로버 문지기', art: 'fox', hp: 14, reward: 20 },
-    },
-    {
-      name: '꽃비 동산', texture: 'orchard', level: 4, goal: 10, bonus: 22,
-      enemies: [
-        { name: '잎꼬리 말랑이', art: 'fox', hp: 5, reward: 7 },
-        { name: '꽃뿔 말랑이', art: 'deer', hp: 11, reward: 15 },
-      ],
-      boss: { name: '꽃비 문지기', art: 'deer', hp: 50, reward: 70 },
-    },
-    {
-      name: '달빛 골짜기', texture: 'moon', level: 8, goal: 12, bonus: 55,
-      enemies: [
-        { name: '꽃뿔 말랑이', art: 'deer', hp: 12, reward: 20 },
-        { name: '달귀 말랑이', art: 'moonling', hp: 24, reward: 37 },
-      ],
-      boss: { name: '달빛 문지기', art: 'moonling', hp: 125, reward: 200 },
-    },
-    {
-      name: '혜성 고원', texture: 'comet', level: 12, goal: 14, bonus: 185,
-      enemies: [
-        { name: '혜성껍질 말랑이', art: 'meteor-fox', hp: 32, reward: 75 },
-        { name: '불꽃갈기 말랑이', art: 'comet-lion', hp: 57, reward: 125 },
-      ],
-      boss: { name: '혜성갈기 문지기', art: 'comet-lion', hp: 360, reward: 680 },
-    },
-    {
-      name: '은하 대장간', texture: 'nebula', level: 16, goal: 18, bonus: 460,
-      enemies: [
-        { name: '별무늬 해파리', art: 'star-jelly', hp: 72, reward: 155 },
-        { name: '별구름 꼬마 용', art: 'nebula-dragon', hp: 110, reward: 240 },
-      ],
-      boss: { name: '은하 용 문지기', art: 'nebula-dragon', hp: 980, reward: 1480 },
-    },
-    {
-      name: '천둥 협곡', texture: 'storm', level: 20, goal: 20, bonus: 1200,
-      enemies: [
-        { name: '구름귀 토끼', art: 'cloud-hare', hp: 150, reward: 730 },
-        { name: '뇌운 산양', art: 'storm-ram', hp: 235, reward: 1160 },
-      ],
-      boss: { name: '번개뿔 문지기', art: 'storm-ram', hp: 2200, reward: 8500 },
-    },
-    {
-      name: '유리 해구', texture: 'trench', level: 24, goal: 22, bonus: 3100,
-      enemies: [
-        { name: '유리 지느러미', art: 'deep-seal', hp: 300, reward: 1750 },
-        { name: '초롱 꼬마 오징어', art: 'trench-squid', hp: 440, reward: 2650 },
-      ],
-      boss: { name: '해구 등불 문지기', art: 'trench-squid', hp: 5000, reward: 23500 },
-    },
-    {
-      name: '여명 궁정', texture: 'dawn', level: 28, goal: 24, bonus: 6800,
-      enemies: [
-        { name: '햇살 날개새', art: 'dawn-bird', hp: 640, reward: 4300 },
-        { name: '왕관 꼬마 용', art: 'crown-dragon', hp: 1000, reward: 6200 },
-      ],
-      boss: { name: '여명 용 문지기', art: 'crown-dragon', hp: 12000, reward: 56000 },
-    },
-  ];
+  function natural(value, fallback = 0n) {
+    if (typeof value === 'bigint') return value >= 0n ? value : fallback;
+    if (typeof value === 'number') return Number.isSafeInteger(value) && value >= 0 ? BigInt(value) : fallback;
+    if (typeof value === 'string' && /^\d+$/.test(value)) return BigInt(value);
+    return fallback;
+  }
 
-  const upgrades = {
-    polish: { name: '칼날 연마', art: 'ore', text: '공격력 +2', prices: [25, 65, 155, 300, 620] },
-    echo: { name: '베기 연습', art: 'meteor', text: '연계 발동에 필요한 타격 −1', unlock: 2, prices: [75, 240] },
-    miner: { name: '꼬마 채굴기', art: 'mill', text: '5초마다 별철 +2', prices: [38, 92, 235, 470, 830] },
-  };
-
-  function integer(value, max) {
-    return Number.isFinite(value) ? Math.min(max, Math.max(0, Math.floor(value))) : 0;
+  function timestamp(value, now) {
+    return Number.isFinite(value) && value >= 0 ? Math.min(value, now) : now;
   }
 
   function restore(raw, now = Date.now()) {
-    const stored = raw && typeof raw === 'object' ? raw : {};
-    const level = integer(stored.level, maxLevel);
-    const bestLevel = Math.max(level, integer(stored.bestLevel, maxLevel));
-    const savedMisses = Array.isArray(stored.forgeMissesByLevel) ? stored.forgeMissesByLevel : null;
-    const forgeMissesByLevel = upgradesByLevel.map(({ chance }, step) => {
-      const maxMisses = Math.ceil((100 - chance) / recoveryBonus);
-      const saved = savedMisses ? savedMisses[step] : step === level ? stored.forgeMisses : 0;
-      return integer(saved, maxMisses);
-    });
-    const region = integer(stored.region, regions.length - 1);
-    const cleared = regions.map((_, i) => Boolean(stored.cleared?.[i]));
+    const old = raw && typeof raw === 'object' ? raw : {};
+    const level = natural(old.level);
+    const priorBest = natural(old.bestLevel);
+    const bestLevel = priorBest > level ? priorBest : level;
+    const pity = {};
+    if (old.version === 2 && old.pity && typeof old.pity === 'object') {
+      for (const [key, amount] of Object.entries(old.pity)) {
+        if (/^\d+$/.test(key) && Number.isSafeInteger(amount) && amount > 0) pity[BigInt(key).toString()] = Math.min(amount, 9000);
+      }
+    } else if (Array.isArray(old.forgeMissesByLevel)) {
+      old.forgeMissesByLevel.forEach((misses, from) => {
+        if (Number.isFinite(misses) && misses > 0) pity[String(from + 1)] = Math.min(9000, Math.floor(misses) * 1200);
+      });
+    } else if (Number.isFinite(old.forgeMisses) && old.forgeMisses > 0) {
+      pity[(level + 1n).toString()] = Math.min(9000, Math.floor(old.forgeMisses) * 1200);
+    }
+    const history = Array.isArray(old.history) ? old.history.filter(entry =>
+      entry && ['success', 'reset', 'shatter', 'reforge'].includes(entry.kind) &&
+      /^\d+$/.test(String(entry.from)) && /^\d+$/.test(String(entry.target)) && Number.isFinite(entry.at)
+    ).slice(0, 12).map(entry => ({
+      kind: entry.kind, from: String(entry.from), target: String(entry.target), at: entry.at,
+    })) : [];
+
     return {
-      shards: integer(stored.shards, maxShards),
+      version: 2,
       level,
       bestLevel,
-      forgeMissesByLevel,
-      region: regions[region].level <= bestLevel ? region : 0,
-      cleared,
-      polish: integer(stored.polish, upgrades.polish.prices.length),
-      echo: bestLevel < upgrades.echo.unlock ? 0 : integer(stored.echo, upgrades.echo.prices.length),
-      miner: integer(stored.miner, upgrades.miner.prices.length),
-      paidAt: Number.isFinite(stored.paidAt) ? Math.min(now, Math.max(0, stored.paidAt)) : now,
+      shards: natural(old.shards, 120n),
+      broken: old.version === 2 && old.broken === true,
+      attempts: natural(old.attempts),
+      shattered: natural(old.shattered),
+      pity,
+      history,
+      paidAt: timestamp(old.paidAt, now),
+      lastAt: old.version === 2 && Number.isFinite(old.lastAt) ? timestamp(old.lastAt, now) : 0,
+      legacy: old.version === 2 && old.legacy && typeof old.legacy === 'object' ? old.legacy : {
+        region: old.region ?? 0,
+        cleared: Array.isArray(old.cleared) ? old.cleared : [],
+        polish: old.polish ?? 0,
+        echo: old.echo ?? 0,
+        miner: old.miner ?? 0,
+      },
     };
   }
 
-  function credit(state, amount) {
-    state.shards = Math.min(maxShards, state.shards + amount);
+  function serialize(state) {
+    return JSON.stringify(state, (_, value) => typeof value === 'bigint' ? value.toString() : value);
+  }
+
+  function formAt(level) {
+    if (level <= 48n) {
+      const index = forms.findLastIndex(form => level >= form.level);
+      return { ...forms[index], index, awakening: 0n, next: forms[index + 1]?.level ?? 49n };
+    }
+    const step = (level - 49n) / 4n;
+    const index = 10 + Number(step % 10n);
+    return { ...forms[index], index, awakening: step / 10n + 1n, next: 49n + (step + 1n) * 4n };
+  }
+
+  function cost(target) {
+    if (target <= 32n) return BigInt(costs[Number(target - 1n)]);
+    return 62000n + 3n * (target ** 3n - 32n ** 3n);
+  }
+
+  function reforgeCost(state) {
+    return 8n + (state.bestLevel + 1n) ** 2n;
+  }
+
+  function income(state) {
+    const level = state.bestLevel;
+    const miner = natural(state.legacy.miner);
+    const polish = natural(state.legacy.polish);
+    const echo = natural(state.legacy.echo);
+    return 12n + level ** 3n / 6n + miner * 4n + polish * 2n + echo * 2n;
   }
 
   function collectPassive(state, now = Date.now()) {
-    if (state.miner === 0 || now < state.paidAt) {
+    if (now < state.paidAt) {
       state.paidAt = now;
-      return 0;
+      return 0n;
     }
-    const elapsed = now - state.paidAt;
-    const ticks = Math.floor(Math.min(elapsed, offlineLimit) / intervalMs);
-    if (ticks === 0) return 0;
-    const income = ticks * state.miner * 2;
-    state.paidAt = elapsed > offlineLimit ? now : state.paidAt + ticks * intervalMs;
-    credit(state, income);
-    return income;
+    const elapsed = Math.min(offlineLimit, now - state.paidAt);
+    const seconds = Math.floor(elapsed / 1000);
+    const earned = BigInt(seconds) * income(state);
+    state.shards += earned;
+    state.paidAt = now - state.paidAt > offlineLimit ? now : state.paidAt + seconds * 1000;
+    return earned;
   }
 
-  function formIndex(level) {
-    return forms.findLastIndex(form => form.level <= level);
+  function preview(state) {
+    if (state.broken) return { cost: reforgeCost(state), target: 0n, success: 0, reset: 0, shatter: 0, bonus: 0 };
+    const target = state.level + 1n;
+    const base = target <= 32n ? chances[Number(target - 1n)] : Math.max(800, 2000 - Number(target - 32n > 48n ? 48n : target - 32n) * 25);
+    const bonus = state.pity[target.toString()] ?? 0;
+    const success = base === 10000 ? base : Math.min(9500, base + bonus);
+    const failure = 10000 - success;
+    const destructionShare = target < 6n ? 0 : Math.min(40, 10 + Number(target > 36n ? 36n : target) - 6);
+    const shatter = Math.floor(failure * destructionShare / 100);
+    return { target, cost: cost(target), success, reset: failure - shatter, shatter, bonus: success - base };
   }
 
-  function power(state) {
-    return damage[state.level] + state.polish * 2;
-  }
-
-  function chainEvery(state, form = forms[formIndex(state.level)]) {
-    return (form.cadence ?? 4) - state.echo;
-  }
-
-  function enhancement(state, from = state.level) {
-    const next = upgradesByLevel[from];
-    if (!next) return null;
-    const chance = Math.min(100, next.chance + state.forgeMissesByLevel[from] * recoveryBonus);
-    return { cost: next.cost, chance, bonus: chance - next.chance };
-  }
-
-  function enhance(state, random = Math.random) {
+  function act(state, now = Date.now(), random = Math.random) {
+    if (now - state.lastAt < cooldown) return null;
+    const offer = preview(state);
+    if (state.shards < offer.cost) return null;
     const from = state.level;
-    const offer = enhancement(state, from);
-    if (!offer || state.shards < offer.cost) return null;
-    state.shards -= offer.cost;
-    const succeeded = offer.chance === 100 || random() < offer.chance / 100;
-    if (succeeded) {
-      state.level = from + 1;
-      state.bestLevel = Math.max(state.bestLevel, state.level);
-      state.forgeMissesByLevel[from] = 0;
+    let kind;
+    if (state.broken) {
+      kind = 'reforge';
+      state.broken = false;
+      state.level = 0n;
     } else {
-      state.forgeMissesByLevel[from] += 1;
-      state.level = 0;
-    }
-    return { succeeded, spent: offer.cost };
-  }
-
-  function purchase(state, id, now = Date.now()) {
-    const cost = upgrades[id]?.prices[state[id]];
-    if (cost === undefined || state.shards < cost || state.bestLevel < (upgrades[id]?.unlock ?? 0)) return false;
-    if (id === 'miner') {
-      collectPassive(state, now);
-      state.paidAt = now;
-    }
-    state.shards -= cost;
-    state[id] += 1;
-    return true;
-  }
-
-  function randomEnemy(region, random) {
-    const enemy = region.enemies[random() < 0.72 ? 0 : 1];
-    return { ...enemy, maxHp: enemy.hp };
-  }
-
-  function begin(state, now, random = Math.random) {
-    const region = regions[state.region];
-    return {
-      region,
-      initial: state.region,
-      until: now + seconds * 1000,
-      turns: 0,
-      kills: 0,
-      earned: 0,
-      bossAppeared: false,
-      bossDefeated: false,
-      spots: Array.from({ length: 9 }, (_, index) => randomEnemy(region, index % 3 === 2 ? random : () => 0)),
-    };
-  }
-
-  function splashTargets(pattern, index) {
-    const row = Math.floor(index / 3);
-    const column = index % 3;
-    const neighbors = Array.from({ length: 9 }, (_, neighbor) => neighbor).filter(neighbor => neighbor !== index);
-    if (pattern === 'side') return [column < 2 ? index + 1 : index - 1];
-    return neighbors.filter(neighbor => {
-      const rowDistance = Math.abs(row - Math.floor(neighbor / 3));
-      const columnDistance = Math.abs(column - neighbor % 3);
-      if (pattern === 'row') return rowDistance === 0;
-      if (pattern === 'column') return columnDistance === 0;
-      if (pattern === 'near') return rowDistance + columnDistance === 1;
-      if (pattern === 'cross') return rowDistance === 0 || columnDistance === 0;
-      return pattern === 'all';
-    });
-  }
-
-  function strike(state, run, index, random = Math.random) {
-    if (!run.spots[index]) return null;
-    run.turns += 1;
-    const form = forms[formIndex(state.level)];
-    const chain = form.pattern !== 'single' && run.turns % chainEvery(state, form) === 0;
-    const targets = chain ? [index, ...splashTargets(form.pattern, index)] : [index];
-    const basePower = power(state);
-    const strength = chain && form.multiplier ? Math.ceil(basePower * form.multiplier) : basePower;
-    const fullPowerTargets = chain && form.fullPower ? splashTargets(form.fullPower, index) : [];
-    const splashStrength = Math.ceil(form.splashMultiplier ? basePower * form.splashMultiplier : strength * 0.6);
-    const hits = targets.map((target, order) => {
-      const enemy = run.spots[target];
-      const fullPowerHit = order === 0 || fullPowerTargets.includes(target);
-      const points = fullPowerHit ? strength : splashStrength;
-      enemy.hp = Math.max(0, enemy.hp - points);
-      const killed = enemy.hp === 0;
-      const reward = killed ? enemy.reward : 0;
-      if (killed) {
-        run.kills += 1;
-        if (enemy.boss) {
-          run.bossDefeated = true;
-          state.cleared[run.initial] = true;
-        }
-        run.spots[target] = randomEnemy(run.region, random);
+      const roll = Math.floor(random() * 10000);
+      state.attempts += 1n;
+      if (roll < offer.success) {
+        kind = 'success';
+        state.level = offer.target;
+        if (state.level > state.bestLevel) state.bestLevel = state.level;
+        delete state.pity[offer.target.toString()];
+      } else {
+        kind = roll < offer.success + offer.reset ? 'reset' : 'shatter';
+        state.pity[offer.target.toString()] = Math.min(9000, (state.pity[offer.target.toString()] ?? 0) + recoveryBonus);
+        state.level = 0n;
+        state.broken = kind === 'shatter';
+        if (state.broken) state.shattered += 1n;
       }
-      return { target, reward, points };
-    });
-    if (!run.bossAppeared && run.kills >= run.region.goal) {
-      const boss = run.region.boss;
-      const position = hits.find(hit => hit.reward > 0).target;
-      run.spots[position] = { ...boss, maxHp: boss.hp, boss: true };
-      run.bossAppeared = true;
     }
-    const total = hits.reduce((sum, hit) => sum + hit.reward, 0);
-    run.earned += total;
-    credit(state, total);
-    return { total, hits, chain, color: form.color, effect: chain ? form.effect : undefined };
+    state.shards -= offer.cost;
+    state.lastAt = now;
+    const event = { kind, from: from.toString(), target: offer.target.toString(), at: now };
+    state.history.unshift(event);
+    state.history.length = Math.min(state.history.length, 12);
+    return { ...event, spent: offer.cost };
   }
 
-  function finish(state, run) {
-    const bonus = run.kills >= run.region.goal ? run.region.bonus : 0;
-    credit(state, bonus);
-    run.earned += bonus;
-    return bonus;
-  }
-
-  return {
-    seconds, saveKey, forms, regions, upgrades, recoveryBonus, maxLevel,
-    restore, collectPassive, formIndex, power, chainEvery, enhancement, enhance, purchase, begin, strike, finish,
-  };
+  return { saveKey, backupKey, cooldown, recoveryBonus, offlineLimit, forms, restore, serialize, formAt, cost, income, preview, collectPassive, act };
 })();
 
 if (typeof module !== 'undefined') module.exports = Forge;

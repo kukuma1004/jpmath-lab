@@ -1,0 +1,76 @@
+.technique { position: absolute; inset: 0; animation: technique-fade 640ms ease-out both; }
+.technique-shape { position: absolute; display: block; }
+.technique.comet .technique-shape { --offset: 16%; top: 42%; left: 8%; width: 84%; height: 8%; border-radius: 0 65% 65% 0; background: linear-gradient(90deg, transparent 1%, #ff98548c 41%, #ffd17e 85%, #fff5cb); box-shadow: 0 4px 10px #dd642b63; rotate: -24deg; animation: comet-flight 470ms cubic-bezier(.23,.78,.33,1) both; }
+.technique.comet .technique-shape:nth-child(2) { top: 57%; --offset: 22%; scale: .88; animation-delay: 36ms; }
+.technique.comet .technique-shape:nth-child(3) { top: 33%; --offset: 12%; height: 2%; animation-delay: 83ms; }
+@keyframes comet-flight { from { transform: translateX(-45%) scaleX(.35); opacity: .2; } 43% { opacity: .82; } to { transform: translateX(var(--offset)) scaleX(1); opacity: 0; } }
+.technique.aurora .technique-shape { --slant: -14deg; left: -4%; top: 19%; width: 105%; height: 57%; border: 9px solid transparent; border-top: 10px solid #bdfde9; border-radius: 47% 62% 43% 56%; box-shadow: inset 0 9px 13px #33d6bc6c; rotate: var(--slant); animation: aurora-wave 575ms cubic-bezier(.19,.75,.22,1) both; }
+.technique.aurora .technique-shape:nth-child(2) { --slant: 8deg; top: 43%; scale: 1 .72; border-top-color: #bddaff; animation-delay: 38ms; }
+.technique.aurora .technique-shape:nth-child(3) { --slant: 44deg; top: 34%; scale: .88 1.04; opacity: .6; border-top-width: 3px; animation-delay: 65ms; }
+@keyframes aurora-wave { from { transform: translateY(30%) skewX(-13deg) scaleX(.65); opacity: .13; } 43% { opacity: .84; } to { transform: translateY(-26%) skewX(12deg) scaleX(1.13); opacity: 0; } }
+.technique.eclipse .technique-shape { left: 50%; top: 50%; width: min(55%, 340px); aspect-ratio: 1; translate: -50% -50%; border: 8px solid #1e142b; border-radius: 50%; box-shadow: 0 0 0 4px #ffc27d, 0 0 26px #ffd589b8, inset 0 0 0 4px #ffb35c; background: radial-gradient(circle, #29193000 51%, #281a386e 100%); animation: eclipse-ring 640ms cubic-bezier(.16,.67,.25,1) both; }
+.technique.eclipse .technique-shape:nth-child(2) { scale: .78; border-width: 3px; background: none; animation-delay: 77ms; }
+.technique.eclipse .technique-shape:nth-child(3) { display: none; }
+@keyframes eclipse-ring { from { transform: scale(.32); opacity: .3; } 51% { opacity: .88; } to { transform: scale(1.94); opacity: 0; } }
+.technique.galaxy { background: radial-gradient(ellipse at center, #ddc5ff39, #7264ba24 51%, transparent 72%); animation-duration: 760ms; }
+.technique.galaxy .technique-shape { --orbit: -32deg; inset: 15% 13%; border: 3px solid transparent; border-top-color: #f0daff; border-bottom-color: #9acbff; border-radius: 50%; box-shadow: inset 0 4px 12px #b49aff66; animation: galaxy-orbit 720ms cubic-bezier(.15,.69,.23,1) both; }
+.technique.galaxy .technique-shape:nth-child(2) { --orbit: 43deg; scale: .82; border-top-width: 8px; animation-delay: 50ms; }
+.technique.galaxy .technique-shape:nth-child(3) { --orbit: 104deg; scale: .58; border: 4px dotted #ffe8f8; box-shadow: 0 0 12px #b7a0fb; animation-delay: 90ms; }
+@keyframes galaxy-orbit { from { transform: rotate(var(--orbit)) scale(.36); opacity: .32; } 43% { opacity: .94; } to { transform: rotate(calc(var(--orbit) + 92deg)) scale(1.28); opacity: 0; } }
+
+.technique.lightning .technique-shape { --bolt-angle: -34deg; top: 40%; left: 3%; width: 94%; height: 20%; background: linear-gradient(0deg, #edb53d, #fff9b9 36%, #fffbea 75%, #b5c6fc); clip-path: polygon(0 56%, 17% 55%, 27% 18%, 37% 48%, 47% 6%, 61% 53%, 70% 28%, 81% 52%, 100% 6%, 80% 74%, 70% 51%, 61% 78%, 47% 39%, 37% 73%, 27% 42%, 18% 76%, 0 65%); transform-origin: 17% center; rotate: var(--bolt-angle); animation: fork-strike 570ms cubic-bezier(.18,.71,.29,1) both; }
+.technique.lightning .technique-shape:nth-child(2) { --bolt-angle: -76deg; top: 74%; left: 36%; height: 17%; scale: .74; animation-delay: 32ms; }
+.technique.lightning .technique-shape:nth-child(3) { --bolt-angle: 13deg; top: 37%; left: 21%; height: 10%; scale: .74; background: #e1efff; animation-delay: 60ms; }
+@keyframes fork-strike { 0% { transform: scaleX(.13) translateX(-8%); opacity: .18; } 26%, 53% { transform: scaleX(1); opacity: .89; } 100% { transform: scaleX(1.06) translateX(4%); opacity: 0; } }
+
+.technique.anchor .technique-shape { left: 7%; right: 7%; top: 11%; bottom: 8%; border: 13px solid transparent; border-left-color: #b7ffea; border-bottom-color: #82ede7; border-radius: 47% 54% 48% 36%; box-shadow: inset 12px -7px 8px #57d2d256; rotate: -18deg; animation: anchor-surge 590ms cubic-bezier(.19,.73,.28,1) both; }
+.technique.anchor .technique-shape:nth-child(2) { left: 19%; right: 9%; top: 19%; bottom: 13%; border-width: 7px; border-color: #d0fbff transparent transparent #b5ecff; rotate: 126deg; animation-delay: 41ms; }
+.technique.anchor .technique-shape:nth-child(3) { left: 19%; right: 19%; top: 16%; bottom: 16%; border-width: 4px; border-color: transparent #d6ffeb #e5ffff transparent; rotate: 17deg; animation-delay: 96ms; }
+@keyframes anchor-surge { from { transform: translate(-23%, 17%) scale(.67) rotate(-14deg); opacity: .23; } 52% { opacity: .82; } to { transform: translate(18%, -10%) scale(1.14) rotate(27deg); opacity: 0; } }
+
+.technique.gravity .technique-shape { left: 50%; top: 50%; width: min(66%, 550px); height: 68%; translate: -50% -50%; border: 7px solid #d481ee; border-radius: 50%; box-shadow: 0 0 0 3px #fddaff, inset 0 0 19px #2b163d; rotate: -13deg; animation: lens-in 610ms cubic-bezier(.36,.15,.4,1) both; }
+.technique.gravity .technique-shape:nth-child(2) { width: min(52%, 425px); height: 76%; border: 4px solid #f8caf9; rotate: 53deg; animation-delay: 35ms; }
+.technique.gravity .technique-shape:nth-child(3) { width: min(48%, 390px); height: 65%; border: none; background: radial-gradient(ellipse, #42205290, #8455ab34 58%, transparent 74%); rotate: 0deg; }
+@keyframes lens-in { from { transform: scale(1.35) rotate(-19deg); opacity: .25; } 42% { opacity: .8; } 79% { transform: scale(.58) rotate(14deg); opacity: .85; } to { transform: scale(.34) rotate(21deg); opacity: 0; } }
+
+.technique.glacier .technique-shape { left: 1%; right: 3%; height: 39%; top: 32%; background: linear-gradient(158deg, #e7faff, #b2ebfa 30%, #809cce 61%, #d7ffff 83%); clip-path: polygon(0 70%, 12% 41%, 18% 49%, 24% 0, 35% 53%, 41% 18%, 49% 45%, 59% 13%, 65% 48%, 73% 33%, 79% 59%, 96% 24%, 100% 66%, 83% 81%, 71% 69%, 62% 100%, 52% 76%, 40% 95%, 32% 63%, 22% 88%, 9% 65%); animation: crystal-break 570ms cubic-bezier(.15,.79,.29,1) both; }
+.technique.glacier .technique-shape:nth-child(2) { top: 16%; height: 32%; scale: .91; rotate: 11deg; animation-delay: 57ms; }
+.technique.glacier .technique-shape:nth-child(3) { top: 56%; height: 38%; scale: .84; rotate: -9deg; animation-delay: 68ms; }
+@keyframes crystal-break { from { transform: translateY(31%) scale(.49,.3); opacity: .15; } 42% { transform: translateY(0) scale(.94); opacity: .73; } to { transform: translateY(-25%) scale(1.18,.8); opacity: 0; } }
+
+.technique.clockwork { animation-duration: 750ms; }
+.technique.clockwork .technique-shape { left: 50%; top: 51%; width: min(54%, 330px); aspect-ratio: 1; translate: -50% -50%; border: 4px double #fff0b7; border-radius: 50%; box-shadow: 0 0 0 3px #5f432c, inset 0 0 0 5px #846549; animation: clock-dial 700ms cubic-bezier(.2,.6,.34,1) both; }
+.technique.clockwork .technique-shape:first-child::before { position: absolute; content: ""; inset: 3%; border-radius: inherit; background: repeating-conic-gradient(#f0c974 0deg 2deg, transparent 2deg 30deg); mask: radial-gradient(circle, transparent 0 60%, #000 61%); }
+.technique.clockwork .technique-shape:nth-child(2), .technique.clockwork .technique-shape:nth-child(3) { top: 22%; width: 8px; height: 29%; aspect-ratio: auto; translate: -50% 0; border: 1px solid #d59953; border-radius: 9px; box-shadow: 0 0 10px #fddc9d; background: #fff2c1; transform-origin: 50% 100%; animation: clock-hand 695ms cubic-bezier(.16,.74,.33,1) both; }
+.technique.clockwork .technique-shape:nth-child(3) { top: 30%; height: 21%; width: 5px; rotate: -115deg; animation-delay: 37ms; }
+@keyframes clock-dial { from { transform: scale(.56) rotate(-24deg); opacity: .34; } 38% { opacity: .95; } to { transform: scale(1.12) rotate(11deg); opacity: 0; } }
+@keyframes clock-hand { from { transform: rotate(-39deg) scaleY(.62); opacity: .55; } 47% { transform: rotate(68deg) scaleY(1); opacity: .84; } to { transform: rotate(255deg) scaleY(1.15); opacity: 0; } }
+
+.technique.dawn { background: radial-gradient(ellipse at 50% 66%, #ffeeb450, transparent 67%); animation-duration: 740ms; }
+.technique.dawn .technique-shape { --ray-opacity: .61; left: 4%; right: 4%; top: 8%; bottom: 2%; transform-origin: 50% 79%; background: linear-gradient(0deg, #ffc48f 15%, #ffeac0 42%, #fff9dc 58%, #ffcbbac2 98%); clip-path: polygon(50% 80%, 0 48%, 27% 54%, 12% 15%, 38% 38%, 34% 0, 48% 27%, 50% 0, 55% 28%, 69% 0, 64% 39%, 91% 12%, 74% 51%, 100% 40%, 76% 68%); animation: crown-flare 695ms cubic-bezier(.18,.64,.25,1) both; }
+.technique.dawn .technique-shape:nth-child(2) { --ray-opacity: .34; scale: .72; rotate: 15deg; background: #ffe3b6; animation-delay: 52ms; }
+.technique.dawn .technique-shape:nth-child(3) { --ray-opacity: .76; left: 15%; right: 15%; top: 12%; bottom: 9%; background: none; border: 3px solid #fff2ca; border-bottom: none; border-radius: 50%; clip-path: none; animation-delay: 86ms; }
+@keyframes crown-flare { from { transform: translateY(23%) scale(.28,.49); opacity: .22; } 42% { opacity: var(--ray-opacity); } to { transform: translateY(-15%) scale(1.28,1.13); opacity: 0; } }
+@keyframes technique-fade { from, 43% { opacity: 1; } to { opacity: 0; } }
+
+
+.technique:is(.ember,.leaf,.blossom) .technique-shape { left: 27%; top: 24%; width: 46%; height: 46%; border: 2px solid var(--spark); border-radius: 50%; box-shadow: 0 0 14px color-mix(in srgb,var(--spark) 30%,transparent); animation: bloom-ring 610ms ease-out both; }
+.technique:is(.ember,.leaf,.blossom) .technique-shape:nth-child(2) { inset: 29% 31%; border-radius: 65% 8%; rotate: 32deg; animation-delay: 40ms; }
+.technique:is(.ember,.leaf,.blossom) .technique-shape:nth-child(3) { inset: 24% 30% 37%; border-radius: 8% 65%; rotate: -41deg; animation-delay: 65ms; }
+@keyframes bloom-ring { from { transform: scale(.35) rotate(-14deg); opacity: .8; } to { transform: scale(1.3) rotate(12deg); opacity: 0; } }
+.technique.keylight .technique-shape { inset: 19% 22%; border: 3px solid #d2f5ff; box-shadow: 0 0 14px #8bd5ea55; border-radius: 42% 42% 5% 5%; animation: open-gate 720ms cubic-bezier(.18,.7,.3,1) both; }
+.technique.keylight .technique-shape:nth-child(2) { inset: 23% 30%; border-width: 1px; animation-delay: 42ms; }
+.technique.keylight .technique-shape:nth-child(3) { inset: 31% 32% 34%; border: none; background: #fff2bb; clip-path: polygon(50% 0,60% 30%,92% 18%,73% 49%,100% 68%,65% 69%,50% 100%,37% 68%,0 68%,29% 48%,8% 18%,40% 30%); animation-delay: 55ms; }
+@keyframes open-gate { from { transform: scale(.36,.75); opacity: .1; } 42% { opacity: .82; } to { transform: scale(1.24,1.15); opacity: 0; } }
+.technique.phoenix .technique-shape { inset: 20% 10%; background: linear-gradient(30deg,#f38a4b,#ffdab0 57%,#fff9d0); clip-path: polygon(48% 70%,5% 45%,17% 39%,0 10%,26% 28%,16% 0,44% 36%,49% 52%,55% 33%,85% 0,77% 28%,100% 9%,83% 40%,95% 44%,54% 74%,50% 100%); animation: phoenix-rise 710ms cubic-bezier(.2,.7,.25,1) both; }
+.technique.phoenix .technique-shape:nth-child(2) { inset: 28% 20%; rotate: -13deg; animation-delay: 38ms; opacity: .5; }
+.technique.phoenix .technique-shape:nth-child(3) { display: none; }
+@keyframes phoenix-rise { from { transform: translateY(15%) scale(.42,.7); opacity: .25; } 44% { opacity: .68; } to { transform: translateY(-20%) scale(1.25,1.1); opacity: 0; } }
+.technique.fanblade .technique-shape { inset: 11% 14% 18%; background: linear-gradient(10deg,#b284ca,#e6d6ff 62%,#f5f4ff); clip-path: polygon(50% 87%,0 42%,26% 40%,11% 10%,39% 28%,50% 0,60% 28%,89% 10%,73% 40%,100% 43%); transform-origin: 50% 87%; animation: fan-open 730ms cubic-bezier(.16,.7,.23,1) both; }
+.technique.fanblade .technique-shape:nth-child(2) { inset: 15% 17% 20%; rotate: 24deg; animation-delay: 42ms; opacity: .5; }
+.technique.fanblade .technique-shape:nth-child(3) { inset: 15% 17% 20%; rotate: -24deg; animation-delay: 42ms; opacity: .5; }
+@keyframes fan-open { from { transform: scaleX(.1) rotate(-24deg); opacity: .2; } 43% { opacity: .56; } to { transform: scaleX(1.1) rotate(15deg); opacity: 0; } }
+.technique.infinity .technique-shape { left: 15%; top: 33%; width: 40%; height: 26%; border: 5px double #d7ffe7; border-radius: 50%; rotate: 31deg; box-shadow: 0 0 14px #72d3c970; animation: infinite-loop 720ms cubic-bezier(.2,.7,.3,1) both; }
+.technique.infinity .technique-shape:nth-child(2) { left: 45%; rotate: -31deg; animation-delay: 28ms; }
+.technique.infinity .technique-shape:nth-child(3) { left: 26%; top: 23%; width: 46%; height: 44%; border: 1px dotted #ffebbe; rotate: -12deg; animation-delay: 35ms; }
+@keyframes infinite-loop { from { transform: scale(.3) rotate(-17deg); opacity: .1; } 43% { opacity: .9; } to { transform: scale(1.35) rotate(12deg); opacity: 0; } }
