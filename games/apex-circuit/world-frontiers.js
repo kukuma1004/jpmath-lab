@@ -1,5 +1,5 @@
 import * as T from './vendor/three.module.min.js';
-import { instances, matrix, nearest, noise, pathSamples, pineCrown, random } from './world-landmarks.js?v=5';
+import { instances, matrix, nearest, noise, pathSamples, pineCrown, random } from './world-landmarks.js?v=6';
 
 // The road carries its own banks. Fit the adjoining landscape below its lowest edge.
 function landscape(scene, course, frost, grain, road) {
@@ -63,6 +63,7 @@ function frontierStone(frost, grain) {
   rock.customProgramCacheKey = () => frost ? 'snow-pass' : 'quarry-strata';
   rock.onBeforeCompile = shader => {
     shader.uniforms.rockTile = {value:grain('slate-rock')};
+    shader.uniforms.outcropTile = {value:grain(frost ? 'alpine-schist' : 'quarry-bedding')};
     shader.vertexShader = 'varying vec3 frontierPoint;\n' + shader.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>
       vec4 frontierWorld=vec4(position,1.);
       #ifdef USE_INSTANCING
@@ -70,15 +71,19 @@ function frontierStone(frost, grain) {
       #endif
       frontierPoint=(modelMatrix*frontierWorld).xyz;
     `);
-    shader.fragmentShader = 'varying vec3 frontierPoint; uniform sampler2D rockTile;\n' + shader.fragmentShader.replace('#include <color_fragment>', `#include <color_fragment>
+    shader.fragmentShader = 'varying vec3 frontierPoint; uniform sampler2D rockTile, outcropTile;\n' + shader.fragmentShader.replace('#include <color_fragment>', `#include <color_fragment>
       vec3 p=frontierPoint;
       vec3 n=normalize(cross(dFdx(p),dFdy(p)));
       vec3 w=pow(abs(n),vec3(4.0)); w/=max(.001,w.x+w.y+w.z);
       float grain=dot(w,vec3(texture2D(rockTile,p.zy*.32).r,texture2D(rockTile,p.xz*.32).r,texture2D(rockTile,p.xy*.32).r));
       float erosion=texture2D(rockTile,p.xz*.061).g;
+      vec3 bedding = texture2D(outcropTile,p.zy*vec2(.13,.13)).rgb*w.x
+        + texture2D(outcropTile,p.xz*.13).rgb*w.y + texture2D(outcropTile,p.xy*.13).rgb*w.z;
       float seam=p.y*1.34+p.x*.021-p.z*.038+erosion*1.2;
       ${frost ? 'float drift=smoothstep(.43,.82,abs(n.y)+erosion*.23); diffuseColor.rgb=mix(vec3(.19,.25,.29)*(.68+grain),diffuseColor.rgb*(.81+.64*grain),drift);' :
       'float band=smoothstep(.25,.9,sin(seam))*(1.-abs(n.y)*.66); diffuseColor.rgb*=mix(vec3(1.02,.96,.89),vec3(.63,.49,.41),band)*(.72+.80*grain);'}
+      float exposed=1.-smoothstep(.54,.96,abs(n.y));
+      diffuseColor.rgb=mix(diffuseColor.rgb,bedding*(.84+.42*grain), ${frost ? '.86*exposed' : '.41+.49*exposed'});
     `);
   };
   return rock;
@@ -142,8 +147,8 @@ function vergeDetails(scene, course, frost, grain, road, ground) {
         if (nearest(x,z,road).distance<course.halfWidth+2+radius) continue;
         const y=ground(x,z);
         if (frost && y<-6.7) continue;
-        rocks.push(matrix(x,y-.11,z,radius*1.45,radius*.72,radius,rng()*6.28));
-        if (frost && i!==0) drifts.push(matrix(x,y+radius*.27,z,radius*1.30,radius*.41,radius*.86,rng()*6.28));
+        rocks.push(matrix(x,y-radius*.25,z,radius*1.45,radius*.72,radius,rng()*6.28));
+        if (frost && i!==0) drifts.push(matrix(x,y+radius*.14,z,radius*1.30,radius*.41,radius*.86,rng()*6.28));
         if (!frost && i!==1) tufts.push(matrix(x+.16,y,z-.56,.78,.23+rng()*.59,.78,rng()*6.28));
       }
       if (frost) {
@@ -167,11 +172,22 @@ function vergeDetails(scene, course, frost, grain, road, ground) {
       }
     }
   }
-  const rockGeo=new T.IcosahedronGeometry(1,0);
+  const rockGeo=new T.IcosahedronGeometry(1,1);
+  const rockVertices=rockGeo.attributes.position;
+  const rockColors=[];
+  const stoneTint=new T.Color(frost ? 0x8e9fa7 : 0xc0896b);
+  for(let i=0;i<rockVertices.count;i++){
+    const x=rockVertices.getX(i), y=rockVertices.getY(i), z=rockVertices.getZ(i);
+    const fracture=.85+.17*Math.sin(x*4.7+y*1.7)*Math.cos(z*4.3+x);
+    rockVertices.setXYZ(i,x*fracture,Math.min(.76,y*fracture+.08*x),z*fracture);
+    rockColors.push(stoneTint.r,stoneTint.g,stoneTint.b);
+  }
+  rockGeo.setAttribute('color',new T.Float32BufferAttribute(rockColors,3));
+  rockGeo.computeVertexNormals();
   const cube=new T.BoxGeometry();
   const material=(color, options={})=>new T.MeshStandardMaterial({color,roughness:.94,...options});
   const props=[
-    instances(scene,rockGeo,material(frost ? 0x6a7881 : 0x9e654b),rocks),
+    instances(scene,rockGeo,frontierStone(frost,grain),rocks),
     instances(scene,rockGeo,material(0xcadfe6),drifts),
     instances(scene,cube,material(0x524943),trunks),
     instances(scene,pineCrown(435,true,true),material(0x9eb7ad,{vertexColors:true,side:T.DoubleSide}),crowns),

@@ -1,6 +1,6 @@
 import * as T from './vendor/three.module.min.js';
 import { track } from './track.js?v=5';
-import { buildRoadCar } from './road-cars.js?v=6';
+import { buildRoadCar } from './road-cars.js?v=7';
 
 const box = new T.BoxGeometry();
 const tire = new T.CylinderGeometry(.37, .37, .22, 28);
@@ -240,7 +240,7 @@ export function selectVehicle(visuals, vehicle, roadRoster) {
       const { id } = roadRoster[(selected + index) % roadRoster.length];
       let body = player.roadBodies.get(id);
       if (!body) {
-        body = buildRoadCar(id, player.reflection);
+        body = buildRoadCar(id);
         player.roadBodies.set(id, body);
       }
       visual.model.add(body);

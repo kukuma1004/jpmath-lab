@@ -1,6 +1,6 @@
-import { frontier } from './world-frontiers.js?v=7';
+import { frontier } from './world-frontiers.js?v=8';
 import * as T from './vendor/three.module.min.js';
-import { grain, alpine, metropolis, coastalBridge, roadFurniture } from './world-landmarks.js?v=5';
+import { grain, alpine, metropolis, coastalBridge, roadFurniture } from './world-landmarks.js?v=6';
 import { courseFrame, coursePoint, track } from './track.js?v=5';
 
 const box = new T.BoxGeometry();
@@ -119,16 +119,46 @@ function road(scene, track, theme) {
   const asphalt = surface(theme === 'frost' ? 0x9fbdc8 : theme === 'redrock' ? 0xc8af9d : theme === 'metro' ? 0x889aa9 : 0xbdbac1, theme === 'metro' ? .27 : .84);
   asphalt.map = grain(theme === 'metro' ? 'wet-asphalt' : 'asphalt-grain');
   if(theme === 'metro'){
+    asphalt.metalness = .14;
+    const mirror = scene.userData.wetMirror = {
+      wetView: {value:null}, wetProjection: {value:new T.Matrix4()}, wetStrength:{value:0}
+    };
+    asphalt.customProgramCacheKey = () => 'metro-rain-film';
     asphalt.onBeforeCompile = shader => {
-      shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>', `
+      Object.assign(shader.uniforms,mirror);
+      shader.vertexShader = 'uniform mat4 wetProjection; varying vec4 wetCoord;\n' + shader.vertexShader.replace('#include <project_vertex>', '#include <project_vertex>\nwetCoord = wetProjection * modelMatrix * vec4(transformed,1.);');
+      shader.fragmentShader = 'uniform sampler2D wetView; uniform float wetStrength; varying vec4 wetCoord;\n' + shader.fragmentShader.replace('#include <map_fragment>', `
         #include <map_fragment>
-        float u = vMapUv.x * 3.0;
-        float v = vMapUv.y;
-        float breakup = texture2D(map,vMapUv*1.52).r;
-        float rim = pow(clamp(abs(fract(u/6.0)*2.0-1.0),0.0,1.0),2.8);
-        float reflection = pow(max(0.,cos(v*2.12+sin(u*3.+v)*.35)),3.5)*rim;
-        vec3 neon=mix(vec3(.11,.28,.43),vec3(.38,.13,.23),.5+.5*sin(v*.37));
-        diffuseColor.rgb += neon * reflection * (.24+.76*breakup);
+        float lane = vMapUv.x * 7.;
+        float distanceM = vMapUv.y * 7.;
+        float grit = texture2D(map,vMapUv*2.4).r;
+        float puddleNoise = texture2D(map, vMapUv*.41+vec2(.17,.53)).g;
+        float film = smoothstep(.025,.25,puddleNoise*.72 + .065*sin(lane*.8+distanceM*.18));
+        float aggregate = texture2D(map,vMapUv*1.53).g;
+        diffuseColor.rgb = vec3(.012,.018,.024) + diffuseColor.rgb * (.46+.54*grit) + vec3(.15,.16,.17)*aggregate;
+        float lampZ = mod(distanceM-5.+9.,18.)-9.;
+        float lateral = abs(lane-${width.toFixed(2)});
+        float lampX = lateral-(${width.toFixed(2)}-1.65);
+        float spread = .30 + .055*abs(lampZ);
+        float shine = exp(-lampX*lampX/(spread*spread)) * exp(-abs(lampZ)*.43);
+        float flutter = .57+.43*sin(distanceM*27.+sin(lane*23.))*sin(lane*9.+distanceM*8.);
+        vec3 lens = lane < ${width.toFixed(2)} ? vec3(.47,.72,1.) : vec3(1.,.63,.31);
+        diffuseColor.rgb += lens * shine * flutter * (.55+film*.56);
+      `).replace('#include <roughnessmap_fragment>', `
+        #include <roughnessmap_fragment>
+        roughnessFactor = mix(.57,.29,film);
+      `).replace('#include <opaque_fragment>', `
+        if(wetStrength>0. && wetCoord.w>0.){
+          vec2 wetUv=wetCoord.xy/wetCoord.w*.5+.5;
+          vec2 ripple=vec2(dFdx(grit),dFdy(grit))*.017 + .0011*vec2(sin(distanceM*7.+lane*4.),cos(lane*13.));
+          vec2 smear=vec2(.0017,.0058)*(.8+grit);
+          vec3 echo=texture2D(wetView,wetUv+ripple).rgb*.50
+            +texture2D(wetView,wetUv+ripple+smear).rgb*.25
+            +texture2D(wetView,wetUv+ripple-smear).rgb*.25;
+          float grazing=pow(1.-clamp(dot(normal,normalize(vViewPosition)),0.,1.),2.);
+          outgoingLight=mix(outgoingLight,echo,wetStrength*(.055+.19*film+.14*grazing));
+        }
+        #include <opaque_fragment>
       `);
     };
   }
@@ -158,7 +188,9 @@ function road(scene, track, theme) {
   const shoulder = surface(style.shoulder);
   shoulder.map = grain('concrete-grain');
   steel.side = T.DoubleSide;
-  strip(track, scene, asphalt, -width, width, 0, 0).receiveShadow = true;
+  const pavement = strip(track, scene, asphalt, -width, width, 0, 0);
+  pavement.receiveShadow = true;
+  if(theme === 'metro') scene.userData.wetPavement = pavement;
   strip(track, scene, steel, -width-.4, width+.4, -0.68, -0.68);
   for (const side of [-1, 1]) {
     strip(track, scene, steel, side * (width+.39), side * (width+.39), -0.68, 0.08);

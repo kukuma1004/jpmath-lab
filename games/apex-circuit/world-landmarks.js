@@ -303,20 +303,19 @@ function canyonSpurs(scene, course, path) {
   instances(scene,geo,material,spurs);
 }
 
-function facade(rng,palette) {
-  const canvas=document.createElement('canvas');canvas.width=256;canvas.height=512;
-  const g=canvas.getContext('2d');
-  g.fillStyle='#111e30';g.fillRect(0,0,256,512);
-  for(let row=0;row<48;row++){
-    for(let col=0;col<16;col++){
-      const x=col*16,y=row*10.667;
-      g.fillStyle=rng()<.52 ? palette[Math.floor(rng()*palette.length)] : '#243548';
-      g.fillRect(x+2,y+2,12,6);
-      g.fillStyle='rgba(9,19,31,.55)';g.fillRect(x+8,y+2,1,6);
-    }
-  }
-  const t=new T.CanvasTexture(canvas);t.colorSpace=T.SRGBColorSpace;t.anisotropy=4;
-  return new T.MeshBasicMaterial({map:t});
+function facade(atlas,variant) {
+  const material=new T.MeshBasicMaterial({map:atlas,color:variant ? 0xf8e5d8 : 0xe1eeff});
+  // Fixed room sizes on both the tall office slabs and their low rooftop annexes.
+  material.onBeforeCompile=shader=>{
+    shader.vertexShader=shader.vertexShader.replace('#include <uv_vertex>', `#include <uv_vertex>
+      vec3 dimensions=vec3(length(instanceMatrix[0].xyz),length(instanceMatrix[1].xyz),length(instanceMatrix[2].xyz));
+      float breadth=abs(normal.x)>.5 ? dimensions.z : dimensions.x;
+      vec2 origin=instanceMatrix[3].xz;
+      vec2 phase=floor(fract(sin(origin*vec2(.173,.391))*197.17)*12.)/12.;
+      vMapUv=uv*vec2(breadth/18.,dimensions.y/44.)+phase;
+    `);
+  };
+  return material;
 }
 export function metropolis(scene,course) {
   const rng=random(912),path=pathSamples(course), bodies=[[],[]], caps=[],trim=[[],[]], podiums=[],antennae=[];
@@ -337,9 +336,15 @@ export function metropolis(scene,course) {
       if(h>35) trim[m].push(matrix(x-w*.5-.03,y+h*.55,z-d*.46,.14,h*.85,.17));
     }
   }
-  for(const [i,palette] of ['#52748b #405a73 #93c4cb #8d8876','#6d728f #5b627e #e1b090 #9294a2'].entries()){
+  let finish;
+  scene.userData.facadeReady=new Promise(resolve=>{ finish=resolve; });
+  const glazing=new T.TextureLoader().load(new URL('./assets/metro-office.webp',import.meta.url).href,()=>finish(true),undefined,()=>finish(false));
+  glazing.wrapS=glazing.wrapT=T.RepeatWrapping;
+  glazing.colorSpace=T.SRGBColorSpace;
+  glazing.anisotropy=4;
+  for(let i=0;i<2;i++){
     // A dark roof closes each lit facade at its skyline silhouette.
-    instances(scene,cube,facade(rng,palette.split(' ')),bodies[i]);
+    instances(scene,cube,facade(glazing,i),bodies[i]);
     instances(scene,cube,glow(i?0xfd7696:0x67daf5),trim[i]);
   }
   instances(scene,cube,mat(0x1d293a),caps);

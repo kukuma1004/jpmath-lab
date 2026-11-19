@@ -1,8 +1,8 @@
 import * as T from './vendor/three.module.min.js';
 import { tracks } from './track.js?v=5';
 import { createRace, vehicleSpecs } from './race.js?v=5';
-import { buildWorld } from './world.js?v=6';
-import { buildCars, driveCar, selectVehicle } from './cars.js?v=6';
+import { buildWorld } from './world.js?v=7';
+import { buildCars, driveCar, selectVehicle } from './cars.js?v=7';
 import { createAudio } from './audio.js?v=4';
 import { createEffects } from './effects.js?v=4';
 import { bindGarage } from './garage.js?v=5';
@@ -126,10 +126,10 @@ function createCamera() {
           dropView = Math.max(dropView, entry * exit);
         }
       }
-      const follow = T.MathUtils.lerp(portrait ? 17 : 20.5, portrait ? 13.0 : 10.7, dropView);
-      const shoulder = T.MathUtils.lerp(portrait ? 1.4 : 4.8, .72, dropView);
-      const height = T.MathUtils.lerp(portrait ? 25.5 : 18.2, portrait ? 10.1 : 6.2, dropView);
-      const laneFollow = player.lane * (.40 + .54 * dropView);
+      const follow = T.MathUtils.lerp(portrait ? 12.8 : 13.2, portrait ? 13.0 : 10.7, dropView);
+      const shoulder = T.MathUtils.lerp(portrait ? .9 : 1.85, .72, dropView);
+      const height = T.MathUtils.lerp(portrait ? 8.6 : 5.5, portrait ? 8.2 : 5.3, dropView);
+      const laneFollow = player.lane * (portrait ? 1 : .40 + .54 * dropView);
       const carX = p.x - p.dz * laneFollow;
       const carZ = p.z + p.dx * laneFollow;
       const carY = p.y + p.bank * laneFollow + player.air;
@@ -170,11 +170,102 @@ function setup() {
   renderer.shadowMap.type = T.PCFShadowMap;
   renderer.shadowMap.autoUpdate = false;
   renderer.shadowMap.needsUpdate = true;
+  renderer.info.autoReset = false;
   const worldCache = new Map();
+  const wetTarget = new T.WebGLRenderTarget(560, 350, {type:T.HalfFloatType});
+  const mirrorCamera = new T.PerspectiveCamera();
+  const roadPlane = new T.Plane();
+  const mirrorAim = new T.Vector3();
+  function reflectGarage(scene, camera) {
+    const mirror = scene.userData.wetMirror;
+    if (!mirror) return;
+    mirror.wetStrength.value = 0;
+    if (state !== 'menu') return;
+    const distance = race.cars[0].distance;
+    const center = track.point(distance);
+    const direction = track.point(distance + .25).sub(center);
+    const lateral = track.point(distance, 1).sub(center);
+    const normal = lateral.cross(direction).normalize();
+    if (normal.y < 0) normal.negate();
+    roadPlane.setFromNormalAndCoplanarPoint(normal, center);
+    camera.updateMatrixWorld();
+    mirrorCamera.copy(camera, false);
+    mirrorCamera.position.addScaledVector(normal, -2 * roadPlane.distanceToPoint(camera.position));
+    camera.getWorldDirection(mirrorAim).reflect(normal).add(mirrorCamera.position);
+    mirrorCamera.up.copy(camera.up).reflect(normal);
+    mirrorCamera.lookAt(mirrorAim);
+    mirrorCamera.updateMatrixWorld();
+    mirror.wetProjection.value.multiplyMatrices(mirrorCamera.projectionMatrix, mirrorCamera.matrixWorldInverse);
+    const pavement = scene.userData.wetPavement;
+    pavement.visible = false;
+    const oldPlanes = renderer.clippingPlanes;
+    renderer.clippingPlanes = [roadPlane];
+    renderer.setRenderTarget(wetTarget);
+    renderer.render(scene, mirrorCamera);
+    renderer.setRenderTarget(null);
+    renderer.clippingPlanes = oldPlanes;
+    pavement.visible = true;
+    mirror.wetView.value = wetTarget.texture;
+    mirror.wetStrength.value = 1;
+  }
+  const reflectionFilter = new T.PMREMGenerator(renderer);
+  function captureCourseLighting(scene, course) {
+    // Cache a probe at driver height. Reflections cost no extra scene pass during play.
+    const cube = new T.WebGLCubeRenderTarget(course.id === 'metro' ? 256 : 128, { type: T.HalfFloatType });
+    const probe = new T.CubeCamera(.3, 780, cube);
+    probe.position.copy(course.point(0, 0, 1.45));
+    // Photograph long, luminous facade strips into the metro environment probe.
+    // Their high dynamic range produces narrow moving highlights on curved panels.
+    const practicals = new T.Group();
+    if(course.id === 'metro') {
+      const plane = new T.PlaneGeometry(1,1);
+      for(const [lane,height,run,length,width,color,power] of [
+        [-8,6,2,13,.43,0xc9e8ff,3.6], [8,4,-3,9,.80,0xffcf91,3.0],
+        [-5,3,-7,4,.48,0xffead1,3.5], [4,10,1,12,.88,0xa2b5ce,1.15]
+      ]) {
+        const source = new T.MeshBasicMaterial({color,side:T.DoubleSide});
+        source.color.multiplyScalar(power);
+        const strip = new T.Mesh(plane,source);
+        strip.position.copy(course.point(run,lane,height));
+        strip.lookAt(probe.position);
+        strip.scale.set(length,width,1);
+        practicals.add(strip);
+      }
+      scene.add(practicals);
+    }
+    try {
+      probe.update(renderer, scene);
+      const filtered = reflectionFilter.fromCubemap(cube.texture);
+      scene.environment = filtered.texture;
+      scene.environmentIntensity = course.id === 'metro' ? 1.18 : .58;
+      return filtered;
+    } finally {
+      practicals.removeFromParent();
+      practicals.children[0]?.geometry.dispose();
+      practicals.children.forEach(strip => strip.material.dispose());
+      cube.dispose();
+    }
+  }
+  function refreshReflections(world, course) {
+    const previous = world.reflections;
+    const visible = carLayer.visible;
+    carLayer.visible = false;
+    world.scene.environment = null;
+    try {
+      world.reflections = captureCourseLighting(world.scene, course);
+      previous.dispose();
+    } catch (error) {
+      world.scene.environment = previous.texture;
+      console.warn('Apex Circuit reflection refresh failed', error);
+    } finally {
+      carLayer.visible = visible;
+      if (activeWorld === world) snap = true;
+    }
+  }
   const carLayer = new T.Group();
   const vehicles = buildCars(carLayer);
   const effects = createEffects(carLayer);
-  const garageKey = new T.DirectionalLight(0xffe2c2, 1);
+  const garageKey = new T.DirectionalLight(0xffe2c2, 2.1);
   garageKey.position.set(45, 54, 40);
   carLayer.add(garageKey);
   const view = createCamera();
@@ -214,8 +305,12 @@ function setup() {
       const scene = new T.Scene();
       const environment = buildWorld(scene, track);
       if (innerWidth < 850) environment.sun.shadow.mapSize.set(1024, 1024);
-      nextWorld = { scene, ...environment };
+      nextWorld = { scene, ...environment, reflections: captureCourseLighting(scene, track) };
       worldCache.set(track.id, nextWorld);
+      const course=track;
+      scene.userData.facadeReady?.then(loaded => {
+        if (loaded) refreshReflections(nextWorld, course);
+      });
     }
     if (activeWorld !== nextWorld) {
       activeWorld = nextWorld;
@@ -414,6 +509,7 @@ function setup() {
     }
   }
   function render(dt) {
+    renderer.info.reset();
     if (resizePending) resize();
     if (!['paused', 'results'].includes(state) && !motion.matches && !visualOnly) worldTime += dt;
     const { waves, lights, scene } = activeWorld;
@@ -428,6 +524,11 @@ function setup() {
       material.color.set(signalTime > 0 ? 0x30fcc0 : lit ? 0xff622d : 0x4f2f34);
     }
     garageKey.visible = state === 'menu';
+    if (garageKey.visible) {
+      garageKey.target.position.copy(track.point(race.cars[0].distance));
+      garageKey.target.updateMatrixWorld();
+      garageKey.position.copy(track.point(race.cars[0].distance + 8, 6, 12));
+    }
     race.cars.forEach((car, index) => {
       const visual = vehicles[index];
       const visible = state !== 'menu' || index === 0;
@@ -438,6 +539,7 @@ function setup() {
     snap = false;
     audio.drive(race.cars[0].speed, boosting, state === 'racing' || state === 'countdown');
     hud();
+    reflectGarage(scene, view.camera);
     renderer.render(scene, view.camera);
     frame++;
     lastStateRendered = state;
@@ -522,6 +624,10 @@ function setup() {
     pause();
   });
   world.addEventListener('webglcontextrestored', () => {
+    for (const course of tracks) {
+      const cached = worldCache.get(course.id);
+      if (cached) refreshReflections(cached, course);
+    }
     resizePending = true;
     renderer.shadowMap.needsUpdate = true;
     activeWorld.sun.shadow.needsUpdate = true;

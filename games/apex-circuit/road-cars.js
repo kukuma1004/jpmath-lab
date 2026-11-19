@@ -25,7 +25,7 @@ const profiles = {
     noseSweep: .27, tailSweep: .145, wheel: 5 }
 };
 
-export function buildRoadCar(id, envMap) {
+export function buildRoadCar(id) {
   const p = profiles[id];
   if (!p) throw new RangeError('Unknown road car: ' + id);
   const truck = id === 'cybertruck', hatch = id === 'ioniq-5-n', gt = id === 'rs-etron-gt';
@@ -36,7 +36,7 @@ export function buildRoadCar(id, envMap) {
   group.name = id;
   const batches = new Map();
   function material(color, metalness, roughness, emissive, clearcoat) {
-    const options = { color, metalness, roughness, envMap: envMap || null, side: T.DoubleSide };
+    const options = { color, metalness, roughness, side: T.DoubleSide };
     const m = clearcoat
       ? new T.MeshPhysicalMaterial({ ...options, clearcoat, clearcoatRoughness: .16 })
       : new T.MeshStandardMaterial(options);
@@ -44,8 +44,8 @@ export function buildRoadCar(id, envMap) {
     batches.set(m, { pos: [], normal: [] });
     return m;
   }
-  const paint = material(p.color, truck ? .72 : .34, truck ? .32 : .25, 0, truck ? 0 : .60);
-  const glass = material(0x142839,.46,.21,0,.25), black = material(0x121820,.24,.49);
+  const paint = material(p.color, truck ? .78 : .43, truck ? .225 : .21, 0, truck ? 0 : .60);
+  const glass = material(0x405569,.77,.064,0,.92), black = material(0x121820,.24,.49);
   const tire = material(0x181b20,.03,.86), alloy = material(0xb0b7bc,.76,.28);
   const led = material(0xe6faff,.15,.24,0xc5edff), red = material(0xcf1826,.18,.25,0xab0810);
   const trim = hatch ? material(0xf04727,.32,.32) : black;
@@ -79,7 +79,7 @@ export function buildRoadCar(id, envMap) {
       diffuseColor.rgb *= 1. + shoulder * (.14 - .51 * seam);
     `);
   }
-  glass.envMapIntensity = .77;
+  glass.envMapIntensity = 1.14;
   surfaceFinish(glass, `
     float skyBand = smoothstep(.9, 1.8, vPanel.y);
     diffuseColor.rgb *= mix(vec3(.49,.61,.75), vec3(.94,1.12,1.32), skyBand);
@@ -254,6 +254,33 @@ export function buildRoadCar(id, envMap) {
       if(i===1 || i===canopy.length-1 || (!truck && pillar)) {
         rod(pillar?black:paint,b[bottom],b[top],pillar?.023:.018);
       }
+    }
+  }
+  // The ceramic frit follows the windshield perimeter. A wiper rests just inside the cowl.
+  const frontGlass=canopy.at(-2), cowl=canopy.at(-1);
+  function windshield(u,t,lift) {
+    const edge=u<0 ? 1 : 4, center=u<0 ? 2 : 3;
+    const q=Math.abs(u);
+    function section(row,k) {
+      const middle=(row[2][k]+row[3][k])*.5;
+      return q<.75 ? T.MathUtils.lerp(middle,row[center][k],q/.75)
+        : T.MathUtils.lerp(row[center][k],row[edge][k],(q-.75)/.25);
+    }
+    return [0,1,2].map(k=>T.MathUtils.lerp(section(frontGlass,k),section(cowl,k),t)+(k===1?lift:0));
+  }
+  for(const [lo,hi,t0,t1] of [[-1,1,.954,1],[-1,1,0,.016],[-1,-.978,0,1],[.978,1,0,1]]) {
+    for(let i=0;i<6;i++){
+      const a=T.MathUtils.lerp(lo,hi,i/6), b=T.MathUtils.lerp(lo,hi,(i+1)/6);
+      quad(black,windshield(a,t0,.005),windshield(b,t0,.005),windshield(b,t1,.005),windshield(a,t1,.005));
+    }
+  }
+  if(truck) {
+    rod(black,windshield(-.90,.94,.016),windshield(-.94,.39,.016),.011);
+    rod(black,windshield(-.945,.67,.022),windshield(-.96,.10,.022),.014);
+  } else {
+    for(const start of [-.63,.11]){
+      rod(black,windshield(start,.96,.013),windshield(start+.25,.89,.016),.009);
+      rod(black,windshield(start+.06,.914,.020),windshield(start+.55,.869,.020),.012);
     }
   }
   function sidePoint(side,y,z,lift=0) {
