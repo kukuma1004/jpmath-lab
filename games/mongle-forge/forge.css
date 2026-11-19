@@ -40,7 +40,7 @@ h1, h2, h3, p { margin: 0; }
 .record .record-mark { position: absolute; right: 0; top: 14px; font-size: 26px; color: #d5b472; }
 
 .forge-layout { display: grid; grid-template-columns: minmax(0, 1fr) 328px; gap: 18px; align-items: stretch; }
-.weapon-stage { position: relative; isolation: isolate; overflow: hidden; min-height: 560px; border: 1px solid #8571546b; border-radius: 14px; background: #1c252e url(assets/workshop-infinite.webp) center 57% / cover; }
+.weapon-stage { position: relative; isolation: isolate; overflow: hidden; min-height: 560px; border: 1px solid #8571546b; border-radius: 14px; background: #1c252e url(assets/workshop-appraisal.webp) center 57% / cover; }
 .weapon-stage::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, #121a235c 0, #101b2540 39%, #10182100 58%, #111c27c7 100%); }
 .stage-top { position: absolute; z-index: 4; inset: 22px 24px auto; display: flex; justify-content: space-between; align-items: start; gap: 10px; }
 .stage-top h2 { font-size: 20px; font-weight: 800; letter-spacing: -.05em; color: #ffedce; text-shadow: 0 2px 12px #111923; }
@@ -232,3 +232,192 @@ dialog::backdrop { background: #0b1219b5; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+/* Gold leaf, enamel and brushed parchment around the active blade. */
+body { background: radial-gradient(ellipse at 43% 30%, #203236, #142025 67%, #151d21); }
+.weapon-stage { container-type: inline-size; border: 2px solid #d99a4f; box-shadow: inset 0 0 0 1px #412410, 0 5px 16px #070d1047; }
+.weapon-stage::after { background: linear-gradient(180deg, #07101747, transparent 27% 84%, #11151865); }
+.weapon-stage::before { content: ""; position:absolute; inset:3px; z-index:3; border:1px solid #efbd6766; border-radius:10px; pointer-events:none; }
+.stage-top h2 { font-size:clamp(18px,3.15cqw,29px); color:#fff4d4; text-shadow:0 2px 3px #291505,0 2px 12px #140f08; }
+.stage-state, .magic-tag { color:#ffde99; border:1px solid #e9ae57; background:linear-gradient(100deg,#33291c,#211f22); box-shadow:inset 0 0 0 2px #372923, inset 0 0 0 3px #a97a44,0 2px 6px #1d110c; border-radius:4px 12px; }
+.stage-state { padding:5px 12px; }
+.magic-tag { display:inline-block; padding:5px 13px; margin-top:6px; font-size:13px; font-weight:800; background:linear-gradient(110deg,var(--enamel),#2e202c); }
+[data-enchantment=cinder] { --enamel:#8f3e27; --magic:#ffae4e; --glyph:'♦'; }
+[data-enchantment=frost] { --enamel:#255e78; --magic:#9ceeff; --glyph:'❄'; }
+[data-enchantment=storm] { --enamel:#45417e; --magic:#c6bbff; --glyph:'ϟ'; }
+[data-enchantment=astral] { --enamel:#683d82; --magic:#ffd5ff; --glyph:'✦'; }
+[data-enchantment=lunar] { --enamel:#355773; --magic:#e3ebff; --glyph:'☾'; }
+.weapon-wrap { inset:5% 10% 23%; }
+.weapon-wrap img { max-width: none; filter: saturate(1.22) contrast(1.06) drop-shadow(0 0 3px #fee9bb77) drop-shadow(0 0 13px color-mix(in srgb,var(--magic) 35%,transparent)) drop-shadow(3px 8px 5px #160e1aad); }
+.weapon-orbit { width:47%; top:44%; }
+.weapon-orbit i { border-color:#efbd5a99; }
+.weapon-orbit i:nth-child(2) { border-color:#f3c16670; border-style:dotted; }
+.weapon-orbit i::before { color:#ffe8aa; text-shadow:0 0 10px #ffd573; }
+.enchantment-fx { position:absolute; inset:18% 16% 32%; z-index:1; pointer-events:none; color:var(--magic); }
+.enchantment-fx::before,.enchantment-fx::after { content:""; position:absolute; inset:20% 1% 0; border-radius:50%; border-bottom:2px solid currentColor; border-right:1px solid transparent; transform:rotate(-16deg); filter:drop-shadow(0 0 4px currentColor); }
+.enchantment-fx::after { inset:30% 6% 3%; opacity:.45; transform:rotate(-22deg); }
+.enchantment-fx i { position:absolute; font:700 clamp(15px,3.8cqw,38px)/1 Georgia,serif; color:#fff1c3; text-shadow:0 0 3px #fff,0 0 8px var(--magic),0 0 16px var(--magic); animation:magic-shimmer 3.8s ease-in-out infinite alternate; }
+.enchantment-fx i::before { content:var(--glyph); }
+.enchantment-fx i:nth-child(1){left:11%;top:24%;animation-delay:-1s}
+.enchantment-fx i:nth-child(2){right:1%;top:54%;animation-delay:-2s}
+.enchantment-fx i:nth-child(3){right:21%;bottom:-3%;animation-delay:-3s}
+.enchantment-fx i:nth-child(4){left:3%;top:65%;font-size:1.8cqw}
+.enchantment-fx i:nth-child(5){right:32%;top:3%;font-size:2cqw;animation-delay:-1.5s}
+[data-enchantment=cinder] .enchantment-fx::before,[data-enchantment=cinder] .enchantment-fx::after { border:0; background:radial-gradient(ellipse at 50% 95%,#ff9a373d,transparent 55%); }
+[data-enchantment=cinder] .enchantment-fx i { border-radius:75% 4% 70% 40%; width:2.4%; height:9%; background:linear-gradient(145deg,#ed5623,#ffde8d); transform:rotate(28deg); box-shadow:0 0 12px #ffa947; animation-name:magic-rise; }
+[data-enchantment=cinder] .enchantment-fx i::before { content:none; }
+[data-enchantment=frost] .enchantment-fx::before,[data-enchantment=frost] .enchantment-fx::after { inset:13% 14% 5%; border-radius:13%; border:1px solid #b8faff77; transform:rotate(-28deg); }
+[data-enchantment=frost] .enchantment-fx::after { transform:rotate(32deg); }
+[data-enchantment=storm] .enchantment-fx::before,[data-enchantment=storm] .enchantment-fx::after { inset:20% 0; transform:rotate(-13deg); border:none; border-radius:0; background:currentColor; clip-path:polygon(0 67%,28% 35%,24% 52%,55% 27%,45% 51%,80% 18%,67% 41%,100% 0,65% 49%,73% 29%,40% 59%,47% 38%,20% 62%,23% 46%); }
+[data-enchantment=storm] .enchantment-fx::after { transform:rotate(160deg); }
+[data-enchantment=lunar] .enchantment-fx::before { inset:-5% 22%; border:0; box-shadow:-6px 3px 0 1px #e0dcff; transform:rotate(-21deg); }
+[data-enchantment=lunar] .enchantment-fx::after { inset:8% 28% -8%; border:0; box-shadow:4px 0 0 #d1f3ff; }
+[data-broken=true] .enchantment-fx { display:none; }
+@keyframes magic-shimmer { from { opacity:.65; translate:0 2px; } to { opacity:1; translate:0 -5px; } }
+@keyframes magic-rise { from { opacity:.5;translate:-3px 5px; } to { opacity:1;translate:4px -12px; } }
+.appraisal { position:absolute; z-index:5; left:2%; bottom:2%; text-align:center; color:#ffe3a4; padding:9px 16px 8px; min-width:27%; border:3px double #ffd58a; border-radius:13px 5px; background:radial-gradient(ellipse at top,#654322,#372419 67%,#241915); box-shadow:0 0 0 2px #69421d,0 0 0 3px #d49b50,inset 0 0 12px #ae76334d,0 4px 10px #120c09; }
+.appraisal-label { display:block; font-size:13px; font-weight:800; letter-spacing:.07em; }
+.appraisal-label::before,.appraisal-label::after { content:'✧'; margin:0 9px; color:#efb964; font-size:11px; }
+.appraisal strong { display:block; font:700 clamp(18px,3.6cqw,34px)/1.3 Georgia,serif; color:#ffda84; text-shadow:0 2px 2px #261508; }
+.appraisal small { display:block; border-top:1px solid #d5954547; padding-top:3px; font-size:11px; color:#ead7af; }
+.stage-bottom { inset-inline:32% 22%; bottom:3%; }
+.weapon-level { color:#ffdc93; font-weight:600; text-shadow:0 2px 2px #462410,0 3px 12px #44250c; }
+.next-form { color:#ffedca; text-shadow:0 2px 3px #160e09; }
+.forge-panel { background:linear-gradient(120deg,#fff7e8,#f6ead1); border:3px double #d8af72; box-shadow:0 4px 12px #070c1033; }
+.resources { border:0; padding-bottom:0; margin-bottom:12px; }
+.enchantment-card { display:flex; gap:6px; align-items:center; justify-content:center; margin:0 -3px 15px; padding:9px 5px; min-height:47px; background:linear-gradient(110deg,#2a2026,var(--enamel) 55%,#2b2026); border:3px double #f2bd70; border-radius:11px 5px; box-shadow:0 0 0 1px #865630,inset 0 0 9px #d59c4d5c,0 2px 4px #6e492644; color:#ffe5a4; white-space:nowrap; }
+.magic-mark { font:700 30px/1 Georgia,serif; text-shadow:0 0 7px var(--magic); }
+.enchantment-card strong { font-size:15px; }.enchantment-card b { font-size:13px; border-left:1px solid #edce9c70; padding-left:7px; }
+.magic-rank { padding:2px 4px; border-radius:4px; font-size:10px; color:#fff1ed; background:var(--enamel); }
+.strengthen:enabled { background:linear-gradient(#ed9137,#c36124); }
+@media (min-width:901px) { .stage-top { inset:4% 3% auto; } .forge-panel { padding-top:18px; }.weapon-stage { min-height:566px; } }
+@media(max-width:900px) and (min-width:701px) { .appraisal { padding-inline:8px; }.stage-bottom { inset-inline:36% 6%; } }
+@media(max-width:700px) {
+ .weapon-stage { height:clamp(224px,64vw,315px); }
+ .stage-top { inset:10px 12px auto; }.stage-top h2 { font-size:15px; }
+ .stage-state { font-size:9px;padding:4px 8px; }.magic-tag { font-size:10px; margin-top:3px; padding:3px 8px; }
+ .weapon-wrap { inset:6% 7% 20% 16%; }.weapon-wrap img { max-width:none; }
+ .weapon-orbit { left:55%;width:46%; }.enchantment-fx { inset:19% 12% 30% 23%; }
+ .appraisal { min-width:0; left:3%; bottom:5%; padding:4px 8px; border-radius:8px 3px; }
+ .appraisal-label,.appraisal small { font-size:9px; }.appraisal strong { font-size:clamp(14px,4vw,20px); }
+ .appraisal-label::before,.appraisal-label::after { margin:0 4px; }
+ .stage-bottom { inset-inline:38% 4%; bottom:5%; }.weapon-level { font-size:38px; }
+ .resources { padding-bottom:0; margin-bottom:8px; }.enchantment-card { margin:0 0 9px; min-height:32px; padding:3px 8px; gap:8px; }
+ .magic-mark {font-size:19px;}.enchantment-card strong {font-size:13px;}
+}
+@media(prefers-reduced-motion:reduce) { .enchantment-fx i { animation:none; } }
+.appraisal strong::before { content:""; display:inline-block; width:.94em; height:.9em; margin-right:.22em; background:url("assets/coins.svg") center/contain no-repeat; vertical-align:-.06em; }
+[data-enchantment=astral] .enchantment-fx::before { inset:24% 1% 5%; border:1.5px solid transparent; border-top-color:#ffdb73; border-bottom-color:#e99fff; rotate:15deg; }
+[data-enchantment=astral] .enchantment-fx::after { inset:25% 2% 6%; border:1px solid transparent; border-left-color:#fff0a2; border-right-color:#ffd3ff; rotate:22deg; }
+[data-enchantment=astral] .enchantment-fx i::before { color:#fff7c3; -webkit-text-stroke:.6px #ffa9ff; text-shadow:0 0 2px #fff,0 0 5px #ffbffa,0 0 14px #f78cff; }
+[data-enchantment=astral] .enchantment-fx i::after { content:""; position:absolute; inset:10% 20%; border:1px solid #ffe6aa; transform:rotate(45deg) skew(8deg,8deg); }
+@media(min-width:901px) {
+ .site-header,.shell { width:min(1268px,100% - 64px); }
+ .site-header { min-height:70px; }
+ .shell { padding-top:32px; }
+ .intro { margin-bottom:24px; }
+ .intro h1 { font-size:50px; }
+ .forge-layout { grid-template-columns:minmax(0,1fr) clamp(320px,23vw,352px); }
+ .stage-top h2,.weapon-level { display:flex; align-items:center; justify-content:center; gap:.35em; }
+ .stage-top h2::before,.stage-top h2::after,.weapon-level::before,.weapon-level::after { content:""; width:21px; height:32px; background:url("assets/laurel.svg") center/contain no-repeat; flex:none; }
+ .stage-top h2::after,.weapon-level::after { transform:scaleX(-1); }
+ .stage-top .magic-tag { margin-left:34px; }
+ .weapon-level::before,.weapon-level::after { align-self:flex-end; margin-bottom:.11em; }
+ .stage-top { inset:3.5% 3.4% auto; }
+ .appraisal { min-width:30%; padding:6px 11px 9px; }
+ .appraisal-label { font-size:17px; } .appraisal small { font-size:12px; }
+ .weapon-level { font-size:74px; gap:.12em; }
+ .outcome { min-height:68px; }
+ .enchantment-card strong { font-size:17px; }
+ .resources strong { font-size:27px; }
+ .risk-copy,.outcome p { font-size:12px; }
+ .forge-panel { padding-top:23px; }
+}
+@media(max-width:700px) {
+ .appraisal strong::before { width:.8em; margin-right:.12em; }
+ .weapon-wrap { inset:6% 6% 23% 18%; }
+}
+/* Carved gold corners and light pools keep the workshop an illuminated scene. */
+.stage-filigree { position:absolute; inset:0; z-index:6; pointer-events:none; }
+.stage-filigree i { position:absolute; width:66px; height:66px; background:url(assets/gold-corner.svg) center/contain no-repeat; }
+.stage-filigree i:nth-child(1) { left:0;top:0; }
+.stage-filigree i:nth-child(2) { right:0;top:0;transform:scaleX(-1); }
+.stage-filigree i:nth-child(3) { right:0;bottom:0;transform:scale(-1); }
+.stage-filigree i:nth-child(4) { left:0;bottom:0;transform:scaleY(-1); }
+.forge-light { position:absolute; inset:0; pointer-events:none; z-index:0; background:radial-gradient(ellipse at 5% 65%,#ff7b262b,transparent 30%),radial-gradient(ellipse at 88% 25%,#ffbc401d,transparent 22%),radial-gradient(ellipse at 52% 44%,#a4e9e511,transparent 49%); mix-blend-mode:screen; animation:forge-glow 6s ease-in-out infinite alternate; }
+@keyframes forge-glow { to { opacity:.55; } }
+.weapon-stage::before { box-shadow:inset 0 0 35px #0610157a; }
+.appraisal { background:linear-gradient(110deg,#f7ce7120,transparent 25% 75%,#e0a84b13),radial-gradient(ellipse at top,#654322,#372419 67%,#241915); }
+.appraisal::before,.appraisal::after { content:'◆'; position:absolute; left:50%; translate:-50% 0; font:10px/1 Georgia,serif; color:#ffe1a0; text-shadow:-12px 0 #aa652b,12px 0 #aa652b; }
+.appraisal::before { top:-7px; }.appraisal::after { bottom:-7px; }
+.enchantment-card { position:relative; background:radial-gradient(ellipse at 50% 0,#f4ccff25,transparent 68%),linear-gradient(110deg,#2a2026,var(--enamel) 55%,#2b2026); }
+.enchantment-card::before,.enchantment-card::after { content:'✧'; position:absolute; left:50%; translate:-50% 0; font:12px/1 Georgia,serif; color:#edb861; }
+.enchantment-card::before { top:-8px; }.enchantment-card::after { bottom:-8px; }
+[data-outcome=success] .appraisal { animation:appraisal-gain 750ms ease-out; }
+@keyframes appraisal-gain { 0% { filter:brightness(1); } 35% { filter:brightness(1.55); transform:translateY(-4px); } 100% { filter:brightness(1); transform:translateY(0); } }
+[data-enchantment=astral] .enchantment-fx::before { animation:astral-ribbon 7s ease-in-out infinite alternate; }
+[data-enchantment=astral] .enchantment-fx::after { animation:astral-ribbon 9s ease-in-out -3s infinite alternate-reverse; }
+@keyframes astral-ribbon { to { rotate:-3deg; scale:1.05 .94; } }
+[data-enchantment=frost] .enchantment-fx i { animation:frost-drift 7s ease-in-out infinite alternate; }
+@keyframes frost-drift { from { translate:0 -7px;rotate:-12deg;opacity:.5; } to { translate:4px 9px;rotate:20deg;opacity:1; } }
+[data-enchantment=storm] .enchantment-fx::before,[data-enchantment=storm] .enchantment-fx::after { animation:storm-current 4.6s steps(1,end) infinite; }
+[data-enchantment=storm] .enchantment-fx::after { animation-delay:-2.3s; }
+@keyframes storm-current { 0%,9%,100% { opacity:.8; } 4%,14% { opacity:.15; } 20%,92% { opacity:.35; } }
+[data-enchantment=lunar] .enchantment-fx::before { animation:lunar-tide 8s ease-in-out infinite alternate; }
+@keyframes lunar-tide { to { transform:rotate(-7deg);opacity:.45; } }
+@media(min-width:901px) {
+ .weapon-stage { min-height:606px; }
+ .weapon-wrap { inset:3% 10% 24%; }
+ .weapon-orbit { width:47%;max-width:none; }
+ .stage-bottom { inset-inline:39% 22%;bottom:3%; }
+ .appraisal { bottom:3%;left:2.5%; }
+ .next-form { font-size:12px;white-space:nowrap; }
+ .resources { margin-bottom:18px; }
+ .enchantment-card { margin-bottom:23px;min-height:54px; }
+ .chance-bar { margin-top:0; }
+ .chances dd { font-size:23px; }
+ .smelter { padding-block:17px; }
+ .lab { font-weight:700;font-size:18px; }
+}
+@media(max-width:700px) {
+ .stage-filigree i { width:37px;height:37px; }
+ .weapon-stage { height:clamp(224px,64vw,315px); }
+ .forge-panel { padding-top:11px; }
+ .enchantment-card { margin-bottom:4px; }
+ .attempt-heading { margin-top:9px;margin-bottom:8px; }
+ .chances > div { flex-direction:column;gap:2px; }
+ .chances dt { font-size:10px;white-space:nowrap; }
+ .chances dd { font-size:18px; }
+ .risk-copy { margin-top:8px; }
+ .strengthen { margin-top:10px; }
+ .outcome { margin-top:5px; }
+ .waiting { min-height:20px;padding-top:7px; }
+ .smelter { margin-top:9px;padding-block:8px; }
+ .appraisal { max-width:46%; }
+ .appraisal small { line-height:1.4;overflow-wrap:anywhere; }
+ .next-form { margin-top:4px; }
+}
+@media(prefers-reduced-motion:reduce) {
+ .forge-light,.appraisal,.enchantment-fx::before,.enchantment-fx::after,.enchantment-fx i { animation:none!important; }
+}
+/* Final illustration pass: keep the blade crisp and let its engraved materials carry the light. */
+.weapon-wrap img { filter:saturate(1.08) contrast(1.025) drop-shadow(0 0 2px #ffeac580) drop-shadow(0 0 12px color-mix(in srgb,var(--magic) 24%,transparent)) drop-shadow(3px 9px 6px #160e1a85); }
+.appraisal strong { font-variant-numeric:lining-nums tabular-nums; }
+.forge-panel { background:radial-gradient(ellipse at 18% 4%,#fffdf580,transparent 55%),linear-gradient(115deg,#fff5e2,#f5e8ce); }
+.enchantment-card { box-shadow:0 0 0 1px #865630,inset 0 0 0 2px #5a322d,inset 0 0 17px #ecad5760,0 2px 4px #6e492644; }
+.strengthen:enabled { box-shadow:0 4px 0 #754126,inset 0 1px 0 #ffe0a8,inset 0 0 16px #ffd27824; }
+@media(min-width:901px) {
+ .weapon-wrap { inset:4% 9% 23%; }
+ .weapon-stage { min-height:606px; }
+ .enchantment-card { margin-bottom:20px; }
+ .strengthen { margin-top:15px; }
+ .outcome { margin-top:12px; }
+ .smelter { padding-block:15px; }
+ .appraisal { min-width:31%; }
+ .stage-bottom { bottom:3.4%; }
+}
+@media(max-width:700px) {
+ .weapon-wrap { inset:6% 5% 22% 17%; }
+ .magic-tag { box-shadow:inset 0 0 0 2px #372923,inset 0 0 0 3px #a97a44,0 2px 8px #130e09; }
+ .appraisal { background:linear-gradient(120deg,#5b3c20,#302017); }
+}
+@media (max-width:360px) { .weapon-stage { height:204px; } }

@@ -117,3 +117,59 @@ test('post +48 forms keep changing and failed attempts cannot erase the collecti
   assert.equal(state.bestLevel, 80n);
   assert.equal(Forge.forms.filter(form => form.level <= state.bestLevel).length, 20);
 });
+
+test('same-level appraisal reflects the actual persistent magical affix', () => {
+  const expected = {
+    cinder: 646416n,
+    frost: 861888n,
+    storm: 1023492n,
+    astral: 1292832n,
+    lunar: 1723776n,
+  };
+  for (const [enchantment, value] of Object.entries(expected)) {
+    const state = Forge.restore({ version: 2, level: '32', bestLevel: '32', shards: '9000000', enchantment }, 100000);
+    assert.equal(Forge.appraisal(state).base, 538680n);
+    assert.equal(Forge.appraisal(state).value, value);
+    Forge.collectPassive(state, 102000);
+    assert.equal(state.enchantment, enchantment);
+    const saved = Forge.restore(JSON.parse(Forge.serialize(state)), 102000, () => 0.99);
+    assert.equal(saved.enchantment, enchantment);
+    const before = Forge.appraisal(saved).value;
+    Forge.act(saved, 103000, () => 0);
+    assert(Forge.appraisal(saved).value > before);
+    assert.equal(saved.enchantment, enchantment);
+  }
+});
+
+test('magical affinity survives a reset and is drawn again when a broken sword is reforged', () => {
+  const state = Forge.restore({ version: 2, level: '31', bestLevel: '31', shards: '9000000', enchantment: 'astral' }, 100000);
+  const odds = Forge.preview(state);
+  const reset = Forge.act(state, 100000, () => odds.success / 10000);
+  assert.equal(reset.kind, 'reset');
+  assert.equal(state.enchantment, 'astral');
+  assert.equal(Forge.appraisal(state).value, 288n);
+
+  state.level = 31n;
+  const nextOdds = Forge.preview(state);
+  const broken = Forge.act(state, 101000, () => (nextOdds.success + nextOdds.reset) / 10000);
+  assert.equal(broken.kind, 'shatter');
+  assert.equal(Forge.appraisal(state).value, 0n);
+  const newSword = Forge.act(state, 102000, () => 0.99);
+  assert.equal(newSword.kind, 'reforge');
+  assert.equal(state.enchantment, 'lunar');
+  assert.equal(Forge.appraisal(state).value, 384n);
+  assert.equal(state.bestLevel, 31n);
+});
+
+test('affix creation respects draw boundaries and old-save migration is stable', () => {
+  for (const [roll, expected] of [[0,'cinder'],[0.38,'frost'],[0.66,'storm'],[0.84,'astral'],[0.96,'lunar']]) {
+    assert.equal(Forge.restore(null, 100000, () => roll).enchantment, expected);
+  }
+  const old = { version: 2, level: '32', bestLevel: '32', shards: '100000' };
+  assert.equal(Forge.restore(old, 100000, () => 0).enchantment, 'astral');
+  assert.equal(Forge.restore(old, 100000, () => 0.99).enchantment, 'astral');
+  const veryHigh = Forge.restore({ level: '900719925474099312345678901234567890', enchantment: 'lunar' }, 100000);
+  const appraisal = Forge.appraisal(veryHigh);
+  assert(appraisal.value > appraisal.base);
+  assert.equal(Forge.restore(JSON.parse(Forge.serialize(veryHigh)),100000).enchantment,'lunar');
+});

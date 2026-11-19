@@ -7,9 +7,9 @@
   <meta name="description" content="한 번 더, 어디까지 갈까. 강화 제한 없이 검을 벼리고 실패와 파괴를 넘어 최고 기록에 도전하는 몽글 대장간.">
   <title>몽글 대장간 · 끝없는 강화</title>
   <link rel="stylesheet" href="forge-effects.css?v=infinite-1">
-  <link rel="stylesheet" href="forge.css?v=infinite-2">
-  <script src="forge-engine.js?v=infinite-1" defer></script>
-  <script src="forge.js?v=infinite-2" defer></script>
+  <link rel="stylesheet" href="forge.css?v=appraisal-3">
+  <script src="forge-engine.js?v=appraisal-1" defer></script>
+  <script src="forge.js?v=appraisal-3" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#strengthen">강화 버튼으로 바로가기</a>
@@ -27,13 +27,17 @@
 
     <div class="forge-layout">
       <section class="weapon-stage" id="weapon-stage" aria-label="지금 벼리는 검">
-        <div class="stage-top"><div><span id="awakening" class="awakening" hidden></span><h2 id="weapon-name">연습용 나무검</h2></div><span class="stage-state" id="stage-state">강화 준비</span></div>
+        <div class="stage-filigree" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+        <div class="forge-light" aria-hidden="true"></div>
+        <div class="stage-top"><div><span id="awakening" class="awakening" hidden></span><h2 id="weapon-name">연습용 나무검</h2><span class="magic-tag" id="magic-tag"></span></div><span class="stage-state" id="stage-state">강화 준비</span></div>
         <div class="weapon-orbit" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="enchantment-fx" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
         <div class="weapon-wrap" id="weapon-wrap">
           <img id="weapon" src="assets/sword-0.webp" alt="연습용 나무검" width="360" height="360" fetchpriority="high">
         </div>
         <div class="technique-fx" id="technique-fx" aria-hidden="true"></div>
         <div class="forge-fx" id="forge-fx" aria-hidden="true"></div>
+        <div class="appraisal"><span class="appraisal-label">감정가</span><strong id="sword-value"></strong><small id="value-formula"></small></div>
         <div class="stage-bottom">
           <p class="weapon-level" id="level">+0</p>
           <p class="next-form" id="next-form"></p>
@@ -45,6 +49,7 @@
           <img src="assets/ore.webp" alt="" width="40" height="40">
           <div><span>보유 별철</span><strong id="wallet">120</strong></div>
         </div>
+        <div class="enchantment-card" id="enchantment-card"><span class="magic-mark" id="magic-mark" aria-hidden="true"></span><strong id="magic-name"></strong><span class="magic-rank" id="magic-rank"></span><b id="magic-multiplier"></b></div>
         <div class="attempt-heading"><h2 id="attempt-title">+1에 도전</h2><span id="attempt-cost">16 별철</span></div>
 
         <div id="probabilities">
@@ -58,7 +63,7 @@
           <p class="pity" id="forge-bonus" hidden></p>
         </div>
 
-        <div id="broken-copy" class="broken-copy" hidden><h3>검이 산산이 부서졌어요.</h3><p>제작비를 내고 새 검을 만들면 +0에서 다시 시작해요.</p></div>
+        <div id="broken-copy" class="broken-copy" hidden><h3>검이 산산이 부서졌어요.</h3><p>제작비를 내고 새 검을 만들면 마법 효과가 새로 정해지고 +0에서 다시 시작해요.</p></div>
         <button class="strengthen" id="strengthen" type="button" aria-describedby="probabilities broken-copy"><span id="button-label">강화하기</span><span aria-hidden="true" id="button-icon">✦</span></button>
         <p class="waiting" id="waiting">스페이스바로도 강화할 수 있어요.</p>
         <div class="outcome" id="outcome" role="status" aria-live="polite"><strong id="outcome-title">한 번 더, 어디까지 갈까.</strong><p id="outcome-copy">별철을 모아 검의 다음 모습을 발견하세요.</p></div>

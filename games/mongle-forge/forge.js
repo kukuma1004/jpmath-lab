@@ -5,7 +5,7 @@
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   const number = new Intl.NumberFormat('ko-KR');
   const percent = value => (value / 100).toLocaleString('ko-KR', { maximumFractionDigits: 2 }) + '%';
-  const asset = name => 'assets/' + name + '.webp';
+  const asset = name => 'assets/' + (name === 'sword-32' ? 'sword-32-appraisal' : name) + '.webp';
   const stage = $('weapon-stage');
   const weapon = $('weapon');
   const button = $('strengthen');
@@ -74,6 +74,20 @@
 
   function renderWeapon() {
     const form = Forge.formAt(state.level);
+    const { enchantment, base, value } = Forge.appraisal(state);
+    const multiplier = (Number(enchantment.tenths) / 10).toFixed(1);
+    stage.dataset.enchantment = enchantment.id;
+    $('enchantment-card').dataset.enchantment = enchantment.id;
+    $('enchantment-card').hidden = state.broken;
+    $('magic-tag').hidden = state.broken;
+    $('magic-tag').textContent = enchantment.mark + ' ' + enchantment.name;
+    $('magic-mark').textContent = enchantment.mark;
+    $('magic-name').textContent = enchantment.name;
+    $('magic-rank').textContent = enchantment.rank;
+    $('magic-multiplier').textContent = '가치 ×' + multiplier;
+    $('sword-value').textContent = fmt(value) + ' G';
+    $('sword-value').title = number.format(value) + ' G';
+    $('value-formula').textContent = state.broken ? '파괴된 검' : '기본 ' + fmt(base) + ' × 특수효과 ' + multiplier;
     const name = state.broken ? '깨진 검' : form.name;
     const src = asset(state.broken ? 'broken-sword' : 'sword-' + form.level);
     if (src !== shownWeapon) {

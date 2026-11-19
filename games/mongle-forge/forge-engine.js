@@ -39,6 +39,29 @@ const Forge = (() => {
     { level: 48n, name: '무한 매듭검', effect: 'infinity', color: '#c6ffe4', detail: '두 번 휘감긴 칼날로 이어지는 무한' },
   ];
 
+  const enchantments = [
+    { id: 'cinder', name: '잿불의 숨결', rank: '일반', mark: '♨', tenths: 12n, weight: 38 },
+    { id: 'frost', name: '서리꽃 각인', rank: '희귀', mark: '❄', tenths: 16n, weight: 28 },
+    { id: 'storm', name: '폭풍의 맹세', rank: '희귀', mark: 'ϟ', tenths: 19n, weight: 18 },
+    { id: 'astral', name: '별빛의 축복', rank: '영웅', mark: '✦', tenths: 24n, weight: 12 },
+    { id: 'lunar', name: '월식의 계약', rank: '전설', mark: '☾', tenths: 32n, weight: 4 },
+  ];
+
+  function rollEnchantment(random) {
+    let roll = random() * 100;
+    for (const enchantment of enchantments) {
+      roll -= enchantment.weight;
+      if (roll < 0) return enchantment.id;
+    }
+    return enchantments.at(-1).id;
+  }
+
+  function appraisal(state) {
+    const enchantment = enchantments.find(entry => entry.id === state.enchantment);
+    const base = state.broken ? 0n : 120n + 15n * state.level * (state.level + 1n) * (state.level + 2n);
+    return { enchantment, base, value: enchantment ? base * enchantment.tenths / 10n : base };
+  }
+
   function natural(value, fallback = 0n) {
     if (typeof value === 'bigint') return value >= 0n ? value : fallback;
     if (typeof value === 'number') return Number.isSafeInteger(value) && value >= 0 ? BigInt(value) : fallback;
@@ -50,7 +73,7 @@ const Forge = (() => {
     return Number.isFinite(value) && value >= 0 ? Math.min(value, now) : now;
   }
 
-  function restore(raw, now = Date.now()) {
+  function restore(raw, now = Date.now(), random = Math.random) {
     const old = raw && typeof raw === 'object' ? raw : {};
     const level = natural(old.level);
     const priorBest = natural(old.bestLevel);
@@ -78,6 +101,8 @@ const Forge = (() => {
       version: 2,
       level,
       bestLevel,
+      enchantment: enchantments.some(entry => entry.id === old.enchantment) ? old.enchantment :
+        raw ? enchantments[Number((level / 8n + 4n) % 5n)].id : rollEnchantment(random),
       shards: natural(old.shards, 120n),
       broken: old.version === 2 && old.broken === true,
       attempts: natural(old.attempts),
@@ -160,6 +185,7 @@ const Forge = (() => {
     let kind;
     if (state.broken) {
       kind = 'reforge';
+      state.enchantment = rollEnchantment(random);
       state.broken = false;
       state.level = 0n;
     } else {
@@ -186,7 +212,7 @@ const Forge = (() => {
     return { ...event, spent: offer.cost };
   }
 
-  return { saveKey, backupKey, cooldown, recoveryBonus, offlineLimit, forms, restore, serialize, formAt, cost, income, preview, collectPassive, act };
+  return { saveKey, backupKey, cooldown, recoveryBonus, offlineLimit, forms, enchantments, appraisal, restore, serialize, formAt, cost, income, preview, collectPassive, act };
 })();
 
 if (typeof module !== 'undefined') module.exports = Forge;
