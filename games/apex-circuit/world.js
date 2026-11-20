@@ -2,7 +2,8 @@ import { frontier } from './world-frontiers.js?v=9';
 import * as T from './vendor/three.module.min.js';
 import { grain, alpine, metropolis, coastalBridge, roadFurniture } from './world-landmarks.js?v=9';
 import { harborVillage, quarryArch, streetShops } from './world-districts.js?v=9';
-import { courseFrame, coursePoint, track } from './track.js?v=5';
+import { expansion } from './world-expansion.js?v=11';
+import { courseFrame, coursePoint, track } from './track.js?v=11';
 
 const box = new T.BoxGeometry();
 const dummy = new T.Object3D();
@@ -29,6 +30,8 @@ const roadStyles = {
   metro: { curb: 0x3e8792, pale: 0xb8dce3, shoulder: 0x476277, signal: 0x36889c, sign: '#102c3e' },
   frost: { curb: 0x367782, pale: 0xe5f3f0, shoulder: 0x7996a4, signal: 0x42778f, sign: '#163746', dust: [.29, .38, .41] },
   redrock: { curb: 0xc18243, pale: 0xf8d99b, shoulder: 0xa17958, signal: 0xb26835, sign: '#3e2b27', dust: [.32, .19, .11] },
+  windway: { curb: 0x286e85, pale: 0xf4e9b9, shoulder: 0x8e9c97, signal: 0x326e7b, sign: '#18394a', dust: [.16, .21, .20] },
+  foundry: { curb: 0xc4934f, pale: 0xeee1b3, shoulder: 0x677476, signal: 0x8d5d3a, sign: '#243842', dust: [.15, .17, .17] },
 };
 
 function randomFrom(seed) {
@@ -690,10 +693,13 @@ export function buildWorld(scene, course = track) {
   const theme = course.id || 'sunset';
   const night = theme === 'metro', mountain = theme === 'summit';
   const extra = theme === 'frost' || theme === 'redrock';
-  scene.fog = new T.FogExp2(theme === 'frost' ? 0xc4d9e5 : theme === 'redrock' ? 0xe1ab85 : night ? 0x343854 : mountain ? 0xabb9bf : 0xd4aa92, night ? .0041 : mountain ? .0026 : .00125);
+  const expanded = theme === 'windway' || theme === 'foundry';
+  scene.fog = new T.FogExp2(theme === 'foundry' ? 0xa6a29a : theme === 'windway' ? 0xb5c6ca : theme === 'frost' ? 0xc4d9e5 : theme === 'redrock' ? 0xe1ab85 : night ? 0x343854 : mountain ? 0xabb9bf : 0xd4aa92, night ? .0041 : mountain ? .0026 : .00125);
   scene.background = new T.Color(0xd4bfa8);
-  sky(scene, night, mountain, theme);
-  const waves = extra || night || mountain ? {value: 0} : water(scene);
+  // New kits deliberately share existing photographic skies; no unprovided assets.
+  const horizon = theme === 'windway' ? 'sunset' : theme === 'foundry' ? 'redrock' : theme;
+  sky(scene, night, mountain, horizon);
+  const waves = extra || night || mountain || theme === 'foundry' ? {value: 0} : water(scene);
   scene.add(new T.HemisphereLight(night ? 0x97c2ff : extra ? 0xd4e8ff : 0xffe8ca, night ? 0x71628b : 0x639aaf, 1.05));
   const sun = new T.DirectionalLight(night ? 0xb3dcff : theme === 'frost' ? 0xf9f2df : theme === 'redrock' ? 0xffdfb8 : mountain ? 0xffe3bf : 0xffcb8d, night ? 1.7 : 3.4);
   sun.target.position.set(-21, 0, -18);
@@ -710,7 +716,8 @@ export function buildWorld(scene, course = track) {
   const rim = new T.DirectionalLight(0xb5dfff, 1.00);
   rim.position.set(-85, 48, 90);
   scene.add(rim);
-  if (extra) frontier(scene, course, {block,surface,placard,grain});
+  if (expanded) expansion(scene, course, {block,surface,placard,grain}, waves);
+  else if (extra) frontier(scene, course, {block,surface,placard,grain});
   else if (mountain) alpine(scene, course, waves);
   else if (night) metropolis(scene, course);
   else { scenery(scene, waves); coastalBridge(scene); }
@@ -720,7 +727,7 @@ export function buildWorld(scene, course = track) {
   scene.userData.assetsReady = Promise.all([scene.userData.horizonReady, scene.userData.facadeReady || Promise.resolve(false)])
     .then(loaded => loaded.some(Boolean));
   roadFurniture(scene, course, theme);
-  const lights = gantry(scene, course, theme === 'frost' ? 'FROST PASS' : theme === 'redrock' ? 'RED ROCK CANYON' : mountain ? 'SKYLINE DROP' : night ? 'MIDNIGHT RING' : 'SUNSET PIER');
+  const lights = gantry(scene, course, theme === 'windway' ? 'TURBINE CAUSEWAY' : theme === 'foundry' ? 'IRONWORKS DROP' : theme === 'frost' ? 'FROST PASS' : theme === 'redrock' ? 'RED ROCK CANYON' : mountain ? 'SKYLINE DROP' : night ? 'MIDNIGHT RING' : 'SUNSET PIER');
   combineStaticBoxes(scene);
   scene.traverse(object => {
     if (!object.isMesh || !object.material.isMeshStandardMaterial) return;

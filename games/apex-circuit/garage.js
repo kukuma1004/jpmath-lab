@@ -21,6 +21,23 @@ function courseOutline(track) {
 
 export function bindGarage({ vehicleSpecs, tracks, onVehicle, onCourse }) {
   const description = document.getElementById('garage-description');
+  const scroll = document.querySelector('.garage-scroll');
+  const scrollHint = document.createElement('p');
+  scrollHint.className = 'garage-scroll-hint';
+  scrollHint.textContent = '밀어서 차량·코스 더 보기 ↓';
+  scrollHint.hidden = true;
+  scroll.after(scrollHint);
+  let hintFrame = 0;
+  function refreshScrollHint() {
+    if (hintFrame) return;
+    hintFrame = requestAnimationFrame(() => {
+      hintFrame = 0;
+      scrollHint.hidden = scroll.scrollHeight <= scroll.clientHeight + 2 ||
+        scroll.scrollTop + scroll.clientHeight >= scroll.scrollHeight - 4;
+    });
+  }
+  scroll.addEventListener('scroll', refreshScrollHint, { passive: true });
+  new ResizeObserver(refreshScrollHint).observe(scroll);
   const brands = { apex: 'APEX', tesla: '테슬라', hyundai: '현대', audi: '아우디' };
   const brandOf = spec => spec.brand || 'apex';
   const selectedByBrand = new Map();
@@ -58,7 +75,7 @@ export function bindGarage({ vehicleSpecs, tracks, onVehicle, onCourse }) {
       if (key === 'vehicle') {
         const type = document.createElement('small');
         button.dataset.make = brandOf(item);
-        type.textContent = item.cosmetic ? item.bodyClass || '' : [item.type, Number.isFinite(item.topSpeed) ? Math.round(item.topSpeed * 3.6) + 'km/h' : ''].filter(Boolean).join(' · ');
+        type.textContent = item.type || item.bodyClass || '';
         button.title = item.description || item.name;
         if (type.textContent) button.append(type);
       } else {
@@ -91,9 +108,37 @@ export function bindGarage({ vehicleSpecs, tracks, onVehicle, onCourse }) {
       button.setAttribute('aria-pressed', String(button.dataset.vehicle === vehicleId));
     }
     for (const button of courses) button.setAttribute('aria-pressed', String(button.dataset.course === course));
+    const profile = document.getElementById('vehicle-profile');
+    const heading = document.createElement('div');
+    heading.className = 'vehicle-trait';
+    const trait = document.createElement('strong');
+    trait.textContent = spec.type || spec.bodyClass || '밸런스';
+    const note = document.createElement('small');
+    note.textContent = '게임 내 튜닝';
+    heading.append(trait, note);
+    const stats = document.createElement('dl');
+    const tuning = [
+      ['최고 속도', Math.round(spec.topSpeed * 3.6) + ' km/h'],
+      ['출발 가속', (spec.acceleration / 18).toFixed(2) + '×'],
+      ['코너 그립', spec.grip.toFixed(2) + '×'],
+      ['부스터', (1 / (spec.boostDrain || .4)).toFixed(1) + '초']
+    ];
+    for (const [label, value] of tuning) {
+      const group = document.createElement('div');
+      const term = document.createElement('dt');
+      const detail = document.createElement('dd');
+      term.textContent = label;
+      detail.textContent = value;
+      group.append(term, detail);
+      stats.append(group);
+    }
+    const detail = document.createElement('p');
+    detail.textContent = spec.description || '';
+    profile.replaceChildren(heading, stats, detail);
     const track = tracks.find(item => item.id === course);
     description.textContent = track?.description || '';
     document.getElementById('result-course').textContent = track?.name || '';
+    refreshScrollHint();
   }
   select(vehicleSpecs[0].id, tracks[0].id);
   return select;

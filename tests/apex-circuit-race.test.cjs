@@ -6,18 +6,18 @@ before(async()=>{
   ({tracks}=await import('../games/apex-circuit/track.js'));
 });
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-function drive(track,trained=false){
-  const race=createRace(track,vehicleSpecs.find(v=>v.id==='model-3'));
+function drive(track,trained=false,id='model-3'){
+  const spec=vehicleSpecs.find(v=>v.id===id),race=createRace(track,spec);
   let boostFrames=0,boostEnded=false,wasBoosting=false;
   const previous=race.cars.map(c=>c.distance);
   for(let frame=0;frame<18000&&!race.finished;frame++){
     const p=race.cars[0],curve=track.sample(p.distance+8).curve;
     let steer=0,brake=false;
     if(trained){
-      let aim=-Math.sign(curve)*Math.min(4,Math.abs(curve)*170);
+      let aim=-clamp(track.sample(p.distance+7).curve*145,-4.4,4.4);
       const traffic=race.cars.slice(1).find(c=>c.distance-p.distance>0&&c.distance-p.distance<15&&Math.abs(c.lane-aim)<2.5);
-      if(traffic)aim=traffic.lane>0?-4:4;
-      if(race.boost<.8){
+      if(traffic)aim=traffic.lane>0?-4.4:4.4;
+      if(race.boost<.86){
         let nextPad;
         for(const pad of track.pads){
           const gap=((pad.distance-p.distance)%track.length+track.length)%track.length;
@@ -25,10 +25,13 @@ function drive(track,trained=false){
         }
         if(nextPad&&nextPad.gap<32)aim=nextPad.lane;
       }
-      steer=clamp((aim-p.lane)*.5-p.lateralSpeed*.10,-1,1);
-      brake=Math.abs(curve)>.008&&Math.abs(curve)<.05&&Math.abs(steer)>.22&&Math.abs(p.lane)<4.1&&frame%95<31;
+      const bend=track.sample(p.distance+7).curve;
+      brake=Math.abs(bend)>.007&&Math.abs(bend)<.075&&p.speed>27&&(race.boost<.72||Math.abs(bend)>.045)&&frame%53<32;
+      const outward=clamp(track.sample(p.distance).curve*p.speed**2*(brake?.065:.155)/spec.grip,-11,11);
+      steer=clamp((clamp((aim-p.lane)*4-p.lateralSpeed*.45,-11,11)-outward)/(brake?11.5:13.8),-1,1);
+      if(brake&&Math.abs(steer)<.22)steer=steer<0?-.23:.23;
     }
-    const boost=trained?!brake&&frame%190<135:frame%240<160;
+    const boost=trained?!brake&&race.boost>.16&&(Math.abs(track.sample(p.distance+7).curve)<.045||race.boost>.8):frame%240<160;
     race.step(1/60,{steer,brake,boost});
     let active=false;
     race.cars.forEach((car,i)=>{
@@ -56,8 +59,77 @@ test('rivals contest repeated boosts with bounded rechargeable boost and continu
   }
   assert.ok(easyWins<=2,'repeated boosts without steering do not win every course');
 });
-test('racing lines, charging pads and timed drift keep the stronger rivals beatable on every course',()=>{
-  for(const track of tracks)assert.equal(drive(track,true).race.place,1,track.id+' can be won through the input system');
+test('expert lines and drift can win every course while untimed boost loses the same races',()=>{
+  for(const track of tracks){
+    const expert=drive(track,true,'nova').race;
+    assert.equal(expert.place,1,track.id+' can be won through steering/drift/boost inputs');
+    assert.ok(drive(track).race.place>1,track.id+' requires more than repeated boost');
+    assert.ok(expert.cars.slice(1).some(c=>c.padCharges>0),track.id+' rivals collect real charging pads');
+    assert.ok(expert.cars.slice(1).some(c=>c.driftExits>0),track.id+' rivals use corner-exit kicks');
+  }
+});
+test('ten arcade profiles differ in measured acceleration, steering and boost endurance',()=>{
+  assert.equal(vehicleSpecs.length,10);
+  const signatures=new Set(vehicleSpecs.map(s=>[s.topSpeed,s.acceleration,s.grip,s.boostDrain].join(':')));
+  assert.equal(signatures.size,10,'every car has its own driving profile');
+  // A flat isolated fixture measures actual input response without traffic or pad pickups.
+  const straight={length:10000,halfWidth:8,pads:[],gaps:[],sample(d,out={}){return Object.assign(out,{curve:0,slope:0,y:0});}};
+  const stats=Object.fromEntries(vehicleSpecs.map(spec=>{
+    const r=createRace(straight,spec);r.cars.slice(1).forEach(c=>c.distance=-1000);
+    for(let f=0;f<60;f++)r.step(1/60,{});
+    const speed=r.cars[0].speed;r.boost=1;
+    for(let f=0;f<60;f++)r.step(1/60,{boost:true});
+    return [spec.id,{speed,charge:r.boost}];
+  }));
+  assert.ok(stats['ioniq-5-n'].speed>stats.cybertruck.speed+5,'corner hatch reaccelerates faster than heavy truck');
+  assert.ok(stats.cybertruck.charge>stats.raptor.charge+.2,'truck boost lasts materially longer than the power prototype');
+  assert.ok(vehicleSpecs.find(s=>s.id==='raptor').topSpeed>vehicleSpecs.find(s=>s.id==='nova').topSpeed+8,'speed and grip classes trade top speed');
+});
+test('road opponents use the actual models visible on their grid',()=>{
+  const roster=vehicleSpecs.filter(s=>s.cosmetic),start=roster.findIndex(s=>s.id==='model-y');
+  const r=createRace(tracks[0],roster[start]);
+  assert.deepEqual(r.cars.map(c=>c.vehicleId),Array.from({length:5},(_,i)=>roster[(start+i)%roster.length].id));
+  const straight={length:10000,halfWidth:8,pads:[],gaps:[],sample(d,out={}){return Object.assign(out,{curve:0,slope:0,y:0});}};
+  const grid=createRace(straight,roster[start]);
+  for(let f=0;f<60;f++)grid.step(1/60,{});
+  const truck=grid.cars.find(c=>c.vehicleId==='cybertruck'),hatch=grid.cars.find(c=>c.vehicleId==='ioniq-5-n');
+  assert.ok(hatch.speed>truck.speed+6,'CPU models retain their different launch acceleration');
+});
+test('hands-off steering keeps the chosen line and corner drifting preserves more pace',()=>{
+  const flat={length:10000,halfWidth:8,pads:[],gaps:[],sample(d,out={}){return Object.assign(out,{curve:0,slope:0,y:0});}};
+  const spec=vehicleSpecs[0],r=createRace(flat,spec),p=r.cars[0];
+  p.lane=3;p.speed=34;r.cars.slice(1).forEach(c=>c.distance=-1000);
+  for(let f=0;f<60;f++)r.step(1/60,{});
+  assert.ok(p.lane>2.5&&p.lane<3,'releasing steering no longer pulls the car quickly back to center');
+  const corner={...flat,sample(d,out={}){return Object.assign(out,{curve:.02,slope:0,y:0});}};
+  const coast=createRace(corner,spec),slide=createRace(corner,spec);
+  for(const race of [coast,slide]){race.cars[0].speed=40;race.cars.slice(1).forEach(c=>c.distance=-1000);}
+  for(let f=0;f<30;f++){coast.step(1/60,{});slide.step(1/60,{steer:-.5,brake:true});}
+  assert.ok(coast.cars[0].lane>1,'unsteered fast corner pushes the car outward');
+  assert.ok(slide.drifting&&slide.cars[0].speed>coast.cars[0].speed+2,'active drift earns corner speed instead of automatic corner help');
+});
+test('holding boost against a curved outer rail cannot act as automatic cornering',()=>{
+  const corner={length:10000,halfWidth:8,pads:[],gaps:[],sample(d,out={}){return Object.assign(out,{curve:.04,slope:0,y:0});}};
+  const spec=vehicleSpecs.find(s=>s.id==='cybertruck'),r=createRace(corner,spec),p=r.cars[0];
+  p.lane=corner.halfWidth-2.35*.52;p.speed=spec.topSpeed;r.boost=1;
+  r.cars.slice(1).forEach(c=>c.distance=-1000);let hits=0;
+  for(let f=0;f<120;f++){r.step(1/60,{boost:true});if(r.events.includes('wall'))hits++;}
+  assert.ok(p.speed<spec.cruiseSpeed*.9,'sustained rail friction beats full turbo');
+  assert.equal(hits,1,'continuous scraping does not spam impact events');
+  for(let f=0;f<30;f++)r.step(1/60,{steer:-1,brake:true});
+  assert.ok(p.lane<corner.halfWidth-2,'steer/drift away from the rail recovers control');
+});
+test('new courses have distinct routes, bounded grade and a genuine foundry drop',()=>{
+  assert.equal(tracks.length,7);
+  for(const id of ['windway','foundry']){
+    const t=tracks.find(t=>t.id===id);assert.ok(t&&t.length>500&&t.pads.length>=3);
+    for(let d=0;d<t.length;d+=2){const p=t.sample(d);assert.ok(Number.isFinite(p.curve)&&Math.abs(p.slope)<1.2,id+' finite driveable grade');}
+  }
+  const t=tracks.find(t=>t.id==='foundry'),r=createRace(t,vehicleSpecs[0]),p=r.cars[0],gap=t.gaps[0];
+  assert.ok(gap.end>gap.start&&gap.drop>=15,'authored road cut');p.distance=gap.start-.2;p.speed=34;
+  r.step(1/60,{});assert.ok(p.airborne&&p.air>0);
+  for(let f=0;f<300&&p.airborne;f++)r.step(1/60,{});
+  assert.ok(!p.airborne&&p.air===0,'real drop returns to the catch road');
 });
 test('clean corner drift preserves pace and rewards release while straight braking slows',()=>{
   const track=tracks.find(t=>t.id==='redrock'),spec=vehicleSpecs.find(v=>v.id==='model-3');

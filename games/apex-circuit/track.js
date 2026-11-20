@@ -35,6 +35,20 @@ const redrockPoints = [
   [-52,6,-44],[-90,6,-62],[-117,9,-58],[-133,12,-36],
   [-120,13,-12],[-91,10,2],[-84,8,16],[-102,5,31],[-100,4,45]
 ];
+// The open causeway rewards a long boost, then asks for one deliberate S transition.
+const windwayPoints = [
+  [-118,7,58],[-65,8,58],[10,9,58],[86,13,56],[131,17,38],
+  [146,19,7],[134,20,-19],[116,18,-32],[106,15,-56],[88,12,-75],
+  [45,9,-89],[-28,7,-89],[-91,6,-80],[-125,6,-56],[-144,7,-20],[-143,7,24]
+];
+// A straight upper gantry leads to a separate lower catch deck. The gap endpoints
+// are control points, so the road mesh and the flight system share the same cut.
+const foundryPoints = [
+  [-108,8,58],[-60,10,58],[-5,14,58],[59,19,52],[106,25,29],
+  [117,32,-5],[99,36,-32],[65,38,-44],[45,39,-44],[1,21,-44],
+  [-26,20,-44],[-53,18,-44],[-82,14,-80],[-117,11,-68],
+  [-133,9,-43],[-141,8,-11],[-142,8,24],[-132,8,47]
+];
 function makeCourse(meta, points, setup) {
   const line = new T.CatmullRomCurve3(points.map(v => new T.Vector3(...v)), true, 'centripetal');
   line.arcLengthDivisions = 1600;
@@ -106,7 +120,12 @@ export const tracks = [
   makeCourse({ id: 'frost', name: '프로스트 패스', subtitle: '빙하 저수지', description: '댐을 건너 눈 덮인 고갯길의 연속 헤어핀을 공략하세요.', halfWidth: 7.4 }, frostPoints,
     (length, at) => ({ pads: [{distance: 44, lane: -2.8}, {distance: at(7)+6, lane: 2}, {distance: at(13), lane: -3}, {distance: at(20)+6, lane: 2.6}] })),
   makeCourse({ id: 'redrock', name: '레드록 캐니언', subtitle: '사암 채석장', description: '붉은 암벽 사이의 긴 고속 코너를 지나 채석장 굽잇길로 진입하세요.', halfWidth: 8.1 }, redrockPoints,
-    (length, at) => ({ pads: [{distance: 39, lane: 2.9}, {distance: at(4)+4, lane: -3}, {distance: at(8), lane: 2.5}, {distance: at(14)+6, lane: -2.7}] }))
+    (length, at) => ({ pads: [{distance: 39, lane: 2.9}, {distance: at(4)+4, lane: -3}, {distance: at(8), lane: 2.5}, {distance: at(14)+6, lane: -2.7}] })),
+  makeCourse({ id: 'windway', name: '터빈 코즈웨이', subtitle: '해상 풍력 단지', description: '바다 위 긴 직선에서 부스트를 펼치고, 터빈 사이 S자 전환을 공략하세요.', halfWidth: 8.1 }, windwayPoints,
+    (length, at) => ({ pads: [{distance: 48, lane: -2.8}, {distance: at(4)+6, lane: 2.8}, {distance: at(8)+7, lane: -2.3}, {distance: at(11)+9, lane: 2.9}] })),
+  makeCourse({ id: 'foundry', name: '아이언웍스 드롭', subtitle: '제철소 고가 도로', description: '용광로 상부의 고가에서 18m 아래 착지 도로로 도약하고, 공장 외곽 코너를 연결하세요.', halfWidth: 7.8 }, foundryPoints,
+    (length, at) => ({ pads: [{distance: 42, lane: 2.7}, {distance: at(7)-7, lane: 0}, {distance: at(11)+5, lane: -2.6}, {distance: at(16)+5, lane: 2.6}],
+      gaps: [{start: at(8), end: at(9), drop: 18}] }))
 ];
 export const track = tracks[0];
 export const coursePoint = track.point;

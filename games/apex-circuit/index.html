@@ -10,8 +10,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;1,800;1,900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./style.css?v=10">
-  <script type="module" src="./game.js?v=10"></script>
+  <link rel="stylesheet" href="./style.css?v=11">
+  <script type="module" src="./game.js?v=11"></script>
 </head>
 <body data-state="loading">
   <canvas id="world" tabindex="0" aria-label="레이스 화면. 방향키 또는 A D로 조향, 아래 방향키 또는 S로 드리프트, 스페이스로 부스터"></canvas>
@@ -33,9 +33,12 @@
     <section class="start-screen" aria-labelledby="game-title">
       <h1 id="game-title" lang="en" aria-label="에이펙스 서킷">APEX <span>CIRCUIT</span></h1>
       <div class="start-content">
+        <div class="garage-scroll" tabindex="0" aria-label="차량 성능과 코스 선택">
         <fieldset class="garage-group"><legend>차량 선택</legend><div class="brand-options" id="brand-options" role="group" aria-label="브랜드"></div><div class="garage-options" id="vehicle-options" role="group" aria-label="모델"></div></fieldset>
+        <section id="vehicle-profile" class="vehicle-profile" aria-label="선택한 차량 성능"></section>
         <fieldset class="garage-group"><legend>코스 선택</legend><div class="garage-options" id="course-options"></div></fieldset>
         <p id="garage-description"></p>
+        </div>
         <div class="garage-launch">
           <button type="button" id="start" class="race-button">레이스 시작 <span aria-hidden="true">↗</span></button>
           <button type="button" id="menu-ranking" class="garage-record" aria-haspopup="dialog">

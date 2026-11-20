@@ -1,5 +1,5 @@
 import * as T from './vendor/three.module.min.js';
-import { track } from './track.js?v=5';
+import { track } from './track.js?v=11';
 import { buildRoadCar } from './road-cars.js?v=8';
 
 const box = new T.BoxGeometry();
@@ -170,30 +170,104 @@ function shadowStamp() {
   return new T.MeshBasicMaterial({map: texture, transparent: true, opacity: .40, depthWrite: false});
 }
 
-function exhaustMaterial() {
-  const canvas = document.createElement('canvas');
-  canvas.width = 96;
-  canvas.height = 256;
-  const ctx = canvas.getContext('2d');
-  const pixels = ctx.createImageData(canvas.width, canvas.height);
-  for (let y = 0; y < canvas.height; y++) {
-    const t = y / (canvas.height - 1);
-    const width = .30 * Math.pow(1 - t, .78) + .013;
-    for (let x = 0; x < canvas.width; x++) {
-      const radius = Math.abs((x + .5) / canvas.width - .5) / width;
-      const heat = Math.exp(-radius * radius * 3.1) * Math.pow(1 - t, 1.8);
-      const amber = Math.max(0, 1 - t * 4.8);
-      const i = (y * canvas.width + x) * 4;
-      pixels.data[i] = Math.min(255, 42 + heat * 620 + amber * 245);
-      pixels.data[i + 1] = 255 - amber * 48;
-      pixels.data[i + 2] = 226 - amber * 163 + heat * 35;
-      pixels.data[i + 3] = 255 * Math.exp(-radius * radius * 1.7) * Math.min(1, (1 - t) * 3);
+const boostShapes = {
+  needle: { width: .48, length: 2.8, spacing: .27, sway: .025, rhythm: 12 },
+  fork: { width: .72, length: 2.1, spacing: .40, sway: .06, rhythm: 15 },
+  pulse: { width: .86, length: 1.6, spacing: .37, sway: .025, rhythm: 8 },
+  ribbon: { width: 1.02, length: 2.25, spacing: .32, sway: .08, rhythm: 6 },
+  plume: { width: 1.12, length: 1.8, spacing: .45, sway: .035, rhythm: 10 }
+};
+const prototypeBoost = {
+  vector: { boostStyle: 'needle', boostColor: 0xffc15a },
+  raptor: { boostStyle: 'plume', boostColor: 0xff6334 },
+  nova: { boostStyle: 'pulse', boostColor: 0x719fff },
+  vortex: { boostStyle: 'fork', boostColor: 0x64e8e1 },
+  pulse: { boostStyle: 'ribbon', boostColor: 0xffe482 }
+};
+const boostGeometry = new Map();
+const boostMaterials = new Map();
+let boostTexture;
+
+// Longitudinal ribbons share one texture; their edges and cadence define the engine type.
+function exhaustGeometry(style) {
+  if (boostGeometry.has(style)) return boostGeometry.get(style);
+  const positions = [], uvs = [], indices = [];
+  const blades = style === 'fork' ? [-.25, .25] : [0];
+  const rows = 16;
+  for (const blade of blades) {
+    const offset = positions.length / 3;
+    for (let i = 0; i <= rows; i++) {
+      const t = i / rows;
+      let width = Math.pow(1 - t, .68) * .5;
+      let center = blade * (.45 + t * .8);
+      if (style === 'needle') width *= .67;
+      if (style === 'fork') width *= .35;
+      if (style === 'plume') width *= .66 + Math.sin(t * Math.PI) * .56;
+      if (style === 'pulse') width *= .50 + .44 * Math.pow(Math.sin(t * Math.PI * 3), 2);
+      if (style === 'ribbon') { width *= .67; center = Math.sin(t * Math.PI * 1.6) * .16; }
+      for (const side of [-1, 1]) {
+        positions.push(center + side * width, 0, -t);
+        uvs.push(side < 0 ? 0 : 1, 1 - t);
+      }
+      if (i < rows) {
+        const n = offset + i * 2;
+        indices.push(n, n + 1, n + 2, n + 1, n + 3, n + 2);
+      }
     }
   }
-  ctx.putImageData(pixels, 0, 0);
-  const texture = new T.CanvasTexture(canvas);
-  texture.colorSpace = T.SRGBColorSpace;
-  return new T.MeshBasicMaterial({map: texture, transparent: true, depthWrite: false, toneMapped: false, side: T.DoubleSide});
+  const geometry = new T.BufferGeometry();
+  geometry.setAttribute('position', new T.Float32BufferAttribute(positions, 3));
+  geometry.setAttribute('uv', new T.Float32BufferAttribute(uvs, 2));
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+  boostGeometry.set(style, geometry);
+  return geometry;
+}
+
+function exhaustMaterial(color = 0xb4fff1) {
+  if (boostMaterials.has(color)) return boostMaterials.get(color);
+  if (!boostTexture) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 96;
+    canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+    const pixels = ctx.createImageData(canvas.width, canvas.height);
+    for (let y = 0; y < canvas.height; y++) {
+      const t = y / (canvas.height - 1);
+      const width = .30 * Math.pow(1 - t, .78) + .013;
+      for (let x = 0; x < canvas.width; x++) {
+        const radius = Math.abs((x + .5) / canvas.width - .5) / width;
+        const heat = Math.exp(-radius * radius * 3.1) * Math.pow(1 - t, 1.8);
+        const amber = Math.max(0, 1 - t * 4.8);
+        const i = (y * canvas.width + x) * 4;
+        const light = Math.min(255, 195 + heat * 60 + amber * 35);
+        pixels.data[i] = light;
+        pixels.data[i + 1] = light;
+        pixels.data[i + 2] = light;
+        pixels.data[i + 3] = 255 * Math.exp(-radius * radius * 1.7) * Math.min(1, (1 - t) * 3);
+      }
+    }
+    ctx.putImageData(pixels, 0, 0);
+    boostTexture = new T.CanvasTexture(canvas);
+    boostTexture.colorSpace = T.SRGBColorSpace;
+  }
+  const material = new T.MeshBasicMaterial({map: boostTexture, color, transparent: true, depthWrite: false, toneMapped: false, side: T.DoubleSide});
+  boostMaterials.set(color, material);
+  return material;
+}
+
+function tuneExhaust(visual, spec) {
+  const style = boostShapes[spec.boostStyle] ? spec.boostStyle : 'needle';
+  const settings = boostShapes[style];
+  const variation = [...spec.id].reduce((sum, letter) => sum + letter.charCodeAt(0), 0) % 9;
+  visual.boostProfile = { ...settings, variation, style };
+  visual.jets.userData.style = style;
+  for (const [index, jet] of visual.jets.children.entries()) {
+    jet.geometry = exhaustGeometry(style);
+    jet.material = exhaustMaterial(spec.boostColor);
+    jet.position.set((index ? 1 : -1) * settings.spacing, .28, -2.14);
+  }
+  visual.jets.position.z = spec.id === 'cybertruck' ? -.29 : spec.cosmetic ? -.10 : 0;
 }
 
 export function buildCars(scene) {
@@ -201,7 +275,7 @@ export function buildCars(scene) {
   const shadowGeometry = new T.PlaneGeometry(3.45, 5.8).rotateX(-Math.PI / 2);
   const shadowMaterial = shadowStamp();
   const exhaust = exhaustMaterial();
-  const jetGeometry = new T.PlaneGeometry(.90, 1.9).rotateX(Math.PI / 2).translate(0, 0, -.95);
+  const jetGeometry = exhaustGeometry('needle');
   const visuals = liveries.map((design, id) => {
     const model = new T.Group();
     const shadow = new T.Mesh(shadowGeometry, shadowMaterial.clone());
@@ -217,7 +291,9 @@ export function buildCars(scene) {
     }
     model.add(jets);
     scene.add(shadow, model);
-    return { model, shadow, jets, body, id: design.id };
+    const visual = { model, shadow, jets, body, id: design.id };
+    tuneExhaust(visual, { id: design.id, ...prototypeBoost[design.id] });
+    return visual;
   });
   visuals[0].roadBodies = new Map();
   visuals[0].reflection = reflection;
@@ -235,7 +311,8 @@ export function selectVehicle(visuals, vehicle, roadRoster) {
   if (vehicle.cosmetic) {
     const selected = roadRoster.findIndex(spec => spec.id === vehicle.id);
     for (const [index, visual] of visuals.entries()) {
-      const { id } = roadRoster[(selected + index) % roadRoster.length];
+      const spec = roadRoster[(selected + index) % roadRoster.length];
+      const { id } = spec;
       let body = player.roadBodies.get(id);
       if (!body) {
         body = buildRoadCar(id);
@@ -244,13 +321,13 @@ export function selectVehicle(visuals, vehicle, roadRoster) {
       visual.model.add(body);
       visual.roadBody = body;
       visual.roadId = id;
+      tuneExhaust(visual, spec);
     }
-    player.jets.position.z = vehicle.id === 'cybertruck' ? -.29 : -.10;
     return;
   }
-  player.jets.position.z = 0;
+  for (const visual of visuals) tuneExhaust(visual, { id: visual.id, ...prototypeBoost[visual.id] });
   const other = visuals.find(v => v.id === vehicle.id);
-  if (!other || player === other) return;
+  if (!other || player === other) { tuneExhaust(player, vehicle); return; }
   const previous = player.body, previousId = player.id;
   player.model.add(other.body);
   other.model.add(previous);
@@ -258,6 +335,8 @@ export function selectVehicle(visuals, vehicle, roadRoster) {
   player.id = other.id;
   other.body = previous;
   other.id = previousId;
+  tuneExhaust(player, vehicle);
+  tuneExhaust(other, { id: other.id, ...prototypeBoost[other.id] });
 }
 
 const sample = {};
@@ -293,8 +372,12 @@ export function driveCar(visual, car, boosting, elapsed, course = track) {
   visual.jets.visible = boosting;
   for (let i = 0; i < visual.jets.children.length; i++) {
     const jet = visual.jets.children[i];
-    jet.scale.x = 1.1 + .11 * Math.sin(elapsed * 47 + i);
-    jet.scale.z = .97 + .075 * Math.sin(elapsed * 39 + i) + .04 * Math.sin(elapsed * 63);
-    jet.rotation.y = car.slip * .42;
+    const profile = visual.boostProfile;
+    const phase = elapsed * (profile.rhythm + profile.variation * .28) + i * .8;
+    const wave = Math.sin(phase);
+    const pulse = profile.style === 'pulse' ? .16 : .06;
+    jet.scale.x = profile.width * (.96 + profile.variation * .012) * (1 + wave * pulse);
+    jet.scale.z = profile.length * (1 + .045 * Math.sin(phase * 1.3) + profile.variation * .006);
+    jet.rotation.y = car.slip * .42 + Math.sin(phase * .65) * profile.sway;
   }
 }

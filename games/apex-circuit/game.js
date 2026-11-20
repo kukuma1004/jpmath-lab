@@ -1,12 +1,12 @@
 import * as T from './vendor/three.module.min.js';
-import { tracks } from './track.js?v=5';
-import { createRace, vehicleSpecs } from './race.js?v=10';
-import { buildWorld } from './world.js?v=9';
-import { buildCars, driveCar, selectVehicle } from './cars.js?v=10';
+import { tracks } from './track.js?v=11';
+import { createRace, vehicleSpecs } from './race.js?v=11';
+import { buildWorld } from './world.js?v=11';
+import { buildCars, driveCar, selectVehicle } from './cars.js?v=11';
 import { drivingKeys, resolveDrivingKey } from './input.js?v=10';
 import { createAudio } from './audio.js?v=4';
 import { createEffects } from './effects.js?v=4';
-import { bindGarage } from './garage.js?v=5';
+import { bindGarage } from './garage.js?v=11';
 import { bindRanking, formatTime } from './ranking.js?v=1';
 
 const byId = id => document.getElementById(id);
@@ -138,7 +138,11 @@ function createCamera() {
         trailing.z + trailing.dx * (laneFollow - shoulder));
       const upcoming = T.MathUtils.clamp(preview.y + .95, carY - 5.6, carY + 9);
       const aimY = T.MathUtils.lerp(upcoming, carY - height * .68, dropView);
-      aim.set(preview.x - p.dz * laneFollow, aimY, preview.z + p.dx * laneFollow);
+      // A narrow portrait frustum needs a closer subject anchor in hairpins.
+      // Keep the same camera distance/FOV; reduce only the horizontal lookahead.
+      const lookahead = portrait ? .45 : 1;
+      aim.set(T.MathUtils.lerp(p.x, preview.x, lookahead) - p.dz * laneFollow, aimY,
+        T.MathUtils.lerp(p.z, preview.z, lookahead) + p.dx * laneFollow);
       fov = portrait ? 54 : 49;
     }
     const blend = snap || !ready ? 1 : 1 - Math.exp(-(isMenu ? 3.6 : 14.2) * dt);
@@ -170,6 +174,40 @@ function setup() {
   renderer.shadowMap.needsUpdate = true;
   renderer.info.autoReset = false;
   const worldCache = new Map();
+  const worldCacheLimit = innerWidth < 850 || matchMedia('(pointer: coarse)').matches ? 1 : 2;
+  // Keep course switching quick without retaining all seven worlds on tablets.
+  function resources(scene) {
+    const geometries = new Set(), materials = new Set(), textures = new Set();
+    scene.traverse(object => {
+      if (object.geometry) geometries.add(object.geometry);
+      const list = Array.isArray(object.material) ? object.material : object.material ? [object.material] : [];
+      for (const material of list) {
+        materials.add(material);
+        for (const value of Object.values(material)) if (value?.isTexture) textures.add(value);
+        for (const uniform of Object.values(material.uniforms || {})) if (uniform.value?.isTexture) textures.add(uniform.value);
+      }
+    });
+    return {geometries, materials, textures};
+  }
+  function trimWorldCache() {
+    while (worldCache.size > worldCacheLimit) {
+      const [id, retired] = worldCache.entries().next().value;
+      worldCache.delete(id);
+      const keep = {geometries: new Set(), materials: new Set(), textures: new Set()};
+      for (const cached of worldCache.values()) {
+        const used = resources(cached.scene);
+        for (const kind of Object.keys(keep)) for (const item of used[kind]) keep[kind].add(item);
+      }
+      const unused = resources(retired.scene);
+      for (const kind of Object.keys(keep)) for (const item of unused[kind]) {
+        if (!keep[kind].has(item) && !item.isRenderTargetTexture) item.dispose();
+      }
+      retired.reflections.dispose();
+      retired.sun.shadow.map?.dispose();
+      retired.sun.shadow.mapPass?.dispose();
+      renderer.renderLists.dispose();
+    }
+  }
   const wetTarget = new T.WebGLRenderTarget(560, 350, {type:T.HalfFloatType});
   const mirrorCamera = new T.PerspectiveCamera();
   const roadPlane = new T.Plane();
@@ -306,9 +344,12 @@ function setup() {
       worldCache.set(track.id, nextWorld);
       const course=track;
       scene.userData.assetsReady?.then(loaded => {
-        if (loaded) refreshReflections(nextWorld, course);
+        if (loaded && worldCache.get(course.id) === nextWorld) refreshReflections(nextWorld, course);
       });
     }
+    // Touch an existing entry so eviction follows the user's recent selections.
+    worldCache.delete(track.id);
+    worldCache.set(track.id, nextWorld);
     if (activeWorld !== nextWorld) {
       activeWorld = nextWorld;
       activeWorld.scene.add(carLayer);
@@ -316,6 +357,7 @@ function setup() {
       renderer.shadowMap.needsUpdate = true;
       map = drawMap(byId('minimap'), track);
     }
+    trimWorldCache();
     selectVehicle(vehicles, vehicle, roadRoster);
     race = createRace(track, vehicle);
     best = readBestLap(track.id);

@@ -344,13 +344,14 @@ kbd {
     right: var(--side-right);
     bottom: var(--bottom);
     justify-content: space-between;
-    gap: 10px;
+    gap: 8px;
+    align-items: flex-end;
     touch-action: none;
   }
   .touch-pair { display: flex; gap: clamp(5px, 1.7vw, 12px); }
   .touch-pair button {
-    width: clamp(56px, 17vw, 91px);
-    min-height: clamp(64px, 17vmin, 86px);
+    width: clamp(64px, 14vw, 92px);
+    min-height: 76px;
     padding: 0 2px;
     border: 1px solid var(--line);
     border-radius: 3px;
@@ -363,11 +364,12 @@ kbd {
     font-weight: 850;
     white-space: nowrap;
   }
-  .touch-pair button span { display: block; font: 700 45px/.7 var(--display); margin-top: -5px; }
+  .touch-pair:not(.action-controls) button { width: clamp(84px, 20vw, 116px); min-height: 96px; }
+  .touch-pair button span { display: block; font: 700 64px/.7 var(--display); margin-top: -5px; }
   .touch-pair button[data-control="brake"] { min-width: 64px; }
   .touch-pair button[data-control="boost"] { color: var(--ink); background: var(--lemon); border-color: var(--lemon); }
   .touch-pair button:is(:active,.is-held,[data-held="true"]) { background: var(--cyan); color: var(--ink); border-color: var(--cyan); }
-  .telemetry { bottom: calc(var(--bottom) + clamp(64px, 17vmin, 86px) + 8px); width: 137px; }
+  .telemetry { bottom: calc(var(--bottom) + 104px); width: 137px; }
   .map-frame { width: 130px; }
 }
 
@@ -637,4 +639,46 @@ body.is-drifting .boost-caption { color: #ffc65b; }
   .ranking-publish { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 6px; }
   .ranking-publish label, .ranking-publish p { margin: 0; }
   #ranking-delete { grid-column: 1 / -1; margin: 0; min-height: 24px; }
+}
+
+/* Car setup stays readable while the launch action remains within reach. */
+.start-content { display: flex; flex-direction: column; min-height: 0; max-height: calc(100dvh - 340px); }
+.garage-scroll { min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #70818d #15212c; pointer-events: auto; padding-right: 3px; }
+.garage-scroll:focus-visible { outline: 1px solid #f9f4d66b; outline-offset: 2px; }
+.garage-scroll-hint { flex-shrink: 0; margin: 3px 0 0; color: #ffcf57; font-size: 10px; line-height: 1.4; text-align: right; text-shadow: 0 1px 4px #000; }
+.garage-launch { flex-shrink: 0; margin-top: 8px; }
+.vehicle-profile { margin: 0 0 12px; padding: 6px 0 7px; border-block: 1px solid #b0bec947; text-shadow: 0 1px 4px #000; }
+.vehicle-trait { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.vehicle-trait strong { color: #ffcf57; font-size: 12px; }
+.vehicle-trait small { color: #acb9c4; font-size: 10px; }
+.vehicle-profile dl { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 6px; margin: 5px 0; }
+.vehicle-profile dt { font-size: 10px; color: #c4cfd6; }
+.vehicle-profile dd { margin: 1px 0 0; font: 750 13px/1.3 system-ui, sans-serif; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.vehicle-profile p { margin: 4px 0 0; font-size: 11px; line-height: 1.5; color: #e3e9eb; word-break: keep-all; }
+#course-options { grid-template-columns: repeat(4,minmax(0,1fr)); }
+#course-options button { min-height: 56px; }
+@media (max-width: 740px) and (orientation: portrait) {
+  .start-content { max-height: min(58dvh, 550px); }
+  .vehicle-profile { margin-bottom: 9px; padding-block: 5px; }
+  #course-options button { min-height: 54px; }
+  .garage-launch { margin-top: 7px; }
+}
+@media (max-width: 460px) and (orientation: portrait) {
+  .action-controls { flex-direction: column; gap: 6px; }
+  .action-controls button { width: clamp(80px, 23vw, 100px); min-height: 64px; }
+  .touch-pair:not(.action-controls) { gap: 8px; }
+  .touch-pair:not(.action-controls) button { width: clamp(84px, 24vw, 104px); min-height: 96px; }
+  .telemetry { top: calc(var(--top) + 204px); bottom: auto; width: 113px; padding-inline: 8px; }
+  .telemetry .speed-stat { font-size: 43px; }
+  .telemetry .speed-stat small { font-size: 11px; }
+  .telemetry .boost-caption { font-size: 11px; }
+  .telemetry .boost-caption span:first-child { font-size: 10px; }
+}
+@media (max-height: 620px) and (orientation: landscape) {
+  .start-content { max-height: calc(100dvh - 125px); }
+  .vehicle-profile { padding-block: 4px; margin-bottom: 5px; }
+  .vehicle-profile dl { margin-block: 3px; }
+  .vehicle-profile p { font-size: 10px; }
+  #course-options { grid-template-columns: repeat(4,minmax(0,1fr)); }
+  #course-options button { min-height: 44px; }
 }
