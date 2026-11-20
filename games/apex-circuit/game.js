@@ -1,8 +1,9 @@
 import * as T from './vendor/three.module.min.js';
 import { tracks } from './track.js?v=5';
-import { createRace, vehicleSpecs } from './race.js?v=9';
+import { createRace, vehicleSpecs } from './race.js?v=10';
 import { buildWorld } from './world.js?v=9';
-import { buildCars, driveCar, selectVehicle } from './cars.js?v=8';
+import { buildCars, driveCar, selectVehicle } from './cars.js?v=10';
+import { drivingKeys, resolveDrivingKey } from './input.js?v=10';
 import { createAudio } from './audio.js?v=4';
 import { createEffects } from './effects.js?v=4';
 import { bindGarage } from './garage.js?v=5';
@@ -126,29 +127,26 @@ function createCamera() {
           dropView = Math.max(dropView, entry * exit);
         }
       }
-      const follow = T.MathUtils.lerp(portrait ? 12.8 : 13.2, portrait ? 13.0 : 10.7, dropView);
-      const shoulder = T.MathUtils.lerp(portrait ? .9 : 1.85, .72, dropView);
-      const height = T.MathUtils.lerp(portrait ? 8.6 : 5.5, portrait ? 8.2 : 5.3, dropView);
-      const laneFollow = player.lane * (portrait ? 1 : .40 + .54 * dropView);
-      const carX = p.x - p.dz * laneFollow;
-      const carZ = p.z + p.dx * laneFollow;
+      const follow = portrait ? 12.8 : 13.2;
+      const shoulder = portrait ? .8 : 1.1;
+      const height = portrait ? 6.6 : 4.8;
+      const laneFollow = player.lane * (portrait ? 1 : .8);
       const carY = p.y + p.bank * laneFollow + player.air;
       track.sample(player.distance - follow, trailing);
       track.sample(player.distance + T.MathUtils.lerp(9, 19, dropView), preview);
-      desired.set(carX - p.dx * follow + p.dz * shoulder, Math.max(carY + height, trailing.y + 3.6),
-        carZ - p.dz * follow - p.dx * shoulder);
+      desired.set(trailing.x - trailing.dz * (laneFollow - shoulder), Math.max(carY + height, trailing.y + 3.6),
+        trailing.z + trailing.dx * (laneFollow - shoulder));
       const upcoming = T.MathUtils.clamp(preview.y + .95, carY - 5.6, carY + 9);
       const aimY = T.MathUtils.lerp(upcoming, carY - height * .68, dropView);
       aim.set(preview.x - p.dz * laneFollow, aimY, preview.z + p.dx * laneFollow);
-      fov = (portrait ? 54 : 49) + (race.boosting && !reduced ? 4.0 : 0) + dropView * 2;
+      fov = portrait ? 54 : 49;
     }
     const blend = snap || !ready ? 1 : 1 - Math.exp(-(isMenu ? 3.6 : 14.2) * dt);
     camera.position.lerp(desired, blend);
     target.lerp(aim, blend);
     camera.lookAt(target);
     if (!isMenu && !reduced) {
-      camera.rotateZ(-player.slip * .065 + Math.sin(animateTime * 58) * race.impact * .009);
-      camera.position.y += Math.sin(animateTime * 73) * race.impact * .12;
+      camera.rotateZ(-player.slip * .025);
     }
     const next = T.MathUtils.lerp(camera.fov, fov, blend);
     if (Math.abs(next - camera.fov) > .01) {
@@ -279,8 +277,7 @@ function setup() {
     'result-time', 'result-lap', 'result-best', 'result-course', 'menu-best'].map(id => [id, byId(id)]));
   const measured = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) && new URLSearchParams(location.search).has('qa');
   const controls = [...document.querySelectorAll('[data-control]')];
-  const keyControls = new Map([['ArrowLeft', 'left'], ['KeyA', 'left'], ['ArrowRight', 'right'], ['KeyD', 'right'],
-    ['ArrowDown', 'brake'], ['KeyS', 'brake'], ['Space', 'boost'], ['ArrowUp', 'boost'], ['KeyW', 'boost'], ['ShiftLeft', 'brake'], ['ShiftRight', 'brake']]);
+  const keyControls = drivingKeys;
   const keys = new Set();
   const pointers = new Map();
   const input = { steer: 0, brake: false, boost: false };
@@ -371,6 +368,9 @@ function setup() {
     pointers.clear();
     updateControls();
   }
+  function focusDriving() {
+    world.focus({ preventScroll: true });
+  }
   function clearMessage() {
     feedbackTime = 0;
     feedbackPriority = 0;
@@ -409,7 +409,7 @@ function setup() {
     change('countdown');
     showCountdown(3);
     snap = true;
-    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    focusDriving();
   }
   function pause() {
     if (state !== 'racing' && state !== 'countdown') return;
@@ -422,7 +422,7 @@ function setup() {
     if (state !== 'paused') return;
     audio.unlock();
     change(pausedState);
-    nodes.resume.blur();
+    focusDriving();
   }
   function finish() {
     if (race.bestLap !== null && (best === null || race.bestLap < best)) {
@@ -497,6 +497,7 @@ function setup() {
     const speed = Math.round(race.cars[0].speed * 3.6);
     const percent = Math.round(race.boost * 100);
     const display = [race.place, race.lap, formatTime(race.time), speed, percent];
+    setText(byId('boost-label'), race.drifting ? (percent < 100 ? '드리프트 충전' : '충전 완료') : '부스터');
     const next = display.join(',');
     if (lastHUD !== next) {
       lastHUD = next;
@@ -552,6 +553,9 @@ function setup() {
         grid: vehicles.map(visual => visual.roadId || visual.id),
         player: { ...race.cars[0] }, boost: race.boost, boosting, lap: race.lap, input: { ...input },
         projected: { x: (1 + projected.x) * .5, y: (1 - projected.y) * .5 },
+        camera: { fov: view.camera.fov, position: view.camera.position.toArray() },
+        grounded: { modelY: vehicles[0].model.position.y, shadowOffset: vehicles[0].shadow.position.distanceTo(vehicles[0].model.position),
+          rivalExhaust: vehicles.slice(1).map(v => ({visible: v.jets.visible, meshes: v.jets.children.length})) },
         render: { ...renderer.info.render }, memory: { ...renderer.info.memory },
       };
     }
@@ -586,6 +590,7 @@ function setup() {
     button.addEventListener('pointerdown', event => {
       if (!['racing', 'countdown'].includes(state) || event.button !== 0) return;
       event.preventDefault();
+      focusDriving();
       button.setPointerCapture(event.pointerId);
       pointers.set(event.pointerId, button.dataset.control);
       updateControls();
@@ -601,19 +606,38 @@ function setup() {
   });
   window.addEventListener('keydown', event => {
     if (event.altKey || event.metaKey || event.ctrlKey) return;
-    if (['KeyP', 'Escape'].includes(event.code) && !event.repeat) {
+    if (event.target instanceof Element && event.target.closest('input, textarea, select, [contenteditable="true"]')) return;
+    const code = resolveDrivingKey(event);
+    if (['KeyP', 'Escape'].includes(code) && !event.repeat) {
+      if (!['racing', 'countdown', 'paused'].includes(state)) return;
+      event.preventDefault();
       if (state === 'paused') resume();
       else pause();
       return;
     }
-    if (!['racing', 'countdown'].includes(state) || !keyControls.has(event.code)) return;
+    if (!['racing', 'countdown'].includes(state) || !keyControls.has(code)) return;
     event.preventDefault();
-    keys.add(event.code);
+    keys.add(code);
     updateControls();
   });
   window.addEventListener('keyup', event => {
-    if (keys.delete(event.code)) updateControls();
+    const code = resolveDrivingKey(event);
+    let changed = keys.delete(code);
+    if (code === 'ShiftLeft' && !keyControls.has(event.code)) changed = keys.delete('ShiftRight') || changed;
+    if (changed) updateControls();
   });
+  world.addEventListener('pointerdown', () => {
+    if (['racing', 'countdown'].includes(state)) focusDriving();
+  });
+  // Cancel native two-finger zoom without cancelling the independent pointer controls.
+  const stopPinch = event => {
+    if (['racing', 'countdown'].includes(state) && (event.type.startsWith('gesture') || event.touches?.length > 1)) event.preventDefault();
+  };
+  for (const name of ['touchstart', 'touchmove', 'gesturestart', 'gesturechange'])
+    document.addEventListener(name, stopPinch, {passive: false});
+  document.addEventListener('wheel', event => {
+    if (event.ctrlKey && ['racing', 'countdown'].includes(state)) event.preventDefault();
+  }, {passive: false});
   window.addEventListener('blur', clearControls);
   window.addEventListener('resize', () => { resizePending = true; });
   document.addEventListener('visibilitychange', () => {

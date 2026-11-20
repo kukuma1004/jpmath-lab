@@ -88,6 +88,7 @@ function resetCar(car, distance, lane) {
   car.pitch = null;
   car.flight = null;
   car.boosting = false;
+  car.drifting = false;
   car.boostReserve = .53 + car.id * .065;
   car.finished = false;
   car.time = null;
@@ -188,6 +189,7 @@ export function createRace(track, vehicle = vehicleSpecs[0]) {
     const cornerSpeed = vehicle.cruiseSpeed * (1 - Math.min(0.15, Math.abs(curve) * 2.25));
     let targetSpeed = boosting ? vehicle.topSpeed : cornerSpeed;
     race.drifting = brake && !pressingRail && Math.abs(steer) > .2 && player.speed > 23 && !player.airborne;
+    if (race.drifting) race.boost = Math.min(1, race.boost + dt * .28);
     if (brake) targetSpeed = race.drifting ? vehicle.cruiseSpeed * .98 : 19;
     race.drafting = !brake && cars.slice(1).some(car => {
       const gap = lapDifference(car.distance - player.distance, track.length);
@@ -260,13 +262,16 @@ export function createRace(track, vehicle = vehicleSpecs[0]) {
     car.slip = Math.atan2(car.lateralSpeed, Math.max(18, car.speed)) * 0.7;
 
     const turn = Math.max(Math.abs(course.curve), Math.abs(preview.curve) * 0.72);
-    const straightSpeed = rival.speed + 1.15 + Math.sin(elapsed * .54) * .75;
+    const straightSpeed = vehicle.cruiseSpeed * rival.speed / 34 + 1.4 + Math.sin(elapsed * .54) * .75;
     const passing = nearestAhead < 17 && nearestAhead > 6;
-    if (!car.boosting && car.boostReserve > .58 && !car.finished && car.speed > 26 &&
-        (turn < .016 || passing || finishDistance - car.distance < 50)) car.boosting = true;
-    if (car.finished || car.boostReserve <= 0 || turn > .048) car.boosting = false;
-    car.boostReserve = clamp(car.boostReserve + dt * (car.boosting ? -.40 : .101), 0, 1);
-    const target = car.finished ? 20 : straightSpeed * (1 - Math.min(.14, turn * 1.95)) + (car.boosting ? 15 : 0);
+    if (!car.boosting && car.boostReserve > (passing ? .28 : .48) && !car.finished && car.speed > 26 &&
+        (turn < .021 || passing && turn < .035 || finishDistance - car.distance < 50)) car.boosting = true;
+    if (car.finished || car.boostReserve <= 0 || turn > .052) car.boosting = false;
+    car.drifting = !car.boosting && turn > .009 && turn < .065 && car.speed > 25 && !car.airborne && !car.finished;
+    car.boostReserve = clamp(car.boostReserve + dt * (car.boosting ? -BOOST_DRAIN : CHARGE_RATE + (car.drifting ? .28 : 0)), 0, 1);
+    const pace = straightSpeed * (1 - Math.min(.14, turn * 1.95));
+    const turboSpeed = Math.max(pace, vehicle.topSpeed * (.965 + .025 * Math.sin(rival.phase)));
+    const target = car.finished ? 20 : car.boosting ? turboSpeed : pace;
     car.speed = approach(car.speed, target, dt * (car.boosting ? 26 : 20));
     const previous = car.distance;
     advanceDistance(car, course.curve, dt);
@@ -306,16 +311,10 @@ export function createRace(track, vehicle = vehicleSpecs[0]) {
       if (car === player && wasAirborne !== car.airborne) events.push(car.airborne ? 'launch' : 'land');
       return !car.airborne;
     }
-    let height = 0;
-    for (const ramp of track.ramps) {
-      const fromRamp = mod(car.distance - ramp.start, track.length);
-      if (fromRamp < ramp.length) {
-        const lift = Math.sin(Math.PI * fromRamp / ramp.length);
-        height = Math.max(height, lift * clamp((car.speed - 19) * 0.135, 0, 3.25));
-      }
-    }
-    car.air = height;
-    car.airborne = height >= .24;
+    // Continuous road crests already have height in track.sample(). Only a real
+    // gap starts a flight; painted approach markings must not make cars hover.
+    car.air = 0;
+    car.airborne = false;
     if (car === player && wasAirborne !== car.airborne) events.push(car.airborne ? 'launch' : 'land');
     return !car.airborne;
   }

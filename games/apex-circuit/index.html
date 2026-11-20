@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#131d29">
   <meta name="description" content="차량과 코스를 선택해 다섯 대가 겨루는 3랩 아케이드 레이스에 도전하세요.">
   <title>에이펙스 서킷 · JP Math Lab</title>
@@ -10,11 +10,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;1,800;1,900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./style.css?v=9">
-  <script type="module" src="./game.js?v=9"></script>
+  <link rel="stylesheet" href="./style.css?v=10">
+  <script type="module" src="./game.js?v=10"></script>
 </head>
 <body data-state="loading">
-  <canvas id="world" aria-hidden="true"></canvas>
+  <canvas id="world" tabindex="0" aria-label="레이스 화면. 방향키 또는 A D로 조향, 아래 방향키 또는 S로 드리프트, 스페이스로 부스터"></canvas>
   <div class="shade" aria-hidden="true"></div>
 
   <header class="topbar">
@@ -73,7 +73,7 @@
       <div class="telemetry">
         <div class="speed-stat"><strong id="speed">0</strong><small>KM/H</small></div>
         <div class="boost-gauge" aria-label="부스터">
-          <div class="boost-caption"><span>부스터</span><span><strong id="boost-value">0</strong>%</span></div>
+          <div class="boost-caption"><span id="boost-label">부스터</span><span><strong id="boost-value">0</strong>%</span></div>
           <div class="boost-track"><div id="boost-fill"></div></div>
         </div>
       </div>
@@ -97,6 +97,7 @@
         <h2 id="pause-title">일시정지</h2>
         <button type="button" id="resume" class="race-button">계속 달리기 <span aria-hidden="true">↗</span></button>
         <button type="button" id="retry" class="secondary-button">처음부터 다시</button>
+        <p class="keyboard-help">연결 키보드: ← → / A D 조향 · ↓ / S / Shift 드리프트 · Space 부스터</p>
       </section>
     </div>
 

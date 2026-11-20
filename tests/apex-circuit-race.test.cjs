@@ -14,11 +14,19 @@ function drive(track,trained=false){
     const p=race.cars[0],curve=track.sample(p.distance+8).curve;
     let steer=0,brake=false;
     if(trained){
-      let aim=-Math.sign(curve)*Math.min(2.7,Math.abs(curve)*100);
+      let aim=-Math.sign(curve)*Math.min(4,Math.abs(curve)*170);
       const traffic=race.cars.slice(1).find(c=>c.distance-p.distance>0&&c.distance-p.distance<15&&Math.abs(c.lane-aim)<2.5);
-      if(traffic)aim=traffic.lane>0?-2.9:2.9;
+      if(traffic)aim=traffic.lane>0?-4:4;
+      if(race.boost<.8){
+        let nextPad;
+        for(const pad of track.pads){
+          const gap=((pad.distance-p.distance)%track.length+track.length)%track.length;
+          if(!nextPad||gap<nextPad.gap)nextPad={lane:pad.lane,gap};
+        }
+        if(nextPad&&nextPad.gap<32)aim=nextPad.lane;
+      }
       steer=clamp((aim-p.lane)*.5-p.lateralSpeed*.10,-1,1);
-      brake=Math.abs(curve)>.008&&Math.abs(curve)<.05&&Math.abs(steer)>.22&&Math.abs(p.lane)<2.8&&frame%95<31;
+      brake=Math.abs(curve)>.008&&Math.abs(curve)<.05&&Math.abs(steer)>.22&&Math.abs(p.lane)<4.1&&frame%95<31;
     }
     const boost=trained?!brake&&frame%190<135:frame%240<160;
     race.step(1/60,{steer,brake,boost});
@@ -48,7 +56,7 @@ test('rivals contest repeated boosts with bounded rechargeable boost and continu
   }
   assert.ok(easyWins<=2,'repeated boosts without steering do not win every course');
 });
-test('racing line control, overtaking and timed drift keep every course winnable',()=>{
+test('racing lines, charging pads and timed drift keep the stronger rivals beatable on every course',()=>{
   for(const track of tracks)assert.equal(drive(track,true).race.place,1,track.id+' can be won through the input system');
 });
 test('clean corner drift preserves pace and rewards release while straight braking slows',()=>{
@@ -62,6 +70,7 @@ test('clean corner drift preserves pace and rewards release while straight braki
   const steer=-Math.sign(track.sample(distance).curve)*.4;
   for(let i=0;i<30;i++)race.step(1/60,{steer,brake:true});
   assert.ok(race.drifting&&race.driftPower>0,'brake and steering charge a slide');
+  assert.ok(race.boost>.39,'boost visibly refills while drift is held, before release');
   assert.ok(p.speed>spec.cruiseSpeed*.85,'drift does not crawl');
   const speed=p.speed,charge=race.boost;
   race.step(1/60,{});
@@ -70,6 +79,24 @@ test('clean corner drift preserves pace and rewards release while straight braki
   straight.cars.slice(1).forEach(c=>{c.distance=distance-100;});
   for(let i=0;i<30;i++)straight.step(1/60,{brake:true});
   assert.ok(!straight.drifting&&s.speed<spec.cruiseSpeed*.8,'brake alone still slows');
+});
+test('continuous roads keep tires down while genuine course gaps still launch',()=>{
+  const course=tracks.find(t=>t.id==='sunset'),race=createRace(course,vehicleSpecs[0]),p=race.cars[0];
+  const ramp=course.ramps[0];p.distance=ramp.start+ramp.length/2-34/60;p.speed=34;
+  race.cars.slice(1).forEach(c=>{c.distance=p.distance-100;});race.step(1/60,{});
+  assert.equal(p.air,0);assert.equal(p.airborne,false);
+  const summit=tracks.find(t=>t.id==='summit'),jump=createRace(summit,vehicleSpecs[0]),car=jump.cars[0];
+  car.distance=summit.gaps[0].start-.2;car.speed=34;jump.step(1/60,{});
+  assert.ok(car.flight&&car.airborne&&car.air>0,'22m gap remains a genuine jump');
+});
+test('rival turbo scales with the selected power car and spends a bounded reserve',()=>{
+  const race=createRace(tracks[0],vehicleSpecs.find(v=>v.id==='raptor'));let peak=0,spent=false;
+  for(let i=0;i<1200;i++){
+    race.step(1/60,{});
+    race.cars.slice(1).forEach(c=>{peak=Math.max(peak,c.speed);spent ||= c.boostReserve<.2;assert.ok(c.boostReserve>=0&&c.boostReserve<=1);});
+  }
+  assert.ok(peak>57&&peak<63,'power car does not get free 62 versus 51 m/s superiority');
+  assert.ok(spent,'rivals spend actual fuel');
 });
 test('rail scraping and reset cannot retain a drift reward or CPU boost state',()=>{
   const track=tracks[0],race=createRace(track,vehicleSpecs[0]),p=race.cars[0];

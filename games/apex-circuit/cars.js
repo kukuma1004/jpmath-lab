@@ -201,23 +201,21 @@ export function buildCars(scene) {
   const shadowGeometry = new T.PlaneGeometry(3.45, 5.8).rotateX(-Math.PI / 2);
   const shadowMaterial = shadowStamp();
   const exhaust = exhaustMaterial();
-  const jetGeometry = new T.PlaneGeometry(1.43, 4.6).rotateX(Math.PI / 2).translate(0, 0, -2.3);
+  const jetGeometry = new T.PlaneGeometry(.90, 1.9).rotateX(Math.PI / 2).translate(0, 0, -.95);
   const visuals = liveries.map((design, id) => {
     const model = new T.Group();
-    const shadow = new T.Mesh(shadowGeometry, shadowMaterial);
+    const shadow = new T.Mesh(shadowGeometry, shadowMaterial.clone());
     shadow.renderOrder = 2;
     const body = new T.Group();
     buildBody(body, design, reflection);
     model.add(body);
     const jets = new T.Group();
-    if (id === 0) {
-      for (const side of [-1, 1]) {
-        const flame = new T.Mesh(jetGeometry, exhaust);
-        flame.position.set(side * .29, .385, -2.14);
-        jets.add(flame);
-      }
-      model.add(jets);
+    for (const side of [-1, 1]) {
+      const flame = new T.Mesh(jetGeometry, exhaust);
+      flame.position.set(side * .29, .28, -2.14);
+      jets.add(flame);
     }
+    model.add(jets);
     scene.add(shadow, model);
     return { model, shadow, jets, body, id: design.id };
   });
@@ -278,11 +276,11 @@ export function driveCar(visual, car, boosting, elapsed, course = track) {
     pitch = T.MathUtils.lerp(T.MathUtils.clamp(car.pitch, -.34, .23),
       Math.atan(touchdown.slope), T.MathUtils.smoothstep(flightProgress, .76, 1));
   }
-  visual.model.position.set(x, y + car.air + .04, z);
-  visual.model.rotation.set(-pitch, heading, Math.atan(-p.bank) - car.slip * .19, 'YXZ');
+  visual.model.position.set(x, y + car.air + .02, z);
+  visual.model.rotation.set(-pitch, heading, Math.atan(-p.bank) - car.slip * .025, 'YXZ');
   const marker = (car.distance % course.length + course.length) % course.length;
   visual.shadow.visible = !course.gaps.some(gap => gap.start <= marker && marker < gap.end);
-  const cast = 1.85 + car.air * .84;
+  const cast = .12 + car.air * .72;
   const offsetX = -.78 * cast;
   const offsetZ = .63 * cast;
   const groundHeight = p.slope * (p.dx * offsetX + p.dz * offsetZ)
@@ -290,7 +288,8 @@ export function driveCar(visual, car, boosting, elapsed, course = track) {
   visual.shadow.position.set(x + offsetX, y + groundHeight + .064, z + offsetZ);
   visual.shadow.rotation.set(-Math.atan(p.slope), heading, Math.atan(-p.bank), 'YXZ');
   const spread = 1 + car.air * .15;
-  visual.shadow.scale.set(spread * 1.05, 1, spread * 1.16);
+  visual.shadow.scale.set(spread, 1, spread * 1.05);
+  visual.shadow.material.opacity = .62 / (1 + car.air * .24);
   visual.jets.visible = boosting;
   for (let i = 0; i < visual.jets.children.length; i++) {
     const jet = visual.jets.children[i];
