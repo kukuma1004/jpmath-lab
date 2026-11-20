@@ -545,3 +545,8 @@ body { background: radial-gradient(ellipse at 43% 30%, #203236, #142025 67%, #15
 .outcome[data-kind=protected],.outcome[data-kind=protection] { color:#355e4b; border-color:#9fbba0; background:#e0ebd8; }
 .outcome[data-kind=sell] { color:#875c2b; border-color:#cfb071; background:#f4e6c4; }
 @media(max-width:700px) { .sold-stage > span { font-size:38px; }.sold-stage strong { font-size:16px; }.sold-stage p { font-size:10px; }.ranking-reward { margin-top:0; }.ranking-value { flex-wrap:wrap; }.market-button span { font-size:10px; } }
+.outcome[data-kind=reroll] { color:#684580; background:#eee2f5; border-color:#c9aedb; }
+[data-outcome=reroll] .weapon-wrap { animation:forge-succeed 680ms cubic-bezier(.18,.74,.32,1) both; }
+[data-outcome=reroll] .appraisal { animation:appraisal-gain 750ms ease-out; }
+.enchantment-card[data-reroll-slot="1"] .magic-slot:nth-child(1),.enchantment-card[data-reroll-slot="2"] .magic-slot:nth-child(2),.enchantment-card[data-reroll-slot="3"] .magic-slot:nth-child(3) { animation:engraving-reveal 420ms cubic-bezier(.2,.7,.3,1); outline:1px solid #fff1ba; outline-offset:1px; }
+.history-item.reroll strong,.history-item.reroll .history-symbol { color:#d3b4ec; }

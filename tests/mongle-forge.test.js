@@ -403,3 +403,47 @@ test('top ten rank bonuses are tiered, bounded by verification and never paid re
   const offline=Forge.restore({shards:'0',paidAt:100000},100000);Forge.setRankBonus(offline,1,100000);
   assert.equal(Forge.collectPassive(offline,100000+24*60*60*1000),4n*28800n);
 });
+
+test('reroll selects one of three slots and always draws a currently unowned effect', () => {
+  const original=['cinder','frost','storm'];
+  for(const [slotRoll,slot]of [[0,1],[1/3,2],[2/3,3],[.99999,3]]) {
+    for(const [effectRoll,effect]of [[0,'astral'],[.74999,'astral'],[.75,'lunar'],[.99999,'lunar']]) {
+      const s=Forge.restore({version:2,level:'32',shards:'9000000',enchantments:original,protections:{33:true},pity:{33:2400}},100000);
+      const offer=Forge.enchantPreview(s);assert(offer.reroll);assert.equal(offer.cost,401976n);
+      const rolls=[slotRoll,effectRoll];const result=Forge.reroll(s,100000,()=>rolls.shift(),offer.token);
+      assert.equal(result.kind,'reroll');assert.equal(result.slot,slot);assert.equal(result.replaced,original[slot-1]);assert.equal(result.enchantment,effect);
+      assert.equal(s.enchantments.length,3);assert.equal(new Set(s.enchantments).size,3);
+      assert.deepEqual(s.enchantments,original.map((id,index)=>index===slot-1?effect:id));
+      assert.equal(s.enchantment,s.enchantments[0]);assert.equal(s.shards,9000000n-offer.cost);
+      assert.equal(s.level,32n);assert.equal(s.bestLevel,32n);assert.equal(s.broken,false);assert.equal(s.attempts,0n);
+      assert.deepEqual(s.protections,{33:true});assert.deepEqual(s.pity,{33:2400});
+      assert.equal(BigInt(result.valueAfter),Forge.appraisal(s).value);
+      const restored=Forge.restore(JSON.parse(Forge.serialize(s)),101000);
+      assert.deepEqual(restored.enchantments,s.enchantments);assert.equal(restored.history[0].slot,slot);
+      assert.equal(restored.history[0].replaced,result.replaced);
+    }
+  }
+});
+
+test('reroll rejects missing slots, broken swords, insufficient funds, cooldown and stale offers without drawing', () => {
+  for(const changes of [{enchantments:['cinder']},{enchantments:['cinder','storm']},{broken:true},{shards:'0'},{lastAt:99999}]) {
+    const s=Forge.restore({version:2,level:'32',shards:'9000000',enchantments:['astral','lunar','storm'],...changes},100000);
+    const before=Forge.serialize(s);
+    assert.equal(Forge.reroll(s,100000,()=>{throw Error('must not draw')}),null);
+    assert.equal(Forge.serialize(s),before);
+  }
+  const s=Forge.restore({level:'32',shards:'9000000',enchantments:['astral','lunar','storm']},100000);
+  const old=Forge.enchantPreview(s);Forge.act(s,100000,()=>0);const before=Forge.serialize(s);
+  assert.equal(Forge.reroll(s,101000,()=>{throw Error('must not draw')},old.token),null);assert.equal(Forge.serialize(s),before);
+});
+
+test('a lower-value reroll preserves the old ranking snapshot and a stronger reroll records the improvement', () => {
+  const s=Forge.restore({level:'32',shards:'9000000',enchantments:['astral','lunar','storm']},100000);
+  const oldValue=Forge.appraisal(s).value;const result=Forge.reroll(s,100000,()=>0);
+  assert(BigInt(result.valueAfter)<oldValue);assert.equal(BigInt(s.rankingBest.value),oldValue);
+  assert.equal(Forge.saleOffer(s).shards,Forge.appraisal(s).value/10n);
+  const stronger=Forge.restore({level:'32',shards:'9000000',enchantments:['cinder','frost','storm']},100000);
+  const draws=[0,.99];Forge.reroll(stronger,100000,()=>draws.shift());
+  assert.equal(stronger.enchantment,'lunar');assert.equal(BigInt(stronger.rankingBest.value),Forge.appraisal(stronger).value);
+  const wallet=stronger.shards;assert.equal(Forge.reroll(stronger,100001,()=>0),null);assert.equal(stronger.shards,wallet);
+});

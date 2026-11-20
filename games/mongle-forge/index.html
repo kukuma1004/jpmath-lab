@@ -7,10 +7,10 @@
   <meta name="description" content="한 번 더, 어디까지 갈까. 강화 제한 없이 검을 벼리고 실패와 파괴를 넘어 최고 기록에 도전하는 몽글 대장간.">
   <title>몽글 대장간 · 끝없는 강화</title>
   <link rel="stylesheet" href="forge-effects.css?v=infinite-1">
-  <link rel="stylesheet" href="forge.css?v=market-1">
-  <script src="forge-engine.js?v=market-1" defer></script>
+  <link rel="stylesheet" href="forge.css?v=reroll-1">
+  <script src="forge-engine.js?v=reroll-1" defer></script>
   <script src="forge-ranking.js?v=market-1" defer></script>
-  <script src="forge.js?v=market-1" defer></script>
+  <script src="forge.js?v=reroll-1" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#strengthen">강화 버튼으로 바로가기</a>
@@ -79,7 +79,7 @@
           <button class="special-strengthen" id="special-strengthen" type="button" aria-describedby="special-copy special-waiting"><span>✧ <strong id="special-label">특수 강화</strong></span><span><b id="special-chance"></b><small id="special-cost"></small></span></button>
           <p id="special-copy">실패하면 별철만 소모 · 단계와 효과는 유지돼요.</p>
           <p id="special-waiting"></p>
-          <details class="special-rules"><summary>효과 조합과 유지 규칙</summary><p>성공하면 아직 없는 효과 하나를 추가해요. 감정가는 각 효과의 배율을 모두 곱해 계산해요. 일반 강화의 +0 초기화에도 효과는 유지되고, 검이 파괴되면 모두 사라져요.</p><ul id="special-pool"></ul><p>추가 효과는 남아 있는 후보의 가중치 비율로 추첨해요.</p></details>
+          <details class="special-rules"><summary>효과 조합·리롤 규칙</summary><p>성공하면 아직 없는 효과 하나를 추가해요. 3개를 모으면 리롤이 열려요. 세 각인은 각각 1/3 확률로 교체 대상이 되고, 현재 없는 효과 두 종류 중 하나가 새로 붙어요. 리롤은 확정 변환이며 감정가가 내려갈 수도 있어요. 강화 단계와 나머지 두 효과는 유지해요.</p><ul id="special-pool"></ul><p>새 효과는 남은 후보의 가중치 비율로 추첨해요. 리롤 비용은 세 번째 효과 추가 비용의 2배예요. 일반 강화의 +0 초기화에는 효과가 유지되고, 검이 파괴되면 모두 사라져요.</p></details>
         </div>
         <div class="outcome" id="outcome" role="status" aria-live="polite"><strong id="outcome-title">새 시즌 · 별철 10,000개로 시작!</strong><p id="outcome-copy">나만의 검을 벼리고 이름을 붙여 무기 랭킹에 등록해 보세요.</p></div>
         <div class="smelter">

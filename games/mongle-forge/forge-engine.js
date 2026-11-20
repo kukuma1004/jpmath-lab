@@ -101,12 +101,16 @@ const Forge = (() => {
       pity[(level + 1n).toString()] = Math.min(9000, Math.floor(old.forgeMisses) * 1200);
     }
     const history = Array.isArray(old.history) ? old.history.filter(entry =>
-      entry && ['success', 'reset', 'shatter', 'reforge', 'enchant', 'enchant-fail', 'protected', 'protection', 'sell'].includes(entry.kind) &&
+      entry && ['success', 'reset', 'shatter', 'reforge', 'enchant', 'enchant-fail', 'protected', 'protection', 'sell', 'reroll'].includes(entry.kind) &&
       /^\d+$/.test(String(entry.from)) && /^\d+$/.test(String(entry.target)) && Number.isFinite(entry.at) &&
-      (!['protection', 'sell'].includes(entry.kind) || /^\d+$/.test(String(entry.amount)))
+      (!['protection', 'sell'].includes(entry.kind) || /^\d+$/.test(String(entry.amount))) &&
+      (entry.kind !== 'reroll' || Number.isInteger(entry.slot) && entry.slot >= 1 && entry.slot <= enchantmentLimit &&
+        enchantments.some(effect => effect.id === entry.enchantment) && enchantments.some(effect => effect.id === entry.replaced) &&
+        entry.enchantment !== entry.replaced && /^\d+$/.test(String(entry.valueBefore)) && /^\d+$/.test(String(entry.valueAfter)))
     ).slice(0, 12).map(entry => ({
       kind: entry.kind, from: String(entry.from), target: String(entry.target), at: entry.at,
-      ...(entry.kind === 'enchant' && enchantments.some(effect => effect.id === entry.enchantment) ? { enchantment: entry.enchantment } : {}),
+      ...(['enchant', 'reroll'].includes(entry.kind) && enchantments.some(effect => effect.id === entry.enchantment) ? { enchantment: entry.enchantment } : {}),
+      ...(entry.kind === 'reroll' ? { replaced: entry.replaced, slot: entry.slot, valueBefore: String(entry.valueBefore), valueAfter: String(entry.valueAfter) } : {}),
       ...(entry.kind === 'shatter' && Number.isInteger(entry.lostEffects) && entry.lostEffects >= 0 && entry.lostEffects <= enchantmentLimit ? { lostEffects: entry.lostEffects } : {}),
       ...(['protection', 'sell'].includes(entry.kind) && /^\d+$/.test(String(entry.amount)) ? { amount: String(entry.amount) } : {}),
     })) : [];
@@ -281,11 +285,13 @@ const Forge = (() => {
   function enchantPreview(state) {
     const slots = state.enchantments.length;
     const full = slots >= enchantmentLimit;
+    const baseCost = 120n * (state.level + 1n) + productionBase(state) * (slots === 1 ? 12n : 36n);
     return {
-      slots, full,
+      slots, full, reroll: full && !state.broken,
+      token: state.generation + ':' + state.level + ':' + state.bestLevel + ':' + state.enchantments.join(','),
       // Keep engraving prices independent of automatic production balancing.
-      cost: full || state.broken ? 0n : 120n * (state.level + 1n) + productionBase(state) * (slots === 1 ? 12n : 36n),
-      success: full || state.broken ? 0 : slots === 1 ? 6000 : 3000,
+      cost: state.broken ? 0n : baseCost * (full ? 2n : 1n),
+      success: state.broken ? 0 : full ? 10000 : slots === 1 ? 6000 : 3000,
     };
   }
 
@@ -356,6 +362,26 @@ const Forge = (() => {
     return { ...event, spent: offer.cost };
   }
 
+  function reroll(state, now = Date.now(), random = Math.random, expectedToken) {
+    const offer = enchantPreview(state);
+    if (!offer.reroll || now - state.lastAt < cooldown || state.shards < offer.cost ||
+        expectedToken !== undefined && expectedToken !== offer.token) return null;
+    rememberWeapon(state);
+    const valueBefore = appraisal(state).value;
+    const index = Math.min(enchantmentLimit - 1, Math.floor(random() * enchantmentLimit));
+    const replaced = state.enchantments[index];
+    const enchantment = rollEnchantment(random, state.enchantments);
+    state.enchantments[index] = enchantment;
+    state.enchantment = state.enchantments[0];
+    state.shards -= offer.cost;
+    state.lastAt = now;
+    rememberWeapon(state);
+    const event = { kind: 'reroll', from: state.level.toString(), target: state.level.toString(), at: now,
+      slot: index + 1, replaced, enchantment, valueBefore: valueBefore.toString(), valueAfter: appraisal(state).value.toString() };
+    state.history.unshift(event); state.history.length = Math.min(state.history.length, 12);
+    return { ...event, spent: offer.cost };
+  }
+
   function protectionOffer(state) {
     const offer = preview(state);
     return { target: offer.target, cost: offer.target ? 1000n + offer.target ** 2n * 100n + offer.cost * 8n : 0n,
@@ -390,7 +416,7 @@ const Forge = (() => {
     return event;
   }
 
-  return { saveKey, previousSaveKey, legacySaveKey, backupKey, seasonId, startingShards, cooldown, recoveryBonus, offlineLimit, enchantmentLimit, forms, enchantments, appraisal, restore, loadSeason, serialize, rankingName, rankingRecord, weaponSnapshot, rememberWeapon, formAt, cost, baseIncome, income, rankReward, setRankBonus, preview, protectionOffer, buyProtection, saleOffer, sell, enchantPreview, collectPassive, act, enchant };
+  return { saveKey, previousSaveKey, legacySaveKey, backupKey, seasonId, startingShards, cooldown, recoveryBonus, offlineLimit, enchantmentLimit, forms, enchantments, appraisal, restore, loadSeason, serialize, rankingName, rankingRecord, weaponSnapshot, rememberWeapon, formAt, cost, baseIncome, income, rankReward, setRankBonus, preview, protectionOffer, buyProtection, saleOffer, sell, enchantPreview, collectPassive, act, enchant, reroll };
 })();
 
 if (typeof module !== 'undefined') module.exports = Forge;

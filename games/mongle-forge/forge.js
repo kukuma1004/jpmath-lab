@@ -12,7 +12,7 @@
   const specialButton = $('special-strengthen');
   const book = $('book');
   const fx = $('technique-fx');
-  const labels = { success: '강화 성공', reset: '+0 초기화', shatter: '검 파괴', reforge: '새 검 제작', enchant: '특수 강화 성공', 'enchant-fail': '특수 강화 실패', protected: '보호권 발동', protection: '보호권 구매', sell: '무기 판매' };
+  const labels = { success: '강화 성공', reset: '+0 초기화', shatter: '검 파괴', reforge: '새 검 제작', enchant: '특수 강화 성공', 'enchant-fail': '특수 강화 실패', protected: '보호권 발동', protection: '보호권 구매', sell: '무기 판매', reroll: '효과 리롤' };
   let state = Forge.restore(null);
   let storageOkay = true;
   let busy = false;
@@ -118,10 +118,11 @@
       }));
       const remaining = Forge.enchantments.filter(entry => !state.enchantments.includes(entry.id));
       const totalWeight = remaining.reduce((total, entry) => total + entry.weight, 0);
+      const reroll = effects.length === Forge.enchantmentLimit;
       $('special-pool').replaceChildren(...Forge.enchantments.map(effect => {
         const owned = state.enchantments.includes(effect.id);
         return node('li', '', effect.mark + ' ' + effect.name + ' · ' + effect.rank + ' ×' + Number(effect.tenths) / 10 + ' · ' +
-          (owned ? '보유 중' : '성공 시 ' + (effect.weight / totalWeight * 100).toLocaleString('ko-KR', { maximumFractionDigits: 1 }) + '%'));
+          (owned ? reroll ? '교체 대상 33.3%' : '보유 중' : (reroll ? '새 효과 추첨 ' : '성공 시 ') + (effect.weight / totalWeight * 100).toLocaleString('ko-KR', { maximumFractionDigits: 1 }) + '%'));
       }));
     }
     $('sword-value').textContent = fmt(value) + ' G';
@@ -172,13 +173,15 @@
     $('open-sale').disabled = !!busy || cooling || state.broken;
     $('sale-price').textContent = state.broken ? '판매할 무기 없음' : '+' + fmt(Forge.saleOffer(state).shards) + ' 별철';
     $('income-breakdown').textContent = '기본 +' + fmt(Forge.baseIncome(state)) + (state.rankBonus && rate > Forge.baseIncome(state) ? ' · 랭킹 ' + state.rankBonus.rank + '위 +' + fmt(Forge.rankReward(state.rankBonus.rank)) : ' · 랭킹 보너스 별도');
-    specialButton.disabled = !!busy || cooling || state.broken || special.full || state.shards < special.cost;
-    $('special-label').textContent = busy === 'special' ? '각인 중…' : !state.broken && special.full ? '3중 마법 완성' : '특수 강화';
+    specialButton.disabled = !!busy || cooling || state.broken || state.shards < special.cost;
+    $('special-label').textContent = busy === 'special' ? special.reroll ? '변환 중…' : '각인 중…' : special.reroll ? '효과 리롤' : '특수 강화';
     document.querySelector('.special-rules').hidden = state.broken;
-    $('special-chance').textContent = state.broken ? '제작 필요' : special.full ? '3 / 3' : '성공 ' + percent(special.success);
-    $('special-cost').textContent = state.broken || special.full ? '' : fmt(special.cost) + ' 별철';
-    $('special-waiting').textContent = state.broken ? '새 검을 제작하면 다시 각인할 수 있어요.' : special.full ? '효과 세 가지의 이펙트와 가치 배율이 함께 적용돼요.' :
-      state.shards < special.cost ? '별철이 모이고 있어요 · 약 ' + fmt((special.cost - state.shards + rate - 1n) / rate) + '초 뒤 각인' : '';
+    $('special-chance').textContent = state.broken ? '제작 필요' : special.reroll ? '무작위 1개 확정 변환' : '성공 ' + percent(special.success);
+    $('special-cost').textContent = state.broken ? '' : fmt(special.cost) + ' 별철';
+    $('special-copy').textContent = special.reroll ? '세 효과 중 하나를 무작위 교체 · 감정가 상승·하락 가능' : '실패하면 별철만 소모 · 단계와 효과는 유지돼요.';
+    $('special-waiting').textContent = state.broken ? '새 검을 제작하면 다시 각인할 수 있어요.' :
+      state.shards < special.cost ? '별철이 모이고 있어요 · 약 ' + fmt((special.cost - state.shards + rate - 1n) / rate) + '초 뒤 ' + (special.reroll ? '리롤' : '각인') :
+      special.reroll ? '강화 단계와 나머지 두 효과는 유지돼요.' : '';
     $('wallet').textContent = fmt(state.shards);
     $('wallet').title = state.shards.toString();
     $('income').textContent = '+' + fmt(rate) + ' /초';
@@ -221,7 +224,7 @@
       item.append(
         node('span', 'history-symbol', entry.kind === 'success' || entry.kind === 'enchant' ? '✦' : entry.kind === 'shatter' ? '✕' : '↻'),
         node('strong', '', labels[entry.kind]),
-        node('span', 'history-levels', entry.kind === 'protected' ? level(from) + ' 유지' : entry.kind === 'protection' ? level(target) + ' 전용 · ' + fmt(BigInt(entry.amount ?? 0)) + ' 별철' : entry.kind === 'sell' ? '+' + fmt(BigInt(entry.amount ?? 0)) + ' 별철' : entry.kind === 'reforge' ? '새 검 +0' : entry.kind === 'enchant' ?
+        node('span', 'history-levels', entry.kind === 'reroll' ? entry.slot + '번 · ' + (Forge.enchantments.find(effect => effect.id === entry.replaced)?.name ?? '이전 효과') + ' → ' + (Forge.enchantments.find(effect => effect.id === entry.enchantment)?.name ?? '새 효과') : entry.kind === 'protected' ? level(from) + ' 유지' : entry.kind === 'protection' ? level(target) + ' 전용 · ' + fmt(BigInt(entry.amount ?? 0)) + ' 별철' : entry.kind === 'sell' ? '+' + fmt(BigInt(entry.amount ?? 0)) + ' 별철' : entry.kind === 'reforge' ? '새 검 +0' : entry.kind === 'enchant' ?
           (Forge.enchantments.find(effect => effect.id === entry.enchantment)?.name ?? '효과 추가') : entry.kind === 'enchant-fail' ? level(from) + ' · 효과 유지' :
           level(from) + ' → ' + (entry.kind === 'success' ? level(target) : entry.kind === 'shatter' ?
             '파괴' + (entry.lostEffects ? ' · 효과 ' + entry.lostEffects + '개 소멸' : '') : '+0')),
@@ -258,6 +261,8 @@
   function animateEvent(event) {
     clearTimeout(outcomeTimer);
     stage.dataset.outcome = event.kind;
+    delete $('enchantment-card').dataset.rerollSlot;
+    if (event.kind === 'reroll') $('enchantment-card').dataset.rerollSlot = String(event.slot);
     fx.replaceChildren();
     $('forge-fx').replaceChildren();
     if (!reducedMotion.matches) {
@@ -283,6 +288,7 @@
     }
     outcomeTimer = setTimeout(() => {
       delete stage.dataset.outcome;
+      delete $('enchantment-card').dataset.rerollSlot;
       fx.replaceChildren();
       $('forge-fx').replaceChildren();
     }, 1100);
@@ -319,6 +325,11 @@
       const effect = Forge.enchantments.find(entry => entry.id === event.enchantment);
       title = '특수 강화 성공! ' + (effect?.mark ?? '✧');
       copy = (effect?.name ?? '새 효과') + ' 추가 · 각 효과의 배율이 곱해져 감정가가 올라가요.';
+    } else if (event.kind === 'reroll') {
+      const previous = Forge.enchantments.find(effect => effect.id === event.replaced);
+      const next = Forge.enchantments.find(effect => effect.id === event.enchantment);
+      title = '효과 리롤 완료 · ' + event.slot + '번 각인';
+      copy = previous.name + ' → ' + next.name + ' · 감정가 ' + fmt(BigInt(event.valueBefore)) + ' → ' + fmt(BigInt(event.valueAfter)) + ' G';
     } else if (event.kind === 'enchant-fail') {
       title = '특수 강화 실패 · 효과 보존';
       copy = '별철만 소모했어요. 기존 강화 단계와 붙어 있던 효과는 그대로예요.';
@@ -333,11 +344,12 @@
 
   async function attempt(action = 'forge') {
     if (busy) return;
+    const specialOffer = action === 'special' ? Forge.enchantPreview(state) : null;
     busy = action;
     renderControls();
     let event;
     try {
-      event = await transaction(next => action === 'special' ? Forge.enchant(next) : action === 'protection' ? Forge.buyProtection(next) : action === 'sell' ? Forge.sell(next, Date.now(), saleToken) : Forge.act(next));
+      event = await transaction(next => action === 'special' ? specialOffer.reroll ? Forge.reroll(next, Date.now(), Math.random, specialOffer.token) : Forge.enchant(next) : action === 'protection' ? Forge.buyProtection(next) : action === 'sell' ? Forge.sell(next, Date.now(), saleToken) : Forge.act(next));
       if (event) showOutcome(event, !['protection', 'sell'].includes(event.kind));
       if (action === 'sell') {
         if (event) $('sale-dialog').close();
