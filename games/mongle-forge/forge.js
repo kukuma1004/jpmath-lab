@@ -19,7 +19,7 @@
   let bookSignature = '';
   let lastHistory = '';
   let shownWeapon = '';
-  let shownEffects = '';
+  let shownEffects = null;
   let outcomeTimer;
 
   function fmt(value) {
@@ -78,11 +78,11 @@
     const form = Forge.formAt(state.level);
     const { enchantment, effects, numerator, denominator, base, value } = Forge.appraisal(state);
     const multiplier = (Number(numerator) / Number(denominator)).toLocaleString('ko-KR', { maximumFractionDigits: 3 });
-    stage.dataset.enchantment = enchantment.id;
-    $('enchantment-card').dataset.enchantment = enchantment.id;
+    stage.dataset.enchantment = enchantment?.id ?? 'none';
+    $('enchantment-card').dataset.enchantment = enchantment?.id ?? 'none';
     $('enchantment-card').hidden = state.broken;
     $('magic-tag').hidden = state.broken;
-    $('magic-tag').textContent = effects.length === 1 ? enchantment.mark + ' ' + enchantment.name : effects.map(entry => entry.mark).join(' ') + ' ' + effects.length + '중 마법';
+    $('magic-tag').textContent = !effects.length ? '' : effects.length === 1 ? enchantment.mark + ' ' + enchantment.name : effects.map(entry => entry.mark).join(' ') + ' ' + effects.length + '중 마법';
     $('magic-tag').title = effects.map(entry => entry.name).join(' + ');
     $('magic-slots').textContent = effects.length + ' / ' + Forge.enchantmentLimit;
     $('magic-multiplier').textContent = '가치 ×' + multiplier;
@@ -139,7 +139,7 @@
     $('awakening').textContent = '각성 ' + fmt(form.awakening);
     $('stage-state').textContent = state.broken ? '새 검 제작 필요' : '끝없는 강화';
     const nextForm = Forge.formAt(form.next);
-    $('next-form').textContent = state.broken ? '다시 벼릴 불꽃이 남아 있어요.' :
+    $('next-form').textContent = state.broken ? '특수효과 0개 · 새 검을 제작해 주세요.' :
       level(form.next) + '에서 ' + nextForm.name + (nextForm.awakening > 0n ? ' · 각성 ' + fmt(nextForm.awakening) : '');
     const discovered = Forge.forms.filter(entry => entry.level <= state.bestLevel).length;
     $('book-count').textContent = discovered + '/' + Forge.forms.length;
@@ -201,7 +201,8 @@
         node('strong', '', labels[entry.kind]),
         node('span', 'history-levels', entry.kind === 'reforge' ? '새 검 +0' : entry.kind === 'enchant' ?
           (Forge.enchantments.find(effect => effect.id === entry.enchantment)?.name ?? '효과 추가') : entry.kind === 'enchant-fail' ? level(from) + ' · 효과 유지' :
-          level(from) + ' → ' + (entry.kind === 'success' ? level(target) : entry.kind === 'shatter' ? '파괴' : '+0')),
+          level(from) + ' → ' + (entry.kind === 'success' ? level(target) : entry.kind === 'shatter' ?
+            '파괴' + (entry.lostEffects ? ' · 효과 ' + entry.lostEffects + '개 소멸' : '') : '+0')),
       );
       return item;
     }));
@@ -281,7 +282,8 @@
       copy = '효과는 모두 유지돼요. 나무검 +0에서 바로 다시 강화할 수 있어요. ' + level(target) + ' 재도전 보정 +' + percent(Forge.recoveryBonus).replace('%', '%p');
     } else if (event.kind === 'shatter') {
       title = '쨍그랑! 검이 깨졌어요.';
-      copy = '붙어 있던 효과도 사라졌어요. 강화비 ' + fmt(event.spent ?? Forge.cost(target)) + ' 별철 소모 · 제작비 ' + fmt(Forge.preview(state).cost) + ' 별철로 새 검을 만드세요.';
+      copy = (event.lostEffects ? '특수효과 ' + event.lostEffects + '개가 모두 사라졌어요. ' : '붙어 있던 효과가 모두 사라졌어요. ') +
+        '강화비 ' + fmt(event.spent ?? Forge.cost(target)) + ' 별철 소모 · 제작비 ' + fmt(Forge.preview(state).cost) + ' 별철로 새 검을 만드세요.';
     } else if (event.kind === 'enchant') {
       const effect = Forge.enchantments.find(entry => entry.id === event.enchantment);
       title = '특수 강화 성공! ' + (effect?.mark ?? '✧');
@@ -291,7 +293,7 @@
       copy = '별철만 소모했어요. 기존 강화 단계와 붙어 있던 효과는 그대로예요.';
     } else {
       title = '새 검이 준비됐어요.';
-      copy = '+0에서 다시 시작해요. 최고 기록 ' + level(state.bestLevel);
+      copy = '새 효과 하나를 가진 검 +0으로 시작해요. 최고 기록 ' + level(state.bestLevel);
     }
     $('outcome-title').textContent = title;
     $('outcome-copy').textContent = copy;

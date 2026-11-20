@@ -59,7 +59,7 @@ const Forge = (() => {
   }
 
   function appraisal(state) {
-    const effects = state.enchantments.map(id => enchantments.find(entry => entry.id === id));
+    const effects = state.broken ? [] : state.enchantments.map(id => enchantments.find(entry => entry.id === id));
     const numerator = effects.reduce((product, entry) => product * entry.tenths, 1n);
     const denominator = 10n ** BigInt(effects.length);
     const base = state.broken ? 0n : 120n + 15n * state.level * (state.level + 1n) * (state.level + 2n);
@@ -79,6 +79,7 @@ const Forge = (() => {
 
   function restore(raw, now = Date.now(), random = Math.random) {
     const old = raw && typeof raw === 'object' ? raw : {};
+    const broken = old.version === 2 && old.broken === true;
     const level = natural(old.level);
     const priorBest = natural(old.bestLevel);
     const bestLevel = priorBest > level ? priorBest : level;
@@ -100,20 +101,21 @@ const Forge = (() => {
     ).slice(0, 12).map(entry => ({
       kind: entry.kind, from: String(entry.from), target: String(entry.target), at: entry.at,
       ...(entry.kind === 'enchant' && enchantments.some(effect => effect.id === entry.enchantment) ? { enchantment: entry.enchantment } : {}),
+      ...(entry.kind === 'shatter' && Number.isInteger(entry.lostEffects) && entry.lostEffects >= 0 && entry.lostEffects <= enchantmentLimit ? { lostEffects: entry.lostEffects } : {}),
     })) : [];
-    const savedEffects = Array.isArray(old.enchantments) ? [...new Set(old.enchantments.filter(id =>
+    const savedEffects = !broken && Array.isArray(old.enchantments) ? [...new Set(old.enchantments.filter(id =>
       enchantments.some(entry => entry.id === id)))].slice(0, enchantmentLimit) : [];
-    if (!savedEffects.length) savedEffects.push(enchantments.some(entry => entry.id === old.enchantment) ? old.enchantment :
+    if (!broken && !savedEffects.length) savedEffects.push(enchantments.some(entry => entry.id === old.enchantment) ? old.enchantment :
       raw ? enchantments[Number((level / 8n + 4n) % 5n)].id : rollEnchantment(random));
 
     return {
       version: 2,
       level,
       bestLevel,
-      enchantment: savedEffects[0],
+      enchantment: savedEffects[0] ?? null,
       enchantments: savedEffects,
       shards: natural(old.shards, 120n),
-      broken: old.version === 2 && old.broken === true,
+      broken,
       attempts: natural(old.attempts),
       shattered: natural(old.shattered),
       pity,
@@ -153,12 +155,17 @@ const Forge = (() => {
     return 8n + (state.bestLevel + 1n) ** 2n;
   }
 
-  function income(state) {
+  function productionBase(state) {
     const level = state.bestLevel;
     const miner = natural(state.legacy.miner);
     const polish = natural(state.legacy.polish);
     const echo = natural(state.legacy.echo);
     return 12n + level ** 3n / 6n + miner * 4n + polish * 2n + echo * 2n;
+  }
+
+  function income(state) {
+    const rate = productionBase(state) / 20n;
+    return rate < 2n ? 2n : rate;
   }
 
   function collectPassive(state, now = Date.now()) {
@@ -191,7 +198,8 @@ const Forge = (() => {
     const full = slots >= enchantmentLimit;
     return {
       slots, full,
-      cost: full ? 0n : 120n * (state.level + 1n) + income(state) * (slots === 1 ? 12n : 36n),
+      // Keep engraving prices independent of automatic production balancing.
+      cost: full || state.broken ? 0n : 120n * (state.level + 1n) + productionBase(state) * (slots === 1 ? 12n : 36n),
       success: full || state.broken ? 0 : slots === 1 ? 6000 : 3000,
     };
   }
@@ -218,6 +226,7 @@ const Forge = (() => {
     const offer = preview(state);
     if (state.shards < offer.cost) return null;
     const from = state.level;
+    const effectCount = state.enchantments.length;
     let kind;
     if (state.broken) {
       kind = 'reforge';
@@ -238,12 +247,18 @@ const Forge = (() => {
         state.pity[offer.target.toString()] = Math.min(9000, (state.pity[offer.target.toString()] ?? 0) + recoveryBonus);
         state.level = 0n;
         state.broken = kind === 'shatter';
-        if (state.broken) state.shattered += 1n;
+        if (state.broken) {
+          state.shattered += 1n;
+          state.enchantments = [];
+          state.enchantment = null;
+        }
       }
     }
     state.shards -= offer.cost;
     state.lastAt = now;
-    const event = { kind, from: from.toString(), target: offer.target.toString(), at: now };
+    const event = { kind, from: from.toString(), target: offer.target.toString(), at: now,
+      ...(kind === 'shatter' ? { lostEffects: effectCount } : {}),
+    };
     state.history.unshift(event);
     state.history.length = Math.min(state.history.length, 12);
     return { ...event, spent: offer.cost };

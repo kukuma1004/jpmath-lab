@@ -239,16 +239,23 @@ test('stacked appraisal multiplies every effect exactly with one final integer r
   }
 });
 
-test('all engravings survive normal reset and are replaced by one new effect on reforge', () => {
+test('normal reset keeps engravings but shatter clears them immediately, before reforge', () => {
   const state = Forge.restore({ version: 2, level: '31', shards: '9000000', enchantments: ['frost', 'storm', 'lunar'] }, 100000);
   Forge.act(state, 100000, () => Forge.preview(state).success / 10000);
   assert.equal(state.level, 0n);
   assert.deepEqual(state.enchantments, ['frost', 'storm', 'lunar']);
   state.level = 31n;
-  Forge.act(state, 101000, () => 0.9999);
+  const destroyed = Forge.act(state, 101000, () => 0.9999);
   assert.equal(state.broken, true);
+  assert.equal(destroyed.lostEffects, 3);
+  assert.deepEqual(state.enchantments, []);
+  assert.equal(state.enchantment, null);
   assert.equal(Forge.appraisal(state).value, 0n);
+  assert.deepEqual(Forge.appraisal(state).effects, []);
   const saved = Forge.restore(JSON.parse(Forge.serialize(state)), 102000);
+  assert.deepEqual(saved.enchantments, []);
+  assert.equal(saved.enchantment, null);
+  assert.equal(saved.history[0].lostEffects, 3);
   Forge.act(saved, 102000, () => 0.85);
   assert.deepEqual(saved.enchantments, ['astral']);
   assert.equal(saved.enchantment, 'astral');
@@ -263,4 +270,39 @@ test('stack migration preserves existing effects and sanitizes invalid or duplic
   assert.equal(restored.enchantment, 'frost');
   assert.deepEqual(Forge.restore({ enchantments: ['bad'], enchantment: 'lunar' }, 100000).enchantments, ['lunar']);
   assert.deepEqual(Forge.restore(JSON.parse(Forge.serialize(restored)), 100000), restored);
+});
+
+test('old broken saves discard every stored effect without drawing a replacement', () => {
+  for (const old of [
+    { enchantment: 'lunar', enchantments: ['lunar', 'storm', 'astral'] },
+    { enchantment: 'astral' },
+    { enchantment: null, enchantments: [] },
+  ]) {
+    const state = Forge.restore({ version: 2, broken: true, level: '0', bestLevel: '32', shards: '123456789', ...old }, 100000,
+      () => { throw Error('broken swords must not draw effects'); });
+    assert.deepEqual(state.enchantments, []);
+    assert.equal(state.enchantment, null);
+    assert.equal(state.shards, 123456789n);
+    assert.equal(state.bestLevel, 32n);
+    assert.equal(Forge.enchantPreview(state).cost, 0n);
+    assert.equal(Forge.enchantPreview(state).success, 0);
+    assert.deepEqual(Forge.appraisal(state).effects, []);
+    assert.deepEqual(Forge.restore(JSON.parse(Forge.serialize(state)), 101000), state);
+  }
+});
+
+test('automatic income is reduced with a playable minimum and engraving prices stay unchanged', () => {
+  for (const [bestLevel, expected] of [['0', 2n], ['12', 15n], ['20', 67n], ['32', 273n], ['80', 4267n]]) {
+    const state = Forge.restore({ version: 2, level: bestLevel, shards: '123456789', paidAt: 100000, enchantment: 'astral' }, 100000);
+    assert.equal(Forge.income(state), expected);
+    const oldIncome = 12n + BigInt(bestLevel) ** 3n / 6n;
+    assert.equal(Forge.enchantPreview(state).cost, 120n * (BigInt(bestLevel) + 1n) + oldIncome * 12n);
+    assert.equal(Forge.collectPassive(state, 105000), expected * 5n);
+    assert.equal(state.shards, 123456789n + expected * 5n);
+    assert.equal(Forge.collectPassive(state, 105000), 0n);
+  }
+  const legacy = Forge.restore({ level: '32', miner: 4, polish: 3, echo: 2 }, 100000);
+  assert.equal(Forge.income(legacy), (12n + 32n ** 3n / 6n + 4n * 4n + 3n * 2n + 2n * 2n) / 20n);
+  const huge = Forge.restore({ level: '90071992547409931234567890' }, 100000);
+  assert.equal(Forge.income(huge), (12n + huge.bestLevel ** 3n / 6n) / 20n);
 });
