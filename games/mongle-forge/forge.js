@@ -152,7 +152,8 @@
     const cooling = Date.now() - state.lastAt < Forge.cooldown;
     const special = Forge.enchantPreview(state);
     specialButton.disabled = !!busy || cooling || state.broken || special.full || state.shards < special.cost;
-    $('special-label').textContent = busy === 'special' ? '각인 중…' : special.full ? '3중 마법 완성' : '특수 강화';
+    $('special-label').textContent = busy === 'special' ? '각인 중…' : !state.broken && special.full ? '3중 마법 완성' : '특수 강화';
+    document.querySelector('.special-rules').hidden = state.broken;
     $('special-chance').textContent = state.broken ? '제작 필요' : special.full ? '3 / 3' : '성공 ' + percent(special.success);
     $('special-cost').textContent = state.broken || special.full ? '' : fmt(special.cost) + ' 별철';
     $('special-waiting').textContent = state.broken ? '새 검을 제작하면 다시 각인할 수 있어요.' : special.full ? '효과 세 가지의 이펙트와 가치 배율이 함께 적용돼요.' :
