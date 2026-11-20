@@ -11,7 +11,7 @@ const config={
 const base='https://jpmathlab-default-rtdb.asia-southeast1.firebasedatabase.app/cheonroeV1/season-20261120-1';
 const appSdkUrl='https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js';
 const authSdkUrl='https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
-const heroes:HeroId[]=['rin','golem','ryu'];
+const heroes:HeroId[]=['rin','golem','ryu','hanui','arang'];
 const payloadFields=['nickname','hero','difficulty','score','durationMs','kills','graze','cleared','submittedAt'];
 interface FirebaseUser {uid:string;getIdToken(forceRefresh?:boolean):Promise<string>;}
 let session:Promise<FirebaseUser>|undefined;
@@ -69,12 +69,17 @@ export async function loadOnline(difficulty:Difficulty,hero:'all'|HeroId):Promis
   const selected=hero==='all'?heroes:[hero];
   for(const id of selected)scope(difficulty,id);
   const query=new URLSearchParams({orderBy:JSON.stringify('score'),limitToLast:'100'});
+  // One unreadable board (for example a hero added before its rules are live) must not hide the others.
+  let failed:unknown=null,failures=0;
   const boards=await Promise.all(selected.map(async id=>{
-    const data=await json(await request(`${base}/${difficulty}/${id}.json?${query}`));
+    let data:unknown;
+    try{data=await json(await request(`${base}/${difficulty}/${id}.json?${query}`));}
+    catch(error){failed=error;failures++;return [];}
     if(data===null)return [];
     if(!data||typeof data!=='object'||Array.isArray(data))throw new Error('랭킹 목록을 읽지 못했어요. 다시 불러와 주세요.');
     return Object.entries(data).map(([uid,value])=>publicRecord(value,uid,difficulty,id)).filter((row):row is PublicRecord=>row!==null);
   }));
+  if(failures===selected.length)throw failed;
   return boards.flat().sort(compareRecords).slice(0,100);
 }
 

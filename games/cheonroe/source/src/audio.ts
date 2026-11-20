@@ -1,8 +1,9 @@
 import type { GameEvent, GameState, HeroId } from './types';
 
 // Original procedural score and event sounds. Each chapter has its own scale, tempo and drum pattern.
-const SCALES=[[293.66,349.23,392,440,523.25,587.33],[329.63,392,440,493.88,587.33,659.25],[220,261.63,293.66,329.63,392,440],[349.23,415.3,466.16,523.25,622.25,698.46],[246.94,293.66,329.63,369.99,440,493.88]];
-const TEMPO=[.2,.18,.17,.165,.15];
+// One scale per chapter, in chapter order (the new chapters sit between the original five).
+const SCALES=[[293.66,349.23,392,440,523.25,587.33],[329.63,392,440,493.88,587.33,659.25],[261.63,311.13,349.23,392,466.16,523.25],[220,261.63,293.66,329.63,392,440],[293.66,329.63,392,440,493.88,587.33],[349.23,415.3,466.16,523.25,622.25,698.46],[207.65,246.94,277.18,311.13,369.99,415.3],[246.94,293.66,329.63,369.99,440,493.88]];
+const TEMPO=[.2,.18,.19,.17,.18,.165,.17,.15];
 const MELODY=[0,2,3,4,3,2,1,2,0,2,4,5,4,3,2,3];
 const BOSS_MELODY=[0,0,3,0,4,3,1,2,0,0,5,4,3,4,2,1];
 
@@ -54,7 +55,7 @@ export class AudioSystem {
   tick(dt:number,s:GameState) {
     if(!this.ok())return;
     this.clock-=dt;if(this.clock>0)return;
-    const stage=Math.min(4,s.stage),boss=s.bossActive,scale=SCALES[stage];
+    const stage=Math.min(SCALES.length-1,s.stage),boss=s.bossActive,scale=SCALES[stage];
     this.clock+=TEMPO[stage]*(boss?.88:1);
     const n=this.beat++,mel=boss?BOSS_MELODY:MELODY;
     if(s.clearTimer>0||s.transition>0){if(n%4===0)this.tone(scale[(n/4|0)%scale.length]*2,.5,'triangle',.06,1,'music');return;}
@@ -68,7 +69,7 @@ export class AudioSystem {
   event(e:GameEvent,hero:HeroId,stage=0) {
     if(!this.ok())return;
     switch(e.kind){
-      case 'shot':if(this.throttle('shot',.09))this.tone(hero==='golem'?240:hero==='ryu'?320:720,.05,'triangle',.04,.5);break;
+      case 'shot':if(this.throttle('shot',.09))this.tone(hero==='golem'?240:hero==='ryu'?320:hero==='hanui'?980:hero==='arang'?470:720,.05,'triangle',.04,.5);break;
       case 'hit':if(this.throttle('hit',.06))this.tone(1200+Math.random()*300,.025,'square',.018,.6);break;
       case 'kill':if(e.big){this.hiss(.5,.45,900,80,'lowpass');this.tone(70,.4,'sine',.5,.4);}else if(this.throttle('kill',.04)){this.hiss(.18,.22,1800,200,'lowpass');this.tone(140,.12,'triangle',.12,.3);}break;
       case 'explode':this.hiss(1.6,.6,600,40,'lowpass');this.tone(50,1.4,'sine',.8,.4);break;
@@ -87,8 +88,8 @@ export class AudioSystem {
       case 'attack':this.tone(587,.18,'triangle',.06);this.tone(880,.25,'triangle',.05,1,'sfx',.08);break;
       case 'warning':for(let i=0;i<4;i++){this.tone(440,.35,'square',.07,1,'sfx',i*.7);this.tone(415,.35,'square',.07,1,'sfx',i*.7+.35);}break;
       case 'boss':this.tone(55,1.5,'sawtooth',.14);this.tone(58,1.5,'sawtooth',.12);break;
-      case 'stage':[0,2,4].forEach((k,i)=>this.tone(SCALES[Math.min(4,stage)][k]*2,.6,'triangle',.08,1,'sfx',i*.12));break;
-      case 'stageclear':case 'victory':[0,2,4,5].forEach((k,i)=>this.tone(SCALES[Math.min(4,stage)][k]*2,1.2,'triangle',.11,1,'sfx',i*.14));break;
+      case 'stage':[0,2,4].forEach((k,i)=>this.tone(SCALES[Math.min(SCALES.length-1,stage)][k]*2,.6,'triangle',.08,1,'sfx',i*.12));break;
+      case 'stageclear':case 'victory':[0,2,4,5].forEach((k,i)=>this.tone(SCALES[Math.min(SCALES.length-1,stage)][k]*2,1.2,'triangle',.11,1,'sfx',i*.14));break;
       case 'extend':[0,2,4].forEach((k,i)=>this.tone(SCALES[0][k]*4,.3,'sine',.1,1,'sfx',i*.07));break;
     }
   }

@@ -14,9 +14,9 @@ const {Engine,hitCircles,HEIGHT}=await import(pathToFileURL(out).href);
 await rm(dir,{recursive:true,force:true});
 
 const args=process.argv.slice(2),god=args.includes('--god');
-const heroArg=args.find(a=>['rin','golem','ryu','all'].includes(a))||'all';
+const heroArg=args.find(a=>['rin','golem','ryu','hanui','arang','all'].includes(a))||'all';
 const diff=args.find(a=>['normal','story'].includes(a))||'normal';
-const heroes=heroArg==='all'?['rin','golem','ryu']:[heroArg];
+const heroes=heroArg==='all'?['rin','golem','ryu','hanui','arang']:[heroArg];
 const DT=1/120,REACT=Number((args.find(a=>a.startsWith('--react='))||'--react=.06').slice(8));
 
 function danger(s,x,y,t) {

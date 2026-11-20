@@ -16,7 +16,7 @@ const saved=(key:string,fallback:string)=>{try{return localStorage.getItem(key)|
 const save=(key:string,value:string)=>{try{localStorage.setItem(key,value);}catch{/* Local settings are optional. */}};
 const params=new URLSearchParams(location.search),qaMode=params.get('qa')==='1';
 const pad=(n:number)=>String(Math.round(n)).padStart(7,'0');
-const MARKS=['꽃','쇠','뢰'];
+const MARKS=['꽃','쇠','뢰','활','혼'];
 
 let selected:HeroId=(saved('cheonroe-hero','rin') as HeroId),difficulty:Difficulty=(saved('cheonroe-difficulty','normal') as Difficulty),chosenStage=0;
 if(!HEROES.some(h=>h.id===selected))selected='rin';if(difficulty!=='normal'&&difficulty!=='story')difficulty='normal';
@@ -56,7 +56,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML=`
 <section id="menu" class="menu" aria-labelledby="title">
  <div class="menu-top"><a class="back-link" href="../">${icon('back')}<span>게임 목록</span></a><div class="menu-tools"><button class="tool-btn" id="open-ranking">${icon('rank')}<span>랭킹</span></button><button class="icon-btn" id="sound" aria-label="소리">${icon('sound')}</button><button class="icon-btn" id="help" aria-label="조작 방법">${icon('help')}</button><button class="icon-btn fs-btn" id="menu-fullscreen" aria-label="전체 화면">${icon('full')}</button></div></div>
  <div class="menu-body">
-  <div class="title-block"><span class="seal">천<br>뢰</span><div><p class="eyebrow">제이피매쓰랩 오리지널 탄막 슈팅</p><h1 id="title">천뢰 <i>철화전선</i></h1><p class="tagline">다섯 마당, 다섯 수호신. 탄막 사이의 길을 읽어라.</p></div></div>
+  <div class="title-block"><span class="seal">천<br>뢰</span><div><p class="eyebrow">제이피매쓰랩 오리지널 탄막 슈팅</p><h1 id="title">천뢰 <i>철화전선</i></h1><p class="tagline">여덟 마당, 여덟 수호신. 탄막 사이의 길을 읽어라.</p></div></div>
   <div class="hero-row" role="group" aria-label="전사 선택">${HEROES.map((h,i)=>`
    <button class="hero-card" data-hero="${h.id}" aria-pressed="false" style="--hero:${h.color}">
     <span class="hero-mark">${MARKS[i]}</span><img src="${asset(h.asset)}" alt="${h.epithet} ${h.name}" draggable="false">
@@ -84,7 +84,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML=`
  <div><dt>근접</dt><dd>적에게 바짝 붙으면 <b>근접 공격</b>이 저절로 나갑니다. 사격보다 훨씬 세고(점수 ×1.5), 휘두르는 자리의 적 탄을 금화로 바꿉니다. 무진이 가장 멀리 닿아요.</dd></div>
  <div><dt>차지</dt><dd>Z를 누르고 있다가 떼면 강한 공격.</dd></div>
  <div><dt>필살기</dt><dd>X / Space · 게이지 100마다 1회. 화면의 탄을 모두 금화로 바꾸고 잠시 무적.</dd></div></dl>
- <p class="manual-note">아케이드: 목숨 3, 첫째 마당부터 끝까지 · 수련: 목숨 5, 느린 탄, 원하는 마당부터<br>P 일시 정지 · F 전체 화면 · 한 마당은 약 5분, 다섯 마당을 모두 돌파하면 클리어</p>
+ <p class="manual-note">아케이드: 목숨 3, 첫째 마당부터 끝까지 · 수련: 목숨 5, 느린 탄, 원하는 마당부터<br>P 일시 정지 · F 전체 화면 · 한 마당은 약 5분, 여덟 마당을 모두 돌파하면 클리어</p>
  <button id="help-play" class="primary">알겠어 ${icon('arrow')}</button></dialog>`;
 
 const $=<T extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as T;
@@ -206,7 +206,7 @@ function onEvent(e:GameEvent){
     case 'kill':if(e.value&&(e.big||Math.random()<.35))label(e.x,e.y,`${e.text?e.text+'  ':''}+${e.value.toLocaleString()}`);break;
     case 'pickup':if(e.text)label(e.x,e.y-30,e.text,'item');break;
     case 'perfect':label(e.x,e.y-70,'완벽 회피!','perfect');break;
-    case 'near':{const now=performance.now();if(now-nearLabelAt>1400){nearLabelAt=now;label(e.x+10,e.y-56,['베기!','쾅!','연타!'][HEROES.findIndex(h=>h.id===s.hero)],'item');}break;}
+    case 'near':{const now=performance.now();if(now-nearLabelAt>1400){nearLabelAt=now;label(e.x+10,e.y-56,['베기!','쾅!','연타!','찌르기!','휘감기!'][HEROES.findIndex(h=>h.id===s.hero)],'item');}break;}
     case 'hurt':notice(s.player.hp>0?'피격! 잠시 무적 · 흰 점만 피하면 돼요':'격추',1300);break;
     case 'extend':notice('목숨 +1',1600);break;
     case 'stage':{

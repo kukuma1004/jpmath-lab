@@ -24,9 +24,11 @@ test('only completed runs of at least 10 seconds with positive score qualify',()
   for(const time of [0,9.9999,NaN,Infinity])assert.equal(fromState({...state,time}),null);
   for(const score of [0,-1,1.5,NaN,Infinity,10000000])assert.equal(fromState({...state,score}),null);
   assert.deepEqual(fromState({...state,time:10}),{...run,durationMs:10000});
+  // An eight-chapter clear can run past an hour; the recorded clock stops at the board's limit.
+  assert.deepEqual(fromState({...state,time:4000}),{...run,durationMs:3600000});
 });
 test('all heroes and difficulty combinations are valid independently',()=>{
-  for(const hero of ['rin','golem','ryu'])for(const difficulty of ['story','normal'])assert.equal(validRun({...run,hero,difficulty}),true);
+  for(const hero of ['rin','golem','ryu','hanui','arang'])for(const difficulty of ['story','normal'])assert.equal(validRun({...run,hero,difficulty}),true);
   for(const hero of ['all','rin/ryu','RIN','',null])assert.equal(validRun({...run,hero}),false);
   for(const difficulty of ['easy','NORMAL','',null])assert.equal(validRun({...run,difficulty}),false);
 });
@@ -79,8 +81,8 @@ test('public load uses only scoped score queries, filters malformed records and 
       }),{status:200});
     };
     const rows=await loadOnline('normal','all');
-    assert.equal(requested.length,3);
-    assert.deepEqual(rows.map(row=>row.uid),['uid_golem','uid_rin','uid_ryu']);
+    assert.equal(requested.length,5);
+    assert.deepEqual(rows.map(row=>row.uid),['uid_golem','uid_arang','uid_hanui','uid_rin','uid_ryu']);
     for(const target of requested) {
       assert(target.pathname.startsWith('/cheonroeV1/season-20261120-1/normal/'));
       assert.equal(target.searchParams.get('orderBy'),'"score"');
@@ -88,7 +90,7 @@ test('public load uses only scoped score queries, filters malformed records and 
       assert.equal(target.searchParams.has('auth'),false);
     }
     await assert.rejects(()=>loadOnline('other','rin'),/분류/);
-    assert.equal(requested.length,3);
+    assert.equal(requested.length,5);
     globalThis.fetch=async()=>new Response('{"error":"Permission denied"}',{status:403});
     await assert.rejects(()=>loadOnline('normal','rin'),/온라인 랭킹을 사용할 수 없어요/);
   }finally{globalThis.fetch=previousFetch;}

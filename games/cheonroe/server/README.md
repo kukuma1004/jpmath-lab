@@ -1,6 +1,6 @@
 # 천뢰 시즌 1 공개 랭킹
 
-Firebase 프로젝트 `jpmathlab`의 Realtime Database 중 `cheonroeV1/season-20261120-1/{difficulty}/{hero}/{anonymousUid}`만 사용합니다. 난이도는 `normal`과 `story`, 전사는 `rin`, `golem`, `ryu`입니다. `cheonroe-ranking-v1`이라는 별도 Firebase 앱에서 사용자가 직접 등록/삭제를 누를 때만 익명 인증합니다. 공개 목록을 볼 때는 인증 계정을 만들지 않습니다.
+Firebase 프로젝트 `jpmathlab`의 Realtime Database 중 `cheonroeV1/season-20261120-1/{difficulty}/{hero}/{anonymousUid}`만 사용합니다. 난이도는 `normal`과 `story`, 전사는 `rin`, `golem`, `ryu`, `hanui`(궁수 하늬), `arang`(처녀귀신 아랑)입니다. `cheonroe-ranking-v1`이라는 별도 Firebase 앱에서 사용자가 직접 등록/삭제를 누를 때만 익명 인증합니다. 공개 목록을 볼 때는 인증 계정을 만들지 않습니다.
 
 각 보드는 점수 정렬로 최대 100개만 공개 조회합니다. 본인 UID만 기록을 읽고 쓰거나 삭제할 수 있습니다. 서버 시각, 10초 갱신 간격, 닉네임, 필드 허용 목록, 숫자 범위, 경로 일치, 최고 점수 보전을 검사합니다. 동점 갱신은 당시 통계와 클리어 여부를 유지하며 닉네임을 바꿀 수 있습니다. 클라이언트는 ETag 조건부 쓰기로 동시 갱신을 보호합니다.
 

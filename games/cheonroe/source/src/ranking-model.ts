@@ -26,7 +26,7 @@ export function validNickname(name:string):boolean {
 export function validRun(value:unknown):value is RunRecord {
   if(!value||typeof value!=='object'||Array.isArray(value))return false;
   const run=value as Record<string,unknown>;
-  return (run.hero==='rin'||run.hero==='golem'||run.hero==='ryu')&&
+  return (run.hero==='rin'||run.hero==='golem'||run.hero==='ryu'||run.hero==='hanui'||run.hero==='arang')&&
     (run.difficulty==='normal'||run.difficulty==='story')&&
     integerBetween(run.score,1,9999999)&&integerBetween(run.durationMs,10000,3600000)&&
     integerBetween(run.kills,0,1000)&&integerBetween(run.graze,0,100000)&&typeof run.cleared==='boolean';
@@ -36,7 +36,8 @@ export function validRun(value:unknown):value is RunRecord {
 export function fromState(state:GameState):RunRecord|null {
   if((state.phase!=='gameover'&&state.phase!=='victory')||state.time<10||state.score<=0)return null;
   const run:RunRecord={hero:state.hero,difficulty:state.difficulty,score:state.score,
-    durationMs:Math.floor(state.time*1000),kills:state.stats.kills,graze:state.graze,
+    // A full eight-chapter run can outlast the board's one-hour limit; the clock stops there so the record still counts.
+    durationMs:Number.isFinite(state.time)?Math.min(3600000,Math.floor(state.time*1000)):NaN,kills:state.stats.kills,graze:state.graze,
     // Only a run that started at chapter one and beat the final guardian counts as cleared.
     cleared:state.phase==='victory'&&(state.startStage??0)===0};
   return validRun(run)?run:null;

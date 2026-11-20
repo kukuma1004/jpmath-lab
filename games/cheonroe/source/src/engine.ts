@@ -18,7 +18,7 @@ export const ULT_TIME=3.2;
 /** Boss HP is sized from its attack script: this much damage per world second, for every second of attacks. */
 export const BOSS_DPS=250;
 /** Melee reach in front of the hit core, and the radius of bullets the swing knocks away. */
-export const MELEE_REACH:{[k in HeroId]:number}={rin:150,golem:150,ryu:190}, MELEE_CANCEL=105;
+export const MELEE_REACH:{[k in HeroId]:number}={rin:150,golem:150,ryu:190,hanui:150,arang:175}, MELEE_CANCEL=105;
 
 /** World-space hit circles [x,y,r] of an enemy, derived from the drawn sprite. */
 export function hitCircles(e:Enemy):[number,number,number][] {
@@ -27,7 +27,7 @@ export function hitCircles(e:Enemy):[number,number,number][] {
 }
 /** Where the hero's shots leave, relative to the hit core. */
 export function muzzleOffset(hero:HeroId):[number,number] {
-  const d=heroDef(hero),w=d.spriteH*.955;
+  const d=heroDef(hero),w=d.spriteH*(d.aspect??.955);
   return [(d.muzzle[0]-d.core[0])*w,(d.muzzle[1]-d.core[1])*d.spriteH*.5];
 }
 
@@ -289,6 +289,16 @@ export class Engine {
       const offs=[[0],[-12,12],[-12,12],[-20,0,20]][pw-1];
       for(const o of offs)this.shot('shot',mx,my+o,0,1800,11,5.4+pw*.5,1,true);
       p.shotTimer+=.11;
+    }else if(s.hero==='hanui') {
+      // Arrows pierce every small enemy in their line; focusing folds the volley into one lane.
+      const n=[2,3,4,5][pw-1],gap=this.focusing?0:.055;
+      for(let i=0;i<n;i++){const k=i-(n-1)/2;this.shot('shot',mx,my+k*(this.focusing?6:10),k*gap,1900,9,6.2+pw*.5,1,true);}
+      p.shotTimer+=.14;
+    }else if(s.hero==='arang') {
+      // Ghost fires drift out in a fan, then hunt the nearest enemy; focusing keeps the fan tight.
+      const n=[3,3,4,5][pw-1],spread=this.focusing?.18:.42;
+      for(let i=0;i<n;i++){const k=n>1?i/(n-1)-.5:0;this.shot('homing',mx,my,k*spread*2,460,12,7.2,1.8,false);}
+      p.shotTimer+=.13;
     }else {
       const offs=[[0],[-16,16],[-16,16],[-26,0,26]][pw-1];
       for(const o of offs)this.shot('wave',mx,my+o,o*.0018,1050,16,9+pw*.6,.86,false);
@@ -300,6 +310,16 @@ export class Engine {
     const s=this.state,p=s.player,f=p.charge/1.2,[ox,oy]=muzzleOffset(s.hero),mx=p.x+ox,my=p.y+oy;
     if(s.hero==='rin')for(let i=-4;i<=4;i++)this.shot('charge',mx,my,i*.1,1050,20,16+22*f,1.4,true);
     else if(s.hero==='golem')this.shot('charge',mx,my,0,2100,34+10*f,110+170*f,1,true);
+    else if(s.hero==='hanui') {
+      // Three heavy arrows straight ahead, and a rain of arrows on the space in front.
+      for(let i=-1;i<=1;i++)this.shot('charge',mx,my+i*14,0,2300,14,40+60*f,1,true);
+      const n=Math.round(10+8*f);for(let i=0;i<n;i++){const x=p.x+140+i*(520/n)+this.random()*30;this.shot('charge',x-150,-30-this.random()*160,1.22,1700,12,18+26*f,1.1,true);}
+    }else if(s.hero==='arang') {
+      // A lash of hair sweeps the space in front: heavy damage, and every bullet it touches turns to gold.
+      const reach=280+140*f;
+      for(const e of [...s.enemies]){const c=hitCircles(e).find(([cx,cy,r])=>cx+r>p.x-20&&Math.hypot(cx-p.x,cy-p.y)<reach+r);if(c)this.damageEnemy(e,(e.boss?.6:1)*(60+90*f),true,c[0],c[1]);}
+      this.clears.push({x:p.x+reach*.45,y:p.y,r:reach*.75,gold:true});
+    }
     else for(let i=-1;i<=1;i++)this.shot('charge',mx,my+i*32,i*.05,1150,30,45+70*f,.9,true);
     s.stats.chargeShots++;this.event({kind:'charge',x:mx,y:my,value:f});
   }
@@ -327,7 +347,7 @@ export class Engine {
       this.ultTick+=.1;
       for(const e of [...s.enemies]) {
         let dmg:number;
-        if(s.hero==='rin')dmg=e.boss?13:30;
+        if(s.hero==='rin'||s.hero==='hanui'||s.hero==='arang')dmg=e.boss?13:30;
         else if(s.hero==='golem')dmg=this.inGolemLane(e)?(e.boss?14:60):(e.boss?2:10);
         else dmg=e.boss?2:8;
         this.damageEnemy(e,dmg,false,e.x,e.y);
@@ -461,8 +481,8 @@ export class Engine {
         const reach=MELEE_REACH[s.hero];
         const c=circles.find(([cx,cy,r])=>cx-r-p.x>-30&&cx-r-p.x<reach&&Math.abs(cy-p.y)<70+r*.6);
         if(c) {
-          p.nearTimer=s.hero==='ryu'?.16:s.hero==='golem'?.32:.24;
-          const dmg=(s.hero==='ryu'?46:s.hero==='golem'?60:30)*(e.boss?.5:1);
+          p.nearTimer=s.hero==='ryu'?.16:s.hero==='golem'?.32:s.hero==='arang'?.2:.24;
+          const dmg=({rin:30,golem:60,ryu:46,hanui:34,arang:40}[s.hero])*(e.boss?.5:1);
           const hx=Math.max(p.x+40,c[0]-c[2]*.5),hy=clamp(c[1],p.y-70,p.y+70);
           this.clears.push({x:hx,y:hy,r:MELEE_CANCEL,gold:true});
           this.event({kind:'near',x:hx,y:hy,value:dmg});

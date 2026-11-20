@@ -48,7 +48,8 @@ type Layer='far'|'mid'|'near';
 function paintLayer(st:StageDef,layer:Layer,w:number,h:number):(c:CanvasRenderingContext2D)=>void {
   const r=seeded(st.name.length*97+(layer==='far'?1:layer==='mid'?2:3)*31);
   return c=>{
-    const t=st.terrain;
+    // New terrains reuse the closest procedural style; they always come with a painted background.
+    const t0=st.terrain,t=t0==='bamboo'||t0==='night'?'valley':t0==='underworld'?'storm':t0;
     if(layer==='far') {
       if(t==='clouds'){cloudBank(c,w,ridge(w,h*.55,[[2,40,1],[5,22,2],[9,10,.4]]),r,st.mid,st.far,90);return;}
       if(t==='storm'){cloudBank(c,w,ridge(w,h*.5,[[3,50,.3],[7,24,1]]),r,'#1a1430',st.far,110);for(let i=0;i<6;i++){const x=r()*w;wrapDraw(w,x,x=>{c.strokeStyle='#ffe58a33';c.lineWidth=2;c.beginPath();c.moveTo(x,h*.3);for(let k=1;k<6;k++)c.lineTo(x+(r()-.5)*40,h*.3+k*22);c.stroke();});}return;}
@@ -67,14 +68,16 @@ function paintLayer(st:StageDef,layer:Layer,w:number,h:number):(c:CanvasRenderin
       fillRidge(c,w,h,f,st.mid);
       if(t==='forge'){for(let i=0;i<10;i++){const x=r()*w,bh=110+r()*120;wrapDraw(w,x,x=>{c.fillStyle=st.mid;c.fillRect(x-40,f(x)-bh,80,bh+20);c.fillRect(x-12,f(x)-bh-90,24,90);c.fillStyle=radial(c,x,f(x)-bh+30,60,[[0,st.accent+'cc'],[1,st.accent+'00']]);c.fillRect(x-60,f(x)-bh-30,120,120);});}}
       else for(let x=10;x<w;x+=46+r()*60)pine(c,x,f(x)+6,.9+r()*.7,st.mid,t==='snow'?'#eef4ff':undefined);
-      if(t==='valley')for(let i=0;i<2;i++){const x=r()*w;wrapDraw(w,x,x=>{const y=f(x);c.fillStyle='#5a2a2a';c.fillRect(x-40,y-90,10,90);c.fillRect(x+30,y-90,10,90);poly(c,[[x-58,y-96],[x+58,y-96],[x+50,y-84],[x-50,y-84]],'#6e3030');c.fillRect(x-46,y-74,92,7);});}
+      // A Korean hongsalmun: two red posts, two beams and a row of arrow-like slats between them.
+      if(t0==='valley')for(let i=0;i<2;i++){const x=r()*w;wrapDraw(w,x,x=>{const y=f(x);c.fillStyle='#5a2a2a';c.fillRect(x-44,y-104,9,104);c.fillRect(x+35,y-104,9,104);c.fillRect(x-50,y-104,100,6);c.fillRect(x-50,y-80,100,5);for(let k=-36;k<=36;k+=8)c.fillRect(x+k,y-118,2,38);ellipse(c,x,y-92,7,7,'#6e3030');});}
     }else {
       const f=ridge(w,h*.55,[[4,26,.4],[9,12,1.1],[23,5,2]]);
       if(t==='clouds'||t==='storm'){cloudBank(c,w,f,r,t==='storm'?'#06050c':st.mid,st.near,58);if(t==='storm'){c.globalAlpha=.6;for(let x=0;x<w;x+=12){c.fillStyle=st.accent+'55';c.fillRect(x,f(x)-30,10,2);}c.globalAlpha=1;}return;}
       fillRidge(c,w,h,f,st.near);
       if(t==='snow'){c.save();c.beginPath();c.moveTo(0,h);for(let x=0;x<=w;x+=8)c.lineTo(x,f(x));c.lineTo(w,h);c.closePath();c.clip();for(let x=0;x<=w;x+=8){c.fillStyle='#e7eefb';c.fillRect(x,f(x)-2,8,14);}c.restore();}
       if(t==='forge'){c.strokeStyle=st.accent+'88';c.lineWidth=3;for(let x=0;x<w;x+=140){c.beginPath();c.moveTo(x,f(x)+30);c.lineTo(x+70,h);c.stroke();}c.fillStyle=st.accent+'55';for(let x=0;x<w;x+=6)c.fillRect(x,f(x)+2,6,3);}
-      for(let i=0;i<7;i++){const x=r()*w,s=1.3+r()*1.2;wrapDraw(w,x,x=>{if(t==='valley'||t==='snow')pine(c,x,f(x)+8,s,st.near,t==='snow'?'#e7eefb':undefined);else{c.fillStyle=st.near;c.fillRect(x-14,f(x)-90*s,28,90*s);c.fillRect(x-40,f(x)-90*s,80,10);}});}
+      for(let i=0;i<7;i++){const x=r()*w,s=1.3+r()*1.2;wrapDraw(w,x,x=>{if(t==='valley'||t==='snow')pine(c,x,f(x)+8,s,st.near,t==='snow'?'#e7eefb':undefined);else{c.fillStyle=st.near;c.fillRect(x-14,f(x)-90*s,28,90*s);c.fillRect(x-20,f(x)-90*s,40,8);}});}
+      if(t0==='bamboo')for(let x=0;x<w;x+=18+r()*26){const hh=h*(.5+r()*.5),bw=6+r()*6;c.fillStyle=st.near;c.fillRect(x,h-hh,bw,hh);for(let y=h-hh+20;y<h;y+=40+r()*20)c.fillRect(x-1,y,bw+2,3);}
     }
   };
 }
@@ -111,7 +114,7 @@ interface Ghost {x:number;y:number;life:number;}
 interface Pending {at:number;run:()=>void;}
 
 const FALLBACK:Partial<Record<EnemyKind,[EnemyKind,string]>>={kite:['drone','#ffb6e6'],ember:['drone','#ffb070'],frost:['wing','#a8e6ff'],storm:['drone','#d6b6ff'],
-  boss2:['boss1','#b9dcff'],boss3:['boss1','#ffb48a'],boss4:['boss1','#c8ecff'],boss5:['boss1','#e2cfff']};
+  boss2:['boss1','#b9dcff'],boss3:['boss1','#ffb48a'],boss4:['boss1','#c8ecff'],boss5:['boss1','#e2cfff'],boss6:['boss1','#d8fff0'],boss7:['boss1','#ffd8a0'],boss8:['boss1','#bcd0ff']};
 
 export class GameRenderer {
   readonly renderer:THREE.WebGLRenderer;
@@ -148,7 +151,8 @@ export class GameRenderer {
   private lightning=0;
   private elapsed=0;
   private lastPlayer={x:0,y:0,vy:0};
-  private swings:{x:number;y:number;life:number;max:number;a:number;n:number}[]=[];
+  private swings:{x:number;y:number;life:number;max:number;a:number;n:number;s:number}[]=[];
+  private wailAt=0;
   private lunge=0;
   private foreTimer=3;
   private foreX=-999;
@@ -197,6 +201,7 @@ export class GameRenderer {
     const coreDot=canvasTexture(64,64,c=>{ellipse(c,32,32,26,26,'#ffffff','#10131c',5);});
     const coreRing=canvasTexture(128,128,c=>{c.strokeStyle='#ffffff';c.lineWidth=6;for(let i=0;i<4;i++){c.beginPath();c.arc(64,64,52,i*TAU/4+.25,i*TAU/4+TAU/4-.25);c.stroke();}});
     const hitRing=canvasTexture(128,128,c=>{c.strokeStyle='#ffffff';c.lineWidth=3;c.beginPath();c.arc(64,64,61,0,TAU);c.stroke();});
+    const arrow=canvasTexture(128,16,c=>{c.fillStyle='#ffffff';c.fillRect(14,7,96,2);poly(c,[[128,8],[106,2],[111,8],[106,14]],'#ffffff');poly(c,[[1,3],[20,7],[20,9],[1,13],[8,8]],'#ffffffcc');});
     // Melee swing: a crescent that opens to the right.
     const slash=canvasTexture(256,256,c=>{c.beginPath();c.arc(70,128,118,-1.2,1.2);c.arc(36,128,104,1.02,-1.02,true);c.closePath();const gr=c.createLinearGradient(0,0,256,0);gr.addColorStop(0,'#ffffff00');gr.addColorStop(.5,'#ffffff88');gr.addColorStop(1,'#ffffff');c.fillStyle=gr;c.fill();});
     this.b={
@@ -214,7 +219,7 @@ export class GameRenderer {
       ultBeamGlow:new Batch(s,g,beamGlow,6,20,true),ultBeamCore:new Batch(s,g,beamCore,4,20,true),
       coreGlow:new Batch(s,g,soft,2,23,true),coreRing:new Batch(s,g,coreRing,2,24,true),coreDot:new Batch(s,g,coreDot,2,25,false),grazeRing:new Batch(s,g,hitRing,2,23,true),
       debug:new Batch(s,g,hitRing,900,40,false),
-      slash:new Batch(s,g,slash,40,21,true),slashCore:new Batch(s,g,slash,40,22,true),
+      slash:new Batch(s,g,slash,40,21,true),slashCore:new Batch(s,g,slash,40,22,true),shotArrow:new Batch(s,g,arrow,700,10,true),
     };
     this.sky=this.mesh(null,-20);
     this.bg=this.mesh(null,-18);
@@ -276,7 +281,7 @@ export class GameRenderer {
     const bg=st.bg?this.bgTex.get(st.bg):undefined;
     this.bg.visible=!!bg;if(bg){this.bg.material.map=bg;this.bg.material.needsUpdate=true;this.bg.material.color.set(st.terrain==='storm'?'#8f86b3':st.terrain==='forge'?'#e6dcdc':'#ffffff');}
     for(const k of ['far','mid','near'] as Layer[]){this.layers[k].material.map=t[k];this.layers[k].material.needsUpdate=true;}
-    this.layers.far.material.opacity=bg?0:1;this.layers.mid.material.opacity=bg?(st.terrain==='valley'?.85:0):1;
+    this.layers.far.material.opacity=bg?0:1;this.layers.mid.material.opacity=bg?0:1;
     this.fog.material.color.set(st.fog);this.fog.material.opacity=bg?.35:.55;
     this.shownStage=i;
   }
@@ -330,12 +335,15 @@ export class GameRenderer {
       case 'graze':this.add('spark',{x:e.x,y:e.y,vx:-60,vy:(Math.random()-.5)*80,life:.18,size:16,color:col('#b8fff4')});break;
       case 'perfect':this.add('ring',{x:e.x,y:e.y,life:.5,size:30,grow:420,color:col('#9ffcff')});this.add('ring',{x:e.x,y:e.y,life:.35,size:20,grow:240,color:WHITE});this.flash=.25;this.flashColor.set('#7fe9ff');break;
       case 'dash':this.ghostData.push({x:e.x,y:e.y,life:.25});for(let i=0;i<10;i++)this.add('spark',{x:e.x,y:e.y,vx:-Math.cos(e.value??0)*(200+Math.random()*300),vy:-Math.sin(e.value??0)*(200+Math.random()*300)+(Math.random()-.5)*120,life:.25,size:10,color:hc,stretch:3});break;
-      case 'charge':this.add('flash',{x:e.x,y:e.y,life:.2,size:80,grow:200,color:hc});this.shake=Math.max(this.shake,4);break;
+      case 'charge':this.add('flash',{x:e.x,y:e.y,life:.2,size:80,grow:200,color:hc});this.shake=Math.max(this.shake,4);
+        // Arang's charge is a sweeping lash of hair in front of her.
+        if(state.hero==='arang'){const p=state.player;for(let i=0;i<3;i++)this.swings.push({x:p.x+150+i*60,y:p.y+(i-1)*50,life:.32+i*.06,max:.32+i*.06,a:(i-1)*.35,n:i,s:2.2+(e.value??0)});this.shake=Math.max(this.shake,8);}
+        break;
       case 'near':{
         // Each hero swings differently: a fan sweep, an iron fist, a flurry of thunder punches.
         this.lunge=1;this.shake=Math.max(this.shake,state.hero==='golem'?7:4);
         const n=state.hero==='ryu'?3:1;
-        for(let i=0;i<n;i++)this.swings.push({x:e.x+i*26,y:e.y+(i-1)*26*(n>1?1:0),life:.2+i*.05,max:.2+i*.05,a:(Math.random()-.5)*.5+(state.hero==='rin'?-.3:0),n:i});
+        for(let i=0;i<n;i++)this.swings.push({x:e.x+i*26,y:e.y+(i-1)*26*(n>1?1:0),life:.2+i*.05,max:.2+i*.05,a:(Math.random()-.5)*.5+(state.hero==='rin'?-.3:0),n:i,s:1});
         this.add('flash',{x:e.x,y:e.y,life:.14,size:state.hero==='golem'?160:110,grow:120,color:col(hero.glow)});
         if(state.hero==='golem')this.add('ring',{x:e.x,y:e.y,life:.3,size:40,grow:260,color:hc});
         for(let i=0;i<12;i++)this.add('spark',{x:e.x,y:e.y,vx:150+Math.random()*420,vy:(Math.random()-.5)*480,life:.3,size:state.hero==='rin'?16:12,color:i%3?hc:WHITE,stretch:2.4,drag:3});
@@ -386,6 +394,8 @@ export class GameRenderer {
         this.b.petalW.push(x,y,w,h,a,c,al);continue;}
       if(wt==='wisps'){x=r-((t*sp*(1.2+k)+i*271)%(cw+400))+200;y=k2*H;w=120+k*200;h=4+k*6;c=col('#ffffff');al=.08+k*.1;}
       else if(wt==='embers'){x=r-((t*(140+k*200)+i*233)%(cw+60))+30;y=H-((k2*H+t*(60+k*90))%H);w=h=4+k*6;c=col(i%3?'#ff9a3c':'#ffd27a');al=.7;}
+      else if(wt==='fireflies'){x=r-((t*(40+k*60)+i*233)%(cw+60))+30;y=(k2*H+Math.sin(t*.7+i)*40+H)%H;w=h=4+k*5;c=col(st.accent);al=.3+.5*Math.max(0,Math.sin(t*3+i*1.7));}
+      else if(wt==='souls'){x=r-((t*(60+k*80)+i*233)%(cw+60))+30;y=H-((k2*H+t*(30+k*50))%H);w=6+k*6;h=w*1.7;c=col('#bfefff');al=.22+.3*k;}
       else if(wt==='snow'){x=r-((t*(220+k*320)+i*233)%(cw+60))+30;y=(k2*H+t*(70+k*120))%H;w=h=3+k*7;c=WHITE;al=.75;}
       else {x=r-((t*(500+k*300)+i*233)%(cw+200))+100;y=(k2*H+t*(900+k*300))%H;w=36+k*30;h=2;a=1.25;c=col('#bfc8ff');al=.25;}
       this.b.weatherBack.push(x,y,w,h,a,c,al);wn++;
@@ -396,7 +406,7 @@ export class GameRenderer {
 
     // Foreground silhouettes rushing past sell the speed.
     this.foreTimer-=gdt;
-    if(this.foreTimer<=0&&active&&!this.reducedMotion&&st.terrain!=='clouds'&&st.terrain!=='storm'){this.foreTimer=7+Math.random()*7;this.foreX=r+260;}
+    if(this.foreTimer<=0&&active&&!this.reducedMotion&&st.terrain!=='clouds'&&st.terrain!=='storm'&&st.terrain!=='underworld'){this.foreTimer=7+Math.random()*7;this.foreX=r+260;}
     if(this.foreX>l-300){this.foreX-=sp*2.6*gdt;this.fore.visible=true;this.quad(this.fore,this.foreX,H/2,240,ch+200);this.fore.material.color.set(st.near);this.fore.material.opacity=st.bg?.5:.7;}
     else this.fore.visible=false;
 
@@ -424,12 +434,18 @@ export class GameRenderer {
     const bright=col(hero.glow);
     for(const s of state.shots){
       const a=Math.atan2(s.vy,s.vx);
-      if(s.kind==='homing')this.b.shotGlow.push(s.x,s.y,26,26,0,hc,.9);
+      if(state.hero==='arang'){const big=s.kind==='charge';this.b.shotGlow.push(s.x,s.y,big?64:40,big?64:40,0,hc,.85);this.b.shotGlow.push(s.x,s.y,big?22:15,big?22:15,0,WHITE,1);}
+      else if(state.hero==='hanui'&&s.kind!=='homing')this.b.shotArrow.push(s.x-24,s.y,s.kind==='charge'?150:96,s.kind==='charge'?22:14,a,s.kind==='charge'?bright:hc,1);
+      else if(s.kind==='homing')this.b.shotGlow.push(s.x,s.y,26,26,0,hc,.9);
       else if(state.hero==='rin')this.b.shotPetal.push(s.x,s.y,s.kind==='charge'?84:46,s.kind==='charge'?42:22,a,s.kind==='charge'?bright:hc,1);
       else if(state.hero==='golem')this.b.shotBolt.push(s.x-30,s.y,s.kind==='charge'?220:110,s.kind==='charge'?s.r*2.2:22,a,s.kind==='charge'?bright:hc,1);
       else this.b.shotWave.push(s.x,s.y,s.kind==='charge'?110:62,s.kind==='charge'?150:78,a,s.kind==='charge'?bright:hc,1);
     }
-    for(const k of ['shotPetal','shotBolt','shotWave','shotGlow'])this.b[k].end();
+    // Hanui's ultimate: a sky full of arrows falling across the screen.
+    if(active&&p.ultimateTimer>0&&state.hero==='hanui'){const fall=1.08,fade=Math.min(1,p.ultimateTimer*2);
+      for(let i=0;i<110;i++){const k=((i*7919)%997)/997,d=(t*(1600+k*900)+i*331)%(H*1.5+300),x0=l-260+((i*173)%(cw+360));
+        this.b.shotArrow.push(x0+Math.cos(fall)*d,-120+Math.sin(fall)*d,110+k*50,14,fall,i%4?hc:bright,fade);}}
+    for(const k of ['shotPetal','shotBolt','shotWave','shotGlow','shotArrow'])this.b[k].end();
 
     // Lasers: warning line, then a beam whose white core width equals the collision core.
     for(const ls of state.lasers){
@@ -483,6 +499,8 @@ export class GameRenderer {
     // Ultimates
     this.shade.visible=active&&(p.ultimateTimer>0||this.lightning>0||state.slow>0);
     if(this.shade.visible){this.quad(this.shade,cx,H/2,cw+60,ch+60);this.shade.material.opacity=p.ultimateTimer>0?.38:state.slow>0?.18:0;}
+    // Arang's ultimate: the wail rolls out in cold rings.
+    if(active&&p.ultimateTimer>0&&state.hero==='arang'&&this.elapsed-this.wailAt>.28){this.wailAt=this.elapsed;this.add('ring',{x:p.x,y:p.y,life:1,size:80,grow:1900,color:col('#a9c0ff')});for(let i=0;i<8;i++){const a=Math.random()*TAU;this.add('spark',{x:p.x+Math.cos(a)*40,y:p.y+Math.sin(a)*40,vx:Math.cos(a)*520,vy:Math.sin(a)*520,life:.6,size:20,color:col('#cfe0ff'),stretch:2});}}
     this.mandala.visible=active&&p.ultimateTimer>0&&state.hero==='rin';
     if(this.mandala.visible){const k=ULT_TIME-p.ultimateTimer,size=500+k*420;this.quad(this.mandala,W*.55,H/2,size,size);this.mandala.rotation.z=t*.4;this.mandala.material.color.set('#ff8fa3');this.mandala.material.opacity=Math.min(1,p.ultimateTimer)*.7;}
     if(active&&p.ultimateTimer>0&&state.hero==='golem'){
@@ -528,7 +546,7 @@ export class GameRenderer {
 
     // Melee swings
     for(let i=this.swings.length-1;i>=0;i--){const w=this.swings[i];w.life-=raw;if(w.life<=0){this.swings.splice(i,1);continue;}
-      const k=w.life/w.max,size=(state.hero==='golem'?190:state.hero==='ryu'?120:230)*(1.15-k*.35);
+      const k=w.life/w.max,size=(state.hero==='golem'?190:state.hero==='ryu'?120:230)*(1.15-k*.35)*w.s;
       this.b.slash.push(w.x-20+(1-k)*30,w.y,size,size*1.15,w.a,hc,k);this.b.slashCore.push(w.x-14+(1-k)*30,w.y,size*.8,size*.92,w.a,col(hero.glow),k);}
     this.b.slash.end();this.b.slashCore.end();
 
