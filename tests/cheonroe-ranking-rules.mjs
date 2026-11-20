@@ -100,7 +100,7 @@ check('anonymous player can write/read own record; server timestamp resolves', a
 });
 check('public leaderboard allows bounded score queries for each hero/difficulty', async () => {
   await clear();
-  for (const difficulty of ['normal', 'story']) for (const hero of ['rin', 'golem', 'ryu']) {
+  for (const difficulty of ['normal', 'story']) for (const hero of ['rin', 'golem', 'ryu', 'hanui', 'arang']) {
     await ok(await request(recordPath(alice, hero, difficulty), { user: alice, method: 'PUT', body: record({ hero, difficulty }) }), 'Write valid hero/difficulty');
     for (const limit of [1, 20, 100]) {
       const data = await ok(await request(lane(hero, difficulty), { query: { orderBy: 'score', limitToLast: limit } }), 'Read bounded public leaderboard');

@@ -337,7 +337,7 @@ export class GameRenderer {
       case 'dash':this.ghostData.push({x:e.x,y:e.y,life:.25});for(let i=0;i<10;i++)this.add('spark',{x:e.x,y:e.y,vx:-Math.cos(e.value??0)*(200+Math.random()*300),vy:-Math.sin(e.value??0)*(200+Math.random()*300)+(Math.random()-.5)*120,life:.25,size:10,color:hc,stretch:3});break;
       case 'charge':this.add('flash',{x:e.x,y:e.y,life:.2,size:80,grow:200,color:hc});this.shake=Math.max(this.shake,4);
         // Arang's charge is a sweeping lash of hair in front of her.
-        if(state.hero==='arang'){const p=state.player;for(let i=0;i<3;i++)this.swings.push({x:p.x+150+i*60,y:p.y+(i-1)*50,life:.32+i*.06,max:.32+i*.06,a:(i-1)*.35,n:i,s:2.2+(e.value??0)});this.shake=Math.max(this.shake,8);}
+        if(state.hero==='arang'){const p=state.player;for(let i=0;i<3;i++)this.swings.push({x:p.x+150+i*60,y:p.y+(i-1)*50,life:.32+i*.06,max:.32+i*.06,a:(i-1)*.35,n:i,s:1.2+.6*(e.value??0)});this.shake=Math.max(this.shake,8);}
         break;
       case 'near':{
         // Each hero swings differently: a fan sweep, an iron fist, a flurry of thunder punches.
