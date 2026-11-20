@@ -36,7 +36,9 @@ export function validRun(value:unknown):value is RunRecord {
 export function fromState(state:GameState):RunRecord|null {
   if((state.phase!=='gameover'&&state.phase!=='victory')||state.time<10||state.score<=0)return null;
   const run:RunRecord={hero:state.hero,difficulty:state.difficulty,score:state.score,
-    durationMs:Math.floor(state.time*1000),kills:state.stats.kills,graze:state.graze,cleared:state.phase==='victory'};
+    durationMs:Math.floor(state.time*1000),kills:state.stats.kills,graze:state.graze,
+    // Only a run that started at chapter one and beat the final guardian counts as cleared.
+    cleared:state.phase==='victory'&&(state.startStage??0)===0};
   return validRun(run)?run:null;
 }
 
