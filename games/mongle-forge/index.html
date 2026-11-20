@@ -7,9 +7,9 @@
   <meta name="description" content="한 번 더, 어디까지 갈까. 강화 제한 없이 검을 벼리고 실패와 파괴를 넘어 최고 기록에 도전하는 몽글 대장간.">
   <title>몽글 대장간 · 끝없는 강화</title>
   <link rel="stylesheet" href="forge-effects.css?v=infinite-1">
-  <link rel="stylesheet" href="forge.css?v=appraisal-3">
-  <script src="forge-engine.js?v=appraisal-1" defer></script>
-  <script src="forge.js?v=appraisal-3" defer></script>
+  <link rel="stylesheet" href="forge.css?v=stack-1">
+  <script src="forge-engine.js?v=stack-1" defer></script>
+  <script src="forge.js?v=stack-1" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#strengthen">강화 버튼으로 바로가기</a>
@@ -31,7 +31,7 @@
         <div class="forge-light" aria-hidden="true"></div>
         <div class="stage-top"><div><span id="awakening" class="awakening" hidden></span><h2 id="weapon-name">연습용 나무검</h2><span class="magic-tag" id="magic-tag"></span></div><span class="stage-state" id="stage-state">강화 준비</span></div>
         <div class="weapon-orbit" aria-hidden="true"><i></i><i></i><i></i></div>
-        <div class="enchantment-fx" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="enchantment-layers" id="enchantment-fx" aria-hidden="true"></div>
         <div class="weapon-wrap" id="weapon-wrap">
           <img id="weapon" src="assets/sword-0.webp" alt="연습용 나무검" width="360" height="360" fetchpriority="high">
         </div>
@@ -49,7 +49,10 @@
           <img src="assets/ore.webp" alt="" width="40" height="40">
           <div><span>보유 별철</span><strong id="wallet">120</strong></div>
         </div>
-        <div class="enchantment-card" id="enchantment-card"><span class="magic-mark" id="magic-mark" aria-hidden="true"></span><strong id="magic-name"></strong><span class="magic-rank" id="magic-rank"></span><b id="magic-multiplier"></b></div>
+        <div class="enchantment-card" id="enchantment-card">
+          <div class="magic-summary"><span>특수효과 <strong id="magic-slots">1 / 3</strong></span><b id="magic-multiplier"></b></div>
+          <ul class="magic-slots" id="magic-effects" aria-label="검에 붙은 특수효과"></ul>
+        </div>
         <div class="attempt-heading"><h2 id="attempt-title">+1에 도전</h2><span id="attempt-cost">16 별철</span></div>
 
         <div id="probabilities">
@@ -63,9 +66,15 @@
           <p class="pity" id="forge-bonus" hidden></p>
         </div>
 
-        <div id="broken-copy" class="broken-copy" hidden><h3>검이 산산이 부서졌어요.</h3><p>제작비를 내고 새 검을 만들면 마법 효과가 새로 정해지고 +0에서 다시 시작해요.</p></div>
+        <div id="broken-copy" class="broken-copy" hidden><h3>검이 산산이 부서졌어요.</h3><p>붙어 있던 효과도 함께 사라졌어요. 제작비를 내면 효과 하나를 가진 새 검 +0으로 시작해요.</p></div>
         <button class="strengthen" id="strengthen" type="button" aria-describedby="probabilities broken-copy"><span id="button-label">강화하기</span><span aria-hidden="true" id="button-icon">✦</span></button>
         <p class="waiting" id="waiting">스페이스바로도 강화할 수 있어요.</p>
+        <div class="special-forge">
+          <button class="special-strengthen" id="special-strengthen" type="button" aria-describedby="special-copy special-waiting"><span>✧ <strong id="special-label">특수 강화</strong></span><span><b id="special-chance"></b><small id="special-cost"></small></span></button>
+          <p id="special-copy">실패하면 별철만 소모 · 단계와 효과는 유지돼요.</p>
+          <p id="special-waiting"></p>
+          <details class="special-rules"><summary>효과 조합과 유지 규칙</summary><p>성공하면 아직 없는 효과 하나를 추가해요. 감정가는 각 효과의 배율을 모두 곱해 계산해요. 일반 강화의 +0 초기화에도 효과는 유지되고, 검이 파괴되면 모두 사라져요.</p><ul id="special-pool"></ul><p>추가 효과는 남아 있는 후보의 가중치 비율로 추첨해요.</p></details>
+        </div>
         <div class="outcome" id="outcome" role="status" aria-live="polite"><strong id="outcome-title">한 번 더, 어디까지 갈까.</strong><p id="outcome-copy">별철을 모아 검의 다음 모습을 발견하세요.</p></div>
         <div class="smelter">
           <img src="assets/mill.webp" alt="" width="35" height="35">
@@ -76,7 +85,7 @@
     </div>
 
     <section class="journey" aria-labelledby="history-title">
-      <div class="journey-heading"><h2 id="history-title">불꽃의 기록</h2><p><span>강화 <b id="attempts">0</b>회</span><span>파괴 <b id="shattered">0</b>회</span></p></div>
+      <div class="journey-heading"><h2 id="history-title">불꽃의 기록</h2><p><span>일반 강화 <b id="attempts">0</b>회</span><span>파괴 <b id="shattered">0</b>회</span></p></div>
       <ol class="history" id="history"></ol>
       <p class="empty-history" id="empty-history">첫 강화를 하면 이곳에 기록돼요.</p>
     </section>

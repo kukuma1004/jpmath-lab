@@ -173,3 +173,94 @@ test('affix creation respects draw boundaries and old-save migration is stable',
   assert(appraisal.value > appraisal.base);
   assert.equal(Forge.restore(JSON.parse(Forge.serialize(veryHigh)),100000).enchantment,'lunar');
 });
+
+test('special enhancement adds distinct effects up to three without changing the sword level', () => {
+  const state = Forge.restore({ version: 2, level: '32', shards: '9000000', enchantment: 'astral' }, 100000);
+  const first = Forge.enchantPreview(state);
+  assert.equal(first.success, 6000);
+  const draws = [0.5999, 0.9999];
+  const added = Forge.enchant(state, 100000, () => draws.shift());
+  assert.equal(added.kind, 'enchant');
+  assert.equal(added.enchantment, 'lunar');
+  assert.deepEqual(state.enchantments, ['astral', 'lunar']);
+  assert.equal(state.enchantment, 'astral');
+  assert.equal(state.level, 32n);
+  assert.equal(state.shards, 9000000n - first.cost);
+  assert.equal(Forge.enchantPreview(state).success, 3000);
+  assert(Forge.enchantPreview(state).cost > first.cost);
+  Forge.enchant(state, 101000, () => 0);
+  assert.deepEqual(state.enchantments, ['astral', 'lunar', 'cinder']);
+  assert.equal(Forge.enchantPreview(state).full, true);
+  const snapshot = Forge.serialize(state);
+  assert.equal(Forge.enchant(state, 102000, () => { throw Error('must not draw at capacity'); }), null);
+  assert.equal(Forge.serialize(state), snapshot);
+  assert.deepEqual(Forge.restore(JSON.parse(snapshot), 102000).enchantments, state.enchantments);
+});
+
+test('special failure boundaries charge once and preserve level, effects and normal pity', () => {
+  for (const effects of [['frost'], ['frost', 'storm']]) {
+    const state = Forge.restore({ version: 2, level: '32', shards: '9000000', enchantments: effects, pity: { 33: 2400 } }, 100000);
+    const offer = Forge.enchantPreview(state);
+    const result = Forge.enchant(state, 100000, () => offer.success / 10000);
+    assert.equal(result.kind, 'enchant-fail');
+    assert.equal(state.shards, 9000000n - offer.cost);
+    assert.equal(state.level, 32n);
+    assert.deepEqual(state.enchantments, effects);
+    assert.deepEqual(state.pity, { 33: 2400 });
+    assert.equal(state.attempts, 0n);
+    const snapshot = Forge.serialize(state);
+    assert.equal(Forge.enchant(state, 100001, () => 0), null);
+    assert.equal(Forge.act(state, 100001, () => 0), null);
+    assert.equal(Forge.serialize(state), snapshot);
+    const restored = Forge.restore(JSON.parse(snapshot), 101000);
+    assert.equal(restored.history[0].kind, 'enchant-fail');
+    assert.equal(Forge.act(restored, 101000, () => 0).kind, 'success');
+    assert.deepEqual(restored.enchantments, effects);
+  }
+});
+
+test('special enhancement rejects broken, underfunded and cooling states without mutation', () => {
+  for (const overrides of [{ broken: true }, { shards: '0' }, { lastAt: 99999 }]) {
+    const state = Forge.restore({ version: 2, level: '32', shards: '9000000', enchantment: 'lunar', ...overrides }, 100000);
+    const snapshot = Forge.serialize(state);
+    assert.equal(Forge.enchant(state, 100000, () => { throw Error('must not draw'); }), null);
+    assert.equal(Forge.serialize(state), snapshot);
+  }
+});
+
+test('stacked appraisal multiplies every effect exactly with one final integer rounding', () => {
+  for (const level of ['0', '32', '900719925474099312345678901234567890']) {
+    const state = Forge.restore({ level, enchantments: ['astral', 'lunar', 'storm'] }, 100000);
+    const value = Forge.appraisal(state);
+    assert.equal(value.numerator, 14592n);
+    assert.equal(value.denominator, 1000n);
+    assert.equal(value.value, value.base * 14592n / 1000n);
+    assert.equal(value.effects.length, 3);
+  }
+});
+
+test('all engravings survive normal reset and are replaced by one new effect on reforge', () => {
+  const state = Forge.restore({ version: 2, level: '31', shards: '9000000', enchantments: ['frost', 'storm', 'lunar'] }, 100000);
+  Forge.act(state, 100000, () => Forge.preview(state).success / 10000);
+  assert.equal(state.level, 0n);
+  assert.deepEqual(state.enchantments, ['frost', 'storm', 'lunar']);
+  state.level = 31n;
+  Forge.act(state, 101000, () => 0.9999);
+  assert.equal(state.broken, true);
+  assert.equal(Forge.appraisal(state).value, 0n);
+  const saved = Forge.restore(JSON.parse(Forge.serialize(state)), 102000);
+  Forge.act(saved, 102000, () => 0.85);
+  assert.deepEqual(saved.enchantments, ['astral']);
+  assert.equal(saved.enchantment, 'astral');
+  assert.equal(saved.level, 0n);
+});
+
+test('stack migration preserves existing effects and sanitizes invalid or duplicate slots', () => {
+  const migrated = Forge.restore({ version: 2, enchantment: 'storm' }, 100000, () => 0);
+  assert.deepEqual(migrated.enchantments, ['storm']);
+  const restored = Forge.restore({ enchantment: 'cinder', enchantments: ['frost', 'bad', 'frost', null, 'lunar', 'storm', 'astral'] }, 100000);
+  assert.deepEqual(restored.enchantments, ['frost', 'lunar', 'storm']);
+  assert.equal(restored.enchantment, 'frost');
+  assert.deepEqual(Forge.restore({ enchantments: ['bad'], enchantment: 'lunar' }, 100000).enchantments, ['lunar']);
+  assert.deepEqual(Forge.restore(JSON.parse(Forge.serialize(restored)), 100000), restored);
+});

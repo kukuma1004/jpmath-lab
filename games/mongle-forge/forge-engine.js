@@ -6,6 +6,7 @@ const Forge = (() => {
   const cooldown = 680;
   const offlineLimit = 8 * 60 * 60 * 1000;
   const recoveryBonus = 800;
+  const enchantmentLimit = 3;
   const costs = [
     16, 32, 56, 88, 135, 190, 275, 390, 530, 710, 940, 1230,
     1550, 1950, 2450, 3100, 3800, 4600, 5600, 6800, 8300, 10200,
@@ -47,19 +48,22 @@ const Forge = (() => {
     { id: 'lunar', name: '월식의 계약', rank: '전설', mark: '☾', tenths: 32n, weight: 4 },
   ];
 
-  function rollEnchantment(random) {
-    let roll = random() * 100;
-    for (const enchantment of enchantments) {
+  function rollEnchantment(random, excluded = []) {
+    const available = enchantments.filter(entry => !excluded.includes(entry.id));
+    let roll = random() * available.reduce((total, entry) => total + entry.weight, 0);
+    for (const enchantment of available) {
       roll -= enchantment.weight;
       if (roll < 0) return enchantment.id;
     }
-    return enchantments.at(-1).id;
+    return available.at(-1).id;
   }
 
   function appraisal(state) {
-    const enchantment = enchantments.find(entry => entry.id === state.enchantment);
+    const effects = state.enchantments.map(id => enchantments.find(entry => entry.id === id));
+    const numerator = effects.reduce((product, entry) => product * entry.tenths, 1n);
+    const denominator = 10n ** BigInt(effects.length);
     const base = state.broken ? 0n : 120n + 15n * state.level * (state.level + 1n) * (state.level + 2n);
-    return { enchantment, base, value: enchantment ? base * enchantment.tenths / 10n : base };
+    return { enchantment: effects[0], effects, numerator, denominator, base, value: base * numerator / denominator };
   }
 
   function natural(value, fallback = 0n) {
@@ -91,18 +95,23 @@ const Forge = (() => {
       pity[(level + 1n).toString()] = Math.min(9000, Math.floor(old.forgeMisses) * 1200);
     }
     const history = Array.isArray(old.history) ? old.history.filter(entry =>
-      entry && ['success', 'reset', 'shatter', 'reforge'].includes(entry.kind) &&
+      entry && ['success', 'reset', 'shatter', 'reforge', 'enchant', 'enchant-fail'].includes(entry.kind) &&
       /^\d+$/.test(String(entry.from)) && /^\d+$/.test(String(entry.target)) && Number.isFinite(entry.at)
     ).slice(0, 12).map(entry => ({
       kind: entry.kind, from: String(entry.from), target: String(entry.target), at: entry.at,
+      ...(entry.kind === 'enchant' && enchantments.some(effect => effect.id === entry.enchantment) ? { enchantment: entry.enchantment } : {}),
     })) : [];
+    const savedEffects = Array.isArray(old.enchantments) ? [...new Set(old.enchantments.filter(id =>
+      enchantments.some(entry => entry.id === id)))].slice(0, enchantmentLimit) : [];
+    if (!savedEffects.length) savedEffects.push(enchantments.some(entry => entry.id === old.enchantment) ? old.enchantment :
+      raw ? enchantments[Number((level / 8n + 4n) % 5n)].id : rollEnchantment(random));
 
     return {
       version: 2,
       level,
       bestLevel,
-      enchantment: enchantments.some(entry => entry.id === old.enchantment) ? old.enchantment :
-        raw ? enchantments[Number((level / 8n + 4n) % 5n)].id : rollEnchantment(random),
+      enchantment: savedEffects[0],
+      enchantments: savedEffects,
       shards: natural(old.shards, 120n),
       broken: old.version === 2 && old.broken === true,
       attempts: natural(old.attempts),
@@ -177,6 +186,33 @@ const Forge = (() => {
     return { target, cost: cost(target), success, reset: failure - shatter, shatter, bonus: success - base };
   }
 
+  function enchantPreview(state) {
+    const slots = state.enchantments.length;
+    const full = slots >= enchantmentLimit;
+    return {
+      slots, full,
+      cost: full ? 0n : 120n * (state.level + 1n) + income(state) * (slots === 1 ? 12n : 36n),
+      success: full || state.broken ? 0 : slots === 1 ? 6000 : 3000,
+    };
+  }
+
+  function enchant(state, now = Date.now(), random = Math.random) {
+    const offer = enchantPreview(state);
+    if (state.broken || offer.full || now - state.lastAt < cooldown || state.shards < offer.cost) return null;
+    const success = Math.floor(random() * 10000) < offer.success;
+    const effect = success ? rollEnchantment(random, state.enchantments) : null;
+    if (effect) state.enchantments.push(effect);
+    state.shards -= offer.cost;
+    state.lastAt = now;
+    const event = {
+      kind: success ? 'enchant' : 'enchant-fail', from: state.level.toString(), target: state.level.toString(), at: now,
+      ...(effect ? { enchantment: effect } : {}),
+    };
+    state.history.unshift(event);
+    state.history.length = Math.min(state.history.length, 12);
+    return { ...event, spent: offer.cost };
+  }
+
   function act(state, now = Date.now(), random = Math.random) {
     if (now - state.lastAt < cooldown) return null;
     const offer = preview(state);
@@ -186,6 +222,7 @@ const Forge = (() => {
     if (state.broken) {
       kind = 'reforge';
       state.enchantment = rollEnchantment(random);
+      state.enchantments = [state.enchantment];
       state.broken = false;
       state.level = 0n;
     } else {
@@ -212,7 +249,7 @@ const Forge = (() => {
     return { ...event, spent: offer.cost };
   }
 
-  return { saveKey, backupKey, cooldown, recoveryBonus, offlineLimit, forms, enchantments, appraisal, restore, serialize, formAt, cost, income, preview, collectPassive, act };
+  return { saveKey, backupKey, cooldown, recoveryBonus, offlineLimit, enchantmentLimit, forms, enchantments, appraisal, restore, serialize, formAt, cost, income, preview, enchantPreview, collectPassive, act, enchant };
 })();
 
 if (typeof module !== 'undefined') module.exports = Forge;

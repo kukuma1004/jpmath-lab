@@ -262,15 +262,15 @@ body { background: radial-gradient(ellipse at 43% 30%, #203236, #142025 67%, #15
 .enchantment-fx i:nth-child(3){right:21%;bottom:-3%;animation-delay:-3s}
 .enchantment-fx i:nth-child(4){left:3%;top:65%;font-size:1.8cqw}
 .enchantment-fx i:nth-child(5){right:32%;top:3%;font-size:2cqw;animation-delay:-1.5s}
-[data-enchantment=cinder] .enchantment-fx::before,[data-enchantment=cinder] .enchantment-fx::after { border:0; background:radial-gradient(ellipse at 50% 95%,#ff9a373d,transparent 55%); }
-[data-enchantment=cinder] .enchantment-fx i { border-radius:75% 4% 70% 40%; width:2.4%; height:9%; background:linear-gradient(145deg,#ed5623,#ffde8d); transform:rotate(28deg); box-shadow:0 0 12px #ffa947; animation-name:magic-rise; }
-[data-enchantment=cinder] .enchantment-fx i::before { content:none; }
-[data-enchantment=frost] .enchantment-fx::before,[data-enchantment=frost] .enchantment-fx::after { inset:13% 14% 5%; border-radius:13%; border:1px solid #b8faff77; transform:rotate(-28deg); }
-[data-enchantment=frost] .enchantment-fx::after { transform:rotate(32deg); }
-[data-enchantment=storm] .enchantment-fx::before,[data-enchantment=storm] .enchantment-fx::after { inset:20% 0; transform:rotate(-13deg); border:none; border-radius:0; background:currentColor; clip-path:polygon(0 67%,28% 35%,24% 52%,55% 27%,45% 51%,80% 18%,67% 41%,100% 0,65% 49%,73% 29%,40% 59%,47% 38%,20% 62%,23% 46%); }
-[data-enchantment=storm] .enchantment-fx::after { transform:rotate(160deg); }
-[data-enchantment=lunar] .enchantment-fx::before { inset:-5% 22%; border:0; box-shadow:-6px 3px 0 1px #e0dcff; transform:rotate(-21deg); }
-[data-enchantment=lunar] .enchantment-fx::after { inset:8% 28% -8%; border:0; box-shadow:4px 0 0 #d1f3ff; }
+.enchantment-fx[data-enchantment=cinder]::before,.enchantment-fx[data-enchantment=cinder]::after { border:0; background:radial-gradient(ellipse at 50% 95%,#ff9a373d,transparent 55%); }
+.enchantment-fx[data-enchantment=cinder] i { border-radius:75% 4% 70% 40%; width:2.4%; height:9%; background:linear-gradient(145deg,#ed5623,#ffde8d); transform:rotate(28deg); box-shadow:0 0 12px #ffa947; animation-name:magic-rise; }
+.enchantment-fx[data-enchantment=cinder] i::before { content:none; }
+.enchantment-fx[data-enchantment=frost]::before,.enchantment-fx[data-enchantment=frost]::after { inset:13% 14% 5%; border-radius:13%; border:1px solid #b8faff77; transform:rotate(-28deg); }
+.enchantment-fx[data-enchantment=frost]::after { transform:rotate(32deg); }
+.enchantment-fx[data-enchantment=storm]::before,.enchantment-fx[data-enchantment=storm]::after { inset:20% 0; transform:rotate(-13deg); border:none; border-radius:0; background:currentColor; clip-path:polygon(0 67%,28% 35%,24% 52%,55% 27%,45% 51%,80% 18%,67% 41%,100% 0,65% 49%,73% 29%,40% 59%,47% 38%,20% 62%,23% 46%); }
+.enchantment-fx[data-enchantment=storm]::after { transform:rotate(160deg); }
+.enchantment-fx[data-enchantment=lunar]::before { inset:-5% 22%; border:0; box-shadow:-6px 3px 0 1px #e0dcff; transform:rotate(-21deg); }
+.enchantment-fx[data-enchantment=lunar]::after { inset:8% 28% -8%; border:0; box-shadow:4px 0 0 #d1f3ff; }
 [data-broken=true] .enchantment-fx { display:none; }
 @keyframes magic-shimmer { from { opacity:.65; translate:0 2px; } to { opacity:1; translate:0 -5px; } }
 @keyframes magic-rise { from { opacity:.5;translate:-3px 5px; } to { opacity:1;translate:4px -12px; } }
@@ -306,10 +306,10 @@ body { background: radial-gradient(ellipse at 43% 30%, #203236, #142025 67%, #15
 }
 @media(prefers-reduced-motion:reduce) { .enchantment-fx i { animation:none; } }
 .appraisal strong::before { content:""; display:inline-block; width:.94em; height:.9em; margin-right:.22em; background:url("assets/coins.svg") center/contain no-repeat; vertical-align:-.06em; }
-[data-enchantment=astral] .enchantment-fx::before { inset:24% 1% 5%; border:1.5px solid transparent; border-top-color:#ffdb73; border-bottom-color:#e99fff; rotate:15deg; }
-[data-enchantment=astral] .enchantment-fx::after { inset:25% 2% 6%; border:1px solid transparent; border-left-color:#fff0a2; border-right-color:#ffd3ff; rotate:22deg; }
-[data-enchantment=astral] .enchantment-fx i::before { color:#fff7c3; -webkit-text-stroke:.6px #ffa9ff; text-shadow:0 0 2px #fff,0 0 5px #ffbffa,0 0 14px #f78cff; }
-[data-enchantment=astral] .enchantment-fx i::after { content:""; position:absolute; inset:10% 20%; border:1px solid #ffe6aa; transform:rotate(45deg) skew(8deg,8deg); }
+.enchantment-fx[data-enchantment=astral]::before { inset:24% 1% 5%; border:1.5px solid transparent; border-top-color:#ffdb73; border-bottom-color:#e99fff; rotate:15deg; }
+.enchantment-fx[data-enchantment=astral]::after { inset:25% 2% 6%; border:1px solid transparent; border-left-color:#fff0a2; border-right-color:#ffd3ff; rotate:22deg; }
+.enchantment-fx[data-enchantment=astral] i::before { color:#fff7c3; -webkit-text-stroke:.6px #ffa9ff; text-shadow:0 0 2px #fff,0 0 5px #ffbffa,0 0 14px #f78cff; }
+.enchantment-fx[data-enchantment=astral] i::after { content:""; position:absolute; inset:10% 20%; border:1px solid #ffe6aa; transform:rotate(45deg) skew(8deg,8deg); }
 @media(min-width:901px) {
  .site-header,.shell { width:min(1268px,100% - 64px); }
  .site-header { min-height:70px; }
@@ -354,15 +354,15 @@ body { background: radial-gradient(ellipse at 43% 30%, #203236, #142025 67%, #15
 .enchantment-card::before { top:-8px; }.enchantment-card::after { bottom:-8px; }
 [data-outcome=success] .appraisal { animation:appraisal-gain 750ms ease-out; }
 @keyframes appraisal-gain { 0% { filter:brightness(1); } 35% { filter:brightness(1.55); transform:translateY(-4px); } 100% { filter:brightness(1); transform:translateY(0); } }
-[data-enchantment=astral] .enchantment-fx::before { animation:astral-ribbon 7s ease-in-out infinite alternate; }
-[data-enchantment=astral] .enchantment-fx::after { animation:astral-ribbon 9s ease-in-out -3s infinite alternate-reverse; }
+.enchantment-fx[data-enchantment=astral]::before { animation:astral-ribbon 7s ease-in-out infinite alternate; }
+.enchantment-fx[data-enchantment=astral]::after { animation:astral-ribbon 9s ease-in-out -3s infinite alternate-reverse; }
 @keyframes astral-ribbon { to { rotate:-3deg; scale:1.05 .94; } }
-[data-enchantment=frost] .enchantment-fx i { animation:frost-drift 7s ease-in-out infinite alternate; }
+.enchantment-fx[data-enchantment=frost] i { animation:frost-drift 7s ease-in-out infinite alternate; }
 @keyframes frost-drift { from { translate:0 -7px;rotate:-12deg;opacity:.5; } to { translate:4px 9px;rotate:20deg;opacity:1; } }
-[data-enchantment=storm] .enchantment-fx::before,[data-enchantment=storm] .enchantment-fx::after { animation:storm-current 4.6s steps(1,end) infinite; }
-[data-enchantment=storm] .enchantment-fx::after { animation-delay:-2.3s; }
+.enchantment-fx[data-enchantment=storm]::before,.enchantment-fx[data-enchantment=storm]::after { animation:storm-current 4.6s steps(1,end) infinite; }
+.enchantment-fx[data-enchantment=storm]::after { animation-delay:-2.3s; }
 @keyframes storm-current { 0%,9%,100% { opacity:.8; } 4%,14% { opacity:.15; } 20%,92% { opacity:.35; } }
-[data-enchantment=lunar] .enchantment-fx::before { animation:lunar-tide 8s ease-in-out infinite alternate; }
+.enchantment-fx[data-enchantment=lunar]::before { animation:lunar-tide 8s ease-in-out infinite alternate; }
 @keyframes lunar-tide { to { transform:rotate(-7deg);opacity:.45; } }
 @media(min-width:901px) {
  .weapon-stage { min-height:606px; }
@@ -421,3 +421,54 @@ body { background: radial-gradient(ellipse at 43% 30%, #203236, #142025 67%, #15
  .appraisal { background:linear-gradient(120deg,#5b3c20,#302017); }
 }
 @media (max-width:360px) { .weapon-stage { height:204px; } }
+
+/* Each engraving owns its shapes and motion so several kinds can coexist. */
+.enchantment-layers { position:absolute; inset:0; pointer-events:none; }
+.enchantment-fx { translate:calc(var(--layer, 0) * 4%) calc(var(--layer, 0) * -3%); }
+.enchantment-fx:nth-child(2) { scale:.85; }
+.enchantment-fx:nth-child(3) { scale:1.13; }
+[data-broken=true] .enchantment-layers { display:none; }
+.enchantment-card { display:block; padding:7px 8px; white-space:normal; min-height:0; }
+.magic-summary { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:5px; font-size:10px; }
+.magic-summary strong { font-size:10px; margin-left:3px; }
+.magic-summary b { font-size:12px; border:0; padding:0; }
+.magic-slots { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px; padding:0; margin:0; list-style:none; }
+.magic-slot { display:flex; align-items:center; justify-content:center; gap:3px; min-width:0; min-height:24px; padding:3px 2px; font-size:10px; line-height:1.35; color:#fff1ce; background:linear-gradient(115deg,var(--enamel),#29212a); border:1px solid color-mix(in srgb,var(--magic) 40%,transparent); border-radius:4px; white-space:nowrap; }
+.slot-mark { color:var(--magic); font:700 15px/1 Georgia,serif; }
+.magic-slot.empty { color:#d2bfa2; border:1px dashed #c7a97d66; background:#211c2444; font-size:10px; }
+.special-forge { margin-top:9px; padding-bottom:2px; }
+.special-strengthen { display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%; min-height:46px; padding:7px 12px; border:1px solid #79608f; border-radius:7px; color:#fff0ff; background:linear-gradient(115deg,#665078,#493b5f); box-shadow:0 2px 0 #342741,inset 0 1px 0 #cfb1df55; text-align:left; touch-action:manipulation; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; transition:translate 120ms ease-out; }
+.special-strengthen > span:last-child { text-align:right; }
+.special-strengthen strong { font-size:14px; }
+.special-strengthen b { display:block; font-size:11px; }
+.special-strengthen small { display:block; font-size:10px; margin-top:2px; opacity:.85; }
+.special-strengthen:hover:enabled { background:linear-gradient(115deg,#79618b,#5d4975); }
+.special-strengthen:active:enabled { translate:0 2px; box-shadow:inset 0 1px 3px #20152555; }
+.special-strengthen:disabled { background:#e3d9e3; border-color:#c9bbcc; color:#82718b; box-shadow:0 2px 0 #d0c3d0; }
+.special-forge > p { color:#78677d; font-size:10px; line-height:1.5; margin-top:6px; word-break:keep-all; }
+#special-waiting:empty { display:none; }
+.special-rules { color:#78677d; font-size:10px; line-height:1.6; margin-top:5px; }
+.special-rules summary { cursor:pointer; width:fit-content; padding-block:3px; }
+.special-rules p { margin-top:6px; }
+.special-rules ul { padding-left:16px; margin:6px 0; }
+.outcome[data-kind=enchant] { background:#eee2f5; border-color:#c9aedb; color:#684580; }
+.outcome[data-kind=enchant-fail] { background:#ece5eb; border-color:#d2c2d1; color:#765974; }
+.history-item.enchant { border-color:#a888c466; }
+.history-item.enchant strong,.history-item.enchant .history-symbol { color:#d3b4ec; }
+[data-outcome=enchant] .weapon-wrap { animation:forge-succeed 680ms cubic-bezier(.18,.74,.32,1) both; }
+[data-outcome=enchant] .appraisal { animation:appraisal-gain 750ms ease-out; }
+[data-outcome=enchant] .magic-slot:not(.empty):last-child { animation:engraving-reveal 420ms cubic-bezier(.2,.7,.3,1); }
+@keyframes engraving-reveal { from { transform:translateY(5px) scale(.9); filter:brightness(1.7); } to { transform:translateY(0) scale(1); filter:brightness(1); } }
+@media(max-width:700px) {
+ .enchantment-card { padding:5px 6px; margin-bottom:4px; }
+ .magic-summary { margin-bottom:3px; }
+ .magic-summary b { font-size:11px; }
+ .magic-slot { min-height:21px; font-size:9px; gap:2px; padding:2px 0; }
+ .slot-mark { font-size:12px; }
+ .special-forge { margin-top:6px; }
+}
+@media(max-width:360px) {
+ .weapon-stage { height:190px; }
+ .magic-slot { font-size:8px; }
+ .special-forge > p { font-size:9px; }
+}

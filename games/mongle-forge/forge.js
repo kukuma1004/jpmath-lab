@@ -9,15 +9,17 @@
   const stage = $('weapon-stage');
   const weapon = $('weapon');
   const button = $('strengthen');
+  const specialButton = $('special-strengthen');
   const book = $('book');
   const fx = $('technique-fx');
-  const labels = { success: '강화 성공', reset: '+0 초기화', shatter: '검 파괴', reforge: '새 검 제작' };
+  const labels = { success: '강화 성공', reset: '+0 초기화', shatter: '검 파괴', reforge: '새 검 제작', enchant: '특수 강화 성공', 'enchant-fail': '특수 강화 실패' };
   let state = Forge.restore(null);
   let storageOkay = true;
   let busy = false;
   let bookSignature = '';
   let lastHistory = '';
   let shownWeapon = '';
+  let shownEffects = '';
   let outcomeTimer;
 
   function fmt(value) {
@@ -74,20 +76,49 @@
 
   function renderWeapon() {
     const form = Forge.formAt(state.level);
-    const { enchantment, base, value } = Forge.appraisal(state);
-    const multiplier = (Number(enchantment.tenths) / 10).toFixed(1);
+    const { enchantment, effects, numerator, denominator, base, value } = Forge.appraisal(state);
+    const multiplier = (Number(numerator) / Number(denominator)).toLocaleString('ko-KR', { maximumFractionDigits: 3 });
     stage.dataset.enchantment = enchantment.id;
     $('enchantment-card').dataset.enchantment = enchantment.id;
     $('enchantment-card').hidden = state.broken;
     $('magic-tag').hidden = state.broken;
-    $('magic-tag').textContent = enchantment.mark + ' ' + enchantment.name;
-    $('magic-mark').textContent = enchantment.mark;
-    $('magic-name').textContent = enchantment.name;
-    $('magic-rank').textContent = enchantment.rank;
+    $('magic-tag').textContent = effects.length === 1 ? enchantment.mark + ' ' + enchantment.name : effects.map(entry => entry.mark).join(' ') + ' ' + effects.length + '중 마법';
+    $('magic-tag').title = effects.map(entry => entry.name).join(' + ');
+    $('magic-slots').textContent = effects.length + ' / ' + Forge.enchantmentLimit;
     $('magic-multiplier').textContent = '가치 ×' + multiplier;
+    const effectSignature = state.enchantments.join(',');
+    if (effectSignature !== shownEffects) {
+      shownEffects = effectSignature;
+      $('magic-effects').replaceChildren(...Array.from({ length: Forge.enchantmentLimit }, (_, index) => {
+        const effect = effects[index];
+        const slot = node('li', 'magic-slot' + (effect ? '' : ' empty'));
+        if (effect) {
+          slot.dataset.enchantment = effect.id;
+          slot.title = effect.name + ' · ' + effect.rank + ' · 가치 ×' + Number(effect.tenths) / 10;
+          slot.append(node('span', 'slot-mark', effect.mark), node('span', '', effect.name));
+        } else {
+          slot.textContent = '＋ 빈 각인';
+        }
+        return slot;
+      }));
+      $('enchantment-fx').replaceChildren(...effects.map((effect, index) => {
+        const layer = node('div', 'enchantment-fx');
+        layer.dataset.enchantment = effect.id;
+        layer.style.setProperty('--layer', index);
+        layer.append(...Array.from({ length: 5 }, () => node('i', '')));
+        return layer;
+      }));
+      const remaining = Forge.enchantments.filter(entry => !state.enchantments.includes(entry.id));
+      const totalWeight = remaining.reduce((total, entry) => total + entry.weight, 0);
+      $('special-pool').replaceChildren(...Forge.enchantments.map(effect => {
+        const owned = state.enchantments.includes(effect.id);
+        return node('li', '', effect.mark + ' ' + effect.name + ' · ' + effect.rank + ' ×' + Number(effect.tenths) / 10 + ' · ' +
+          (owned ? '보유 중' : '성공 시 ' + (effect.weight / totalWeight * 100).toLocaleString('ko-KR', { maximumFractionDigits: 1 }) + '%'));
+      }));
+    }
     $('sword-value').textContent = fmt(value) + ' G';
     $('sword-value').title = number.format(value) + ' G';
-    $('value-formula').textContent = state.broken ? '파괴된 검' : '기본 ' + fmt(base) + ' × 특수효과 ' + multiplier;
+    $('value-formula').textContent = state.broken ? '파괴된 검' : '기본 ' + fmt(base) + effects.map(entry => ' × ' + Number(entry.tenths) / 10).join('');
     const name = state.broken ? '깨진 검' : form.name;
     const src = asset(state.broken ? 'broken-sword' : 'sword-' + form.level);
     if (src !== shownWeapon) {
@@ -119,6 +150,13 @@
     const rate = Forge.income(state);
     const affordable = state.shards >= offer.cost;
     const cooling = Date.now() - state.lastAt < Forge.cooldown;
+    const special = Forge.enchantPreview(state);
+    specialButton.disabled = !!busy || cooling || state.broken || special.full || state.shards < special.cost;
+    $('special-label').textContent = busy === 'special' ? '각인 중…' : special.full ? '3중 마법 완성' : '특수 강화';
+    $('special-chance').textContent = state.broken ? '제작 필요' : special.full ? '3 / 3' : '성공 ' + percent(special.success);
+    $('special-cost').textContent = state.broken || special.full ? '' : fmt(special.cost) + ' 별철';
+    $('special-waiting').textContent = state.broken ? '새 검을 제작하면 다시 각인할 수 있어요.' : special.full ? '효과 세 가지의 이펙트와 가치 배율이 함께 적용돼요.' :
+      state.shards < special.cost ? '별철이 모이고 있어요 · 약 ' + fmt((special.cost - state.shards + rate - 1n) / rate) + '초 뒤 각인' : '';
     $('wallet').textContent = fmt(state.shards);
     $('wallet').title = state.shards.toString();
     $('income').textContent = '+' + fmt(rate) + ' /초';
@@ -158,9 +196,11 @@
       const from = BigInt(entry.from);
       const target = BigInt(entry.target);
       item.append(
-        node('span', 'history-symbol', entry.kind === 'success' ? '✦' : entry.kind === 'shatter' ? '✕' : '↻'),
+        node('span', 'history-symbol', entry.kind === 'success' || entry.kind === 'enchant' ? '✦' : entry.kind === 'shatter' ? '✕' : '↻'),
         node('strong', '', labels[entry.kind]),
-        node('span', 'history-levels', entry.kind === 'reforge' ? '새 검 +0' : level(from) + ' → ' + (entry.kind === 'success' ? level(target) : entry.kind === 'shatter' ? '파괴' : '+0')),
+        node('span', 'history-levels', entry.kind === 'reforge' ? '새 검 +0' : entry.kind === 'enchant' ?
+          (Forge.enchantments.find(effect => effect.id === entry.enchantment)?.name ?? '효과 추가') : entry.kind === 'enchant-fail' ? level(from) + ' · 효과 유지' :
+          level(from) + ' → ' + (entry.kind === 'success' ? level(target) : entry.kind === 'shatter' ? '파괴' : '+0')),
       );
       return item;
     }));
@@ -237,10 +277,17 @@
       copy = form.index !== previous.index || form.awakening !== previous.awakening ? form.name + (form.awakening > 0n ? ' · 각성 ' + fmt(form.awakening) : '') + '을 발견했어요.' : '한 번 더 벼릴 준비가 됐어요.';
     } else if (event.kind === 'reset') {
       title = '강화 실패 · +0으로';
-      copy = '나무검 +0에서 바로 다시 강화할 수 있어요. ' + level(target) + ' 재도전 보정 +' + percent(Forge.recoveryBonus).replace('%', '%p');
+      copy = '효과는 모두 유지돼요. 나무검 +0에서 바로 다시 강화할 수 있어요. ' + level(target) + ' 재도전 보정 +' + percent(Forge.recoveryBonus).replace('%', '%p');
     } else if (event.kind === 'shatter') {
       title = '쨍그랑! 검이 깨졌어요.';
-      copy = '강화비 ' + fmt(event.spent ?? Forge.cost(target)) + ' 별철 소모 · 제작비 ' + fmt(Forge.preview(state).cost) + ' 별철로 새 검을 만드세요.';
+      copy = '붙어 있던 효과도 사라졌어요. 강화비 ' + fmt(event.spent ?? Forge.cost(target)) + ' 별철 소모 · 제작비 ' + fmt(Forge.preview(state).cost) + ' 별철로 새 검을 만드세요.';
+    } else if (event.kind === 'enchant') {
+      const effect = Forge.enchantments.find(entry => entry.id === event.enchantment);
+      title = '특수 강화 성공! ' + (effect?.mark ?? '✧');
+      copy = (effect?.name ?? '새 효과') + ' 추가 · 각 효과의 배율이 곱해져 감정가가 올라가요.';
+    } else if (event.kind === 'enchant-fail') {
+      title = '특수 강화 실패 · 효과 보존';
+      copy = '별철만 소모했어요. 기존 강화 단계와 붙어 있던 효과는 그대로예요.';
     } else {
       title = '새 검이 준비됐어요.';
       copy = '+0에서 다시 시작해요. 최고 기록 ' + level(state.bestLevel);
@@ -250,13 +297,13 @@
     if (animate) animateEvent(event);
   }
 
-  async function attempt() {
+  async function attempt(special = false) {
     if (busy) return;
-    busy = true;
+    busy = special ? 'special' : 'normal';
     renderControls();
     let event;
     try {
-      event = await transaction(next => Forge.act(next));
+      event = await transaction(next => special ? Forge.enchant(next) : Forge.act(next));
       if (event) showOutcome(event);
     } finally {
       const delay = event ? Math.max(0, Forge.cooldown - (Date.now() - event.at)) : 0;
@@ -274,10 +321,13 @@
     tapStart = null;
     if (event.touches.length !== 1) return;
     const touch = event.touches[0];
-    const bounds = button.getBoundingClientRect();
-    if (touch.clientX >= bounds.left && touch.clientX <= bounds.right &&
-        touch.clientY >= bounds.top && touch.clientY <= bounds.bottom) {
-      tapStart = { x: touch.clientX, y: touch.clientY, identifier: touch.identifier };
+    for (const control of [button, specialButton]) {
+      const bounds = control.getBoundingClientRect();
+      if (touch.clientX >= bounds.left && touch.clientX <= bounds.right &&
+          touch.clientY >= bounds.top && touch.clientY <= bounds.bottom) {
+        tapStart = { x: touch.clientX, y: touch.clientY, identifier: touch.identifier, control };
+        break;
+      }
     }
   }, { passive: true, capture: true });
 
@@ -297,10 +347,11 @@
     const touch = Array.from(event.changedTouches).find(point => point.identifier === start.identifier);
     if (!touch || Math.hypot(touch.clientX - start.x, touch.clientY - start.y) > 12) return;
     event.preventDefault();
-    if (!button.disabled) button.click();
+    if (!start.control.disabled) start.control.click();
   }, { passive: false, capture: true });
 
-  button.addEventListener('click', attempt);
+  button.addEventListener('click', () => attempt());
+  specialButton.addEventListener('click', () => attempt(true));
   $('open-book').addEventListener('click', () => {
     renderBook();
     book.showModal();
