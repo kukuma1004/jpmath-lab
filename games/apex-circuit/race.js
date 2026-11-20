@@ -87,6 +87,8 @@ function resetCar(car, distance, lane) {
   car.airborne = false;
   car.pitch = null;
   car.flight = null;
+  car.boosting = false;
+  car.boostReserve = .53 + car.id * .065;
   car.finished = false;
   car.time = null;
 }
@@ -186,26 +188,26 @@ export function createRace(track, vehicle = vehicleSpecs[0]) {
     const cornerSpeed = vehicle.cruiseSpeed * (1 - Math.min(0.15, Math.abs(curve) * 2.25));
     let targetSpeed = boosting ? vehicle.topSpeed : cornerSpeed;
     race.drifting = brake && !pressingRail && Math.abs(steer) > .2 && player.speed > 23 && !player.airborne;
-    if (brake) targetSpeed = race.drifting ? 26 : 18;
+    if (brake) targetSpeed = race.drifting ? vehicle.cruiseSpeed * .98 : 19;
     race.drafting = !brake && cars.slice(1).some(car => {
       const gap = lapDifference(car.distance - player.distance, track.length);
       return gap > 4.4 && gap < 19 && Math.abs(car.lane - player.lane) < 1.5;
     });
     if (race.drafting && !boosting) { targetSpeed += 4; race.boost = Math.min(1, race.boost + dt * .10); }
-    const earnedDrift = !race.drifting && !pressingRail && driftCharge >= .5 && driftCooldown <= 0
+    const earnedDrift = !race.drifting && !pressingRail && driftCharge >= .32 && driftCooldown <= 0
       ? driftCharge : 0;
-    driftCharge = race.drifting ? Math.min(1.3, driftCharge + dt) : 0;
+    driftCharge = race.drifting ? Math.min(1.3, driftCharge + dt * (Math.abs(curve) > .006 ? 1.45 : .60)) : 0;
     if (pressingRail) targetSpeed *= 0.78;
-    const acceleration = player.speed < targetSpeed ? (boosting ? 1.67 : 1) * vehicle.acceleration : (brake ? 45 : 25);
+    const acceleration = player.speed < targetSpeed ? (boosting ? 1.67 : 1) * vehicle.acceleration : (race.drifting ? 12 : brake ? 32 : 25);
     player.speed = approach(player.speed, targetSpeed, acceleration * dt);
 
     // Faster corners push outward. Braking restores grip and slows the drift.
     const drift = clamp(curve * player.speed ** 2 * (brake ? 0.065 : 0.155) / vehicle.grip, -11, 11);
     const centering = Math.abs(steer) < 0.05 ? -player.lane * 0.41 : 0;
-    const lateralTarget = player.airborne ? steer * 6 : steer * (race.drifting ? 13 : 18) + drift + centering;
+    const lateralTarget = player.airborne ? steer * 6 : steer * (race.drifting ? 11.5 : 13.8) + drift + centering;
     player.lateralSpeed = approach(player.lateralSpeed, lateralTarget, dt * (player.airborne ? 16 : brake ? 82 : 66) * vehicle.grip);
     player.lane += player.lateralSpeed * dt;
-    player.slip = Math.atan2(player.lateralSpeed, Math.max(18, player.speed)) * (race.drifting ? 1.35 : .7);
+    player.slip = Math.atan2(player.lateralSpeed, Math.max(18, player.speed)) * (race.drifting ? 1.75 : .7);
 
     if (Math.abs(player.lane) > laneLimit) {
       player.lane = Math.sign(player.lane) * laneLimit;
@@ -237,21 +239,35 @@ export function createRace(track, vehicle = vehicleSpecs[0]) {
 
   function advanceRival(car, rival, dt) {
     track.sample(car.distance, course);
-    track.sample(car.distance + 14, preview);
+    track.sample(car.distance + 10 + car.speed * .24, preview);
     const elapsed = race.time * 0.74 + rival.phase;
-    const desiredLine = track.halfWidth * (
+    let desiredLine = track.halfWidth * (
       rival.line * 0.58 + Math.sin(elapsed) * 0.17
       - clamp(preview.curve * 15, -1, 1) * rival.corner
     );
-    const lateral = clamp((desiredLine - car.lane) * 1.7, -7, 7);
+    let nearestAhead = 22;
+    for (const other of cars) {
+      if (other === car || other.finished) continue;
+      const gap = lapDifference(other.distance - car.distance, track.length);
+      if (gap <= 0 || gap >= nearestAhead || Math.abs(other.lane - desiredLine) >= CAR_WIDTH + .5) continue;
+      nearestAhead = gap;
+      const side = Math.abs(other.lane) < .45 ? Math.sign(rival.line) : -Math.sign(other.lane);
+      desiredLine = clamp(other.lane + side * (CAR_WIDTH + 1), -laneLimit + .35, laneLimit - .35);
+    }
+    const lateral = clamp((desiredLine - car.lane) * 2.6, -9, 9);
     car.lateralSpeed = approach(car.lateralSpeed, lateral, dt * 19);
     car.lane = clamp(car.lane + car.lateralSpeed * dt, -laneLimit, laneLimit);
     car.slip = Math.atan2(car.lateralSpeed, Math.max(18, car.speed)) * 0.7;
 
     const turn = Math.max(Math.abs(course.curve), Math.abs(preview.curve) * 0.72);
-    const straightSpeed = rival.speed + Math.sin(elapsed * 0.54) * 1.2;
-    const target = car.finished ? 20 : straightSpeed * (1 - Math.min(0.18, turn * 2.35));
-    car.speed = approach(car.speed, target, dt * 19);
+    const straightSpeed = rival.speed + 1.15 + Math.sin(elapsed * .54) * .75;
+    const passing = nearestAhead < 17 && nearestAhead > 6;
+    if (!car.boosting && car.boostReserve > .58 && !car.finished && car.speed > 26 &&
+        (turn < .016 || passing || finishDistance - car.distance < 50)) car.boosting = true;
+    if (car.finished || car.boostReserve <= 0 || turn > .048) car.boosting = false;
+    car.boostReserve = clamp(car.boostReserve + dt * (car.boosting ? -.40 : .101), 0, 1);
+    const target = car.finished ? 20 : straightSpeed * (1 - Math.min(.14, turn * 1.95)) + (car.boosting ? 15 : 0);
+    car.speed = approach(car.speed, target, dt * (car.boosting ? 26 : 20));
     const previous = car.distance;
     advanceDistance(car, course.curve, dt);
     updateAir(car, previous);

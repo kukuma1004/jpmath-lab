@@ -1,6 +1,7 @@
-import { frontier } from './world-frontiers.js?v=8';
+import { frontier } from './world-frontiers.js?v=9';
 import * as T from './vendor/three.module.min.js';
-import { grain, alpine, metropolis, coastalBridge, roadFurniture } from './world-landmarks.js?v=6';
+import { grain, alpine, metropolis, coastalBridge, roadFurniture } from './world-landmarks.js?v=9';
+import { harborVillage, quarryArch, streetShops } from './world-districts.js?v=9';
 import { courseFrame, coursePoint, track } from './track.js?v=5';
 
 const box = new T.BoxGeometry();
@@ -156,7 +157,7 @@ function road(scene, track, theme) {
             +texture2D(wetView,wetUv+ripple+smear).rgb*.25
             +texture2D(wetView,wetUv+ripple-smear).rgb*.25;
           float grazing=pow(1.-clamp(dot(normal,normalize(vViewPosition)),0.,1.),2.);
-          outgoingLight=mix(outgoingLight,echo,wetStrength*(.055+.19*film+.14*grazing));
+          outgoingLight=mix(outgoingLight,echo,wetStrength*(.105+.32*film+.20*grazing));
         }
         #include <opaque_fragment>
       `);
@@ -627,12 +628,19 @@ function water(scene) {
 }
 
 function sky(scene, night, mountain, theme) {
+  const ready = {value: 0};
+  let finishHorizon;
+  scene.userData.horizonReady = new Promise(resolve => { finishHorizon = resolve; });
+  const panorama = new T.TextureLoader().load(new URL('./assets/horizon-'+theme+'.webp',import.meta.url).href,
+    () => { ready.value = 1; finishHorizon(true); }, undefined, () => finishHorizon(false));
   const material = new T.ShaderMaterial({
     side: T.BackSide, depthWrite: false,
     uniforms: {
       uSun: { value: night ? new T.Vector3(-.25,.38,-.88).normalize() : sunDirection }, uHorizon: { value: new T.Color(night ? 0x494772 : theme === 'frost' ? 0xc6deeb : theme === 'redrock' ? 0xf0b083 : mountain ? 0xf0c8ac : 0xe69783) },
       uOrange: { value: new T.Color(night ? 0x5a6486 : 0xffce80) }, uSky: { value: new T.Color(night ? 0x080f29 : theme === 'frost' ? 0x345782 : theme === 'redrock' ? 0x688aa5 : mountain ? 0x365e82 : 0x617896) },
       uNight: {value: night ? 1 : 0},
+      uPanorama: {value: panorama}, uPanoramaReady: ready,
+      uPeak: {value: mountain || theme==='frost' ? .38 : night ? .32 : .26},
     },
     vertexShader: `
       varying vec3 vDir;
@@ -642,7 +650,7 @@ function sky(scene, night, mountain, theme) {
       }`,
     fragmentShader: `
       uniform vec3 uSun, uHorizon, uOrange, uSky;
-      uniform float uNight;
+      uniform float uNight, uPeak, uPanoramaReady; uniform sampler2D uPanorama;
       varying vec3 vDir;
       float cloudNoise(vec2 p) {
         vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f);
@@ -661,6 +669,13 @@ function sky(scene, night, mountain, theme) {
         col = mix(col, mix(vec3(.56, .39, .32),vec3(.10,.11,.21),uNight), cloud * .39);
         col += mix(vec3(.48, .24, .09),vec3(.04,.07,.12),uNight) * pow(sun, 150.0);
         col += mix(vec3(1.55, 1.04, .59),vec3(.75,.83,.95),uNight) * smoothstep(.99912, .99942, sun);
+        float yaw=atan(ray.z,ray.x)/6.2831853;
+        float longitude=fract(yaw+.31);
+        float latitude=(asin(clamp(ray.y,-1.,1.))+.08)/uPeak;
+        vec3 photograph=texture2D(uPanorama,vec2(longitude,clamp(latitude,.002,.998))).rgb;
+        photograph=pow(photograph,vec3(2.2));
+        float edgeFade=smoothstep(0.,.045,min(longitude,1.-longitude));
+        col=mix(col,photograph,uPanoramaReady*edgeFade*(1.-smoothstep(.78,.99,latitude)));
         gl_FragColor = vec4(col, 1.0);
         #include <tonemapping_fragment>
         #include <colorspace_fragment>
@@ -699,6 +714,11 @@ export function buildWorld(scene, course = track) {
   else if (mountain) alpine(scene, course, waves);
   else if (night) metropolis(scene, course);
   else { scenery(scene, waves); coastalBridge(scene); }
+  if (theme==='sunset') harborVillage(scene,course);
+  if (night) streetShops(scene,course,placard);
+  if (theme==='redrock') quarryArch(scene);
+  scene.userData.assetsReady = Promise.all([scene.userData.horizonReady, scene.userData.facadeReady || Promise.resolve(false)])
+    .then(loaded => loaded.some(Boolean));
   roadFurniture(scene, course, theme);
   const lights = gantry(scene, course, theme === 'frost' ? 'FROST PASS' : theme === 'redrock' ? 'RED ROCK CANYON' : mountain ? 'SKYLINE DROP' : night ? 'MIDNIGHT RING' : 'SUNSET PIER');
   combineStaticBoxes(scene);

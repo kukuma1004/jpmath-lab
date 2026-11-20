@@ -39,6 +39,22 @@ export function pineCrown(seed, compact, snowy = false) {
   const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(positions,3));
   g.setAttribute('color',new T.Float32BufferAttribute(tints,3));g.computeVertexNormals();return g;
 }
+// Three crossed cutouts give crowns depth around bends and from the overhead garage view.
+export function spruceGrove(scene,transforms,snowy=false) {
+  const positions=[],uvs=[],indices=[];
+  for(let i=0;i<3;i++){
+    const angle=i*Math.PI/3, x=Math.cos(angle)*1.27,z=Math.sin(angle)*1.27, n=i*4;
+    positions.push(-x,-.57,-z,x,-.57,z,x,.65,z,-x,.65,-z);
+    uvs.push(0,0,1,0,1,1,0,1);indices.push(n,n+1,n+2,n,n+2,n+3);
+  }
+  const g=new T.BufferGeometry();
+  g.setAttribute('position',new T.Float32BufferAttribute(positions,3));
+  g.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));g.setIndex(indices);
+  const map=grain(snowy?'spruce-snow':'spruce-summer');
+  map.wrapS=map.wrapT=T.ClampToEdgeWrapping;
+  const material=new T.MeshBasicMaterial({map,alphaTest:.43,side:T.DoubleSide,color:snowy?0xe6f0fc:0xc3c8a9});
+  return instances(scene,g,material,transforms);
+}
 const mat = (color, roughness=.78) => new T.MeshStandardMaterial({color,roughness});
 const glow = color => new T.MeshBasicMaterial({color});
 export function random(seed) {
@@ -163,6 +179,30 @@ export function alpine(scene,course,time) {
   const compact=matchMedia('(pointer:coarse), (max-width:800px)').matches;
   distantAlps(scene,compact);
   alpineGallery(scene);
+  const cable=[], towers=[];
+  const ends=[new T.Vector3(42,0,-5),new T.Vector3(32,0,112)];
+  for(const end of ends){
+    const floor=alpineField(end.x,end.z,path,course.halfWidth);
+    end.y=Math.max(51,floor+13);
+    for(const off of [-1,1]) towers.push(beam(new T.Vector3(end.x+off*2,floor-1,end.z),new T.Vector3(end.x+off*.65,end.y,end.z),.46));
+    towers.push(matrix(end.x,end.y,end.z,5,.55,.85));
+  }
+  const cablePoint=(t,lane)=>new T.Vector3(
+    T.MathUtils.lerp(ends[0].x,ends[1].x,t)+lane,
+    T.MathUtils.lerp(ends[0].y,ends[1].y,t)-Math.sin(t*Math.PI)*4.6,
+    T.MathUtils.lerp(ends[0].z,ends[1].z,t));
+  scene.userData.moveCabins=[];
+  for(const lane of [-1.8,1.8]){
+    for(let i=0;i<24;i++) cable.push(beam(cablePoint(i/24,lane),cablePoint((i+1)/24,lane),.12));
+    const cabin=new T.Group();
+    for(const [y,w,h,d,color] of [[-.7,.12,1.4,.12,0x303538],[-1.6,2.3,.35,2.9,0xa8402b],[-2.4,2.15,1.3,2.65,0x426476],[-3.24,2.35,.56,2.85,0xb54b30]]){
+      const part=new T.Mesh(cube,mat(color));part.position.y=y;part.scale.set(w,h,d);cabin.add(part);
+    }
+    const move=()=>cabin.position.copy(cablePoint((1+Math.sin(time.value*.045+Math.sign(lane)*Math.PI/2))*.5,lane));
+    move();scene.add(cabin);scene.userData.moveCabins.push(move);
+  }
+  instances(scene,cube,mat(0x464c4b),towers);
+  instances(scene,cube,mat(0x302f30),cable);
   const resolution=compact?142:192;
   const geo=new T.PlaneGeometry(580,580,resolution,resolution);
   geo.rotateX(-Math.PI/2);
@@ -230,13 +270,26 @@ export function alpine(scene,course,time) {
   for(let i=0;i<(compact?1020:1670);i++){
     const x=(rng()-.5)*340,z=(rng()-.5)*330;
     if(nearest(x,z,path).distance<course.halfWidth+4) continue;
-    const y=alpineField(x,z,path,course.halfWidth),h=2.2+rng()*6;
+    const y=alpineField(x,z,path,course.halfWidth),h=3.4+rng()*7.8;
     if(y<2 || y>59 || noise(x*.034,z*.034)<.30) continue;
     trunks.push(matrix(x,y+.24*h,z,.06*h,.6*h,.06*h));
     needles.push(matrix(x,y+.57*h,z,.25*h,.90*h,.25*h,rng()*6));
   }
+  // Mixed-age fir stands along the verge break up large uninterrupted meadow slopes.
+  for(let d=4;d<course.length;d+=9){
+    for(const side of [-1,1]){
+      const cluster=2+Math.floor(rng()*4);
+      for(let j=0;j<cluster;j++){
+        const p=course.point(d+rng()*10,side*(course.halfWidth+7+rng()*18));
+        if(nearest(p.x,p.z,path).distance<course.halfWidth+5) continue;
+        const y=alpineField(p.x,p.z,path,course.halfWidth),h=2.6+rng()*6.5;
+        if(y<0 || y>58) continue;
+        needles.push(matrix(p.x,y+h*.48,p.z,h*.26,h*.92,h*.26,rng()*6));
+      }
+    }
+  }
   instances(scene,cube,mat(0x584941),trunks);
-  instances(scene,pineCrown(1389,compact),new T.MeshStandardMaterial({color:0x567063,vertexColors:true,side:T.DoubleSide}),needles);
+  spruceGrove(scene,needles);
   const steel=[],struts=[];
   for(const gap of course.gaps || []){
     for(const [end,sign] of [[gap.start,-1],[gap.end,1]]){
@@ -323,7 +376,8 @@ export function metropolis(scene,course) {
     const x=i*19+(rng()-.5)*7,z=j*19+(rng()-.5)*7,w=9+rng()*7,d=9+rng()*7;
     const road=nearest(x,z,path);
     if(road.distance<course.halfWidth+Math.hypot(w,d)/2+3) continue;
-    const h=10+Math.pow(rng(),1.7)*66 + (road.distance>85?12:0), m=rng()>.5?1:0, y=-3;
+    const height=10+Math.pow(rng(),1.7)*66+(road.distance>85?12:0);
+    const h=height*(.33+.67*T.MathUtils.smoothstep(road.distance,21,80)), m=rng()>.5?1:0, y=-3;
     bodies[m].push(matrix(x,y+h/2,z,w,h,d));
     podiums.push(matrix(x,y+1.6,z,w+1.8,3.2,d+1.8));
     caps.push(matrix(x,y+h+.3,z,w+.3,.6,d+.3));

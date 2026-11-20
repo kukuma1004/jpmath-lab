@@ -5,3 +5,7 @@
 .forge-card{background:#382b21}.forge-card .game-image{min-height:335px;background:#64452b}.forge-card .game-image img{object-position:50% 50%}.forge-card .game-copy{align-self:center}.forge-card .game-copy h2 small,.forge-card .game-copy>p:not(.device-note){color:#eee0c5}.forge-card .game-tags span,.forge-card .device-note{color:#e9d7aa}.forge-card .play-button{background:#f5cf7c;color:#3b2a18}.forge-card .play-button:hover{background:#ffe5ab}
 @media(max-width:720px){.forge-card .game-image{min-height:0;aspect-ratio:1.62}}
 .racing-card{background:#152330}.racing-card .game-image{background:#0b363e}.racing-card .game-image img{object-position:center 58%}.racing-card .game-copy h2{margin-top:24px}.racing-card .game-copy h2 small{color:#f6df96;font-size:12px;letter-spacing:.14em}.racing-card .play-button{background:#f6f27a;color:#152330}.racing-card .play-button:hover{background:#fffba6}
+.game-card .game-image{position:relative;overflow:hidden}
+.game-card .game-image img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center}
+.forge-card .game-image img{object-position:center top}
+@media(max-width:720px){.game-card .game-image{min-height:0;aspect-ratio:3/2}}

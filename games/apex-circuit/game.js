@@ -1,7 +1,7 @@
 import * as T from './vendor/three.module.min.js';
 import { tracks } from './track.js?v=5';
-import { createRace, vehicleSpecs } from './race.js?v=5';
-import { buildWorld } from './world.js?v=7';
+import { createRace, vehicleSpecs } from './race.js?v=9';
+import { buildWorld } from './world.js?v=9';
 import { buildCars, driveCar, selectVehicle } from './cars.js?v=8';
 import { createAudio } from './audio.js?v=4';
 import { createEffects } from './effects.js?v=4';
@@ -280,7 +280,7 @@ function setup() {
   const measured = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) && new URLSearchParams(location.search).has('qa');
   const controls = [...document.querySelectorAll('[data-control]')];
   const keyControls = new Map([['ArrowLeft', 'left'], ['KeyA', 'left'], ['ArrowRight', 'right'], ['KeyD', 'right'],
-    ['ArrowDown', 'brake'], ['KeyS', 'brake'], ['Space', 'boost']]);
+    ['ArrowDown', 'brake'], ['KeyS', 'brake'], ['Space', 'boost'], ['ArrowUp', 'boost'], ['KeyW', 'boost'], ['ShiftLeft', 'brake'], ['ShiftRight', 'brake']]);
   const keys = new Set();
   const pointers = new Map();
   const input = { steer: 0, brake: false, boost: false };
@@ -308,7 +308,7 @@ function setup() {
       nextWorld = { scene, ...environment, reflections: captureCourseLighting(scene, track) };
       worldCache.set(track.id, nextWorld);
       const course=track;
-      scene.userData.facadeReady?.then(loaded => {
+      scene.userData.assetsReady?.then(loaded => {
         if (loaded) refreshReflections(nextWorld, course);
       });
     }
@@ -514,6 +514,7 @@ function setup() {
     if (!['paused', 'results'].includes(state) && !motion.matches && !visualOnly) worldTime += dt;
     const { waves, lights, scene } = activeWorld;
     waves.value = worldTime;
+    scene.userData.moveCabins?.forEach(move => move());
     const boosting = state === 'racing' && race.boosting;
     document.body.classList.toggle('is-boosting', boosting);
     document.body.classList.toggle('is-drifting', state === 'racing' && race.drifting);
@@ -533,7 +534,7 @@ function setup() {
       const visual = vehicles[index];
       const visible = state !== 'menu' || index === 0;
       visual.model.visible = visual.shadow.visible = visible;
-      if (visible) driveCar(visual, car, boosting && index === 0, motion.matches ? 0 : worldTime, track);
+      if (visible) driveCar(visual, car, index === 0 ? boosting : state === "racing" && car.boosting, motion.matches ? 0 : worldTime, track);
     });
     if (state !== 'paused' || snap) view.update(track, race, vehicle, state === 'paused' ? pausedState : state, worldTime, dt, motion.matches, snap);
     snap = false;
@@ -606,7 +607,6 @@ function setup() {
       return;
     }
     if (!['racing', 'countdown'].includes(state) || !keyControls.has(event.code)) return;
-    if (event.code === 'Space' && event.target instanceof HTMLButtonElement) return;
     event.preventDefault();
     keys.add(event.code);
     updateControls();

@@ -344,10 +344,10 @@ kbd {
     gap: 10px;
     touch-action: none;
   }
-  .touch-pair { display: flex; gap: 6px; }
+  .touch-pair { display: flex; gap: clamp(5px, 1.7vw, 12px); }
   .touch-pair button {
-    width: clamp(48px, 9vmin, 72px);
-    min-height: 52px;
+    width: clamp(56px, 17vw, 91px);
+    min-height: clamp(64px, 17vmin, 86px);
     padding: 0 2px;
     border: 1px solid var(--line);
     border-radius: 3px;
@@ -361,10 +361,10 @@ kbd {
     white-space: nowrap;
   }
   .touch-pair button span { display: block; font: 700 45px/.7 var(--display); margin-top: -5px; }
-  .touch-pair button[data-control="brake"] { min-width: 60px; }
+  .touch-pair button[data-control="brake"] { min-width: 64px; }
   .touch-pair button[data-control="boost"] { color: var(--ink); background: var(--lemon); border-color: var(--lemon); }
   .touch-pair button:is(:active,.is-held,[data-held="true"]) { background: var(--cyan); color: var(--ink); border-color: var(--cyan); }
-  .telemetry { bottom: calc(var(--bottom) + 62px); width: 137px; }
+  .telemetry { bottom: calc(var(--bottom) + clamp(64px, 17vmin, 86px) + 8px); width: 137px; }
   .map-frame { width: 130px; }
 }
 

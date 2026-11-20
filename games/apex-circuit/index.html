@@ -10,8 +10,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;1,800;1,900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./style.css?v=6">
-  <script type="module" src="./game.js?v=8"></script>
+  <link rel="stylesheet" href="./style.css?v=9">
+  <script type="module" src="./game.js?v=9"></script>
 </head>
 <body data-state="loading">
   <canvas id="world" aria-hidden="true"></canvas>
@@ -45,10 +45,10 @@
       </div>
       <div class="instructions">
         <span class="auto-drive"><i aria-hidden="true"></i> 자동 가속</span>
-        <span class="keyboard-guide"><kbd>←</kbd><kbd>→</kbd> 조향</span>
-        <span class="keyboard-guide"><kbd>↓</kbd> + 조향 드리프트</span>
-        <span class="keyboard-guide"><kbd>Space</kbd> 부스터</span>
-        <span class="touch-guide">브레이크 + 방향으로 드리프트</span>
+        <span class="keyboard-guide"><kbd>← →</kbd> / <kbd>A D</kbd> 조향</span>
+        <span class="keyboard-guide"><kbd>↓</kbd> / <kbd>S</kbd> + 조향 드리프트</span>
+        <span class="keyboard-guide"><kbd>Space</kbd> / <kbd>W</kbd> 부스터</span>
+        <span class="touch-guide">방향과 드리프트를 함께 누르고, 코너 출구에서 떼면 터보</span>
       </div>
     </section>
 
@@ -87,7 +87,7 @@
         <button type="button" data-control="right" aria-label="오른쪽으로 조향"><span aria-hidden="true">›</span></button>
       </div>
       <div class="touch-pair action-controls">
-        <button type="button" data-control="brake">브레이크</button>
+        <button type="button" data-control="brake" aria-label="길게 누르면 감속, 조향과 함께 누르면 드리프트">드리프트</button>
         <button type="button" data-control="boost">부스터</button>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import * as T from './vendor/three.module.min.js';
-import { instances, matrix, nearest, noise, pathSamples, pineCrown, random } from './world-landmarks.js?v=6';
+import { instances, matrix, nearest, noise, pathSamples, spruceGrove, random } from './world-landmarks.js?v=9';
 
 // The road carries its own banks. Fit the adjoining landscape below its lowest edge.
 function landscape(scene, course, frost, grain, road) {
@@ -19,13 +19,16 @@ function landscape(scene, course, frost, grain, road) {
       const ridge = Math.abs(Math.sin(.024*x+.017*z+warp)*Math.cos(.019*z-.011*x-warp*.6));
       const wave = (ripple - .5)*7 + Math.cos(.073*z+.019*x)*2.1;
       const bank = course.halfWidth;
-      let height = frost ? 2 + ridge*ridge*79 + wave : 2 + Math.floor((ridge*48+wave)/5)*5 + ripple*1.8;
+      let height = frost ? 2 + ridge*ridge*61 + wave + 2.1*Math.sin(x*.17+z*.09+warp) : 2 + Math.floor((ridge*48+wave)/5)*5 + ripple*1.8;
       // The dam retains a low basin on the outside of the start straight.
       if (frost && z > 42 && z < 133 && Math.abs(x)<87) height = -9 + wave*.31;
       if (!frost) {
         const bench = Math.max(Math.abs(x-9)/38,Math.abs(z-6)/22);
         height = T.MathUtils.lerp(6.6,height,T.MathUtils.smoothstep(bench,.85,1.5));
       }
+      // A drainage valley beyond the east approach opens a layered view of the reservoir and far ridges.
+      const valley=T.MathUtils.smoothstep(x,26,128)*(1-T.MathUtils.smoothstep(Math.abs(z-61),19,92));
+      height=T.MathUtils.lerp(height,frost?-8+wave*.36:5+ripple*5,valley*.96);
       const shoulder = verge.height - 2.9 + (ripple-.5)*.58;
       height = T.MathUtils.lerp(shoulder, height, T.MathUtils.smoothstep(verge.distance,bank+3,39));
       if (frost && z > 66 && z < 127 && Math.abs(x)<58) height = Math.min(height,-8);
@@ -153,11 +156,11 @@ function vergeDetails(scene, course, frost, grain, road, ground) {
       }
       if (frost) {
         // Leave the water and road edge open. Pines collect on higher snow-covered benches.
-        for (let i=0;i<3;i++) {
-          const {x,z}=place(5+rng()*26,19);
-          const h=2.7+rng()*4.1;
+        for (let i=0;i<8;i++) {
+          const {x,z}=place(4+rng()*25,21);
+          const h=3.3+rng()*6.7;
           const y=ground(x,z);
-          if (y<1 || nearest(x,z,road).distance<lane+1.8+h*.24 || Math.abs(ground(x+1,z)-y)>1.27) continue;
+          if (y<-4 || nearest(x,z,road).distance<lane+1.8+h*.24 || Math.abs(ground(x+1,z)-y)>2.1) continue;
           trunks.push(matrix(x,y+.23*h,z,.08*h,.59*h,.08*h));
           crowns.push(matrix(x,y+.55*h,z,.24*h,.90*h,.24*h,rng()*6.28));
         }
@@ -190,11 +193,73 @@ function vergeDetails(scene, course, frost, grain, road, ground) {
     instances(scene,rockGeo,frontierStone(frost,grain),rocks),
     instances(scene,rockGeo,material(0xcadfe6),drifts),
     instances(scene,cube,material(0x524943),trunks),
-    instances(scene,pineCrown(435,true,true),material(0x9eb7ad,{vertexColors:true,side:T.DoubleSide}),crowns),
+    spruceGrove(scene,crowns,true),
     instances(scene,plantTuft(),material(0x887452,{side:T.DoubleSide}),tufts),
     instances(scene,outcrop(),frontierStone(false,grain),columns)
   ];
   for (const mesh of props) if (mesh) mesh.userData.distant=true;
+}
+
+// Broad benches and vertical fractures read at speed, while the generated rock tile
+// carries mineral detail as the car draws alongside the face.
+function escarpments(scene,frost,ground,grain){
+  const rng=random(frost?2401:833);
+  const positions=[],colors=[],uv=[],indices=[];
+  const palette=(frost?[0x6d99a7,0x97c9d3,0xcbe3e8,0xf1f7f5]:[0x945a48,0xc2815d,0xae664e,0xe6a773]).map(c=>new T.Color(c));
+  function stack(x,z,rx,rz,h,y){
+    const sides=frost?7:13,angle=rng()*6.28;
+    const radii=Array.from({length:sides},()=>.84+rng()*.27);
+    const levels=frost?[[0,1.22],[.42,1],[.91,.89],[1,.70]]:[[0,1.35],[.24,1.02],[.29,.92],[.53,.86],[.56,.77],[.86,.74],[.90,.65],[1,.61]];
+    const topSlope=(rng()-.5)*.19;
+    for(let k=1;k<levels.length;k++){
+      for(let j=0;j<sides;j++){
+        const corners=[];
+        for(const [layer,i] of [[k-1,j],[k,j],[k,(j+1)%sides],[k-1,(j+1)%sides]]){
+          const [e,r]=levels[layer],a=i*Math.PI*2/sides+angle;
+          const dx=Math.cos(a)*radii[i],dz=Math.sin(a)*radii[i];
+          corners.push([x+dx*rx*r+e*rx*.09,y+h*(e+e*topSlope*dx),z+dz*rz*r]);
+        }
+        const base=positions.length/3;
+        const tone=palette[frost?Math.min(k-1,2):(k-1)%4].clone().multiplyScalar(.9+.13*Math.cos(j*1.77));
+        const ax=corners[3][0]-corners[0][0],az=corners[3][2]-corners[0][2],length=Math.hypot(ax,az);
+        for(const [i,v] of corners.entries()){
+          positions.push(...v);colors.push(tone.r,tone.g,tone.b);
+          uv.push((j+i/4+(i>1?length:0))*.18,v[1]*.19);
+        }
+        indices.push(base,base+1,base+2,base,base+2,base+3);
+        if(k===levels.length-1){
+          const c=positions.length/3;positions.push(x+rx*.09,y+h,z);
+          colors.push(palette[3].r,palette[3].g,palette[3].b);uv.push(.5,.5);indices.push(base+1,c,base+2);
+        }
+      }
+    }
+  }
+  if(frost){
+    // A descending, fractured glacier tongue on the far side of the reservoir.
+    for(let n=0;n<40;n++){
+      const x=138+Math.floor(n/5)*7.3+rng()*3,z=54+(n%5)*8.6+rng()*4;
+      const floor=ground(x,z);
+      stack(x,z,4+rng()*4.7,5+rng()*3,8+(x-135)*.32+rng()*6,floor-2.7);
+    }
+  }else{
+    for(const [x,z,rx,rz,h] of [[195,67,12,19,45],[206,89,9,8,56],[195,109,21,10,32],[178,-60,23,13,46],[-165,-108,26,15,36],[-180,47,13,10,41],[63,131,13,17,35]]){
+      stack(x,z,rx,rz,h,ground(x,z)-3);
+    }
+  }
+  const geometry=new T.BufferGeometry();
+  geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));
+  geometry.setAttribute('color',new T.Float32BufferAttribute(colors,3));
+  geometry.setAttribute('uv',new T.Float32BufferAttribute(uv,2));
+  geometry.setIndex(indices);geometry.computeVertexNormals();
+  const material=new T.MeshStandardMaterial({vertexColors:true,roughness: frost ? .55 : .94,side:T.DoubleSide});
+  material.map=grain(frost?'alpine-schist':'quarry-bedding');
+  material.onBeforeCompile=shader=>{
+    shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',`
+      vec3 vein=texture2D(map,vMapUv).rgb;
+      diffuseColor.rgb*=.79+dot(vein,vec3(.25,.5,.25))*.69;
+    `);
+  };
+  const formation=new T.Mesh(geometry,material);formation.userData.distant=true;scene.add(formation);
 }
 
 export function frontier(scene,course,{block,surface,placard,grain}) {
@@ -202,6 +267,7 @@ export function frontier(scene,course,{block,surface,placard,grain}) {
   const road=pathSamples(course,3);
   const ground=landscape(scene,course,frost,grain,road);
   vergeDetails(scene,course,frost,grain,road,ground);
+  escarpments(scene,frost,ground,grain);
   const dark = surface(frost ? 0x465b69 : 0x573d37);
   const body = surface(frost ? 0x9cacb5 : 0xc79565);
   body.map = grain('concrete-grain');
@@ -217,6 +283,7 @@ export function frontier(scene,course,{block,surface,placard,grain}) {
       `);
     };
     block(scene,ice,0,-6.8,100,115,.6,62);
+    block(scene,ice,188,-6.85,65,145,.55,84);
     // Ribbed downstream face below the open crest road.
     for(let d=10;d<121;d+=5) {
       const p=course.point(d,5.5,-10.4);
