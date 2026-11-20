@@ -295,6 +295,9 @@ kbd {
 [data-state="loading"] .loading-screen, [data-state="error"] .loading-screen { display: grid; place-items: center; }
 .session-panel {
   width: min(100%, 370px);
+  max-height: calc(100dvh - var(--top) - var(--bottom) - 53px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: clamp(17px, 4vw, 30px);
   background: var(--panel);
   border-top: 3px solid var(--lemon);
@@ -554,7 +557,18 @@ body.is-drifting .boost-caption { color: #ffc65b; }
 .result-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
 .result-actions .race-button { grid-column: 1 / -1; }
 .result-actions .secondary-button { margin: 0; }
+.selection-button { min-height: 52px; font-size: 16px; }
+.selection-button::before { background: var(--cyan); }
+.selection-button:hover::before { background: #c8ffef; }
+.selection-button:active::before { background: #67d5ba; }
+.selection-link { border-color: var(--cyan); background: #203944; color: var(--cyan); min-height: 52px; }
+.pause-actions { display: grid; gap: 8px; }
+.pause-actions .secondary-button { margin: 0; }
 @media (max-height: 520px) and (orientation: landscape) {
+  .pause-screen .session-panel { width: min(100%, 580px); }
+  .pause-screen h2 { margin-bottom: 12px; }
+  .pause-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .pause-actions :is(.race-button, .secondary-button) { min-height: 48px; padding-inline: 8px; font-size: 13px; }
   .result-screen .session-panel { width: min(100%, 415px); }
   .result-actions { grid-template-columns: 1.35fr 1fr 1fr; }
   .result-actions .race-button { grid-column: auto; padding-inline: 10px; font-size: 13px; }

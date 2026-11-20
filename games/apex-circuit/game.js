@@ -459,6 +459,12 @@ function setup() {
     snap = true;
     focusDriving();
   }
+  function openGarage() {
+    if (!['paused', 'results'].includes(state)) return;
+    showMenu(false);
+    document.querySelector('.garage-scroll').scrollTop = 0;
+    document.querySelector('[data-vehicle="' + vehicle.id + '"]').focus({preventScroll: true});
+  }
   function pause() {
     if (state !== 'racing' && state !== 'countdown') return;
     pausedState = state;
@@ -483,7 +489,7 @@ function setup() {
     setText(nodes['result-lap'], formatTime(race.bestLap));
     setText(nodes['result-best'], formatTime(best));
     change('results');
-    nodes['play-again'].focus({ preventScroll: true });
+    nodes.menu.focus({ preventScroll: true });
   }
   function showCountdown(beat) {
     if (previousBeat === beat) return;
@@ -628,7 +634,8 @@ function setup() {
   nodes.resume.addEventListener('click', resume);
   nodes.retry.addEventListener('click', start);
   nodes['play-again'].addEventListener('click', start);
-  nodes.menu.addEventListener('click', () => showMenu(true));
+  nodes.menu.addEventListener('click', openGarage);
+  byId('pause-menu').addEventListener('click', openGarage);
   nodes.sound.addEventListener('click', () => {
     audio.setEnabled(!audio.enabled);
     save(soundKey, audio.enabled ? 'on' : 'off');
@@ -656,6 +663,15 @@ function setup() {
     if (event.altKey || event.metaKey || event.ctrlKey) return;
     if (event.target instanceof Element && event.target.closest('input, textarea, select, [contenteditable="true"]')) return;
     const code = resolveDrivingKey(event);
+    if (code === 'Space' && event.repeat && ['paused', 'results'].includes(state)) {
+      event.preventDefault();
+      return;
+    }
+    if (code === 'Escape' && !event.repeat && state === 'results' && !byId('ranking').open) {
+      event.preventDefault();
+      openGarage();
+      return;
+    }
     if (['KeyP', 'Escape'].includes(code) && !event.repeat) {
       if (!['racing', 'countdown', 'paused'].includes(state)) return;
       event.preventDefault();
@@ -672,7 +688,10 @@ function setup() {
     const code = resolveDrivingKey(event);
     let changed = keys.delete(code);
     if (code === 'ShiftLeft' && !keyControls.has(event.code)) changed = keys.delete('ShiftRight') || changed;
-    if (changed) updateControls();
+    if (changed) {
+      if (code === 'Space' && ['paused', 'results'].includes(state)) event.preventDefault();
+      updateControls();
+    }
   });
   world.addEventListener('pointerdown', () => {
     if (['racing', 'countdown'].includes(state)) focusDriving();
