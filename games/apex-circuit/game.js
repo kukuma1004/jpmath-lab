@@ -1,13 +1,13 @@
 import * as T from './vendor/three.module.min.js';
-import { tracks } from './track.js?v=11';
+import { tracks, courseRecordId } from './track.js?v=12';
 import { createRace, vehicleSpecs } from './race.js?v=11';
-import { buildWorld } from './world.js?v=11';
-import { buildCars, driveCar, selectVehicle } from './cars.js?v=11';
+import { buildWorld } from './world.js?v=12';
+import { buildCars, driveCar, selectVehicle } from './cars.js?v=12';
 import { drivingKeys, resolveDrivingKey } from './input.js?v=10';
 import { createAudio } from './audio.js?v=4';
 import { createEffects } from './effects.js?v=4';
 import { bindGarage } from './garage.js?v=11';
-import { bindRanking, formatTime } from './ranking.js?v=1';
+import { bindRanking, formatTime } from './ranking.js?v=12';
 
 const byId = id => document.getElementById(id);
 const recordKey = 'jp-apex-circuit-lap';
@@ -27,10 +27,16 @@ function save(key, value) {
   }
 }
 function lapKey(courseId) {
-  return courseId === tracks[0].id ? recordKey : `${recordKey}:${courseId}`;
+  return recordLapKey(courseRecordId(courseId));
+}
+function recordLapKey(id) {
+  return id === tracks[0].id ? recordKey : `${recordKey}:${id}`;
 }
 function readBestLap(courseId) {
-  const best = Number(read(lapKey(courseId)));
+  return readBestRecord(courseRecordId(courseId));
+}
+function readBestRecord(id) {
+  const best = Number(read(recordLapKey(id)));
   return Number.isFinite(best) && best > 0 ? best : null;
 }
 function setText(element, text) {
@@ -332,7 +338,7 @@ function setup() {
   const recordFinish = bindRanking({
     tracks, vehicleSpecs, read, save, canPublish: !measured,
     getCourse: () => track.id,
-    getBest: id => id === track.id ? best : readBestLap(id)
+    getBest: id => id === courseRecordId(track.id) ? best : readBestRecord(id)
   });
   function loadSelection() {
     let nextWorld = worldCache.get(track.id);

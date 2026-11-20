@@ -3,7 +3,7 @@ import * as T from './vendor/three.module.min.js';
 import { grain, alpine, metropolis, coastalBridge, roadFurniture } from './world-landmarks.js?v=9';
 import { harborVillage, quarryArch, streetShops } from './world-districts.js?v=9';
 import { expansion } from './world-expansion.js?v=11';
-import { courseFrame, coursePoint, track } from './track.js?v=11';
+import { courseFrame, coursePoint, track } from './track.js?v=12';
 
 const box = new T.BoxGeometry();
 const dummy = new T.Object3D();

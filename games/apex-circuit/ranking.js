@@ -1,4 +1,5 @@
 import { loadOnline, publishOnline, deleteOnline } from './online-ranking.js?v=1';
+import { courseRecordId } from './track.js?v=12';
 
 const prefix = 'jp-apex-circuit-times:';
 const limit = 20;
@@ -63,6 +64,7 @@ export function bindRanking({ tracks, vehicleSpecs, getCourse, getBest, read, sa
   }
 
   function record(trackId, model, totalSeconds, lapSeconds) {
+    trackId = courseRecordId(trackId);
     const total = toCentiseconds(totalSeconds);
     const lap = toCentiseconds(lapSeconds);
     if (!models.has(model) || !isTime(total) || !isTime(lap) || lap > total) return;
@@ -199,14 +201,17 @@ export function bindRanking({ tracks, vehicleSpecs, getCourse, getBest, read, sa
       render();
     }
   });
-  for (const track of tracks) course.add(new Option(track.name, track.id));
+  for (const track of tracks) {
+    course.add(new Option(track.name, courseRecordId(track.id)));
+    for (const previous of track.previousRecords || []) course.add(new Option(previous.name, previous.id));
+  }
   course.addEventListener('change', showTop);
   for (const button of buttons) button.addEventListener('click', () => {
     metric = button.dataset.order;
     showTop();
   });
   for (const id of ['menu-ranking', 'result-ranking']) byId(id).addEventListener('click', () => {
-    course.value = getCourse();
+    course.value = courseRecordId(getCourse());
     metric = 'total';
     dialog.showModal();
     showTop();

@@ -1,5 +1,5 @@
 import * as T from './vendor/three.module.min.js';
-import { track } from './track.js?v=11';
+import { track } from './track.js?v=12';
 import { buildRoadCar } from './road-cars.js?v=8';
 
 const box = new T.BoxGeometry();
