@@ -8,7 +8,7 @@
       "$uid": {
         ".read": "auth != null && auth.uid == $uid && $season == 'season-20261120-1'",
         ".write": "auth != null && auth.uid == $uid && $season == 'season-20261120-1' && (!newData.exists() || !data.exists() || newData.child('value').val() > data.child('value').val() || (newData.child('value').val() == data.child('value').val() && newData.child('level').val() == data.child('level').val() && newData.child('effect1').val() == data.child('effect1').val() && newData.child('effect2').val() == data.child('effect2').val() && newData.child('effect3').val() == data.child('effect3').val()))",
-        ".validate": "newData.hasChildren(['nickname','weaponName','level','value','effect1','effect2','effect3','submittedAt']) && (newData.child('effect2').val() != 'none' || newData.child('effect3').val() == 'none')",
+        ".validate": "newData.hasChildren(['nickname','weaponName','level','value','effect1','effect2','effect3','submittedAt']) && (newData.child('effect2').val() != 'none' || newData.child('effect3').val() == 'none') && (!data.child('protectionUses').exists() || newData.child('value').val() != data.child('value').val() || (newData.child('protectionUses').exists() && (newData.child('protectionUses').val().length > data.child('protectionUses').val().length || (newData.child('protectionUses').val().length == data.child('protectionUses').val().length && newData.child('protectionUses').val() >= data.child('protectionUses').val()))))",
         "nickname": {
           ".validate": "newData.isString() && newData.val().matches(/^[가-힣ㄱ-ㅎㅏ-ㅣA-Za-z0-9 _.-]{1,12}$/) && newData.val().matches(/.*[^ ].*/)"
         },
@@ -35,6 +35,9 @@
         },
         "$other": {
           ".validate": false
+        },
+        "protectionUses": {
+          ".validate": "newData.isString() && newData.val().matches(/^(0|[1-9][0-9]{0,127})$/)"
         }
       }
     }

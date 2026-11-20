@@ -572,3 +572,4 @@ body { background: radial-gradient(ellipse at 43% 30%, #203236, #142025 67%, #15
 .journey-heading { flex-wrap:wrap; }
 .journey-heading p { flex-wrap:wrap; }
 @media(max-width:700px) { .appraisal-label { font-size:8px; }.happy-hours { font-size:9px; } }
+.ranking-protection { display:block; margin-top:5px; color:#c9bc9a; font-size:10px; }

@@ -4,6 +4,51 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const Forge = require('../games/mongle-forge/forge-engine.js');
 
+test('special prices stay affordable after a high record and charge exact current-level quotes', () => {
+  const full = Date.UTC(2026,10,21,0), happy = Date.UTC(2026,10,21,3);
+  for (const [level, prices] of [[0,[110n,220n,330n]],[12,[1790n,3580n,5370n]],[32,[10990n,21980n,32970n]]]) {
+    for (let slots=1;slots<=3;slots++) {
+      const state=Forge.restore({level,bestLevel:1000,shards:'9000000',enchantments:Array(slots).fill('cinder')},full);
+      const quote=Forge.enchantPreview(state,full);
+      assert.equal(quote.cost,prices[slots-1]);
+      assert.equal(Forge.enchantPreview(state,happy).cost,(prices[slots-1]+1n)/2n);
+      const fresh=Forge.restore({level,enchantments:Array(slots).fill('cinder')},full);
+      assert.equal(Forge.enchantPreview(fresh,full).cost,quote.cost);
+      const before=state.shards;
+      const event=slots===3?Forge.reroll(state,full,()=>0,quote.token):Forge.enchant(state,full,()=>0,quote.token);
+      assert(event);assert.equal(event.spent,quote.cost);assert.equal(state.shards,before-quote.cost);
+    }
+  }
+  const state=Forge.restore({level:'9007199254740993123',enchantments:['cinder']},full);
+  assert.equal(Forge.enchantPreview(state,full).cost,100n+10n*9007199254740993124n**2n);
+});
+
+test('ranked protection usage follows that weapon record and survives destruction and reload', () => {
+  const now=Date.UTC(2026,10,21,0);
+  const state=Forge.restore({level:32,shards:'9000000',enchantments:['cinder'],protections:{33:true},protectionUses:'2'},now);
+  Forge.rememberWeapon(state);assert.equal(state.rankingBest.protectionUses,'2');
+  assert.equal(Forge.act(state,now,()=>.99999).kind,'protected');
+  assert.equal(state.rankingBest.protectionUses,'3');
+  assert.equal(Forge.act(state,now+1000,()=>.99999).kind,'shatter');
+  assert.equal(state.rankingBest.protectionUses,'3');
+  const restored=Forge.restore(JSON.parse(Forge.serialize(state)),now+2000);
+  assert.equal(restored.rankingBest.protectionUses,'3');
+  restored.broken=false;restored.level=0n;restored.enchantments=['cinder'];restored.protectionUses=20n;
+  Forge.rememberWeapon(restored);assert.equal(restored.rankingBest.protectionUses,'3');
+});
+
+test('legacy ranked usage stays unknown unless the currently held weapon matches the record', () => {
+  const now=Date.UTC(2026,10,21,0);
+  const current=Forge.restore({level:32,enchantments:['cinder'],protectionUses:'7'},now);
+  const record=Forge.weaponSnapshot(current);delete record.protectionUses;
+  const legacy=Forge.restore({...JSON.parse(Forge.serialize(current)),rankingBest:record},now);
+  assert.equal(legacy.rankingBest.protectionUses,undefined);
+  Forge.rememberWeapon(legacy);assert.equal(legacy.rankingBest.protectionUses,'7');
+  const weaker=Forge.restore({...JSON.parse(Forge.serialize(current)),level:'0',rankingBest:record},now);
+  Forge.rememberWeapon(weaker);assert.equal(weaker.rankingBest.protectionUses,undefined);
+  assert.equal(Forge.rankingRecord(weaker,'몽글','검').protectionUses,'7');
+});
+
 test('a +32 save migrates its resources, failure correction and earlier records', () => {
   const old = { level: 32, bestLevel: 32, shards: 654321, forgeMissesByLevel: Array(32).fill(0), cleared: [true, true], polish: 3, echo: 2, miner: 4, region: 7, paidAt: 100000 };
   old.forgeMissesByLevel[30] = 2;
@@ -297,8 +342,6 @@ test('record income increments double and the current level adds production', ()
   for (const [bestLevel, expected] of [['0', 4n], ['12', 128n], ['20', 464n], ['32', 1600n], ['80', 20264n]]) {
     const state = Forge.restore({ version: 2, level: bestLevel, shards: '123456789', paidAt: 100000, enchantment: 'astral' }, 100000);
     assert.equal(Forge.income(state), expected);
-    const oldIncome = 12n + BigInt(bestLevel) ** 3n / 6n;
-    assert.equal(Forge.enchantPreview(state,100000).cost, 120n * (BigInt(bestLevel) + 1n) + oldIncome * 12n);
     assert.equal(Forge.collectPassive(state, 105000), expected * 5n);
     assert.equal(state.shards, 123456789n + expected * 5n);
     assert.equal(Forge.collectPassive(state, 105000), 0n);
@@ -411,7 +454,7 @@ test('reroll selects one slot and can match another owned effect', () => {
   for(const [slotRoll,slot]of [[0,1],[1/3,2],[2/3,3],[.99999,3]]) {
     for(const [effectRoll,effect]of [[0,slot===1?'solar':'cinder'],[.99999,'lunar']]) {
       const s=Forge.restore({version:2,level:'32',shards:'9000000',enchantments:original,protections:{33:true},pity:{33:2400}},100000);
-      const offer=Forge.enchantPreview(s,100000);assert(offer.reroll);assert.equal(offer.cost,401976n);
+      const offer=Forge.enchantPreview(s,100000);assert(offer.reroll);assert.equal(offer.cost,32970n);
       const rolls=[slotRoll,effectRoll];const result=Forge.reroll(s,100000,()=>rolls.shift(),offer.token);
       assert.equal(result.kind,'reroll');assert.equal(result.slot,slot);assert.equal(result.replaced,original[slot-1]);assert.equal(result.enchantment,effect);
       assert.equal(s.enchantments.length,3);assert.notEqual(result.enchantment,result.replaced);

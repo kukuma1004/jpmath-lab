@@ -188,7 +188,7 @@
     $('special-chance').textContent = state.broken ? '제작 필요' : special.reroll ? '무작위 1개 확정 변환' : '성공 ' + percent(special.success);
     $('special-cost').textContent = state.broken ? '' : fmt(special.cost) + ' 별철' + (special.discount ? ' · 50%' : '');
     $('special-cost').title = '원가 ' + fmt(special.originalCost) + ' 별철';
-    $('special-copy').textContent = special.reroll ? '세 효과 중 하나를 무작위 교체 · 감정가 상승·하락 가능' : '실패하면 별철만 소모 · 단계와 효과는 유지돼요.';
+    $('special-copy').textContent = special.reroll ? '현재 단계 기준 · 무작위 1개 교체 · 감정가 상승·하락' : '현재 단계 기준 · 실패해도 단계와 효과는 유지돼요.';
     $('special-waiting').textContent = state.broken ? '새 검을 제작하면 다시 각인할 수 있어요.' :
       state.shards < special.cost ? '별철이 모이고 있어요 · 약 ' + fmt((special.cost - state.shards + rate - 1n) / rate) + '초 뒤 ' + (special.reroll ? '리롤' : '각인') :
       special.reroll ? '강화 단계와 나머지 두 효과는 유지돼요.' : '';
@@ -459,5 +459,5 @@
     capture: (nickname, weaponName) => transaction(next => { Forge.rememberWeapon(next); return Forge.rankingRecord(next, nickname, weaponName); }),
     onBonus: rank => transaction(next => Forge.setRankBonus(next, rank)),
   });
-  transaction();
+  transaction(next => { if (next.rankingBest) Forge.rememberWeapon(next); });
 })();

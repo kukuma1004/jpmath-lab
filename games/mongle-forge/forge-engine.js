@@ -196,6 +196,7 @@ const Forge = (() => {
     if (value.length > 512 || state.level.toString().length > 128) return null;
     return { level: state.level.toString(), value: value.padStart(512, '0'),
       effect1: state.enchantments[0], effect2: state.enchantments[1] ?? 'none', effect3: state.enchantments[2] ?? 'none',
+      ...(typeof state.protectionUses === 'bigint' && state.protectionUses.toString().length <= 128 ? { protectionUses: state.protectionUses.toString() } : {}),
     };
   }
 
@@ -206,12 +207,19 @@ const Forge = (() => {
     if (ids[0] === 'none' || (ids[1] === 'none' && ids[2] !== 'none')) return null;
     const effects = ids.filter(id => id !== 'none');
     if (effects.some(id => !enchantments.some(effect => effect.id === id))) return null;
-    return weaponSnapshot({ level: BigInt(row.level), enchantments: effects, broken: false });
+    return weaponSnapshot({ level: BigInt(row.level), enchantments: effects, broken: false,
+      protectionUses: typeof row.protectionUses === 'string' && /^(0|[1-9][0-9]{0,127})$/.test(row.protectionUses) ? BigInt(row.protectionUses) : undefined });
+  }
+
+  function sameWeaponRecord(a, b) {
+    return !!a && !!b && ['value', 'level', 'effect1', 'effect2', 'effect3'].every(key => a[key] === b[key]);
   }
 
   function rememberWeapon(state) {
     const snapshot = weaponSnapshot(state);
     if (snapshot && (!state.rankingBest || snapshot.value > state.rankingBest.value)) state.rankingBest = snapshot;
+    else if (sameWeaponRecord(snapshot, state.rankingBest) && snapshot.protectionUses !== undefined &&
+        (state.rankingBest.protectionUses === undefined || BigInt(snapshot.protectionUses) >= BigInt(state.rankingBest.protectionUses))) state.rankingBest.protectionUses = snapshot.protectionUses;
   }
 
   function formAt(level) {
@@ -315,12 +323,12 @@ const Forge = (() => {
   function enchantPreview(state, now = Date.now()) {
     const slots = state.enchantments.length;
     const full = slots >= enchantmentLimit;
-    const baseCost = 120n * (state.level + 1n) + productionBase(state) * (slots === 1 ? 12n : 36n);
-    const quote = priceQuote(state.broken ? 0n : baseCost * (full ? 2n : 1n), now);
+    const baseCost = 100n + 10n * (state.level + 1n) ** 2n;
+    const quote = priceQuote(state.broken ? 0n : baseCost * BigInt(full ? 3 : slots === 1 ? 1 : 2), now);
     return {
       slots, full, reroll: full && !state.broken,
       token: state.generation + ':' + state.level + ':' + state.bestLevel + ':' + state.enchantments.join(',') + ':' + quote.cost,
-      // Keep engraving prices independent of automatic production balancing.
+      // Price the held weapon; a previous high record must not penalize a fresh sword.
       ...quote,
       success: state.broken ? 0 : full ? 10000 : slots === 1 ? 6000 : 3000,
     };
@@ -450,7 +458,7 @@ const Forge = (() => {
     return event;
   }
 
-  return { saveKey, previousSaveKey, olderSaveKey, legacySaveKey, backupKey, seasonId, startingShards, cooldown, recoveryBonus, offlineLimit, enchantmentLimit, forms, enchantments, appraisal, restore, loadSeason, serialize, rankingName, rankingRecord, weaponSnapshot, rememberWeapon, formAt, cost, incomeBreakdown, discountInfo, baseIncome, income, rankReward, setRankBonus, preview, protectionOffer, buyProtection, saleOffer, sell, enchantPreview, collectPassive, act, enchant, reroll };
+  return { saveKey, previousSaveKey, olderSaveKey, legacySaveKey, backupKey, seasonId, startingShards, cooldown, recoveryBonus, offlineLimit, enchantmentLimit, forms, enchantments, appraisal, restore, loadSeason, serialize, rankingName, rankingRecord, weaponSnapshot, sameWeaponRecord, rememberWeapon, formAt, cost, incomeBreakdown, discountInfo, baseIncome, income, rankReward, setRankBonus, preview, protectionOffer, buyProtection, saleOffer, sell, enchantPreview, collectPassive, act, enchant, reroll };
 })();
 
 if (typeof module !== 'undefined') module.exports = Forge;
