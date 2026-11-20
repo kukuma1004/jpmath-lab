@@ -1,7 +1,8 @@
-import { ENEMIES, GAUGE_MAX, GAUGE_PER_STOCK, GRAZE_R, HEIGHT, PLAYER_R, SCORE_CAP, heroDef,
+import { ENEMIES, GAUGE_MAX, GAUGE_PER_STOCK, GRAZE_R, HEIGHT, PLAYER_R, SCORE_CAP, TEMPO, heroDef,
   type Bullet, type Difficulty, type Enemy, type EnemyKind, type EnemyPath, type FirePattern, type GameEvent, type GameState, type HeroId,
   type InputIntent, type Laser, type Shot, type ShotKind, type Pickup } from './types';
-import { STAGES, type BulletOpts, type Ctx } from './stages';
+import { STAGES, bossSeconds, type BulletOpts, type Ctx } from './stages';
+export { HEIGHT, TEMPO };
 
 const TAU=Math.PI*2;
 const clamp=(v:number,lo:number,hi:number)=>Math.max(lo,Math.min(hi,v));
@@ -11,9 +12,13 @@ function segDist2(px:number,py:number,ax:number,ay:number,bx:number,by:number) {
   return d2(px,py,ax+t*sx,ay+t*sy);
 }
 const NO_INPUT:InputIntent={x:0,y:0,focus:false,charge:false,ultimate:false,dash:false};
-const EXTENDS=[300000,1000000,2000000,3500000];
-export const DASH_MAX=2, DASH_RECHARGE=1.5, DASH_TIME=.13, DASH_SPEED=1650, DASH_IFRAMES=.3;
+const EXTENDS=[200000,600000,1200000,2000000,3000000];
+export const DASH_MAX=2, DASH_RECHARGE=2.2, DASH_TIME=.13, DASH_SPEED=1650, DASH_IFRAMES=.3;
 export const ULT_TIME=3.2;
+/** Boss HP is sized from its attack script: this much damage per world second, for every second of attacks. */
+export const BOSS_DPS=250;
+/** Melee reach in front of the hit core, and the radius of bullets the swing knocks away. */
+export const MELEE_REACH:{[k in HeroId]:number}={rin:150,golem:150,ryu:190}, MELEE_CANCEL=105;
 
 /** World-space hit circles [x,y,r] of an enemy, derived from the drawn sprite. */
 export function hitCircles(e:Enemy):[number,number,number][] {
@@ -26,14 +31,15 @@ export function muzzleOffset(hero:HeroId):[number,number] {
   return [(d.muzzle[0]-d.core[0])*w,(d.muzzle[1]-d.core[1])*d.spriteH*.5];
 }
 
-/** Pure, seeded simulation. Coordinates are pixels, y points down, world height 900. No browser dependencies. */
+/** Pure, seeded simulation. Coordinates are pixels, y points down, world height HEIGHT. No browser dependencies. */
 export class Engine {
   state:GameState;
   readonly ctx:Ctx;
   private rs=42;
   private seed0=42;
   private nextId=1;
-  private worldW=1600;
+  private worldW=1280;
+  private dropCount=0;
   private waveIndex=0;
   private pending:{at:number;run:()=>void}[]=[];
   private clears:{x:number;y:number;r:number;gold:boolean}[]=[];
@@ -57,7 +63,7 @@ export class Engine {
     this.ctx=this.makeCtx();
   }
   seed(n:number):void {this.seed0=(n>>>0)||42;this.rs=this.seed0;}
-  setWorld(w:number):void {this.worldW=clamp(Math.round(w),1300,1900);this.state.worldW=this.worldW;}
+  setWorld(w:number):void {this.worldW=clamp(Math.round(w),1040,1520);this.state.worldW=this.worldW;}
   get W():number {return this.state.worldW;}
   get stageDef() {return STAGES[this.state.stage];}
   private random():number {
@@ -65,7 +71,9 @@ export class Engine {
     a=Math.imul(a^(a>>>15),a|1);a^=a+Math.imul(a^(a>>>7),a|61);
     return ((a^(a>>>14))>>>0)/4294967296;
   }
-  private hardness():number {const s=this.state;return s.difficulty==='story'?.8+s.stage*.03:1+s.stage*.05;}
+  /** 0 on the first chapter, 1 on the last, whatever the chapter count. */
+  private depth():number {return this.state.stage/Math.max(1,STAGES.length-1);}
+  private hardness():number {const s=this.state,f=this.depth();return s.difficulty==='story'?.8+f*.08:1+f*.1;}
   private empty(hero:HeroId,difficulty:Difficulty,stage:number):GameState {
     const hp=difficulty==='story'?5:3;
     return {phase:'playing',hero,difficulty,time:0,score:0,combo:0,comboTimer:0,graze:0,stage,stageTime:0,startStage:stage,
@@ -77,7 +85,7 @@ export class Engine {
   }
   /** Arcade always starts at chapter one; practice may start at any chapter. */
   start(hero:HeroId,difficulty:Difficulty,stage=0):void {
-    this.rs=this.seed0;this.nextId=1;this.wasCharge=false;this.wasUlt=false;this.wasDash=false;this.pierceHits.clear();
+    this.rs=this.seed0;this.nextId=1;this.dropCount=0;this.wasCharge=false;this.wasUlt=false;this.wasDash=false;this.pierceHits.clear();
     const first=difficulty==='normal'?0:clamp(stage|0,0,STAGES.length-1);
     this.state=this.empty(hero,difficulty,first);
     this.beginStage(first);
@@ -110,7 +118,7 @@ export class Engine {
     if(!s.bossActive&&!s.bossDefeated&&s.stageTime>=st.bossAt)this.spawnBoss();
   }
   private spawnBoss():void {
-    const s=this.state,def=this.stageDef.boss,hp=ENEMIES[def.kind].hp*(s.difficulty==='story'?.75:1);
+    const s=this.state,def=this.stageDef.boss,hp=Math.round(BOSS_DPS*bossSeconds(def)*(s.difficulty==='story'?.75:1));
     const e=this.spawnEnemy(def.kind,this.W+330,HEIGHT/2,{type:'boss',speed:0});
     e.hp=e.maxHp=hp;e.boss=true;e.shield=2.6;e.tx=this.W-270;e.ty=HEIGHT/2;
     s.bossActive=true;s.bossName=def.name;s.bossTitle=def.title;s.bossPhases=def.phases.length;s.attackName=def.phases[0].attacks[0].name;s.attackTime=0;
@@ -157,8 +165,8 @@ export class Engine {
   }
   private spawnEnemy(kind:EnemyKind,x:number,y:number,path:EnemyPath,o:{fire?:FirePattern;hp?:number;tint?:string;drop?:Enemy['drop'];mid?:boolean;scale?:number}={}):Enemy {
     const s=this.state,def=ENEMIES[kind];
-    const hp=(o.hp??def.hp)*(s.difficulty==='story'?.8:1)*(1+s.stage*.12);
-    const e:Enemy={id:this.nextId++,kind,x,y,vx:0,vy:0,hp,maxHp:hp,age:0,shotTimer:o.fire?.delay??1,flash:0,seed:this.random()*TAU,
+    const hp=(o.hp??def.hp)*(s.difficulty==='story'?.8:1)*(1+this.depth()*.35);
+    const e:Enemy={id:this.nextId++,kind,x,y,vx:0,vy:0,hp,maxHp:hp,age:0,shotTimer:(o.fire?.delay??1)*.6,flash:0,seed:this.random()*TAU,
       tint:o.tint??'#ffffff',boss:false,mid:!!o.mid,scale:o.scale??1,path:{...path,sx:path.sx??x,sy:path.sy??y},fire:o.fire,fireCount:0,drop:o.drop,
       phase:0,attack:0,attackTime:0,tx:x,ty:y,shield:0,spin:0};
     s.enemies.push(e);return e;
@@ -197,7 +205,7 @@ export class Engine {
     const s=this.state,p=s.player;
     p.perfectThisDash=true;s.stats.perfects++;p.dashCharges=Math.min(DASH_MAX,p.dashCharges+1);
     s.slow=Math.max(s.slow,.5);this.gainGauge(14);this.addScore(2000+500*s.stage);
-    this.clears.push({x:p.x,y:p.y,r:140,gold:true});
+    this.clears.push({x:p.x,y:p.y,r:100,gold:true});
     this.event({kind:'perfect',x:p.x,y:p.y,text:'완벽 회피!'});
   }
   private flushClears():void {
@@ -219,7 +227,7 @@ export class Engine {
     const s=this.state,p=s.player;
     if(p.invulnerable>0||p.dashIframes>0||p.ultimateTimer>0||s.phase!=='playing'||s.clearTimer>0||s.transition>0)return;
     p.hp--;p.invulnerable=2.4;p.power=Math.max(1,p.power-1);p.charge=0;s.combo=0;s.comboTimer=0;s.stats.damageTaken++;this.stageHits++;
-    this.clears.push({x:p.x,y:p.y,r:320,gold:false});
+    this.clears.push({x:p.x,y:p.y,r:220,gold:false});
     this.gainGauge(60);s.hitstop=.2;
     this.event({kind:'hurt',x:p.x,y:p.y,value:p.hp});
     if(p.hp<=0){s.phase='gameover';this.event({kind:'gameover',x:p.x,y:p.y,value:s.score});}
@@ -255,9 +263,10 @@ export class Engine {
     this.gainGauge(e.boss?0:big?4:.8);
     this.event({kind:'kill',x:e.x,y:e.y,value,enemy:e.kind,big,text:near?'근접 ×1.5':undefined});
     if(e.boss){this.bossDefeated(e);return;}
+    this.dropCount++;
     if(e.drop)this.drop(e.drop,e.x,e.y);
-    else if(s.stats.kills%13===0)this.drop(s.player.power<4?'power':'gauge',e.x,e.y);
-    else if(s.stats.kills%29===0)this.drop('gauge',e.x,e.y);
+    else if(this.dropCount%13===0)this.drop(s.player.power<4?'power':'gauge',e.x,e.y);
+    else if(this.dropCount%29===0)this.drop('gauge',e.x,e.y);
     else this.drop('gold',e.x,e.y);
     if(big)s.hitstop=Math.max(s.hitstop,e.mid?.14:.05);
     if(e.mid)this.clears.push({x:0,y:0,r:-1,gold:true});
@@ -434,7 +443,7 @@ export class Engine {
         if(e.age<.6)e.x-=path.speed*g;
         else {
           if(!e.attack){e.attack=1;e.spin=Math.atan2(p.y-e.y,p.x-e.x);e.vx=path.speed;}
-          e.vx=Math.min(900,e.vx+1100*g);e.x+=Math.cos(e.spin)*e.vx*g;e.y+=Math.sin(e.spin)*e.vx*g;
+          e.vx=Math.min(760,e.vx+1000*g);e.x+=Math.cos(e.spin)*e.vx*g;e.y+=Math.sin(e.spin)*e.vx*g;
         }
       }else this.updateBoss(e,g);
       if(s.phase!=='playing')return;
@@ -448,14 +457,16 @@ export class Engine {
       }
       const circles=hitCircles(e);
       if(canHit&&!(e.boss&&e.age<2.2))for(const [cx,cy,r] of circles)if(d2(cx,cy,p.x,p.y)<(r*(e.boss?.85:.72)+PLAYER_R)**2){this.hurt();break;}
-      if(p.nearTimer<=0&&e.hp>0&&s.enemies.includes(e)) {
-        const reach=s.hero==='ryu'?185:140;
+      if(p.nearTimer<=0&&e.hp>0&&s.enemies.includes(e)&&s.clearTimer<=0) {
+        const reach=MELEE_REACH[s.hero];
         const c=circles.find(([cx,cy,r])=>cx-r-p.x>-30&&cx-r-p.x<reach&&Math.abs(cy-p.y)<70+r*.6);
         if(c) {
-          p.nearTimer=s.hero==='ryu'?.15:.3;
-          const dmg=(s.hero==='ryu'?46:28)*(e.boss?.5:1);
-          this.event({kind:'near',x:c[0]-c[2]*.5,y:c[1],value:dmg});
-          this.damageEnemy(e,dmg,true,c[0]-c[2]*.5,c[1]);
+          p.nearTimer=s.hero==='ryu'?.16:s.hero==='golem'?.32:.24;
+          const dmg=(s.hero==='ryu'?46:s.hero==='golem'?60:30)*(e.boss?.5:1);
+          const hx=Math.max(p.x+40,c[0]-c[2]*.5),hy=clamp(c[1],p.y-70,p.y+70);
+          this.clears.push({x:hx,y:hy,r:MELEE_CANCEL,gold:true});
+          this.event({kind:'near',x:hx,y:hy,value:dmg});
+          this.damageEnemy(e,dmg,true,hx,hy);
         }
       }
     }
@@ -554,7 +565,7 @@ export class Engine {
     const s=this.state,p=s.player;
     if(it.kind==='gold'){this.addScore(60+20*s.stage);this.event({kind:'pickup',x:it.x,y:it.y,enemy:undefined,value:60+20*s.stage});return;}
     let text='';
-    if(it.kind==='power'){if(p.power<4){p.power++;text=`사격 강화 LV ${p.power}`;}else{this.addScore(5000);text='+5,000';}}
+    if(it.kind==='power'){if(p.power<4){p.power++;text=`사격 강화 ${p.power}단`;}else{this.addScore(5000);text='+5,000';}}
     else if(it.kind==='gauge'){this.gainGauge(35);text='필살 게이지 +35';}
     else {p.hp=Math.min(9,p.hp+1);p.maxHp=Math.max(p.maxHp,p.hp);text='목숨 +1';}
     this.event({kind:'pickup',x:it.x,y:it.y,text,big:true});
@@ -565,9 +576,9 @@ export class Engine {
     dt=Math.min(dt,.05);
     if(s.hitstop>0){s.hitstop=Math.max(0,s.hitstop-dt);return;}
     s.time+=dt;
-    const g=dt*(s.slow>0?.33:1);s.slow=Math.max(0,s.slow-dt);
-    s.comboTimer=Math.max(0,s.comboTimer-g);if(s.comboTimer===0)s.combo=0;
-    this.updatePlayer(dt,g,input);
+    const pg=dt*(s.slow>0?.33:1),g=pg*TEMPO;s.slow=Math.max(0,s.slow-dt);
+    s.comboTimer=Math.max(0,s.comboTimer-pg);if(s.comboTimer===0)s.combo=0;
+    this.updatePlayer(dt,pg,input);
     if(s.phase!=='playing')return;
     this.updateStage(g,dt);
     if(s.phase!=='playing')return;
@@ -575,8 +586,8 @@ export class Engine {
     if(s.phase!=='playing')return;
     this.updateBullets(g);
     this.updateLasers(g);
-    this.updateShots(g);
-    this.updatePickups(g);
+    this.updateShots(pg);
+    this.updatePickups(pg);
     this.flushClears();
   }
 }

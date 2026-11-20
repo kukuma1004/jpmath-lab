@@ -3,7 +3,7 @@ import { ENEMIES, HEIGHT, HEROES, PLAYER_R, GRAZE_R, heroDef, type EnemyKind, ty
 import { STAGES, type StageDef } from './stages';
 import { hitCircles, muzzleOffset, ULT_TIME } from './engine';
 
-const H=HEIGHT, TAU=Math.PI*2;
+const H=HEIGHT, TAU=Math.PI*2, S=HEIGHT/900;
 const Y=(y:number)=>H-y;
 const colorCache=new Map<string,THREE.Color>();
 /** Shared colour per hex string: never mutate the returned object. */
@@ -148,8 +148,8 @@ export class GameRenderer {
   private lightning=0;
   private elapsed=0;
   private lastPlayer={x:0,y:0,vy:0};
-  private nearLife=0;
-  private nearPos={x:0,y:0};
+  private swings:{x:number;y:number;life:number;max:number;a:number;n:number}[]=[];
+  private lunge=0;
   private foreTimer=3;
   private foreX=-999;
   private frameTimes:number[]=[];
@@ -189,14 +189,16 @@ export class GameRenderer {
     const boltShot=canvasTexture(128,32,c=>{const gr=c.createLinearGradient(0,0,128,0);gr.addColorStop(0,'#ffffff00');gr.addColorStop(.4,'#ffffffaa');gr.addColorStop(1,'#ffffff');c.fillStyle=gr;c.fillRect(0,8,128,16);c.fillStyle='#ffffff';c.fillRect(40,13,88,6);});
     const wave=canvasTexture(96,96,c=>{c.strokeStyle='#ffffff';c.lineCap='round';c.lineWidth=12;c.beginPath();c.arc(20,48,46,-1.05,1.05);c.stroke();c.strokeStyle='#ffffff66';c.lineWidth=26;c.stroke();});
     const coin=canvasTexture(64,64,c=>{ellipse(c,32,32,24,24,'#f2c35a','#5a3d1c',4);ellipse(c,32,32,15,15,'#ffe39a');poly(c,[[32,20],[44,32],[32,44],[20,32]],'#b77b2d');});
-    const power=canvasTexture(96,96,c=>{poly(c,[[48,5],[85,26],[85,68],[48,91],[11,68],[11,26]],'#ff8a57');poly(c,[[48,14],[77,30],[77,64],[48,82],[19,64],[19,30]],'#ffe1a0');c.font='bold 48px Georgia';c.textAlign='center';c.fillStyle='#7a2d1c';c.fillText('P',48,65);});
-    const gauge=canvasTexture(96,96,c=>{ellipse(c,48,48,40,40,radial(c,48,48,42,[[0,'#ffffff'],[.4,'#8fe9ff'],[1,'#2a6fd6']]),'#e6fbff',4);c.font='bold 40px serif';c.textAlign='center';c.fillStyle='#103a6b';c.fillText('必',48,62);});
+    const power=canvasTexture(96,96,c=>{poly(c,[[48,5],[85,26],[85,68],[48,91],[11,68],[11,26]],'#ff8a57');poly(c,[[48,14],[77,30],[77,64],[48,82],[19,64],[19,30]],'#ffe1a0');c.font='bold 40px sans-serif';c.textAlign='center';c.fillStyle='#7a2d1c';c.fillText('힘',48,62);});
+    const gauge=canvasTexture(96,96,c=>{ellipse(c,48,48,40,40,radial(c,48,48,42,[[0,'#ffffff'],[.4,'#8fe9ff'],[1,'#2a6fd6']]),'#e6fbff',4);c.font='bold 38px sans-serif';c.textAlign='center';c.fillStyle='#103a6b';c.fillText('필',48,61);});
     const life=canvasTexture(96,96,c=>{poly(c,[[48,8],[88,48],[48,88],[8,48]],'#5ff0a8');poly(c,[[48,22],[74,48],[48,74],[22,48]],'#e8fff2');});
     const flower=canvasTexture(256,256,c=>{c.translate(128,128);for(let i=0;i<8;i++){c.save();c.rotate(i/8*TAU);c.beginPath();c.moveTo(0,10);c.bezierCurveTo(-60,40,-40,110,0,120);c.bezierCurveTo(40,110,60,40,0,10);c.fillStyle='#ffffff55';c.fill();c.strokeStyle='#ffffffcc';c.lineWidth=3;c.stroke();c.restore();}ellipse(c,0,0,22,22,'#ffffffee');});
     const mandala=canvasTexture(1024,1024,c=>{c.translate(512,512);for(let i=0;i<12;i++){c.save();c.rotate(i/12*TAU);c.beginPath();c.moveTo(0,25);c.bezierCurveTo(-180,100,-110,330,0,490);c.bezierCurveTo(110,330,180,100,0,25);c.fillStyle='#ffffff12';c.fill();c.strokeStyle='#ffffffaa';c.lineWidth=4;c.stroke();c.restore();}for(const r of [150,270,300])ellipse(c,0,0,r,r,'#00000000','#ffffff77',3);});
     const coreDot=canvasTexture(64,64,c=>{ellipse(c,32,32,26,26,'#ffffff','#10131c',5);});
     const coreRing=canvasTexture(128,128,c=>{c.strokeStyle='#ffffff';c.lineWidth=6;for(let i=0;i<4;i++){c.beginPath();c.arc(64,64,52,i*TAU/4+.25,i*TAU/4+TAU/4-.25);c.stroke();}});
     const hitRing=canvasTexture(128,128,c=>{c.strokeStyle='#ffffff';c.lineWidth=3;c.beginPath();c.arc(64,64,61,0,TAU);c.stroke();});
+    // Melee swing: a crescent that opens to the right.
+    const slash=canvasTexture(256,256,c=>{c.beginPath();c.arc(70,128,118,-1.2,1.2);c.arc(36,128,104,1.02,-1.02,true);c.closePath();const gr=c.createLinearGradient(0,0,256,0);gr.addColorStop(0,'#ffffff00');gr.addColorStop(.5,'#ffffff88');gr.addColorStop(1,'#ffffff');c.fillStyle=gr;c.fill();});
     this.b={
       streak:new Batch(s,g,streak,90,-5,true),
       weatherBack:new Batch(s,g,soft,160,-9,true),
@@ -212,6 +214,7 @@ export class GameRenderer {
       ultBeamGlow:new Batch(s,g,beamGlow,6,20,true),ultBeamCore:new Batch(s,g,beamCore,4,20,true),
       coreGlow:new Batch(s,g,soft,2,23,true),coreRing:new Batch(s,g,coreRing,2,24,true),coreDot:new Batch(s,g,coreDot,2,25,false),grazeRing:new Batch(s,g,hitRing,2,23,true),
       debug:new Batch(s,g,hitRing,900,40,false),
+      slash:new Batch(s,g,slash,40,21,true),slashCore:new Batch(s,g,slash,40,22,true),
     };
     this.sky=this.mesh(null,-20);
     this.bg=this.mesh(null,-18);
@@ -288,10 +291,10 @@ export class GameRenderer {
       const bottom=toBottom?Math.min(b-10,Y(top)-height):Y(top)-height;const hh=Y(top)-bottom;m.position.set(cx,bottom+hh/2,0);m.scale.set(cw+20,hh,1);
       const map=m.material.map;if(map){map.repeat.set((cw+20)/tileW,1);map.offset.x=(this.scroll*factor)/tileW%1;}
     };
-    layer(this.layers.far,240,520,.09,2048);
-    layer(this.layers.mid,500,420,.32,1900);
-    layer(this.layers.near,640,300,1,1500,true);
-    this.fog.position.set(cx,Y(560),0);this.fog.scale.set(cw+20,560,1);
+    layer(this.layers.far,240*S,520*S,.09,2048*S);
+    layer(this.layers.mid,500*S,420*S,.32,1900*S);
+    layer(this.layers.near,640*S,300*S,1,1500*S,true);
+    this.fog.position.set(cx,Y(560*S),0);this.fog.scale.set(cw+20,560*S,1);
   }
 
   private add(kind:keyof GameRenderer['particles'],p:Partial<Particle>&{x:number;y:number}) {
@@ -328,7 +331,15 @@ export class GameRenderer {
       case 'perfect':this.add('ring',{x:e.x,y:e.y,life:.5,size:30,grow:420,color:col('#9ffcff')});this.add('ring',{x:e.x,y:e.y,life:.35,size:20,grow:240,color:WHITE});this.flash=.25;this.flashColor.set('#7fe9ff');break;
       case 'dash':this.ghostData.push({x:e.x,y:e.y,life:.25});for(let i=0;i<10;i++)this.add('spark',{x:e.x,y:e.y,vx:-Math.cos(e.value??0)*(200+Math.random()*300),vy:-Math.sin(e.value??0)*(200+Math.random()*300)+(Math.random()-.5)*120,life:.25,size:10,color:hc,stretch:3});break;
       case 'charge':this.add('flash',{x:e.x,y:e.y,life:.2,size:80,grow:200,color:hc});this.shake=Math.max(this.shake,4);break;
-      case 'near':this.nearLife=.16;this.nearPos={x:e.x,y:e.y};for(let i=0;i<6;i++)this.add('spark',{x:e.x,y:e.y,vx:200+Math.random()*300,vy:(Math.random()-.5)*400,life:.16,size:14,color:hc,stretch:2});break;
+      case 'near':{
+        // Each hero swings differently: a fan sweep, an iron fist, a flurry of thunder punches.
+        this.lunge=1;this.shake=Math.max(this.shake,state.hero==='golem'?7:4);
+        const n=state.hero==='ryu'?3:1;
+        for(let i=0;i<n;i++)this.swings.push({x:e.x+i*26,y:e.y+(i-1)*26*(n>1?1:0),life:.2+i*.05,max:.2+i*.05,a:(Math.random()-.5)*.5+(state.hero==='rin'?-.3:0),n:i});
+        this.add('flash',{x:e.x,y:e.y,life:.14,size:state.hero==='golem'?160:110,grow:120,color:col(hero.glow)});
+        if(state.hero==='golem')this.add('ring',{x:e.x,y:e.y,life:.3,size:40,grow:260,color:hc});
+        for(let i=0;i<12;i++)this.add('spark',{x:e.x,y:e.y,vx:150+Math.random()*420,vy:(Math.random()-.5)*480,life:.3,size:state.hero==='rin'?16:12,color:i%3?hc:WHITE,stretch:2.4,drag:3});
+        break;}
       case 'cancel':if((e.value??0)>12&&state.player.ultimateTimer<=0){this.flash=Math.max(this.flash,.16);this.flashColor.set('#fff4c6');}break;
       case 'phase':this.flash=.5;this.flashColor.set('#ffffff');this.shake=10;this.add('ring',{x:e.x,y:e.y,life:.7,size:60,grow:1400,color:col(st.accent)});break;
       case 'ultimate':
@@ -365,7 +376,8 @@ export class GameRenderer {
     // Speed streaks and weather.
     const sp=st.scroll*speedMul;
     for(let i=0;i<70;i++){const k=(i*7919)%1000/1000,y=((i*331)%H),len=80+k*220,x=r-((t*sp*(1.6+k*1.6)+i*397)%(cw+len*2))+len;
-      this.b.streak.push(x,y,len,3+k*2,0,col(st.light),(.05+k*.12)*(p.dashTime>0||p.ultimateTimer>0?2.2:1)*(active?1:.6));}
+      const burst=p.dashTime>0||p.ultimateTimer>0||state.transition>0;if(!burst&&i%5)continue;
+      this.b.streak.push(x,y,len,3+k*2,0,col(st.light),(.03+k*.06)*(burst?3:1)*(active?1:.6));}
     this.b.streak.end();
     const wt=st.weather;let wn=0;
     for(let i=0;i<110;i++){
@@ -447,7 +459,8 @@ export class GameRenderer {
       if(this.hero.material.map!==ht){this.hero.material.map=ht;this.hero.material.needsUpdate=true;}
       const img=ht.image as HTMLImageElement,hh=hero.spriteH,ww=hh*img.width/img.height;
       const vy=dt>0?(p.y-this.lastPlayer.y)/dt:0;this.lastPlayer.vy+=(vy-this.lastPlayer.vy)*Math.min(1,dt*10);
-      const sx=p.x+(.5-hero.core[0])*ww,sy=p.y+(.5-hero.core[1])*hh+Math.sin(t*5)*2;
+      this.lunge=Math.max(0,this.lunge-raw*7);
+      const sx=p.x+(.5-hero.core[0])*ww+Math.sin(this.lunge*Math.PI)*16,sy=p.y+(.5-hero.core[1])*hh+Math.sin(t*5)*2;
       this.hero.position.set(sx,Y(sy),0);this.hero.scale.set(ww,hh,1);this.hero.rotation.z=-Math.max(-.18,Math.min(.18,this.lastPlayer.vy/2600));
       this.hero.material.opacity=p.invulnerable>0&&p.ultimateTimer<=0&&state.clearTimer<=0&&state.transition<=0?(Math.sin(t*30)>0?.35:.9):1;
       this.hero.material.color.set(p.dashIframes>0?'#ffffff':'#ffffff').multiplyScalar(p.dashIframes>0?1.6:1);
@@ -513,8 +526,11 @@ export class GameRenderer {
     step(this.particles.spark,this.b.spark,'spark');step(this.particles.smoke,this.b.smoke,'smoke');step(this.particles.flash,this.b.flash,'flash');
     step(this.particles.ring,this.b.ring,'ring');step(this.particles.petal,this.b.petal,'petal');
 
-    // Melee slash
-    if(this.nearLife>0){this.nearLife-=dt;const k=this.nearLife/.16;this.b.ring.push(this.nearPos.x-20,this.nearPos.y,140*(1.4-k*.4),140*(1.4-k*.4),0,hc,k);this.b.ring.end();}
+    // Melee swings
+    for(let i=this.swings.length-1;i>=0;i--){const w=this.swings[i];w.life-=raw;if(w.life<=0){this.swings.splice(i,1);continue;}
+      const k=w.life/w.max,size=(state.hero==='golem'?190:state.hero==='ryu'?120:230)*(1.15-k*.35);
+      this.b.slash.push(w.x-20+(1-k)*30,w.y,size,size*1.15,w.a,hc,k);this.b.slashCore.push(w.x-14+(1-k)*30,w.y,size*.8,size*.92,w.a,col(hero.glow),k);}
+    this.b.slash.end();this.b.slashCore.end();
 
     // Debug: draw every collision shape so hit positions can be verified against the art.
     if(this.showHitboxes){

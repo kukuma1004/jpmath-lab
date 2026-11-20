@@ -141,8 +141,8 @@ kbd{font:inherit;font-size:.82em;border:1px solid #ffffff38;border-bottom-width:
 .mode{display:flex;border:1px solid #ffffff26}
 .mode button{padding:.55em 1em;text-align:left;color:#cbbda3;min-height:44px}.mode button small{display:block;font-size:.72em;color:#8d8370}
 .mode button.active{background:#f0d8ae;color:#22170d}.mode button.active small{color:#5c4730}
-.chapters{display:flex;gap:4px}.chapters button{width:3.3em;min-height:44px;border:1px solid #ffffff22;color:#d9c8aa;background:#0d0f16a0;display:grid;place-items:center;line-height:1.1}
-.chapters button span{font-family:var(--serif);font-size:1.05em}.chapters button small{font-size:.58em;color:#988b74}
+.chapters{display:flex;gap:4px}.chapters button{min-width:4.4em;padding:0 .45em;white-space:nowrap;min-height:44px;border:1px solid #ffffff22;color:#d9c8aa;background:#0d0f16a0;display:grid;place-items:center;line-height:1.1}
+.chapters button span{font-family:var(--serif);font-size:.95em}.chapters button small{font-size:.58em;color:#988b74}
 .chapters button.active{border-color:var(--gold);background:#3a3024;color:#fff}.chapters.locked button:not(.active){opacity:.3}
 .start{display:flex;align-items:center;gap:.8em;height:clamp(48px,8vh,64px);padding:0 2em;background:var(--accent);color:#1b0f0b;font-weight:900;font-size:1.25em;letter-spacing:.2em;box-shadow:0 6px 30px color-mix(in srgb,var(--accent) 45%,transparent)}
 .start:not(:disabled):hover{filter:brightness(1.08);transform:translateY(-1px)}
@@ -192,5 +192,6 @@ dialog::backdrop{background:#05060acc;backdrop-filter:blur(3px)}
   .hero-card{height:clamp(110px,38vh,200px)}
   .title-block h1{font-size:clamp(26px,10vh,52px)}.seal{font-size:13px}
   .hud-left{gap:3px}.boss-hud{top:calc(2.9em + var(--safe-t));width:min(46vw,520px)}
+  .touch-device .graze-chip{display:none}
   .ultimate-cut img{height:140%}
 }
