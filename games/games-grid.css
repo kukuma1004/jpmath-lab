@@ -1,0 +1,20 @@
+/* Game room grid: three cards per row on wide screens, two on tablets, one on phones.
+   Loaded after every card stylesheet so the compact card layout wins over the old wide cards. */
+main{max-width:1280px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:26px 22px;align-items:stretch}
+main>:not(.game-card){grid-column:1/-1}
+.game-card+.game-card{margin-top:0}
+.game-card{display:flex;flex-direction:column;border-radius:10px;transition:transform .18s ease,box-shadow .18s ease}
+.game-card:hover{transform:translateY(-3px);box-shadow:0 14px 30px #0e242533}
+.game-card .game-image{min-height:0;aspect-ratio:3/2;flex:none}
+.game-card .game-copy{display:flex;flex-direction:column;flex:1;align-self:stretch;padding:18px 20px 20px}
+.game-card .game-copy h2{font-family:"Malgun Gothic",sans-serif;font-size:25px;font-weight:700;letter-spacing:-.03em;line-height:1.25;margin:10px 0 6px}
+.game-card .game-copy h2 small{display:block;font-size:12px;letter-spacing:0;line-height:1.5;margin-top:5px}
+.game-card .game-number{margin-top:12px}
+.game-card .game-copy>p:not(.game-number):not(.device-note){font-size:13px;line-height:1.72;margin:6px 0 16px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.game-card .play-button{margin-top:auto;min-height:46px;padding:12px 16px}
+.game-card .device-note{margin:10px 0 0;min-height:3.4em}
+.games-intro{margin-bottom:24px}
+.controls{margin-top:34px}
+@media(max-width:1020px){main{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){main{grid-template-columns:minmax(0,1fr);gap:20px}.game-card .game-copy h2{font-size:24px}}
+@media(prefers-reduced-motion:reduce){.game-card{transition:none}.game-card:hover{transform:none}}
