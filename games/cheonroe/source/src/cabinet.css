@@ -1,0 +1,22 @@
+#arena{container-type:inline-size;container-name:cabinet}
+.touch-device .touch-controls{display:flex;align-items:center;gap:9px;padding:10px 12px;border-top:1px solid #ffffff12;background:#191e24;touch-action:none}
+.touch-device .touch-guide{display:flex;align-items:center;gap:8px;margin-right:auto;font-size:9px;line-height:1.4;color:#c2b8a9}
+.touch-device .touch-guide small{display:block;font-size:7px;color:#7e817e;margin-top:3px}
+.touch-device .drag-symbol{font-size:26px;color:#a58f71}
+.touch-device .touch-action{border:1px solid #756650;min-width:54px;height:46px;font-size:10px;padding:4px 9px;background:#242a30;touch-action:none}
+.touch-device .touch-action small{display:block;font-size:6px;margin-top:4px;color:#a89b89}
+.touch-device .touch-action.pressed,.touch-device .touch-action[aria-pressed=true]{background:#5c5140;border-color:#dcc08f}
+.touch-device .ultimate-touch{background:#743b35;border-color:#b87054}
+.touch-device .control-strip{display:none!important}
+@container cabinet (max-width:600px){
+ .stage-title{display:none}.game-top{padding-inline:10px;gap:9px}.pilot{min-width:0;gap:7px}.pilot-symbol{width:28px;height:32px;line-height:29px;font-size:17px;flex-shrink:0}.pilot .micro{font-size:7px;letter-spacing:0;display:block;max-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.weapon-level{font-size:7px;margin-left:0;padding:3px;white-space:nowrap}.score-cluster{min-width:0;gap:8px}.score-cluster>.micro{font-size:6px}.score-cluster b{font-size:15px;letter-spacing:1px}.score-cluster>div{gap:0}.score-cluster .icon-btn{width:25px}.score-cluster .icon-btn svg{width:17px}.life{font-size:13px}.lives{gap:3px}
+ .game-bottom{padding-inline:10px;gap:13px}.ultimate-status{flex-direction:column;align-items:flex-start;gap:1px}.ultimate-status>.micro{font-size:7px;letter-spacing:0;white-space:nowrap}.stocks{gap:4px}.stock{font-size:22px}.charge-cluster{min-width:70px;max-width:140px}.charge-cluster .micro{font-size:6px;letter-spacing:0;white-space:nowrap}.graze-status{min-width:45px}.graze-status .micro{font-size:7px;letter-spacing:0}.graze-status small{display:none}
+ .boss-hud{left:28%;right:4%;top:7px}.boss-hud strong{font-size:7px;letter-spacing:0}.boss-hud span{font-size:7px;letter-spacing:0}.boss-hud span:first-child{display:none}.boss-track{height:4px}
+ .result-panel h2{font-size:20px;letter-spacing:0}.result-panel>p:not(.eyebrow){font-size:8px;margin-block:8px 12px}.result-panel .eyebrow{font-size:7px}.result-stats{padding-block:7px;margin-bottom:12px}.result-stats span{font-size:6px}.result-stats strong{font-size:16px}.result-panel .primary{height:38px;font-size:10px}.result-panel .text-btn{font-size:8px;margin-top:5px}
+ .touch-controls{gap:7px;padding:8px 10px}.touch-guide{font-size:8px;gap:5px}.touch-guide small{font-size:6px}.drag-symbol{font-size:20px}.touch-action{min-width:49px;height:44px;font-size:9px;padding-inline:7px}.touch-action small{font-size:5px}
+ .stage-intro{left:12%;right:12%;top:29%}.stage-intro small{font-size:6px;letter-spacing:3px}.stage-intro h2{font-size:22px;letter-spacing:3px;margin:8px 0}.stage-intro span{font-size:7px;letter-spacing:2px}
+ .ultimate-cut{height:38%;top:30%;min-height:0;gap:10px}.ultimate-cut small{font-size:5px;letter-spacing:2px;margin-bottom:5px}.ultimate-cut strong{font-size:27px;letter-spacing:3px}.ultimate-cut span{font-size:5px;margin-top:6px;letter-spacing:1px}
+}
+@media(max-height:580px) and (orientation:landscape){
+ .touch-device.in-game .masthead{display:none}.touch-device.in-game #game{padding-top:0;max-width:min(100%,calc((100dvh - 149px)*16/9))}.touch-device .shell{padding-inline:0}.touch-device .game-top{height:44px}.touch-device .game-bottom{height:43px}.touch-device .touch-controls{padding-block:7px}.touch-device .touch-action{height:44px}
+}

@@ -1,0 +1,27 @@
+{
+  "cheonroeV1": {
+    "$season": {
+      "$difficulty": {
+        "$hero": {
+          ".read": "$season == 'season-20261120-1' && ($difficulty == 'normal' || $difficulty == 'story') && ($hero == 'rin' || $hero == 'golem' || $hero == 'ryu') && query.orderByChild == 'score' && query.limitToLast != null && query.limitToLast >= 1 && query.limitToLast <= 100",
+          ".indexOn": ["score"],
+          "$uid": {
+            ".read": "auth != null && $uid == auth.uid && $season == 'season-20261120-1' && ($difficulty == 'normal' || $difficulty == 'story') && ($hero == 'rin' || $hero == 'golem' || $hero == 'ryu')",
+            ".write": "auth != null && $uid == auth.uid && $season == 'season-20261120-1' && ($difficulty == 'normal' || $difficulty == 'story') && ($hero == 'rin' || $hero == 'golem' || $hero == 'ryu') && (!newData.exists() || ((!data.exists() || now - data.child('submittedAt').val() >= 10000) && (!data.exists() || newData.child('score').val() > data.child('score').val() || (newData.child('score').val() == data.child('score').val() && newData.child('hero').val() == data.child('hero').val() && newData.child('difficulty').val() == data.child('difficulty').val() && newData.child('durationMs').val() == data.child('durationMs').val() && newData.child('kills').val() == data.child('kills').val() && newData.child('graze').val() == data.child('graze').val() && newData.child('cleared').val() == data.child('cleared').val()))))",
+            ".validate": "newData.hasChildren(['nickname','hero','difficulty','score','durationMs','kills','graze','cleared','submittedAt'])",
+            "nickname": { ".validate": "newData.isString() && newData.val().matches(/^[가-힣ㄱ-ㅎㅏ-ㅣA-Za-z0-9 _.-]{1,12}$/) && newData.val().matches(/.*[^ ].*/)" },
+            "hero": { ".validate": "newData.isString() && newData.val() == $hero" },
+            "difficulty": { ".validate": "newData.isString() && newData.val() == $difficulty" },
+            "score": { ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 1 && newData.val() <= 9999999" },
+            "durationMs": { ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 10000 && newData.val() <= 3600000" },
+            "kills": { ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= 1000" },
+            "graze": { ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= 100000" },
+            "cleared": { ".validate": "newData.isBoolean()" },
+            "submittedAt": { ".validate": "newData.isNumber() && newData.val() == now" },
+            "$other": { ".validate": false }
+          }
+        }
+      }
+    }
+  }
+}
