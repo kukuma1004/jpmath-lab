@@ -5,7 +5,8 @@ const Forge = (() => {
   const backupKey = legacySaveKey + ':before-infinite';
   const seasonId = 'season-20261120-1';
   // Isolate the season from older tabs that still write the previous save format.
-  const saveKey = legacySaveKey + ':' + seasonId;
+  const previousSaveKey = legacySaveKey + ':' + seasonId;
+  const saveKey = previousSaveKey + ':market-1';
   const startingShards = 10000n;
   const cooldown = 680;
   const offlineLimit = 8 * 60 * 60 * 1000;
@@ -100,13 +101,21 @@ const Forge = (() => {
       pity[(level + 1n).toString()] = Math.min(9000, Math.floor(old.forgeMisses) * 1200);
     }
     const history = Array.isArray(old.history) ? old.history.filter(entry =>
-      entry && ['success', 'reset', 'shatter', 'reforge', 'enchant', 'enchant-fail'].includes(entry.kind) &&
-      /^\d+$/.test(String(entry.from)) && /^\d+$/.test(String(entry.target)) && Number.isFinite(entry.at)
+      entry && ['success', 'reset', 'shatter', 'reforge', 'enchant', 'enchant-fail', 'protected', 'protection', 'sell'].includes(entry.kind) &&
+      /^\d+$/.test(String(entry.from)) && /^\d+$/.test(String(entry.target)) && Number.isFinite(entry.at) &&
+      (!['protection', 'sell'].includes(entry.kind) || /^\d+$/.test(String(entry.amount)))
     ).slice(0, 12).map(entry => ({
       kind: entry.kind, from: String(entry.from), target: String(entry.target), at: entry.at,
       ...(entry.kind === 'enchant' && enchantments.some(effect => effect.id === entry.enchantment) ? { enchantment: entry.enchantment } : {}),
       ...(entry.kind === 'shatter' && Number.isInteger(entry.lostEffects) && entry.lostEffects >= 0 && entry.lostEffects <= enchantmentLimit ? { lostEffects: entry.lostEffects } : {}),
+      ...(['protection', 'sell'].includes(entry.kind) && /^\d+$/.test(String(entry.amount)) ? { amount: String(entry.amount) } : {}),
     })) : [];
+    const protections = {};
+    if (old.protections && typeof old.protections === 'object') {
+      for (const [target, owned] of Object.entries(old.protections)) {
+        if (/^[1-9]\d*$/.test(target) && owned === true) protections[target] = true;
+      }
+    }
     const savedEffects = !broken && Array.isArray(old.enchantments) ? [...new Set(old.enchantments.filter(id =>
       enchantments.some(entry => entry.id === id)))].slice(0, enchantmentLimit) : [];
     if (!broken && !savedEffects.length) savedEffects.push(enchantments.some(entry => entry.id === old.enchantment) ? old.enchantment :
@@ -121,6 +130,14 @@ const Forge = (() => {
       enchantments: savedEffects,
       shards: natural(old.shards, startingShards),
       broken,
+      sold: broken && old.sold === true,
+      generation: natural(old.generation),
+      protections,
+      rankingBest: validSnapshot(old.rankingBest) ? { level: old.rankingBest.level, value: old.rankingBest.value,
+        effect1: old.rankingBest.effect1, effect2: old.rankingBest.effect2, effect3: old.rankingBest.effect3 } : null,
+      rankBonus: old.rankBonus && Number.isInteger(old.rankBonus.rank) && old.rankBonus.rank >= 1 && old.rankBonus.rank <= 10 &&
+        Number.isFinite(old.rankBonus.since) && old.rankBonus.since >= 0 && old.rankBonus.since <= now &&
+        Number.isFinite(old.rankBonus.until) && old.rankBonus.until >= old.rankBonus.since && old.rankBonus.until <= old.rankBonus.since + 60000 ? { ...old.rankBonus } : null,
       attempts: natural(old.attempts),
       shattered: natural(old.shattered),
       pity,
@@ -155,13 +172,36 @@ const Forge = (() => {
 
   function rankingRecord(state, nickname, weaponName) {
     if (state.broken) throw new Error('검이 깨졌어요. 새 검을 만든 뒤 등록해 주세요.');
-    const value = appraisal(state).value.toString();
-    if (value.length > 512 || state.level.toString().length > 128) throw new Error('이 무기는 랭킹의 표시 범위를 넘었어요. 강화는 계속할 수 있어요.');
+    const snapshot = weaponSnapshot(state);
+    if (!snapshot) throw new Error('이 무기는 랭킹의 표시 범위를 넘었어요. 강화는 계속할 수 있어요.');
     return {
       nickname: rankingName(nickname, 12), weaponName: rankingName(weaponName, 16),
-      level: state.level.toString(), value: value.padStart(512, '0'),
+      ...snapshot,
+    };
+  }
+
+  function weaponSnapshot(state) {
+    if (state.broken) return null;
+    const value = appraisal(state).value.toString();
+    if (value.length > 512 || state.level.toString().length > 128) return null;
+    return { level: state.level.toString(), value: value.padStart(512, '0'),
       effect1: state.enchantments[0], effect2: state.enchantments[1] ?? 'none', effect3: state.enchantments[2] ?? 'none',
     };
+  }
+
+  function validSnapshot(row) {
+    if (!row || typeof row.level !== 'string' || !/^(0|[1-9][0-9]{0,127})$/.test(row.level) ||
+        typeof row.value !== 'string' || !/^[0-9]{512}$/.test(row.value)) return false;
+    const ids = [row.effect1, row.effect2, row.effect3];
+    if (ids[0] === 'none' || (ids[1] === 'none' && ids[2] !== 'none')) return false;
+    const effects = ids.filter(id => id !== 'none');
+    if (new Set(effects).size !== effects.length || effects.some(id => !enchantments.some(effect => effect.id === id))) return false;
+    return appraisal({ level: BigInt(row.level), enchantments: effects, broken: false }).value === BigInt(row.value);
+  }
+
+  function rememberWeapon(state) {
+    const snapshot = weaponSnapshot(state);
+    if (snapshot && (!state.rankingBest || snapshot.value > state.rankingBest.value)) state.rankingBest = snapshot;
   }
 
   function formAt(level) {
@@ -191,9 +231,22 @@ const Forge = (() => {
     return 12n + level ** 3n / 6n + miner * 4n + polish * 2n + echo * 2n;
   }
 
-  function income(state) {
+  function baseIncome(state) {
     const rate = productionBase(state) / 20n;
-    return rate < 2n ? 2n : rate;
+    return (rate < 2n ? 2n : rate) * 2n;
+  }
+
+  function rankReward(rank) {
+    return Number.isInteger(rank) && rank >= 1 && rank <= 10 ? 100n - BigInt(rank - 1) * 5n : 0n;
+  }
+
+  function income(state, now = Date.now()) {
+    const bonus = state.rankBonus;
+    return baseIncome(state) + (bonus && now >= bonus.since && now < bonus.until ? rankReward(bonus.rank) : 0n);
+  }
+
+  function setRankBonus(state, rank, now = Date.now()) {
+    state.rankBonus = rankReward(rank) ? { rank, since: now, until: now + 60000 } : null;
   }
 
   function collectPassive(state, now = Date.now()) {
@@ -203,7 +256,11 @@ const Forge = (() => {
     }
     const elapsed = Math.min(offlineLimit, now - state.paidAt);
     const seconds = Math.floor(elapsed / 1000);
-    const earned = BigInt(seconds) * income(state);
+    const start = now - state.paidAt > offlineLimit ? now - offlineLimit : state.paidAt;
+    const end = start + seconds * 1000;
+    const bonus = state.rankBonus;
+    const eligible = bonus ? Math.max(0, Math.min(end, bonus.until) - Math.max(start, bonus.since)) : 0;
+    const earned = BigInt(seconds) * baseIncome(state) + BigInt(Math.floor(eligible / 1000)) * (bonus ? rankReward(bonus.rank) : 0n);
     state.shards += earned;
     state.paidAt = now - state.paidAt > offlineLimit ? now : state.paidAt + seconds * 1000;
     return earned;
@@ -235,9 +292,11 @@ const Forge = (() => {
   function enchant(state, now = Date.now(), random = Math.random) {
     const offer = enchantPreview(state);
     if (state.broken || offer.full || now - state.lastAt < cooldown || state.shards < offer.cost) return null;
+    rememberWeapon(state);
     const success = Math.floor(random() * 10000) < offer.success;
     const effect = success ? rollEnchantment(random, state.enchantments) : null;
     if (effect) state.enchantments.push(effect);
+    rememberWeapon(state);
     state.shards -= offer.cost;
     state.lastAt = now;
     const event = {
@@ -253,6 +312,7 @@ const Forge = (() => {
     if (now - state.lastAt < cooldown) return null;
     const offer = preview(state);
     if (state.shards < offer.cost) return null;
+    rememberWeapon(state);
     const from = state.level;
     const effectCount = state.enchantments.length;
     let kind;
@@ -261,6 +321,8 @@ const Forge = (() => {
       state.enchantment = rollEnchantment(random);
       state.enchantments = [state.enchantment];
       state.broken = false;
+      state.sold = false;
+      state.generation += 1n;
       state.level = 0n;
     } else {
       const roll = Math.floor(random() * 10000);
@@ -271,9 +333,10 @@ const Forge = (() => {
         if (state.level > state.bestLevel) state.bestLevel = state.level;
         delete state.pity[offer.target.toString()];
       } else {
-        kind = roll < offer.success + offer.reset ? 'reset' : 'shatter';
+        kind = state.protections[offer.target.toString()] ? 'protected' : roll < offer.success + offer.reset ? 'reset' : 'shatter';
         state.pity[offer.target.toString()] = Math.min(9000, (state.pity[offer.target.toString()] ?? 0) + recoveryBonus);
-        state.level = 0n;
+        if (kind === 'protected') delete state.protections[offer.target.toString()];
+        else state.level = 0n;
         state.broken = kind === 'shatter';
         if (state.broken) {
           state.shattered += 1n;
@@ -284,6 +347,7 @@ const Forge = (() => {
     }
     state.shards -= offer.cost;
     state.lastAt = now;
+    rememberWeapon(state);
     const event = { kind, from: from.toString(), target: offer.target.toString(), at: now,
       ...(kind === 'shatter' ? { lostEffects: effectCount } : {}),
     };
@@ -292,7 +356,41 @@ const Forge = (() => {
     return { ...event, spent: offer.cost };
   }
 
-  return { saveKey, legacySaveKey, backupKey, seasonId, startingShards, cooldown, recoveryBonus, offlineLimit, enchantmentLimit, forms, enchantments, appraisal, restore, loadSeason, serialize, rankingName, rankingRecord, formAt, cost, income, preview, enchantPreview, collectPassive, act, enchant };
+  function protectionOffer(state) {
+    const offer = preview(state);
+    return { target: offer.target, cost: offer.target ? 1000n + offer.target ** 2n * 100n + offer.cost * 8n : 0n,
+      owned: state.protections[offer.target.toString()] === true, eligible: !state.broken && offer.success < 10000 };
+  }
+
+  function buyProtection(state, now = Date.now()) {
+    const offer = protectionOffer(state);
+    if (!offer.eligible || offer.owned || state.shards < offer.cost || now - state.lastAt < cooldown) return null;
+    state.protections[offer.target.toString()] = true;
+    state.shards -= offer.cost;
+    state.lastAt = now;
+    const event = { kind: 'protection', from: state.level.toString(), target: offer.target.toString(), at: now, amount: offer.cost.toString() };
+    state.history.unshift(event); state.history.length = Math.min(state.history.length, 12);
+    return event;
+  }
+
+  function saleOffer(state) {
+    const value = appraisal(state).value;
+    return { value, shards: value / 10n, token: state.generation + ':' + state.level + ':' + state.enchantments.join(',') };
+  }
+
+  function sell(state, now = Date.now(), token) {
+    const offer = saleOffer(state);
+    if (state.broken || token !== offer.token || now - state.lastAt < cooldown) return null;
+    rememberWeapon(state);
+    const event = { kind: 'sell', from: state.level.toString(), target: '0', at: now, amount: offer.shards.toString() };
+    state.shards += offer.shards;
+    state.broken = true; state.sold = true; state.level = 0n;
+    state.enchantments = []; state.enchantment = null; state.lastAt = now;
+    state.history.unshift(event); state.history.length = Math.min(state.history.length, 12);
+    return event;
+  }
+
+  return { saveKey, previousSaveKey, legacySaveKey, backupKey, seasonId, startingShards, cooldown, recoveryBonus, offlineLimit, enchantmentLimit, forms, enchantments, appraisal, restore, loadSeason, serialize, rankingName, rankingRecord, weaponSnapshot, rememberWeapon, formAt, cost, baseIncome, income, rankReward, setRankBonus, preview, protectionOffer, buyProtection, saleOffer, sell, enchantPreview, collectPassive, act, enchant };
 })();
 
 if (typeof module !== 'undefined') module.exports = Forge;

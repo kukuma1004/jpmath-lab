@@ -291,8 +291,8 @@ test('old broken saves discard every stored effect without drawing a replacement
   }
 });
 
-test('automatic income is reduced with a playable minimum and engraving prices stay unchanged', () => {
-  for (const [bestLevel, expected] of [['0', 2n], ['12', 15n], ['20', 67n], ['32', 273n], ['80', 4267n]]) {
+test('automatic base income doubles and engraving prices stay unchanged', () => {
+  for (const [bestLevel, expected] of [['0', 4n], ['12', 30n], ['20', 134n], ['32', 546n], ['80', 8534n]]) {
     const state = Forge.restore({ version: 2, level: bestLevel, shards: '123456789', paidAt: 100000, enchantment: 'astral' }, 100000);
     assert.equal(Forge.income(state), expected);
     const oldIncome = 12n + BigInt(bestLevel) ** 3n / 6n;
@@ -302,9 +302,9 @@ test('automatic income is reduced with a playable minimum and engraving prices s
     assert.equal(Forge.collectPassive(state, 105000), 0n);
   }
   const legacy = Forge.restore({ level: '32', miner: 4, polish: 3, echo: 2 }, 100000);
-  assert.equal(Forge.income(legacy), (12n + 32n ** 3n / 6n + 4n * 4n + 3n * 2n + 2n * 2n) / 20n);
+  assert.equal(Forge.income(legacy), (12n + 32n ** 3n / 6n + 4n * 4n + 3n * 2n + 2n * 2n) / 20n * 2n);
   const huge = Forge.restore({ level: '90071992547409931234567890' }, 100000);
-  assert.equal(Forge.income(huge), (12n + huge.bestLevel ** 3n / 6n) / 20n);
+  assert.equal(Forge.income(huge), (12n + huge.bestLevel ** 3n / 6n) / 20n * 2n);
 });
 
 test('the new season resets all earlier progress once and starts with exactly 10000 shards', () => {
@@ -316,13 +316,13 @@ test('the new season resets all earlier progress once and starts with exactly 10
   assert.equal(state.level,0n);assert.equal(state.bestLevel,0n);assert.equal(state.broken,false);
   assert.equal(state.attempts,0n);assert.equal(state.shattered,0n);
   assert.deepEqual(state.enchantments,['cinder']);assert.deepEqual(state.history,[]);assert.deepEqual(state.pity,{});
-  assert.equal(Forge.income(state),2n);assert.equal(state.paidAt,100000);
+  assert.equal(Forge.income(state),4n);assert.equal(state.paidAt,100000);
   Forge.act(state,100000,()=>0);
   const reloaded=Forge.loadSeason(JSON.parse(Forge.serialize(state)),101000,()=>.99);
   assert.equal(reloaded.level,1n);assert.equal(reloaded.shards,9984n);assert.equal(reloaded.attempts,1n);
   assert.equal(Forge.restore(null,100000,()=>0).shards,10000n);
   assert.notEqual(Forge.saveKey,Forge.legacySaveKey);
-  assert(Forge.saveKey.endsWith(Forge.seasonId));
+  assert(Forge.saveKey.includes(Forge.seasonId));
 });
 
 test('ranking snapshots use chosen names, every effect and exact sortable BigInt values', () => {
@@ -337,4 +337,69 @@ test('ranking snapshots use chosen names, every effect and exact sortable BigInt
   assert.equal(BigInt(row.value),7860418n);
   assert.throws(()=>Forge.rankingRecord(state,'몽글','깨진 검'),/깨졌/);
   for(const name of ['','   ','<script>','a'.repeat(13)])assert.throws(()=>Forge.rankingName(name,12));
+});
+
+test('protection is priced per target and consumed only when a failed attempt is protected', () => {
+  const prices=[];
+  for (const level of [3,5,11,31,80]) {
+    const s=Forge.restore({level,shards:'9999999999',enchantments:['astral','lunar']},100000);
+    const offer=Forge.protectionOffer(s);prices.push(offer.cost);
+    assert.equal(offer.target,BigInt(level+1));assert(offer.cost>Forge.preview(s).cost*8n);
+    const wallet=s.shards;assert.equal(Forge.buyProtection(s,100000).kind,'protection');
+    assert.equal(s.shards,wallet-offer.cost);
+    assert.equal(Forge.buyProtection(s,101000),null);
+    const cost=Forge.preview(s).cost;
+    const result=Forge.act(s,101000,()=>.99999);
+    assert.equal(result.kind,'protected');assert.equal(s.level,BigInt(level));assert.equal(s.broken,false);
+    assert.deepEqual(s.enchantments,['astral','lunar']);assert.equal(s.shattered,0n);
+    assert.equal(s.shards,wallet-offer.cost-cost);assert.equal(s.protections[String(level+1)],undefined);
+    assert.equal(s.pity[String(level+1)],800);
+  }
+  assert(prices.every((p,i)=>!i||p>prices[i-1]));
+  const s=Forge.restore({level:3,shards:'100000'},100000);Forge.buyProtection(s,100000);
+  assert.equal(Forge.act(s,101000,()=>0).kind,'success');assert.equal(s.protections['4'],true);
+  assert.equal(Forge.restore(JSON.parse(Forge.serialize(s)),102000).protections['4'],true);
+  const safe=Forge.restore(null,100000);const before=Forge.serialize(safe);
+  assert.equal(Forge.buyProtection(safe,100000),null);assert.equal(Forge.serialize(safe),before);
+});
+
+test('sales return exactly ten percent once, keep the best weapon, and require a new weapon', () => {
+  const s=Forge.restore({level:32,shards:'1000000',enchantments:['astral','lunar','storm']},100000);
+  const offer=Forge.saleOffer(s);assert.equal(offer.shards,786041n);
+  assert.equal(Forge.sell(s,100000,'stale'),null);
+  const event=Forge.sell(s,100000,offer.token);
+  assert.equal(event.kind,'sell');assert.equal(s.shards,1786041n);assert.equal(s.sold,true);assert.equal(s.broken,true);
+  assert.equal(s.shattered,0n);assert.equal(s.level,0n);assert.deepEqual(s.enchantments,[]);
+  assert.equal(BigInt(s.rankingBest.value),7860418n);
+  assert.equal(Forge.sell(s,101000,offer.token),null);
+  const reload=Forge.restore(JSON.parse(Forge.serialize(s)),101000);assert.equal(reload.sold,true);
+  const fee=Forge.preview(reload).cost;Forge.act(reload,101000,()=>0);
+  assert.equal(reload.sold,false);assert.equal(reload.shards,1786041n-fee);assert.equal(reload.enchantments.length,1);
+  assert.notEqual(Forge.saleOffer(reload).token,offer.token);
+});
+
+test('best weapon snapshots survive destruction, reset and reload for automatic publishing', () => {
+  const s=Forge.restore({level:32,shards:'999999',enchantments:['astral','lunar','storm']},100000);
+  Forge.act(s,100000,()=>.99999);
+  assert(s.broken);assert.deepEqual(s.enchantments,[]);assert.equal(s.rankingBest.level,'32');
+  assert.equal(BigInt(s.rankingBest.value),7860418n);
+  const reload=Forge.restore(JSON.parse(Forge.serialize(s)),101000);
+  assert.deepEqual(reload.rankingBest,s.rankingBest);
+  Forge.act(reload,101000,()=>0);assert.equal(reload.rankingBest.level,'32');
+});
+
+test('top ten rank bonuses are tiered, bounded by verification and never paid retroactively', () => {
+  for(let rank=1;rank<=10;rank++)assert.equal(Forge.rankReward(rank),100n-BigInt(rank-1)*5n);
+  assert.equal(Forge.rankReward(0),0n);assert.equal(Forge.rankReward(11),0n);
+  const s=Forge.restore({shards:'0',paidAt:100000},100000);
+  Forge.setRankBonus(s,1,105000);
+  assert.equal(Forge.income(s,105000),104n);
+  assert.equal(Forge.collectPassive(s,110000),540n); // 10 base seconds, 5 verified bonus seconds.
+  assert.equal(Forge.collectPassive(s,110000),0n);
+  assert.equal(Forge.collectPassive(s,170000),5740n); // Verification ends at 165000.
+  assert.equal(Forge.income(s,170000),4n);
+  Forge.setRankBonus(s,10,170000);assert.equal(Forge.income(s,170000),59n);
+  Forge.collectPassive(s,171000);Forge.setRankBonus(s,0,171000);assert.equal(Forge.income(s,171000),4n);
+  const offline=Forge.restore({shards:'0',paidAt:100000},100000);Forge.setRankBonus(offline,1,100000);
+  assert.equal(Forge.collectPassive(offline,100000+24*60*60*1000),4n*28800n);
 });

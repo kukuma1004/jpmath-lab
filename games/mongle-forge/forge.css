@@ -522,3 +522,26 @@ body { background: radial-gradient(ellipse at 43% 30%, #203236, #142025 67%, #15
  .ranking-list { max-height:260px; }
 }
 @media(max-width:360px) { .lab { font-size:11px; }.header-actions .quiet-button { font-size:9px; padding-inline:5px; } }
+
+.forge-market { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-top:8px; }
+.market-button { display:grid; gap:5px; min-height:49px; padding:7px 6px; border:1px solid #7d8a76; border-radius:7px; color:#435940; background:#e9eddc; text-align:center; touch-action:manipulation; -webkit-user-select:none; user-select:none; }
+.market-button span { font-size:11px; font-weight:800; }.market-button strong { font-size:11px; font-variant-numeric:tabular-nums; }
+.market-button:disabled { opacity:.6; }.market-button:active:enabled { translate:0 1px; }
+.sale-button { color:#805426; background:#f5e5c6; border-color:#c2a36e; }
+.market-note { color:#827153; margin-top:6px; font-size:9px; line-height:1.5; }
+.auto-ranking { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:3px 6px; margin-top:7px; border-top:1px solid #d5c5a9; padding-top:6px; }
+.auto-ranking button { background:none; border:0; padding:3px 0; color:#745a86; font-size:10px; font-weight:700; text-decoration:underline; text-underline-offset:3px; }
+.auto-ranking > span { color:#7c775f; font-size:9px; }
+.auto-ranking-option { display:flex; gap:7px; align-items:center; color:#d5c5a4; font-size:12px; margin-top:12px; }
+.auto-ranking-option input { width:18px; height:18px; accent-color:#d6a75b; }
+.ranking-reward { display:block; color:#abd19e; margin-top:5px; font-size:10px; }
+.sale-dialog { width:min(480px,100% - 24px); }.sale-dialog h2 { font-size:23px; }.sale-dialog > p { margin-top:16px; font-size:12px; line-height:1.7; }
+.sale-quote strong { display:inline-block; font:700 30px Georgia,serif; color:#ecca83; margin-top:7px; }
+#sale-error { color:#edb6a0; }
+.sold-stage { position:absolute; z-index:3; inset:25% 10% 30%; display:grid; justify-items:center; align-content:center; text-align:center; gap:8px; color:#ffe3a4; text-shadow:0 2px 6px #21140b; }
+.sold-stage > span { font:80px/1 Georgia,serif; color:#f6d077; }.sold-stage strong { font-size:23px; }.sold-stage p { font-size:12px; }
+[data-sold=true] .weapon-wrap,[data-sold=true] .weapon-orbit { display:none; }
+[data-outcome=protected] .weapon-wrap { animation:forge-succeed 600ms ease-out; }
+.outcome[data-kind=protected],.outcome[data-kind=protection] { color:#355e4b; border-color:#9fbba0; background:#e0ebd8; }
+.outcome[data-kind=sell] { color:#875c2b; border-color:#cfb071; background:#f4e6c4; }
+@media(max-width:700px) { .sold-stage > span { font-size:38px; }.sold-stage strong { font-size:16px; }.sold-stage p { font-size:10px; }.ranking-reward { margin-top:0; }.ranking-value { flex-wrap:wrap; }.market-button span { font-size:10px; } }

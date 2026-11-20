@@ -51,7 +51,7 @@ const ForgeRanking = (() => {
     const response = await request(base + Forge.seasonId + '.json?' + query);
     return Object.entries(await response.json() || {}).filter(([, record]) => validRecord(record))
       .map(([uid, record]) => ({ ...record, uid })).sort((a, b) => a.value === b.value ?
-        a.submittedAt - b.submittedAt || a.uid.localeCompare(b.uid) : a.value > b.value ? -1 : 1);
+        a.uid === b.uid ? 0 : a.uid > b.uid ? -1 : 1 : a.value > b.value ? -1 : 1);
   }
 
   async function publish(record, onOwner) {
@@ -81,7 +81,7 @@ const ForgeRanking = (() => {
     await request(base + Forge.seasonId + '/' + encodeURIComponent(user.uid) + '.json?auth=' + encodeURIComponent(token), { method: 'DELETE' });
   }
 
-  function mount({ getState, capture, fmt, asset }) {
+  function mount({ getState, capture, fmt, asset, onBonus }) {
     const $ = id => document.getElementById(id);
     const dialog = $('ranking');
     let profile = {};
@@ -89,11 +89,54 @@ const ForgeRanking = (() => {
       const saved = JSON.parse(localStorage.getItem(profileKey) || '{}');
       if (saved && typeof saved === 'object' && !Array.isArray(saved)) profile = saved;
     } catch {}
+    if (!profile.nickname) profile.nickname = '몽글' + String(crypto.getRandomValues(new Uint32Array(1))[0] % 10000).padStart(4, '0');
+    if (profile.auto !== false) profile.auto = true;
+    if (typeof profile.syncedValue !== 'string' || !/^[0-9]{512}$/.test(profile.syncedValue)) profile.syncedValue = null;
     let busy = false;
     let generation = 0;
+    let verifiedUid;
+    let nextTry = 0;
+    let benefitRequest = 0;
     function saveProfile() {
       try { localStorage.setItem(profileKey, JSON.stringify(profile)); } catch {}
     }
+    saveProfile();
+    function pending() {
+      const best = getState().rankingBest;
+      return profile.auto && best && (!profile.syncedValue || best.value > profile.syncedValue);
+    }
+    function autoStatus() {
+      $('auto-ranking-name').textContent = (profile.auto ? '자동 등록 · ' : '자동 등록 꺼짐 · ') + profile.nickname;
+      $('auto-ranking-status').textContent = !profile.auto ? '이름·설정 변경' : pending() ? nextTry > Date.now() ? '기록 보관 중 · 연결 후 재전송' : '최고 무기 전송 대기' : '파괴 전 기록 자동 보관';
+    }
+    function owner(uid) { verifiedUid = uid; profile.uid = uid; saveProfile(); }
+    async function applyBenefits(rows) {
+      const index = verifiedUid ? rows.findIndex(row => row.uid === verifiedUid) : -1;
+      await onBonus(index >= 0 && index < 10 ? index + 1 : 0);
+    }
+    async function syncBenefits() {
+      if (!verifiedUid || document.hidden) return;
+      const current = ++benefitRequest;
+      try {
+        const rows = await list();
+        if (current === benefitRequest) await applyBenefits(rows);
+      } catch { if (current === benefitRequest) await onBonus(0); }
+    }
+    async function pump() {
+      if (busy || !pending() || Date.now() < nextTry) return;
+      busy = true; controls(); autoStatus();
+      try {
+        const best = { ...getState().rankingBest };
+        const record = { ...best, nickname: Forge.rankingName(profile.nickname, 12),
+          weaponName: Forge.rankingName(profile.weaponName || Forge.formAt(BigInt(best.level)).name, 16) };
+        const result = await publish(record, owner);
+        profile.syncedValue = result.record.value; saveProfile(); nextTry = 0;
+        await syncBenefits();
+        if (dialog.open) await refresh(false);
+      } catch { nextTry = Date.now() + 10000; }
+      finally { busy = false; controls(); autoStatus(); }
+    }
+    function changed() { autoStatus(); queueMicrotask(pump); }
     function element(tag, className, text) {
       const item = document.createElement(tag);
       item.className = className;
@@ -117,11 +160,8 @@ const ForgeRanking = (() => {
       controls();
     }
     function renderRows(rows) {
-      let lastValue;
-      let rank;
       $('ranking-list').replaceChildren(...rows.map((record, index) => {
-        if (record.value !== lastValue) rank = index + 1;
-        lastValue = record.value;
+        const rank = index + 1;
         const row = element('li', 'ranking-row' + (record.uid === profile.uid ? ' ranking-mine' : ''));
         const form = Forge.formAt(BigInt(record.level));
         const image = element('img', 'ranking-weapon');
@@ -140,6 +180,7 @@ const ForgeRanking = (() => {
         info.append(effects);
         const value = element('div', 'ranking-value');
         value.append(element('strong', '', fmt(BigInt(record.value)) + ' G'), element('span', '', '+' + fmt(BigInt(record.level))));
+        if (rank <= 10) value.append(element('small', 'ranking-reward', '별철 +' + fmt(Forge.rankReward(rank)) + '/초'));
         value.title = new Intl.NumberFormat('ko-KR').format(BigInt(record.value)) + ' G';
         row.append(element('span', 'ranking-place', String(rank)), image, info, value);
         return row;
@@ -148,20 +189,28 @@ const ForgeRanking = (() => {
     }
     async function refresh(announce = true) {
       const current = ++generation;
+      const benefit = ++benefitRequest;
       if (announce) status('무기 랭킹을 불러오는 중이에요.');
       try {
         const rows = await list();
         if (current !== generation) return;
         renderRows(rows);
-        if (announce) status(rows.length ? '감정가가 같은 무기는 공동 순위예요.' : '이번 시즌의 첫 무기를 등록해 보세요.');
+        if (benefit === benefitRequest) await applyBenefits(rows);
+        if (announce) status(rows.length ? '상위 10명은 현재 순위에 따라 별철 보너스를 받아요.' : '이번 시즌의 첫 무기를 등록해 보세요.');
       } catch (error) {
         if (current === generation) status(error.message);
       }
     }
-    $('open-ranking').addEventListener('click', () => {
+    function openRanking() {
       $('ranking-nickname').value = typeof profile.nickname === 'string' ? profile.nickname : '';
       $('ranking-weapon-name').value = typeof profile.weaponName === 'string' ? profile.weaponName : Forge.formAt(getState().level).name;
+      $('auto-ranking-enabled').checked = profile.auto;
       preview(); dialog.showModal(); refresh();
+    }
+    $('open-ranking').addEventListener('click', openRanking);
+    $('auto-ranking-name').addEventListener('click', openRanking);
+    $('auto-ranking-enabled').addEventListener('change', () => {
+      profile.auto = $('auto-ranking-enabled').checked; nextTry = 0; saveProfile(); changed();
     });
     $('ranking-refresh').addEventListener('click', () => { preview(); refresh(); });
     $('ranking-form').addEventListener('submit', async event => {
@@ -172,27 +221,36 @@ const ForgeRanking = (() => {
       status('무기를 등록하고 있어요.');
       try {
         const record = await capture($('ranking-nickname').value, $('ranking-weapon-name').value);
-        const result = await publish(record, uid => { profile.uid = uid; saveProfile(); });
-        profile = { uid: profile.uid, nickname: result.record.nickname, weaponName: result.record.weaponName };
+        profile.nickname = record.nickname; profile.weaponName = record.weaponName;
+        const result = await publish(record, owner);
+        profile.syncedValue = result.record.value;
         saveProfile();
         status(result.kept ? '등록된 최고 무기의 감정가가 더 높아 기존 기록을 유지했어요.' : '무기를 등록했어요! 더 가치 높은 검으로 기록을 갱신해 보세요.');
         await refresh(false);
       } catch (error) {
         status(error.message);
       } finally {
-        busy = false; preview();
+        busy = false; preview(); changed();
       }
     });
     $('ranking-delete').addEventListener('click', async () => {
       if (busy) return;
       busy = true; controls(); ++generation;
+      profile.auto = false; saveProfile();
       try {
-        await remove(); delete profile.uid; saveProfile();
+        await remove(); delete profile.uid; profile.syncedValue = null; saveProfile();
         status('내 공개 무기 기록을 삭제했어요.');
         await refresh(false);
       } catch (error) { status(error.message); }
-      finally { busy = false; controls(); }
+      finally { busy = false; controls(); autoStatus(); }
     });
+    if (profile.uid) identity().then(user => { owner(user.uid); syncBenefits(); }).catch(() => onBonus(0));
+    setInterval(() => { pump(); }, 10000);
+    setInterval(syncBenefits, 30000);
+    addEventListener('online', () => { nextTry = 0; pump(); syncBenefits(); });
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) { pump(); syncBenefits(); } });
+    changed();
+    return { changed };
   }
   return { mount };
 })();

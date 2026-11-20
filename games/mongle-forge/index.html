@@ -7,10 +7,10 @@
   <meta name="description" content="한 번 더, 어디까지 갈까. 강화 제한 없이 검을 벼리고 실패와 파괴를 넘어 최고 기록에 도전하는 몽글 대장간.">
   <title>몽글 대장간 · 끝없는 강화</title>
   <link rel="stylesheet" href="forge-effects.css?v=infinite-1">
-  <link rel="stylesheet" href="forge.css?v=season-1">
-  <script src="forge-engine.js?v=season-1" defer></script>
-  <script src="forge-ranking.js?v=season-1" defer></script>
-  <script src="forge.js?v=season-1" defer></script>
+  <link rel="stylesheet" href="forge.css?v=market-1">
+  <script src="forge-engine.js?v=market-1" defer></script>
+  <script src="forge-ranking.js?v=market-1" defer></script>
+  <script src="forge.js?v=market-1" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#strengthen">강화 버튼으로 바로가기</a>
@@ -36,6 +36,7 @@
         <div class="weapon-wrap" id="weapon-wrap">
           <img id="weapon" src="assets/sword-0.webp" alt="연습용 나무검" width="360" height="360" fetchpriority="high">
         </div>
+        <div class="sold-stage" id="sold-stage" hidden><span aria-hidden="true">◇</span><strong>무기 판매 완료</strong><p>새 검을 제작해 다시 벼려 보세요.</p></div>
         <div class="technique-fx" id="technique-fx" aria-hidden="true"></div>
         <div class="forge-fx" id="forge-fx" aria-hidden="true"></div>
         <div class="appraisal"><span class="appraisal-label">감정가</span><strong id="sword-value"></strong><small id="value-formula"></small></div>
@@ -60,7 +61,7 @@
           <div class="chance-bar" id="chance-bar" aria-hidden="true"><i></i><i></i><i></i></div>
           <dl class="chances">
             <div class="chance-success"><dt>성공</dt><dd id="chance-success">100%</dd></div>
-            <div class="chance-reset"><dt>+0 초기화</dt><dd id="chance-reset">0%</dd></div>
+            <div class="chance-reset"><dt id="chance-reset-label">+0 초기화</dt><dd id="chance-reset">0%</dd></div>
             <div class="chance-shatter"><dt>검 파괴</dt><dd id="chance-shatter">0%</dd></div>
           </dl>
           <p class="risk-copy" id="risk-copy">초반 세 단계는 확정 성공이에요.</p>
@@ -70,6 +71,10 @@
         <div id="broken-copy" class="broken-copy" hidden><h3>검이 산산이 부서졌어요.</h3><p>특수효과 0개 · 붙어 있던 효과가 모두 소멸했어요. 제작비를 내면 효과 하나를 가진 새 검 +0으로 시작해요.</p></div>
         <button class="strengthen" id="strengthen" type="button" aria-describedby="probabilities broken-copy"><span id="button-label">강화하기</span><span aria-hidden="true" id="button-icon">✦</span></button>
         <p class="waiting" id="waiting">스페이스바로도 강화할 수 있어요.</p>
+        <div class="forge-market"><button type="button" id="buy-protection" class="market-button"><span id="protection-label">강화 보호권</span><strong id="protection-price"></strong></button><button type="button" id="open-sale" class="market-button sale-button"><span>무기 판매 · 감정가 10%</span><strong id="sale-price"></strong></button></div>
+        <p class="market-note" id="protection-note"></p>
+        <p class="market-note" id="protection-stock" hidden></p>
+        <div class="auto-ranking"><button type="button" id="auto-ranking-name">자동 등록 이름 설정</button><span id="auto-ranking-status" role="status"></span></div>
         <div class="special-forge">
           <button class="special-strengthen" id="special-strengthen" type="button" aria-describedby="special-copy special-waiting"><span>✧ <strong id="special-label">특수 강화</strong></span><span><b id="special-chance"></b><small id="special-cost"></small></span></button>
           <p id="special-copy">실패하면 별철만 소모 · 단계와 효과는 유지돼요.</p>
@@ -79,7 +84,7 @@
         <div class="outcome" id="outcome" role="status" aria-live="polite"><strong id="outcome-title">새 시즌 · 별철 10,000개로 시작!</strong><p id="outcome-copy">나만의 검을 벼리고 이름을 붙여 무기 랭킹에 등록해 보세요.</p></div>
         <div class="smelter">
           <img src="assets/mill.webp" alt="" width="35" height="35">
-          <div><span>자동 제련</span><strong id="income">+2 /초</strong><small>쉬는 동안에도 최대 8시간</small></div>
+          <div><span>자동 제련</span><strong id="income">+4 /초</strong><small id="income-breakdown">기본 생산 2배 · 쉬는 동안 최대 8시간</small></div>
           <span class="smelter-light" aria-hidden="true"></span>
         </div>
       </section>
@@ -105,14 +110,23 @@
     <form id="ranking-form" class="ranking-form">
       <div class="ranking-inputs"><label>대장장이 닉네임 <small>최대 12자</small><input id="ranking-nickname" maxlength="12" pattern="[가-힣ㄱ-ㅎㅏ-ㅣA-Za-z0-9 _.\-]{1,12}" autocomplete="nickname" required placeholder="예: 몽글대장"></label><label>무기 이름 <small>최대 16자</small><input id="ranking-weapon-name" maxlength="16" pattern="[가-힣ㄱ-ㅎㅏ-ㅣA-Za-z0-9 _.\-]{1,16}" required placeholder="예: 새벽을 가르는 검"></label></div>
       <button type="submit" id="ranking-submit" class="ranking-submit">현재 무기 등록</button>
+      <label class="auto-ranking-option"><input type="checkbox" id="auto-ranking-enabled" checked> 강화 전·후 최고 무기 자동 등록</label>
+      <p class="ranking-note">자동 등록은 표시된 닉네임을 사용해요. 전송이 끊겨도 파괴 전 기록을 보관했다가 다시 연결되면 등록해요.</p>
       <p class="ranking-note">닉네임·무기 이름·강화 단계·효과·감정가가 공개돼요. 브라우저당 최고 무기 1개를 보관하고, 등록 당시 기록은 검이 깨져도 남아요.</p>
       <button type="button" id="ranking-delete" class="ranking-delete" hidden>내 공개 기록 삭제</button>
     </form>
     <p id="ranking-status" class="ranking-status" role="status" aria-live="polite"></p>
     <div class="ranking-toolbar"><h3>감정가 TOP 100</h3><button type="button" id="ranking-refresh" class="quiet-button">새로고침</button></div>
+    <p class="ranking-note">상위 10명은 별철 보너스: 1위 +100/초, 2위 +95/초 … 10위 +55/초. 같은 감정가도 고정 순서로 순위를 나눠요. 보너스는 접속 중 현재 순위를 확인해 적용해요.</p>
     <ol id="ranking-list" class="ranking-list" aria-label="감정가 순 무기 랭킹"></ol>
     <p id="ranking-empty" class="ranking-empty" hidden>아직 등록된 무기가 없어요. 첫 기록의 주인공이 되어 보세요.</p>
     <p class="ranking-note">기기 저장을 제출하는 자율 랭킹이에요. 한글·영문·숫자·공백과 _ . -로 이름을 정해 주세요.</p>
+  </dialog>
+  <dialog id="sale-dialog" class="sale-dialog" aria-labelledby="sale-title">
+    <div class="dialog-top"><h2 id="sale-title">무기를 판매할까요?</h2><form method="dialog"><button class="quiet-button" type="submit">취소</button></form></div>
+    <p id="sale-weapon"></p><p class="sale-quote">감정가 <span id="sale-value"></span><br><strong id="sale-reward"></strong> 별철 받기</p>
+    <p class="ranking-note">감정가의 10%를 별철로 받아요. 판매한 검과 효과는 사라지고, 제작비를 내고 새 검을 만들 수 있어요. 보유 보호권과 최고 무기 기록은 보관해요.</p>
+    <p id="sale-error" role="status"></p><button type="button" id="confirm-sale" class="ranking-submit">판매하고 별철 받기</button>
   </dialog>
 </body>
 </html>

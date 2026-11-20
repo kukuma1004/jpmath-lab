@@ -12,7 +12,7 @@
   const specialButton = $('special-strengthen');
   const book = $('book');
   const fx = $('technique-fx');
-  const labels = { success: '강화 성공', reset: '+0 초기화', shatter: '검 파괴', reforge: '새 검 제작', enchant: '특수 강화 성공', 'enchant-fail': '특수 강화 실패' };
+  const labels = { success: '강화 성공', reset: '+0 초기화', shatter: '검 파괴', reforge: '새 검 제작', enchant: '특수 강화 성공', 'enchant-fail': '특수 강화 실패', protected: '보호권 발동', protection: '보호권 구매', sell: '무기 판매' };
   let state = Forge.restore(null);
   let storageOkay = true;
   let busy = false;
@@ -21,6 +21,8 @@
   let shownWeapon = '';
   let shownEffects = null;
   let outcomeTimer;
+  let ranking;
+  let saleToken;
 
   function fmt(value) {
     const digits = value.toString();
@@ -42,9 +44,10 @@
   function loadStored() {
     if (!storageOkay) return { next: state, reset: false };
     try {
-      const original = localStorage.getItem(Forge.saveKey);
+      const previous = localStorage.getItem(Forge.previousSaveKey);
+      const original = localStorage.getItem(Forge.saveKey) ?? previous;
       const raw = original ? JSON.parse(original) : null;
-      return { next: Forge.loadSeason(raw), reset: (!!raw && raw.season !== Forge.seasonId) || localStorage.getItem(Forge.legacySaveKey) !== null };
+      return { next: Forge.loadSeason(raw), reset: previous !== null || (!!raw && raw.season !== Forge.seasonId) || localStorage.getItem(Forge.legacySaveKey) !== null };
     } catch {
       storageOkay = false;
       return { next: state, reset: false };
@@ -53,11 +56,12 @@
 
   function persist(next, reset) {
     try {
+      localStorage.setItem(Forge.saveKey, Forge.serialize(next));
       if (reset) {
         localStorage.removeItem(Forge.legacySaveKey);
+        localStorage.removeItem(Forge.previousSaveKey);
         localStorage.removeItem(Forge.backupKey);
       }
-      localStorage.setItem(Forge.saveKey, Forge.serialize(next));
     } catch {
       storageOkay = false;
     }
@@ -72,6 +76,7 @@
       persist(next, reset);
       state = next;
       render();
+      ranking?.changed();
       return event;
     };
     return navigator.locks ? navigator.locks.request(Forge.saveKey, update) : update();
@@ -122,7 +127,7 @@
     $('sword-value').textContent = fmt(value) + ' G';
     $('sword-value').title = number.format(value) + ' G';
     $('value-formula').textContent = state.broken ? '파괴된 검' : '기본 ' + fmt(base) + effects.map(entry => ' × ' + Number(entry.tenths) / 10).join('');
-    const name = state.broken ? '깨진 검' : form.name;
+    const name = state.sold ? '무기 판매 완료' : state.broken ? '깨진 검' : form.name;
     const src = asset(state.broken ? 'broken-sword' : 'sword-' + form.level);
     if (src !== shownWeapon) {
       weapon.src = src;
@@ -130,7 +135,9 @@
     }
     weapon.alt = name;
     $('weapon-name').textContent = name;
-    $('level').textContent = state.broken ? '파괴' : level(state.level);
+    $('level').textContent = state.sold ? '판매 완료' : state.broken ? '파괴' : level(state.level);
+    stage.dataset.sold = String(state.sold);
+    $('sold-stage').hidden = !state.sold;
     $('best').textContent = level(state.bestLevel);
     $('best').title = '+' + state.bestLevel;
     stage.dataset.broken = String(state.broken);
@@ -140,7 +147,7 @@
     stage.dataset.awakened = String(form.awakening > 0n);
     $('awakening').hidden = state.broken || form.awakening === 0n;
     $('awakening').textContent = '각성 ' + fmt(form.awakening);
-    $('stage-state').textContent = state.broken ? '새 검 제작 필요' : '끝없는 강화';
+    $('stage-state').textContent = state.broken ? '새 검 제작 필요' : Forge.protectionOffer(state).owned ? '보호권 적용 중' : '끝없는 강화';
     const nextForm = Forge.formAt(form.next);
     $('next-form').textContent = state.broken ? '특수효과 0개 · 새 검을 제작해 주세요.' :
       level(form.next) + '에서 ' + nextForm.name + (nextForm.awakening > 0n ? ' · 각성 ' + fmt(nextForm.awakening) : '');
@@ -154,6 +161,17 @@
     const affordable = state.shards >= offer.cost;
     const cooling = Date.now() - state.lastAt < Forge.cooldown;
     const special = Forge.enchantPreview(state);
+    const protection = Forge.protectionOffer(state);
+    $('buy-protection').disabled = !!busy || cooling || !protection.eligible || protection.owned || state.shards < protection.cost;
+    $('protection-label').textContent = protection.owned ? level(protection.target) + ' 보호권 적용 중' : state.broken ? '강화 보호권' : level(protection.target) + ' 강화 보호권';
+    $('protection-price').textContent = protection.owned ? '보유 1장 · 자동 사용' : protection.eligible ? fmt(protection.cost) + ' 별철' : state.broken ? '새 검 제작 후 구매' : '확정 성공 단계';
+    $('protection-note').textContent = '실패할 때만 1장 사용 · 단계·효과 유지 · 파괴 방지 · 성공하면 보관';
+    const tickets = Object.keys(state.protections).sort((a, b) => BigInt(a) < BigInt(b) ? -1 : 1);
+    $('protection-stock').hidden = tickets.length === 0;
+    $('protection-stock').textContent = '보관 중: ' + tickets.slice(0, 6).map(target => '+' + fmt(BigInt(target)) + ' 도전권').join(' · ') + (tickets.length > 6 ? ' 외 ' + (tickets.length - 6) + '종' : '');
+    $('open-sale').disabled = !!busy || cooling || state.broken;
+    $('sale-price').textContent = state.broken ? '판매할 무기 없음' : '+' + fmt(Forge.saleOffer(state).shards) + ' 별철';
+    $('income-breakdown').textContent = '기본 +' + fmt(Forge.baseIncome(state)) + (state.rankBonus && rate > Forge.baseIncome(state) ? ' · 랭킹 ' + state.rankBonus.rank + '위 +' + fmt(Forge.rankReward(state.rankBonus.rank)) : ' · 랭킹 보너스 별도');
     specialButton.disabled = !!busy || cooling || state.broken || special.full || state.shards < special.cost;
     $('special-label').textContent = busy === 'special' ? '각인 중…' : !state.broken && special.full ? '3중 마법 완성' : '특수 강화';
     document.querySelector('.special-rules').hidden = state.broken;
@@ -167,16 +185,17 @@
     $('attempt-cost').textContent = fmt(offer.cost) + ' 별철';
     $('attempt-title').textContent = state.broken ? '다시, 나무검부터' : level(offer.target) + '에 도전';
     $('probabilities').hidden = state.broken;
-    $('broken-copy').hidden = !state.broken;
+    $('broken-copy').hidden = !state.broken || state.sold;
     $('button-label').textContent = busy ? '벼리는 중…' : state.broken ? '새 검 제작' : '강화하기';
     $('button-icon').textContent = state.broken ? '↻' : '✦';
     button.disabled = busy || cooling || !affordable;
     button.dataset.reforge = String(state.broken);
     $('chance-success').textContent = percent(offer.success);
-    $('chance-reset').textContent = percent(offer.reset);
-    $('chance-shatter').textContent = percent(offer.shatter);
-    $('chance-bar').style.gridTemplateColumns = [offer.success, offer.reset, offer.shatter].map(weight => weight + 'fr').join(' ');
-    $('risk-copy').textContent = offer.success === 10000 ? '이번 단계는 확정 성공이에요.' : '초기화는 +0에서 바로 재강화 · 파괴는 제작비를 내고 새 검 제작';
+    $('chance-reset-label').textContent = protection.owned ? '단계 유지' : '+0 초기화';
+    $('chance-reset').textContent = percent(protection.owned ? offer.reset + offer.shatter : offer.reset);
+    $('chance-shatter').textContent = percent(protection.owned ? 0 : offer.shatter);
+    $('chance-bar').style.gridTemplateColumns = [offer.success, protection.owned ? offer.reset + offer.shatter : offer.reset, protection.owned ? 0 : offer.shatter].map(weight => weight + 'fr').join(' ');
+    $('risk-copy').textContent = protection.owned ? '보호권 적용 중 · 실패해도 현재 단계와 효과를 지켜요.' : offer.success === 10000 ? '이번 단계는 확정 성공이에요.' : '초기화는 +0에서 바로 재강화 · 파괴는 제작비를 내고 새 검 제작';
     $('forge-bonus').hidden = offer.bonus === 0 || state.broken;
     $('forge-bonus').textContent = '이 단계의 실패 보정 +' + percent(offer.bonus).replace('%', '%p');
     if (!affordable) {
@@ -202,7 +221,7 @@
       item.append(
         node('span', 'history-symbol', entry.kind === 'success' || entry.kind === 'enchant' ? '✦' : entry.kind === 'shatter' ? '✕' : '↻'),
         node('strong', '', labels[entry.kind]),
-        node('span', 'history-levels', entry.kind === 'reforge' ? '새 검 +0' : entry.kind === 'enchant' ?
+        node('span', 'history-levels', entry.kind === 'protected' ? level(from) + ' 유지' : entry.kind === 'protection' ? level(target) + ' 전용 · ' + fmt(BigInt(entry.amount ?? 0)) + ' 별철' : entry.kind === 'sell' ? '+' + fmt(BigInt(entry.amount ?? 0)) + ' 별철' : entry.kind === 'reforge' ? '새 검 +0' : entry.kind === 'enchant' ?
           (Forge.enchantments.find(effect => effect.id === entry.enchantment)?.name ?? '효과 추가') : entry.kind === 'enchant-fail' ? level(from) + ' · 효과 유지' :
           level(from) + ' → ' + (entry.kind === 'success' ? level(target) : entry.kind === 'shatter' ?
             '파괴' + (entry.lostEffects ? ' · 효과 ' + entry.lostEffects + '개 소멸' : '') : '+0')),
@@ -280,6 +299,15 @@
       title = level(target) + ' 강화 성공!';
       const previous = Forge.formAt(BigInt(event.from));
       copy = form.index !== previous.index || form.awakening !== previous.awakening ? form.name + (form.awakening > 0n ? ' · 각성 ' + fmt(form.awakening) : '') + '을 발견했어요.' : '한 번 더 벼릴 준비가 됐어요.';
+    } else if (event.kind === 'protected') {
+      title = '보호권 발동! ' + level(BigInt(event.from)) + ' 유지';
+      copy = '보호권 1장으로 초기화와 파괴를 막았어요. 효과도 그대로예요. 재도전 보정 +' + percent(Forge.recoveryBonus).replace('%', '%p');
+    } else if (event.kind === 'protection') {
+      title = level(target) + ' 도전 보호권 구매 완료';
+      copy = fmt(BigInt(event.amount)) + ' 별철 사용 · 실패할 때만 자동으로 한 장을 사용해요.';
+    } else if (event.kind === 'sell') {
+      title = '무기 판매 · +' + fmt(BigInt(event.amount)) + ' 별철';
+      copy = '감정가의 10%를 받았어요. 새 검을 제작해 다시 시작할 수 있어요.';
     } else if (event.kind === 'reset') {
       title = '강화 실패 · +0으로';
       copy = '효과는 모두 유지돼요. 나무검 +0에서 바로 다시 강화할 수 있어요. ' + level(target) + ' 재도전 보정 +' + percent(Forge.recoveryBonus).replace('%', '%p');
@@ -303,14 +331,18 @@
     if (animate) animateEvent(event);
   }
 
-  async function attempt(special = false) {
+  async function attempt(action = 'forge') {
     if (busy) return;
-    busy = special ? 'special' : 'normal';
+    busy = action;
     renderControls();
     let event;
     try {
-      event = await transaction(next => special ? Forge.enchant(next) : Forge.act(next));
-      if (event) showOutcome(event);
+      event = await transaction(next => action === 'special' ? Forge.enchant(next) : action === 'protection' ? Forge.buyProtection(next) : action === 'sell' ? Forge.sell(next, Date.now(), saleToken) : Forge.act(next));
+      if (event) showOutcome(event, !['protection', 'sell'].includes(event.kind));
+      if (action === 'sell') {
+        if (event) $('sale-dialog').close();
+        else $('sale-error').textContent = '무기가 바뀌었거나 거래 중이에요. 닫은 뒤 판매 가격을 다시 확인해 주세요.';
+      }
     } finally {
       const delay = event ? Math.max(0, Forge.cooldown - (Date.now() - event.at)) : 0;
       setTimeout(() => {
@@ -327,7 +359,7 @@
     tapStart = null;
     if (event.touches.length !== 1) return;
     const touch = event.touches[0];
-    for (const control of [button, specialButton]) {
+    for (const control of [button, specialButton, $('buy-protection'), $('open-sale')]) {
       const bounds = control.getBoundingClientRect();
       if (touch.clientX >= bounds.left && touch.clientX <= bounds.right &&
           touch.clientY >= bounds.top && touch.clientY <= bounds.bottom) {
@@ -357,13 +389,24 @@
   }, { passive: false, capture: true });
 
   button.addEventListener('click', () => attempt());
-  specialButton.addEventListener('click', () => attempt(true));
+  specialButton.addEventListener('click', () => attempt('special'));
+  $('buy-protection').addEventListener('click', () => attempt('protection'));
+  $('open-sale').addEventListener('click', () => {
+    const offer = Forge.saleOffer(state);
+    saleToken = offer.token;
+    $('sale-weapon').textContent = Forge.formAt(state.level).name + ' ' + level(state.level);
+    $('sale-value').textContent = fmt(offer.value) + ' G';
+    $('sale-reward').textContent = '+' + fmt(offer.shards);
+    $('sale-error').textContent = '';
+    $('sale-dialog').showModal();
+  });
+  $('confirm-sale').addEventListener('click', () => attempt('sell'));
   $('open-book').addEventListener('click', () => {
     renderBook();
     book.showModal();
   });
   document.addEventListener('keydown', event => {
-    if (event.code !== 'Space' || event.repeat || event.ctrlKey || event.altKey || event.metaKey || book.open || $('ranking').open) return;
+    if (event.code !== 'Space' || event.repeat || event.ctrlKey || event.altKey || event.metaKey || book.open || $('ranking').open || $('sale-dialog').open) return;
     if (event.target instanceof HTMLButtonElement || event.target instanceof HTMLInputElement) return;
     event.preventDefault();
     if (!button.disabled) attempt();
@@ -373,6 +416,7 @@
     try {
       state = Forge.loadSeason(JSON.parse(event.newValue));
       render();
+      ranking?.changed();
     } catch {
       $('storage-status').textContent = '다른 탭의 저장 내용을 읽을 수 없어요.';
     }
@@ -384,9 +428,10 @@
     if (!document.hidden) transaction();
   }, 1000);
 
-  ForgeRanking.mount({
+  ranking = ForgeRanking.mount({
     getState: () => state, fmt, asset,
-    capture: (nickname, weaponName) => transaction(next => Forge.rankingRecord(next, nickname, weaponName)),
+    capture: (nickname, weaponName) => transaction(next => { Forge.rememberWeapon(next); return Forge.rankingRecord(next, nickname, weaponName); }),
+    onBonus: rank => transaction(next => Forge.setRankBonus(next, rank)),
   });
   transaction();
 })();
