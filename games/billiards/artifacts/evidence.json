@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "runId": "billiards-phase1-final-4",
+  "captures": [
+    {"mode":"desktop","state":"active-play","report":"../artifacts/visual-pass-4/desktop-active.json"},
+    {"mode":"desktop","state":"cue-view","report":"../artifacts/visual-pass-4/desktop-cue.json"},
+    {"mode":"mobile","state":"active-play","report":"../artifacts/visual-pass-4/mobile-active.json"},
+    {"mode":"mobile","state":"cue-view","report":"../artifacts/visual-pass-4/mobile-cue.json"},
+    {"mode":"mobile","state":"pause","report":"../artifacts/visual-pass-4/mobile-pause.json"}
+  ],
+  "artifacts": ["../artifacts/browser-pass-1/result.json", "../artifacts/final-motion.json", "../artifacts/resize-smoke.json", "../artifacts/final-input-pass/page@03feb1ffe427ecc829957665b8be640b.webm"]
+}

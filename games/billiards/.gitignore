@@ -1,0 +1,6 @@
+# Local recordings and exploratory captures; preserve them on disk, exclude from the site source.
+artifacts/**/*.webm
+artifacts/scene-smoke-*.png
+artifacts/first-*.png
+artifacts/visual-pass-2/
+artifacts/visual-pass-3/

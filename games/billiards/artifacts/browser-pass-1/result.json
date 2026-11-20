@@ -1,0 +1,360 @@
+{
+  "url": "http://127.0.0.1:5190/games/billiards/?qa=1",
+  "checks": [
+    "Phase1 title is explicit",
+    "Practice starts with four resting balls",
+    "Mouse drag changes aim",
+    "Aim begins automatic cue camera",
+    "V and R camera controls",
+    "Tip panel selects backspin",
+    "Center tip reset",
+    "Prediction uses worker",
+    "Single shot, duplicate Space locked",
+    "Physics is in motion",
+    "Pause freezes physics",
+    "Shot settles and collision log populated",
+    "Contacts are chronologically ordered",
+    "Shot records are reachable",
+    "Replay reproduces exact final ball states",
+    "Replay keeps shot count",
+    "Focused menu Space activates menu without shooting",
+    "Three-ball practice layout",
+    "Settings persist",
+    "Mobile controls fit viewport",
+    "Touch drag changes aim",
+    "Touch selects backspin",
+    "Touch shot actually moves balls",
+    "Mobile contact records accessible",
+    "Mobile panel collapses",
+    "Landscape resize preserves controls",
+    "No browser, console or HTTP errors"
+  ],
+  "errors": [],
+  "diagnostics": [
+    {
+      "mode": "desktop",
+      "renderer": {
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "calls": 68,
+        "triangles": 18922,
+        "points": 0,
+        "lines": 305,
+        "geometries": 80,
+        "textures": 12,
+        "programs": 11,
+        "dpr": 1,
+        "shadowCastingLights": 1,
+        "shadowMapSize": 1024,
+        "postPasses": 0,
+        "cameraMode": "top",
+        "quality": "high",
+        "frameTimeMs": 97.22,
+        "fps": 10,
+        "ballMeshes": 3,
+        "width": 1154,
+        "height": 824,
+        "frames": 331
+      },
+      "calls": 68,
+      "triangles": 18922,
+      "points": 0,
+      "lines": 305,
+      "geometries": 80,
+      "textures": 12,
+      "programs": 11,
+      "dpr": 1,
+      "shadowCastingLights": 1,
+      "shadowMapSize": 1024,
+      "postPasses": 0,
+      "cameraMode": "top",
+      "quality": "high",
+      "frameTimeMs": 97.22,
+      "fps": 10,
+      "ballMeshes": 3,
+      "width": 1154,
+      "height": 824,
+      "frames": 331,
+      "gameState": "aiming",
+      "frameCount": 331,
+      "frameMs": 100,
+      "physics": {
+        "engine": "dedicated-billiards",
+        "timestep": 0.004166666666666667,
+        "balls": 3,
+        "energy": 0,
+        "settled": true,
+        "time": 0,
+        "safetyStops": 0
+      },
+      "simulationState": {
+        "balls": [
+          {
+            "id": "white",
+            "color": "white",
+            "position": {
+              "x": -0.71,
+              "z": 0.28
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            }
+          },
+          {
+            "id": "yellow",
+            "color": "yellow",
+            "position": {
+              "x": -0.71,
+              "z": -0.28
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            }
+          },
+          {
+            "id": "red",
+            "color": "red",
+            "position": {
+              "x": 0.71,
+              "z": 0
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            }
+          }
+        ],
+        "time": 0
+      },
+      "shotCount": 0,
+      "contacts": [],
+      "paused": false,
+      "angle": -0.16,
+      "tip": {
+        "x": 0,
+        "y": 0
+      },
+      "power": 0.35,
+      "predictionWorker": true
+    },
+    {
+      "mode": "mobile",
+      "renderer": {
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "calls": 64,
+        "triangles": 20184,
+        "points": 0,
+        "lines": 1,
+        "geometries": 81,
+        "textures": 11,
+        "programs": 11,
+        "dpr": 1,
+        "shadowCastingLights": 0,
+        "shadowMapSize": 1024,
+        "postPasses": 0,
+        "cameraMode": "top",
+        "quality": "low",
+        "frameTimeMs": 92.38,
+        "fps": 11,
+        "ballMeshes": 4,
+        "width": 390,
+        "height": 536,
+        "frames": 211
+      },
+      "calls": 64,
+      "triangles": 20184,
+      "points": 0,
+      "lines": 1,
+      "geometries": 81,
+      "textures": 11,
+      "programs": 11,
+      "dpr": 1,
+      "shadowCastingLights": 0,
+      "shadowMapSize": 1024,
+      "postPasses": 0,
+      "cameraMode": "top",
+      "quality": "low",
+      "frameTimeMs": 92.38,
+      "fps": 11,
+      "ballMeshes": 4,
+      "width": 390,
+      "height": 536,
+      "frames": 211,
+      "gameState": "aiming",
+      "frameCount": 211,
+      "frameMs": 94.16111111111115,
+      "physics": {
+        "engine": "dedicated-billiards",
+        "timestep": 0.004166666666666667,
+        "balls": 4,
+        "energy": 0,
+        "settled": true,
+        "time": 2.9458333333333746,
+        "safetyStops": 0
+      },
+      "simulationState": {
+        "balls": [
+          {
+            "id": "white",
+            "color": "white",
+            "position": {
+              "x": -0.3134870780389081,
+              "z": 0.18745076177617803
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0.18251623514883591,
+              "y": 0.08308434046031787,
+              "z": -0.5840226455619538,
+              "w": 0.7865763572268015
+            }
+          },
+          {
+            "id": "yellow",
+            "color": "yellow",
+            "position": {
+              "x": 0.76,
+              "z": -0.38
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            }
+          },
+          {
+            "id": "red",
+            "color": "red",
+            "position": {
+              "x": -0.009639894083874275,
+              "z": -0.16206325267184388
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": -0.07369577275928069,
+              "y": 0.014172531530433359,
+              "z": -0.17928078080817433,
+              "w": 0.9809314318851461
+            }
+          },
+          {
+            "id": "red2",
+            "color": "red2",
+            "position": {
+              "x": 0.58,
+              "z": 0.3
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            }
+          }
+        ],
+        "time": 2.9458333333333746
+      },
+      "shotCount": 1,
+      "contacts": [
+        {
+          "type": "shot",
+          "time": 0,
+          "sequence": 0,
+          "ballId": "white",
+          "speed": 1.125
+        },
+        {
+          "type": "ball-ball",
+          "time": 0.31161626607202497,
+          "sequence": 1,
+          "ballA": "white",
+          "ballB": "red",
+          "speed": 0.4458716878922191
+        },
+        {
+          "type": "rest",
+          "time": 2.9458333333333746,
+          "sequence": 2
+        }
+      ],
+      "paused": false,
+      "angle": 0.1,
+      "tip": {
+        "x": 0,
+        "y": -0.4600006813226744
+      },
+      "power": 0.25,
+      "predictionWorker": true
+    }
+  ],
+  "hardwarePerformance": "Not established: browser reports software rasterizer; frame rate is not representative of a physical device."
+}

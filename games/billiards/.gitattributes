@@ -1,0 +1,5 @@
+# Generated output must retain exact bytes and embedded upstream shader whitespace.
+* text=auto eol=lf
+assets/* binary
+index.html binary
+cover.png binary

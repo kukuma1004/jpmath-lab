@@ -1,0 +1,22 @@
+{
+  "checks": [
+    "Title canvas uses its real CSS dimensions",
+    "Starting practice preserves ball aspect ratio",
+    "New layout restarts automatic aiming camera",
+    "Repeated aim updates do not accumulate geometries",
+    "Returning to title resizes the drawing surface",
+    "Portrait resize matches renderer to canvas",
+    "Landscape resize matches renderer to canvas",
+    "Landscape shot button stays inside the viewport",
+    "Production entry hides QA hooks",
+    "No page errors"
+  ],
+  "errors": [],
+  "hashes": {
+    "index.html": "4a5e5d3589f7e2c254d3a00f77ce4db191b217f0a6b8204881d40da4eaca27bc",
+    "assets/index-DTZ3jC9-.js": "c40ff4f99aee499b28167ddf79dfc7eb632393767bdb275011608bf82eda7563",
+    "assets/index-DUB4RSLs.css": "c282097976bc21674093befd01b76f699f345fd6280d840d31c237066de4cfad",
+    "assets/PredictionWorker-CtC4Re4w.js": "746e6acd168231c97bef7a75380264401cb40f40bee7c1fc3a6c86813799a561",
+    "assets/three-rXC_5gu0.js": "a92fac7f0b17381a0cb03b4252970b4b907ef1b1c1c16579895bd8683e76a9b8"
+  }
+}

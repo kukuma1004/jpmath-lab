@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#10191c" />
+  <meta name="description" content="JP Math Lab의 3D 당구. 캐롬 테이블에서 조준, 파워와 당점을 조절하며 자유롭게 연습하세요." />
+  <title>3D BILLIARDS · JP Math Lab</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2310191c'/%3E%3Ccircle cx='32' cy='32' r='20' fill='%23e8e2cc'/%3E%3Ccircle cx='25' cy='25' r='3' fill='%23ba4444'/%3E%3C/svg%3E" />
+  <script type="module" crossorigin src="./assets/index-DTZ3jC9-.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/three-rXC_5gu0.js">
+  <link rel="stylesheet" crossorigin href="./assets/index-DUB4RSLs.css">
+</head>
+<body>
+  <header class="masthead">
+    <a class="lab-link" href="../" aria-label="제이피매쓰랩 게임룸으로 돌아가기"><span aria-hidden="true">↖</span><span>JP MATH LAB</span></a>
+    <div class="brand">3D <strong>BILLIARDS</strong><i></i><span>당구 클럽</span></div>
+    <nav aria-label="경기 도구">
+      <button id="sound" class="icon-button" aria-label="소리 켜기" aria-pressed="false" title="소리"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m11 5-5 4H3v6h3l5 4V5Z"/><path class="sound-wave" d="M15 8c2 2 2 6 0 8m3-11c4 4 4 10 0 14"/></svg></button>
+      <button id="help" class="icon-button" aria-label="조작 도움말" title="조작 도움말">?</button>
+      <button id="menu" class="icon-button" aria-label="경기 메뉴" title="메뉴 · Esc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 7h14M5 12h14M5 17h14"/></svg></button>
+    </nav>
+  </header>
+
+  <main class="play-layout">
+    <section class="table-stage" aria-label="3D 당구대">
+      <canvas id="world" tabindex="0" aria-label="3D 당구대. 드래그로 조준하고 스페이스로 샷, V로 시점 전환"></canvas>
+      <div class="stage-heading"><p>CAROM <span>/</span> FREE PRACTICE</p><span class="live-label"><i></i><span id="state-label">나만의 한 수</span></span></div>
+      <div class="shot-banner" id="shot-banner" role="status" aria-live="polite">방향과 당점을 정한 뒤 샷을 눌러 주세요.</div>
+      <div id="welcome" class="welcome">
+        <div class="welcome-copy"><p class="eyebrow">JP MATH LAB · BILLIARD CLUB</p><h1>3D<br><strong>BILLIARDS</strong><span>각도를 읽고,<br>다음 한 수를 그리다.</span></h1><p class="welcome-description">천천히 조준하고, 섬세하게 타격하세요.<br>한 번의 샷이 새로운 궤적을 만듭니다.</p><button id="start" class="primary-button">자유 연습 시작 <span aria-hidden="true">↗</span></button><p class="release-note">PHASE 1 · 캐롬 물리 연습<br>4구·3쿠션 경기와 8볼·AI는 다음 단계에서 열립니다.</p></div>
+      </div>
+      <div class="view-tools" aria-label="카메라와 조준 보조">
+        <div class="view-switch" role="group" aria-label="카메라 시점"><button id="camera-top" aria-pressed="true">탑뷰</button><button id="camera-cue" aria-pressed="false">큐 시점</button></div>
+        <button id="reset-camera" class="small-button" aria-label="카메라 재설정" title="카메라 재설정 · R">⟲</button>
+        <label class="guide-select">조준 보조 <select id="assist" aria-label="조준 보조"><option value="none">없음</option><option value="basic" selected>기본</option><option value="advanced">고급</option></select></label>
+      </div>
+      <div class="stage-bottom"><span id="aim-label">드래그하여 조준 · 휠로 확대</span><span id="angle-label">0.0°</span></div>
+      <div id="error" class="error" hidden role="alert"></div>
+    </section>
+
+    <aside class="cue-console" aria-label="샷 컨트롤">
+      <div class="console-heading"><div><p class="eyebrow">YOUR NEXT SHOT</p><h2>자유 연습</h2></div><button id="collapse" class="small-button" aria-label="세부 컨트롤 접기" aria-expanded="true">⌄</button></div>
+      <div class="setup-controls">
+        <label class="layout-label">연습 배치<select id="layout"><option value="opening">기본 배치 · 4구</option><option value="collision">정면 충돌</option><option value="cushion">쿠션과 회전</option><option value="spin">밀어치기 · 끌어치기</option><option value="three">캐롬 · 공 3개</option></select></label>
+        <div class="cue-choice"><span>내 수구</span><div role="group" aria-label="수구 선택"><button id="cue-white" aria-pressed="true"><i class="ball white"></i>흰 공</button><button id="cue-yellow" aria-pressed="false"><i class="ball yellow"></i>노란 공</button></div></div>
+      </div>
+      <div class="shot-controls">
+        <section class="tip-section" aria-labelledby="tip-title"><div class="section-label"><h3 id="tip-title">당점</h3><button id="reset-tip" title="중앙 당점으로" class="text-button">중앙</button></div><div id="tip-pad" class="tip-pad" role="group" aria-label="당점. 위쪽 밀어치기, 아래쪽 끌어치기. 방향키로 조절할 수 있습니다." tabindex="0"><span class="tip-vertical"></span><span class="tip-horizontal"></span><i id="tip-dot"></i><span class="tip-top">밀기</span><span class="tip-bottom">끌기</span></div><output id="tip-label">중앙 · 무회전 타격</output></section>
+        <section class="power-section" aria-labelledby="power-title"><div class="section-label"><h3 id="power-title">파워</h3><output id="power-value">45<span>%</span></output></div><div class="power-track"><input id="power" type="range" min="5" max="100" step="1" value="45" aria-label="타격 파워"/><div class="power-ticks" aria-hidden="true"><span>SOFT</span><span>HARD</span></div></div><div class="fine-aim"><button id="aim-left" aria-label="왼쪽 미세 조준">−</button><span>미세 조준</span><button id="aim-right" aria-label="오른쪽 미세 조준">+</button></div></section>
+      </div>
+      <div class="strike-area"><button id="shoot" class="strike-button" disabled><span id="shoot-label">샷</span><span class="strike-key">SPACE <span aria-hidden="true">↗</span></span></button><div class="secondary-actions"><button id="replay" disabled>↶ 이전 샷 재생</button><button id="reset-layout">배치 초기화</button><button id="open-record">샷 기록</button></div></div>
+      <section class="shot-record" aria-labelledby="record-title"><div class="section-label"><h3 id="record-title">샷 기록</h3><span id="shot-number">첫 샷을 기다리는 중</span></div><p id="record-summary">공이 모두 멈추면 접촉 순서를 확인할 수 있습니다.</p><ol id="contact-log"></ol></section>
+      <p class="console-footnote">캐롬 테이블 2.84 × 1.42 m<br>자유 연습 · 점수 없이 감각 익히기</p>
+    </aside>
+  </main>
+
+  <dialog id="pause-dialog"><form method="dialog"><button class="dialog-close" aria-label="닫기">×</button></form><p class="eyebrow">TAKE A BREATH</p><h2>잠시, 쉬어 가기.</h2><p>이어서 나만의 궤적을 그려 보세요.</p><button id="resume" class="primary-button">연습 계속 <span>→</span></button><div class="settings"><label>자동 카메라 전환<input id="auto-camera" type="checkbox" checked/></label><label>소리<input id="sound-setting" type="checkbox"/></label><label>그래픽<select id="quality"><option value="high">높음</option><option value="low">절약</option></select></label><label>움직임 줄이기<input id="reduce-motion" type="checkbox"/></label></div><div class="dialog-actions"><button id="new-practice">새 연습</button><button id="back-title">처음 화면</button><a href="../">게임룸으로 ↗</a></div><p class="phase-note">현재는 Phase 1 자유 연습입니다.<br>3구·4구 점수 대전, 포켓볼과 AI는 준비 중입니다.</p></dialog>
+  <dialog id="help-dialog"><form method="dialog"><button class="dialog-close" aria-label="닫기">×</button></form><p class="eyebrow">A LITTLE PRECISION</p><h2>한 수를 만드는 방법</h2><dl class="help-list"><dt>조준</dt><dd>당구대에서 좌우 드래그 · 방향키로 미세 조준<br>Shift + 방향키로 더 섬세하게</dd><dt>타격</dt><dd>당점과 파워를 고른 뒤 샷 버튼 또는 Space</dd><dt>카메라</dt><dd>V 시점 전환 · 휠/두 손가락으로 확대<br>우클릭 드래그로 회전 · R 초기화</dd><dt>회전</dt><dd>당점 위: 밀어치기 · 아래: 끌어치기<br>좌우 당점은 쿠션 반사에 영향을 줍니다.</dd><dt>연습</dt><dd>배치 메뉴로 충돌·쿠션·회전을 연습하세요.<br>공이 멈추면 기록 확인과 이전 샷 재생이 열립니다.</dd></dl><p class="phase-note">고급 보조는 최대 10초까지의 예측 경로입니다.<br>회색 경로는 다른 공, 금색은 수구의 경로입니다.</p><button id="help-done" class="primary-button">확인 <span>→</span></button></dialog>
+  <dialog id="record-dialog"><form method="dialog"><button class="dialog-close" aria-label="닫기">×</button></form><p class="eyebrow">FOLLOW THE CONTACTS</p><h2>이전 샷 기록</h2><p id="record-dialog-summary">첫 샷을 기다리는 중입니다.</p><ol id="record-dialog-log" class="record-dialog-log"></ol><p class="phase-note">물리엔진의 접촉 시각 순서입니다.<br>현재는 자유 연습이며 득점 판정은 하지 않습니다.</p><button id="record-done" class="primary-button">연습으로 <span>→</span></button></dialog>
+</body>
+</html>

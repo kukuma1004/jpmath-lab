@@ -1,0 +1,242 @@
+{
+  "url": "http://127.0.0.1:5190/games/billiards/?qa=1",
+  "mode": "desktop",
+  "state": "cue-view",
+  "requestedState": "cue-view",
+  "appliedState": "cue-view",
+  "runId": "billiards-phase1-final-4",
+  "seed": null,
+  "screenshotPath": "../artifacts/visual-pass-4/desktop-cue.png",
+  "gpu": {
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "vendor": "Google Inc. (Google)",
+    "softwareRendered": true
+  },
+  "result": {
+    "ok": true,
+    "reason": "nonblank",
+    "rect": {
+      "x": 0,
+      "y": 146,
+      "width": 994,
+      "height": 486
+    },
+    "drawingBuffer": {
+      "width": 994,
+      "height": 486
+    },
+    "alphaPixels": 4129,
+    "variance": 249,
+    "colorBuckets": 109,
+    "metrics": {
+      "colorBuckets": 180,
+      "colorEntropyBits": 3.73,
+      "edgeDensity": 0.099,
+      "luminance": {
+        "mean": 98.3,
+        "p5": 23.4,
+        "p95": 141.5,
+        "contrast": 118.1
+      },
+      "dominantColorShare": 0.217,
+      "nonBackgroundShare": 0.783
+    },
+    "renderBudget": {
+      "tier": "desktop",
+      "note": "starting-point budget; adjust per game and document overrides",
+      "rows": [
+        {
+          "metric": "calls",
+          "actual": 50,
+          "limit": 300,
+          "ok": true
+        },
+        {
+          "metric": "triangles",
+          "actual": 18488,
+          "limit": 750000,
+          "ok": true
+        },
+        {
+          "metric": "geometries",
+          "actual": 77,
+          "limit": 300,
+          "ok": true
+        },
+        {
+          "metric": "textures",
+          "actual": 12,
+          "limit": 60,
+          "ok": true
+        }
+      ],
+      "withinBudget": true
+    },
+    "diagnostics": {
+      "renderer": {
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "calls": 50,
+        "triangles": 18488,
+        "points": 0,
+        "lines": 1,
+        "geometries": 77,
+        "textures": 12,
+        "programs": 11,
+        "dpr": 1,
+        "shadowCastingLights": 1,
+        "shadowMapSize": 1024,
+        "postPasses": 0,
+        "cameraMode": "cue",
+        "quality": "high",
+        "frameTimeMs": 28.76,
+        "fps": 35,
+        "ballMeshes": 4,
+        "width": 994,
+        "height": 486,
+        "frames": 112
+      },
+      "calls": 50,
+      "triangles": 18488,
+      "points": 0,
+      "lines": 1,
+      "geometries": 77,
+      "textures": 12,
+      "programs": 11,
+      "dpr": 1,
+      "shadowCastingLights": 1,
+      "shadowMapSize": 1024,
+      "postPasses": 0,
+      "cameraMode": "cue",
+      "quality": "high",
+      "frameTimeMs": 28.76,
+      "fps": 35,
+      "ballMeshes": 4,
+      "width": 994,
+      "height": 486,
+      "frames": 112,
+      "gameState": "aiming",
+      "frameCount": 12,
+      "frameMs": 94.57500000794728,
+      "physics": {
+        "engine": "dedicated-billiards",
+        "timestep": 0.004166666666666667,
+        "balls": 4,
+        "energy": 0,
+        "settled": true,
+        "time": 0,
+        "safetyStops": 0
+      },
+      "simulationState": {
+        "balls": [
+          {
+            "id": "white",
+            "color": "white",
+            "position": {
+              "x": -0.71,
+              "z": 0.28
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            }
+          },
+          {
+            "id": "yellow",
+            "color": "yellow",
+            "position": {
+              "x": -0.71,
+              "z": -0.28
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            }
+          },
+          {
+            "id": "red",
+            "color": "red",
+            "position": {
+              "x": 0.71,
+              "z": 0
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            }
+          },
+          {
+            "id": "red2",
+            "color": "red2",
+            "position": {
+              "x": 0.45,
+              "z": -0.32
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            }
+          }
+        ],
+        "time": 0
+      },
+      "shotCount": 0,
+      "contacts": [],
+      "paused": false,
+      "angle": -0.16,
+      "tip": {
+        "x": 0,
+        "y": 0
+      },
+      "power": 0.45,
+      "predictionWorker": true
+    }
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "consoleErrorCount": 0,
+  "pageErrorCount": 0
+}
