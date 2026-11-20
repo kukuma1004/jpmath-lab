@@ -1,8 +1,12 @@
 'use strict';
 
 const Forge = (() => {
-  const saveKey = 'jp-math-lab:mongle-forge:v1';
-  const backupKey = saveKey + ':before-infinite';
+  const legacySaveKey = 'jp-math-lab:mongle-forge:v1';
+  const backupKey = legacySaveKey + ':before-infinite';
+  const seasonId = 'season-20261120-1';
+  // Isolate the season from older tabs that still write the previous save format.
+  const saveKey = legacySaveKey + ':' + seasonId;
+  const startingShards = 10000n;
   const cooldown = 680;
   const offlineLimit = 8 * 60 * 60 * 1000;
   const recoveryBonus = 800;
@@ -110,11 +114,12 @@ const Forge = (() => {
 
     return {
       version: 2,
+      season: seasonId,
       level,
       bestLevel,
       enchantment: savedEffects[0] ?? null,
       enchantments: savedEffects,
-      shards: natural(old.shards, 120n),
+      shards: natural(old.shards, startingShards),
       broken,
       attempts: natural(old.attempts),
       shattered: natural(old.shattered),
@@ -134,6 +139,29 @@ const Forge = (() => {
 
   function serialize(state) {
     return JSON.stringify(state, (_, value) => typeof value === 'bigint' ? value.toString() : value);
+  }
+
+  function loadSeason(raw, now = Date.now(), random = Math.random) {
+    return restore(raw?.season === seasonId ? raw : null, now, random);
+  }
+
+  function rankingName(value, limit) {
+    const name = typeof value === 'string' ? value.trim().normalize('NFC') : '';
+    if (!name || name.length > limit || !/^[가-힣ㄱ-ㅎㅏ-ㅣA-Za-z0-9 _.\-]+$/.test(name)) {
+      throw new Error('이름은 한글·영문·숫자·공백과 _ . -로 입력해 주세요.');
+    }
+    return name;
+  }
+
+  function rankingRecord(state, nickname, weaponName) {
+    if (state.broken) throw new Error('검이 깨졌어요. 새 검을 만든 뒤 등록해 주세요.');
+    const value = appraisal(state).value.toString();
+    if (value.length > 512 || state.level.toString().length > 128) throw new Error('이 무기는 랭킹의 표시 범위를 넘었어요. 강화는 계속할 수 있어요.');
+    return {
+      nickname: rankingName(nickname, 12), weaponName: rankingName(weaponName, 16),
+      level: state.level.toString(), value: value.padStart(512, '0'),
+      effect1: state.enchantments[0], effect2: state.enchantments[1] ?? 'none', effect3: state.enchantments[2] ?? 'none',
+    };
   }
 
   function formAt(level) {
@@ -264,7 +292,7 @@ const Forge = (() => {
     return { ...event, spent: offer.cost };
   }
 
-  return { saveKey, backupKey, cooldown, recoveryBonus, offlineLimit, enchantmentLimit, forms, enchantments, appraisal, restore, serialize, formAt, cost, income, preview, enchantPreview, collectPassive, act, enchant };
+  return { saveKey, legacySaveKey, backupKey, seasonId, startingShards, cooldown, recoveryBonus, offlineLimit, enchantmentLimit, forms, enchantments, appraisal, restore, loadSeason, serialize, rankingName, rankingRecord, formAt, cost, income, preview, enchantPreview, collectPassive, act, enchant };
 })();
 
 if (typeof module !== 'undefined') module.exports = Forge;

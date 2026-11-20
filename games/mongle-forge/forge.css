@@ -472,3 +472,53 @@ body { background: radial-gradient(ellipse at 43% 30%, #203236, #142025 67%, #15
  .magic-slot { font-size:8px; }
  .special-forge > p { font-size:9px; }
 }
+
+.site-header { grid-template-columns:auto minmax(0,1fr) auto; }
+.lab { justify-self:center; }
+.header-actions { display:flex; align-items:center; gap:6px; justify-self:end; }
+.ranking-dialog { width:min(760px,100% - 24px); padding:22px; }
+.ranking-preview { display:flex; align-items:center; gap:13px; margin:15px 0; padding:8px 12px; background:#2b3436; border:1px solid #d5ab6255; border-radius:9px; }
+.ranking-preview img { width:64px; height:64px; object-fit:contain; flex:none; }
+.ranking-preview strong,.ranking-preview span { display:block; }
+.ranking-preview strong { font-size:13px; color:#f9e1b1; }
+.ranking-preview span { margin-top:5px; font:700 20px Georgia,serif; color:#e8bc72; overflow-wrap:anywhere; }
+.ranking-inputs { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.ranking-inputs label { display:block; font-size:12px; color:#d8c7a7; }
+.ranking-inputs small { color:#929f99; font-size:10px; margin-left:4px; }
+.ranking-inputs input { display:block; width:100%; margin-top:6px; padding:10px; min-height:44px; border:1px solid #77816c; border-radius:6px; background:#182428; color:#fff0d4; font:inherit; font-size:16px; }
+.ranking-inputs input::placeholder { font-size:12px; color:#8b9c94; }
+.ranking-submit { width:100%; min-height:44px; margin-top:12px; border:1px solid #d09c53; border-radius:7px; background:linear-gradient(#d89845,#a46930); color:#fff0d3; font:800 15px "Malgun Gothic",sans-serif; }
+.ranking-submit:disabled { background:#46514d; border-color:#69776c; color:#a6b1a5; }
+.ranking-note { color:#a6b0a1; font-size:10px; line-height:1.65; margin-top:9px; word-break:keep-all; }
+.ranking-delete { padding:5px 0; color:#d7aa94; border:0; background:transparent; font-size:11px; text-decoration:underline; text-underline-offset:3px; }
+.ranking-status { min-height:2.8em; margin:10px 0; color:#eed4a1; font-size:12px; line-height:1.5; word-break:keep-all; }
+.ranking-toolbar { display:flex; align-items:center; justify-content:space-between; gap:8px; margin:15px 0 8px; }
+.ranking-toolbar h3 { font-size:14px; color:#dfd0b2; }
+.ranking-list { margin:0; padding:0; list-style:none; max-height:330px; overflow:auto; overscroll-behavior:contain; }
+.ranking-row { display:grid; grid-template-columns:28px 64px minmax(0,1fr) auto; gap:9px; align-items:center; padding:10px 4px; border-top:1px solid #65705d77; }
+.ranking-place { text-align:center; color:#e3ba73; font:700 24px Georgia,serif; }
+.ranking-weapon { width:64px; height:64px; object-fit:contain; }
+.ranking-weapon-info strong { display:block; color:#ffe3af; font-size:13px; overflow-wrap:anywhere; }
+.ranking-nickname { display:block; margin-top:4px; color:#a8b9ac; font-size:11px; overflow-wrap:anywhere; }
+.ranking-effects { display:flex; flex-wrap:wrap; gap:4px; margin-top:6px; }
+.ranking-effects span { font-size:9px; padding:2px 4px; border:1px solid color-mix(in srgb,var(--magic) 32%,transparent); border-radius:3px; color:var(--magic); background:#192429; }
+.ranking-value { text-align:right; max-width:170px; overflow-wrap:anywhere; }
+.ranking-value strong { display:block; color:#e8c68c; font-size:14px; font-variant-numeric:tabular-nums; }
+.ranking-value > span { display:block; color:#a1b09e; font-size:11px; margin-top:5px; }
+.ranking-mine { background:#7b643526; border-color:#c5a25988; }
+.ranking-empty { padding:20px 12px; color:#b4bca8; font-size:12px; text-align:center; line-height:1.7; }
+@media(max-width:700px) {
+ .header-actions { gap:4px; }
+ .header-actions .quiet-button { padding-inline:6px; }
+ .ranking-dialog { padding:15px; max-height:90dvh; }
+ .ranking-inputs { grid-template-columns:1fr; gap:10px; }
+ .ranking-preview { margin-block:12px; }
+ .ranking-row { grid-template-columns:22px 43px minmax(0,1fr); gap:7px; }
+ .ranking-weapon { width:43px; height:55px; grid-row:span 2; }
+ .ranking-place { grid-row:span 2; font-size:21px; }
+ .ranking-value { grid-column:3; display:flex; align-items:center; justify-content:space-between; gap:8px; max-width:none; text-align:left; }
+ .ranking-value > span { margin:0; }
+ .ranking-weapon-info strong { font-size:12px; }
+ .ranking-list { max-height:260px; }
+}
+@media(max-width:360px) { .lab { font-size:11px; }.header-actions .quiet-button { font-size:9px; padding-inline:5px; } }

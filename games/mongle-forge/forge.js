@@ -40,20 +40,23 @@
   }
 
   function loadStored() {
-    if (!storageOkay) return { next: state, original: null };
+    if (!storageOkay) return { next: state, reset: false };
     try {
       const original = localStorage.getItem(Forge.saveKey);
       const raw = original ? JSON.parse(original) : null;
-      return { next: Forge.restore(raw), original: raw && raw.version !== 2 ? original : null };
+      return { next: Forge.loadSeason(raw), reset: (!!raw && raw.season !== Forge.seasonId) || localStorage.getItem(Forge.legacySaveKey) !== null };
     } catch {
       storageOkay = false;
-      return { next: state, original: null };
+      return { next: state, reset: false };
     }
   }
 
-  function persist(next, original) {
+  function persist(next, reset) {
     try {
-      if (original && !localStorage.getItem(Forge.backupKey)) localStorage.setItem(Forge.backupKey, original);
+      if (reset) {
+        localStorage.removeItem(Forge.legacySaveKey);
+        localStorage.removeItem(Forge.backupKey);
+      }
       localStorage.setItem(Forge.saveKey, Forge.serialize(next));
     } catch {
       storageOkay = false;
@@ -63,10 +66,10 @@
 
   async function transaction(action) {
     const update = () => {
-      const { next, original } = loadStored();
+      const { next, reset } = loadStored();
       Forge.collectPassive(next);
       const event = action?.(next);
-      persist(next, original);
+      persist(next, reset);
       state = next;
       render();
       return event;
@@ -360,7 +363,7 @@
     book.showModal();
   });
   document.addEventListener('keydown', event => {
-    if (event.code !== 'Space' || event.repeat || event.ctrlKey || event.altKey || event.metaKey || book.open) return;
+    if (event.code !== 'Space' || event.repeat || event.ctrlKey || event.altKey || event.metaKey || book.open || $('ranking').open) return;
     if (event.target instanceof HTMLButtonElement || event.target instanceof HTMLInputElement) return;
     event.preventDefault();
     if (!button.disabled) attempt();
@@ -368,7 +371,7 @@
   addEventListener('storage', event => {
     if (event.key !== Forge.saveKey || !event.newValue) return;
     try {
-      state = Forge.restore(JSON.parse(event.newValue));
+      state = Forge.loadSeason(JSON.parse(event.newValue));
       render();
     } catch {
       $('storage-status').textContent = '다른 탭의 저장 내용을 읽을 수 없어요.';
@@ -381,5 +384,9 @@
     if (!document.hidden) transaction();
   }, 1000);
 
+  ForgeRanking.mount({
+    getState: () => state, fmt, asset,
+    capture: (nickname, weaponName) => transaction(next => Forge.rankingRecord(next, nickname, weaponName)),
+  });
   transaction();
 })();

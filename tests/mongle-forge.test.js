@@ -306,3 +306,35 @@ test('automatic income is reduced with a playable minimum and engraving prices s
   const huge = Forge.restore({ level: '90071992547409931234567890' }, 100000);
   assert.equal(Forge.income(huge), (12n + huge.bestLevel ** 3n / 6n) / 20n);
 });
+
+test('the new season resets all earlier progress once and starts with exactly 10000 shards', () => {
+  const old={version:2,level:'80',bestLevel:'99',shards:'999999999',enchantments:['astral','lunar','storm'],broken:true,
+    attempts:'1000',shattered:'100',pity:{81:9000},history:[{kind:'shatter',from:'80',target:'81',at:1}],paidAt:1,legacy:{miner:999,echo:999,polish:999}};
+  const state=Forge.loadSeason(old,100000,()=>0);
+  assert.equal(state.season,Forge.seasonId);
+  assert.equal(state.shards,10000n);
+  assert.equal(state.level,0n);assert.equal(state.bestLevel,0n);assert.equal(state.broken,false);
+  assert.equal(state.attempts,0n);assert.equal(state.shattered,0n);
+  assert.deepEqual(state.enchantments,['cinder']);assert.deepEqual(state.history,[]);assert.deepEqual(state.pity,{});
+  assert.equal(Forge.income(state),2n);assert.equal(state.paidAt,100000);
+  Forge.act(state,100000,()=>0);
+  const reloaded=Forge.loadSeason(JSON.parse(Forge.serialize(state)),101000,()=>.99);
+  assert.equal(reloaded.level,1n);assert.equal(reloaded.shards,9984n);assert.equal(reloaded.attempts,1n);
+  assert.equal(Forge.restore(null,100000,()=>0).shards,10000n);
+  assert.notEqual(Forge.saveKey,Forge.legacySaveKey);
+  assert(Forge.saveKey.endsWith(Forge.seasonId));
+});
+
+test('ranking snapshots use chosen names, every effect and exact sortable BigInt values', () => {
+  const state=Forge.restore({level:'32',enchantments:['astral','lunar','storm']},100000);
+  const row=Forge.rankingRecord(state,'  몽글대장  ','새벽의 검');
+  assert.equal(row.nickname,'몽글대장');assert.equal(row.weaponName,'새벽의 검');
+  assert.equal(row.value.length,512);assert.equal(BigInt(row.value),7860418n);
+  assert.deepEqual([row.effect1,row.effect2,row.effect3],state.enchantments);
+  const huge=Forge.rankingRecord(Forge.restore({level:'9007199254740993123',enchantment:'lunar'},100000),'큰검','무한검');
+  assert(huge.value>row.value);
+  state.broken=true;state.enchantments=[];state.enchantment=null;
+  assert.equal(BigInt(row.value),7860418n);
+  assert.throws(()=>Forge.rankingRecord(state,'몽글','깨진 검'),/깨졌/);
+  for(const name of ['','   ','<script>','a'.repeat(13)])assert.throws(()=>Forge.rankingName(name,12));
+});
