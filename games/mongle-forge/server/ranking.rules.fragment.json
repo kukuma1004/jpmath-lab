@@ -2,20 +2,40 @@
   "mongleForgeV1": {
     "$season": {
       ".read": "$season == 'season-20261120-1' && query.orderByChild == 'value' && query.limitToLast != null && query.limitToLast > 0 && query.limitToLast <= 100",
-      ".indexOn": ["value"],
+      ".indexOn": [
+        "value"
+      ],
       "$uid": {
         ".read": "auth != null && auth.uid == $uid && $season == 'season-20261120-1'",
         ".write": "auth != null && auth.uid == $uid && $season == 'season-20261120-1' && (!newData.exists() || !data.exists() || newData.child('value').val() > data.child('value').val() || (newData.child('value').val() == data.child('value').val() && newData.child('level').val() == data.child('level').val() && newData.child('effect1').val() == data.child('effect1').val() && newData.child('effect2').val() == data.child('effect2').val() && newData.child('effect3').val() == data.child('effect3').val()))",
-        ".validate": "newData.hasChildren(['nickname','weaponName','level','value','effect1','effect2','effect3','submittedAt']) && newData.child('effect1').val() != newData.child('effect2').val() && newData.child('effect1').val() != newData.child('effect3').val() && (newData.child('effect2').val() == 'none' || newData.child('effect2').val() != newData.child('effect3').val()) && (newData.child('effect2').val() != 'none' || newData.child('effect3').val() == 'none')",
-        "nickname": { ".validate": "newData.isString() && newData.val().matches(/^[가-힣ㄱ-ㅎㅏ-ㅣA-Za-z0-9 _.-]{1,12}$/) && newData.val().matches(/.*[^ ].*/)" },
-        "weaponName": { ".validate": "newData.isString() && newData.val().matches(/^[가-힣ㄱ-ㅎㅏ-ㅣA-Za-z0-9 _.-]{1,16}$/) && newData.val().matches(/.*[^ ].*/)" },
-        "level": { ".validate": "newData.isString() && newData.val().matches(/^(0|[1-9][0-9]{0,127})$/)" },
-        "value": { ".validate": "newData.isString() && newData.val().matches(/^[0-9]{512}$/) && newData.val().matches(/.*[1-9].*/)" },
-        "effect1": { ".validate": "newData.val() == 'cinder' || newData.val() == 'frost' || newData.val() == 'storm' || newData.val() == 'astral' || newData.val() == 'lunar'" },
-        "effect2": { ".validate": "newData.val() == 'none' || newData.val() == 'cinder' || newData.val() == 'frost' || newData.val() == 'storm' || newData.val() == 'astral' || newData.val() == 'lunar'" },
-        "effect3": { ".validate": "newData.val() == 'none' || newData.val() == 'cinder' || newData.val() == 'frost' || newData.val() == 'storm' || newData.val() == 'astral' || newData.val() == 'lunar'" },
-        "submittedAt": { ".validate": "newData.isNumber() && newData.val() == now" },
-        "$other": { ".validate": false }
+        ".validate": "newData.hasChildren(['nickname','weaponName','level','value','effect1','effect2','effect3','submittedAt']) && (newData.child('effect2').val() != 'none' || newData.child('effect3').val() == 'none')",
+        "nickname": {
+          ".validate": "newData.isString() && newData.val().matches(/^[가-힣ㄱ-ㅎㅏ-ㅣA-Za-z0-9 _.-]{1,12}$/) && newData.val().matches(/.*[^ ].*/)"
+        },
+        "weaponName": {
+          ".validate": "newData.isString() && newData.val().matches(/^[가-힣ㄱ-ㅎㅏ-ㅣA-Za-z0-9 _.-]{1,16}$/) && newData.val().matches(/.*[^ ].*/)"
+        },
+        "level": {
+          ".validate": "newData.isString() && newData.val().matches(/^(0|[1-9][0-9]{0,127})$/)"
+        },
+        "value": {
+          ".validate": "newData.isString() && newData.val().matches(/^[0-9]{512}$/) && newData.val().matches(/.*[1-9].*/)"
+        },
+        "effect1": {
+          ".validate": "newData.val() == 'cinder' || newData.val() == 'frost' || newData.val() == 'storm' || newData.val() == 'astral' || newData.val() == 'lunar' || newData.val() == 'solar' || newData.val() == 'verdant'"
+        },
+        "effect2": {
+          ".validate": "newData.val() == 'none' || newData.val() == 'cinder' || newData.val() == 'frost' || newData.val() == 'storm' || newData.val() == 'astral' || newData.val() == 'lunar' || newData.val() == 'solar' || newData.val() == 'verdant'"
+        },
+        "effect3": {
+          ".validate": "newData.val() == 'none' || newData.val() == 'cinder' || newData.val() == 'frost' || newData.val() == 'storm' || newData.val() == 'astral' || newData.val() == 'lunar' || newData.val() == 'solar' || newData.val() == 'verdant'"
+        },
+        "submittedAt": {
+          ".validate": "newData.isNumber() && newData.val() == now"
+        },
+        "$other": {
+          ".validate": false
+        }
       }
     }
   }

@@ -5,8 +5,9 @@ const Forge = (() => {
   const backupKey = legacySaveKey + ':before-infinite';
   const seasonId = 'season-20261120-1';
   // Isolate the season from older tabs that still write the previous save format.
-  const previousSaveKey = legacySaveKey + ':' + seasonId;
-  const saveKey = previousSaveKey + ':market-1';
+  const olderSaveKey = legacySaveKey + ':' + seasonId;
+  const previousSaveKey = olderSaveKey + ':market-1';
+  const saveKey = olderSaveKey + ':rainbow-1';
   const startingShards = 10000n;
   const cooldown = 680;
   const offlineLimit = 8 * 60 * 60 * 1000;
@@ -47,9 +48,11 @@ const Forge = (() => {
 
   const enchantments = [
     { id: 'cinder', name: '잿불의 숨결', rank: '일반', mark: '♨', tenths: 12n, weight: 38 },
+    { id: 'solar', name: '노을의 불꽃', rank: '희귀', mark: '☀', tenths: 14n, weight: 22 },
+    { id: 'astral', name: '별빛의 축복', rank: '영웅', mark: '✦', tenths: 24n, weight: 12 },
+    { id: 'verdant', name: '숲의 가호', rank: '희귀', mark: '❧', tenths: 21n, weight: 14 },
     { id: 'frost', name: '서리꽃 각인', rank: '희귀', mark: '❄', tenths: 16n, weight: 28 },
     { id: 'storm', name: '폭풍의 맹세', rank: '희귀', mark: 'ϟ', tenths: 19n, weight: 18 },
-    { id: 'astral', name: '별빛의 축복', rank: '영웅', mark: '✦', tenths: 24n, weight: 12 },
     { id: 'lunar', name: '월식의 계약', rank: '전설', mark: '☾', tenths: 32n, weight: 4 },
   ];
 
@@ -67,8 +70,10 @@ const Forge = (() => {
     const effects = state.broken ? [] : state.enchantments.map(id => enchantments.find(entry => entry.id === id));
     const numerator = effects.reduce((product, entry) => product * entry.tenths, 1n);
     const denominator = 10n ** BigInt(effects.length);
-    const base = state.broken ? 0n : 120n + 15n * state.level * (state.level + 1n) * (state.level + 2n);
-    return { enchantment: effects[0], effects, numerator, denominator, base, value: base * numerator / denominator };
+    const rawBase = state.broken ? 0n : 120n + 15n * state.level * (state.level + 1n) * (state.level + 2n);
+    const levelTenths = 10n + state.level;
+    const base = rawBase * levelTenths / 10n;
+    return { enchantment: effects[0], effects, numerator, denominator, rawBase, levelTenths, base, value: base * numerator / denominator };
   }
 
   function natural(value, fallback = 0n) {
@@ -109,6 +114,7 @@ const Forge = (() => {
         entry.enchantment !== entry.replaced && /^\d+$/.test(String(entry.valueBefore)) && /^\d+$/.test(String(entry.valueAfter)))
     ).slice(0, 12).map(entry => ({
       kind: entry.kind, from: String(entry.from), target: String(entry.target), at: entry.at,
+      ...(/^\d+$/.test(String(entry.spent)) ? { spent: String(entry.spent) } : {}),
       ...(['enchant', 'reroll'].includes(entry.kind) && enchantments.some(effect => effect.id === entry.enchantment) ? { enchantment: entry.enchantment } : {}),
       ...(entry.kind === 'reroll' ? { replaced: entry.replaced, slot: entry.slot, valueBefore: String(entry.valueBefore), valueAfter: String(entry.valueAfter) } : {}),
       ...(entry.kind === 'shatter' && Number.isInteger(entry.lostEffects) && entry.lostEffects >= 0 && entry.lostEffects <= enchantmentLimit ? { lostEffects: entry.lostEffects } : {}),
@@ -120,10 +126,10 @@ const Forge = (() => {
         if (/^[1-9]\d*$/.test(target) && owned === true) protections[target] = true;
       }
     }
-    const savedEffects = !broken && Array.isArray(old.enchantments) ? [...new Set(old.enchantments.filter(id =>
-      enchantments.some(entry => entry.id === id)))].slice(0, enchantmentLimit) : [];
+    const savedEffects = !broken && Array.isArray(old.enchantments) ? old.enchantments.filter(id =>
+      enchantments.some(entry => entry.id === id)).slice(0, enchantmentLimit) : [];
     if (!broken && !savedEffects.length) savedEffects.push(enchantments.some(entry => entry.id === old.enchantment) ? old.enchantment :
-      raw ? enchantments[Number((level / 8n + 4n) % 5n)].id : rollEnchantment(random));
+      raw ? ['cinder', 'frost', 'storm', 'astral', 'lunar'][Number((level / 8n + 4n) % 5n)] : rollEnchantment(random));
 
     return {
       version: 2,
@@ -137,8 +143,8 @@ const Forge = (() => {
       sold: broken && old.sold === true,
       generation: natural(old.generation),
       protections,
-      rankingBest: validSnapshot(old.rankingBest) ? { level: old.rankingBest.level, value: old.rankingBest.value,
-        effect1: old.rankingBest.effect1, effect2: old.rankingBest.effect2, effect3: old.rankingBest.effect3 } : null,
+      protectionUses: natural(old.protectionUses, BigInt(history.filter(entry => entry.kind === 'protected').length)),
+      rankingBest: normalizeSnapshot(old.rankingBest),
       rankBonus: old.rankBonus && Number.isInteger(old.rankBonus.rank) && old.rankBonus.rank >= 1 && old.rankBonus.rank <= 10 &&
         Number.isFinite(old.rankBonus.since) && old.rankBonus.since >= 0 && old.rankBonus.since <= now &&
         Number.isFinite(old.rankBonus.until) && old.rankBonus.until >= old.rankBonus.since && old.rankBonus.until <= old.rankBonus.since + 60000 ? { ...old.rankBonus } : null,
@@ -193,14 +199,14 @@ const Forge = (() => {
     };
   }
 
-  function validSnapshot(row) {
+  function normalizeSnapshot(row) {
     if (!row || typeof row.level !== 'string' || !/^(0|[1-9][0-9]{0,127})$/.test(row.level) ||
-        typeof row.value !== 'string' || !/^[0-9]{512}$/.test(row.value)) return false;
+        typeof row.value !== 'string' || !/^[0-9]{512}$/.test(row.value)) return null;
     const ids = [row.effect1, row.effect2, row.effect3];
-    if (ids[0] === 'none' || (ids[1] === 'none' && ids[2] !== 'none')) return false;
+    if (ids[0] === 'none' || (ids[1] === 'none' && ids[2] !== 'none')) return null;
     const effects = ids.filter(id => id !== 'none');
-    if (new Set(effects).size !== effects.length || effects.some(id => !enchantments.some(effect => effect.id === id))) return false;
-    return appraisal({ level: BigInt(row.level), enchantments: effects, broken: false }).value === BigInt(row.value);
+    if (effects.some(id => !enchantments.some(effect => effect.id === id))) return null;
+    return weaponSnapshot({ level: BigInt(row.level), enchantments: effects, broken: false });
   }
 
   function rememberWeapon(state) {
@@ -235,9 +241,29 @@ const Forge = (() => {
     return 12n + level ** 3n / 6n + miner * 4n + polish * 2n + echo * 2n;
   }
 
-  function baseIncome(state) {
+  function incomeBreakdown(state) {
     const rate = productionBase(state) / 20n;
-    return (rate < 2n ? 2n : rate) * 2n;
+    const previous = (rate < 2n ? 2n : rate) * 2n;
+    return { base: 4n, record: (previous - 4n) * 2n, current: state.broken ? 0n : state.level ** 2n / 2n };
+  }
+
+  function baseIncome(state) {
+    const parts = incomeBreakdown(state);
+    return parts.base + parts.record + parts.current;
+  }
+
+  function discountInfo(now = Date.now()) {
+    const shifted = now + 9 * 60 * 60 * 1000;
+    const day = Math.floor(shifted / 86400000) * 86400000 - 9 * 60 * 60 * 1000;
+    for (const [start, end] of [[7, 8], [12, 14], [21, 24]]) {
+      if (now >= day + start * 3600000 && now < day + end * 3600000) return { active: true, until: day + end * 3600000, endHour: end };
+    }
+    return { active: false };
+  }
+
+  function priceQuote(originalCost, now) {
+    const discount = discountInfo(now).active;
+    return { originalCost, cost: discount ? (originalCost + 1n) / 2n : originalCost, discount };
   }
 
   function rankReward(rank) {
@@ -270,8 +296,11 @@ const Forge = (() => {
     return earned;
   }
 
-  function preview(state) {
-    if (state.broken) return { cost: reforgeCost(state), target: 0n, success: 0, reset: 0, shatter: 0, bonus: 0 };
+  function preview(state, now = Date.now()) {
+    if (state.broken) {
+      const quote = priceQuote(reforgeCost(state), now);
+      return { ...quote, token: state.generation + ':reforge:' + quote.cost, target: 0n, success: 0, reset: 0, shatter: 0, bonus: 0 };
+    }
     const target = state.level + 1n;
     const base = target <= 32n ? chances[Number(target - 1n)] : Math.max(800, 2000 - Number(target - 32n > 48n ? 48n : target - 32n) * 25);
     const bonus = state.pity[target.toString()] ?? 0;
@@ -279,34 +308,37 @@ const Forge = (() => {
     const failure = 10000 - success;
     const destructionShare = target < 6n ? 0 : Math.min(40, 10 + Number(target > 36n ? 36n : target) - 6);
     const shatter = Math.floor(failure * destructionShare / 100);
-    return { target, cost: cost(target), success, reset: failure - shatter, shatter, bonus: success - base };
+    const quote = priceQuote(cost(target), now);
+    return { target, ...quote, token: state.generation + ':' + target + ':' + quote.cost + ':' + !!state.protections[target.toString()], success, reset: failure - shatter, shatter, bonus: success - base };
   }
 
-  function enchantPreview(state) {
+  function enchantPreview(state, now = Date.now()) {
     const slots = state.enchantments.length;
     const full = slots >= enchantmentLimit;
     const baseCost = 120n * (state.level + 1n) + productionBase(state) * (slots === 1 ? 12n : 36n);
+    const quote = priceQuote(state.broken ? 0n : baseCost * (full ? 2n : 1n), now);
     return {
       slots, full, reroll: full && !state.broken,
-      token: state.generation + ':' + state.level + ':' + state.bestLevel + ':' + state.enchantments.join(','),
+      token: state.generation + ':' + state.level + ':' + state.bestLevel + ':' + state.enchantments.join(',') + ':' + quote.cost,
       // Keep engraving prices independent of automatic production balancing.
-      cost: state.broken ? 0n : baseCost * (full ? 2n : 1n),
+      ...quote,
       success: state.broken ? 0 : full ? 10000 : slots === 1 ? 6000 : 3000,
     };
   }
 
-  function enchant(state, now = Date.now(), random = Math.random) {
-    const offer = enchantPreview(state);
-    if (state.broken || offer.full || now - state.lastAt < cooldown || state.shards < offer.cost) return null;
+  function enchant(state, now = Date.now(), random = Math.random, expectedToken) {
+    const offer = enchantPreview(state, now);
+    if (state.broken || offer.full || now - state.lastAt < cooldown || state.shards < offer.cost || expectedToken !== undefined && expectedToken !== offer.token) return null;
     rememberWeapon(state);
     const success = Math.floor(random() * 10000) < offer.success;
-    const effect = success ? rollEnchantment(random, state.enchantments) : null;
+    const effect = success ? rollEnchantment(random) : null;
     if (effect) state.enchantments.push(effect);
     rememberWeapon(state);
     state.shards -= offer.cost;
     state.lastAt = now;
     const event = {
       kind: success ? 'enchant' : 'enchant-fail', from: state.level.toString(), target: state.level.toString(), at: now,
+      spent: offer.cost.toString(),
       ...(effect ? { enchantment: effect } : {}),
     };
     state.history.unshift(event);
@@ -314,10 +346,10 @@ const Forge = (() => {
     return { ...event, spent: offer.cost };
   }
 
-  function act(state, now = Date.now(), random = Math.random) {
+  function act(state, now = Date.now(), random = Math.random, expectedToken) {
     if (now - state.lastAt < cooldown) return null;
-    const offer = preview(state);
-    if (state.shards < offer.cost) return null;
+    const offer = preview(state, now);
+    if (state.shards < offer.cost || expectedToken !== undefined && expectedToken !== offer.token) return null;
     rememberWeapon(state);
     const from = state.level;
     const effectCount = state.enchantments.length;
@@ -341,7 +373,7 @@ const Forge = (() => {
       } else {
         kind = state.protections[offer.target.toString()] ? 'protected' : roll < offer.success + offer.reset ? 'reset' : 'shatter';
         state.pity[offer.target.toString()] = Math.min(9000, (state.pity[offer.target.toString()] ?? 0) + recoveryBonus);
-        if (kind === 'protected') delete state.protections[offer.target.toString()];
+        if (kind === 'protected') { delete state.protections[offer.target.toString()]; state.protectionUses += 1n; }
         else state.level = 0n;
         state.broken = kind === 'shatter';
         if (state.broken) {
@@ -354,7 +386,7 @@ const Forge = (() => {
     state.shards -= offer.cost;
     state.lastAt = now;
     rememberWeapon(state);
-    const event = { kind, from: from.toString(), target: offer.target.toString(), at: now,
+    const event = { kind, from: from.toString(), target: offer.target.toString(), at: now, spent: offer.cost.toString(),
       ...(kind === 'shatter' ? { lostEffects: effectCount } : {}),
     };
     state.history.unshift(event);
@@ -363,34 +395,36 @@ const Forge = (() => {
   }
 
   function reroll(state, now = Date.now(), random = Math.random, expectedToken) {
-    const offer = enchantPreview(state);
+    const offer = enchantPreview(state, now);
     if (!offer.reroll || now - state.lastAt < cooldown || state.shards < offer.cost ||
         expectedToken !== undefined && expectedToken !== offer.token) return null;
     rememberWeapon(state);
     const valueBefore = appraisal(state).value;
     const index = Math.min(enchantmentLimit - 1, Math.floor(random() * enchantmentLimit));
     const replaced = state.enchantments[index];
-    const enchantment = rollEnchantment(random, state.enchantments);
+    const enchantment = rollEnchantment(random, [replaced]);
     state.enchantments[index] = enchantment;
     state.enchantment = state.enchantments[0];
     state.shards -= offer.cost;
     state.lastAt = now;
     rememberWeapon(state);
     const event = { kind: 'reroll', from: state.level.toString(), target: state.level.toString(), at: now,
+      spent: offer.cost.toString(),
       slot: index + 1, replaced, enchantment, valueBefore: valueBefore.toString(), valueAfter: appraisal(state).value.toString() };
     state.history.unshift(event); state.history.length = Math.min(state.history.length, 12);
     return { ...event, spent: offer.cost };
   }
 
-  function protectionOffer(state) {
-    const offer = preview(state);
-    return { target: offer.target, cost: offer.target ? 1000n + offer.target ** 2n * 100n + offer.cost * 8n : 0n,
+  function protectionOffer(state, now = Date.now()) {
+    const offer = preview(state, now);
+    const quote = priceQuote(offer.target ? 1000n + offer.target ** 2n * 100n + cost(offer.target) * 8n : 0n, now);
+    return { target: offer.target, ...quote, token: state.generation + ':' + offer.target + ':' + quote.cost,
       owned: state.protections[offer.target.toString()] === true, eligible: !state.broken && offer.success < 10000 };
   }
 
-  function buyProtection(state, now = Date.now()) {
-    const offer = protectionOffer(state);
-    if (!offer.eligible || offer.owned || state.shards < offer.cost || now - state.lastAt < cooldown) return null;
+  function buyProtection(state, now = Date.now(), expectedToken) {
+    const offer = protectionOffer(state, now);
+    if (!offer.eligible || offer.owned || state.shards < offer.cost || now - state.lastAt < cooldown || expectedToken !== undefined && expectedToken !== offer.token) return null;
     state.protections[offer.target.toString()] = true;
     state.shards -= offer.cost;
     state.lastAt = now;
@@ -416,7 +450,7 @@ const Forge = (() => {
     return event;
   }
 
-  return { saveKey, previousSaveKey, legacySaveKey, backupKey, seasonId, startingShards, cooldown, recoveryBonus, offlineLimit, enchantmentLimit, forms, enchantments, appraisal, restore, loadSeason, serialize, rankingName, rankingRecord, weaponSnapshot, rememberWeapon, formAt, cost, baseIncome, income, rankReward, setRankBonus, preview, protectionOffer, buyProtection, saleOffer, sell, enchantPreview, collectPassive, act, enchant, reroll };
+  return { saveKey, previousSaveKey, olderSaveKey, legacySaveKey, backupKey, seasonId, startingShards, cooldown, recoveryBonus, offlineLimit, enchantmentLimit, forms, enchantments, appraisal, restore, loadSeason, serialize, rankingName, rankingRecord, weaponSnapshot, rememberWeapon, formAt, cost, incomeBreakdown, discountInfo, baseIncome, income, rankReward, setRankBonus, preview, protectionOffer, buyProtection, saleOffer, sell, enchantPreview, collectPassive, act, enchant, reroll };
 })();
 
 if (typeof module !== 'undefined') module.exports = Forge;

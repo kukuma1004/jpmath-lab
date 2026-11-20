@@ -550,3 +550,25 @@ body { background: radial-gradient(ellipse at 43% 30%, #203236, #142025 67%, #15
 [data-outcome=reroll] .appraisal { animation:appraisal-gain 750ms ease-out; }
 .enchantment-card[data-reroll-slot="1"] .magic-slot:nth-child(1),.enchantment-card[data-reroll-slot="2"] .magic-slot:nth-child(2),.enchantment-card[data-reroll-slot="3"] .magic-slot:nth-child(3) { animation:engraving-reveal 420ms cubic-bezier(.2,.7,.3,1); outline:1px solid #fff1ba; outline-offset:1px; }
 .history-item.reroll strong,.history-item.reroll .history-symbol { color:#d3b4ec; }
+[data-enchantment=cinder] { --enamel:#873a31; --magic:#ff8c79; }
+[data-enchantment=solar] { --enamel:#85502a; --magic:#ffc06d; --glyph:'☀'; }
+[data-enchantment=astral] { --enamel:#7f672c; --magic:#ffe59a; }
+[data-enchantment=verdant] { --enamel:#2f6648; --magic:#a7f1b4; --glyph:'❧'; }
+[data-enchantment=storm] { --enamel:#3b427e; --magic:#b4c0ff; }
+[data-enchantment=lunar] { --enamel:#66417e; --magic:#dfbcff; }
+.enchantment-fx[data-enchantment=astral] i::before { -webkit-text-stroke:.6px #ffd775; text-shadow:0 0 2px #fff,0 0 5px #ffdd8f,0 0 14px #ffd36b; }
+.enchantment-fx[data-enchantment=astral]::before { border-top-color:#fff1a3; border-bottom-color:#ffdb76; }
+.enchantment-fx[data-enchantment=astral]::after { border-right-color:#ffe495; }
+.enchantment-fx[data-enchantment=solar]::before { inset:8% 19%; border:2px dashed currentColor; box-shadow:0 0 18px #ff9e3d66,inset 0 0 15px #ffb55944; animation:solar-turn 18s linear infinite; }
+.enchantment-fx[data-enchantment=solar]::after { inset:0 10%; border:0; border-radius:0; opacity:.2; background:currentColor; clip-path:polygon(50% 0,58% 22%,75% 7%,72% 30%,96% 25%,78% 46%,100% 58%,73% 62%,87% 85%,61% 78%,52% 100%,43% 77%,18% 90%,27% 64%,0 58%,22% 45%,3% 22%,30% 29%,25% 7%,44% 23%); animation:solar-turn 24s linear infinite reverse; }
+.enchantment-fx[data-enchantment=verdant]::before,.enchantment-fx[data-enchantment=verdant]::after { inset:5% 28% 14%; border:1px solid currentColor; border-radius:85% 4% 82% 5%; background:linear-gradient(45deg,#1f9a5422,transparent); opacity:.55; transform:rotate(32deg); animation:verdant-sway 6s ease-in-out infinite alternate; }
+.enchantment-fx[data-enchantment=verdant]::after { inset:15% 21% 5%; transform:rotate(-38deg); animation-delay:-3s; }
+.enchantment-fx[data-enchantment=verdant] i { animation:verdant-leaf 5s ease-in-out infinite alternate; }
+@keyframes solar-turn { to { rotate:360deg; } }
+@keyframes verdant-sway { to { translate:3px -4px; rotate:7deg; } }
+@keyframes verdant-leaf { from { opacity:.45; translate:-3px 4px; rotate:-8deg; } to { opacity:1; translate:4px -7px; rotate:12deg; } }
+.happy-hours { font-size:10px; line-height:1.5; color:#857058; margin-top:5px; padding:5px 7px; border:1px dashed #b6a27d88; border-radius:5px; }
+.happy-hours[data-active=true] { color:#785017; background:#f8e4b4; border-color:#c88c36; font-weight:700; }
+.journey-heading { flex-wrap:wrap; }
+.journey-heading p { flex-wrap:wrap; }
+@media(max-width:700px) { .appraisal-label { font-size:8px; }.happy-hours { font-size:9px; } }

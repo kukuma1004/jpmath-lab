@@ -32,7 +32,7 @@ function funded(level = 31) {
 
 test('the exact success boundary resets the sword and charges a single attempt', () => {
   const state = funded();
-  const offer = Forge.preview(state);
+  const offer = Forge.preview(state,100000);
   const before = state.shards;
   const event = Forge.act(state, 100000, () => offer.success / 10000);
   assert.equal(event.kind, 'reset');
@@ -46,14 +46,14 @@ test('the exact success boundary resets the sword and charges a single attempt',
 
 test('the destruction boundary breaks the sword, survives reload and requires re-forging', () => {
   const state = funded();
-  const offer = Forge.preview(state);
+  const offer = Forge.preview(state,100000);
   const event = Forge.act(state, 100000, () => (offer.success + offer.reset) / 10000);
   assert.equal(event.kind, 'shatter');
   assert.equal(state.broken, true);
   assert.equal(state.shattered, 1n);
   const restored = Forge.restore(JSON.parse(Forge.serialize(state)), 100000);
   assert.equal(restored.broken, true);
-  const price = Forge.preview(restored).cost;
+  const price = Forge.preview(restored,100000).cost;
   const wallet = restored.shards;
   assert.equal(Forge.act(restored, 100000 + Forge.cooldown).kind, 'reforge');
   assert.equal(restored.broken, false);
@@ -90,7 +90,7 @@ test('strengthening continues above JavaScript safe integer precision without ro
   const current = 900719925474099312345678901234567890n;
   const wallet = Forge.cost(current + 1n) * 4n;
   const state = Forge.restore({ level: current.toString(), bestLevel: current.toString(), shards: wallet.toString(), paidAt: 100000 }, 100000);
-  const offer = Forge.preview(state);
+  const offer = Forge.preview(state,100000);
   assert.equal(offer.target, current + 1n);
   const event = Forge.act(state, 100000, () => 0);
   assert.equal(event.kind, 'success');
@@ -111,8 +111,8 @@ test('post +48 forms keep changing and failed attempts cannot erase the collecti
   assert(Forge.formAt(89n).awakening > Forge.formAt(49n).awakening);
   const state = funded(80);
   state.pity['81'] = 9000;
-  assert.equal(Forge.preview(state).success, 9500);
-  assert(Forge.preview(state).shatter > 0);
+  assert.equal(Forge.preview(state,100000).success, 9500);
+  assert(Forge.preview(state,100000).shatter > 0);
   Forge.act(state, 100000, () => 0.9999);
   assert.equal(state.bestLevel, 80n);
   assert.equal(Forge.forms.filter(form => form.level <= state.bestLevel).length, 20);
@@ -120,15 +120,17 @@ test('post +48 forms keep changing and failed attempts cannot erase the collecti
 
 test('same-level appraisal reflects the actual persistent magical affix', () => {
   const expected = {
-    cinder: 646416n,
-    frost: 861888n,
-    storm: 1023492n,
-    astral: 1292832n,
-    lunar: 1723776n,
+    cinder: 2714947n,
+    solar: 3167438n,
+    verdant: 4751157n,
+    frost: 3619929n,
+    storm: 4298666n,
+    astral: 5429894n,
+    lunar: 7239859n,
   };
   for (const [enchantment, value] of Object.entries(expected)) {
     const state = Forge.restore({ version: 2, level: '32', bestLevel: '32', shards: '9000000', enchantment }, 100000);
-    assert.equal(Forge.appraisal(state).base, 538680n);
+    assert.equal(Forge.appraisal(state).base, 2262456n);
     assert.equal(Forge.appraisal(state).value, value);
     Forge.collectPassive(state, 102000);
     assert.equal(state.enchantment, enchantment);
@@ -143,14 +145,14 @@ test('same-level appraisal reflects the actual persistent magical affix', () => 
 
 test('magical affinity survives a reset and is drawn again when a broken sword is reforged', () => {
   const state = Forge.restore({ version: 2, level: '31', bestLevel: '31', shards: '9000000', enchantment: 'astral' }, 100000);
-  const odds = Forge.preview(state);
+  const odds = Forge.preview(state,100000);
   const reset = Forge.act(state, 100000, () => odds.success / 10000);
   assert.equal(reset.kind, 'reset');
   assert.equal(state.enchantment, 'astral');
   assert.equal(Forge.appraisal(state).value, 288n);
 
   state.level = 31n;
-  const nextOdds = Forge.preview(state);
+  const nextOdds = Forge.preview(state,100000);
   const broken = Forge.act(state, 101000, () => (nextOdds.success + nextOdds.reset) / 10000);
   assert.equal(broken.kind, 'shatter');
   assert.equal(Forge.appraisal(state).value, 0n);
@@ -162,7 +164,7 @@ test('magical affinity survives a reset and is drawn again when a broken sword i
 });
 
 test('affix creation respects draw boundaries and old-save migration is stable', () => {
-  for (const [roll, expected] of [[0,'cinder'],[0.38,'frost'],[0.66,'storm'],[0.84,'astral'],[0.96,'lunar']]) {
+  for (const [roll, expected] of [[0,'cinder'],[(38+.00001)/136,'solar'],[(60+.00001)/136,'astral'],[(72+.00001)/136,'verdant'],[(86+.00001)/136,'frost'],[(114+.00001)/136,'storm'],[(132+.00001)/136,'lunar']]) {
     assert.equal(Forge.restore(null, 100000, () => roll).enchantment, expected);
   }
   const old = { version: 2, level: '32', bestLevel: '32', shards: '100000' };
@@ -176,7 +178,7 @@ test('affix creation respects draw boundaries and old-save migration is stable',
 
 test('special enhancement adds distinct effects up to three without changing the sword level', () => {
   const state = Forge.restore({ version: 2, level: '32', shards: '9000000', enchantment: 'astral' }, 100000);
-  const first = Forge.enchantPreview(state);
+  const first = Forge.enchantPreview(state,100000);
   assert.equal(first.success, 6000);
   const draws = [0.5999, 0.9999];
   const added = Forge.enchant(state, 100000, () => draws.shift());
@@ -186,11 +188,11 @@ test('special enhancement adds distinct effects up to three without changing the
   assert.equal(state.enchantment, 'astral');
   assert.equal(state.level, 32n);
   assert.equal(state.shards, 9000000n - first.cost);
-  assert.equal(Forge.enchantPreview(state).success, 3000);
-  assert(Forge.enchantPreview(state).cost > first.cost);
+  assert.equal(Forge.enchantPreview(state,100000).success, 3000);
+  assert(Forge.enchantPreview(state,100000).cost > first.cost);
   Forge.enchant(state, 101000, () => 0);
   assert.deepEqual(state.enchantments, ['astral', 'lunar', 'cinder']);
-  assert.equal(Forge.enchantPreview(state).full, true);
+  assert.equal(Forge.enchantPreview(state,100000).full, true);
   const snapshot = Forge.serialize(state);
   assert.equal(Forge.enchant(state, 102000, () => { throw Error('must not draw at capacity'); }), null);
   assert.equal(Forge.serialize(state), snapshot);
@@ -200,7 +202,7 @@ test('special enhancement adds distinct effects up to three without changing the
 test('special failure boundaries charge once and preserve level, effects and normal pity', () => {
   for (const effects of [['frost'], ['frost', 'storm']]) {
     const state = Forge.restore({ version: 2, level: '32', shards: '9000000', enchantments: effects, pity: { 33: 2400 } }, 100000);
-    const offer = Forge.enchantPreview(state);
+    const offer = Forge.enchantPreview(state,100000);
     const result = Forge.enchant(state, 100000, () => offer.success / 10000);
     assert.equal(result.kind, 'enchant-fail');
     assert.equal(state.shards, 9000000n - offer.cost);
@@ -241,7 +243,7 @@ test('stacked appraisal multiplies every effect exactly with one final integer r
 
 test('normal reset keeps engravings but shatter clears them immediately, before reforge', () => {
   const state = Forge.restore({ version: 2, level: '31', shards: '9000000', enchantments: ['frost', 'storm', 'lunar'] }, 100000);
-  Forge.act(state, 100000, () => Forge.preview(state).success / 10000);
+  Forge.act(state, 100000, () => Forge.preview(state,100000).success / 10000);
   assert.equal(state.level, 0n);
   assert.deepEqual(state.enchantments, ['frost', 'storm', 'lunar']);
   state.level = 31n;
@@ -256,17 +258,17 @@ test('normal reset keeps engravings but shatter clears them immediately, before 
   assert.deepEqual(saved.enchantments, []);
   assert.equal(saved.enchantment, null);
   assert.equal(saved.history[0].lostEffects, 3);
-  Forge.act(saved, 102000, () => 0.85);
+  Forge.act(saved, 102000, () => 0.5);
   assert.deepEqual(saved.enchantments, ['astral']);
   assert.equal(saved.enchantment, 'astral');
   assert.equal(saved.level, 0n);
 });
 
-test('stack migration preserves existing effects and sanitizes invalid or duplicate slots', () => {
+test('stack migration preserves existing effects and sanitizes invalid slots while preserving duplicates', () => {
   const migrated = Forge.restore({ version: 2, enchantment: 'storm' }, 100000, () => 0);
   assert.deepEqual(migrated.enchantments, ['storm']);
   const restored = Forge.restore({ enchantment: 'cinder', enchantments: ['frost', 'bad', 'frost', null, 'lunar', 'storm', 'astral'] }, 100000);
-  assert.deepEqual(restored.enchantments, ['frost', 'lunar', 'storm']);
+  assert.deepEqual(restored.enchantments, ['frost', 'frost', 'lunar']);
   assert.equal(restored.enchantment, 'frost');
   assert.deepEqual(Forge.restore({ enchantments: ['bad'], enchantment: 'lunar' }, 100000).enchantments, ['lunar']);
   assert.deepEqual(Forge.restore(JSON.parse(Forge.serialize(restored)), 100000), restored);
@@ -284,27 +286,27 @@ test('old broken saves discard every stored effect without drawing a replacement
     assert.equal(state.enchantment, null);
     assert.equal(state.shards, 123456789n);
     assert.equal(state.bestLevel, 32n);
-    assert.equal(Forge.enchantPreview(state).cost, 0n);
-    assert.equal(Forge.enchantPreview(state).success, 0);
+    assert.equal(Forge.enchantPreview(state,100000).cost, 0n);
+    assert.equal(Forge.enchantPreview(state,100000).success, 0);
     assert.deepEqual(Forge.appraisal(state).effects, []);
     assert.deepEqual(Forge.restore(JSON.parse(Forge.serialize(state)), 101000), state);
   }
 });
 
-test('automatic base income doubles and engraving prices stay unchanged', () => {
-  for (const [bestLevel, expected] of [['0', 4n], ['12', 30n], ['20', 134n], ['32', 546n], ['80', 8534n]]) {
+test('record income increments double and the current level adds production', () => {
+  for (const [bestLevel, expected] of [['0', 4n], ['12', 128n], ['20', 464n], ['32', 1600n], ['80', 20264n]]) {
     const state = Forge.restore({ version: 2, level: bestLevel, shards: '123456789', paidAt: 100000, enchantment: 'astral' }, 100000);
     assert.equal(Forge.income(state), expected);
     const oldIncome = 12n + BigInt(bestLevel) ** 3n / 6n;
-    assert.equal(Forge.enchantPreview(state).cost, 120n * (BigInt(bestLevel) + 1n) + oldIncome * 12n);
+    assert.equal(Forge.enchantPreview(state,100000).cost, 120n * (BigInt(bestLevel) + 1n) + oldIncome * 12n);
     assert.equal(Forge.collectPassive(state, 105000), expected * 5n);
     assert.equal(state.shards, 123456789n + expected * 5n);
     assert.equal(Forge.collectPassive(state, 105000), 0n);
   }
   const legacy = Forge.restore({ level: '32', miner: 4, polish: 3, echo: 2 }, 100000);
-  assert.equal(Forge.income(legacy), (12n + 32n ** 3n / 6n + 4n * 4n + 3n * 2n + 2n * 2n) / 20n * 2n);
+  assert.equal(Forge.income(legacy), 4n + ((12n + 32n ** 3n / 6n + 4n * 4n + 3n * 2n + 2n * 2n) / 20n * 2n - 4n) * 2n + 512n);
   const huge = Forge.restore({ level: '90071992547409931234567890' }, 100000);
-  assert.equal(Forge.income(huge), (12n + huge.bestLevel ** 3n / 6n) / 20n * 2n);
+  assert.equal(Forge.income(huge), 4n + ((12n + huge.bestLevel ** 3n / 6n) / 20n * 2n - 4n) * 2n + huge.level ** 2n / 2n);
 });
 
 test('the new season resets all earlier progress once and starts with exactly 10000 shards', () => {
@@ -329,12 +331,12 @@ test('ranking snapshots use chosen names, every effect and exact sortable BigInt
   const state=Forge.restore({level:'32',enchantments:['astral','lunar','storm']},100000);
   const row=Forge.rankingRecord(state,'  몽글대장  ','새벽의 검');
   assert.equal(row.nickname,'몽글대장');assert.equal(row.weaponName,'새벽의 검');
-  assert.equal(row.value.length,512);assert.equal(BigInt(row.value),7860418n);
+  assert.equal(row.value.length,512);assert.equal(BigInt(row.value),33013757n);
   assert.deepEqual([row.effect1,row.effect2,row.effect3],state.enchantments);
   const huge=Forge.rankingRecord(Forge.restore({level:'9007199254740993123',enchantment:'lunar'},100000),'큰검','무한검');
   assert(huge.value>row.value);
   state.broken=true;state.enchantments=[];state.enchantment=null;
-  assert.equal(BigInt(row.value),7860418n);
+  assert.equal(BigInt(row.value),33013757n);
   assert.throws(()=>Forge.rankingRecord(state,'몽글','깨진 검'),/깨졌/);
   for(const name of ['','   ','<script>','a'.repeat(13)])assert.throws(()=>Forge.rankingName(name,12));
 });
@@ -343,12 +345,12 @@ test('protection is priced per target and consumed only when a failed attempt is
   const prices=[];
   for (const level of [3,5,11,31,80]) {
     const s=Forge.restore({level,shards:'9999999999',enchantments:['astral','lunar']},100000);
-    const offer=Forge.protectionOffer(s);prices.push(offer.cost);
-    assert.equal(offer.target,BigInt(level+1));assert(offer.cost>Forge.preview(s).cost*8n);
+    const offer=Forge.protectionOffer(s,100000);prices.push(offer.cost);
+    assert.equal(offer.target,BigInt(level+1));assert(offer.cost>Forge.preview(s,100000).cost*8n);
     const wallet=s.shards;assert.equal(Forge.buyProtection(s,100000).kind,'protection');
     assert.equal(s.shards,wallet-offer.cost);
     assert.equal(Forge.buyProtection(s,101000),null);
-    const cost=Forge.preview(s).cost;
+    const cost=Forge.preview(s,100000).cost;
     const result=Forge.act(s,101000,()=>.99999);
     assert.equal(result.kind,'protected');assert.equal(s.level,BigInt(level));assert.equal(s.broken,false);
     assert.deepEqual(s.enchantments,['astral','lunar']);assert.equal(s.shattered,0n);
@@ -365,16 +367,16 @@ test('protection is priced per target and consumed only when a failed attempt is
 
 test('sales return exactly ten percent once, keep the best weapon, and require a new weapon', () => {
   const s=Forge.restore({level:32,shards:'1000000',enchantments:['astral','lunar','storm']},100000);
-  const offer=Forge.saleOffer(s);assert.equal(offer.shards,786041n);
+  const offer=Forge.saleOffer(s);assert.equal(offer.shards,3301375n);
   assert.equal(Forge.sell(s,100000,'stale'),null);
   const event=Forge.sell(s,100000,offer.token);
-  assert.equal(event.kind,'sell');assert.equal(s.shards,1786041n);assert.equal(s.sold,true);assert.equal(s.broken,true);
+  assert.equal(event.kind,'sell');assert.equal(s.shards,4301375n);assert.equal(s.sold,true);assert.equal(s.broken,true);
   assert.equal(s.shattered,0n);assert.equal(s.level,0n);assert.deepEqual(s.enchantments,[]);
-  assert.equal(BigInt(s.rankingBest.value),7860418n);
+  assert.equal(BigInt(s.rankingBest.value),33013757n);
   assert.equal(Forge.sell(s,101000,offer.token),null);
   const reload=Forge.restore(JSON.parse(Forge.serialize(s)),101000);assert.equal(reload.sold,true);
-  const fee=Forge.preview(reload).cost;Forge.act(reload,101000,()=>0);
-  assert.equal(reload.sold,false);assert.equal(reload.shards,1786041n-fee);assert.equal(reload.enchantments.length,1);
+  const fee=Forge.preview(reload,100000).cost;Forge.act(reload,101000,()=>0);
+  assert.equal(reload.sold,false);assert.equal(reload.shards,4301375n-fee);assert.equal(reload.enchantments.length,1);
   assert.notEqual(Forge.saleOffer(reload).token,offer.token);
 });
 
@@ -382,7 +384,7 @@ test('best weapon snapshots survive destruction, reset and reload for automatic 
   const s=Forge.restore({level:32,shards:'999999',enchantments:['astral','lunar','storm']},100000);
   Forge.act(s,100000,()=>.99999);
   assert(s.broken);assert.deepEqual(s.enchantments,[]);assert.equal(s.rankingBest.level,'32');
-  assert.equal(BigInt(s.rankingBest.value),7860418n);
+  assert.equal(BigInt(s.rankingBest.value),33013757n);
   const reload=Forge.restore(JSON.parse(Forge.serialize(s)),101000);
   assert.deepEqual(reload.rankingBest,s.rankingBest);
   Forge.act(reload,101000,()=>0);assert.equal(reload.rankingBest.level,'32');
@@ -404,15 +406,15 @@ test('top ten rank bonuses are tiered, bounded by verification and never paid re
   assert.equal(Forge.collectPassive(offline,100000+24*60*60*1000),4n*28800n);
 });
 
-test('reroll selects one of three slots and always draws a currently unowned effect', () => {
+test('reroll selects one slot and can match another owned effect', () => {
   const original=['cinder','frost','storm'];
   for(const [slotRoll,slot]of [[0,1],[1/3,2],[2/3,3],[.99999,3]]) {
-    for(const [effectRoll,effect]of [[0,'astral'],[.74999,'astral'],[.75,'lunar'],[.99999,'lunar']]) {
+    for(const [effectRoll,effect]of [[0,slot===1?'solar':'cinder'],[.99999,'lunar']]) {
       const s=Forge.restore({version:2,level:'32',shards:'9000000',enchantments:original,protections:{33:true},pity:{33:2400}},100000);
-      const offer=Forge.enchantPreview(s);assert(offer.reroll);assert.equal(offer.cost,401976n);
+      const offer=Forge.enchantPreview(s,100000);assert(offer.reroll);assert.equal(offer.cost,401976n);
       const rolls=[slotRoll,effectRoll];const result=Forge.reroll(s,100000,()=>rolls.shift(),offer.token);
       assert.equal(result.kind,'reroll');assert.equal(result.slot,slot);assert.equal(result.replaced,original[slot-1]);assert.equal(result.enchantment,effect);
-      assert.equal(s.enchantments.length,3);assert.equal(new Set(s.enchantments).size,3);
+      assert.equal(s.enchantments.length,3);assert.notEqual(result.enchantment,result.replaced);
       assert.deepEqual(s.enchantments,original.map((id,index)=>index===slot-1?effect:id));
       assert.equal(s.enchantment,s.enchantments[0]);assert.equal(s.shards,9000000n-offer.cost);
       assert.equal(s.level,32n);assert.equal(s.bestLevel,32n);assert.equal(s.broken,false);assert.equal(s.attempts,0n);
@@ -433,7 +435,7 @@ test('reroll rejects missing slots, broken swords, insufficient funds, cooldown 
     assert.equal(Forge.serialize(s),before);
   }
   const s=Forge.restore({level:'32',shards:'9000000',enchantments:['astral','lunar','storm']},100000);
-  const old=Forge.enchantPreview(s);Forge.act(s,100000,()=>0);const before=Forge.serialize(s);
+  const old=Forge.enchantPreview(s,100000);Forge.act(s,100000,()=>0);const before=Forge.serialize(s);
   assert.equal(Forge.reroll(s,101000,()=>{throw Error('must not draw')},old.token),null);assert.equal(Forge.serialize(s),before);
 });
 
@@ -446,4 +448,59 @@ test('a lower-value reroll preserves the old ranking snapshot and a stronger rer
   const draws=[0,.99];Forge.reroll(stronger,100000,()=>draws.shift());
   assert.equal(stronger.enchantment,'lunar');assert.equal(BigInt(stronger.rankingBest.value),Forge.appraisal(stronger).value);
   const wallet=stronger.shards;assert.equal(Forge.reroll(stronger,100001,()=>0),null);assert.equal(stronger.shards,wallet);
+});
+
+test('all seven rainbow effects stack, including three copies of the same effect', () => {
+  assert.equal(Forge.enchantments.length,7);
+  const s=Forge.restore({level:32,shards:'9000000',enchantments:['lunar','lunar','lunar']},100000);
+  const value=Forge.appraisal(s);assert.equal(value.numerator,32768n);assert.equal(value.denominator,1000n);
+  assert.equal(value.value,value.base*32768n/1000n);
+  const saved=Forge.restore(JSON.parse(Forge.serialize(s)),101000);assert.deepEqual(saved.enchantments,['lunar','lunar','lunar']);
+  assert.equal(Forge.rankingRecord(s,'중복검','보라 세 겹').effect3,'lunar');
+  const add=Forge.restore({enchantment:'cinder',shards:'999999'},100000);
+  Forge.enchant(add,100000,()=>0);assert.deepEqual(add.enchantments,['cinder','cinder']);
+  Forge.enchant(add,101000,()=>0);assert.deepEqual(add.enchantments,['cinder','cinder','cinder']);
+  const old={level:'32',value:'7860418'.padStart(512,'0'),effect1:'astral',effect2:'lunar',effect3:'storm'};
+  const migrated=Forge.restore({version:2,broken:true,rankingBest:old},100000);
+  assert.equal(BigInt(migrated.rankingBest.value),33013757n);
+});
+
+test('current enhancement income disappears on destruction while record growth remains', () => {
+  const s=Forge.restore({version:2,level:32,bestLevel:32,shards:'9000000'},100000);
+  assert.deepEqual(Forge.incomeBreakdown(s),{base:4n,record:1084n,current:512n});
+  assert.equal(Forge.baseIncome(s),1600n);
+  Forge.act(s,100000,()=>.99999);assert.equal(Forge.baseIncome(s),1088n);
+  assert.equal(s.bestLevel,32n);
+});
+
+test('protection usage counts actual activations and survives reload', () => {
+  const s=Forge.restore({version:2,level:31,shards:'9000000',protections:{32:true}},100000);
+  Forge.act(s,100000,()=>.99999);assert.equal(s.protectionUses,1n);
+  Forge.buyProtection(s,101000);Forge.act(s,102000,()=>0);assert.equal(s.protectionUses,1n);
+  const saved=Forge.restore(JSON.parse(Forge.serialize(s)),103000);assert.equal(saved.protectionUses,1n);
+  const legacy=Forge.restore({history:[{kind:'protected',from:'5',target:'6',at:1}]},100000);assert.equal(legacy.protectionUses,1n);
+});
+
+test('Korean happy hours include starts and exclude ends, and halve every spending type once', () => {
+  const at=(h,m=0,s=0)=>Date.UTC(2026,10,20,h-9,m,s);
+  for(const [h,m,s,active]of [[6,59,59,false],[7,0,0,true],[7,59,59,true],[8,0,0,false],[11,59,59,false],[12,0,0,true],[13,59,59,true],[14,0,0,false],[20,59,59,false],[21,0,0,true],[23,59,59,true],[24,0,0,false]])assert.equal(Forge.discountInfo(at(h,m,s)).active,active);
+  const full=at(9),sale=at(12);
+  const s=Forge.restore({version:2,level:31,shards:'9000000',enchantments:['solar','verdant','verdant']},full);
+  for(const fn of [Forge.preview,Forge.protectionOffer,Forge.enchantPreview]) {
+    const normal=fn(s,full),offer=fn(s,sale);assert.equal(offer.cost,(normal.cost+1n)/2n);assert.equal(offer.originalCost,normal.cost);
+  }
+  const price=Forge.preview(s,sale).cost;const wallet=s.shards;
+  const event=Forge.act(s,sale,()=>0);assert.equal(event.spent,price);assert.equal(s.shards,wallet-price);
+  const broken=Forge.restore({version:2,broken:true,bestLevel:0,shards:'1000'},full);
+  assert.equal(Forge.preview(broken,sale).cost,5n);assert.equal(Forge.act(broken,sale,()=>0).spent,5n);
+  const token=Forge.enchantPreview(s,at(13,59,59)).token;const snapshot=Forge.serialize(s);
+  assert.equal(Forge.reroll(s,at(14),()=>{throw Error('must not draw')},token),null);assert.equal(Forge.serialize(s),snapshot);
+  const saleValue=Forge.saleOffer(s).shards;assert.equal(saleValue,Forge.appraisal(s).value/10n);
+  for(const mode of ['protection','enchant','reroll']) {
+    const copy=Forge.restore({version:2,level:31,shards:'9000000',enchantments:mode==='enchant'?['solar']:['solar','solar','verdant']},sale);
+    const quote=mode==='protection'?Forge.protectionOffer(copy,sale):Forge.enchantPreview(copy,sale);
+    const before=copy.shards;
+    const result=mode==='protection'?Forge.buyProtection(copy,sale,quote.token):mode==='enchant'?Forge.enchant(copy,sale,()=>0,quote.token):Forge.reroll(copy,sale,()=>0,quote.token);
+    assert(result);assert.equal(copy.shards,before-quote.cost);
+  }
 });
