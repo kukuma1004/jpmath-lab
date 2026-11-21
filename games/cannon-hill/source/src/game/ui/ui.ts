@@ -1,0 +1,651 @@
+import { GAME_SUBTITLE, GAME_TITLE, GAUGE_MAX, MOVE_BUDGET, WIND_MAX } from '../config/constants';
+import { CHARACTERS, character } from '../data/characters';
+import { MAPS, mapDef } from '../data/maps';
+import { weapon } from '../data/weapons';
+import type { Battle } from '../combat/battle';
+import type { Difficulty } from '../combat/types';
+import { input, type Hold } from '../input/input';
+import type { Settings } from '../settings';
+import { audio } from '../audio/audio';
+
+export type Mode = 'ai' | 'local';
+
+export interface UIHooks {
+  startBattle(mode: Mode, chars: [string, string], mapId: string): void;
+  toTitle(): void;
+  rematch(): void;
+  rechar(): void;
+  resume(): void;
+  restart(): void;
+  pause(): void;
+  weapon(slot: 0 | 1): void;
+  flip(): void;
+  settingsChanged(s: Settings): void;
+}
+
+const DIFF_LABEL: Record<Difficulty, string> = { easy: '쉬움', normal: '보통', hard: '어려움' };
+
+function josa(word: string, a: string, b: string): string {
+  const ch = word.charCodeAt(word.length - 1);
+  if (ch < 0xac00 || ch > 0xd7a3) return word + b;
+  return word + ((ch - 0xac00) % 28 ? a : b);
+}
+
+function esc(s: string): string {
+  return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+}
+
+function h(html: string): HTMLElement {
+  const t = document.createElement('template');
+  t.innerHTML = html.trim();
+  return t.content.firstElementChild as HTMLElement;
+}
+
+export class UI {
+  root: HTMLElement;
+  portraits: Record<string, { normal: string; happy: string; hurt: string; flip: string; bust: string; bustFlip: string }> = {};
+  mapThumbs: Record<string, string> = {};
+  mode: Mode = 'ai';
+  private screens = new Map<string, HTMLElement>();
+  private step: 0 | 1 = 0;
+  private picks: [string, string];
+  private mapPick: string;
+  private hudCache = new Map<string, string>();
+  private bannerT = 0;
+  private toastT = 0;
+
+  constructor(root: HTMLElement, public settings: Settings, private hooks: UIHooks) {
+    this.root = root;
+    this.picks = [...settings.lastChars] as [string, string];
+    this.mapPick = settings.lastMap;
+    this.build();
+    root.addEventListener('contextmenu', (e) => e.preventDefault());
+    // 첫 터치·클릭에서 소리를 연다
+    const unlock = () => audio.unlock();
+    window.addEventListener('pointerdown', unlock, { passive: true });
+    window.addEventListener('keydown', unlock);
+    root.addEventListener('click', (e) => {
+      const b = (e.target as HTMLElement).closest('button');
+      if (b && !b.dataset.hold) audio.click();
+    });
+  }
+
+  private add(name: string, el: HTMLElement): HTMLElement {
+    el.dataset.s = name;
+    this.screens.set(name, el);
+    this.root.appendChild(el);
+    return el;
+  }
+
+  show(name: string, on = true): void {
+    this.screens.get(name)?.classList.toggle('on', on);
+  }
+
+  only(...names: string[]): void {
+    for (const [k, el] of this.screens) el.classList.toggle('on', names.includes(k));
+  }
+
+  isOn(name: string): boolean {
+    return !!this.screens.get(name)?.classList.contains('on');
+  }
+
+  // ───────── 만들기 ─────────
+
+  private build(): void {
+    this.add('loading', h(`<section class="screen loading on"><div style="text-align:center"><b>${GAME_TITLE}</b><div class="bar"><i></i></div></div></section>`));
+    this.buildTitle();
+    this.buildChars();
+    this.buildMaps();
+    this.buildHud();
+    this.buildPause();
+    this.buildResult();
+    this.buildSettings();
+    this.buildHowto();
+  }
+
+  private buildTitle(): void {
+    const letters = [...GAME_TITLE].map((c) => `<span>${c}</span>`).join('');
+    const el = this.add('title', h(`
+      <section class="screen title">
+        <div class="title-wrap">
+          <div class="logo" aria-label="${GAME_TITLE}">${letters}<i class="seal">한판</i></div>
+          <div class="subtitle">${GAME_SUBTITLE}</div>
+          <div class="menu">
+            <button class="btn primary" data-act="ai">AI와 겨루기<small>혼자서 한 판</small></button>
+            <button class="btn jade" data-act="local">둘이서 하기<small>한 기기로 번갈아</small></button>
+            <button class="btn" data-act="howto">게임 방법</button>
+            <button class="btn" data-act="settings">설정</button>
+          </div>
+          <div class="foot"><a href="../">← JP Math Lab 게임 목록</a><span>PC 키보드 · 마우스 · 모바일 터치</span></div>
+        </div>
+      </section>`));
+    el.addEventListener('click', (e) => {
+      const act = (e.target as HTMLElement).closest('button')?.dataset.act;
+      if (act === 'ai' || act === 'local') this.openChars(act);
+      else if (act === 'howto') this.show('howto');
+      else if (act === 'settings') this.openSettings();
+    });
+  }
+
+  showTitle(): void {
+    this.only('title');
+  }
+
+  // 장수 고르기
+  private buildChars(): void {
+    const el = this.add('chars', h(`
+      <section class="screen sel">
+        <div class="sel-head"><h2>장수 고르기</h2><span class="who">1P</span><p class="hint"></p></div>
+        <div class="sel-body">
+          <div class="grid" role="listbox" aria-label="장수"></div>
+          <div class="detail"></div>
+        </div>
+        <div class="sel-foot">
+          <button class="btn ghost" data-act="back">← 뒤로</button>
+          <span class="chip-label ai-only">AI 실력</span>
+          <div class="chips ai-only diff">${(['easy', 'normal', 'hard'] as Difficulty[]).map((d) => `<button data-d="${d}">${DIFF_LABEL[d]}</button>`).join('')}</div>
+          <span class="grow"></span>
+          <button class="btn ghost" data-act="random">아무나</button>
+          <button class="btn primary" data-act="next">이 장수로 →</button>
+        </div>
+      </section>`));
+    el.addEventListener('click', (e) => {
+      const t = e.target as HTMLElement;
+      const card = t.closest<HTMLElement>('.card');
+      if (card?.dataset.id) {
+        this.picks[this.step] = card.dataset.id;
+        audio.select();
+        this.renderChars();
+        return;
+      }
+      const d = t.closest<HTMLElement>('[data-d]')?.dataset.d as Difficulty | undefined;
+      if (d) {
+        this.settings.difficulty = d;
+        this.hooks.settingsChanged(this.settings);
+        this.renderChars();
+        return;
+      }
+      const act = t.closest('button')?.dataset.act;
+      if (act === 'back') {
+        if (this.step === 1) { this.step = 0; this.renderChars(); }
+        else this.showTitle();
+      } else if (act === 'random') {
+        const pool = CHARACTERS.filter((c) => this.step === 0 || c.id !== this.picks[0]);
+        this.picks[this.step] = pool[Math.floor(Math.random() * pool.length)]!.id;
+        audio.select();
+        this.renderChars();
+      } else if (act === 'next') {
+        if (this.step === 0) { this.step = 1; this.renderChars(); }
+        else this.openMaps();
+      }
+    });
+    el.addEventListener('dblclick', (e) => {
+      if ((e.target as HTMLElement).closest('.card')) el.querySelector<HTMLButtonElement>('[data-act=next]')?.click();
+    });
+  }
+
+  openChars(mode: Mode): void {
+    this.mode = mode;
+    this.step = 0;
+    this.renderChars();
+    this.only('chars');
+  }
+
+  private renderChars(): void {
+    const el = this.screens.get('chars')!;
+    const step = this.step;
+    const who = el.querySelector<HTMLElement>('.who')!;
+    who.textContent = step === 0 ? '1P' : this.mode === 'ai' ? 'AI 상대' : '2P';
+    who.classList.toggle('p2', step === 1);
+    el.querySelector('h2')!.textContent = step === 0 ? '장수 고르기' : this.mode === 'ai' ? '상대 장수 고르기' : '2P 장수 고르기';
+    el.querySelector('.hint')!.textContent = step === 0 ? '나와 함께 싸울 장수를 고르세요. 두 번 누르면 바로 넘어갑니다.' : this.mode === 'ai' ? 'AI가 맡을 장수를 고르세요. 같은 장수끼리도 됩니다.' : '2P가 고를 차례입니다. 기기를 넘겨 주세요.';
+    el.querySelectorAll<HTMLElement>('.ai-only').forEach((x) => (x.style.display = this.mode === 'ai' ? '' : 'none'));
+    el.querySelectorAll<HTMLElement>('.diff button').forEach((b) => b.classList.toggle('on', b.dataset.d === this.settings.difficulty));
+    const grid = el.querySelector('.grid')!;
+    grid.innerHTML = CHARACTERS.map((c) => {
+      const on = this.picks[step] === c.id;
+      const tags = step === 1 && this.picks[0] === c.id ? '<span class="tag p1">1P</span>' : '';
+      return `<button class="card${on ? ' on' : ''}" data-id="${c.id}" role="option" aria-selected="${on}">${tags}<img alt="" src="${this.portraits[c.id]?.[step === 1 ? 'flip' : 'normal'] ?? ''}"><b>${c.name}</b><em>${c.role}</em></button>`;
+    }).join('');
+    const c = character(this.picks[step]);
+    const nw = weapon(c.normal), sw = weapon(c.special);
+    const pip = (n: number) => `<span class="pips">${[1, 2, 3, 4, 5].map((k) => `<i class="${k <= n ? 'on' : ''}"></i>`).join('')}</span>`;
+    el.querySelector('.detail')!.innerHTML = `
+      <div class="detail-top"><img alt="" src="${this.portraits[c.id]?.happy ?? ''}"><div><h3>${c.name}</h3><span class="role">${c.role}</span><p>${esc(c.blurb)}</p></div></div>
+      <div class="stats">
+        <span>화력</span>${pip(c.stats.power)}<span>폭발 범위</span>${pip(c.stats.range)}<span>정확도</span>${pip(c.stats.accuracy)}<span>방어</span>${pip(c.stats.defense)}<span>기동</span>${pip(c.stats.mobility)}
+      </div>
+      <div class="weap">
+        <div><b><span>일반</span>${nw.name}</b><p>${esc(nw.desc)}</p></div>
+        <div><b><span class="sp">특수</span>${sw.name}</b><p>${esc(sw.desc)} 기세가 가득 차면 쓸 수 있습니다.</p></div>
+      </div>`;
+    const next = el.querySelector<HTMLButtonElement>('[data-act=next]')!;
+    next.textContent = step === 0 ? '이 장수로 →' : '전장 고르기 →';
+  }
+
+  // 전장 고르기
+  private buildMaps(): void {
+    const el = this.add('maps', h(`
+      <section class="screen sel">
+        <div class="sel-head"><h2>전장 고르기</h2><p>전장마다 지형과 무너지는 방식이 다릅니다.</p></div>
+        <div class="sel-body">
+          <div class="grid maps"></div>
+          <div class="detail"></div>
+        </div>
+        <div class="sel-foot">
+          <button class="btn ghost" data-act="back">← 장수 다시</button>
+          <span class="grow"></span>
+          <button class="btn primary" data-act="go">싸움 시작!</button>
+        </div>
+      </section>`));
+    el.addEventListener('click', (e) => {
+      const t = e.target as HTMLElement;
+      const card = t.closest<HTMLElement>('.card');
+      if (card?.dataset.id) {
+        this.mapPick = card.dataset.id;
+        audio.select();
+        this.renderMaps();
+        return;
+      }
+      const tt = t.closest<HTMLElement>('[data-tt]')?.dataset.tt;
+      if (tt) { this.settings.turnTime = Number(tt); this.hooks.settingsChanged(this.settings); this.renderMaps(); return; }
+      const tl = t.closest<HTMLElement>('[data-tl]')?.dataset.tl;
+      if (tl) { this.settings.turnLimit = Number(tl); this.hooks.settingsChanged(this.settings); this.renderMaps(); return; }
+      const act = t.closest('button')?.dataset.act;
+      if (act === 'back') { this.step = 1; this.renderChars(); this.only('chars'); }
+      else if (act === 'go') this.go();
+    });
+    el.addEventListener('dblclick', (e) => { if ((e.target as HTMLElement).closest('.card')) this.go(); });
+  }
+
+  private go(): void {
+    let mapId = this.mapPick;
+    if (mapId === 'random') mapId = MAPS[Math.floor(Math.random() * MAPS.length)]!.id;
+    this.hooks.startBattle(this.mode, [...this.picks] as [string, string], mapId);
+  }
+
+  openMaps(): void {
+    this.renderMaps();
+    this.only('maps');
+  }
+
+  private renderMaps(): void {
+    const el = this.screens.get('maps')!;
+    const grid = el.querySelector('.grid')!;
+    grid.innerHTML = MAPS.map((m) => `<button class="card mapcard${this.mapPick === m.id ? ' on' : ''}" data-id="${m.id}"><img alt="" src="${this.mapThumbs[m.id] ?? ''}"><b>${m.name}</b><em>${m.features}</em></button>`).join('')
+      + `<button class="card mapcard rand${this.mapPick === 'random' ? ' on' : ''}" data-id="random"><b>?</b><em>아무 전장이나</em></button>`;
+    const d = this.mapPick === 'random' ? null : mapDef(this.mapPick);
+    const chips = (attr: string, vals: number[], cur: number, unit: string) => `<div class="chips">${vals.map((v) => `<button data-${attr}="${v}" class="${v === cur ? 'on' : ''}">${v}${unit}</button>`).join('')}</div>`;
+    el.querySelector('.detail')!.innerHTML = `
+      ${d ? `<img alt="" src="${this.mapThumbs[d.id] ?? ''}" style="width:100%;border-radius:14px;aspect-ratio:2/1;object-fit:cover">` : ''}
+      <div><h3>${d ? d.name : '아무 전장이나'}</h3><p>${d ? esc(d.desc) : '다섯 전장 가운데 하나를 무작위로 고릅니다.'}</p>${d ? `<p style="margin-top:6px;color:var(--gold-2)">${d.features}</p>` : ''}</div>
+      <div class="stats" style="grid-template-columns:auto 1fr;align-content:start">
+        <span>턴 시간</span>${chips('tt', [20, 30, 45], this.settings.turnTime, '초')}
+        <span>전체 턴</span>${chips('tl', [20, 30, 40], this.settings.turnLimit, '턴')}
+      </div>`;
+  }
+
+  // ───────── 전투 화면 ─────────
+
+  private buildHud(): void {
+    const pc = (p: 1 | 2) => `
+      <div class="pcard p${p}">
+        <div class="who"><img alt=""><i>${p}P</i></div>
+        <div><div class="name"><span class="nm"></span><small class="hpn"></small></div>
+        <div class="bar"><b></b><i></i><span></span></div>
+        <div class="gauge" title="기세"><i></i></div></div>
+      </div>`;
+    const el = this.add('hud', h(`
+      <section class="screen hud">
+        <div class="top">
+          ${pc(1)}
+          <div class="center">
+            <div class="turnpill"><div class="timer"><svg viewBox="0 0 40 40"><circle class="bg" cx="20" cy="20" r="17"/><circle class="fg" cx="20" cy="20" r="17" stroke-dasharray="106.8" stroke-dashoffset="0"/></svg><b>30</b></div><span class="tp">1P 차례</span><span class="tno"></span></div>
+            <div class="wind"><span class="lbl">바람</span><div class="arrow"><div class="track"></div><div class="mid"></div><div class="fill"></div></div><span class="v">0</span></div>
+            <div class="status"></div>
+          </div>
+          ${pc(2)}
+        </div>
+        <button class="pausebtn" data-act="pause" aria-label="일시정지">Ⅱ</button>
+        <div class="bottom">
+          <div class="pad move"><div class="row"><button class="kbtn" data-hold="left" aria-label="왼쪽으로 이동">◀<small>A</small></button><button class="kbtn" data-hold="right" aria-label="오른쪽으로 이동">▶<small>D</small></button></div><div class="movebar"><i></i></div><div class="lbl">이동</div></div>
+          <div class="pad aim"><div class="row"><button class="kbtn" data-hold="aimDown" aria-label="포신 내리기">▼<small>↓</small></button><div class="angle-read"><span class="ang">45°</span><small>각도</small></div><button class="kbtn" data-hold="aimUp" aria-label="포신 올리기">▲<small>↑</small></button><button class="kbtn" data-act="flip" aria-label="방향 바꾸기">⇄<small>←→</small></button></div><div class="lbl">각도</div></div>
+          <div class="weapons"><button class="wbtn" data-w="0"><kbd>1</kbd><b class="wn0"></b><small>일반 공격</small></button><button class="wbtn sp" data-w="1"><kbd>2</kbd><b class="wn1"></b><small class="gs">기세 0%</small><span class="gfill"></span></button></div>
+          <div class="firewrap"><div class="power"><div class="ticks"></div><i></i><div class="last"></div><span>힘 0</span></div><button class="fire" data-hold="charge" aria-label="힘 모아 발사">발사<small>Space 꾹</small></button><div class="keyhint">Tab 카메라 · Esc 정지 · 드래그로 둘러보기</div></div>
+        </div>
+        <div class="banner"><b></b><span></span></div>
+        <div class="toast"></div>
+        <div class="rotate-hint">가로로 돌리면 더 넓게 보여요</div>
+      </section>`));
+    // 누르고 있는 단추
+    el.querySelectorAll<HTMLElement>('[data-hold]').forEach((b) => {
+      const hold = b.dataset.hold as Hold;
+      const on = (e: PointerEvent) => {
+        e.preventDefault();
+        audio.unlock();
+        try { b.setPointerCapture(e.pointerId); } catch { /* 일부 브라우저 */ }
+        b.classList.add('held');
+        input.set(hold, true);
+      };
+      const off = () => {
+        if (!b.classList.contains('held')) return;
+        b.classList.remove('held');
+        input.set(hold, false);
+      };
+      b.addEventListener('pointerdown', on);
+      b.addEventListener('pointerup', off);
+      b.addEventListener('pointercancel', off);
+      b.addEventListener('lostpointercapture', off);
+    });
+    el.addEventListener('click', (e) => {
+      const t = e.target as HTMLElement;
+      const w = t.closest<HTMLElement>('[data-w]')?.dataset.w;
+      if (w !== undefined) { this.hooks.weapon(Number(w) as 0 | 1); return; }
+      const act = t.closest<HTMLElement>('[data-act]')?.dataset.act;
+      if (act === 'pause') this.hooks.pause();
+      else if (act === 'flip') this.hooks.flip();
+    });
+  }
+
+  showHud(b: Battle, names: [string, string]): void {
+    this.hudCache.clear();
+    const el = this.screens.get('hud')!;
+    for (const i of [0, 1] as const) {
+      const f = b.fighters[i];
+      const c = character(f.charId);
+      const card = el.querySelector<HTMLElement>(`.pcard.p${i + 1}`)!;
+      card.querySelector<HTMLImageElement>('img')!.src = this.portraits[c.id]?.[i === 1 ? 'bustFlip' : 'bust'] ?? '';
+      card.querySelector('.nm')!.textContent = `${names[i]} · ${c.name}`;
+      card.querySelector<HTMLElement>('.who i')!.textContent = names[i];
+    }
+    this.only('hud');
+  }
+
+  private set(key: string, val: string, fn: () => void): void {
+    if (this.hudCache.get(key) === val) return;
+    this.hudCache.set(key, val);
+    fn();
+  }
+
+  updateHud(b: Battle, opts: { names: [string, string]; humanTurn: boolean; status: string }): void {
+    const el = this.screens.get('hud')!;
+    for (const i of [0, 1] as const) {
+      const f = b.fighters[i];
+      const card = el.querySelector<HTMLElement>(`.pcard.p${i + 1}`)!;
+      const pct = Math.max(0, (f.hp / f.maxHp) * 100);
+      this.set(`hp${i}`, `${f.hp}`, () => {
+        const bar = card.querySelector<HTMLElement>('.bar')!;
+        bar.querySelector<HTMLElement>('i')!.style.width = `${pct}%`;
+        bar.querySelector<HTMLElement>('b')!.style.width = `${pct}%`;
+        bar.querySelector('span')!.textContent = `${f.hp} / ${f.maxHp}`;
+        bar.classList.toggle('low', pct <= 50 && pct > 25);
+        bar.classList.toggle('crit', pct <= 25);
+        card.querySelector('.hpn')!.textContent = f.alive ? '' : f.deathCause === 'fall' ? '낙사' : '쓰러짐';
+      });
+      const g = Math.min(100, Math.round((f.gauge / GAUGE_MAX) * 100));
+      this.set(`g${i}`, `${g}`, () => {
+        const gg = card.querySelector<HTMLElement>('.gauge')!;
+        gg.querySelector<HTMLElement>('i')!.style.width = `${g}%`;
+        gg.classList.toggle('full', g >= 100);
+      });
+      this.set(`turn${i}`, `${b.current === i && b.phase !== 'GAME_OVER'}`, () => card.classList.toggle('turn', b.current === i && b.phase !== 'GAME_OVER'));
+    }
+    // 턴·시간·바람
+    const tl = Math.max(0, Math.ceil(b.timeLeft));
+    const playerPhase = b.isPlayerPhase() || b.phase === 'TURN_START';
+    this.set('time', `${tl}|${playerPhase}`, () => {
+      const timer = el.querySelector<HTMLElement>('.timer')!;
+      timer.querySelector('b')!.textContent = playerPhase ? `${tl}` : '·';
+      const frac = playerPhase ? Math.max(0, b.timeLeft / b.cfg.turnTime) : 0;
+      timer.querySelector<SVGCircleElement>('.fg')!.style.strokeDashoffset = `${106.8 * (1 - frac)}`;
+      timer.classList.toggle('hurry', playerPhase && tl <= 5);
+      if (playerPhase && tl <= 5 && tl > 0 && b.phase !== 'TURN_START') audio.tick();
+    });
+    this.set('tp', `${b.current}|${b.turnNo}`, () => {
+      const tp = el.querySelector<HTMLElement>('.tp')!;
+      tp.textContent = `${opts.names[b.current]} 차례`;
+      tp.classList.toggle('p2', b.current === 1);
+      el.querySelector('.tno')!.textContent = `${Math.max(1, b.turnNo)} / ${b.cfg.turnLimit}턴`;
+    });
+    this.set('wind', `${b.wind}`, () => {
+      const w = el.querySelector<HTMLElement>('.wind')!;
+      const fill = w.querySelector<HTMLElement>('.fill')!;
+      const k = (Math.abs(b.wind) / WIND_MAX) * 50;
+      fill.style.left = b.wind >= 0 ? '50%' : `${50 - k}%`;
+      fill.style.width = `${k}%`;
+      w.querySelector('.v')!.textContent = b.wind === 0 ? '잔잔' : `${b.wind > 0 ? '→' : '←'} ${Math.abs(b.wind)}`;
+      w.classList.remove('change');
+      void w.offsetWidth;
+      w.classList.add('change');
+    });
+    this.set('status', opts.status, () => {
+      const s = el.querySelector<HTMLElement>('.status')!;
+      s.textContent = opts.status;
+      s.classList.toggle('on', !!opts.status);
+    });
+    // 조작판
+    const f = b.cur;
+    const c = character(f.charId);
+    const canAct = opts.humanTurn && b.isPlayerPhase();
+    this.set('act', `${canAct}`, () => el.querySelector('.bottom')!.classList.toggle('off', !canAct));
+    this.set('wn', c.id, () => {
+      el.querySelector('.wn0')!.textContent = weapon(c.normal).name;
+      el.querySelector('.wn1')!.textContent = weapon(c.special).name;
+    });
+    const ready = b.canSpecial(f);
+    const gp = Math.min(100, Math.round(f.gauge));
+    this.set('slot', `${f.slot}|${ready}|${gp}`, () => {
+      el.querySelector('[data-w="0"]')!.classList.toggle('on', f.slot === 0);
+      const sp = el.querySelector<HTMLButtonElement>('[data-w="1"]')!;
+      sp.classList.toggle('on', f.slot === 1);
+      sp.classList.toggle('ready', ready && f.slot !== 1);
+      sp.disabled = !ready;
+      sp.querySelector('.gs')!.textContent = ready ? '쓸 수 있음!' : `기세 ${gp}%`;
+      sp.querySelector<HTMLElement>('.gfill')!.style.width = `${gp}%`;
+    });
+    const rel = f.angle <= 90 ? f.angle : 180 - f.angle;
+    this.set('ang', `${Math.round(rel)}|${f.angle <= 90}`, () => {
+      el.querySelector('.ang')!.textContent = `${Math.round(rel)}°`;
+    });
+    const mv = Math.max(0, (f.moveLeft / (MOVE_BUDGET * c.moveMul)) * 100);
+    this.set('mv', `${Math.round(mv)}`, () => { el.querySelector<HTMLElement>('.movebar i')!.style.width = `${mv}%`; });
+    const pw = b.phase === 'CHARGE' ? f.power : 0;
+    this.set('pw', `${Math.round(pw)}|${Math.round(f.lastPower)}`, () => {
+      const p = el.querySelector<HTMLElement>('.power')!;
+      p.querySelector<HTMLElement>('i')!.style.width = `${pw}%`;
+      p.querySelector<HTMLElement>('.last')!.style.left = `${f.lastPower}%`;
+      p.querySelector('span')!.textContent = b.phase === 'CHARGE' ? `힘 ${Math.round(pw)}` : `지난 힘 ${Math.round(f.lastPower)}`;
+    });
+  }
+
+  banner(text: string, sub = '', cls = ''): void {
+    const el = this.screens.get('hud')!.querySelector<HTMLElement>('.banner')!;
+    el.className = `banner ${cls}`;
+    el.querySelector('b')!.textContent = text;
+    el.querySelector('span')!.textContent = sub;
+    void el.offsetWidth;
+    el.classList.add('show');
+    window.clearTimeout(this.bannerT);
+    this.bannerT = window.setTimeout(() => el.classList.remove('show'), 1700);
+  }
+
+  toast(text: string): void {
+    const el = this.screens.get('hud')!.querySelector<HTMLElement>('.toast')!;
+    el.textContent = text;
+    el.classList.add('on');
+    window.clearTimeout(this.toastT);
+    this.toastT = window.setTimeout(() => el.classList.remove('on'), 1600);
+  }
+
+  // ───────── 정지 ─────────
+
+  private buildPause(): void {
+    const el = this.add('pause', h(`
+      <section class="screen modal">
+        <div class="sheet pause-sheet">
+          <h2>잠깐 멈춤</h2>
+          <button class="btn primary" data-act="resume">계속하기</button>
+          <button class="btn" data-act="settings">설정</button>
+          <button class="btn" data-act="howto">게임 방법</button>
+          <button class="btn" data-act="restart">처음부터 다시</button>
+          <button class="btn ghost" data-act="home">처음 화면으로</button>
+        </div>
+      </section>`));
+    el.addEventListener('click', (e) => {
+      const act = (e.target as HTMLElement).closest('button')?.dataset.act;
+      if (act === 'resume') this.hooks.resume();
+      else if (act === 'settings') this.openSettings();
+      else if (act === 'howto') this.show('howto');
+      else if (act === 'restart') this.hooks.restart();
+      else if (act === 'home') this.hooks.toTitle();
+    });
+  }
+
+  // ───────── 결과 ─────────
+
+  private buildResult(): void {
+    const el = this.add('result', h(`<section class="screen result"><div class="res"></div></section>`));
+    el.addEventListener('click', (e) => {
+      const act = (e.target as HTMLElement).closest('button')?.dataset.act;
+      if (act === 'rematch') this.hooks.rematch();
+      else if (act === 'rechar') this.hooks.rechar();
+      else if (act === 'home') this.hooks.toTitle();
+    });
+  }
+
+  showResult(b: Battle, names: [string, string]): void {
+    const el = this.screens.get('result')!.querySelector('.res')!;
+    const w = b.winner;
+    let title: string, cls = '';
+    if (w === -1 || w === null) title = '무승부';
+    else if (this.mode === 'ai') { title = w === 0 ? '승리!' : '패배…'; if (w !== 0) cls = 'lose'; }
+    else title = `${names[w]} 승리!`;
+    const loser = w === 0 ? b.fighters[1] : w === 1 ? b.fighters[0] : null;
+    const ln = loser ? character(loser.charId).name : '';
+    const why = b.endReason === 'fall' ? `${josa(ln, '이', '가')} 낭떠러지로 떨어졌습니다.`
+      : b.endReason === 'hp' ? `${ln}의 기력이 다했습니다.`
+      : b.endReason === 'limit' ? '정해진 턴을 다 써서, 남은 체력이 많은 쪽이 이겼습니다.'
+      : b.fighters.every((f) => !f.alive) ? '둘이 함께 쓰러졌습니다.' : '남은 체력이 똑같습니다.';
+    const showId = w === 1 ? b.fighters[1].charId : b.fighters[0].charId;
+    const img = w === -1 || w === null ? '' : `<img alt="" src="${this.portraits[showId]?.happy ?? ''}">`;
+    const rows: [string, (i: 0 | 1) => number, (v: number) => string][] = [
+      ['명중률', (i) => (b.fighters[i].stats.shots ? b.fighters[i].stats.hits / b.fighters[i].stats.shots : 0), (v) => `${Math.round(v * 100)}%`],
+      ['총 피해량', (i) => b.fighters[i].stats.damageDealt, (v) => `${v}`],
+      ['가장 센 한 방', (i) => b.fighters[i].stats.maxHit, (v) => `${v}`],
+      ['지형 파괴', (i) => b.fighters[i].stats.cellsDestroyed, (v) => `${Math.round(v * 4 / 100)}㎡`],
+      ['쏜 횟수', (i) => b.fighters[i].stats.shots, (v) => `${v}발`],
+    ];
+    const head = `<tr><th></th>${[0, 1].map((i) => `<th class="p${i + 1}">${names[i]} ${character(b.fighters[i].charId).name}</th>`).join('')}</tr>`;
+    const body = rows.map(([label, get, fmt]) => {
+      const a = get(0), c = get(1);
+      return `<tr><td>${label}</td><td class="${a > c ? 'best' : ''}">${fmt(a)}</td><td class="${c > a ? 'best' : ''}">${fmt(c)}</td></tr>`;
+    }).join('');
+    el.innerHTML = `
+      <h2 class="${cls}">${title}</h2>
+      <div class="why">${esc(why)}</div>
+      <div class="who">${img}</div>
+      <table class="table">${head}${body}</table>
+      <div class="actions">
+        <button class="btn primary" data-act="rematch">다시 한 판</button>
+        <button class="btn" data-act="rechar">장수 다시 고르기</button>
+        <button class="btn ghost" data-act="home">처음 화면으로</button>
+      </div>`;
+    this.show('result');
+  }
+
+  hideResult(): void {
+    this.show('result', false);
+  }
+
+  // ───────── 설정 ─────────
+
+  private buildSettings(): void {
+    const el = this.add('settings', h(`<section class="screen modal"><div class="sheet"></div></section>`));
+    el.addEventListener('input', (e) => {
+      const t = e.target as HTMLInputElement;
+      if (t.name === 'bgm') this.settings.bgm = Number(t.value) / 100;
+      if (t.name === 'sfx') this.settings.sfx = Number(t.value) / 100;
+      this.hooks.settingsChanged(this.settings);
+    });
+    el.addEventListener('click', (e) => {
+      const t = e.target as HTMLElement;
+      if (t === el) { this.show('settings', false); return; }
+      const b = t.closest<HTMLElement>('[data-k]');
+      if (b) {
+        const k = b.dataset.k as keyof Settings;
+        const v = b.dataset.v!;
+        const s = this.settings as unknown as Record<string, unknown>;
+        s[k] = k === 'trajectory' ? v === '1' : k === 'shake' || k === 'turnTime' || k === 'turnLimit' ? Number(v) : v;
+        this.hooks.settingsChanged(this.settings);
+        this.renderSettings();
+        return;
+      }
+      if (t.closest('[data-act=close]')) this.show('settings', false);
+    });
+  }
+
+  openSettings(): void {
+    this.renderSettings();
+    this.show('settings');
+  }
+
+  private renderSettings(): void {
+    const s = this.settings;
+    const chips = (k: string, opts: [string, string][], cur: string) => `<div class="chips">${opts.map(([v, l]) => `<button data-k="${k}" data-v="${v}" class="${v === cur ? 'on' : ''}">${l}</button>`).join('')}</div>`;
+    this.screens.get('settings')!.querySelector('.sheet')!.innerHTML = `
+      <h2>설정</h2>
+      <div class="row"><label>배경음</label><input type="range" name="bgm" min="0" max="100" value="${Math.round(s.bgm * 100)}" aria-label="배경음 크기"></div>
+      <div class="row"><label>효과음</label><input type="range" name="sfx" min="0" max="100" value="${Math.round(s.sfx * 100)}" aria-label="효과음 크기"></div>
+      <div class="row"><label>그래픽</label>${chips('quality', [['low', '낮음'], ['medium', '보통'], ['high', '높음']], s.quality)}</div>
+      <div class="row"><label>화면 흔들림</label>${chips('shake', [['0', '끔'], ['0.5', '약하게'], ['1', '보통'], ['1.5', '세게']], String(s.shake))}</div>
+      <div class="row"><label>예상 궤적</label>${chips('trajectory', [['1', '보이기'], ['0', '숨기기']], s.trajectory ? '1' : '0')}</div>
+      <div class="row"><label>AI 실력</label>${chips('difficulty', [['easy', '쉬움'], ['normal', '보통'], ['hard', '어려움']], s.difficulty)}</div>
+      <div class="row"><label>턴 시간</label>${chips('turnTime', [['20', '20초'], ['30', '30초'], ['45', '45초']], String(s.turnTime))}</div>
+      <div class="row"><label>전체 턴</label>${chips('turnLimit', [['20', '20턴'], ['30', '30턴'], ['40', '40턴']], String(s.turnLimit))}</div>
+      <p style="font-size:13px;color:var(--muted)">그래픽을 낮춰도 포탄 궤적과 판정은 똑같습니다. 턴 시간과 전체 턴은 다음 판부터 적용됩니다.</p>
+      <div class="actions"><button class="btn primary" data-act="close">닫기</button></div>`;
+  }
+
+  // ───────── 게임 방법 ─────────
+
+  private buildHowto(): void {
+    const weapons = CHARACTERS.map((c) => `<li><b>${c.name}</b> — ${weapon(c.normal).name} / 특수 ${weapon(c.special).name}</li>`).join('');
+    const el = this.add('howto', h(`
+      <section class="screen modal"><div class="sheet">
+        <h2>게임 방법</h2>
+        <p>바람을 읽고 각도와 힘을 맞춰 상대 장수에게 포탄을 넘기세요. 상대의 체력을 0으로 만들거나, 발밑 땅을 무너뜨려 낭떠러지로 떨어뜨리면 이깁니다.</p>
+        <h3>PC</h3>
+        <ul>
+          <li><kbd>A</kbd> <kbd>D</kbd> 이동(한 턴에 갈 수 있는 거리가 정해져 있어요)</li>
+          <li><kbd>←</kbd> <kbd>→</kbd> 포신을 왼쪽·오른쪽으로 돌리기, <kbd>↑</kbd> <kbd>↓</kbd> 포신 올리기·내리기</li>
+          <li><kbd>Space</kbd> 꾹 눌러 힘 모으기 → 떼면 발사(힘은 끝까지 차면 다시 줄어듭니다)</li>
+          <li><kbd>1</kbd> <kbd>2</kbd> 무기 바꾸기 · <kbd>Tab</kbd> 카메라 · <kbd>Esc</kbd> 일시정지 · 마우스 끌기로 둘러보기, 휠로 확대</li>
+        </ul>
+        <h3>휴대폰·태블릿</h3>
+        <ul><li>왼쪽 ◀ ▶ 이동, ▲ ▼ 각도, ⇄ 방향 바꾸기, 오른쪽 큰 <b>발사</b> 단추를 누르고 있다가 떼면 발사. 화면을 끌면 둘러볼 수 있어요.</li></ul>
+        <h3>규칙</h3>
+        <ul>
+          <li>한 턴에 한 번만 쏩니다. 포탄·폭발·붕괴·낙석이 모두 멈춰야 다음 차례로 넘어갑니다.</li>
+          <li>바람은 턴마다 바뀝니다. 화면 위 화살표가 방향과 세기(0~10)입니다. 무기마다 바람을 타는 정도가 다릅니다.</li>
+          <li>지지점을 잃은 땅은 덩어리째 무너지고, 바위는 낙석이 되어 굴러갑니다. 깔리거나 높은 곳에서 떨어지면 다칩니다.</li>
+          <li>상대를 맞히거나 맞으면 <b>기세</b>가 찹니다. 가득 차면 특수 공격(2번)을 쓸 수 있습니다.</li>
+          <li>정해진 턴을 다 쓰면 남은 체력 비율이 높은 쪽이 이깁니다. 둘이 함께 쓰러지면 무승부입니다.</li>
+        </ul>
+        <h3>포탄 속의 수학</h3>
+        <div class="mathbox">처음 속도 <code>v</code>, 각도 <code>θ</code>로 쏜 포탄의 위치는<br>
+          <code>x(t) = x₀ + v·cosθ·t + ½·w·t²</code><br>
+          <code>y(t) = y₀ − v·sinθ·t + ½·g·t²</code><br>
+          입니다(화면은 아래쪽이 +y, <code>w</code>는 바람, <code>g</code>는 중력). 바람이 없으면 포물선, 45°에 가까울수록 멀리 갑니다.</div>
+        <h3>장수와 무기</h3>
+        <ul>${weapons}</ul>
+        <div class="actions"><button class="btn primary" data-act="close">알겠어요</button></div>
+      </div></section>`));
+    el.addEventListener('click', (e) => {
+      if (e.target === el || (e.target as HTMLElement).closest('[data-act=close]')) this.show('howto', false);
+    });
+  }
+
+  hideLoading(): void {
+    this.show('loading', false);
+  }
+}
