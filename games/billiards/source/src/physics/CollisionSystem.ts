@@ -1,8 +1,9 @@
-import type { BallState, TableConfig } from './types';
+import type { BallState, TableConfig, Vec2 } from './types';
 import type { PhysicsConfig } from './config';
+import { getPocketGeometry, getRailSegments } from './pool';
 
 export type Rail = 'left'|'right'|'top'|'bottom';
-export interface Contact { time: number; a: number; b?: number; rail?: Rail }
+export interface Contact { time: number; a: number; b?: number; rail?: Rail; normal?:Vec2; segmentId?:string; pocketId?:string }
 const EPS = 1e-10;
 
 /** Earliest swept-circle time, including contacts before the next discrete frame. */
@@ -30,12 +31,42 @@ export function earliestContact(balls: BallState[], table: TableConfig, horizon:
     }
   };
   for(let i=0;i<balls.length;i++) {
+    if(balls[i].pocketed)continue;
     const {position:p,velocity:v}=balls[i];
-    if(v.x < -EPS) consider({time:(-xLimit-p.x)/v.x,a:i,rail:'left'});
-    if(v.x > EPS) consider({time:(xLimit-p.x)/v.x,a:i,rail:'right'});
-    if(v.z < -EPS) consider({time:(-zLimit-p.z)/v.z,a:i,rail:'top'});
-    if(v.z > EPS) consider({time:(zLimit-p.z)/v.z,a:i,rail:'bottom'});
+    if(table.pockets?.length){
+      for(const segment of getRailSegments(table)){
+        const dx=segment.b.x-segment.a.x,dz=segment.b.z-segment.a.z,length=Math.hypot(dx,dz),tx=dx/length,tz=dz/length;
+        const px=p.x-segment.a.x,pz=p.z-segment.a.z,distance=px*segment.normal.x+pz*segment.normal.z,vn=v.x*segment.normal.x+v.z*segment.normal.z;
+        if(vn < -EPS && distance>=-EPS){
+          const time=Math.max(0,(table.ballRadius-distance)/vn),along=(px+v.x*time)*tx+(pz+v.z*time)*tz;
+          if(along>=-EPS&&along<=length+EPS)consider({time,a:i,rail:segment.rail,normal:segment.normal,segmentId:segment.id});
+        }
+        for(const end of [segment.a,segment.b]){
+          const ex=p.x-end.x,ez=p.z-end.z,approach=ex*v.x+ez*v.z,speed2=v.x*v.x+v.z*v.z,c=ex*ex+ez*ez-table.ballRadius**2;
+          if(approach>=-EPS||speed2<EPS)continue;
+          const disc=approach*approach-speed2*c;if(disc<0)continue;
+          const time=c<=EPS?0:c/(-approach+Math.sqrt(disc)),nx=ex+v.x*time,nz=ez+v.z*time,norm=Math.hypot(nx,nz);
+          if(norm>EPS)consider({time,a:i,rail:segment.rail,normal:{x:nx/norm,z:nz/norm},segmentId:segment.id});
+        }
+      }
+      // Capture is a swept crossing behind the jaws, never an oversized circle on the bed.
+      for(const geometry of getPocketGeometry(table)){
+        const n=geometry.outward,center=geometry.throat.center,tx=-n.z,tz=n.x;
+        const depth=(p.x-center.x)*n.x+(p.z-center.z)*n.z,outwardSpeed=v.x*n.x+v.z*n.z;
+        if(outwardSpeed<=EPS)continue;
+        const time=depth>=-EPS?0:-depth/outwardSpeed;
+        const along=(p.x+v.x*time-center.x)*tx+(p.z+v.z*time-center.z)*tz;
+        const halfWidth=Math.hypot(geometry.throat.b.x-geometry.throat.a.x,geometry.throat.b.z-geometry.throat.a.z)/2-table.ballRadius;
+        if(Math.abs(along)<=halfWidth+EPS&&depth<=table.ballRadius)consider({time,a:i,pocketId:geometry.pocket.id});
+      }
+    }else{
+      if(v.x < -EPS) consider({time:(-xLimit-p.x)/v.x,a:i,rail:'left'});
+      if(v.x > EPS) consider({time:(xLimit-p.x)/v.x,a:i,rail:'right'});
+      if(v.z < -EPS) consider({time:(-zLimit-p.z)/v.z,a:i,rail:'top'});
+      if(v.z > EPS) consider({time:(zLimit-p.z)/v.z,a:i,rail:'bottom'});
+    }
     for(let j=i+1;j<balls.length;j++) {
+      if(balls[j].pocketed)continue;
       const t=ballTimeOfImpact(balls[i],balls[j],2*table.ballRadius,horizon);
       if(t !== null) consider({time:t,a:i,b:j});
     }
@@ -75,7 +106,12 @@ export function railNormal(rail: Rail): {x:number;z:number} {
 }
 
 export function resolveCushionCollision(ball: BallState, rail: Rail, table: TableConfig, config: PhysicsConfig): number {
-  const {x:nx,z:nz}=railNormal(rail),tx=-nz,tz=nx;
+  return resolveCushionNormal(ball,railNormal(rail),table,config);
+}
+
+/** Same dissipative cushion impulse for arbitrary finite jaw/endcap normals. */
+export function resolveCushionNormal(ball:BallState,normal:Vec2,table:TableConfig,config:PhysicsConfig):number{
+  const {x:nx,z:nz}=normal,tx=-nz,tz=nx;
   const v=ball.velocity,w=ball.angularVelocity,r=table.ballRadius,m=table.ballMass,inertia=0.4*m*r*r;
   const vn=v.x*nx+v.z*nz;
   if(vn>=-EPS) return 0;
@@ -100,9 +136,21 @@ export function correctPositions(balls: BallState[],table: TableConfig): void {
   for(let pass=0;pass<6;pass++){
     let adjusted=false;
     for(let i=0;i<balls.length;i++){
+      if(balls[i].pocketed)continue;
       const p=balls[i].position;
-      p.x=Math.max(-xLimit,Math.min(xLimit,p.x));p.z=Math.max(-zLimit,Math.min(zLimit,p.z));
+      if(table.pockets?.length){
+        for(const segment of getRailSegments(table)){
+          const dx=segment.b.x-segment.a.x,dz=segment.b.z-segment.a.z,length2=dx*dx+dz*dz;
+          const along=Math.max(0,Math.min(1,((p.x-segment.a.x)*dx+(p.z-segment.a.z)*dz)/length2));
+          const qx=segment.a.x+along*dx,qz=segment.a.z+along*dz,ex=p.x-qx,ez=p.z-qz,d=Math.hypot(ex,ez);
+          if(d<table.ballRadius-1e-10&&ex*segment.normal.x+ez*segment.normal.z>=-EPS){
+            const nx=d>EPS?ex/d:segment.normal.x,nz=d>EPS?ez/d:segment.normal.z,shift=table.ballRadius-d+1e-10;
+            p.x+=nx*shift;p.z+=nz*shift;adjusted=true;
+          }
+        }
+      }else{p.x=Math.max(-xLimit,Math.min(xLimit,p.x));p.z=Math.max(-zLimit,Math.min(zLimit,p.z));}
       for(let j=i+1;j<balls.length;j++){
+        if(balls[j].pocketed)continue;
         const q=balls[j].position,dx=q.x-p.x,dz=q.z-p.z,d=Math.hypot(dx,dz);
         if(d<diameter-1e-10){
           const nx=d>EPS?dx/d:1,nz=d>EPS?dz/d:0,shift=(diameter-d+1e-10)*0.5;

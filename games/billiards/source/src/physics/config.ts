@@ -3,6 +3,8 @@ import type { TableConfig } from './types';
 /** All distances in metres, mass in kilograms, time in seconds, angular speed in radians/s. */
 export const FIXED_DT = 1 / 240;
 export const TABLE: TableConfig = { width: 2.84, height: 1.42, ballRadius: 0.03075, ballMass: 0.21 };
+/** Pool's break needs a wider impulse range; every player, AI and forecast shares this cap. */
+export const shotSpeedLimit = (table: TableConfig): number => table.kind === 'pool' ? 7.5 : 4.5;
 export interface PhysicsConfig {
   gravity: number;
   slidingFriction: number;

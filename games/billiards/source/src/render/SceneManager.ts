@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import type { BallState, TableConfig, Vec2 } from '../physics/types';
-import { MaterialKit, ballTexture } from './MaterialKit';
+import { MaterialKit, ballTexture, poolBallTexture } from './MaterialKit';
 import { createTable, createCue, createRoom } from './TableFactory';
+import { disposeModel } from './Geometry';
 
 type CameraMode = 'top' | 'cue';
 const DEFAULT_TABLE: TableConfig = { width: 2.84, height: 1.42, ballRadius: .03075, ballMass: .21 };
@@ -15,9 +16,22 @@ export class SceneManager {
   private readonly materials = new MaterialKit();
   private readonly balls = new Map<string, THREE.Mesh>();
   private readonly shadows = new Map<string, THREE.Mesh>();
-  private readonly ballGeometry: THREE.SphereGeometry;
+  private ballGeometry: THREE.SphereGeometry;
+  private tableRoot: THREE.Group;
+  private tableSignature: string;
   private readonly shadowGeometry = new THREE.PlaneGeometry(1, 1);
   private readonly ballMaterials: Record<string, THREE.MeshPhysicalMaterial>;
+  private readonly poolOrientation = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2);
+  private readonly lastPocketed = new Map<string, boolean>();
+  private readonly pocketFalls = new Map<string, { elapsed: number; start: Vec2; target: Vec2 }>();
+  private readonly placement = new THREE.Group();
+  private readonly placementMaterial = new THREE.MeshBasicMaterial({ color: 0xcce0bd, transparent: true, opacity: .48, depthWrite: false });
+  private placementBall: THREE.Mesh;
+  private placementRing: THREE.Mesh;
+  private readonly calledPocketMarker = new THREE.Group();
+  private calledPocketRing: THREE.Mesh;
+  private calledPocketId: string | null = null;
+  private paused = false;
   private readonly cue: THREE.Group;
   private readonly guide = new THREE.Group();
   private readonly ring: THREE.Mesh;
@@ -54,7 +68,7 @@ export class SceneManager {
   private frameCount = 0;
   private frameTimeMs = 0;
 
-  constructor(private readonly canvas: HTMLCanvasElement, private readonly table: TableConfig = DEFAULT_TABLE) {
+  constructor(private readonly canvas: HTMLCanvasElement, private table: TableConfig = DEFAULT_TABLE) {
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance', preserveDrawingBuffer: true });
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -72,7 +86,8 @@ export class SceneManager {
     environment.dispose(); pmrem.dispose();
 
     this.scene.add(createRoom(this.materials));
-    this.scene.add(createTable(table, this.materials));
+    this.tableRoot = createTable(table, this.materials); this.scene.add(this.tableRoot);
+    this.tableSignature = JSON.stringify(table);
     this.scene.add(new THREE.HemisphereLight(0xd4e8ed, 0x514336, 1.22));
     this.keyLight = new THREE.SpotLight(0xfff2d5, 38, 12, .66, .68, 1.3);
     this.keyLight.position.set(-.7, 3.7, .45);
@@ -103,6 +118,18 @@ export class SceneManager {
     this.ring = new THREE.Mesh(new THREE.RingGeometry(table.ballRadius * 1.3, table.ballRadius * 1.35, 48),
       new THREE.MeshBasicMaterial({ color: 0xe5d2a0, transparent: true, opacity: .62, depthWrite: false }));
     this.ring.rotation.x = -Math.PI / 2; this.ring.position.y = .0025; this.scene.add(this.ring);
+    this.placementBall = new THREE.Mesh(this.ballGeometry, this.placementMaterial);
+    this.placementBall.position.y = table.ballRadius; this.placement.add(this.placementBall);
+    this.placementRing = new THREE.Mesh(new THREE.RingGeometry(table.ballRadius * 1.15, table.ballRadius * 1.3, 40), this.placementMaterial);
+    this.placementRing.rotation.x = -Math.PI / 2; this.placementRing.position.y = .003; this.placement.add(this.placementRing);
+    this.placement.visible = false; this.scene.add(this.placement);
+    const callMaterial = new THREE.MeshBasicMaterial({ color: 0xe0bc73, transparent: true, opacity: .92, depthWrite: false, side: THREE.DoubleSide });
+    this.calledPocketRing = new THREE.Mesh(new THREE.RingGeometry(.084, .09, 48), callMaterial);
+    this.calledPocketRing.rotation.x = -Math.PI / 2; this.calledPocketMarker.add(this.calledPocketRing);
+    const arrowShape = new THREE.Shape(); arrowShape.moveTo(0, -.023); arrowShape.lineTo(.018, .014); arrowShape.lineTo(-.018, .014); arrowShape.closePath();
+    const callArrow = new THREE.Mesh(new THREE.ShapeGeometry(arrowShape), callMaterial);
+    callArrow.rotation.x = -Math.PI / 2; callArrow.position.z = .125; this.calledPocketMarker.add(callArrow);
+    this.calledPocketMarker.visible = false; this.scene.add(this.calledPocketMarker);
     const bounds = canvas.getBoundingClientRect();
     this.resize(bounds.width || 1000, bounds.height || 600);
     this.computeCamera(); this.camera.position.copy(this.desiredPosition); this.cameraTarget.copy(this.desiredTarget);
@@ -111,17 +138,56 @@ export class SceneManager {
 
   get cameraMode(): CameraMode { return this.mode; }
 
+  setTable(table: TableConfig) {
+    const signature = JSON.stringify(table);
+    if (signature === this.tableSignature) return;
+    this.scene.remove(this.tableRoot); disposeModel(this.tableRoot, this.materials);
+    this.table = table; this.tableSignature = signature;
+    this.tableRoot = createTable(table, this.materials); this.scene.add(this.tableRoot);
+    for (const mesh of this.balls.values()) this.scene.remove(mesh);
+    for (const shadow of this.shadows.values()) { this.scene.remove(shadow); (shadow.material as THREE.Material).dispose(); }
+    this.balls.clear(); this.shadows.clear(); this.lastPocketed.clear(); this.pocketFalls.clear();
+    this.ballGeometry.dispose(); this.ballGeometry = new THREE.SphereGeometry(table.ballRadius, 40, 28);
+    this.ring.geometry.dispose(); this.ring.geometry = new THREE.RingGeometry(table.ballRadius * 1.3, table.ballRadius * 1.35, 48);
+    this.placementBall.geometry = this.ballGeometry; this.placementBall.position.y = table.ballRadius;
+    this.placementRing.geometry.dispose(); this.placementRing.geometry = new THREE.RingGeometry(table.ballRadius * 1.15, table.ballRadius * 1.3, 40);
+    this.placement.visible = false; this.setCalledPocket(null); this.setGuide([]);
+    this.selectedPosition.y = table.ballRadius; this.transitioning = true;
+  }
+
+  setPaused(paused: boolean) { this.paused = paused; }
+
+  setBallPlacement(point: Vec2 | null, valid = true) {
+    this.placement.visible = point !== null;
+    if (point) this.placement.position.set(point.x, 0, point.z);
+    this.placementMaterial.color.setHex(valid ? 0xcce0bd : 0xe57058);
+    this.placementBall.material = this.placementMaterial;
+  }
+
+  setCalledPocket(id: string | null) {
+    if (id === this.calledPocketId) return;
+    this.calledPocketId = id;
+    const pocket = this.table.pockets?.find(value => value.id === id);
+    this.calledPocketMarker.visible = !!pocket;
+    if (!pocket) return;
+    this.calledPocketRing.geometry.dispose(); this.calledPocketRing.geometry = new THREE.RingGeometry(pocket.radius + .017, pocket.radius + .023, 48);
+    this.calledPocketMarker.position.set(pocket.x, .078, pocket.z);
+    // An inward-facing arrow gives the selected pocket a shape cue as well as gold.
+    this.calledPocketMarker.rotation.y = Math.atan2(pocket.x, pocket.z) + Math.PI;
+  }
+
   sync(states: BallState[]) {
     const active = new Set(states.map(ball => ball.id));
     for (const [id, mesh] of this.balls) if (!active.has(id)) {
       this.scene.remove(mesh); this.balls.delete(id);
+      this.lastPocketed.delete(id); this.pocketFalls.delete(id);
       const shadow = this.shadows.get(id);
       if (shadow) { this.scene.remove(shadow); (shadow.material as THREE.Material).dispose(); this.shadows.delete(id); }
     }
     for (const ball of states) {
       let mesh = this.balls.get(ball.id);
       if (!mesh) {
-        mesh = new THREE.Mesh(this.ballGeometry, this.ballMaterials[ball.color]);
+        mesh = new THREE.Mesh(this.ballGeometry, this.materialForBall(ball));
         mesh.name = `ball-${ball.id}`; mesh.castShadow = true; mesh.receiveShadow = true;
         this.balls.set(ball.id, mesh); this.scene.add(mesh);
         const shadow = new THREE.Mesh(this.shadowGeometry,
@@ -129,11 +195,27 @@ export class SceneManager {
         shadow.rotation.x = -Math.PI / 2; shadow.scale.setScalar(this.table.ballRadius * 3.3);
         shadow.position.y = .0014; this.shadows.set(ball.id, shadow); this.scene.add(shadow);
       }
-      mesh.material = this.ballMaterials[ball.color];
-      mesh.position.set(ball.position.x, this.table.ballRadius, ball.position.z);
+      mesh.material = this.materialForBall(ball);
       mesh.quaternion.set(ball.orientation.x, ball.orientation.y, ball.orientation.z, ball.orientation.w);
-      this.shadows.get(ball.id)!.position.set(ball.position.x + .003, .0014, ball.position.z + .002);
-      if (ball.id === this.selectedId) this.selectedPosition.copy(mesh.position);
+      if (ball.color === 'pool') mesh.quaternion.multiply(this.poolOrientation);
+      const previousPocketed = this.lastPocketed.get(ball.id);
+      if (ball.pocketed) {
+        if (previousPocketed === false && !this.reducedMotion) {
+          const pocket = this.table.pockets?.find(value => value.id === ball.pocketId);
+          this.pocketFalls.set(ball.id, { elapsed: 0, start: { ...ball.position }, target: pocket ? { x: pocket.x, z: pocket.z } : { ...ball.position } });
+        }
+        const fall = this.pocketFalls.get(ball.id);
+        mesh.visible = !!fall && fall.elapsed < .5;
+        this.shadows.get(ball.id)!.visible = false;
+        if (!fall) mesh.position.set(ball.position.x, -.25, ball.position.z);
+      } else {
+        this.pocketFalls.delete(ball.id); mesh.visible = true;
+        mesh.position.set(ball.position.x, this.table.ballRadius, ball.position.z);
+        const shadow = this.shadows.get(ball.id)!; shadow.visible = true;
+        shadow.position.set(ball.position.x + .003, .0014, ball.position.z + .002);
+        if (ball.id === this.selectedId) this.selectedPosition.copy(mesh.position);
+      }
+      this.lastPocketed.set(ball.id, !!ball.pocketed);
     }
     this.updateCue();
   }
@@ -182,6 +264,13 @@ export class SceneManager {
     this.cameraTarget.lerp(this.desiredTarget, speed);
     this.camera.lookAt(this.cameraTarget);
     if (this.camera.position.distanceToSquared(this.desiredPosition) < .0001) this.transitioning = false;
+    for (const [id, fall] of this.pocketFalls) {
+      if (!this.paused) fall.elapsed += Math.max(0, Math.min(dt, .1));
+      const mesh = this.balls.get(id); if (!mesh) continue;
+      const t = Math.min(1, fall.elapsed / .5), inward = 1 - Math.exp(-t * 8);
+      mesh.position.set(THREE.MathUtils.lerp(fall.start.x, fall.target.x, inward), this.table.ballRadius - .5 * 3.6 * fall.elapsed * fall.elapsed, THREE.MathUtils.lerp(fall.start.z, fall.target.z, inward));
+      mesh.visible = t < 1;
+    }
     this.updateCue();
   }
 
@@ -234,6 +323,9 @@ export class SceneManager {
       shadowMapSize: 1024, postPasses: 0, cameraMode: this.mode, quality: this.quality,
       frameTimeMs: Number(this.frameTimeMs.toFixed(2)), fps: this.frameTimeMs ? Math.round(1000 / this.frameTimeMs) : 0,
       ballMeshes: this.balls.size, width: this.width, height: this.height, frames: this.frameCount,
+      tableKind: this.table.kind ?? 'carom', visibleBalls: [...this.balls.values()].filter(mesh => mesh.visible).length,
+      pockets: this.table.pockets?.length ?? 0, pocketFalls: [...this.pocketFalls.values()].filter(fall => fall.elapsed < .5).length,
+      calledPocket: this.calledPocketId, placementVisible: this.placement.visible, zoom: this.zoomFactor,
     };
   }
 
@@ -250,7 +342,19 @@ export class SceneManager {
     });
     geometries.forEach(geometry => geometry.dispose()); materials.forEach(material => material.dispose()); textures.forEach(texture => texture.dispose());
     this.materials.dispose(); this.environmentTarget.dispose(); this.keyLight.shadow.dispose(); this.renderer.dispose();
-    this.balls.clear(); this.shadows.clear();
+    for (const material of Object.values(this.ballMaterials)) { material.map?.dispose(); material.dispose(); }
+    this.balls.clear(); this.shadows.clear(); this.lastPocketed.clear(); this.pocketFalls.clear();
+  }
+
+  private materialForBall(ball: BallState) {
+    if (ball.color !== 'pool') return this.ballMaterials[ball.color];
+    const number = Math.max(1, Math.min(15, ball.number ?? (Number(ball.id.replace(/\D/g, '')) || 1)));
+    const key = `pool-${number}`;
+    if (!this.ballMaterials[key]) this.ballMaterials[key] = new THREE.MeshPhysicalMaterial({
+      map: poolBallTexture(number), color: 0xffffff, metalness: 0, roughness: .11,
+      clearcoat: 1, clearcoatRoughness: .055, envMapIntensity: 1.05,
+    });
+    return this.ballMaterials[key];
   }
 
   private updateCue() {
@@ -273,8 +377,9 @@ export class SceneManager {
     this.yawQ.setFromAxisAngle(THREE.Object3D.DEFAULT_UP, -this.angle);
     this.pitchQ.setFromAxisAngle(this.zAxis, -.09);
     this.cue.quaternion.copy(this.tempQ.copy(this.yawQ).multiply(this.pitchQ));
-    this.cue.visible = this.cueVisible;
-    this.ring.visible = this.cueVisible;
+    const selectedPresent = !!this.balls.get(this.selectedId)?.visible && !this.lastPocketed.get(this.selectedId);
+    this.cue.visible = this.cueVisible && selectedPresent;
+    this.ring.visible = this.cueVisible && selectedPresent;
     this.ring.position.set(this.selectedPosition.x, .0025, this.selectedPosition.z);
   }
 

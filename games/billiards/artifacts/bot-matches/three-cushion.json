@@ -1,0 +1,383 @@
+{
+  "discipline": "three-cushion",
+  "from": "initial regulation layout",
+  "config": {
+    "discipline": "three-cushion",
+    "mode": "local",
+    "target": 1,
+    "difficulty": "expert",
+    "profile": "domestic",
+    "fourBallFoul": "turn",
+    "equalInnings": false,
+    "callShots": true,
+    "playerNames": [
+      "플레이어 1",
+      "플레이어 2"
+    ]
+  },
+  "final": {
+    "players": [
+      {
+        "name": "플레이어 1",
+        "score": 1,
+        "innings": 2,
+        "shots": 2,
+        "highRun": 1,
+        "run": 1,
+        "fouls": 0,
+        "group": null
+      },
+      {
+        "name": "플레이어 2",
+        "score": 0,
+        "innings": 1,
+        "shots": 1,
+        "highRun": 0,
+        "run": 0,
+        "fouls": 0,
+        "group": null
+      }
+    ],
+    "currentPlayer": 0,
+    "inning": 2,
+    "shotNumber": 3,
+    "status": "finished",
+    "winner": 0,
+    "breakShot": false,
+    "openTable": false,
+    "ballInHand": false,
+    "ballInHandZone": "anywhere",
+    "headStringRestriction": false,
+    "openingRequired": false,
+    "equalizing": false,
+    "pendingChoice": null,
+    "message": "플레이어 1 1점 도달 · 승리!"
+  },
+  "finalTurnState": {
+    "players": [
+      {
+        "name": "플레이어 1",
+        "score": 0,
+        "innings": 1,
+        "shots": 1,
+        "highRun": 0,
+        "run": 0,
+        "fouls": 0,
+        "group": null
+      },
+      {
+        "name": "플레이어 2",
+        "score": 0,
+        "innings": 1,
+        "shots": 1,
+        "highRun": 0,
+        "run": 0,
+        "fouls": 0,
+        "group": null
+      }
+    ],
+    "currentPlayer": 0,
+    "inning": 2,
+    "shotNumber": 2,
+    "status": "playing",
+    "winner": null,
+    "breakShot": false,
+    "openTable": false,
+    "ballInHand": false,
+    "ballInHandZone": "anywhere",
+    "headStringRestriction": false,
+    "openingRequired": false,
+    "equalizing": false,
+    "pendingChoice": null,
+    "message": "두 번째 목적구 전 2쿠션 · 3쿠션 미달, 공격권 전환."
+  },
+  "finalShot": {
+    "input": {
+      "ballId": "white",
+      "angle": 0.8088580332755375,
+      "power": 0.608777827437703,
+      "tip": {
+        "x": -0.35,
+        "y": 0
+      },
+      "safety": false
+    },
+    "before": {
+      "balls": [
+        {
+          "id": "white",
+          "color": "white",
+          "position": {
+            "x": -0.4782742489651543,
+            "z": -0.6780401676226
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": 0.48586226557543394,
+            "y": -0.8716681387724101,
+            "z": -0.01890526354913689,
+            "w": -0.06144188920505679
+          }
+        },
+        {
+          "id": "yellow",
+          "color": "yellow",
+          "position": {
+            "x": 0.24744002159099113,
+            "z": 0.17096378545283417
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": 0.17265397786202244,
+            "y": -0.30339273066225375,
+            "z": 0.03207131606170939,
+            "w": -0.9365441183392227
+          }
+        },
+        {
+          "id": "red",
+          "color": "red",
+          "position": {
+            "x": 0.16420139034950484,
+            "z": -0.6724699764093948
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": -0.6724120545136075,
+            "y": 0.3603329172803253,
+            "z": 0.22036266944418037,
+            "w": 0.6078342797049824
+          }
+        }
+      ],
+      "time": 13.662499999999545
+    },
+    "after": {
+      "balls": [
+        {
+          "id": "white",
+          "color": "white",
+          "position": {
+            "x": -0.14410767401199634,
+            "z": -0.028499675151293823
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": 0.947340125452936,
+            "y": 0.30233991233284274,
+            "z": 0.018440667672896725,
+            "w": -0.10390960443174736
+          }
+        },
+        {
+          "id": "yellow",
+          "color": "yellow",
+          "position": {
+            "x": 0.17034760614675154,
+            "z": 0.2608102399781783
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": -0.5381337126184906,
+            "y": 0.17146534745376407,
+            "z": -0.8167807751052082,
+            "w": 0.11781726267629664
+          }
+        },
+        {
+          "id": "red",
+          "color": "red",
+          "position": {
+            "x": -0.3628190557681826,
+            "z": -0.6592271170212463
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": -0.09840956855943361,
+            "y": -0.8226469939308676,
+            "z": 0.4300164764733694,
+            "w": -0.3586827430388608
+          }
+        }
+      ],
+      "time": 20.116666666665846
+    },
+    "events": [
+      {
+        "type": "shot",
+        "time": 0,
+        "sequence": 15,
+        "ballId": "white",
+        "speed": 2.7395002234696637
+      },
+      {
+        "type": "ball-ball",
+        "time": 0.48651700818975385,
+        "sequence": 16,
+        "ballA": "white",
+        "ballB": "yellow",
+        "speed": 0.23893535477562677,
+        "positionA": {
+          "x": 0.2863876476320856,
+          "z": 0.12336827699076328
+        },
+        "positionB": {
+          "x": 0.24744002159099113,
+          "z": 0.17096378545283417
+        }
+      },
+      {
+        "type": "cushion",
+        "time": 0.9269392664563672,
+        "sequence": 17,
+        "ballId": "white",
+        "rail": "bottom",
+        "speed": 1.2466997212623276,
+        "position": {
+          "x": 0.9203329433037936,
+          "z": 0.6792499999999999
+        }
+      },
+      {
+        "type": "cushion",
+        "time": 1.2365933162810752,
+        "sequence": 18,
+        "ballId": "white",
+        "rail": "right",
+        "speed": 1.493507583464434,
+        "position": {
+          "x": 1.3892499999999999,
+          "z": 0.4534906427949866
+        }
+      },
+      {
+        "type": "cushion",
+        "time": 2.8956384389985477,
+        "sequence": 19,
+        "ballId": "white",
+        "rail": "top",
+        "speed": 0.6100910094746782,
+        "position": {
+          "x": 0.24355339986548308,
+          "z": -0.6792499999999999
+        }
+      },
+      {
+        "type": "ball-ball",
+        "time": 2.927349660121221,
+        "sequence": 20,
+        "ballA": "white",
+        "ballB": "red",
+        "speed": 0.5216649490326263,
+        "positionA": {
+          "x": 0.2252312254191387,
+          "z": -0.664879901879241
+        },
+        "positionB": {
+          "x": 0.16420139034950484,
+          "z": -0.6724699764093948
+        }
+      },
+      {
+        "type": "cushion",
+        "time": 3.063259291001968,
+        "sequence": 21,
+        "ballId": "red",
+        "rail": "top",
+        "speed": 0.043357882392580684,
+        "position": {
+          "x": 0.11083600015653326,
+          "z": -0.6792499999999999
+        }
+      },
+      {
+        "type": "rest",
+        "time": 6.454166666666302,
+        "sequence": 22
+      }
+    ]
+  },
+  "elapsedMs": 618.7230999999999,
+  "shots": 3,
+  "safetyStops": 0,
+  "trace": [
+    {
+      "turn": 0,
+      "current": 1,
+      "scores": [
+        0,
+        0
+      ],
+      "outcome": "두 목적구를 모두 맞히지 못했습니다. 공격권 전환.",
+      "simulations": 136
+    },
+    {
+      "turn": 1,
+      "current": 0,
+      "scores": [
+        0,
+        0
+      ],
+      "outcome": "두 번째 목적구 전 2쿠션 · 3쿠션 미달, 공격권 전환.",
+      "simulations": 141
+    },
+    {
+      "turn": 2,
+      "current": 0,
+      "scores": [
+        1,
+        0
+      ],
+      "outcome": "플레이어 1 1점 도달 · 승리!",
+      "simulations": 141
+    }
+  ]
+}

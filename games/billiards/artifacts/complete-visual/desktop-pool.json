@@ -1,0 +1,603 @@
+{
+  "url": "http://127.0.0.1:5192/games/billiards/?qa=1",
+  "mode": "desktop",
+  "state": "pool-play",
+  "requestedState": "pool-play",
+  "appliedState": "pool-play",
+  "runId": "billiards-complete-v1-final",
+  "seed": null,
+  "screenshotPath": "../artifacts/complete-visual/desktop-pool.png",
+  "gpu": {
+    "renderer": "ANGLE (AMD, AMD Radeon 780M Graphics (0x00001900) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "vendor": "Google Inc. (AMD)",
+    "softwareRendered": false
+  },
+  "result": {
+    "ok": true,
+    "reason": "nonblank",
+    "rect": {
+      "x": 0,
+      "y": 172,
+      "width": 1002,
+      "height": 472
+    },
+    "drawingBuffer": {
+      "width": 1002,
+      "height": 472
+    },
+    "alphaPixels": 4113,
+    "variance": 244,
+    "colorBuckets": 156,
+    "metrics": {
+      "colorBuckets": 191,
+      "colorEntropyBits": 4.54,
+      "edgeDensity": 0.148,
+      "luminance": {
+        "mean": 84.4,
+        "p5": 36.6,
+        "p95": 136.6,
+        "contrast": 100
+      },
+      "dominantColorShare": 0.179,
+      "nonBackgroundShare": 0.821
+    },
+    "renderBudget": {
+      "tier": "desktop",
+      "note": "starting-point budget; adjust per game and document overrides",
+      "rows": [
+        {
+          "metric": "calls",
+          "actual": 113,
+          "limit": 300,
+          "ok": true
+        },
+        {
+          "metric": "triangles",
+          "actual": 55846,
+          "limit": 750000,
+          "ok": true
+        },
+        {
+          "metric": "geometries",
+          "actual": 94,
+          "limit": 300,
+          "ok": true
+        },
+        {
+          "metric": "textures",
+          "actual": 27,
+          "limit": 60,
+          "ok": true
+        }
+      ],
+      "withinBudget": true
+    },
+    "diagnostics": {
+      "renderer": {
+        "renderer": "ANGLE (AMD, AMD Radeon 780M Graphics (0x00001900) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "calls": 113,
+        "triangles": 55846,
+        "points": 0,
+        "lines": 0,
+        "geometries": 94,
+        "textures": 27,
+        "programs": 12,
+        "dpr": 1,
+        "shadowCastingLights": 1,
+        "shadowMapSize": 1024,
+        "postPasses": 0,
+        "cameraMode": "top",
+        "quality": "high",
+        "frameTimeMs": 19.38,
+        "fps": 52,
+        "ballMeshes": 16,
+        "width": 1002,
+        "height": 472,
+        "frames": 110,
+        "tableKind": "pool",
+        "visibleBalls": 16,
+        "pockets": 6,
+        "pocketFalls": 0,
+        "calledPocket": null,
+        "placementVisible": false,
+        "zoom": 1
+      },
+      "calls": 113,
+      "triangles": 55846,
+      "points": 0,
+      "lines": 0,
+      "geometries": 94,
+      "textures": 27,
+      "programs": 12,
+      "dpr": 1,
+      "shadowCastingLights": 1,
+      "shadowMapSize": 1024,
+      "postPasses": 0,
+      "cameraMode": "top",
+      "quality": "high",
+      "frameTimeMs": 19.38,
+      "fps": 52,
+      "ballMeshes": 16,
+      "width": 1002,
+      "height": 472,
+      "frames": 110,
+      "tableKind": "pool",
+      "visibleBalls": 16,
+      "pockets": 6,
+      "pocketFalls": 0,
+      "calledPocket": null,
+      "placementVisible": false,
+      "zoom": 1,
+      "gameState": "moving",
+      "frameCount": 10,
+      "frameMs": 26.700000019073485,
+      "physics": {
+        "engine": "dedicated-billiards",
+        "timestep": 0.004166666666666667,
+        "balls": 16,
+        "settled": false,
+        "energy": 0.3600451349179977,
+        "time": 1.020833333333331,
+        "safetyStops": 0
+      },
+      "simulationState": {
+        "balls": [
+          {
+            "id": "white",
+            "color": "white",
+            "position": {
+              "x": 0.5582635433492986,
+              "z": 0.003955016667914215
+            },
+            "velocity": {
+              "x": 0.004349591631723012,
+              "z": 0.0005338545507153207
+            },
+            "angularVelocity": {
+              "x": 0.018682573953292064,
+              "y": 0,
+              "z": -0.15221668002530228
+            },
+            "orientation": {
+              "x": 0.04938776845542904,
+              "y": 0.017391666491807584,
+              "z": -0.5413858046709593,
+              "w": 0.8391422935142816
+            }
+          },
+          {
+            "id": "ball-1",
+            "color": "pool",
+            "position": {
+              "x": 0.4711923698605649,
+              "z": 0.2673838855488555
+            },
+            "velocity": {
+              "x": -0.20930985966772878,
+              "z": 0.3341970721725842
+            },
+            "angularVelocity": {
+              "x": 11.695435596590874,
+              "y": 5.592358079805033,
+              "z": 7.324929472186484
+            },
+            "orientation": {
+              "x": -0.021967491910009428,
+              "y": 0.14139734443776159,
+              "z": -0.1163372907670566,
+              "w": 0.9828478290468539
+            },
+            "number": 1
+          },
+          {
+            "id": "ball-9",
+            "color": "pool",
+            "position": {
+              "x": 0.685023389940261,
+              "z": -0.02868620717494248
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": -0.009208705180220529,
+              "y": 0.949324129153713,
+              "z": -0.0019406917268669935,
+              "w": 0.3141578126850733
+            },
+            "number": 9
+          },
+          {
+            "id": "ball-2",
+            "color": "pool",
+            "position": {
+              "x": 0.6870743045306712,
+              "z": 0.04402155153833442
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0.257256792558811,
+              "y": 0.2532723119934113,
+              "z": -0.022122964245654603,
+              "w": 0.9322996584322287
+            },
+            "number": 2
+          },
+          {
+            "id": "ball-10",
+            "color": "pool",
+            "position": {
+              "x": 0.7372447316103137,
+              "z": -0.06404257777713648
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": -0.11187948432722628,
+              "y": -0.0604426952190423,
+              "z": -0.04388901655117478,
+              "w": 0.9909103974666442
+            },
+            "number": 10
+          },
+          {
+            "id": "ball-8",
+            "color": "pool",
+            "position": {
+              "x": 0.7355431874954012,
+              "z": 0.002369124250359079
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0.03848561354275569,
+              "y": -0.006039332161976751,
+              "z": -0.023138880199992027,
+              "w": 0.9989729607153366
+            },
+            "number": 8
+          },
+          {
+            "id": "ball-3",
+            "color": "pool",
+            "position": {
+              "x": 0.7201989958969104,
+              "z": 0.11667171669672084
+            },
+            "velocity": {
+              "x": -0.009944787304688105,
+              "z": 0.042422636177531
+            },
+            "angularVelocity": {
+              "x": 1.4846066903772879,
+              "y": 0,
+              "z": 0.34802405265750147
+            },
+            "orientation": {
+              "x": 0.8246630357710165,
+              "y": -0.006713904533839086,
+              "z": 0.20748242742660208,
+              "w": 0.5261528705880133
+            },
+            "number": 3
+          },
+          {
+            "id": "ball-11",
+            "color": "pool",
+            "position": {
+              "x": 0.7954260267171522,
+              "z": -0.10530277939401923
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": -0.3213870859351622,
+              "y": 0.0030922695820457488,
+              "z": -0.19607392635900378,
+              "w": 0.9264209595346496
+            },
+            "number": 11
+          },
+          {
+            "id": "ball-4",
+            "color": "pool",
+            "position": {
+              "x": 0.7848901024162093,
+              "z": -0.029282811627993864
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": -0.011295042135513944,
+              "y": 0.00017520957899975155,
+              "z": -0.02118467759001992,
+              "w": 0.9997117588386002
+            },
+            "number": 4
+          },
+          {
+            "id": "ball-12",
+            "color": "pool",
+            "position": {
+              "x": 0.7940867499235703,
+              "z": 0.03715054063671273
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0.1456483040579214,
+              "y": 0.02210334074992697,
+              "z": -0.17090152749980153,
+              "w": 0.9742128523844154
+            },
+            "number": 12
+          },
+          {
+            "id": "ball-5",
+            "color": "pool",
+            "position": {
+              "x": 0.84295744577001,
+              "z": 0.18266196474220886
+            },
+            "velocity": {
+              "x": 0.06105091759485051,
+              "z": 0.09961842339827223
+            },
+            "angularVelocity": {
+              "x": 3.486209042809177,
+              "y": 0,
+              "z": -2.136515051438338
+            },
+            "orientation": {
+              "x": 0.8274131788389126,
+              "y": -0.003976593342185167,
+              "z": -0.46048667861222375,
+              "w": -0.32143994308386575
+            },
+            "number": 5
+          },
+          {
+            "id": "ball-6",
+            "color": "pool",
+            "position": {
+              "x": 0.361865938844378,
+              "z": -0.4574766768981605
+            },
+            "velocity": {
+              "x": -1.3563214518514388,
+              "z": 0.4423454271385754
+            },
+            "angularVelocity": {
+              "x": 15.480154930483828,
+              "y": -41.006560939835545,
+              "z": 47.4653176500941
+            },
+            "orientation": {
+              "x": 0.7272987080588805,
+              "y": 0.19975218593440278,
+              "z": 0.5778423443178455,
+              "w": -0.311823473432594
+            },
+            "number": 6
+          },
+          {
+            "id": "ball-13",
+            "color": "pool",
+            "position": {
+              "x": 0.8498877881194653,
+              "z": -0.08520744607124679
+            },
+            "velocity": {
+              "x": 0.002083185459303731,
+              "z": -0.003483455861904907
+            },
+            "angularVelocity": {
+              "x": -0.12190571695205274,
+              "y": 0,
+              "z": -0.0729023782783458
+            },
+            "orientation": {
+              "x": -0.44844083963100917,
+              "y": 0.0020734028890970367,
+              "z": -0.2693987302434946,
+              "w": 0.8522445884220606
+            },
+            "number": 13
+          },
+          {
+            "id": "ball-7",
+            "color": "pool",
+            "position": {
+              "x": 0.9091717615409689,
+              "z": -0.01589981520732762
+            },
+            "velocity": {
+              "x": 0.06540640717629898,
+              "z": -0.013708079527660962
+            },
+            "angularVelocity": {
+              "x": -0.4797228181158692,
+              "y": 0,
+              "z": -2.2889381339037262
+            },
+            "orientation": {
+              "x": -0.19171651733797085,
+              "y": 0.0017948577563234192,
+              "z": -0.9442487259235838,
+              "w": 0.267648835336758
+            },
+            "number": 7
+          },
+          {
+            "id": "ball-14",
+            "color": "pool",
+            "position": {
+              "x": 0.8876977029943158,
+              "z": 0.06275777321837331
+            },
+            "velocity": {
+              "x": 0.03487746123300463,
+              "z": 0.0036137233654304547
+            },
+            "angularVelocity": {
+              "x": 0.12646450972635012,
+              "y": 0,
+              "z": -1.2205585733334954
+            },
+            "orientation": {
+              "x": 0.08471056229633567,
+              "y": 0.0019250734202820809,
+              "z": -0.7924854984821573,
+              "w": 0.603976116600029
+            },
+            "number": 14
+          },
+          {
+            "id": "ball-15",
+            "color": "pool",
+            "position": {
+              "x": 1.0665114977395718,
+              "z": 0.5055532099313828
+            },
+            "velocity": {
+              "x": -0.440902598711528,
+              "z": 0.46188674058167356
+            },
+            "angularVelocity": {
+              "x": 16.16401541843127,
+              "y": 5.158861365551891,
+              "z": 15.42966224712259
+            },
+            "orientation": {
+              "x": 0.06801524604079727,
+              "y": 0.4733267411917606,
+              "z": -0.48176344510570185,
+              "w": -0.7343294256249597
+            },
+            "number": 15
+          }
+        ],
+        "time": 1.020833333333331
+      },
+      "match": {
+        "players": [
+          {
+            "name": "플레이어 1",
+            "score": 0,
+            "innings": 0,
+            "shots": 0,
+            "highRun": 0,
+            "run": 0,
+            "fouls": 0,
+            "group": null
+          },
+          {
+            "name": "플레이어 2",
+            "score": 0,
+            "innings": 0,
+            "shots": 0,
+            "highRun": 0,
+            "run": 0,
+            "fouls": 0,
+            "group": null
+          }
+        ],
+        "currentPlayer": 0,
+        "inning": 1,
+        "shotNumber": 0,
+        "status": "playing",
+        "winner": null,
+        "breakShot": true,
+        "openTable": true,
+        "ballInHand": false,
+        "ballInHandZone": "head-string",
+        "headStringRestriction": true,
+        "openingRequired": false,
+        "equalizing": false,
+        "pendingChoice": null,
+        "message": "헤드 스트링 위쪽에서 브레이크를 준비하세요."
+      },
+      "config": {
+        "discipline": "eight-ball",
+        "mode": "practice",
+        "target": 10,
+        "difficulty": "normal",
+        "profile": "wpa",
+        "fourBallFoul": "turn",
+        "equalInnings": false,
+        "callShots": true,
+        "playerNames": [
+          "플레이어 1",
+          "플레이어 2"
+        ]
+      },
+      "shotCount": 1,
+      "contacts": [],
+      "lastOutcome": null,
+      "paused": false,
+      "angle": 0,
+      "power": 0.45,
+      "tip": {
+        "x": 0,
+        "y": 0
+      },
+      "predictionWorker": true,
+      "aiWorker": true,
+      "aiPending": false,
+      "lastAI": null
+    }
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "consoleErrorCount": 0,
+  "pageErrorCount": 0
+}

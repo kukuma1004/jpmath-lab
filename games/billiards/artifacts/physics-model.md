@@ -1,4 +1,4 @@
-# Phase 1 physics model and evidence
+# Shared carom and pool physics model and evidence
 
 ## What is implemented
 
@@ -20,7 +20,7 @@ The rail is a fixed planar point-contact surface through the ball equator. Norma
 
 ### Cue
 
-Angle zero points along +X. The tip panel uses positive Y for top/follow and positive X for the shooter's right (d × up). User power p requests a forward cue impulse J = m (4.5p) d. Angular impulse is rtip × J / I. At angle zero, top produces negative ωz and panel right produces positive ωy. The accepted radial tip offset is at most 0.75 ball radii; invalid input and mid-motion strokes are rejected. Tip input is an impulse model, not a finite-mass elastic cue-stick simulation. Squirt, swerve, jump, cue elevation, tip deformation and miscue are not implemented in Phase 1.
+Angle zero points along +X. The tip panel uses positive Y for top/follow and positive X for the shooter's right (d × up). User power p requests a forward cue impulse J = m (smax p) d, with smax = 4.5 m/s for carom and 7.5 m/s for pool (shared shotSpeedLimit(table) for human, AI and prediction). Angular impulse is rtip × J / I. At angle zero, top produces negative ωz and panel right produces positive ωy. The accepted radial tip offset is at most 0.75 ball radii; invalid input and mid-motion strokes are rejected. Tip input is an impulse model, not a finite-mass elastic cue-stick simulation. Squirt, swerve, jump, cue elevation, tip deformation and miscue are not implemented.
 
 ### Continuous detection and ordered history
 
@@ -32,13 +32,23 @@ There is no sleeping based solely on screen-space movement. Rest requires small 
 
 ## Parameters and calibration boundary
 
-Defaults: μslide 0.20, μroll 0.012, vertical spin decay 12 rad/s², ball restitution 0.95, rail restitution 0.80, ball friction 0.035, rail friction 0.16. These are explicit initial tuning values, not measurements of a particular cloth, cushion or ball set. The rendering is not evidence of calibrated physical accuracy. No actual apparatus or high-speed-camera comparison has been performed in this phase.
+Defaults: μslide 0.20, μroll 0.012, vertical spin decay 12 rad/s², ball restitution 0.95, rail restitution 0.80, ball friction 0.035, rail friction 0.16. These are explicit initial tuning values, not measurements of a particular cloth, cushion or ball set. The rendering is not evidence of calibrated physical accuracy. No actual apparatus or high-speed-camera comparison has been performed.
 
-The equatorial rigid cushion, constant coefficients, ideal sphere inertia and planar constraint omit elevation/compliance and speed-dependent ball friction. Extremely close multi-contact outcomes are deterministically serialized rather than solved as one global simultaneous complementarity problem. Pocket jaws, falling balls and sanctioned rule profiles are future phases. A full professional accuracy claim requires experimental validation and a more complete cushion model; this phase establishes the tested mechanical foundation.
+The equatorial rigid cushion, constant coefficients, ideal sphere inertia and planar constraint omit elevation/compliance and speed-dependent ball friction. Extremely close multi-contact outcomes are deterministically serialized rather than solved as one global simultaneous complementarity problem. A full professional accuracy claim requires experimental validation and a more complete cushion model. Competitive rules consume the ordered event stream separately; they do not alter collision mechanics.
+
+## Pool extension
+
+`pool.ts` supplies a separate 2.54 × 1.27 m playing surface with 28.575 mm radius, 0.17 kg balls. Its 16-ball rack has the 8 in the middle and opposite groups at the rear corners; the initial cue centre is clearly behind the head string at x = −0.85 m. Ball IDs are `white` and `ball-1` through `ball-15`. Number, pocketed state, pocket ID and pocket time remain in snapshots for rules/replay, but pocketed balls no longer collide, accumulate energy or prevent rest.
+
+Six pocket geometries expose both an entry mouth and a deeper fall throat. Six finite straight rail nose segments and twelve angled jaw segments share exact endpoints with rendering. Swept sphere/segment and sphere/endcap tests provide jaw contacts before the next frame; contact uses the same dissipative rigid friction impulse with the actual face normal. A pot is emitted only when a swept ball centre passes through the admissible throat interval behind the jaws. An oversized disc on the cloth cannot swallow a ball. The visible pocket radius describes the opening, not an attraction force. Near-mouth grazes can rebound, and a ball can rest on the short shelf before its centre crosses the fall boundary.
+
+`placeBall()` accepts only settled, finite, nonoverlapping interior centres and can restrict placement behind the head string. A whole sphere supported just inside the side-mouth plane is legal; a centre extending into the mouth or a corner cutout is rejected. Placement restores a pocketed cue without advancing physics time or inventing collision events. Engine clones deep-copy table/pocket configuration, balls, orientation and optional event contact coordinates.
+
+The drop after throat capture is presentation only: a paused/reduced-motion-aware descent hides the mesh. It is not a simulated bag/vertical impact or a physically calibrated shelf model. Balls cannot jump off the table in this planar implementation. Pocket dimensions and cushion coefficients are initial game-model values and have not been measured against a particular commercial table.
 
 ## Verification performed
 
-Command: `npm test -- --reporter=verbose` from `source/`. Current result: **21 tests passed**.
+Commands from `source/`: `npx vitest run tests/physics.test.ts tests/pocket-physics.test.ts tests/renderhelpers.test.ts`; **41 tests passed** (21 original mechanics, 18 pool physics, 2 renderer geometry/disposal checks). Full application tests are recorded by the integration owner.
 
 - Head-on equal-mass restitution and momentum, including analytic contact timestamp.
 - Oblique elastic collision: both momentum components and energy conserved; outgoing velocities perpendicular.
@@ -56,6 +66,12 @@ Command: `npm test -- --reporter=verbose` from `source/`. Current result: **21 t
 - All 3/4-ball practice layouts valid.
 - 24 seeded full shots checked on every physics tick for passive energy, overlap, bounds, quaternion normalization, finite state, rest and ordered event histories.
 - Nonfinite, overlapping, out-of-table or zero-quaternion initial states rejected.
+- All six straight-through pocket approaches pot once at the analytic throat time without phantom rail contact; 100 m/s throat entry cannot tunnel.
+- Near-mouth and 100 m/s off-centre jaw approaches rebound through finite contact geometry instead of being swallowed.
+- Scratch emits once; a pocketed body is ignored by collisions, energy and rest. Contact coordinates and pocket history reproduce through clones without shared nested positions.
+- Full-rack break and twelve seeded spin/power/angle variations settle, preserve passive energy and keep every live ball inside the rail/pocket approach geometry. Each tick also checks ball separation; safety guard trips remain zero.
+- Legal/illegal ball-in-hand positions, kitchen restriction and mid-shot placement rejection.
+- The six visible pocket apertures are real cloth holes, each rail/jaw mesh endpoint matches the physical segment, top-down rays through each aperture reach the interior below cloth rather than a hidden wood plate, and model-local disposal retains shared material resources.
 
 These are analytic and invariant-based simulation tests. Browser controls/rendering are verified separately by the integration pass.
 
@@ -66,3 +82,5 @@ These are analytic and invariant-based simulation tests. Browser controls/render
 - [Pooltool modular physics](https://pooltool.readthedocs.io/en/latest/resources/custom_physics.html) — separate evolution and collision resolution and replaceable cushion models.
 
 The implementation is original TypeScript code using these mechanical principles; it does not embed Pooltool code or claim to implement the more elaborate Mathavan/Han cushion models.
+
+The pool bounds invariant uses the actual finite rail faces and rounded endcaps. A live ball rounding a jaw end may briefly lie beyond the simple rectangle inset by R; this is valid geometry, not an escape. A regression reproduces the formerly misclassified seed-2 tick-237 point, rejects true rail penetration and outer escape, and retains the existing CCD/energy behavior.

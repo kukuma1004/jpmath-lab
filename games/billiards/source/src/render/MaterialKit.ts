@@ -67,6 +67,22 @@ export function ballTexture(color: string, dots: string) {
   });
 }
 
+const POOL_COLORS = ['#f0b52d', '#2353a8', '#bf2f32', '#743d8c', '#dd742b', '#286746', '#792e39', '#101417'];
+
+/** Standard 1–7 solids, black 8 and 9–15 striped companions. */
+export function poolBallTexture(number: number) {
+  const color = POOL_COLORS[(number - 1) % 8];
+  return canvasTexture(512, 256, ctx => {
+    ctx.fillStyle = number < 9 ? color : '#f7f0dc'; ctx.fillRect(0, 0, 512, 256);
+    if (number > 8) { ctx.fillStyle = color; ctx.fillRect(0, 77, 512, 102); }
+    for (const x of [128, 384]) {
+      ctx.fillStyle = '#faf5e7'; ctx.beginPath(); ctx.arc(x, 128, 27, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#172022'; ctx.font = '700 37px Arial, sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(String(number), x, 130, 46);
+    }
+  });
+}
+
 export function labelTexture(text: string, size = 512) {
   return canvasTexture(size, size / 4, ctx => {
     ctx.clearRect(0, 0, size, size / 4);

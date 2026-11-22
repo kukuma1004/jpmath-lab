@@ -1,35 +1,15 @@
-# 3D BILLIARDS · Phase 1
+# 3D BILLIARDS · 완료 점검표
 
-## Intent and boundaries
-- Add a Korean-first billiards game at games/billiards in JP Math Lab. Isolated branch codex/billiards-phase1-20261120 from origin/main 9864b26. No production deployment requested.
-- Phase 1 only: executable carom free practice, dedicated deterministic physics, aim/power/spin, top/cue cameras. Phase 2-6 rules and AI remain explicitly unavailable.
-- Preserve unrelated files, student data and saves. Namespaced local settings only.
+사용자 요청: 각 단계에서 멈추지 않고 모든 종목과 AI까지 구현·검증·배포. 샷은 한 번 눌러 왕복 게이지를 시작하고 다시 눌러 타격한다. 원래 Phase1 릴리스244e2de는 과거 자료다. 현재 전체 게임의 근거는 final-evidence.md와 complete-* 자료다.
 
-## Design brief
-A quiet, precise evening at a blue-cloth carom table. Aim, select tip offset and power, strike, inspect what happened, then repeat or reset. Learning comes from the ordered contact log and repeatable practice layouts; no invented competitive score in this phase.
+- [x] Phase1: 240Hz 독립 물리, CCD, 실제 충격량/회전·마찰·정지, 당점·큐·탑뷰/큐 카메라. 분석적·보존량·시드 테스트.
+- [x] Phase2: 국내식 4구, 두 빨간 공/상대 수구 파울 옵션, 점수·이닝·공격권·승패·2인 로컬. 실제 초기 배치부터 종료와 브라우저 종료 검증.
+- [x] Phase3: 목적구/쿠션 시간 순서, 3쿠션, 초구 직접 빨간 공, 후구/무승부 옵션. 정렬/횟수/늦은 쿠션 회귀와 실제 전체 경기.
+- [x] Phase4: 6포켓 테이블, 유한 쿠션/jaw/낙하, 16공 랙/브레이크, WPA/캐주얼 프로필, 오픈 그룹/콜/파울/8볼 승패, 볼 인 핸드/브레이크 선택. 전체 랙 경기.
+- [x] Phase5: 3종목·4난이도 Worker AI, 후보별 같은 실제 물리 평가·회전·포지션·수비·파울 위험, 동일 ShotInput, 인간 입력 차단, 조준 애니메이션.
+- [x] Phase6: 한국어 메뉴/HUD/결과·재대결, 반응형/실제 터치 이벤트, 두 번 샷/취소/pause, 카메라/보조, 연습 배치·편집, 실제 상태 보존 재생, 이력/설정, 합성 음향·뮤트, GPU 자원과 프레임 측정.
+- [x] 타입/프로덕션 빌드, 120개 단위·통합 테스트, 브라우저41개, 터치/오디오14개, 9개 상태 canvas와 예산 통과.
+- [x] 최신 origin/main aed1583과 자동 rebase 통합. 와르르·천뢰·APEX와 게임룸 3열 배치 변경을 보존하고 당구 경로/카드만 수정했다.
+- 릴리스 수신증: 커밋 후 동일 SHA의 Pages 성공·공개 파일 해시·공개 브라우저 플레이를 외부 full-game-public 폴더에 기록한다. 현재 상태는 해당 수신증이 기준이다.
 
-## Core loop
-Choose a practice layout and cue ball → aim and adjust tip/power → strike → watch until every ball settles → review ball/cushion contacts → replay or adjust. Input is locked during strokes and motion. Pause freezes physics.
-
-## Spatial plan and art direction
-Real 2.84 × 1.42 m pocketless carom bed, 61.5 mm balls; dark walnut, brushed brass, deep blue cloth, ivory sights. Table dominates the view. Warm hanging fixtures and a restrained club surround. Controls outside the table on desktop and below the viewport on portrait mobile. Camera interpolates between strategy and cue views.
-
-## Architecture
-Vite + TypeScript source in source/, self-contained static bundle in games/billiards/. Pure physics modules use SI units and ordered collision events; Three.js scene owns only rendering; UI dispatches ShotInput. RuleEngine interface reserved for later profiles. No scoring or AI placeholders claimed as working.
-
-## Completed Phase 1
-- Shared typed contracts and separate physics/render/game modules. 240Hz SI physics, swept collision times, sphere inertia, cloth slip/roll, spin-dependent contact impulses, event chronology, rest and deterministic snapshots.
-- Playable practice with five layouts, white/yellow cue choice, drag/fine aim, radial tip/power, top/cue cameras with automatic transition option, sound and responsive controls, pause, replay, chronological shot report.
-- A real game-room card links the bundled static game at games/billiards/. Procedural authored materials/geometry and Three.js MIT license notice; no external asset downloads or services.
-- Build/typecheck and 26 analytic/lifecycle tests passed. 27 real-input Chromium desktop/emulated-phone checks passed, plus 11 final motion/layout/navigation checks. Five acknowledged-state canvas captures and evidence checker passed in final pass 4.
-- Fixed mobile record access, Space key stealing focused buttons, landscape shot overflow, controls hiding balls, floor-board gaps, and renderer/CSS-size mismatch when moving between title and play.
-- Independent physics/lifecycle review and final visual defect review completed; no remaining blocking visual defect found in supplied target captures.
-
-## Evidence and remaining boundary
-- See final-evidence.md for current images, metrics, test coverage, commands and limitations. Earlier visual passes 2/3 are retained locally as superseded diagnostic records.
-- Dedicated physics is a planar point-contact approximation with initial coefficients, not a calibration against measured table/camera data. See physics-model.md.
-- Software-rendered browser proves behavior and resource counts, not PC 60FPS or physical-phone performance. Physical devices and real-table measurements remain unverified.
-- Phase 2-6 scoring, competitive rules, pockets and AI remain unimplemented. No production release has been performed. Existing game saves and student data untouched.
-
-## Next action
-Start Phase 2 only with the existing physics contracts: explicit domestic 4-ball profile, two-player local match state, scores/innings/turn transitions/foul option, victory and full-match rule tests. Preserve Phase 1 controls and deterministic replay.
+현재 담당: root 통합·검수·릴리스. 기존 전문 작업은 소스에 통합했다. 진행 중인 외부 에셋 작업 없음. 반복적인 리뷰 사이클 대신 남은 두 릴리스 조건을 마무리한다. 실제 장비 계수 보정/휴대폰/비평면 샷은 완료 범위로 주장하지 않는다. 사용자 데이터/저장 키/다른 게임 변경 보존. 메모리 폴더 수정은 요청받지 않아 하지 않았다.

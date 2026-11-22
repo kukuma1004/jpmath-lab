@@ -1,43 +1,11 @@
 import * as THREE from 'three';
-import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import type { TableConfig } from '../physics/types';
 import { MaterialKit, labelTexture } from './MaterialKit';
-
-function roundedPath(width: number, height: number, radius: number) {
-  const path = new THREE.Shape();
-  const x = -width / 2, y = -height / 2;
-  path.moveTo(x + radius, y);
-  path.lineTo(x + width - radius, y); path.quadraticCurveTo(x + width, y, x + width, y + radius);
-  path.lineTo(x + width, y + height - radius); path.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-  path.lineTo(x + radius, y + height); path.quadraticCurveTo(x, y + height, x, y + height - radius);
-  path.lineTo(x, y + radius); path.quadraticCurveTo(x, y, x + radius, y);
-  return path;
-}
-
-function ring(width: number, height: number, innerW: number, innerH: number, depth: number, radius: number, material: THREE.Material) {
-  const shape = roundedPath(width, height, radius);
-  const hole = roundedPath(innerW, innerH, .035);
-  shape.holes.push(hole);
-  const geometry = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: true, bevelSegments: 2, steps: 1, bevelSize: .005, bevelThickness: .004, curveSegments: 5 });
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.rotation.x = -Math.PI / 2;
-  mesh.receiveShadow = true; mesh.castShadow = true;
-  return mesh;
-}
-
-function block(parent: THREE.Object3D, size: [number, number, number], pos: [number, number, number], material: THREE.Material, radius = .008) {
-  const geo = new RoundedBoxGeometry(...size, 2, radius);
-  const mesh = new THREE.Mesh(geo, material); mesh.position.set(...pos);
-  mesh.castShadow = true; mesh.receiveShadow = true; parent.add(mesh);
-  return mesh;
-}
-
-function cylinder(parent: THREE.Object3D, rt: number, rb: number, height: number, pos: [number, number, number], material: THREE.Material, segments = 20) {
-  const mesh = new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, height, segments), material);
-  mesh.position.set(...pos); mesh.castShadow = true; parent.add(mesh); return mesh;
-}
+import { block, cylinder, ring } from './Geometry';
+import { createPoolTable } from './PoolTableFactory';
 
 export function createTable(table: TableConfig, mats: MaterialKit) {
+  if (table.kind === 'pool') return createPoolTable(table, mats);
   const root = new THREE.Group(); root.name = 'carom-table';
   const w = table.width, h = table.height;
   const chassis = ring(w + .38, h + .38, w - .05, h - .05, .19, .11, mats.darkWood);

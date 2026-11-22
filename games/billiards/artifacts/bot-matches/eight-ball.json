@@ -1,0 +1,1180 @@
+{
+  "discipline": "eight-ball",
+  "from": "initial regulation layout",
+  "config": {
+    "discipline": "eight-ball",
+    "mode": "local",
+    "target": 1,
+    "difficulty": "expert",
+    "profile": "wpa",
+    "fourBallFoul": "turn",
+    "equalInnings": false,
+    "callShots": true,
+    "playerNames": [
+      "플레이어 1",
+      "플레이어 2"
+    ]
+  },
+  "final": {
+    "players": [
+      {
+        "name": "플레이어 1",
+        "score": 7,
+        "innings": 2,
+        "shots": 10,
+        "highRun": 6,
+        "run": 6,
+        "fouls": 0,
+        "group": "solid"
+      },
+      {
+        "name": "플레이어 2",
+        "score": 6,
+        "innings": 1,
+        "shots": 6,
+        "highRun": 5,
+        "run": 0,
+        "fouls": 0,
+        "group": "stripe"
+      }
+    ],
+    "currentPlayer": 0,
+    "inning": 2,
+    "shotNumber": 16,
+    "status": "finished",
+    "winner": 0,
+    "breakShot": false,
+    "openTable": false,
+    "ballInHand": false,
+    "ballInHandZone": "anywhere",
+    "headStringRestriction": false,
+    "openingRequired": false,
+    "equalizing": false,
+    "pendingChoice": null,
+    "message": "지정 포켓에 8번 공 성공 · 플레이어 1 승리!"
+  },
+  "finalTurnState": {
+    "players": [
+      {
+        "name": "플레이어 1",
+        "score": 7,
+        "innings": 2,
+        "shots": 9,
+        "highRun": 5,
+        "run": 5,
+        "fouls": 0,
+        "group": "solid"
+      },
+      {
+        "name": "플레이어 2",
+        "score": 6,
+        "innings": 1,
+        "shots": 6,
+        "highRun": 5,
+        "run": 0,
+        "fouls": 0,
+        "group": "stripe"
+      }
+    ],
+    "currentPlayer": 0,
+    "inning": 2,
+    "shotNumber": 15,
+    "status": "playing",
+    "winner": null,
+    "breakShot": false,
+    "openTable": false,
+    "ballInHand": false,
+    "ballInHandZone": "anywhere",
+    "headStringRestriction": false,
+    "openingRequired": false,
+    "equalizing": false,
+    "pendingChoice": null,
+    "message": "정상 포켓인 · 계속 공격하세요."
+  },
+  "finalShot": {
+    "input": {
+      "ballId": "white",
+      "angle": -0.3142721423523596,
+      "power": 0.20983276981586516,
+      "tip": {
+        "x": 0,
+        "y": 0
+      },
+      "calledBall": "ball-8",
+      "calledPocket": "tr",
+      "safety": false
+    },
+    "before": {
+      "balls": [
+        {
+          "id": "white",
+          "color": "white",
+          "position": {
+            "x": -0.06374781107866487,
+            "z": 0.3340972551077064
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": -0.7875755651085723,
+            "y": -0.06339657154012025,
+            "z": 0.5847533659653351,
+            "w": 0.1837637204485212
+          }
+        },
+        {
+          "id": "ball-1",
+          "color": "pool",
+          "position": {
+            "x": 0.005229683796828805,
+            "z": -0.6765
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": -0.3728624338096208,
+            "y": -0.865951586418085,
+            "z": 0.0554557694510546,
+            "w": -0.32867326186983864
+          },
+          "number": 1,
+          "pocketed": true,
+          "pocketId": "tm",
+          "pocketTime": 13.016577055424277
+        },
+        {
+          "id": "ball-9",
+          "color": "pool",
+          "position": {
+            "x": -1.272353933573121,
+            "z": 0.6578802483007166
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": -0.3038698376148231,
+            "y": -0.1923389623090522,
+            "z": -0.3077960811934414,
+            "w": -0.880869126356338
+          },
+          "number": 9,
+          "pocketed": true,
+          "pocketId": "bl",
+          "pocketTime": 27.245222158312846
+        },
+        {
+          "id": "ball-2",
+          "color": "pool",
+          "position": {
+            "x": -1.2709476626963154,
+            "z": 0.6592865191775222
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": -0.40031945833481414,
+            "y": 0.6568480368230526,
+            "z": 0.0073407867395218354,
+            "w": -0.6389374778883046
+          },
+          "number": 2,
+          "pocketed": true,
+          "pocketId": "bl",
+          "pocketTime": 59.22501965360895
+        },
+        {
+          "id": "ball-10",
+          "color": "pool",
+          "position": {
+            "x": -1.28068336140577,
+            "z": -0.6495508204680677
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": -0.9643167535217175,
+            "y": -0.18991370105041172,
+            "z": 0.09363089596950343,
+            "w": -0.15893155869939007
+          },
+          "number": 10,
+          "pocketed": true,
+          "pocketId": "tl",
+          "pocketTime": 31.099199754240125
+        },
+        {
+          "id": "ball-8",
+          "color": "pool",
+          "position": {
+            "x": 0.6468995074888566,
+            "z": 0.07249181626548486
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": 0.6340220012149447,
+            "y": -0.48224048526172536,
+            "z": 0.5563145756353395,
+            "w": -0.23658890355552337
+          },
+          "number": 8
+        },
+        {
+          "id": "ball-3",
+          "color": "pool",
+          "position": {
+            "x": -1.2931050986371062,
+            "z": 0.6371290832367316
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": -0.3660244805788183,
+            "y": -0.4720734773158969,
+            "z": -0.800999550290175,
+            "w": -0.03965390355086304
+          },
+          "number": 3,
+          "pocketed": true,
+          "pocketId": "bl",
+          "pocketTime": 51.66479831869589
+        },
+        {
+          "id": "ball-11",
+          "color": "pool",
+          "position": {
+            "x": 1.2842752078241153,
+            "z": -0.6459589740497222
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": 0.07774090715223256,
+            "y": 0.15193255448656445,
+            "z": 0.23475177825705473,
+            "w": 0.9569558259645456
+          },
+          "number": 11,
+          "pocketed": true,
+          "pocketId": "tr",
+          "pocketTime": 22.839977252550515
+        },
+        {
+          "id": "ball-4",
+          "color": "pool",
+          "position": {
+            "x": -1.2916409754823304,
+            "z": -0.6385932063915072
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": 0.05454477000694718,
+            "y": 0.6813323006212768,
+            "z": 0.5629827027842205,
+            "w": -0.4646091266438718
+          },
+          "number": 4,
+          "pocketed": true,
+          "pocketId": "tl",
+          "pocketTime": 57.17862463557644
+        },
+        {
+          "id": "ball-12",
+          "color": "pool",
+          "position": {
+            "x": -0.6211889417334745,
+            "z": -0.5786322304415054
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": 0.22469833743300227,
+            "y": 0.253449043481563,
+            "z": 0.60918436288797,
+            "w": 0.7170555428458131
+          },
+          "number": 12
+        },
+        {
+          "id": "ball-5",
+          "color": "pool",
+          "position": {
+            "x": 1.296575216142019,
+            "z": 0.6336589657318187
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": 0.8052920817297873,
+            "y": 0.4036050286681775,
+            "z": -0.2799231950726199,
+            "w": 0.3320401313055412
+          },
+          "number": 5,
+          "pocketed": true,
+          "pocketId": "br",
+          "pocketTime": 45.95253505569413
+        },
+        {
+          "id": "ball-6",
+          "color": "pool",
+          "position": {
+            "x": -1.267680289212416,
+            "z": 0.6625538926614217
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": 0.5803009083471367,
+            "y": -0.35455184671232165,
+            "z": -0.4750549030625382,
+            "w": 0.5584502509987912
+          },
+          "number": 6,
+          "pocketed": true,
+          "pocketId": "bl",
+          "pocketTime": 7.757065181150806
+        },
+        {
+          "id": "ball-13",
+          "color": "pool",
+          "position": {
+            "x": 1.2964384935504232,
+            "z": -0.6337956883234144
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": -0.513993239177459,
+            "y": 0.39465010311852844,
+            "z": 0.5531763883828301,
+            "w": 0.5235056155612153
+          },
+          "number": 13,
+          "pocketed": true,
+          "pocketId": "tr",
+          "pocketTime": 37.698663347753204
+        },
+        {
+          "id": "ball-7",
+          "color": "pool",
+          "position": {
+            "x": 1.269996509771974,
+            "z": -0.6602376721018637
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": 0.9136142936989062,
+            "y": 0.21294752534084935,
+            "z": -0.34092908771587443,
+            "w": -0.06107070451107338
+          },
+          "number": 7,
+          "pocketed": true,
+          "pocketId": "tr",
+          "pocketTime": 65.67894179054862
+        },
+        {
+          "id": "ball-14",
+          "color": "pool",
+          "position": {
+            "x": 1.279587244283891,
+            "z": 0.6506469375899468
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": -0.5891249510602525,
+            "y": 0.3853237412753501,
+            "z": -0.7050359420651158,
+            "w": 0.08591697646086603
+          },
+          "number": 14,
+          "pocketed": true,
+          "pocketId": "br",
+          "pocketTime": 33.64819250540064
+        },
+        {
+          "id": "ball-15",
+          "color": "pool",
+          "position": {
+            "x": 1.2842070813494817,
+            "z": 0.6460271005243559
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": 0.014399139841147695,
+            "y": -0.6181032161334453,
+            "z": 0.3280970777209055,
+            "w": -0.714208223537316
+          },
+          "number": 15,
+          "pocketed": true,
+          "pocketId": "br",
+          "pocketTime": 3.323563468906263
+        }
+      ],
+      "time": 67.88333333335376
+    },
+    "after": {
+      "balls": [
+        {
+          "id": "white",
+          "color": "white",
+          "position": {
+            "x": 0.9876421187287198,
+            "z": 0.4267947044253696
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": 0.3439098602708596,
+            "y": -0.8582670320549992,
+            "z": -0.3765321895771007,
+            "w": 0.057682058807356745
+          }
+        },
+        {
+          "id": "ball-1",
+          "color": "pool",
+          "position": {
+            "x": 0.005229683796828805,
+            "z": -0.6765
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": -0.3728624338096208,
+            "y": -0.865951586418085,
+            "z": 0.0554557694510546,
+            "w": -0.32867326186983864
+          },
+          "number": 1,
+          "pocketed": true,
+          "pocketId": "tm",
+          "pocketTime": 13.016577055424277
+        },
+        {
+          "id": "ball-9",
+          "color": "pool",
+          "position": {
+            "x": -1.272353933573121,
+            "z": 0.6578802483007166
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": -0.3038698376148231,
+            "y": -0.1923389623090522,
+            "z": -0.3077960811934414,
+            "w": -0.880869126356338
+          },
+          "number": 9,
+          "pocketed": true,
+          "pocketId": "bl",
+          "pocketTime": 27.245222158312846
+        },
+        {
+          "id": "ball-2",
+          "color": "pool",
+          "position": {
+            "x": -1.2709476626963154,
+            "z": 0.6592865191775222
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": -0.40031945833481414,
+            "y": 0.6568480368230526,
+            "z": 0.0073407867395218354,
+            "w": -0.6389374778883046
+          },
+          "number": 2,
+          "pocketed": true,
+          "pocketId": "bl",
+          "pocketTime": 59.22501965360895
+        },
+        {
+          "id": "ball-10",
+          "color": "pool",
+          "position": {
+            "x": -1.28068336140577,
+            "z": -0.6495508204680677
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": -0.9643167535217175,
+            "y": -0.18991370105041172,
+            "z": 0.09363089596950343,
+            "w": -0.15893155869939007
+          },
+          "number": 10,
+          "pocketed": true,
+          "pocketId": "tl",
+          "pocketTime": 31.099199754240125
+        },
+        {
+          "id": "ball-8",
+          "color": "pool",
+          "position": {
+            "x": 1.2913344733016274,
+            "z": -0.6388997085722102
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": -0.6620073935767677,
+            "y": 0.48011077015085035,
+            "z": -0.4736175135876427,
+            "w": 0.326995886912834
+          },
+          "number": 8,
+          "pocketed": true,
+          "pocketId": "tr",
+          "pocketTime": 70.21087883199343
+        },
+        {
+          "id": "ball-3",
+          "color": "pool",
+          "position": {
+            "x": -1.2931050986371062,
+            "z": 0.6371290832367316
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": -0.3660244805788183,
+            "y": -0.4720734773158969,
+            "z": -0.800999550290175,
+            "w": -0.03965390355086304
+          },
+          "number": 3,
+          "pocketed": true,
+          "pocketId": "bl",
+          "pocketTime": 51.66479831869589
+        },
+        {
+          "id": "ball-11",
+          "color": "pool",
+          "position": {
+            "x": 1.2842752078241153,
+            "z": -0.6459589740497222
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": 0.07774090715223256,
+            "y": 0.15193255448656445,
+            "z": 0.23475177825705473,
+            "w": 0.9569558259645456
+          },
+          "number": 11,
+          "pocketed": true,
+          "pocketId": "tr",
+          "pocketTime": 22.839977252550515
+        },
+        {
+          "id": "ball-4",
+          "color": "pool",
+          "position": {
+            "x": -1.2916409754823304,
+            "z": -0.6385932063915072
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": 0.05454477000694718,
+            "y": 0.6813323006212768,
+            "z": 0.5629827027842205,
+            "w": -0.4646091266438718
+          },
+          "number": 4,
+          "pocketed": true,
+          "pocketId": "tl",
+          "pocketTime": 57.17862463557644
+        },
+        {
+          "id": "ball-12",
+          "color": "pool",
+          "position": {
+            "x": -0.6211889417334745,
+            "z": -0.5786322304415054
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": 0.22469833743300227,
+            "y": 0.253449043481563,
+            "z": 0.60918436288797,
+            "w": 0.7170555428458131
+          },
+          "number": 12
+        },
+        {
+          "id": "ball-5",
+          "color": "pool",
+          "position": {
+            "x": 1.296575216142019,
+            "z": 0.6336589657318187
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": 0.8052920817297873,
+            "y": 0.4036050286681775,
+            "z": -0.2799231950726199,
+            "w": 0.3320401313055412
+          },
+          "number": 5,
+          "pocketed": true,
+          "pocketId": "br",
+          "pocketTime": 45.95253505569413
+        },
+        {
+          "id": "ball-6",
+          "color": "pool",
+          "position": {
+            "x": -1.267680289212416,
+            "z": 0.6625538926614217
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": 0.5803009083471367,
+            "y": -0.35455184671232165,
+            "z": -0.4750549030625382,
+            "w": 0.5584502509987912
+          },
+          "number": 6,
+          "pocketed": true,
+          "pocketId": "bl",
+          "pocketTime": 7.757065181150806
+        },
+        {
+          "id": "ball-13",
+          "color": "pool",
+          "position": {
+            "x": 1.2964384935504232,
+            "z": -0.6337956883234144
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": -0.513993239177459,
+            "y": 0.39465010311852844,
+            "z": 0.5531763883828301,
+            "w": 0.5235056155612153
+          },
+          "number": 13,
+          "pocketed": true,
+          "pocketId": "tr",
+          "pocketTime": 37.698663347753204
+        },
+        {
+          "id": "ball-7",
+          "color": "pool",
+          "position": {
+            "x": 1.269996509771974,
+            "z": -0.6602376721018637
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": 0.9136142936989062,
+            "y": 0.21294752534084935,
+            "z": -0.34092908771587443,
+            "w": -0.06107070451107338
+          },
+          "number": 7,
+          "pocketed": true,
+          "pocketId": "tr",
+          "pocketTime": 65.67894179054862
+        },
+        {
+          "id": "ball-14",
+          "color": "pool",
+          "position": {
+            "x": 1.279587244283891,
+            "z": 0.6506469375899468
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": -0.5891249510602525,
+            "y": 0.3853237412753501,
+            "z": -0.7050359420651158,
+            "w": 0.08591697646086603
+          },
+          "number": 14,
+          "pocketed": true,
+          "pocketId": "br",
+          "pocketTime": 33.64819250540064
+        },
+        {
+          "id": "ball-15",
+          "color": "pool",
+          "position": {
+            "x": 1.2842070813494817,
+            "z": 0.6460271005243559
+          },
+          "velocity": {
+            "x": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": 0.014399139841147695,
+            "y": -0.6181032161334453,
+            "z": 0.3280970777209055,
+            "w": -0.714208223537316
+          },
+          "number": 15,
+          "pocketed": true,
+          "pocketId": "br",
+          "pocketTime": 3.323563468906263
+        }
+      ],
+      "time": 71.86666666668347
+    },
+    "events": [
+      {
+        "type": "shot",
+        "time": 0,
+        "sequence": 147,
+        "ballId": "white",
+        "speed": 1.5737457736189886
+      },
+      {
+        "type": "ball-ball",
+        "time": 0.5904161155250165,
+        "sequence": 148,
+        "ballA": "white",
+        "ballB": "ball-8",
+        "speed": 0.9307946996237912,
+        "positionA": {
+          "x": 0.6091298393243961,
+          "z": 0.11538207934169532
+        },
+        "positionB": {
+          "x": 0.6468995074888566,
+          "z": 0.07249181626548486
+        }
+      },
+      {
+        "type": "cushion",
+        "time": 1.816993894982872,
+        "sequence": 149,
+        "ballId": "white",
+        "rail": "right",
+        "speed": 0.45426300293825006,
+        "position": {
+          "x": 1.241425,
+          "z": 0.3052556678279433
+        }
+      },
+      {
+        "type": "pocket",
+        "time": 2.3275454986396653,
+        "sequence": 150,
+        "ballId": "ball-8",
+        "pocketId": "tr",
+        "speed": 0.4396718520779363
+      },
+      {
+        "type": "rest",
+        "time": 3.9833333333297105,
+        "sequence": 151
+      }
+    ]
+  },
+  "elapsedMs": 22135.031300000002,
+  "shots": 16,
+  "safetyStops": 0,
+  "trace": [
+    {
+      "turn": 0,
+      "current": 0,
+      "scores": [
+        0,
+        0
+      ],
+      "outcome": "정상 브레이크 · 그룹은 아직 정해지지 않았습니다.",
+      "simulations": 79
+    },
+    {
+      "turn": 1,
+      "current": 0,
+      "scores": [
+        1,
+        1
+      ],
+      "outcome": "솔리드 그룹 확정 · 계속 공격하세요.",
+      "simulations": 83
+    },
+    {
+      "turn": 2,
+      "current": 0,
+      "scores": [
+        2,
+        1
+      ],
+      "outcome": "정상 포켓인 · 계속 공격하세요.",
+      "simulations": 87
+    },
+    {
+      "turn": 3,
+      "current": 1,
+      "scores": [
+        2,
+        1
+      ],
+      "outcome": "포켓인 없이 샷 종료 · 공격권 전환.",
+      "simulations": 92
+    },
+    {
+      "turn": 4,
+      "current": 1,
+      "scores": [
+        2,
+        2
+      ],
+      "outcome": "정상 포켓인 · 계속 공격하세요.",
+      "simulations": 92
+    },
+    {
+      "turn": 5,
+      "current": 1,
+      "scores": [
+        2,
+        3
+      ],
+      "outcome": "정상 포켓인 · 계속 공격하세요.",
+      "simulations": 99
+    },
+    {
+      "turn": 6,
+      "current": 1,
+      "scores": [
+        2,
+        4
+      ],
+      "outcome": "정상 포켓인 · 계속 공격하세요.",
+      "simulations": 103
+    },
+    {
+      "turn": 7,
+      "current": 1,
+      "scores": [
+        2,
+        5
+      ],
+      "outcome": "정상 포켓인 · 계속 공격하세요.",
+      "simulations": 65
+    },
+    {
+      "turn": 8,
+      "current": 1,
+      "scores": [
+        2,
+        6
+      ],
+      "outcome": "정상 포켓인 · 계속 공격하세요.",
+      "simulations": 87
+    },
+    {
+      "turn": 9,
+      "current": 0,
+      "scores": [
+        2,
+        6
+      ],
+      "outcome": "포켓인 없이 샷 종료 · 공격권 전환.",
+      "simulations": 71
+    },
+    {
+      "turn": 10,
+      "current": 0,
+      "scores": [
+        3,
+        6
+      ],
+      "outcome": "정상 포켓인 · 계속 공격하세요.",
+      "simulations": 115
+    },
+    {
+      "turn": 11,
+      "current": 0,
+      "scores": [
+        4,
+        6
+      ],
+      "outcome": "정상 포켓인 · 계속 공격하세요.",
+      "simulations": 125
+    },
+    {
+      "turn": 12,
+      "current": 0,
+      "scores": [
+        5,
+        6
+      ],
+      "outcome": "정상 포켓인 · 계속 공격하세요.",
+      "simulations": 75
+    },
+    {
+      "turn": 13,
+      "current": 0,
+      "scores": [
+        6,
+        6
+      ],
+      "outcome": "정상 포켓인 · 계속 공격하세요.",
+      "simulations": 61
+    },
+    {
+      "turn": 14,
+      "current": 0,
+      "scores": [
+        7,
+        6
+      ],
+      "outcome": "정상 포켓인 · 계속 공격하세요.",
+      "simulations": 47
+    },
+    {
+      "turn": 15,
+      "current": 0,
+      "scores": [
+        7,
+        6
+      ],
+      "outcome": "지정 포켓에 8번 공 성공 · 플레이어 1 승리!",
+      "simulations": 47
+    }
+  ]
+}

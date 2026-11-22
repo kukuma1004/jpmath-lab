@@ -1,0 +1,21 @@
+{
+  "url": "http://127.0.0.1:5192/games/billiards/?qa=1",
+  "checks": [
+    "Touch drag changes actual aim",
+    "Two fingers change camera zoom",
+    "Touch cancel releases drag",
+    "Gestures never trigger a shot",
+    "Advanced controls expand after touch gestures",
+    "Practice yellow cue matches player state",
+    "Practice editor physically relocates ball",
+    "Orientation preserves valid canvas",
+    "Gesture unlocks audio",
+    "Shot generates impact and rolling sources",
+    "Pause silences rolling",
+    "Mute zeros master gain",
+    "Sound toggles keep one rolling loop",
+    "No page errors"
+  ],
+  "errors": [],
+  "limits": "Real browser touch events via CDP and Web Audio node instrumentation; no physical-phone or speaker audition claim."
+}

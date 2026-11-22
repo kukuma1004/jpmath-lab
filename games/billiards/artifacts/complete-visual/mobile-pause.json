@@ -1,0 +1,312 @@
+{
+  "url": "http://127.0.0.1:5192/games/billiards/?qa=1",
+  "mode": "mobile",
+  "state": "pause",
+  "requestedState": "pause",
+  "appliedState": "pause",
+  "runId": "billiards-complete-v1-final",
+  "seed": null,
+  "screenshotPath": "../artifacts/complete-visual/mobile-pause.png",
+  "gpu": {
+    "renderer": "ANGLE (AMD, AMD Radeon 780M Graphics (0x00001900) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "vendor": "Google Inc. (AMD)",
+    "softwareRendered": false
+  },
+  "result": {
+    "ok": true,
+    "reason": "nonblank",
+    "rect": {
+      "x": 0,
+      "y": 154,
+      "width": 390,
+      "height": 261.203125
+    },
+    "drawingBuffer": {
+      "width": 390,
+      "height": 261
+    },
+    "alphaPixels": 4242,
+    "variance": 244,
+    "colorBuckets": 48,
+    "metrics": {
+      "colorBuckets": 72,
+      "colorEntropyBits": 1.67,
+      "edgeDensity": 0.088,
+      "luminance": {
+        "mean": 62,
+        "p5": 20.2,
+        "p95": 185.3,
+        "contrast": 165.1
+      },
+      "dominantColorShare": 0.708,
+      "nonBackgroundShare": 0.292
+    },
+    "renderBudget": {
+      "tier": "mobile",
+      "note": "starting-point budget; adjust per game and document overrides",
+      "rows": [
+        {
+          "metric": "calls",
+          "actual": 61,
+          "limit": 150,
+          "ok": true
+        },
+        {
+          "metric": "triangles",
+          "actual": 21252,
+          "limit": 300000,
+          "ok": true
+        },
+        {
+          "metric": "geometries",
+          "actual": 54,
+          "limit": 200,
+          "ok": true
+        },
+        {
+          "metric": "textures",
+          "actual": 10,
+          "limit": 40,
+          "ok": true
+        }
+      ],
+      "withinBudget": true
+    },
+    "diagnostics": {
+      "renderer": {
+        "renderer": "ANGLE (AMD, AMD Radeon 780M Graphics (0x00001900) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "calls": 61,
+        "triangles": 21252,
+        "points": 0,
+        "lines": 0,
+        "geometries": 54,
+        "textures": 10,
+        "programs": 8,
+        "dpr": 1,
+        "shadowCastingLights": 0,
+        "shadowMapSize": 1024,
+        "postPasses": 0,
+        "cameraMode": "top",
+        "quality": "low",
+        "frameTimeMs": 17.35,
+        "fps": 58,
+        "ballMeshes": 4,
+        "width": 390,
+        "height": 261.203125,
+        "frames": 109,
+        "tableKind": "carom",
+        "visibleBalls": 4,
+        "pockets": 0,
+        "pocketFalls": 0,
+        "calledPocket": null,
+        "placementVisible": false,
+        "zoom": 1
+      },
+      "calls": 61,
+      "triangles": 21252,
+      "points": 0,
+      "lines": 0,
+      "geometries": 54,
+      "textures": 10,
+      "programs": 8,
+      "dpr": 1,
+      "shadowCastingLights": 0,
+      "shadowMapSize": 1024,
+      "postPasses": 0,
+      "cameraMode": "top",
+      "quality": "low",
+      "frameTimeMs": 17.35,
+      "fps": 58,
+      "ballMeshes": 4,
+      "width": 390,
+      "height": 261.203125,
+      "frames": 109,
+      "tableKind": "carom",
+      "visibleBalls": 4,
+      "pockets": 0,
+      "pocketFalls": 0,
+      "calledPocket": null,
+      "placementVisible": false,
+      "zoom": 1,
+      "gameState": "aiming",
+      "frameCount": 9,
+      "frameMs": 32.81111111111111,
+      "physics": {
+        "engine": "dedicated-billiards",
+        "timestep": 0.004166666666666667,
+        "balls": 4,
+        "settled": true,
+        "energy": 0,
+        "time": 0,
+        "safetyStops": 0
+      },
+      "simulationState": {
+        "balls": [
+          {
+            "id": "white",
+            "color": "white",
+            "position": {
+              "x": -0.71,
+              "z": 0.1825
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            }
+          },
+          {
+            "id": "yellow",
+            "color": "yellow",
+            "position": {
+              "x": -0.71,
+              "z": 0
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            }
+          },
+          {
+            "id": "red",
+            "color": "red",
+            "position": {
+              "x": 0.71,
+              "z": 0
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            }
+          },
+          {
+            "id": "red2",
+            "color": "red2",
+            "position": {
+              "x": 0.71,
+              "z": -0.365
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            }
+          }
+        ],
+        "time": 0
+      },
+      "match": {
+        "players": [
+          {
+            "name": "플레이어 1",
+            "score": 0,
+            "innings": 0,
+            "shots": 0,
+            "highRun": 0,
+            "run": 0,
+            "fouls": 0,
+            "group": null
+          },
+          {
+            "name": "플레이어 2",
+            "score": 0,
+            "innings": 0,
+            "shots": 0,
+            "highRun": 0,
+            "run": 0,
+            "fouls": 0,
+            "group": null
+          }
+        ],
+        "currentPlayer": 0,
+        "inning": 1,
+        "shotNumber": 0,
+        "status": "playing",
+        "winner": null,
+        "breakShot": false,
+        "openTable": false,
+        "ballInHand": false,
+        "ballInHandZone": "anywhere",
+        "headStringRestriction": false,
+        "openingRequired": false,
+        "equalizing": false,
+        "pendingChoice": null,
+        "message": "두 빨간 공을 모두 맞혀 1점을 만드세요."
+      },
+      "config": {
+        "discipline": "four-ball",
+        "mode": "practice",
+        "target": 10,
+        "difficulty": "normal",
+        "profile": "domestic",
+        "fourBallFoul": "turn",
+        "equalInnings": false,
+        "callShots": true,
+        "playerNames": [
+          "플레이어 1",
+          "플레이어 2"
+        ]
+      },
+      "shotCount": 0,
+      "contacts": [],
+      "lastOutcome": null,
+      "paused": true,
+      "angle": -0.12,
+      "power": 0.45,
+      "tip": {
+        "x": 0,
+        "y": 0
+      },
+      "predictionWorker": true,
+      "aiWorker": true,
+      "aiPending": false,
+      "lastAI": null
+    }
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "consoleErrorCount": 0,
+  "pageErrorCount": 0
+}

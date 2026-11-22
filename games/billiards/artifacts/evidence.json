@@ -1,12 +1,60 @@
 {
-  "version": 1,
-  "runId": "billiards-phase1-final-4",
-  "captures": [
-    {"mode":"desktop","state":"active-play","report":"../artifacts/visual-pass-4/desktop-active.json"},
-    {"mode":"desktop","state":"cue-view","report":"../artifacts/visual-pass-4/desktop-cue.json"},
-    {"mode":"mobile","state":"active-play","report":"../artifacts/visual-pass-4/mobile-active.json"},
-    {"mode":"mobile","state":"cue-view","report":"../artifacts/visual-pass-4/mobile-cue.json"},
-    {"mode":"mobile","state":"pause","report":"../artifacts/visual-pass-4/mobile-pause.json"}
+  "artifacts": [
+    "../artifacts/complete-browser/result.json",
+    "../artifacts/bot-matches/four-ball.json",
+    "../artifacts/bot-matches/three-cushion.json",
+    "../artifacts/bot-matches/eight-ball.json",
+    "../artifacts/control-regression/result.json",
+    "../artifacts/performance/result.json",
+    "../artifacts/completion-audit.md"
   ],
-  "artifacts": ["../artifacts/browser-pass-1/result.json", "../artifacts/final-motion.json", "../artifacts/resize-smoke.json", "../artifacts/final-input-pass/page@03feb1ffe427ecc829957665b8be640b.webm"]
+  "runId": "billiards-complete-v1-final",
+  "captures": [
+    {
+      "state": "active-play",
+      "report": "../artifacts/complete-visual/desktop-active.json",
+      "mode": "desktop"
+    },
+    {
+      "state": "cue-view",
+      "report": "../artifacts/complete-visual/desktop-cue.json",
+      "mode": "desktop"
+    },
+    {
+      "state": "charging",
+      "report": "../artifacts/complete-visual/desktop-gauge.json",
+      "mode": "desktop"
+    },
+    {
+      "state": "pool-play",
+      "report": "../artifacts/complete-visual/desktop-pool.json",
+      "mode": "desktop"
+    },
+    {
+      "state": "finished",
+      "report": "../artifacts/complete-visual/desktop-result.json",
+      "mode": "desktop"
+    },
+    {
+      "state": "active-play",
+      "report": "../artifacts/complete-visual/mobile-active.json",
+      "mode": "mobile"
+    },
+    {
+      "state": "pool-play",
+      "report": "../artifacts/complete-visual/mobile-pool.json",
+      "mode": "mobile"
+    },
+    {
+      "state": "pool-cue",
+      "report": "../artifacts/complete-visual/mobile-pool-cue.json",
+      "mode": "mobile"
+    },
+    {
+      "state": "pause",
+      "report": "../artifacts/complete-visual/mobile-pause.json",
+      "mode": "mobile"
+    }
+  ],
+  "version": 1
 }
