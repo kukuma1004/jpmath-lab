@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { ENEMIES, HEIGHT, HEROES, PLAYER_R, GRAZE_R, heroDef, type EnemyKind, type GameEvent, type GameState, type HeroId, type Enemy } from './types';
 import { STAGES, type StageDef } from './stages';
 import { hitCircles, muzzleOffset, ULT_TIME } from './engine';
+import { getAwakening, supportPositions } from './progression';
 
 const H=HEIGHT, TAU=Math.PI*2, S=HEIGHT/900;
 const Y=(y:number)=>H-y;
@@ -159,6 +160,7 @@ export class GameRenderer {
   private frameTimes:number[]=[];
   reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
   showHitboxes=false;
+  stabilizeForCapture(){this.flash=0;this.shake=0;this.lightning=0;this.later=[];}
   private texturePaths:string[]=[];
 
   constructor(private host:HTMLElement) {
@@ -221,6 +223,34 @@ export class GameRenderer {
       debug:new Batch(s,g,hitRing,900,40,false),
       slash:new Batch(s,g,slash,40,21,true),slashCore:new Batch(s,g,slash,40,22,true),shotArrow:new Batch(s,g,arrow,700,10,true),
     };
+    for(const hero of HEROES){
+      const support=canvasTexture(128,128,c=>{
+        c.lineCap='round';c.lineJoin='round';
+        const light=hero.glow,ink='#152033';
+        if(hero.id==='rin'){
+          for(let i=0;i<7;i++){const a=-1.3+i*.34;c.save();c.translate(34,75);c.rotate(a);poly(c,[[0,0],[57,-19],[78,-9],[83,5],[57,17]],hero.color);c.strokeStyle=light;c.lineWidth=3;c.beginPath();c.moveTo(3,0);c.lineTo(77,0);c.stroke();c.restore();}
+          ellipse(c,34,75,9,9,light,ink,3);
+        }else if(hero.id==='golem'){
+          poly(c,[[20,35],[52,22],[74,32],[72,96],[38,104],[20,84]],'#596c7c');poly(c,[[45,42],[113,42],[119,53],[111,67],[45,67]],hero.color);poly(c,[[43,75],[103,75],[112,86],[103,96],[43,96]],light);
+          c.strokeStyle=ink;c.lineWidth=5;c.strokeRect(55,45,48,18);ellipse(c,34,60,10,14,light,hero.color,4);
+        }else if(hero.id==='ryu'){
+          poly(c,[[16,57],[28,27],[83,28],[107,52],[98,85],[66,103],[24,88]],'#765338');
+          for(let i=0;i<4;i++)ellipse(c,30+i*20,45,10,16,hero.color,light,3);
+          poly(c,[[38,69],[64,52],[55,72],[82,67],[51,98],[57,78]],light);
+        }else if(hero.id==='hanui'){
+          c.strokeStyle=hero.color;c.lineWidth=10;c.beginPath();c.moveTo(35,18);c.bezierCurveTo(96,25,98,102,35,110);c.stroke();c.strokeStyle=light;c.lineWidth=3;c.beginPath();c.moveTo(35,18);c.lineTo(53,64);c.lineTo(35,110);c.stroke();
+          c.lineWidth=5;c.beginPath();c.moveTo(15,64);c.lineTo(113,64);c.stroke();poly(c,[[120,64],[97,51],[103,64],[97,77]],hero.color);
+        }else{
+          c.beginPath();c.moveTo(68,10);c.bezierCurveTo(23,42,34,45,20,69);c.bezierCurveTo(11,107,95,124,108,79);c.bezierCurveTo(120,53,75,48,90,28);c.bezierCurveTo(67,41,60,45,68,10);c.fillStyle=hero.color;c.fill();
+          ellipse(c,65,77,26,29,light);ellipse(c,56,73,5,7,ink);ellipse(c,77,73,5,7,ink);poly(c,[[58,89],[68,84],[77,89],[73,101],[64,96],[56,102]],hero.color);
+        }
+      });
+      this.b[`support-${hero.id}`]=new Batch(s,g,support,4,9,false);
+    }
+    const marker=canvasTexture(160,48,c=>{poly(c,[[0,10],[12,0],[148,0],[160,10],[160,38],[148,48],[12,48],[0,38]],'#17202bed');c.strokeStyle='#ffd996';c.lineWidth=3;c.strokeRect(3,3,154,42);c.fillStyle='#ffe6ae';c.font='bold 25px sans-serif';c.textAlign='center';c.fillText('발사원',80,33);});
+    const bar=canvasTexture(8,8,c=>{c.fillStyle='#ffffff';c.fillRect(0,0,8,8);});
+    this.b.sourceMarker=new Batch(s,g,marker,40,17,false);this.b.sourceHealth=new Batch(s,g,bar,80,17,false);
+    this.b.awakeningHalo=new Batch(s,g,coreRing,4,8,true);
     this.sky=this.mesh(null,-20);
     this.bg=this.mesh(null,-18);
     this.layers.far=this.mesh(null,-16);this.layers.mid=this.mesh(null,-12);this.layers.near=this.mesh(null,-8);
@@ -251,6 +281,8 @@ export class GameRenderer {
     await Promise.all([...required,...optional]);
     for(const k of kinds)if(!this.enemyTex.has(k)){const fb=FALLBACK[k];const src=fb&&this.enemyTex.get(fb[0]);if(src)this.enemyTex.set(k,{tex:src.tex,tint:fb[1]});}
     if(!this.enemyTex.has('boss1'))throw new Error('필수 원화를 불러오지 못했습니다.');
+    // The menu may already have rendered stage zero while its painted backdrop was loading.
+    this.shownStage=-1;
   }
   setWorld(w:number){this.worldW=w;this.resize();}
   resize() {
@@ -361,6 +393,7 @@ export class GameRenderer {
       case 'stageclear':this.flash=.6;this.flashColor.set('#ffffff');break;
       case 'pickup':if(e.big)this.add('ring',{x:e.x,y:e.y,life:.35,size:20,grow:120,color:col('#ffe7a8')});break;
       case 'extend':this.add('ring',{x:e.x,y:e.y,life:.6,size:30,grow:300,color:col('#7dffb4')});break;
+      case 'awaken':this.add('ring',{x:e.x,y:e.y,life:1.1,size:60,grow:440,color:col(hero.glow)});this.add('ring',{x:e.x,y:e.y,life:.7,size:35,grow:220,color:hc});this.explosion(e.x,e.y,65,hc,false);break;
     }
   }
   private bloomAt:{x:number;y:number;life:number}[]=[];
@@ -427,7 +460,14 @@ export class GameRenderer {
       const c=tmpColor.copy(col(e.tint)).multiply(col(tex.tint));
       if(e.flash>0)c.multiplyScalar(2.2);
       m.material.color.copy(c);m.material.opacity=e.boss&&e.shield>0?.75+Math.sin(t*30)*.2:1;
+      if(e.mid&&!e.boss&&e.x>30&&e.x<W-25){
+        const y=Math.max(145,e.y-h*.5-23);
+        this.b.sourceMarker.push(e.x,y,66,20,0,WHITE,1);
+        this.b.sourceHealth.push(e.x,y+15,64,4,0,col('#1a2334'),1);
+        const hp=Math.max(0,e.hp/e.maxHp);this.b.sourceHealth.push(e.x-32+32*hp,y+15,64*hp,4,0,col('#ffda92'),1);
+      }
     }
+    this.b.sourceMarker.end();this.b.sourceHealth.end();
     for(const [id,m] of this.enemyMeshes)if(!live.has(id)){this.scene.remove(m);m.material.dispose();this.enemyMeshes.delete(id);}
 
     // Player shots
@@ -446,6 +486,21 @@ export class GameRenderer {
       for(let i=0;i<110;i++){const k=((i*7919)%997)/997,d=(t*(1600+k*900)+i*331)%(H*1.5+300),x0=l-260+((i*173)%(cw+360));
         this.b.shotArrow.push(x0+Math.cos(fall)*d,-120+Math.sin(fall)*d,110+k*50,14,fall,i%4?hc:bright,fade);}}
     for(const k of ['shotPetal','shotBolt','shotWave','shotGlow','shotArrow'])this.b[k].end();
+    // These are the actual firing sockets used by the simulation, with five different weapon silhouettes.
+    const growth=getAwakening(state.hero,p.awakening,p.power);
+    for(const h of HEROES){
+      if(active&&h.id===state.hero)for(const o of supportPositions(state.hero,p.awakening)){
+        const size=h.id==='golem'?43:37;
+        this.b[`support-${h.id}`].push(p.x+o.x,p.y+o.y,size,size,h.id==='rin'?-.15:0,WHITE,1);
+      }
+      this.b[`support-${h.id}`].end();
+    }
+    if(active&&growth.rank>=4){
+      const size=growth.rank>=8?132:growth.rank>=6?112:92;
+      this.b.awakeningHalo.push(p.x-12,p.y+20,size,size,t*.28,hc,.26);
+      if(growth.rank>=6)this.b.awakeningHalo.push(p.x-12,p.y+20,size*.73,size*.73,-t*.4,col(hero.glow),.3);
+    }
+    this.b.awakeningHalo.end();
 
     // Lasers: warning line, then a beam whose white core width equals the collision core.
     for(const ls of state.lasers){

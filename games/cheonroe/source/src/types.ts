@@ -9,6 +9,8 @@ export type ShotKind = 'shot' | 'charge' | 'homing' | 'wave';
 export interface InputIntent { x:number; y:number; focus:boolean; charge:boolean; ultimate:boolean; dash:boolean; drag?:{dx:number;dy:number}; }
 
 export interface Player {
+  /** Run-long growth, preserved on damage; temporary weapon power remains separate. */
+  awakening:number; supportTimer:number; signatureTimer:number;
   x:number; y:number; hp:number; maxHp:number; invulnerable:number; charge:number; power:number; shotTimer:number;
   gauge:number; ultimateTimer:number; nearTimer:number;
   dashCharges:number; dashRecharge:number; dashTime:number; dashVX:number; dashVY:number; dashIframes:number; perfectThisDash:boolean;
@@ -34,6 +36,8 @@ export interface Enemy {
 
 /** Enemy bullet in polar motion (angle a, speed v) plus an optional falling component gy. */
 export interface Bullet {
+  /** Optional destructible source: its bullets clear when it is defeated. */
+  owner?:number;
   id:number; x:number; y:number; a:number; v:number; gy:number; r:number; style:BulletStyle; color:string; age:number; grazed:boolean;
   accel:number; turn:number; maxSpeed:number; gravity:number; wait:number; reaim:number; reaimSpeed:number; split:number; splitSpeed:number;
 }
@@ -42,7 +46,7 @@ export interface Laser {id:number; x:number; y:number; angle:number; length:numb
 export interface Pickup {id:number; kind:'power'|'gold'|'life'|'gauge'; x:number; y:number; vx:number; vy:number; age:number; magnet:boolean;}
 
 export type EventKind = 'shot'|'hit'|'kill'|'hurt'|'graze'|'pickup'|'charge'|'ultimate'|'boss'|'victory'|'gameover'|'near'
-  |'dash'|'perfect'|'phase'|'attack'|'stage'|'stageclear'|'cancel'|'strike'|'extend'|'explode'|'warning'|'bloom';
+  |'dash'|'perfect'|'phase'|'attack'|'stage'|'stageclear'|'cancel'|'strike'|'extend'|'explode'|'warning'|'bloom'|'awaken'|'encounter';
 export interface GameEvent {kind:EventKind; x:number; y:number; value?:number; text?:string; sub?:string; enemy?:EnemyKind; big?:boolean;}
 
 export interface GameState {

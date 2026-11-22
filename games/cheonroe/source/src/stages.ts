@@ -1,4 +1,6 @@
 import { ENEMIES, type BulletStyle, type Enemy, type EnemyKind, type EnemyPath, type FirePattern, type Laser, type Bullet } from './types';
+import { authoredChapter as makeEncounterWaves, ENCOUNTER_BOSS_AT } from './encounters';
+export { STAGE_TACTICS } from './encounters';
 
 /** What a wave script or a boss attack may do. The engine implements it. */
 export interface Ctx {
@@ -12,8 +14,9 @@ export interface Ctx {
   fan(x:number,y:number,angle:number,n:number,spread:number,speed:number,o?:BulletOpts):void;
   laser(x:number,y:number,angle:number,o:{length?:number;width?:number;warn?:number;life?:number;color?:string;spin?:number;owner?:Enemy}):Laser;
   later(delay:number,run:()=>void):void;
+  announce(text:string,sub:string):void;
 }
-export interface BulletOpts {r?:number; style?:BulletStyle; color?:string; accel?:number; maxSpeed?:number; turn?:number; gravity?:number; wait?:number; reaim?:number; reaimSpeed?:number; split?:number; splitSpeed?:number;}
+export interface BulletOpts {owner?:Enemy;r?:number; style?:BulletStyle; color?:string; accel?:number; maxSpeed?:number; turn?:number; gravity?:number; wait?:number; reaim?:number; reaimSpeed?:number; split?:number; splitSpeed?:number;}
 
 export interface Wave {t:number; run:(c:Ctx)=>void;}
 export interface BossAttack {name:string; dur:number; run:(b:Enemy,c:Ctx,t:number,every:(period:number,offset?:number)=>number)=>void;}
@@ -215,190 +218,38 @@ const BOSS8=boss({kind:'boss8',name:'저승차사',title:'저승길의 문지기
  ]}
 ]});
 
-// ───────────── second half: the opening formations come back mirrored and fire faster ─────────────
-function mirror(c:Ctx):Ctx {
-  const H=c.H,my=(y:number)=>H-y,opt=(y?:number)=>y===undefined?undefined:my(y);
-  const path=(p:EnemyPath):EnemyPath=>p.type==='ground'?p:{...p,sy:opt(p.sy),stopY:opt(p.stopY),cy:opt(p.cy),ey:opt(p.ey),exit:p.exit==='up'?'down':p.exit==='down'?'up':p.exit};
-  return {
-    get W(){return c.W;},H,get time(){return c.time;},get hard(){return c.hard;},get player(){return c.player;},
-    rand:()=>c.rand(),aim:(x,y)=>c.aim(x,y),
-    enemy:(kind,x,y,p,o={})=>c.enemy(kind,x,p.type==='ground'?y:my(y),path(p),o.fire?{...o,fire:{...o.fire,every:(o.fire.every??2)*.8}}:o),
-    bullet:(x,y,a,v,o)=>c.bullet(x,my(y),-a,v,o),
-    ring:(x,y,n,v,o)=>c.ring(x,my(y),n,v,o&&{...o,offset:o.offset===undefined?undefined:-o.offset}),
-    fan:(x,y,a,n,s,v,o)=>c.fan(x,my(y),-a,n,s,v,o),
-    laser:(x,y,a,o)=>c.laser(x,my(y),-a,o),
-    later:(d,run)=>c.later(d,run),
-  };
-}
-const REMIX_FROM=0,REMIX_TO=44,REMIX_AT=80,BOSS_AT=128;
-/** A chapter: the authored opening, a short breath, then the opening again from the other side. */
-function chapter(waves:Wave[]):Wave[] {
-  const again=waves.filter(w=>w.t>=REMIX_FROM&&w.t<REMIX_TO).map(w=>({t:w.t-REMIX_FROM+REMIX_AT,run:(c:Ctx)=>w.run(mirror(c))}));
-  return [...waves,...again].sort((a,b)=>a.t-b.t);
-}
-
 // ───────────── stages ─────────────
 export const STAGES:StageDef[]=[
  {chapter:'첫째 마당',name:'붉은 달의 계곡',sub:'산사 계곡 · 도깨비 장군 토벌',mark:'붉은 달',terrain:'valley',bg:'k-valley.webp',
   sky:['#c98577','#5d5470','#1f2a3e'],far:'#4c4a63',mid:'#2f3550',near:'#151d2c',fog:'#3a3f5a',accent:'#ff7d72',light:'#ffd6b8',
-  weather:'petals',scroll:190,bossAt:BOSS_AT,tint:'#ffffff',boss:BOSS1,
-  waves:chapter(timeline(at=>{
-   at(1.5,c=>stream(c,'drone',6,c.H*.3,{fire:aim1(RED,320,2.8,1.2)}));
-   at(4.5,c=>stream(c,'drone',6,c.H*.7,{fire:aim1(RED,320,2.8,1.2)}));
-   at(8,c=>swoop(c,'wing',5,true,{fire:fan3(ORANGE,300,2.8,1)}));
-   at(12,c=>{dive(c,'drone',c.W*.62,c.H*.25,{fire:fan3(RED),hold:2});dive(c,'drone',c.W*.62,c.H*.75,{fire:fan3(RED),hold:2});});
-   at(15,c=>swoop(c,'wing',5,false,{fire:fan3(ORANGE,300,2.8,1)}));
-   at(18,c=>darts(c,'drone',6));
-   at(21,c=>ground(c,'turret',3));
-   at(24,c=>{stream(c,'drone',5,c.H*.2,{sine:60});stream(c,'drone',5,c.H*.8,{sine:60});});
-   at(28,c=>dive(c,'brute',c.W*.68,c.H*.5,{hold:4,fire:ringP(PINK,14,200,1.6,.6),drop:'power'}));
-   at(33,c=>swoop(c,'wing',6,true,{fire:fan3(ORANGE,320,2.8,.8)}));
-   at(36,c=>swoop(c,'wing',6,false,{fire:fan3(ORANGE,320,2.8,.8)}));
-   at(40,c=>{for(let i=0;i<4;i++)dive(c,'drone',c.W*(.55+i*.08),c.H*(.18+i*.21),{hold:2.2,fire:streamP(RED,4,400,3,.6),exit:i<2?'up':'down'});});
-   at(45,c=>darts(c,'wing',7,{gap:.3}));
-   at(49,c=>{ground(c,'turret',2);stream(c,'drone',6,c.H*.35,{sine:90});});
-   at(54,c=>{dive(c,'brute',c.W*.7,c.H*.3,{hold:3.5,fire:fan3(RED,280,1.2,.5),drop:'gauge'});dive(c,'brute',c.W*.7,c.H*.72,{hold:3.5,fire:aim1(ORANGE,340,1,.8)});});
-   at(60,c=>{swoop(c,'wing',5,true,{fire:aim1(RED,360,2.8,.8)});swoop(c,'wing',5,false,{fire:aim1(RED,360,2.8,.8)});});
-   at(65,c=>darts(c,'drone',9,{gap:.25}));
-   at(69,c=>{for(let i=0;i<3;i++)dive(c,'turret',c.W*.62,c.H*(.22+i*.28),{hold:3,fire:ringP(YELLOW,10,200,1.8,.7)});});
-   at(74,c=>stream(c,'drone',8,c.H*.5,{sine:180,gap:.2}));
-  }))},
+  weather:'petals',scroll:190,bossAt:ENCOUNTER_BOSS_AT[0],tint:'#ffffff',boss:BOSS1,
+  waves:makeEncounterWaves(0)},
  {chapter:'둘째 마당',name:'구름바다 하늘길',sub:'하늘 항로 · 거북선 격침',mark:'구름바다',terrain:'clouds',bg:'k-clouds.webp',
   sky:['#f1c79a','#7aa3c8','#2b4a74'],far:'#e8eef7',mid:'#d7b4c4',near:'#f7e4e8',fog:'#f3d9dc',accent:'#6fd3ff',light:'#fff3d6',
-  weather:'wisps',scroll:240,bossAt:BOSS_AT,tint:'#ffffff',boss:BOSS2,
-  waves:chapter(timeline(at=>{
-   at(1.5,c=>{stream(c,'kite',7,c.H*.25,{sine:70,fire:aim1(PINK,340,2.8,1)});});
-   at(4,c=>stream(c,'kite',7,c.H*.75,{sine:70,fire:aim1(PINK,340,2.8,1)}));
-   at(7,c=>swoop(c,'wing',6,true,{fire:fan3(BLUE)}));
-   at(10,c=>darts(c,'kite',8,{gap:.28}));
-   at(13,c=>{for(let i=0;i<3;i++)dive(c,'drone',c.W*.6,c.H*(.2+i*.3),{fire:streamP(BLUE,5,430),tint:'#bfe6ff'});});
-   at(17,c=>swoop(c,'wing',6,false,{fire:fan3(BLUE)}));
-   at(20,c=>{stream(c,'kite',6,c.H*.15,{sine:40});stream(c,'kite',6,c.H*.5,{sine:40});stream(c,'kite',6,c.H*.85,{sine:40});});
-   at(25,c=>darts(c,'wing',7,{gap:.3}));
-   at(29,c=>{swoop(c,'kite',7,true,{fire:aim1(PINK,360,2.8,.7)});swoop(c,'kite',7,false,{fire:aim1(PINK,360,2.8,.7)});});
-   at(35,c=>dive(c,'brute',c.W*.66,c.H*.5,{hold:11,mid:true,scale:1.35,hp:1350,fire:{type:'spiral',n:3,speed:220,every:.12,delay:1,color:CYAN},drop:'life',tint:'#cfe8ff'}));
-   at(48,c=>darts(c,'kite',10,{gap:.22}));
-   at(52,c=>{for(let i=0;i<4;i++)dive(c,'wing',c.W*(.5+i*.1),c.H*(.15+i*.23),{fire:ringP(CYAN,12,190,1.6,.6),hold:2.6});});
-   at(58,c=>{stream(c,'drone',7,c.H*.3,{sine:120,tint:'#bfe6ff',fire:aim1(BLUE,360,2.8,.9)});stream(c,'drone',7,c.H*.7,{sine:120,tint:'#bfe6ff',fire:aim1(BLUE,360,2.8,.9)});});
-   at(64,c=>{swoop(c,'wing',7,true,{fire:fan3(CYAN,330,2.8,.6)});});
-   at(67,c=>{swoop(c,'wing',7,false,{fire:fan3(CYAN,330,2.8,.6)});});
-   at(71,c=>darts(c,'kite',12,{gap:.2}));
-   at(75,c=>{for(let i=0;i<2;i++)dive(c,'turret',c.W*.66,c.H*(.3+i*.4),{hold:3,fire:streamP(WHITE,6,450,1.6,.5),tint:'#d8eaff'});});
-  }))},
+  weather:'wisps',scroll:240,bossAt:ENCOUNTER_BOSS_AT[1],tint:'#ffffff',boss:BOSS2,
+  waves:makeEncounterWaves(1)},
  {chapter:'셋째 마당',name:'달빛 대숲',sub:'대나무 숲 · 구미호 퇴치',mark:'대숲',terrain:'bamboo',bg:'k-bamboo.webp',
   sky:['#24405a','#152536','#0a1018'],far:'#1d3340',mid:'#13242c',near:'#08120f',fog:'#2c4c50',accent:'#8fffe0',light:'#e6fff4',
-  weather:'fireflies',scroll:200,bossAt:BOSS_AT,tint:'#e8fff6',boss:BOSS6,
-  waves:chapter(timeline(at=>{
-   at(1.5,c=>stream(c,'ember',7,c.H*.3,{sine:70,tint:'#9fe8ff',fire:aim1(CYAN,300,2.8,1)}));
-   at(4.5,c=>stream(c,'ember',7,c.H*.7,{sine:70,tint:'#9fe8ff',fire:aim1(CYAN,300,2.8,1)}));
-   at(8,c=>swoop(c,'wing',6,true,{fire:fan3(PINK,300,2.8,.8),tint:'#d8f0ff'}));
-   at(12,c=>{for(let i=0;i<3;i++)dive(c,'ember',c.W*.6,c.H*(.2+i*.3),{fire:ringP(CYAN,14,190,1.5,.5),hold:2.4,tint:'#9fe8ff'});});
-   at(16,c=>darts(c,'kite',8,{gap:.3,tint:'#e8d8ff'}));
-   at(20,c=>{stream(c,'kite',6,c.H*.2,{sine:50,fire:aim1(PINK,300,2.8,1)});stream(c,'kite',6,c.H*.8,{sine:50,fire:aim1(PINK,300,2.8,1)});});
-   at(25,c=>swoop(c,'wing',6,false,{fire:fan3(CYAN,300,2.8,.8),tint:'#d8f0ff'}));
-   at(30,c=>dive(c,'brute',c.W*.66,c.H*.5,{hold:11,mid:true,scale:1.35,hp:1500,fire:{type:'spiral',n:3,speed:200,every:.13,delay:1,color:PINK},drop:'life',tint:'#d8c8ff'}));
-   at(44,c=>{for(let i=0;i<4;i++)dive(c,'ember',c.W*(.5+i*.1),c.H*(.16+i*.22),{fire:streamP(WHITE,4,380,2.2,.5),hold:2.4,tint:'#9fe8ff'});});
-   at(49,c=>darts(c,'ember',10,{gap:.24,tint:'#9fe8ff'}));
-   at(54,c=>{swoop(c,'wing',7,true,{fire:fan3(PINK,320,2.8,.6),tint:'#d8f0ff'});swoop(c,'wing',7,false,{fire:fan3(CYAN,320,2.8,.6),tint:'#d8f0ff'});});
-   at(61,c=>ground(c,'turret',3,{tint:'#bfe0d8',fire:{type:'ring',n:10,speed:180,every:1.8,delay:.8,color:CYAN}}));
-   at(66,c=>{stream(c,'kite',8,c.H*.35,{sine:120,gap:.2,fire:aim1(PINK,320,2.8,.8)});stream(c,'kite',8,c.H*.65,{sine:120,gap:.2});});
-   at(72,c=>{dive(c,'brute',c.W*.7,c.H*.3,{hold:4,fire:fan3(CYAN,280,1.1,.5),tint:'#d8c8ff'});dive(c,'brute',c.W*.7,c.H*.7,{hold:4,fire:fan3(PINK,280,1.1,.5),tint:'#d8c8ff'});});
-  }))},
+  weather:'fireflies',scroll:200,bossAt:ENCOUNTER_BOSS_AT[2],tint:'#e8fff6',boss:BOSS6,
+  waves:makeEncounterWaves(2)},
  {chapter:'넷째 마당',name:'불꽃 제련성',sub:'쇠의 성 · 불가사리 퇴치',mark:'불꽃성',terrain:'forge',bg:'k-forge.webp',
   sky:['#ff9c55','#7a2f2a','#1d1013'],far:'#4a1f1d',mid:'#2d1414',near:'#120909',fog:'#7e3424',accent:'#ff8a3c',light:'#ffd07a',
-  weather:'embers',scroll:220,bossAt:BOSS_AT,tint:'#ffd7c2',boss:BOSS3,
-  waves:chapter(timeline(at=>{
-   at(1.5,c=>stream(c,'ember',7,c.H*.3,{sine:80,fire:aim1(ORANGE,340,2.8,1)}));
-   at(4,c=>stream(c,'ember',7,c.H*.7,{sine:80,fire:aim1(ORANGE,340,2.8,1)}));
-   at(7,c=>ground(c,'turret',3,{tint:'#ffb38a'}));
-   at(10,c=>darts(c,'ember',8,{gap:.3}));
-   at(13,c=>{swoop(c,'wing',6,true,{fire:fan3(RED),tint:'#ffb38a'});swoop(c,'wing',6,false,{fire:fan3(RED),tint:'#ffb38a'});});
-   at(19,c=>{for(let i=0;i<3;i++)dive(c,'ember',c.W*.58,c.H*(.2+i*.3),{fire:ringP(ORANGE,14,210,1.4,.5),hold:2.4});});
-   at(23,c=>{ground(c,'turret',3,{tint:'#ffb38a',fire:{type:'ring',n:10,speed:200,every:1.8,delay:.8,color:RED}});stream(c,'ember',6,c.H*.25,{sine:60});});
-   at(29,c=>darts(c,'wing',8,{gap:.26}));
-   at(34,c=>dive(c,'brute',c.W*.66,c.H*.5,{hold:11,mid:true,scale:1.4,hp:1500,fire:{type:'ring',n:18,speed:210,every:.7,delay:1,color:ORANGE},drop:'life',tint:'#ffb08a'}));
-   at(47,c=>{stream(c,'ember',8,c.H*.2,{sine:100,fire:aim1(RED,360,2.8,.8)});stream(c,'ember',8,c.H*.8,{sine:100,fire:aim1(RED,360,2.8,.8)});});
-   at(53,c=>{for(let i=0;i<4;i++)dive(c,'drone',c.W*(.5+i*.1),c.H*(.18+i*.21),{fire:streamP(YELLOW,5,450,2.2,.5),tint:'#ffb38a'});});
-   at(58,c=>darts(c,'ember',10,{gap:.22}));
-   at(62,c=>ground(c,'turret',4,{tint:'#ffb38a',gap:.9}));
-   at(65,c=>{swoop(c,'wing',7,true,{fire:fan3(ORANGE,340,2.8,.6),tint:'#ffb38a'});});
-   at(68,c=>{swoop(c,'wing',7,false,{fire:fan3(ORANGE,340,2.8,.6),tint:'#ffb38a'});});
-   at(72,c=>{dive(c,'brute',c.W*.7,c.H*.28,{hold:4,fire:fan3(RED,300,1,.5),tint:'#ffb08a'});dive(c,'brute',c.W*.7,c.H*.72,{hold:4,fire:fan3(RED,300,1,.5),tint:'#ffb08a'});});
-  }))},
+  weather:'embers',scroll:220,bossAt:ENCOUNTER_BOSS_AT[3],tint:'#ffd7c2',boss:BOSS3,
+  waves:makeEncounterWaves(3)},
  {chapter:'다섯째 마당',name:'별밤 서라벌',sub:'첨성대의 밤 · 삼족오 강림',mark:'서라벌',terrain:'night',bg:'k-night.webp',
   sky:['#3a3060','#1c1a40','#0a0a20'],far:'#2a2850',mid:'#1a1838',near:'#0c0b1c',fog:'#4a3f7a',accent:'#ffd27a',light:'#fff3c8',
-  weather:'fireflies',scroll:220,bossAt:BOSS_AT,tint:'#f2ecff',boss:BOSS7,
-  waves:chapter(timeline(at=>{
-   at(1.5,c=>{stream(c,'kite',7,c.H*.25,{sine:60,fire:aim1(YELLOW,320,2.8,1)});stream(c,'kite',7,c.H*.75,{sine:60,fire:aim1(YELLOW,320,2.8,1)});});
-   at(6,c=>swoop(c,'wing',6,true,{fire:fan3(ORANGE,300,2.8,.8),tint:'#ffe7c8'}));
-   at(9,c=>swoop(c,'wing',6,false,{fire:fan3(ORANGE,300,2.8,.8),tint:'#ffe7c8'}));
-   at(13,c=>{for(let i=0;i<3;i++)dive(c,'storm',c.W*.6,c.H*(.2+i*.3),{fire:ringP(YELLOW,16,190,1.6,.5),hold:2.6,tint:'#ffe7a8'});});
-   at(18,c=>darts(c,'drone',9,{gap:.26,tint:'#ffe7c8'}));
-   at(22,c=>ground(c,'turret',3,{tint:'#e8d8b8',fire:{type:'fan',n:5,spread:.16,speed:280,every:1.6,delay:.6,color:YELLOW,style:'rice'}}));
-   at(27,c=>{stream(c,'storm',6,c.H*.2,{sine:40,tint:'#ffe7a8'});stream(c,'storm',6,c.H*.5,{sine:40,tint:'#ffe7a8',fire:aim1(ORANGE,300,2.8,1)});stream(c,'storm',6,c.H*.8,{sine:40,tint:'#ffe7a8'});});
-   at(32,c=>dive(c,'brute',c.W*.66,c.H*.5,{hold:11,mid:true,scale:1.4,hp:1650,fire:{type:'ring',n:20,speed:190,every:.8,delay:1,color:YELLOW},drop:'life',tint:'#ffe0b0'}));
-   at(46,c=>darts(c,'kite',11,{gap:.22}));
-   at(51,c=>{for(let i=0;i<4;i++)dive(c,'wing',c.W*(.5+i*.1),c.H*(.15+i*.23),{fire:streamP(WHITE,4,380,2.2,.5),hold:2.6,tint:'#ffe7c8'});});
-   at(57,c=>{swoop(c,'kite',8,true,{fire:aim1(YELLOW,320,2.8,.7)});swoop(c,'kite',8,false,{fire:aim1(ORANGE,320,2.8,.7)});});
-   at(63,c=>{stream(c,'drone',8,c.H*.3,{sine:140,tint:'#ffe7c8',fire:aim1(YELLOW,320,2.8,.9)});stream(c,'drone',8,c.H*.7,{sine:140,tint:'#ffe7c8'});});
-   at(69,c=>{for(let i=0;i<3;i++)dive(c,'storm',c.W*.62,c.H*(.2+i*.3),{fire:{type:'spiral',n:3,speed:200,every:.16,delay:.6,color:ORANGE},hold:3,tint:'#ffe7a8'});});
-   at(74,c=>darts(c,'storm',10,{gap:.2,tint:'#ffe7a8'}));
-  }))},
+  weather:'fireflies',scroll:220,bossAt:ENCOUNTER_BOSS_AT[4],tint:'#f2ecff',boss:BOSS7,
+  waves:makeEncounterWaves(4)},
  {chapter:'여섯째 마당',name:'백설 산사',sub:'눈보라 고개 · 기계 용 봉인',mark:'흰 고개',terrain:'snow',bg:'k-snow.webp',
   sky:['#cfe0f2','#7d93b6','#26324d'],far:'#a9bad3',mid:'#6e819f',near:'#2c3850',fog:'#dbe7f4',accent:'#9fe0ff',light:'#ffffff',
-  weather:'snow',scroll:250,bossAt:BOSS_AT,tint:'#dcecff',boss:BOSS4,
-  waves:chapter(timeline(at=>{
-   at(1.5,c=>stream(c,'frost',8,c.H*.3,{sine:90,fire:aim1(CYAN,360,2.8,1)}));
-   at(4,c=>stream(c,'frost',8,c.H*.7,{sine:90,fire:aim1(CYAN,360,2.8,1)}));
-   at(7.5,c=>{swoop(c,'wing',6,true,{fire:fan3(BLUE,340),tint:'#cfe6ff'});swoop(c,'wing',6,false,{fire:fan3(BLUE,340),tint:'#cfe6ff'});});
-   at(13,c=>darts(c,'frost',10,{gap:.25}));
-   at(17,c=>{for(let i=0;i<3;i++)dive(c,'turret',c.W*.6,c.H*(.2+i*.3),{fire:{type:'fan',n:9,spread:.12,speed:380,every:1.6,delay:.5,color:CYAN,style:'needle'},hold:2.6,tint:'#cfe6ff'});});
-   at(22,c=>{stream(c,'frost',7,c.H*.15,{sine:50});stream(c,'frost',7,c.H*.5,{sine:50});stream(c,'frost',7,c.H*.85,{sine:50});});
-   at(27,c=>darts(c,'wing',9,{gap:.24}));
-   at(32,c=>dive(c,'brute',c.W*.66,c.H*.5,{hold:12,mid:true,scale:1.4,hp:1725,fire:{type:'spiral',n:4,speed:230,every:.11,delay:1,color:BLUE},drop:'life',tint:'#cfe6ff'}));
-   at(46,c=>{for(let i=0;i<4;i++)dive(c,'frost',c.W*(.5+i*.1),c.H*(.16+i*.22),{fire:ringP(WHITE,16,200,1.3,.5),hold:2.4});});
-   at(51,c=>darts(c,'frost',12,{gap:.2}));
-   at(55,c=>{swoop(c,'wing',8,true,{fire:fan3(CYAN,360,2.8,.5),tint:'#cfe6ff'});});
-   at(58,c=>{swoop(c,'wing',8,false,{fire:fan3(CYAN,360,2.8,.5),tint:'#cfe6ff'});});
-   at(62,c=>{stream(c,'drone',8,c.H*.3,{sine:160,tint:'#cfe6ff',fire:streamP(WHITE,3,460,2.8,.8)});stream(c,'drone',8,c.H*.7,{sine:160,tint:'#cfe6ff',fire:streamP(WHITE,3,460,2.8,.8)});});
-   at(68,c=>{dive(c,'brute',c.W*.7,c.H*.3,{hold:4,fire:ringP(CYAN,16,220,1.1,.5),tint:'#cfe6ff'});dive(c,'brute',c.W*.7,c.H*.7,{hold:4,fire:ringP(BLUE,16,220,1.1,.9),tint:'#cfe6ff'});});
-   at(74,c=>darts(c,'frost',12,{gap:.18}));
-  }))},
+  weather:'snow',scroll:250,bossAt:ENCOUNTER_BOSS_AT[5],tint:'#dcecff',boss:BOSS4,
+  waves:makeEncounterWaves(5)},
  {chapter:'일곱째 마당',name:'저승길',sub:'삼도천 건너 · 저승차사와의 담판',mark:'저승길',terrain:'underworld',bg:'k-underworld.webp',
   sky:['#1d2e3a','#141c2c','#06080f'],far:'#1a2633',mid:'#101823',near:'#05080d',fog:'#2c4a52',accent:'#9ff0ff',light:'#e0fbff',
-  weather:'souls',scroll:230,bossAt:BOSS_AT,tint:'#dff6ff',boss:BOSS8,
-  waves:chapter(timeline(at=>{
-   at(1.5,c=>stream(c,'ember',8,c.H*.3,{sine:90,tint:'#9ff0ff',fire:aim1(CYAN,320,2.8,1)}));
-   at(4.5,c=>stream(c,'ember',8,c.H*.7,{sine:90,tint:'#9ff0ff',fire:aim1(VIOLET,320,2.8,1)}));
-   at(8,c=>{swoop(c,'wing',6,true,{fire:fan3(VIOLET,320,2.8,.7),tint:'#c0d8ff'});swoop(c,'wing',6,false,{fire:fan3(CYAN,320,2.8,.7),tint:'#c0d8ff'});});
-   at(14,c=>darts(c,'drone',10,{gap:.24,tint:'#b8c8ff'}));
-   at(18,c=>{for(let i=0;i<3;i++)dive(c,'frost',c.W*.6,c.H*(.2+i*.3),{fire:{type:'fan',n:7,spread:.13,speed:320,every:1.5,delay:.5,color:CYAN,style:'needle'},hold:2.6,tint:'#cfe8ff'});});
-   at(23,c=>{stream(c,'ember',7,c.H*.15,{sine:50,tint:'#9ff0ff'});stream(c,'ember',7,c.H*.5,{sine:50,tint:'#9ff0ff',fire:aim1(CYAN,320,2.8,1)});stream(c,'ember',7,c.H*.85,{sine:50,tint:'#9ff0ff'});});
-   at(28,c=>darts(c,'wing',9,{gap:.24,tint:'#c0d8ff'}));
-   at(33,c=>dive(c,'brute',c.W*.66,c.H*.5,{hold:12,mid:true,scale:1.45,hp:1800,fire:{type:'spiral',n:4,speed:210,every:.12,delay:1,color:VIOLET},drop:'life',tint:'#c8b8ff'}));
-   at(47,c=>{for(let i=0;i<4;i++)dive(c,'ember',c.W*(.5+i*.1),c.H*(.16+i*.22),{fire:ringP(WHITE,16,190,1.3,.5),hold:2.4,tint:'#9ff0ff'});});
-   at(52,c=>ground(c,'turret',4,{tint:'#a8b8d8',gap:.9,fire:{type:'stream',count:4,speed:400,every:1.6,delay:.6,color:CYAN,style:'needle'}}));
-   at(57,c=>darts(c,'ember',12,{gap:.2,tint:'#9ff0ff'}));
-   at(62,c=>{swoop(c,'wing',8,true,{fire:fan3(CYAN,340,2.8,.5),tint:'#c0d8ff'});swoop(c,'wing',8,false,{fire:fan3(VIOLET,340,2.8,.5),tint:'#c0d8ff'});});
-   at(68,c=>{dive(c,'brute',c.W*.72,c.H*.28,{hold:4,fire:{type:'spiral',n:3,speed:200,every:.15,delay:.5,color:CYAN},tint:'#c8b8ff'});dive(c,'brute',c.W*.72,c.H*.72,{hold:4,fire:{type:'spiral',n:3,speed:200,every:.15,delay:.5,color:VIOLET},tint:'#c8b8ff'});});
-   at(74,c=>stream(c,'ember',10,c.H*.5,{sine:200,gap:.18,tint:'#9ff0ff',fire:aim1(CYAN,340,2.8,.7)}));
-  }))},
+  weather:'souls',scroll:230,bossAt:ENCOUNTER_BOSS_AT[6],tint:'#dff6ff',boss:BOSS8,
+  waves:makeEncounterWaves(6)},
  {chapter:'마지막 마당',name:'천뢰궁',sub:'뇌운 위의 궁궐 · 뇌공 결전',mark:'천둥궁',terrain:'storm',bg:'k-palace.webp',
   sky:['#8c79c9','#3a2d63','#0d0b1d'],far:'#3c3266',mid:'#241d44',near:'#0e0b1e',fog:'#5b4a9a',accent:'#ffd84a',light:'#fff6c4',
-  weather:'rain',scroll:280,bossAt:BOSS_AT,tint:'#e8dcff',boss:BOSS5,
-  waves:chapter(timeline(at=>{
-   at(1.5,c=>{stream(c,'storm',7,c.H*.25,{sine:80,fire:aim1(YELLOW,380,2.8,1)});stream(c,'storm',7,c.H*.75,{sine:80,fire:aim1(VIOLET,380,2.8,1)});});
-   at(6,c=>darts(c,'storm',10,{gap:.25}));
-   at(10,c=>{swoop(c,'wing',7,true,{fire:fan3(YELLOW,360),tint:'#d9c8ff'});swoop(c,'wing',7,false,{fire:fan3(VIOLET,360),tint:'#d9c8ff'});});
-   at(15,c=>{for(let i=0;i<4;i++)dive(c,'storm',c.W*(.5+i*.1),c.H*(.16+i*.22),{fire:ringP(YELLOW,14,220,1.3,.5),hold:2.4});});
-   at(20,c=>ground(c,'turret',4,{tint:'#d9c8ff',fire:{type:'stream',count:4,speed:460,every:1.6,delay:.6,color:YELLOW,style:'needle'},gap:.9}));
-   at(25,c=>darts(c,'wing',10,{gap:.22}));
-   at(30,c=>dive(c,'brute',c.W*.66,c.H*.5,{hold:12,mid:true,scale:1.45,hp:1950,fire:{type:'spiral',n:5,speed:230,every:.12,delay:1,color:VIOLET},drop:'life',tint:'#d9c8ff'}));
-   at(44,c=>{stream(c,'storm',8,c.H*.15,{sine:60});stream(c,'storm',8,c.H*.5,{sine:60});stream(c,'storm',8,c.H*.85,{sine:60});});
-   at(49,c=>{for(let i=0;i<3;i++)dive(c,'turret',c.W*.62,c.H*(.2+i*.3),{fire:{type:'fan',n:7,spread:.16,speed:360,every:1.2,delay:.4,color:VIOLET,style:'rice'},hold:3,tint:'#d9c8ff'});});
-   at(55,c=>darts(c,'storm',14,{gap:.17}));
-   at(60,c=>{swoop(c,'wing',8,true,{fire:fan3(YELLOW,380,2.8,.5),tint:'#d9c8ff'});swoop(c,'wing',8,false,{fire:fan3(YELLOW,380,2.8,.5),tint:'#d9c8ff'});});
-   at(66,c=>{dive(c,'brute',c.W*.72,c.H*.28,{hold:4,fire:{type:'spiral',n:3,speed:220,every:.14,delay:.5,color:YELLOW},tint:'#d9c8ff'});dive(c,'brute',c.W*.72,c.H*.72,{hold:4,fire:{type:'spiral',n:3,speed:220,every:.14,delay:.5,color:VIOLET},tint:'#d9c8ff'});});
-   at(72,c=>{stream(c,'storm',10,c.H*.35,{sine:200,gap:.18,fire:aim1(YELLOW,400,2.8,.7)});stream(c,'storm',10,c.H*.65,{sine:200,gap:.18,fire:aim1(VIOLET,400,2.8,.7)});});
-  }))}
+  weather:'rain',scroll:280,bossAt:ENCOUNTER_BOSS_AT[7],tint:'#e8dcff',boss:BOSS5,
+  waves:makeEncounterWaves(7)}
 ];

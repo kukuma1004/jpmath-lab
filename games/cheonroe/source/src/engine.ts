@@ -2,6 +2,7 @@ import { ENEMIES, GAUGE_MAX, GAUGE_PER_STOCK, GRAZE_R, HEIGHT, PLAYER_R, SCORE_C
   type Bullet, type Difficulty, type Enemy, type EnemyKind, type EnemyPath, type FirePattern, type GameEvent, type GameState, type HeroId,
   type InputIntent, type Laser, type Shot, type ShotKind, type Pickup } from './types';
 import { STAGES, bossSeconds, type BulletOpts, type Ctx } from './stages';
+import { AWAKENING_MAX, getAwakening, supportPositions } from './progression';
 export { HEIGHT, TEMPO };
 
 const TAU=Math.PI*2;
@@ -55,6 +56,7 @@ export class Engine {
   private strikeTick=0;
   private bloomTick=0;
   private pierceHits=new Map<number,Set<number>>();
+  private shotEffects=new Map<number,{splash:number;cancel:number;kind:'bloom'|'strike'|'near'}>();
 
   constructor(seed=42) {
     this.seed(seed);
@@ -79,13 +81,14 @@ export class Engine {
     return {phase:'playing',hero,difficulty,time:0,score:0,combo:0,comboTimer:0,graze:0,stage,stageTime:0,startStage:stage,
       bossActive:false,bossDefeated:false,clearTimer:0,transition:0,attackName:'',attackTime:0,bossName:'',bossTitle:'',bossPhases:0,
       player:{x:260,y:HEIGHT/2,hp,maxHp:hp,invulnerable:2.4,charge:0,power:1,shotTimer:.1,gauge:difficulty==='story'?200:100,ultimateTimer:0,nearTimer:0,
-        dashCharges:DASH_MAX,dashRecharge:0,dashTime:0,dashVX:0,dashVY:0,dashIframes:0,perfectThisDash:false,faceX:0,faceY:-1,moving:0,missileTimer:.5},
+        dashCharges:DASH_MAX,dashRecharge:0,dashTime:0,dashVX:0,dashVY:0,dashIframes:0,perfectThisDash:false,faceX:0,faceY:-1,moving:0,missileTimer:.5,
+        awakening:Math.min(AWAKENING_MAX,stage+1),supportTimer:.4,signatureTimer:1.4},
       enemies:[],shots:[],bullets:[],lasers:[],pickups:[],events:[],slow:0,hitstop:0,worldW:this.worldW,nextExtend:0,
       stats:{kills:0,shots:0,damageTaken:0,ultimates:0,chargeShots:0,nearKills:0,perfects:0,dashes:0,cancels:0,stagesCleared:0}};
   }
   /** Arcade always starts at chapter one; practice may start at any chapter. */
   start(hero:HeroId,difficulty:Difficulty,stage=0):void {
-    this.rs=this.seed0;this.nextId=1;this.dropCount=0;this.wasCharge=false;this.wasUlt=false;this.wasDash=false;this.pierceHits.clear();
+    this.rs=this.seed0;this.nextId=1;this.dropCount=0;this.wasCharge=false;this.wasUlt=false;this.wasDash=false;this.pierceHits.clear();this.shotEffects.clear();this.clears=[];
     const first=difficulty==='normal'?0:clamp(stage|0,0,STAGES.length-1);
     this.state=this.empty(hero,difficulty,first);
     this.beginStage(first);
@@ -141,7 +144,16 @@ export class Engine {
     this.event({kind:'stageclear',x:this.W/2,y:HEIGHT/2,value:bonus,text:`${st.chapter} ${st.name}`,
       sub:`돌파 ${clear.toLocaleString()} · 스친 탄 ${grazeBonus.toLocaleString()} · 무피격 ${noMiss?noMiss.toLocaleString():'—'} · 격파 ${s.stats.kills-this.stageKills}`});
     if(s.stage>=STAGES.length-1){s.phase='victory';this.event({kind:'victory',x:s.player.x,y:s.player.y,value:s.score});}
-    else s.transition=4.2;
+    else {
+      const before=s.player.awakening;
+      s.player.awakening=Math.min(AWAKENING_MAX,Math.max(before,s.stage+2));
+      s.player.supportTimer=.18;s.player.signatureTimer=.8;
+      if(s.player.awakening>before) {
+        const a=getAwakening(s.hero,s.player.awakening,s.player.power);
+        this.event({kind:'awaken',x:s.player.x,y:s.player.y,value:a.rank,text:`${a.rank}단 · ${a.name}`,sub:a.unlock,big:true});
+      }
+      s.transition=4.2;
+    }
   }
 
   // ───────────── spawning ─────────────
@@ -161,11 +173,12 @@ export class Engine {
       fan:(x,y,a,n,spread,v,o={})=>{for(let i=0;i<n;i++)self.bullet(x,y,a+(i-(n-1)/2)*spread,v,o);},
       laser:(x,y,a,o)=>self.laser(x,y,a,o),
       later:(delay,run)=>{self.pending.push({at:self.state.stageTime+delay,run});},
+      announce:(text,sub)=>self.event({kind:'encounter',x:self.W/2,y:HEIGHT/2,text,sub}),
     };
   }
   private spawnEnemy(kind:EnemyKind,x:number,y:number,path:EnemyPath,o:{fire?:FirePattern;hp?:number;tint?:string;drop?:Enemy['drop'];mid?:boolean;scale?:number}={}):Enemy {
     const s=this.state,def=ENEMIES[kind];
-    const hp=(o.hp??def.hp)*(s.difficulty==='story'?.8:1)*(1+this.depth()*.35);
+    const hp=(o.hp??def.hp)*(s.difficulty==='story'?.8:1)*(1+this.depth()*.15);
     const e:Enemy={id:this.nextId++,kind,x,y,vx:0,vy:0,hp,maxHp:hp,age:0,shotTimer:(o.fire?.delay??1)*.6,flash:0,seed:this.random()*TAU,
       tint:o.tint??'#ffffff',boss:false,mid:!!o.mid,scale:o.scale??1,path:{...path,sx:path.sx??x,sy:path.sy??y},fire:o.fire,fireCount:0,drop:o.drop,
       phase:0,attack:0,attackTime:0,tx:x,ty:y,shield:0,spin:0};
@@ -176,7 +189,7 @@ export class Engine {
     const h=raw?1:this.hardness(),style=o.style??'orb';
     const b:Bullet={id:this.nextId++,x,y,a,v:v*h,gy:0,r:o.r??(style==='big'?13:style==='needle'?4:6),style,color:o.color??'#ff4767',age:0,grazed:false,
       accel:(o.accel??0)*h,turn:o.turn??0,maxSpeed:(o.maxSpeed??0)*h,gravity:o.gravity??0,wait:o.wait??0,reaim:o.reaim??0,reaimSpeed:(o.reaimSpeed??0)*h,
-      split:o.split??0,splitSpeed:(o.splitSpeed??0)*h};
+      split:o.split??0,splitSpeed:(o.splitSpeed??0)*h,owner:o.owner?.id};
     s.bullets.push(b);return b;
   }
   private laser(x:number,y:number,a:number,o:{length?:number;width?:number;warn?:number;life?:number;color?:string;spin?:number;owner?:Enemy}):Laser {
@@ -236,6 +249,8 @@ export class Engine {
     const s=this.state;
     if(e.hp<=0||!s.enemies.includes(e))return;
     if(e.boss&&e.shield>0){e.flash=.03;return;}
+    // All sources enter here with base damage. Awakening is applied once, including splash, melee and ultimates.
+    dmg*=getAwakening(s.hero,s.player.awakening,s.player.power).damageMultiplier;
     e.hp-=dmg;e.flash=.07;
     this.event({kind:'hit',x:hx,y:hy,value:dmg,enemy:e.kind});
     if(e.boss) {
@@ -273,9 +288,10 @@ export class Engine {
   }
 
   // ───────────── player ─────────────
-  private shot(kind:ShotKind,x:number,y:number,a:number,speed:number,r:number,damage:number,life:number,pierce:boolean):void {
+  private shot(kind:ShotKind,x:number,y:number,a:number,speed:number,r:number,damage:number,life:number,pierce:boolean):Shot|undefined {
+    if(this.state.shots.length>=500)return undefined;
     const s:Shot={id:this.nextId++,kind,x,y,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,r,damage,age:0,life,pierce};
-    this.state.shots.push(s);
+    this.state.shots.push(s);return s;
   }
   private autoShoot():void {
     const s=this.state,p=s.player,pw=p.power,[ox,oy]=muzzleOffset(s.hero),mx=p.x+ox,my=p.y+oy;
@@ -308,20 +324,103 @@ export class Engine {
   }
   private chargeShot():void {
     const s=this.state,p=s.player,f=p.charge/1.2,[ox,oy]=muzzleOffset(s.hero),mx=p.x+ox,my=p.y+oy;
+    const awakened=p.awakening>=4,apex=p.awakening>=8;
     if(s.hero==='rin')for(let i=-4;i<=4;i++)this.shot('charge',mx,my,i*.1,1050,20,16+22*f,1.4,true);
-    else if(s.hero==='golem')this.shot('charge',mx,my,0,2100,34+10*f,110+170*f,1,true);
+    else if(s.hero==='golem'){
+      const sh=this.shot('charge',mx,my,0,2100,34+10*f,110+170*f,1,true);
+      if(sh&&awakened)this.shotEffects.set(sh.id,{splash:130+20*f,cancel:0,kind:'strike'});
+      if(p.awakening>=6)for(const side of [-1,1])this.shot('charge',mx,my+side*48,0,1900,20,45+65*f,1,true);
+    }
     else if(s.hero==='hanui') {
       // Three heavy arrows straight ahead, and a rain of arrows on the space in front.
       for(let i=-1;i<=1;i++)this.shot('charge',mx,my+i*14,0,2300,14,40+60*f,1,true);
-      const n=Math.round(10+8*f);for(let i=0;i<n;i++){const x=p.x+140+i*(520/n)+this.random()*30;this.shot('charge',x-150,-30-this.random()*160,1.22,1700,12,18+26*f,1.1,true);}
+      const n=Math.round(10+8*f)+(awakened?6:0)+(apex?6:0),span=awakened?720:520;
+      for(let i=0;i<n;i++){const x=Math.min(this.W+20,p.x+140+i*(span/n)+this.random()*30);this.shot('charge',x-150,-30-this.random()*160,1.22,1700,12,18+26*f,1.1,true);}
     }else if(s.hero==='arang') {
       // A lash of hair sweeps the space in front: heavy damage, and every bullet it touches turns to gold.
-      const reach=280+140*f;
+      const reach=280+140*f+(awakened?70:0)+(apex?60:0);
       for(const e of [...s.enemies]){const c=hitCircles(e).find(([cx,cy,r])=>cx+r>p.x-20&&Math.hypot(cx-p.x,cy-p.y)<reach+r);if(c)this.damageEnemy(e,(e.boss?.6:1)*(60+90*f),true,c[0],c[1]);}
       this.clears.push({x:p.x+reach*.45,y:p.y,r:reach*.75,gold:true});
+      if(awakened)for(const side of [-1,1]){
+        const sh=this.shot('homing',mx,my,side*.4,650,19,28+30*f,2,false);
+        if(sh)this.shotEffects.set(sh.id,{splash:100,cancel:80,kind:'bloom'});
+      }
     }
-    else for(let i=-1;i<=1;i++)this.shot('charge',mx,my+i*32,i*.05,1150,30,45+70*f,.9,true);
+    else for(let i=-1;i<=1;i++){
+      const sh=this.shot('charge',mx,my+i*32,i*.05,1150,30,45+70*f,.9,true);
+      if(sh&&i===0&&awakened)this.shotEffects.set(sh.id,{splash:180+(apex?70:0),cancel:0,kind:'near'});
+    }
+    if(s.hero==='rin'&&awakened)for(let i=0;i<(apex?6:4);i++){
+      const sh=this.shot('homing',mx,my,(i-(apex?2.5:1.5))*.3,760,16,22+20*f,2,false);
+      if(sh)this.shotEffects.set(sh.id,{splash:0,cancel:0,kind:'bloom'});
+    }
     s.stats.chargeShots++;this.event({kind:'charge',x:mx,y:my,value:f});
+  }
+  private supportAttack():void {
+    const s=this.state,p=s.player,target=this.nearestEnemy(p.x,p.y);
+    if(!target)return;
+    for(const orb of supportPositions(s.hero,p.awakening)) {
+      const x=p.x+orb.x,y=p.y+orb.y,a=Math.atan2(target.y-y,target.x-x);
+      if(s.hero==='rin')this.shot('homing',x,y,a,700,8,3.2+p.power*.5,1.7,false);
+      else if(s.hero==='golem')this.shot('shot',x,y,a,1700,8,5+p.power*.65,1.1,true);
+      else if(s.hero==='ryu')this.shot('wave',x,y,a,1100,12,4.8+p.power*.7,1.05,false);
+      else if(s.hero==='hanui')this.shot('shot',x,y,a,1850,7,4.5+p.power*.6,1.1,true);
+      else this.shot('homing',x,y,a+(orb.y<0?-.25:.25),480,10,4.1+p.power*.6,1.8,false);
+    }
+  }
+  /** Rank-four signature weapons change where and how a hero deals damage, not just its palette. */
+  private signatureAttack():void {
+    const s=this.state,p=s.player,target=this.nearestEnemy(p.x,p.y);
+    if(!target)return;
+    const tier=Math.max(0,p.awakening-4),[ox,oy]=muzzleOffset(s.hero),mx=p.x+ox,my=p.y+oy;
+    if(s.hero==='rin') {
+      const n=3+(p.awakening>=6?1:0)+(p.awakening>=8?1:0);
+      for(let i=0;i<n;i++) {
+        const a=Math.atan2(target.y-my,target.x-mx)+(i-(n-1)/2)*.28;
+        const sh=this.shot('homing',mx,my,a,680,14,16+tier*2,2,false);
+        if(sh)this.shotEffects.set(sh.id,{splash:0,cancel:0,kind:'bloom'});
+      }
+    }else if(s.hero==='golem') {
+      const sh=this.shot('charge',mx,my,0,1900,24+tier*2,70+tier*6,1.15,true);
+      if(sh)this.shotEffects.set(sh.id,{splash:95+tier*10,cancel:0,kind:'strike'});
+    }else if(s.hero==='ryu') {
+      const sh=this.shot('wave',mx,my,0,1000,45+tier*3,72+tier*7,1.15,false);
+      if(sh)this.shotEffects.set(sh.id,{splash:145+tier*15,cancel:0,kind:'near'});
+    }else if(s.hero==='hanui') {
+      // Vertical arrows can punish enemies above or below the hero's normal forward lane.
+      const n=6+tier;
+      for(let i=0;i<n;i++) {
+        const x=clamp(target.x+(i-(n-1)/2)*25,70,this.W-40);
+        const sh=this.shot('charge',x,-35-i%3*22,Math.PI/2,1250,10,12+tier*1.6,1.15,true);
+        if(sh)this.shotEffects.set(sh.id,{splash:0,cancel:0,kind:'strike'});
+      }
+    }else {
+      const n=p.awakening>=7?3:2;
+      for(let i=0;i<n;i++) {
+        const a=Math.atan2(target.y-my,target.x-mx)+(i-(n-1)/2)*.7;
+        const sh=this.shot('homing',mx,my,a,560,19,27+tier*3,2.2,false);
+        if(sh)this.shotEffects.set(sh.id,{splash:105+tier*12,cancel:75+tier*8,kind:'bloom'});
+      }
+    }
+  }
+  private updateAwakening(g:number,charging:boolean):void {
+    const s=this.state,p=s.player,a=getAwakening(s.hero,p.awakening,p.power);
+    if(s.clearTimer>0||s.transition>0)return;
+    p.supportTimer=Math.max(0,p.supportTimer-g);p.signatureTimer=Math.max(0,p.signatureTimer-g);
+    if(charging||!s.enemies.length)return;
+    if(a.supportCount>0&&p.supportTimer<=0){p.supportTimer=a.supportEvery;this.supportAttack();}
+    if(a.rank>=4&&p.signatureTimer<=0){p.signatureTimer=a.signatureEvery;this.signatureAttack();}
+  }
+  private signatureImpact(sh:Shot,target:Enemy):void {
+    const effect=this.shotEffects.get(sh.id);if(!effect)return;
+    // Use the actual contact point and existing event vocabulary for renderer/audio feedback.
+    this.event({kind:effect.kind,x:sh.x,y:sh.y,value:effect.splash||sh.r,big:effect.splash>0});
+    if(effect.cancel>0)this.clears.push({x:sh.x,y:sh.y,r:effect.cancel,gold:false});
+    if(effect.splash>0)for(const e of [...this.state.enemies]) {
+      if(e===target)continue;
+      const hit=hitCircles(e).find(([x,y,r])=>d2(x,y,sh.x,sh.y)<(effect.splash+r)**2);
+      if(hit)this.damageEnemy(e,sh.damage*.5,false,hit[0],hit[1]);
+    }
   }
   private activateUltimate():void {
     const s=this.state,p=s.player;
@@ -392,7 +491,7 @@ export class Engine {
     }
     p.x=clamp(p.x,40,W-90);p.y=clamp(p.y,34,HEIGHT-34);
     p.moving=Math.hypot(p.x-ox,p.y-oy)/Math.max(dt,1e-4);
-    if(input.charge)p.charge=Math.min(1.2,p.charge+g);
+    if(input.charge)p.charge=Math.min(1.2,p.charge+g*getAwakening(s.hero,p.awakening,p.power).chargeRate);
     else if(this.wasCharge){if(p.charge>=.45)this.chargeShot();p.charge=0;}
     this.wasCharge=input.charge;
     if(input.ultimate&&!this.wasUlt)this.activateUltimate();
@@ -404,6 +503,7 @@ export class Engine {
       p.missileTimer-=g;
       if(p.missileTimer<=0){p.missileTimer+=.5;for(const k of [-1,1])this.shot('homing',p.x+10,p.y+k*30,k*1.1,620,11,6+p.power,2.2,false);}
     }
+    this.updateAwakening(g,input.charge);
   }
 
   // ───────────── world ─────────────
@@ -498,6 +598,7 @@ export class Engine {
     const canGraze=p.invulnerable<=0&&p.ultimateTimer<=0;
     const list=s.bullets;s.bullets=[];
     for(const b of list) {
+      if(b.owner!==undefined&&!s.enemies.some(e=>e.id===b.owner&&e.hp>0))continue;
       b.age+=g;
       if(b.wait>0&&b.age>=b.wait) {
         if(b.split>0){for(let i=0;i<b.split;i++)this.bullet(b.x,b.y,i/b.split*TAU+b.age,b.splitSpeed,{r:6,color:b.color},true);continue;}
@@ -524,7 +625,7 @@ export class Engine {
     const canGraze=p.invulnerable<=0&&p.ultimateTimer<=0;
     s.lasers=s.lasers.filter(l=>{
       l.age+=g;
-      if(l.owner!==undefined){const o=s.enemies.find(e=>e.id===l.owner);if(o){l.x=o.x+l.ox;l.y=o.y+l.oy;}else if(l.age<l.warn)return false;}
+      if(l.owner!==undefined){const o=s.enemies.find(e=>e.id===l.owner&&e.hp>0);if(o){l.x=o.x+l.ox;l.y=o.y+l.oy;}else return false;}
       if(l.age>=l.warn)l.angle+=l.spin*g;
       if(l.age>=l.warn+l.life)return false;
       if(l.age>=l.warn) {
@@ -550,10 +651,10 @@ export class Engine {
       if(sh.kind==='homing') {
         const t=this.nearestEnemy(sh.x,sh.y);
         if(t){const want=Math.atan2(t.y-sh.y,t.x-sh.x),cur=Math.atan2(sh.vy,sh.vx);let d=want-cur;d=Math.atan2(Math.sin(d),Math.cos(d));
-          const na=cur+clamp(d,-7*g,7*g),sp=Math.hypot(sh.vx,sh.vy)+500*g;sh.vx=Math.cos(na)*sp;sh.vy=Math.sin(na)*sp;}
+          const na=cur+clamp(d,-7*g,7*g),sp=Math.min(1400,Math.hypot(sh.vx,sh.vy)+500*g);sh.vx=Math.cos(na)*sp;sh.vy=Math.sin(na)*sp;}
       }
       sh.x+=sh.vx*g;sh.y+=sh.vy*g;
-      if(sh.age>sh.life||sh.x>W+120||sh.x<-80||sh.y<-80||sh.y>HEIGHT+80){this.pierceHits.delete(sh.id);continue;}
+      if(sh.age>sh.life||sh.x>W+120||sh.x<-80||sh.y<-80||sh.y>HEIGHT+80){this.pierceHits.delete(sh.id);this.shotEffects.delete(sh.id);continue;}
       let alive=true,hits=this.pierceHits.get(sh.id);
       for(const e of s.enemies) {
         if(e.hp<=0||hits?.has(e.id))continue;
@@ -564,9 +665,10 @@ export class Engine {
         if(!hit)continue;
         if(sh.pierce){if(!hits){hits=new Set();this.pierceHits.set(sh.id,hits);}hits.add(e.id);}
         this.damageEnemy(e,sh.damage,false,sh.x,sh.y);
+        this.signatureImpact(sh,e);
         if(!sh.pierce){alive=false;break;}
       }
-      if(alive)keep.push(sh);else this.pierceHits.delete(sh.id);
+      if(alive)keep.push(sh);else {this.pierceHits.delete(sh.id);this.shotEffects.delete(sh.id);}
     }
     s.shots=keep;
   }

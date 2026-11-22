@@ -91,6 +91,8 @@ export class AudioSystem {
       case 'stage':[0,2,4].forEach((k,i)=>this.tone(SCALES[Math.min(SCALES.length-1,stage)][k]*2,.6,'triangle',.08,1,'sfx',i*.12));break;
       case 'stageclear':case 'victory':[0,2,4,5].forEach((k,i)=>this.tone(SCALES[Math.min(SCALES.length-1,stage)][k]*2,1.2,'triangle',.11,1,'sfx',i*.14));break;
       case 'extend':[0,2,4].forEach((k,i)=>this.tone(SCALES[0][k]*4,.3,'sine',.1,1,'sfx',i*.07));break;
+      case 'awaken':[0,2,4,5].forEach((k,i)=>{this.tone(SCALES[0][k]*3,.7,'triangle',.1,1,'sfx',i*.12);});break;
+      case 'encounter':this.tone(392,.16,'triangle',.08);this.tone(587,.22,'triangle',.07,1,'sfx',.14);break;
     }
   }
 }

@@ -1,9 +1,11 @@
 import './styles.css';
+import './growth.css';
 import { Engine, DASH_MAX, DASH_RECHARGE } from './engine';
 import { GameRenderer } from './renderer';
 import { AudioSystem } from './audio';
 import { bindRanking } from './ranking';
-import { STAGES } from './stages';
+import { STAGES, STAGE_TACTICS } from './stages';
+import { getAwakening } from './progression';
 import { HEROES, HEIGHT, TEMPO, GAUGE_PER_STOCK, GAUGE_MAX, heroDef, type HeroId, type Difficulty, type InputIntent, type GameEvent } from './types';
 
 const icons={sound:'<path d="m11 5-6 4H2v6h3l6 4V5Z"/><path d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/>',muted:'<path d="m11 5-6 4H2v6h3l6 4V5Z"/><path d="m16 9 6 6m0-6-6 6"/>',
@@ -36,8 +38,9 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML=`
   <div class="pilot"><span class="pilot-seal" id="pilot-seal">꽃</span><div><span class="pilot-name" id="pilot-name">린</span><div id="lives" class="lives" aria-label="남은 목숨"></div></div><span class="power" id="power">강화 1</span></div>
   <div class="meter ult-meter"><span class="meter-label">필살 <b id="ult-name">홍련만개</b></span><div class="gauge"><i class="gauge-fill" id="gauge-fill"></i><i class="tick" style="left:33.3%"></i><i class="tick" style="left:66.6%"></i></div><b class="stock" id="gauge-stock">×1</b></div>
   <div class="meter"><span class="meter-label">회피</span><div id="dash-pips" class="dash-pips"></div><span class="meter-label">차지</span><div class="charge"><i id="charge-fill"></i></div></div>
+  <div class="growth-status" id="growth-status"><div><b id="awakening-name">초심 · 1단</b><span id="awakening-damage">공격력 ×1.00</span></div><div id="awakening-pips" class="awakening-pips"></div><span id="awakening-skill"></span></div>
  </div>
- <div class="hud-center"><div class="stage-line"><span id="stage-num">첫째 마당</span><strong id="stage-name">붉은 달의 계곡</strong></div><div class="stage-progress"><i id="stage-fill"></i></div></div>
+ <div class="hud-center"><div class="stage-line"><span id="stage-num">첫째 마당</span><strong id="stage-name">붉은 달의 계곡</strong></div><div class="stage-progress"><i id="stage-fill"></i></div><div class="stage-tactic" id="stage-tactic"><b id="tactic-title"></b><span id="tactic-hint"></span></div></div>
  <div class="hud-right"><div class="score"><span>점수</span><b id="score">0000000</b><small>최고 <b id="hi">0000000</b></small></div>
   <div class="hud-buttons"><button id="pause" class="icon-btn" aria-label="일시 정지">${icon('pause')}</button><button id="fullscreen" class="icon-btn fs-btn" aria-label="전체 화면">${icon('full')}</button></div></div>
  <div id="boss-hud" class="boss-hud hidden"><div class="boss-names"><span id="boss-mark"></span><strong id="boss-title"></strong><span id="boss-phase" class="boss-phase"></span></div><div class="boss-track"><i id="boss-fill"></i></div><div id="attack-name" class="attack-name"></div></div>
@@ -46,7 +49,8 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML=`
 </div>
 <div id="stage-intro" class="stage-intro hidden"><small id="intro-num">첫째 마당</small><h2 id="intro-name">붉은 달의 계곡</h2><span id="intro-sub"></span></div>
 <div id="warning" class="warning hidden"><span>경고</span><strong id="warning-name">수호신 접근</strong><small>탄 사이의 틈을 놓치지 마라</small></div>
-<div id="clear-panel" class="clear-panel hidden"><small>마당 돌파</small><h2 id="clear-name"></h2><p id="clear-bonus"></p><span id="clear-detail"></span></div>
+<div id="clear-panel" class="clear-panel hidden"><small>마당 돌파</small><h2 id="clear-name"></h2><p id="clear-bonus"></p><span id="clear-detail"></span><div id="clear-growth" class="clear-growth hidden"><b id="clear-growth-name"></b><span id="clear-growth-skill"></span><small id="clear-growth-stats"></small></div></div>
+<div id="encounter-cue" class="encounter-cue hidden" role="status"><b id="encounter-title"></b><span id="encounter-hint"></span></div>
 <div id="ultimate-cut" class="ultimate-cut hidden"><img id="ultimate-portrait" alt=""><div><small id="ultimate-en"></small><strong id="ultimate-name"></strong><span>적의 탄막이 모두 금화로</span></div></div>
 <div id="notification" class="notification hidden" aria-live="polite"></div>
 <div id="touch-controls" class="touch-controls hidden">
@@ -56,7 +60,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML=`
 <section id="menu" class="menu" aria-labelledby="title">
  <div class="menu-top"><a class="back-link" href="../">${icon('back')}<span>게임 목록</span></a><div class="menu-tools"><button class="tool-btn" id="open-ranking">${icon('rank')}<span>랭킹</span></button><button class="icon-btn" id="sound" aria-label="소리">${icon('sound')}</button><button class="icon-btn" id="help" aria-label="조작 방법">${icon('help')}</button><button class="icon-btn fs-btn" id="menu-fullscreen" aria-label="전체 화면">${icon('full')}</button></div></div>
  <div class="menu-body">
-  <div class="title-block"><span class="seal">천<br>뢰</span><div><p class="eyebrow">제이피매쓰랩 오리지널 탄막 슈팅</p><h1 id="title">천뢰 <i>철화전선</i></h1><p class="tagline">여덟 마당, 여덟 수호신. 탄막 사이의 길을 읽어라.</p></div></div>
+  <div class="title-block"><span class="seal">천<br>뢰</span><div><p class="eyebrow">제이피매쓰랩 오리지널 탄막 슈팅</p><h1 id="title">천뢰 <i>철화전선</i></h1><p class="tagline">수호신을 넘어 각성하라. 동행 무기와 비전이 깨어난다.</p></div></div>
   <div class="hero-row" role="group" aria-label="전사 선택">${HEROES.map((h,i)=>`
    <button class="hero-card" data-hero="${h.id}" aria-pressed="false" style="--hero:${h.color}">
     <span class="hero-mark">${MARKS[i]}</span><img src="${asset(h.asset)}" alt="${h.epithet} ${h.name}" draggable="false">
@@ -66,6 +70,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML=`
    <div class="hero-copy"><b id="chosen-quote"></b><span id="chosen-ability"></span></div>
    <div class="mode" role="group" aria-label="난이도"><button data-difficulty="normal">아케이드<small>목숨 3 · 첫째 마당부터</small></button><button data-difficulty="story">수련<small>목숨 5 · 마당 선택</small></button></div>
    <div class="chapters" id="chapters" role="group" aria-label="시작할 마당">${STAGES.map((s,i)=>`<button data-stage="${i}" title="${s.chapter} ${s.name}"><span>${s.mark}</span><small>${s.chapter}</small></button>`).join('')}</div>
+   <p id="stage-preview" class="stage-preview"></p>
    <button id="start" class="start" disabled><span id="start-label">전장 준비 중</span>${icon('arrow')}</button>
   </div>
   <p class="menu-foot"><span>최고 기록 <b id="best">0000000</b></span><span class="key-hint"><kbd>방향키</kbd> 이동 <kbd>Shift</kbd> 집중 <kbd>C</kbd> 회피 <kbd>Z</kbd> 차지 <kbd>X</kbd> 필살 <kbd>F</kbd> 전체화면</span></p>
@@ -82,9 +87,10 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML=`
  <div><dt>회피</dt><dd>C(또는 K) · 이동 방향으로 순간 돌진하며 잠깐 무적. 2회 저장, 2.2초마다 회복. 탄을 아슬아슬하게 넘기면 <b>완벽 회피</b> — 시간이 느려지고 회피가 바로 돌아옵니다.</dd></div>
  <div><dt>스침</dt><dd>탄이 몸 가까이 스치면 점수와 필살 게이지가 찹니다.</dd></div>
  <div><dt>근접</dt><dd>적에게 바짝 붙으면 <b>근접 공격</b>이 저절로 나갑니다. 사격보다 훨씬 세고(점수 ×1.5), 휘두르는 자리의 적 탄을 금화로 바꿉니다. 무진이 가장 멀리 닿아요.</dd></div>
- <div><dt>차지</dt><dd>Z를 누르고 있다가 떼면 강한 공격.</dd></div>
+ <div><dt>차지</dt><dd>Z를 누르고 있다가 떼면 강한 공격. 각성할수록 모으는 속도와 위력이 높아집니다.</dd></div>
+ <div><dt>각성</dt><dd>마당 돌파마다 각성 +1. 동행 무기와 비전이 열리고 공격력이 높아집니다. 피격 시에도 각성은 유지됩니다. 새로 출격하면 1단부터, 수련은 선택한 마당에 맞는 각성으로 시작합니다.</dd></div>
  <div><dt>필살기</dt><dd>X / Space · 게이지 100마다 1회. 화면의 탄을 모두 금화로 바꾸고 잠시 무적.</dd></div></dl>
- <p class="manual-note">아케이드: 목숨 3, 첫째 마당부터 끝까지 · 수련: 목숨 5, 느린 탄, 원하는 마당부터<br>P 일시 정지 · F 전체 화면 · 한 마당은 약 5분, 여덟 마당을 모두 돌파하면 클리어</p>
+ <p class="manual-note">아케이드: 목숨 3, 첫째 마당부터 끝까지 · 수련: 목숨 5, 느린 탄, 원하는 마당부터<br>P 일시 정지 · F 전체 화면 · 마당마다 다른 공략 · 돌파마다 각성 상승 · 여덟 수호신 격파 시 클리어</p>
  <button id="help-play" class="primary">알겠어 ${icon('arrow')}</button></dialog>`;
 
 const $=<T extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as T;
@@ -133,6 +139,8 @@ function selectStage(i:number){
   chosenStage=difficulty==='normal'?0:i;
   document.querySelectorAll<HTMLButtonElement>('[data-stage]').forEach(b=>{const on=Number(b.dataset.stage)===chosenStage;b.classList.toggle('active',on);b.setAttribute('aria-pressed',String(on));b.disabled=difficulty==='normal'&&b.dataset.stage!=='0';});
   if(engine.state.phase==='menu'){engine.state.stage=chosenStage;}
+  const tactic=STAGE_TACTICS[chosenStage],growth=getAwakening(selected,difficulty==='story'?chosenStage+1:1);
+  $('stage-preview').textContent=`${tactic.title} · ${tactic.hint} / 출격 각성 ${growth.rank}단`;
 }
 document.querySelectorAll<HTMLButtonElement>('[data-hero]').forEach(c=>c.onclick=()=>selectHero(c.dataset.hero as HeroId));
 document.querySelectorAll<HTMLButtonElement>('[data-difficulty]').forEach(b=>b.onclick=()=>selectDifficulty(b.dataset.difficulty as Difficulty));
@@ -141,8 +149,8 @@ selectHero(selected);selectDifficulty(difficulty);
 $('best').textContent=pad(best);$('hi').textContent=pad(best);
 
 function clearInputs(){keys.clear();dragDX=0;dragDY=0;touchCharge=false;dashPending=false;ultimatePending=false;movePointer=null;document.querySelectorAll('.touch-btn.pressed').forEach(el=>el.classList.remove('pressed'));}
-let introUntil=0,warningUntil=0,cutUntil=0,clearUntil=0,notifyAt=0,nearLabelAt=0;
-function clearOverlays(){for(const id of ['stage-intro','warning','ultimate-cut','notification','clear-panel'])$(id).classList.add('hidden');introUntil=warningUntil=cutUntil=clearUntil=notifyAt=0;$('world-labels').replaceChildren();}
+let introUntil=0,warningUntil=0,cutUntil=0,clearUntil=0,notifyAt=0,nearLabelAt=0,encounterUntil=0;
+function clearOverlays(){for(const id of ['stage-intro','warning','ultimate-cut','notification','clear-panel','clear-growth','encounter-cue'])$(id).classList.add('hidden');introUntil=warningUntil=cutUntil=clearUntil=notifyAt=encounterUntil=0;$('world-labels').replaceChildren();}
 function startGame(){
   if(!ready)return;clearInputs();clearOverlays();void enterFullscreen();syncWorld();
   engine.start(selected,difficulty,chosenStage);view.reset();audio.reset();void audio.unlock();
@@ -209,14 +217,21 @@ function onEvent(e:GameEvent){
     case 'near':{const now=performance.now();if(now-nearLabelAt>1400){nearLabelAt=now;label(e.x+10,e.y-56,['베기!','쾅!','연타!','찌르기!','휘감기!'][HEROES.findIndex(h=>h.id===s.hero)],'item');}break;}
     case 'hurt':notice(s.player.hp>0?'피격! 잠시 무적 · 흰 점만 피하면 돼요':'격추',1300);break;
     case 'extend':notice('목숨 +1',1600);break;
+    case 'encounter':$('encounter-title').textContent=e.text||'';$('encounter-hint').textContent=e.sub||'';$('encounter-cue').classList.remove('hidden');retrigger($('encounter-cue'));encounterUntil=performance.now()+4200;break;
+    case 'awaken':{
+      const growth=getAwakening(s.hero,s.player.awakening,s.player.power);
+      $('clear-growth-name').textContent=`${growth.name} · 각성 ${growth.rank}단`;
+      $('clear-growth-skill').textContent=growth.unlock;
+      $('clear-growth-stats').textContent=`공격력 ×${growth.damageMultiplier.toFixed(2)} · 피격 시에도 유지`;
+      $('clear-growth').classList.remove('hidden');break;}
     case 'stage':{
       const st=STAGES[e.value??0];$('intro-num').textContent=st.chapter;$('intro-name').textContent=st.name;$('intro-sub').textContent=st.sub;
-      $('stage-num').textContent=st.chapter;$('stage-name').textContent=st.name;$('clear-panel').classList.add('hidden');
+      $('stage-num').textContent=st.chapter;$('stage-name').textContent=st.name;$('clear-panel').classList.add('hidden');$('clear-growth').classList.add('hidden');$('encounter-cue').classList.add('hidden');encounterUntil=0;
       $('stage-intro').classList.remove('hidden');retrigger($('stage-intro'));introUntil=performance.now()+3000;break;}
     case 'warning':$('warning-name').textContent=`${e.text} · ${e.sub}`;$('warning').classList.remove('hidden');warningUntil=performance.now()+3400;break;
     case 'attack':case 'phase':{const el=$('attack-name');el.textContent=e.text||'';retrigger(el);if(e.kind==='phase')notice('수호신의 형태가 바뀐다',1100);break;}
-    case 'boss':{const el=$('attack-name');el.textContent=s.attackName;retrigger(el);break;}
-    case 'stageclear':$('clear-name').textContent=e.text||'';$('clear-bonus').textContent=`+${(e.value??0).toLocaleString()}`;$('clear-detail').textContent=e.sub||'';$('clear-panel').classList.remove('hidden');retrigger($('clear-panel'));clearUntil=performance.now()+3800;break;
+    case 'boss':{$('encounter-cue').classList.add('hidden');encounterUntil=0;const el=$('attack-name');el.textContent=s.attackName;retrigger(el);break;}
+    case 'stageclear':$('encounter-cue').classList.add('hidden');encounterUntil=0;$('clear-name').textContent=e.text||'';$('clear-bonus').textContent=`+${(e.value??0).toLocaleString()}`;$('clear-detail').textContent=e.sub||'';$('clear-panel').classList.remove('hidden');retrigger($('clear-panel'));clearUntil=performance.now()+3800;break;
     case 'ultimate':{
       $('stage-intro').classList.add('hidden');introUntil=0;
       const h=heroDef(s.hero);$('ultimate-en').textContent=h.ultimateEn;$('ultimate-name').textContent=h.ultimate;$('ultimate-portrait').setAttribute('src',asset(h.asset));
@@ -231,7 +246,7 @@ function syncPhase(){
   overlay.classList.remove('hidden');const paused=s.phase==='paused',won=s.phase==='victory';
   $('result-eyebrow').textContent=paused?'일시 정지 · 잠시 숨 고르기':won?'모든 마당 돌파 · 천뢰 완':`${STAGES[s.stage].chapter} · ${STAGES[s.stage].name}`;
   $('result-title').textContent=paused?'멈춘 시간.':won?'하늘에 고요가 돌아왔다.':'다시, 탄막 속으로.';
-  $('result-copy').textContent=paused?'움직임을 읽으면, 길이 보인다.':won?'다섯 수호신을 모두 쓰러뜨렸습니다.':'회피(C)로 탄 사이를 뚫고, 위험하면 필살기로 탄막을 지우세요.';
+  $('result-copy').textContent=paused?`각성 ${s.player.awakening}단 · ${getAwakening(s.hero,s.player.awakening).unlock}`:won?'여덟 수호신을 모두 쓰러뜨렸습니다.':'회피(C)로 탄 사이를 뚫고, 위험하면 필살기로 탄막을 지우세요.';
   $('resume').classList.toggle('hidden',!paused);$('retry').classList.toggle('hidden',paused);$('result-stats').classList.toggle('hidden',paused);
   if(!paused){
     ranking.record(s);
@@ -244,7 +259,12 @@ function updateHud(){
   const s=engine.state,p=s.player;
   $('score').textContent=pad(s.score);if(s.score>best)$('hi').textContent=pad(s.score);
   $('lives').innerHTML=Array.from({length:Math.max(p.maxHp,p.hp)},(_,i)=>`<span class="life ${i>=p.hp?'lost':''}">◆</span>`).join('');$('lives').setAttribute('aria-label',`남은 목숨 ${p.hp}개`);
-  $('power').textContent=p.power>=4?'강화 최대':`강화 ${p.power}`;
+  $('power').textContent=`사격 ${p.power}`;
+  const growth=getAwakening(s.hero,p.awakening,p.power);
+  $('awakening-name').textContent=`${growth.name} · ${growth.rank}단`;$('awakening-damage').textContent=`공격력 ×${growth.damageMultiplier.toFixed(2)}`;
+  $('awakening-pips').innerHTML=Array.from({length:8},(_,i)=>`<i class="${i<growth.rank?'filled':''}"></i>`).join('');
+  $('awakening-skill').textContent=growth.rank>=4?`${growth.supportCount}기 동행 · ${growth.chargeName}`:growth.rank>=2?`${growth.supportCount}기 동행 · 다음 각성에 더 강하게`:'수호신 격파 → 동행 무기 개방';
+  $('growth-status').title=growth.nextUnlock;
   $('gauge-fill').style.width=`${p.gauge/GAUGE_MAX*100}%`;const stock=Math.floor(p.gauge/GAUGE_PER_STOCK);$('gauge-stock').textContent=`×${stock}`;$('gauge-stock').classList.toggle('ready',stock>0);
   $('touch-stock').textContent=`×${stock}`;$('touch-ult').classList.toggle('ready',stock>0&&p.ultimateTimer<=0);
   $('dash-pips').innerHTML=Array.from({length:DASH_MAX},(_,i)=>{const fill=i<p.dashCharges?1:i===p.dashCharges?1-p.dashRecharge/DASH_RECHARGE:0;return `<i style="--f:${fill}" class="${i<p.dashCharges?'full':''}"></i>`;}).join('');
@@ -252,6 +272,7 @@ function updateHud(){
   $('charge-fill').style.width=`${p.charge/1.2*100}%`;
   $('graze').textContent=String(s.graze);
   const st=STAGES[s.stage];$('stage-fill').style.width=`${Math.min(100,s.bossDefeated?100:s.stageTime/st.bossAt*100)}%`;
+  const tactic=STAGE_TACTICS[s.stage];$('tactic-title').textContent=tactic.title;$('tactic-hint').textContent=tactic.hint;$('stage-tactic').classList.toggle('hidden',s.bossActive||s.bossDefeated);
   const boss=s.enemies.find(e=>e.boss);$('boss-hud').classList.toggle('hidden',!boss);
   if(boss){$('boss-fill').style.width=`${Math.max(0,boss.hp/boss.maxHp*100)}%`;$('boss-mark').textContent=st.boss.mark;$('boss-title').textContent=`${st.boss.name} · ${st.boss.title}`;
     $('boss-phase').textContent='◆'.repeat(Math.max(0,s.bossPhases-boss.phase-1))+'◇'.repeat(Math.min(s.bossPhases,boss.phase+1));}
@@ -280,6 +301,7 @@ function frame(now:number){
   if(cutUntil&&now>cutUntil){$('ultimate-cut').classList.add('hidden');cutUntil=0;}
   if(clearUntil&&now>clearUntil){$('clear-panel').classList.add('hidden');clearUntil=0;}
   if(notifyAt&&now>notifyAt){$('notification').classList.add('hidden');notifyAt=0;}
+  if(encounterUntil&&now>encounterUntil){$('encounter-cue').classList.add('hidden');encounterUntil=0;}
   view.render(engine.state,playing||engine.state.phase==='menu'?dt:0,input.focus,screenshotPaused||engine.state.phase==='paused');
   requestAnimationFrame(frame);
 }
@@ -299,17 +321,19 @@ if(qaMode){
   const advance=(seconds:number,intent:Partial<InputIntent>={},invulnerable=false)=>{
     const empty:InputIntent={x:0,y:0,focus:false,charge:false,ultimate:false,dash:false,...intent};
     for(let t=0;t<seconds;t+=1/120){if(invulnerable)engine.state.player.invulnerable=Math.max(engine.state.player.invulnerable,.5);engine.step(1/120,empty);if(engine.state.events.length>400)engine.state.events.splice(0,300);}
-    for(const e of engine.state.events.splice(0))if(['stage','boss','attack','phase','warning'].includes(e.kind))onEvent(e);updateHud();syncPhase();
+    for(const e of engine.state.events.splice(0))if(['stage','boss','attack','phase','warning','awaken','stageclear','encounter'].includes(e.kind))onEvent(e);updateHud();syncPhase();
   };
   win.__THREE_GAME_TEST_HOOKS__={
     seed:(n:number)=>engine.seed(n),
-    async setState(name:string,opts:{hero?:HeroId;stage?:number}={}){
+    async setState(name:string,opts:{hero?:HeroId;stage?:number;awakening?:number;power?:number;seconds?:number}={}){
       while(!ready)await new Promise(r=>setTimeout(r,40));
       screenshotPaused=false;
       if(name==='menu'){menu();return{state:name};}
       const stage=opts.stage??0;selectHero(opts.hero??(name.startsWith('ultimate-')?name.slice(9) as HeroId:'rin'));
       selectDifficulty(stage>0?'story':'normal');selectStage(stage);startGame();
-      advance(name.startsWith('boss')?STAGES[stage].bossAt/TEMPO+5:16,{},true);
+      if(opts.awakening!==undefined)engine.state.player.awakening=Math.max(1,Math.min(8,opts.awakening));
+      if(opts.power!==undefined)engine.state.player.power=Math.max(1,Math.min(4,opts.power));
+      advance(opts.seconds??(name.startsWith('boss')?STAGES[stage].bossAt/TEMPO+5:16),{},true);
       if(name==='boss-phase2'||name==='boss-phase3'){const boss=engine.state.enemies.find(e=>e.boss)!;boss.hp=boss.maxHp*(name==='boss-phase2'?.6:.3)+1;advance(.1,{},true);boss.hp-=2;engine.state.shots.push({id:9e6,kind:'shot',x:boss.x,y:boss.y,vx:1,vy:0,r:200,damage:1,age:0,life:1,pierce:false});advance(2.5,{},true);}
       if(name.startsWith('ultimate-')){engine.state.player.gauge=300;engine.step(1/120,{x:0,y:0,focus:false,charge:false,ultimate:true,dash:false});for(const e of engine.state.events.splice(0))onEvent(e);}
       if(name==='paused')togglePause();
@@ -318,7 +342,7 @@ if(qaMode){
       $('stage-intro').classList.add('hidden');$('warning').classList.add('hidden');updateHud();
       return{state:name};
     },
-    setPausedForScreenshot:(value:boolean)=>{screenshotPaused=value;},
+    setPausedForScreenshot:(value:boolean)=>{screenshotPaused=value;if(value)view.stabilizeForCapture();},
     setReducedMotion:(value:boolean)=>{view.reducedMotion=value;reducedMotion=value;updateSettings();},
     showHitboxes:(value:boolean)=>{view.showHitboxes=value;},
     /** Render frames synchronously (a hidden tab throttles requestAnimationFrame). */
