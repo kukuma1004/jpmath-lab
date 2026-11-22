@@ -1,13 +1,14 @@
+import { sampleDriver } from './bypass.js?v=14';
 import * as T from './vendor/three.module.min.js';
-import { tracks, courseRecordId } from './track.js?v=12';
-import { createRace, vehicleSpecs } from './race.js?v=11';
-import { buildWorld } from './world.js?v=12';
-import { buildCars, driveCar, selectVehicle } from './cars.js?v=12';
+import { tracks, courseRecordId } from './track.js?v=14';
+import { createRace, vehicleSpecs } from './race.js?v=14';
+import { buildWorld } from './world.js?v=14';
+import { buildCars, driveCar, selectVehicle } from './cars.js?v=14';
 import { drivingKeys, resolveDrivingKey } from './input.js?v=10';
 import { createAudio } from './audio.js?v=4';
-import { createEffects } from './effects.js?v=4';
+import { createEffects } from './effects.js?v=14';
 import { bindGarage } from './garage.js?v=11';
-import { bindRanking, formatTime } from './ranking.js?v=12';
+import { bindRanking, formatTime } from './ranking.js?v=14';
 
 const byId = id => document.getElementById(id);
 const recordKey = 'jp-apex-circuit-lap';
@@ -63,6 +64,14 @@ function drawMap(canvas, track) {
     ctx.lineWidth = 3;
     ctx.lineJoin = 'round';
     ctx.stroke(course);
+    for (const route of track.shortcuts) {
+      ctx.beginPath();
+      for (let i=0;i<=32;i++) {
+        const p=route.sample(route.length*i/32);
+        if(i) ctx.lineTo(x(p.x),y(p.z)); else ctx.moveTo(x(p.x),y(p.z));
+      }
+      ctx.strokeStyle='#ffcd68'; ctx.lineWidth=1.8; ctx.setLineDash([3,2]); ctx.stroke(); ctx.setLineDash([]);
+    }
     for (const gap of track.gaps) {
       const a = track.sample(gap.start);
       const b = track.sample(gap.end);
@@ -84,7 +93,7 @@ function drawMap(canvas, track) {
     }
     for (let i = cars.length - 1; i >= 0; i--) {
       const car = cars[i];
-      const p = track.sample(car.distance);
+      const p = sampleDriver(track, car, car.distance);
       ctx.beginPath();
       ctx.arc(x(p.x - p.dz * car.lane), y(p.z + p.dx * car.lane), i ? 3.2 : 5, 0, Math.PI * 2);
       ctx.fillStyle = i ? ['#fff', '#ff9e88', '#61d2ee', '#c6a7fa', '#bcca85'][i] : '#ffe34c';
@@ -101,13 +110,14 @@ function createCamera() {
   const target = new T.Vector3();
   const desired = new T.Vector3();
   const aim = new T.Vector3();
+  const subject = new T.Vector3(), screenSubject = new T.Vector3(), cameraDelta = new T.Vector3();
   const p = {}, preview = {}, trailing = {};
   let ready = false;
   function update(track, race, vehicle, state, animateTime, dt, reduced, snap = false) {
     const portrait = camera.aspect < .95;
     const isMenu = state === 'menu';
     const player = race.cars[0];
-    track.sample(player.distance, p);
+    sampleDriver(track, player, player.distance, p);
     let fov;
     if (isMenu) {
       const drift = reduced ? 0 : Math.sin(animateTime * .35) * .62;
@@ -133,17 +143,17 @@ function createCamera() {
           dropView = Math.max(dropView, entry * exit);
         }
       }
-      const follow = portrait ? 12.8 : 13.2;
-      const shoulder = portrait ? .8 : 1.1;
-      const height = portrait ? 6.6 : 4.8;
+      const follow = portrait ? 9.6 : 7.7;
+      const shoulder = portrait ? .15 : .32;
+      const height = portrait ? 4.25 : 2.95;
       const laneFollow = player.lane * (portrait ? 1 : .8);
       const carY = p.y + p.bank * laneFollow + player.air;
-      track.sample(player.distance - follow, trailing);
-      track.sample(player.distance + T.MathUtils.lerp(9, 19, dropView), preview);
-      desired.set(trailing.x - trailing.dz * (laneFollow - shoulder), Math.max(carY + height, trailing.y + 3.6),
+      sampleDriver(track, player, player.distance - follow*(player.shortcut?.ratio || 1), trailing);
+      sampleDriver(track, player, player.distance + T.MathUtils.lerp(9, 19, dropView)*(player.shortcut?.ratio || 1), preview);
+      desired.set(trailing.x - trailing.dz * (laneFollow - shoulder), Math.max(carY + height, trailing.y + 2.65),
         trailing.z + trailing.dx * (laneFollow - shoulder));
       const upcoming = T.MathUtils.clamp(preview.y + .95, carY - 5.6, carY + 9);
-      const aimY = T.MathUtils.lerp(upcoming, carY - height * .68, dropView);
+      const aimY = T.MathUtils.lerp(upcoming + (portrait ? .32 : .55), carY - height * .68, dropView);
       // A narrow portrait frustum needs a closer subject anchor in hairpins.
       // Keep the same camera distance/FOV; reduce only the horizontal lookahead.
       const lookahead = portrait ? .45 : 1;
@@ -152,9 +162,27 @@ function createCamera() {
       fov = portrait ? 54 : 49;
     }
     const blend = snap || !ready ? 1 : 1 - Math.exp(-(isMenu ? 3.6 : 14.2) * dt);
-    camera.position.lerp(desired, blend);
+    if (!isMenu && ready && !snap) {
+      cameraDelta.copy(desired).sub(camera.position).multiplyScalar(blend)
+        .clampLength(0, Math.max(.12, player.speed * dt * 2 + .08));
+      camera.position.add(cameraDelta);
+    } else camera.position.lerp(desired, blend);
     target.lerp(aim, blend);
     camera.lookAt(target);
+    if (!isMenu) {
+      // Keep the close chase view safe through tight bends and branch merges.
+      // Correct the aim, never the field of view or the player's steering.
+      subject.set(p.x - p.dz * player.lane, p.y + p.bank * player.lane + player.air + .55,
+        p.z + p.dx * player.lane);
+      for (let guard = 0; guard < 4; guard++) {
+        camera.updateMatrixWorld();
+        screenSubject.copy(subject).project(camera);
+        if (Math.abs(screenSubject.x) < (portrait ? .62 : .78) &&
+            screenSubject.y > -.60 && screenSubject.y < .72) break;
+        target.lerp(subject, .5);
+        camera.lookAt(target);
+      }
+    }
     if (!isMenu && !reduced) {
       camera.rotateZ(-player.slip * .025);
     }
@@ -218,20 +246,26 @@ function setup() {
   const mirrorCamera = new T.PerspectiveCamera();
   const roadPlane = new T.Plane();
   const mirrorAim = new T.Vector3();
+  let lastMirror = -Infinity;
   function reflectGarage(scene, camera) {
     const mirror = scene.userData.wetMirror;
     if (!mirror) return;
-    mirror.wetStrength.value = 0;
-    if (state !== 'menu') return;
+    const now = performance.now();
+    const mirrorInterval = camera.aspect < .85 ? 160 : 125;
+    if (state !== 'menu' && mirror.wetView.value && now - lastMirror < mirrorInterval) return;
+    lastMirror = now;
     const distance = race.cars[0].distance;
-    const center = track.point(distance);
-    const direction = track.point(distance + .25).sub(center);
-    const lateral = track.point(distance, 1).sub(center);
+    const p = sampleDriver(track,race.cars[0],distance);
+    const center = new T.Vector3(p.x,p.y,p.z);
+    const direction = new T.Vector3(p.dx,p.slope,p.dz);
+    const lateral = new T.Vector3(-p.dz,p.bank,p.dx);
     const normal = lateral.cross(direction).normalize();
     if (normal.y < 0) normal.negate();
     roadPlane.setFromNormalAndCoplanarPoint(normal, center);
     camera.updateMatrixWorld();
     mirrorCamera.copy(camera, false);
+    mirrorCamera.far = Math.min(camera.far, 190);
+    mirrorCamera.updateProjectionMatrix();
     mirrorCamera.position.addScaledVector(normal, -2 * roadPlane.distanceToPoint(camera.position));
     camera.getWorldDirection(mirrorAim).reflect(normal).add(mirrorCamera.position);
     mirrorCamera.up.copy(camera.up).reflect(normal);
@@ -239,16 +273,32 @@ function setup() {
     mirrorCamera.updateMatrixWorld();
     mirror.wetProjection.value.multiplyMatrices(mirrorCamera.projectionMatrix, mirrorCamera.matrixWorldInverse);
     const pavement = scene.userData.wetPavement;
-    pavement.visible = false;
+    // Distant rivals and contact-shadow decals are imperceptible in rough wet
+    // pavement. Keep the hero and nearby traffic, but avoid drawing full fleets
+    // a second time. Save each visibility flag rather than reviving hidden cars.
+    const hidden = [];
+    const hide = object => {
+      if (object?.visible) { hidden.push(object); object.visible = false; }
+    };
+    hide(pavement);
+    hide(scene.userData.marinaWater);
+    for (let i=0;i<vehicles.length;i++) {
+      hide(vehicles[i].shadow);
+      if (i && vehicles[i].model.position.distanceToSquared(vehicles[0].model.position)>32*32) hide(vehicles[i].model);
+    }
     const oldPlanes = renderer.clippingPlanes;
-    renderer.clippingPlanes = [roadPlane];
-    renderer.setRenderTarget(wetTarget);
-    renderer.render(scene, mirrorCamera);
-    renderer.setRenderTarget(null);
-    renderer.clippingPlanes = oldPlanes;
-    pavement.visible = true;
+    const oldTarget = renderer.getRenderTarget();
+    try {
+      renderer.clippingPlanes = [roadPlane];
+      renderer.setRenderTarget(wetTarget);
+      renderer.render(scene, mirrorCamera);
+    } finally {
+      renderer.setRenderTarget(oldTarget);
+      renderer.clippingPlanes = oldPlanes;
+      for (const object of hidden) object.visible = true;
+    }
     mirror.wetView.value = wetTarget.texture;
-    mirror.wetStrength.value = 1;
+    mirror.wetStrength.value = state === 'menu' ? 1 : .72;
   }
   const reflectionFilter = new T.PMREMGenerator(renderer);
   function captureCourseLighting(scene, course) {
@@ -507,6 +557,7 @@ function setup() {
     audio.signal(event);
     effects.event(event, race.cars[0], motion.matches, track);
     switch (event) {
+      case 'shortcut': note(race.cars[0].shortcut?.name || '지름길 진입', 1.2); break;
       case 'drift': note('드리프트 충전 + 터보!', .9); break;
       case 'overtake': note('추월!', .65); break;
       case 'launch': {
@@ -728,6 +779,7 @@ function setup() {
     window.__apexQA = {
       get track() { return track; },
       get race() { return race; },
+      ready() { return activeWorld.scene.userData.assetsReady || Promise.resolve(); },
       freeze(value = true) { manual = value; },
       step(frames = 1, snapCamera = false) {
         for (let i = 0; i < frames; i++) tick(fixed);

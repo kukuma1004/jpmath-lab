@@ -1,5 +1,5 @@
 import { loadOnline, publishOnline, deleteOnline } from './online-ranking.js?v=1';
-import { courseRecordId } from './track.js?v=12';
+import { courseRecordId } from './track.js?v=14';
 
 const prefix = 'jp-apex-circuit-times:';
 const limit = 20;

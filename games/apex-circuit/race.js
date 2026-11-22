@@ -1,3 +1,4 @@
+import { sampleDriver } from './bypass.js?v=14';
 const LAPS = 3;
 // Arcade handling profiles, authored for this game rather than real-car specifications.
 const roadTuning = { cosmetic: true };
@@ -93,6 +94,8 @@ function createCar(id, name) {
 function resetCar(car, distance, lane) {
   car.distance = distance;
   car.lane = lane;
+  car.shortcut = null;
+  car.shortcutBase = 0;
   car.speed = 0;
   car.lateralSpeed = 0;
   car.slip = 0;
@@ -207,17 +210,18 @@ export function createRace(track, vehicle = vehicleSpecs[0]) {
       race.boost = Math.min(1, race.boost + dt * (brake ? CHARGE_RATE * 1.52 : CHARGE_RATE));
     }
 
-    track.sample(player.distance, course);
+    sampleDriver(track, player, player.distance, course);
+    const limit = player.shortcut ? player.shortcut.halfWidth - CAR_WIDTH*.47 : laneLimit;
     const curve = course.curve;
     const drift = clamp(curve * player.speed ** 2 * (brake ? .065 : .185) / vehicle.grip, -11, 11);
-    const edge = Math.abs(player.lane) >= laneLimit - 0.2;
+    const edge = Math.abs(player.lane) >= limit - 0.2;
     const pressingRail = edge && Math.sign(player.lane) * (steer * (brake ? 11.5 : 13.8) + drift) > .15;
     const cornerSpeed = vehicle.cruiseSpeed * (1 - Math.min(.22, Math.abs(curve) * 3.1 / vehicle.grip));
     let targetSpeed = boosting ? vehicle.topSpeed : cornerSpeed;
     race.drifting = brake && !pressingRail && Math.abs(steer) > .2 && player.speed > 23 && !player.airborne;
     if (race.drifting) race.boost = Math.min(1, race.boost + dt * (vehicle.driftRecharge || .28));
     if (brake) targetSpeed = race.drifting ? vehicle.cruiseSpeed * .98 : 19;
-    race.drafting = !brake && cars.slice(1).some(car => {
+    race.drafting = !player.shortcut && !brake && cars.slice(1).some(car => {
       const gap = lapDifference(car.distance - player.distance, track.length);
       return gap > 4.4 && gap < 19 && Math.abs(car.lane - player.lane) < 1.5;
     });
@@ -237,8 +241,8 @@ export function createRace(track, vehicle = vehicleSpecs[0]) {
     player.lane += player.lateralSpeed * dt;
     player.slip = Math.atan2(player.lateralSpeed, Math.max(18, player.speed)) * (race.drifting ? 1.75 : .7);
 
-    if (Math.abs(player.lane) > laneLimit) {
-      player.lane = Math.sign(player.lane) * laneLimit;
+    if (Math.abs(player.lane) > limit) {
+      player.lane = Math.sign(player.lane) * limit;
       player.lateralSpeed = 0;
       driftCharge = 0;
       race.drifting = false;
@@ -248,7 +252,7 @@ export function createRace(track, vehicle = vehicleSpecs[0]) {
       }
       wallContact = true;
     } else {
-      if (Math.abs(player.lane) < laneLimit - 0.5) wallContact = false;
+      if (Math.abs(player.lane) < limit - 0.5) wallContact = false;
       if (earnedDrift > 0) {
         race.boost = Math.min(1, race.boost + earnedDrift * .22);
         player.speed = Math.min(vehicle.topSpeed, player.speed + (vehicle.driftKick || 8));
@@ -260,7 +264,30 @@ export function createRace(track, vehicle = vehicleSpecs[0]) {
 
     const previous = player.distance;
     advanceDistance(player, curve, dt);
-    const grounded = updateAir(player, previous);
+    const route = player.shortcut;
+    if (route) {
+      player.distance = previous + (player.distance - previous) * route.ratio;
+      if (player.distance >= player.shortcutBase + route.end) {
+        const finish = player.shortcutBase + route.end;
+        player.distance = finish + (player.distance - finish) / route.ratio;
+        player.lane = clamp(player.lane + route.entryLane, -laneLimit, laneLimit);
+        player.shortcut = null;
+      }
+    } else {
+      for (const branch of track.shortcuts || []) {
+        const base = Math.floor((player.distance - branch.start)/track.length)*track.length;
+        const gate = base + branch.start;
+        if (!player.airborne && previous < gate && player.distance >= gate && Math.abs(player.lane - branch.entryLane) < 1.05) {
+          player.shortcut = branch;
+          player.shortcutBase = base;
+          player.lane -= branch.entryLane;
+          player.distance = gate + (player.distance - gate)*branch.ratio;
+          events.push('shortcut');
+          break;
+        }
+      }
+    }
+    const grounded = !player.shortcut && updateAir(player, previous);
     if (grounded) chargeAtPads();
     updateLap(previous, dt);
   }
@@ -285,7 +312,7 @@ export function createRace(track, vehicle = vehicleSpecs[0]) {
     let nearestAhead = 30;
     car.drafting = false;
     for (const other of cars) {
-      if (other === car || other.finished) continue;
+      if (other === car || other.finished || other.shortcut) continue;
       const gap = lapDifference(other.distance - car.distance, track.length);
       if (gap > 0 && gap < nearestAhead && Math.abs(other.lane - car.lane) < CAR_WIDTH + .8) nearestAhead = gap;
       if (gap > 4.4 && gap < 22 && Math.abs(other.lane - car.lane) < 1.55) car.drafting = true;
@@ -298,7 +325,7 @@ export function createRace(track, vehicle = vehicleSpecs[0]) {
         const lane = clamp(raw, -laneLimit + .35, laneLimit - .35);
         let cost = Math.abs(lane - idealLine) * .55 + Math.abs(lane - car.lane) * .12;
         for (const other of cars) {
-          if (other === car || other.finished) continue;
+          if (other === car || other.finished || other.shortcut) continue;
           const gap = lapDifference(other.distance - car.distance, track.length);
           if (gap < -5 || gap > 25) continue;
           const clearance = Math.abs(other.lane - lane);
@@ -447,17 +474,27 @@ export function createRace(track, vehicle = vehicleSpecs[0]) {
   }
 
   function settleContact() {
+    const playerFrame = player.shortcut ? sampleDriver(track, player, player.distance, {}) : null;
+    const contactLimit = player.shortcut ? player.shortcut.halfWidth - CAR_WIDTH * .47 : laneLimit;
     for (let i = 1; i < cars.length; i++) {
       const rival = cars[i];
-      const forward = lapDifference(rival.distance - player.distance, track.length);
-      const lateral = rival.lane - player.lane;
+      let forward = lapDifference(rival.distance - player.distance, track.length);
+      let lateral = rival.lane - player.lane;
+      if (playerFrame) {
+        const other = track.sample(rival.distance, {});
+        const dx = other.x-other.dz*rival.lane-playerFrame.x+playerFrame.dz*player.lane;
+        const dz = other.z+other.dx*rival.lane-playerFrame.z-playerFrame.dx*player.lane;
+        if (Math.abs(other.y+other.bank*rival.lane+rival.air-playerFrame.y-playerFrame.bank*player.lane-player.air)>.85) continue;
+        forward = dx*playerFrame.dx + dz*playerFrame.dz;
+        lateral = -dx*playerFrame.dz + dz*playerFrame.dx;
+      }
       if (Math.abs(forward) >= CAR_LENGTH || Math.abs(lateral) >= CAR_WIDTH ||
           Math.abs(rival.air - player.air) > 0.85) continue;
 
       // Separate sideways without moving either racer backward across a lap line.
       const split = (CAR_WIDTH - Math.abs(lateral)) * 0.6 + 0.02;
       const side = lateral < 0 ? -1 : 1;
-      player.lane = clamp(player.lane - side * split, -laneLimit, laneLimit);
+      player.lane = clamp(player.lane - side * split, -contactLimit, contactLimit);
       rival.lane = clamp(rival.lane + side * split, -laneLimit, laneLimit);
       if (bumpCooldown <= 0) {
         if (forward > 0) player.speed = Math.min(player.speed * Math.max(.87, vehicle.impactRetention || 0), rival.speed + 2);

@@ -31,9 +31,11 @@ test('the revised foundry retains a straight 18m drop and safe high-speed catch'
 test('course revisions give new records their own keys and retain the original scoreboards',()=>{
   for(const id of ['windway','foundry']){
     const t=tracks.find(t=>t.id===id);
-    assert.equal(courseRecordId(id),id+'-slalom');
+    assert.equal(courseRecordId(id),id==='windway'?'windway-offshore':'foundry-slalom');
     assert.equal(courseRecordId(id+'-slalom'),id+'-slalom');
-    assert.deepEqual(t.previousRecords.map(r=>r.id),[id]);
+    assert.deepEqual(t.previousRecords.map(r=>r.id),id==='windway'?['windway-slalom',id]:[id]);
   }
-  for(const id of ['sunset','summit','metro','frost','redrock'])assert.equal(courseRecordId(id),id,'unmodified course keeps its record key');
+  for(const id of ['sunset','summit','frost','redrock'])assert.equal(courseRecordId(id),id,'unmodified course keeps its record key');
+  assert.equal(courseRecordId('metro'),'metro-marina');
+  assert.ok(tracks.find(t=>t.id==='metro').previousRecords.some(r=>r.id==='metro'),'original city records remain available');
 });

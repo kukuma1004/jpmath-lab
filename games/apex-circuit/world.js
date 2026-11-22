@@ -1,9 +1,10 @@
 import { frontier } from './world-frontiers.js?v=9';
+import { buildJunctions } from './junctions.js?v=14';
 import * as T from './vendor/three.module.min.js';
-import { grain, alpine, metropolis, coastalBridge, roadFurniture } from './world-landmarks.js?v=9';
+import { grain, alpine, metropolis, coastalBridge, roadFurniture } from './world-landmarks.js?v=14';
 import { harborVillage, quarryArch, streetShops } from './world-districts.js?v=9';
 import { expansion } from './world-expansion.js?v=11';
-import { courseFrame, coursePoint, track } from './track.js?v=12';
+import { courseFrame, coursePoint, track } from './track.js?v=14';
 
 const box = new T.BoxGeometry();
 const dummy = new T.Object3D();
@@ -87,7 +88,7 @@ function terrainTransform(x, y, z, sx, sy, sz, yaw = 0) {
   return { position: new T.Vector3(x, y, z), rotation: new T.Euler(0, yaw, 0), scale: [sx, sy, sz] };
 }
 
-function strip(track, parent, material, left, right, low, high, step = 1.7) {
+function strip(track, parent, material, left, right, low, high, step = 1.7, omit = null) {
   const point = track.point || coursePoint;
   const sections = Math.ceil(track.length / step);
   const gaps = track.gaps || [];
@@ -100,7 +101,7 @@ function strip(track, parent, material, left, right, low, high, step = 1.7) {
     const d = distances[i];
     positions.push(...point(d, left, low).toArray(), ...point(d, right, high).toArray());
     uv.push(0, d / 7, Math.abs(right-left)/7, d / 7);
-    if (i === distances.length - 1 || gaps.some(g => d >= g.start && d < g.end)) continue;
+    if (i === distances.length - 1 || omit?.(d) || gaps.some(g => d >= g.start && d < g.end)) continue;
     const j = i * 2;
     indices.push(j, j + 1, j + 2, j + 1, j + 3, j + 2);
   }
@@ -135,11 +136,11 @@ function road(scene, track, theme) {
         #include <map_fragment>
         float lane = vMapUv.x * 7.;
         float distanceM = vMapUv.y * 7.;
-        float grit = texture2D(map,vMapUv*2.4).r;
+        float grit = texture2D(map,vMapUv*4.8).r;
         float puddleNoise = texture2D(map, vMapUv*.41+vec2(.17,.53)).g;
         float film = smoothstep(.025,.25,puddleNoise*.72 + .065*sin(lane*.8+distanceM*.18));
-        float aggregate = texture2D(map,vMapUv*1.53).g;
-        diffuseColor.rgb = vec3(.012,.018,.024) + diffuseColor.rgb * (.46+.54*grit) + vec3(.15,.16,.17)*aggregate;
+        float aggregate = texture2D(map,vMapUv*3.8).g;
+        diffuseColor.rgb = vec3(.008,.013,.020) + diffuseColor.rgb * (.46+.27*grit) + vec3(.023,.026,.030)*aggregate;
         float lampZ = mod(distanceM-5.+9.,18.)-9.;
         float lateral = abs(lane-${width.toFixed(2)});
         float lampX = lateral-(${width.toFixed(2)}-1.65);
@@ -150,7 +151,7 @@ function road(scene, track, theme) {
         diffuseColor.rgb += lens * shine * flutter * (.55+film*.56);
       `).replace('#include <roughnessmap_fragment>', `
         #include <roughnessmap_fragment>
-        roughnessFactor = mix(.57,.29,film);
+        roughnessFactor = mix(.61,.33,film);
       `).replace('#include <opaque_fragment>', `
         if(wetStrength>0. && wetCoord.w>0.){
           vec2 wetUv=wetCoord.xy/wetCoord.w*.5+.5;
@@ -201,11 +202,12 @@ function road(scene, track, theme) {
     const edge = (side * (width-.04));
     strip(track, scene, shoulder, edge - .26, edge + .26, 0.08, 0.08);
     const guard = side * (width+.49);
+    const opening = d => track.shortcuts?.some(r => side === Math.sign(r.entryLane) && (Math.abs(d-r.start-8)<16 || Math.abs(d-r.end+10)<21));
     // Folded galvanized W-beam, with a bright upper lip and dark recessed waist.
     for (const [a,b,ya,yb] of [[.03,.14,.76,.70],[.14,.04,.70,.56],[.04,.13,.56,.47],[.13,.03,.47,.36]]) {
-      strip(track, scene, steel, guard - side*a, guard - side*b, ya, yb);
+      strip(track, scene, steel, guard - side*a, guard - side*b, ya, yb, 1.1, opening);
     }
-    strip(track, scene, steel, guard - .10, guard + .10, 0.41, 0.41);
+    strip(track, scene, steel, guard - .10, guard + .10, 0.41, 0.41, 1.1, opening);
     strip(track, scene, curbWhite, side * (width-.64) - .066, side * (width-.64) + .066, 0.018, 0.018);
   }
   const curbs = [[], []], posts = [], seams = [], piers = [], crossbeams = [];
@@ -214,12 +216,16 @@ function road(scene, track, theme) {
     const distance = i * track.length / segments;
     if (absent(distance, .8)) continue;
     for (const side of [-1, 1]) {
+      if (track.shortcuts?.some(r => side === Math.sign(r.entryLane) && (Math.abs(distance-r.start-8)<16 || Math.abs(distance-r.end+10)<21))) continue;
       const p = track.sample(distance);
       if (Math.abs(p.curve) > .017 || distance < 65)
         curbs[Math.floor(i / 2) % 2].push(at(distance, side * (width-.23), .07, .44, .12, 1.48));
       if (i % 3 === 0) posts.push(at(distance, side * (width+.5), .37, .24, .78, .24));
     }
-    if (i % 4 === 0) seams.push(at(distance, 0, .016, .09, .018, 2.05));
+    if (i % 4 === 0) {
+      const lanes = theme === 'metro' ? [-width/3,width/3] : [0];
+      for (const lane of lanes) seams.push(at(distance, lane, .026, .115, .018, 2.2));
+    }
     if (i % 8 !== 0) continue;
     const p = track.sample(distance);
     if (theme === 'summit' || p.y < 2 && p.z > 22) continue;
@@ -676,6 +682,7 @@ function sky(scene, night, mountain, theme) {
         float longitude=fract(yaw+.31);
         float latitude=(asin(clamp(ray.y,-1.,1.))+.08)/uPeak;
         vec3 photograph=texture2D(uPanorama,vec2(longitude,clamp(latitude,.002,.998))).rgb;
+        photograph=mix(photograph,mix(vec3(dot(photograph,vec3(.2126,.7152,.0722))),photograph,.76)*vec3(.91,.96,1.),uNight*.65);
         photograph=pow(photograph,vec3(2.2));
         float edgeFade=smoothstep(0.,.045,min(longitude,1.-longitude));
         col=mix(col,photograph,uPanoramaReady*edgeFade*(1.-smoothstep(.78,.99,latitude)));
@@ -700,6 +707,7 @@ export function buildWorld(scene, course = track) {
   const horizon = theme === 'windway' ? 'sunset' : theme === 'foundry' ? 'redrock' : theme;
   sky(scene, night, mountain, horizon);
   const waves = extra || night || mountain || theme === 'foundry' ? {value: 0} : water(scene);
+  scene.userData.worldTime = waves;
   scene.add(new T.HemisphereLight(night ? 0x97c2ff : extra ? 0xd4e8ff : 0xffe8ca, night ? 0x71628b : 0x639aaf, 1.05));
   const sun = new T.DirectionalLight(night ? 0xb3dcff : theme === 'frost' ? 0xf9f2df : theme === 'redrock' ? 0xffdfb8 : mountain ? 0xffe3bf : 0xffcb8d, night ? 1.7 : 3.4);
   sun.target.position.set(-21, 0, -18);
@@ -713,7 +721,7 @@ export function buildWorld(scene, course = track) {
   sun.shadow.autoUpdate = false;
   sun.shadow.needsUpdate = true;
   scene.add(sun, sun.target);
-  const rim = new T.DirectionalLight(0xb5dfff, 1.00);
+  const rim = new T.DirectionalLight(night ? 0xffd3a1 : 0xb5dfff, night ? 1.65 : 1.00);
   rim.position.set(-85, 48, 90);
   scene.add(rim);
   if (expanded) expansion(scene, course, {block,surface,placard,grain}, waves);
@@ -724,7 +732,9 @@ export function buildWorld(scene, course = track) {
   if (theme==='sunset') harborVillage(scene,course);
   if (night) streetShops(scene,course,placard);
   if (theme==='redrock') quarryArch(scene);
-  scene.userData.assetsReady = Promise.all([scene.userData.horizonReady, scene.userData.facadeReady || Promise.resolve(false)])
+  buildJunctions(scene, course, {strip,block,surface,placard,grain,batch});
+  scene.userData.assetsReady = Promise.all([scene.userData.horizonReady,
+    scene.userData.facadeReady || Promise.resolve(false), scene.userData.junctionReady || Promise.resolve(false)])
     .then(loaded => loaded.some(Boolean));
   roadFurniture(scene, course, theme);
   const lights = gantry(scene, course, theme === 'windway' ? 'TURBINE CAUSEWAY' : theme === 'foundry' ? 'IRONWORKS DROP' : theme === 'frost' ? 'FROST PASS' : theme === 'redrock' ? 'RED ROCK CANYON' : mountain ? 'SKYLINE DROP' : night ? 'MIDNIGHT RING' : 'SUNSET PIER');

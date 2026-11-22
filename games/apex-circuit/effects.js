@@ -1,3 +1,4 @@
+import { sampleDriver } from './bypass.js?v=14';
 import * as T from './vendor/three.module.min.js';
 
 const sparkEvents = new Set(['wall', 'bump', 'land', 'drift', 'boost']);
@@ -40,7 +41,7 @@ export function createEffects(scene) {
   const p = {};
   function event(name, car, reduced, track) {
     if (reduced || !sparkEvents.has(name)) return;
-    track.sample(car.distance, p);
+    sampleDriver(track, car, car.distance, p);
     const x = p.x - p.dz * car.lane;
     const z = p.z + p.dx * car.lane;
     const amount = name === 'land' ? 24 : 16;
@@ -64,7 +65,7 @@ export function createEffects(scene) {
       timer = 0;
       for (const driver of race.cars) {
         if (driver.air >= .25 || driver.speed < 18) continue;
-        track.sample(driver.distance - 1.5, p);
+        sampleDriver(track, driver, driver.distance - 1.5, p);
         const sliding = driver === car
           ? race.drifting || Math.abs(driver.slip) > .23
           : Math.abs(p.curve) * driver.speed * driver.speed > 29;

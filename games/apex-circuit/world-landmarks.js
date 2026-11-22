@@ -76,7 +76,11 @@ function beam(a,b,w,d=w) {
   return new T.Matrix4().compose(a.clone().lerp(b,.5),new T.Quaternion().setFromUnitVectors(UP,direction.clone().normalize()),new T.Vector3(w,direction.length(),d));
 }
 export function pathSamples(course, step = 2) {
-  return Array.from({length:Math.ceil(course.length/step)},(_,i)=>course.sample(i*step));
+  const samples = Array.from({length:Math.ceil(course.length/step)},(_,i)=>course.sample(i*step));
+  for (const route of course.shortcuts || []) {
+    for (let d=0;d<=route.length;d+=step) samples.push(route.sample(d));
+  }
+  return samples;
 }
 export function nearest(x,z,path) {
   let best=Infinity, height=0;
@@ -375,7 +379,7 @@ export function metropolis(scene,course) {
   for(let i=-10;i<=10;i++) for(let j=-10;j<=10;j++){
     const x=i*19+(rng()-.5)*7,z=j*19+(rng()-.5)*7,w=9+rng()*7,d=9+rng()*7;
     const road=nearest(x,z,path);
-    if(road.distance<course.halfWidth+Math.hypot(w,d)/2+3) continue;
+    if((z>60 && x>-40 && x<235) || road.distance<course.halfWidth+Math.hypot(w,d)/2+3) continue;
     const height=10+Math.pow(rng(),1.7)*66+(road.distance>85?12:0);
     const h=height*(.33+.67*T.MathUtils.smoothstep(road.distance,21,80)), m=rng()>.5?1:0, y=-3;
     bodies[m].push(matrix(x,y+h/2,z,w,h,d));
@@ -388,6 +392,24 @@ export function metropolis(scene,course) {
       antennae.push(matrix(x+w*.12,y+h+crown+2,z,.12,4,.12));
       trim[m].push(matrix(x,y+h-.36,z,w+.06,.22,d+.07));
       if(h>35) trim[m].push(matrix(x-w*.5-.03,y+h*.55,z-d*.46,.14,h*.85,.17));
+    }
+  }
+  // The far bank is real parallax geometry rather than a stretched panorama.
+  // Keep the foreground marina open, with a staggered residential skyline behind it.
+  const bypassPath=(course.shortcuts||[]).flatMap(route=>Array.from({length:Math.ceil(route.length/5)+1},(_,i)=>route.point(Math.min(route.length,i*5))));
+  for(let i=0;i<22;i++){
+    const x=-65+i*16.7,z=151+(i%3)*23,w=10+(i%4)*1.6,d=12+(i%3)*2;
+    const clearance=course.halfWidth+Math.hypot(w,d)/2+6;
+    if(nearest(x,z,path).distance<clearance || bypassPath.some(p=>Math.hypot(x-p.x,z-p.z)<clearance))continue;
+    const h=33+((i*17)%43),y=-3,m=i%2;
+    bodies[m].push(matrix(x,y+h/2,z,w,h,d));
+    bodies[m].push(matrix(x,y+h+2.2,z,w*.72,4.4,d*.73));
+    caps.push(matrix(x,y+h+.12,z,w+.5,.32,d+.5));
+    caps.push(matrix(x,y+h+4.5,z,w*.75,.3,d*.76));
+    trim[m].push(matrix(x,y+h+.34,z,w+.58,.12,d+.58));
+    for(const side of [-1,1]){
+      antennae.push(matrix(x+side*w*.39,y+h*.5,z-d*.505,.18,h,.19));
+      for(let floor=4;floor<h;floor+=3.6)caps.push(matrix(x,y+floor,z,w+.22,.11,d+.22));
     }
   }
   let finish;
@@ -482,6 +504,7 @@ export function roadFurniture(scene,course,theme){
   for(let d=5;d<course.length;d+= night ? 18 : 29){
     if(course.gaps?.some(g=>d>g.start-1 && d<g.end+1))continue;
     for(const side of [-1,1]){
+      if(course.shortcuts?.some(r=>side===Math.sign(r.entryLane) && (Math.abs(d-r.start-8)<16 || Math.abs(d-r.end+10)<21)))continue;
       const p=course.point(d,side*(w+.84),0),h=night?6.9:1.05;
       const top=p.clone().addScaledVector(UP,h);
       poles.push(beam(p,top,night?.16:.13));

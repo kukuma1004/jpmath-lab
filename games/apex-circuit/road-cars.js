@@ -45,15 +45,18 @@ export function buildRoadCar(id) {
     return m;
   }
   const paint = material(p.color, truck ? .67 : .54, truck ? .28 : .155, 0, truck ? 0 : .94);
-  const glass = material(0x34424c,.26,.09,0,.9), black = material(0x121820,.24,.49);
+  const glass = material(0x0d1926,.24,.11,0,1), black = material(0x121820,.24,.49);
   const tire = material(0x181b20,.03,.86), alloy = material(truck?0x87929b:0x89939e,.78,.24);
   const led = material(0xe6faff,.15,.24,0xc5edff), red = material(0xcf1826,.18,.25,0xab0810);
+  red.emissiveIntensity = 2.35;
   const rotor=material(0x58595a,.68,.39);
   const caliper=material(gt||hatch||model3?0xb82e22:0x414953,.34,.36);
   const cabin = material(0x232830,.06,.72);
-  glass.transparent = true;
-  glass.opacity = truck ? .84 : .78;
-  glass.depthWrite = false;
+  // Dark automotive glazing is an opaque reflective shell. Transparent merged
+  // front/back panes cannot sort per triangle and exposed the rear seats above it.
+  glass.transparent = false;
+  glass.opacity = 1;
+  glass.depthWrite = true;
   glass.forceSinglePass = true;
   const trim = hatch ? material(0xf04727,.32,.32) : black;
   // Brushed sheet varies mainly across the rolling direction. Object-space
@@ -86,7 +89,9 @@ export function buildRoadCar(id) {
       diffuseColor.rgb *= 1. + shoulder * (.14 - .51 * seam);
     `);
   }
-  glass.envMapIntensity = .85;
+  glass.envMapIntensity = 1.55;
+  glass.clearcoatRoughness = .075;
+  if (!truck) paint.envMapIntensity = 1.8;
   surfaceFinish(glass, `
     float skyBand = smoothstep(.9, 1.8, vPanel.y);
     diffuseColor.rgb *= mix(vec3(.49,.61,.75), vec3(.94,1.12,1.32), skyBand);
@@ -617,6 +622,42 @@ export function buildRoadCar(id) {
         const z=-half*(.74+i*.035);
         rod(black,[side*w*.877,p.h+.30-i*.048,z],[side*w*.897,p.h+.23-i*.048,z-.055],.015,4);
       }
+    }
+  }
+  // Small rear details read at chase distance and follow the actual curved shell.
+  // Geometry stays in the existing finish batches, without extra car draw calls.
+  if(!truck) {
+    pair(rear,red,[[.69,.165,.194],[.83,.19,.225]],.033);
+    rear.stripe(alloy,-.13,.13,.471,.543,.030);
+    for(let i=-3;i<=3;i++) {
+      rear.stripe(black,i*.027-.006,i*.027+.005,.489,.525,.034);
+    }
+    // Fine trunk reveal beneath the shoulder and the inset license-plate well.
+    rear.band(black,[[-.39,.793,.799],[0,.797,.803],[.39,.793,.799]],.014);
+    for(const side of [-1,1]) {
+      rear.stripe(black,side*.38-.009,side*.38+.009,.40,.421,.017);
+      rear.stripe(alloy,side*.38-.003,side*.38+.003,.404,.414,.020);
+    }
+    // Separate lower diffuser vanes and a narrow painted return on the lip.
+    for(const x of [-.52,-.26,0,.26,.52]) {
+      box(black,x,.245,-half+.092,.022,.115,.24);
+    }
+    if(model3) {
+      pair(rear,red,[[.47,.672,.689],[.73,.675,.696],[.95,.746,.765]],.029);
+      const tailRow=crest[2];
+      for(let i=1;i<tailRow.length;i++) {
+        const a=tailRow[i-1].slice(), b=tailRow[i].slice();
+        a[1]+=.018;b[1]+=.018;
+        rod(paint,a,b,.014,6);
+      }
+    }
+    // Rear heated-glass traces follow the canopy, rather than floating boxes.
+    for(let k=3;k<Math.min(steps+5,canopy.length-1);k+=2) {
+      const row=canopy[k];
+      const left=blend(row[1],row[2],.35), right=blend(row[4],row[3],.35);
+      left[1]+=.006;right[1]+=.006;
+      const center=blend(row[2],row[3],.5);center[1]+=.020;
+      rod(rotor,left,center,.0018,3);rod(rotor,center,right,.0018,3);
     }
   }
   // One draw call per finish, shared across wheels, lamps and body details.

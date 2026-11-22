@@ -1,6 +1,7 @@
+import { sampleDriver } from './bypass.js?v=14';
 import * as T from './vendor/three.module.min.js';
-import { track } from './track.js?v=12';
-import { buildRoadCar } from './road-cars.js?v=8';
+import { track } from './track.js?v=14';
+import { buildRoadCar } from './road-cars.js?v=14';
 
 const box = new T.BoxGeometry();
 const tire = new T.CylinderGeometry(.37, .37, .22, 28);
@@ -342,7 +343,7 @@ export function selectVehicle(visuals, vehicle, roadRoster) {
 const sample = {};
 const touchdown = {};
 export function driveCar(visual, car, boosting, elapsed, course = track) {
-  const p = course.sample(car.distance, sample);
+  const p = sampleDriver(course, car, car.distance, sample);
   const x = p.x - p.dz * car.lane;
   const z = p.z + p.dx * car.lane;
   const y = p.y + p.bank * car.lane;
