@@ -109,6 +109,8 @@ h1, h2, h3, p { margin: 0; }
 .smelter strong { font-size: 15px; color: #496047; font-variant-numeric: tabular-nums; }
 .smelter small { display: block; margin-top: 3px; color: #8b7b61; font-size: 10px; }
 .smelter-light { width: 6px; height: 6px; border-radius: 50%; background: #739660; box-shadow: 0 0 0 4px #738b5a1b; margin-left: auto; }
+.smelter[data-full="true"] strong { color: #96702f; }
+.smelter[data-full="true"] .smelter-light { background: #b78b43; box-shadow: 0 0 0 4px #b78b431b; }
 
 .journey { margin-top: 23px; padding: 19px 0 0; border-top: 1px solid #65675c42; }
 .journey-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 13px; }

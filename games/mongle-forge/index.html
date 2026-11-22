@@ -7,10 +7,10 @@
   <meta name="description" content="한 번 더, 어디까지 갈까. 강화 제한 없이 검을 벼리고 실패와 파괴를 넘어 최고 기록에 도전하는 몽글 대장간.">
   <title>몽글 대장간 · 끝없는 강화</title>
   <link rel="stylesheet" href="forge-effects.css?v=infinite-1">
-  <link rel="stylesheet" href="forge.css?v=forge-risk-1">
-  <script src="forge-engine.js?v=forge-risk-1" defer></script>
-  <script src="forge-ranking.js?v=forge-risk-1" defer></script>
-  <script src="forge.js?v=forge-risk-1" defer></script>
+  <link rel="stylesheet" href="forge.css?v=forge-storage-1">
+  <script src="forge-engine.js?v=forge-storage-1" defer></script>
+  <script src="forge-ranking.js?v=forge-storage-1" defer></script>
+  <script src="forge.js?v=forge-storage-1" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#strengthen">강화 버튼으로 바로가기</a>
@@ -80,12 +80,12 @@
           <button class="special-strengthen" id="special-strengthen" type="button" aria-describedby="special-copy special-waiting"><span>✧ <strong id="special-label">특수 강화</strong></span><span><b id="special-chance"></b><small id="special-cost"></small></span></button>
           <p id="special-copy">실패하면 별철만 소모 · 단계와 효과는 유지돼요.</p>
           <p id="special-waiting"></p>
-          <details class="special-rules"><summary>7색 효과·중복·리롤 규칙</summary><p>효과는 7종이며 같은 효과를 여러 개 붙일 수 있어요. 각 효과의 가치 배율은 중복해서 곱해져요. 3개를 모으면 리롤이 열리고 세 각인 중 하나가 각각 1/3 확률로 선택돼요. 선택한 각인의 이전 효과를 제외한 6종에서 새로 뽑으며, 다른 두 각인과 중복될 수도 있어요. 감정가가 내려갈 수도 있고 강화 단계와 나머지 두 효과는 유지해요.</p><ul id="special-pool"></ul><p>효과는 가중치로 추첨해요. 리롤 원가는 세 번째 효과 추가 비용의 2배예요. 일반 강화의 +0 초기화에는 효과가 유지되고, 검이 파괴되면 모두 사라져요. 할인 시간에는 모든 지출이 50%이며 소수점은 올림해요.</p></details>
+          <details class="special-rules"><summary>7색 효과·중복·리롤 규칙</summary><p>효과는 7종이며 같은 효과를 여러 개 붙일 수 있어요. 각 효과의 가치 배율은 중복해서 곱해져요. 3개를 모으면 리롤이 열리고 세 각인 중 하나가 각각 1/3 확률로 선택돼요. 선택한 각인의 이전 효과를 제외한 6종에서 새로 뽑으며, 다른 두 각인과 중복될 수도 있어요. 감정가가 내려갈 수도 있고 강화 단계와 나머지 두 효과는 유지해요.</p><ul id="special-pool"></ul><p>효과는 가중치로 추첨해요. 리롤 원가는 세 번째 효과 추가 비용의 1.5배예요. 일반 강화의 +0 초기화에는 효과가 유지되고, 검이 파괴되면 모두 사라져요. 할인 시간에는 모든 지출이 50%이며 소수점은 올림해요.</p></details>
         </div>
         <div class="outcome" id="outcome" role="status" aria-live="polite"><strong id="outcome-title">새 시즌 · 별철 10,000개로 시작!</strong><p id="outcome-copy">나만의 검을 벼리고 이름을 붙여 무기 랭킹에 등록해 보세요.</p></div>
-        <div class="smelter">
+        <div class="smelter" id="smelter">
           <img src="assets/mill.webp" alt="" width="35" height="35">
-          <div><span>자동 제련</span><strong id="income">+4 /초</strong><small id="income-breakdown">기본 생산 2배 · 쉬는 동안 최대 8시간</small></div>
+          <div><span>자동 제련</span><strong id="income">+4 /초</strong><small id="income-breakdown">기본 생산 2배 · 쉬는 동안 최대 8시간</small><small id="income-capacity">가득 차면 자동 수급이 멈춰요.</small></div>
           <span class="smelter-light" aria-hidden="true"></span>
         </div>
       </section>

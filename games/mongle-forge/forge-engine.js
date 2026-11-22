@@ -7,8 +7,9 @@ const Forge = (() => {
   // Isolate the season from older tabs that still write the previous save format.
   const olderSaveKey = legacySaveKey + ':' + seasonId;
   const marketSaveKey = olderSaveKey + ':market-1';
-  const previousSaveKey = olderSaveKey + ':rainbow-1';
-  const saveKey = olderSaveKey + ':risk-1';
+  const rainbowSaveKey = olderSaveKey + ':rainbow-1';
+  const previousSaveKey = olderSaveKey + ':risk-1';
+  const saveKey = olderSaveKey + ':storage-1';
   const startingShards = 10000n;
   const cooldown = 680;
   const offlineLimit = 8 * 60 * 60 * 1000;
@@ -284,6 +285,15 @@ const Forge = (() => {
     return parts.base + parts.record + parts.current;
   }
 
+  function passiveCapacity(state) {
+    const target = state.bestLevel + 1n;
+    const attempt = cost(target);
+    const protection = 1000n + target ** 2n * 100n + attempt * 8n;
+    const capacity = (protection + attempt) * 3n;
+    // Three full-price protected attempts, rounded up; a broken sword keeps its capacity.
+    return capacity < startingShards ? startingShards : (capacity + 999n) / 1000n * 1000n;
+  }
+
   function discountInfo(now = Date.now()) {
     const shifted = now + 9 * 60 * 60 * 1000;
     const day = Math.floor(shifted / 86400000) * 86400000 - 9 * 60 * 60 * 1000;
@@ -316,6 +326,11 @@ const Forge = (() => {
       state.paidAt = now;
       return 0n;
     }
+    const room = passiveCapacity(state) - state.shards;
+    if (room <= 0n) {
+      state.paidAt = now;
+      return 0n;
+    }
     const elapsed = Math.min(offlineLimit, now - state.paidAt);
     const seconds = Math.floor(elapsed / 1000);
     const start = now - state.paidAt > offlineLimit ? now - offlineLimit : state.paidAt;
@@ -323,9 +338,11 @@ const Forge = (() => {
     const bonus = state.rankBonus;
     const eligible = bonus ? Math.max(0, Math.min(end, bonus.until) - Math.max(start, bonus.since)) : 0;
     const earned = BigInt(seconds) * baseIncome(state) + BigInt(Math.floor(eligible / 1000)) * (bonus ? rankReward(bonus.rank) : 0n);
-    state.shards += earned;
-    state.paidAt = now - state.paidAt > offlineLimit ? now : state.paidAt + seconds * 1000;
-    return earned;
+    const credited = earned > room ? room : earned;
+    state.shards += credited;
+    // Time spent full is discarded, including fractions, so spending cannot claim it later.
+    state.paidAt = credited === room || now - state.paidAt > offlineLimit ? now : state.paidAt + seconds * 1000;
+    return credited;
   }
 
   function preview(state, now = Date.now()) {
@@ -487,7 +504,7 @@ const Forge = (() => {
     return event;
   }
 
-  return { saveKey, previousSaveKey, marketSaveKey, olderSaveKey, legacySaveKey, backupKey, seasonId, startingShards, cooldown, recoveryBonus, offlineLimit, enchantmentLimit, forms, enchantments, appraisal, restore, loadSeason, serialize, rankingName, rankingRecord, weaponSnapshot, sameWeaponRecord, applyAdminGrant, rememberWeapon, formAt, cost, incomeBreakdown, discountInfo, baseIncome, income, rankReward, setRankBonus, preview, protectionOffer, buyProtection, saleOffer, sell, enchantPreview, collectPassive, act, enchant, reroll };
+  return { saveKey, previousSaveKey, rainbowSaveKey, marketSaveKey, olderSaveKey, legacySaveKey, backupKey, seasonId, startingShards, cooldown, recoveryBonus, offlineLimit, enchantmentLimit, forms, enchantments, appraisal, restore, loadSeason, serialize, rankingName, rankingRecord, weaponSnapshot, sameWeaponRecord, applyAdminGrant, rememberWeapon, formAt, cost, incomeBreakdown, discountInfo, passiveCapacity, baseIncome, income, rankReward, setRankBonus, preview, protectionOffer, buyProtection, saleOffer, sell, enchantPreview, collectPassive, act, enchant, reroll };
 })();
 
 if (typeof module !== 'undefined') module.exports = Forge;

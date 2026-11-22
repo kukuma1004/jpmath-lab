@@ -4,6 +4,46 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const Forge = require('../games/mongle-forge/forge-engine.js');
 
+test('passive storage covers three protected attempts at the highest level and never shrinks on a broken weapon', () => {
+  const now=Date.UTC(2026,10,23,0);let previous=0n;
+  for(const [level,expected] of [[0n,10000n],[32n,2261000n],[100n,85538000n],[1000n,81542867000n],[9007199254740993123n,null]]) {
+    const s=Forge.restore({level:level.toString(),shards:'0'},now),cap=Forge.passiveCapacity(s);
+    if(expected!==null)assert.equal(cap,expected);
+    assert(cap>=previous);previous=cap;
+    assert(cap>=3n*(Forge.preview(s,now).originalCost+Forge.protectionOffer(s,now).originalCost));
+    s.level=0n;s.broken=true;assert.equal(Forge.passiveCapacity(s),cap);
+    Forge.setRankBonus(s,1,now);assert.equal(Forge.passiveCapacity(s),cap);
+  }
+});
+
+test('passive storage pays only remaining room and never banks full time for later spending', () => {
+  const now=Date.UTC(2026,10,23,0);
+  const s=Forge.restore({shards:'9999',paidAt:now},now);
+  Forge.setRankBonus(s,1,now);
+  assert.equal(Forge.collectPassive(s,now+1500),1n);assert.equal(s.shards,10000n);assert.equal(s.paidAt,now+1500);
+  assert.equal(Forge.collectPassive(s,now+86400000),0n);assert.equal(s.shards,10000n);
+  const event=Forge.act(s,now+86400000,()=>0);assert(event);assert.equal(s.shards,10000n-event.spent);
+  assert.equal(Forge.collectPassive(s,now+86400000+999),0n);
+  assert.equal(Forge.collectPassive(s,now+86400000+1000),4n);
+  const offline=Forge.restore({level:32,shards:'0',paidAt:now},now);
+  assert.equal(Forge.collectPassive(offline,now+86400000),2261000n);
+  assert.equal(Forge.collectPassive(offline,now+172800000),0n);
+  const saved=Forge.restore(JSON.parse(Forge.serialize(offline)),now+172800000);
+  assert.equal(saved.shards,2261000n);assert.equal(Forge.collectPassive(saved,now+172800000),0n);
+});
+
+test('legacy excess and full-price sale rewards are preserved while passive income stays stopped', () => {
+  const now=Date.UTC(2026,10,23,0);
+  const legacy=Forge.restore({level:32,shards:'9000000000',paidAt:now},now);
+  assert.equal(Forge.collectPassive(legacy,now+86400000),0n);assert.equal(legacy.shards,9000000000n);
+  assert.equal(Forge.restore(JSON.parse(Forge.serialize(legacy)),now+86400000).shards,9000000000n);
+  const sold=Forge.restore({level:100,enchantments:['lunar','lunar','lunar'],shards:'0',paidAt:now},now);
+  sold.shards=Forge.passiveCapacity(sold);
+  const before=sold.shards,offer=Forge.saleOffer(sold);
+  assert(Forge.sell(sold,now,offer.token));assert.equal(sold.shards,before+offer.value/10n);
+  assert.equal(Forge.collectPassive(sold,now+86400000),0n);assert.equal(sold.shards,before+offer.shards);
+});
+
 test('protected failures at current +100 and above drop exactly one, consume once and preserve effects and best', () => {
   const now=Date.UTC(2026,10,22,0);
   for(const level of [99n,100n,101n,9007199254740993123n]) {
@@ -165,11 +205,12 @@ test('rapid retries and insufficient resources do not consume anything', () => {
 
 test('income is granted once, capped at eight hours and available with a broken sword', () => {
   const state = funded(32);
+  state.shards = 0n;
   state.broken = true;
   state.level = 0n;
   const rate = Forge.income(state);
   const now = 100000 + 24 * 60 * 60 * 1000;
-  assert.equal(Forge.collectPassive(state, now), rate * 28800n);
+  assert.equal(Forge.collectPassive(state, now), Forge.passiveCapacity(state));
   assert.equal(Forge.collectPassive(state, now), 0n);
   assert.equal(Forge.income(state), rate);
 });
@@ -383,10 +424,10 @@ test('old broken saves discard every stored effect without drawing a replacement
 
 test('record income increments double and the current level adds production', () => {
   for (const [bestLevel, expected] of [['0', 4n], ['12', 128n], ['20', 464n], ['32', 1600n], ['80', 20264n]]) {
-    const state = Forge.restore({ version: 2, level: bestLevel, shards: '123456789', paidAt: 100000, enchantment: 'astral' }, 100000);
+    const state = Forge.restore({ version: 2, level: bestLevel, shards: '0', paidAt: 100000, enchantment: 'astral' }, 100000);
     assert.equal(Forge.income(state), expected);
     assert.equal(Forge.collectPassive(state, 105000), expected * 5n);
-    assert.equal(state.shards, 123456789n + expected * 5n);
+    assert.equal(state.shards, expected * 5n);
     assert.equal(Forge.collectPassive(state, 105000), 0n);
   }
   const legacy = Forge.restore({ level: '32', miner: 4, polish: 3, echo: 2 }, 100000);
@@ -489,7 +530,7 @@ test('top ten rank bonuses are tiered, bounded by verification and never paid re
   Forge.setRankBonus(s,10,170000);assert.equal(Forge.income(s,170000),59n);
   Forge.collectPassive(s,171000);Forge.setRankBonus(s,0,171000);assert.equal(Forge.income(s,171000),4n);
   const offline=Forge.restore({shards:'0',paidAt:100000},100000);Forge.setRankBonus(offline,1,100000);
-  assert.equal(Forge.collectPassive(offline,100000+24*60*60*1000),4n*28800n);
+  assert.equal(Forge.collectPassive(offline,100000+24*60*60*1000),Forge.passiveCapacity(offline));
 });
 
 test('reroll selects one slot and can match another owned effect', () => {

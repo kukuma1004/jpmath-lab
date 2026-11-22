@@ -45,7 +45,7 @@
   function loadStored() {
     if (!storageOkay) return { next: state, reset: false };
     try {
-      const previous = localStorage.getItem(Forge.previousSaveKey) ?? localStorage.getItem(Forge.marketSaveKey) ?? localStorage.getItem(Forge.olderSaveKey);
+      const previous = localStorage.getItem(Forge.previousSaveKey) ?? localStorage.getItem(Forge.rainbowSaveKey) ?? localStorage.getItem(Forge.marketSaveKey) ?? localStorage.getItem(Forge.olderSaveKey);
       const original = localStorage.getItem(Forge.saveKey) ?? previous;
       const raw = original ? JSON.parse(original) : null;
       return { next: Forge.loadSeason(raw), reset: previous !== null || (!!raw && raw.season !== Forge.seasonId) || localStorage.getItem(Forge.legacySaveKey) !== null };
@@ -61,6 +61,7 @@
       if (reset) {
         localStorage.removeItem(Forge.legacySaveKey);
         localStorage.removeItem(Forge.previousSaveKey);
+        localStorage.removeItem(Forge.rainbowSaveKey);
         localStorage.removeItem(Forge.marketSaveKey);
         localStorage.removeItem(Forge.olderSaveKey);
         localStorage.removeItem(Forge.backupKey);
@@ -163,6 +164,8 @@
   function renderControls() {
     const offer = Forge.preview(state);
     const rate = Forge.income(state);
+    const capacity = Forge.passiveCapacity(state);
+    const full = state.shards >= capacity;
     const affordable = state.shards >= offer.cost;
     const cooling = Date.now() - state.lastAt < Forge.cooldown;
     const special = Forge.enchantPreview(state);
@@ -195,7 +198,11 @@
       special.reroll ? '강화 단계와 나머지 두 효과는 유지돼요.' : '';
     $('wallet').textContent = fmt(state.shards);
     $('wallet').title = state.shards.toString();
-    $('income').textContent = '+' + fmt(rate) + ' /초';
+    $('income').textContent = full ? '가득 참 · 제련 멈춤' : '+' + fmt(rate) + ' /초';
+    $('income').title = '제련 중 생산량 +' + fmt(rate) + ' /초';
+    $('smelter').dataset.full = String(full);
+    $('income-capacity').textContent = '자동 수급 한도 ' + fmt(capacity) + ' 별철 · ' + (full ? '사용하면 다시 차요' : '가득 차면 멈춰요');
+    $('income-capacity').title = '최고 기록 기준 보호권과 강화 3회분 · 기존 보유분과 판매 대금은 차감하지 않아요.';
     $('attempt-cost').textContent = fmt(offer.cost) + ' 별철' + (offer.discount ? ' · 50%' : '');
     $('attempt-cost').title = '원가 ' + fmt(offer.originalCost) + ' 별철';
     $('attempt-title').textContent = state.broken ? '다시, 나무검부터' : level(offer.target) + '에 도전';
