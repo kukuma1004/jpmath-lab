@@ -45,7 +45,7 @@
   function loadStored() {
     if (!storageOkay) return { next: state, reset: false };
     try {
-      const previous = localStorage.getItem(Forge.previousSaveKey) ?? localStorage.getItem(Forge.olderSaveKey);
+      const previous = localStorage.getItem(Forge.previousSaveKey) ?? localStorage.getItem(Forge.marketSaveKey) ?? localStorage.getItem(Forge.olderSaveKey);
       const original = localStorage.getItem(Forge.saveKey) ?? previous;
       const raw = original ? JSON.parse(original) : null;
       return { next: Forge.loadSeason(raw), reset: previous !== null || (!!raw && raw.season !== Forge.seasonId) || localStorage.getItem(Forge.legacySaveKey) !== null };
@@ -61,6 +61,7 @@
       if (reset) {
         localStorage.removeItem(Forge.legacySaveKey);
         localStorage.removeItem(Forge.previousSaveKey);
+        localStorage.removeItem(Forge.marketSaveKey);
         localStorage.removeItem(Forge.olderSaveKey);
         localStorage.removeItem(Forge.backupKey);
       }
@@ -175,7 +176,7 @@
     $('protection-label').textContent = protection.owned ? level(protection.target) + ' 보호권 적용 중' : state.broken ? '강화 보호권' : level(protection.target) + ' 강화 보호권';
     $('protection-price').textContent = protection.owned ? '보유 1장 · 자동 사용' : protection.eligible ? fmt(protection.cost) + ' 별철' + (protection.discount ? ' · 50%' : '') : state.broken ? '새 검 제작 후 구매' : '확정 성공 단계';
     $('protection-price').title = '원가 ' + fmt(protection.originalCost) + ' 별철';
-    $('protection-note').textContent = '실패할 때만 1장 사용 · 단계·효과 유지 · 파괴 방지 · 성공하면 보관';
+    $('protection-note').textContent = state.level >= 100n ? '현재 +100 이상: 실패 시 1강 하락 · 효과 유지·파괴 방지 · 실패할 때만 1장 사용' : '실패 시 단계·효과 유지 · 현재 +100부터는 1강 하락 · 파괴 방지 · 성공하면 보관';
     const tickets = Object.keys(state.protections).sort((a, b) => BigInt(a) < BigInt(b) ? -1 : 1);
     $('protection-stock').hidden = tickets.length === 0;
     $('protection-stock').textContent = '보관 중: ' + tickets.slice(0, 6).map(target => '+' + fmt(BigInt(target)) + ' 도전권').join(' · ') + (tickets.length > 6 ? ' 외 ' + (tickets.length - 6) + '종' : '');
@@ -205,11 +206,11 @@
     button.disabled = busy || cooling || !affordable;
     button.dataset.reforge = String(state.broken);
     $('chance-success').textContent = percent(offer.success);
-    $('chance-reset-label').textContent = protection.owned ? '단계 유지' : '+0 초기화';
+    $('chance-reset-label').textContent = protection.owned ? offer.protectionDrop ? '1강 하락' : '단계 유지' : '+0 초기화';
     $('chance-reset').textContent = percent(protection.owned ? offer.reset + offer.shatter : offer.reset);
     $('chance-shatter').textContent = percent(protection.owned ? 0 : offer.shatter);
     $('chance-bar').style.gridTemplateColumns = [offer.success, protection.owned ? offer.reset + offer.shatter : offer.reset, protection.owned ? 0 : offer.shatter].map(weight => weight + 'fr').join(' ');
-    $('risk-copy').textContent = protection.owned ? '보호권 적용 중 · 실패해도 현재 단계와 효과를 지켜요.' : offer.success === 10000 ? '이번 단계는 확정 성공이에요.' : '초기화는 +0에서 바로 재강화 · 파괴는 제작비를 내고 새 검 제작';
+    $('risk-copy').textContent = protection.owned ? offer.protectionDrop ? '보호권 적용 중 · 실패하면 ' + level(state.level - 1n) + ' · 효과 유지 · 파괴 방지' : '보호권 적용 중 · 실패해도 현재 단계와 효과를 지켜요.' : offer.success === 10000 ? '이번 단계는 확정 성공이에요.' : '초기화는 +0에서 바로 재강화 · 파괴는 제작비를 내고 새 검 제작';
     $('forge-bonus').hidden = offer.bonus === 0 || state.broken;
     $('forge-bonus').textContent = '이 단계의 실패 보정 +' + percent(offer.bonus).replace('%', '%p');
     if (!affordable) {
@@ -236,7 +237,7 @@
       item.append(
         node('span', 'history-symbol', entry.kind === 'success' || entry.kind === 'enchant' ? '✦' : entry.kind === 'shatter' ? '✕' : '↻'),
         node('strong', '', labels[entry.kind]),
-        node('span', 'history-levels', entry.kind === 'reroll' ? entry.slot + '번 · ' + (Forge.enchantments.find(effect => effect.id === entry.replaced)?.name ?? '이전 효과') + ' → ' + (Forge.enchantments.find(effect => effect.id === entry.enchantment)?.name ?? '새 효과') : entry.kind === 'protected' ? level(from) + ' 유지' : entry.kind === 'protection' ? level(target) + ' 전용 · ' + fmt(BigInt(entry.amount ?? 0)) + ' 별철' : entry.kind === 'sell' ? '+' + fmt(BigInt(entry.amount ?? 0)) + ' 별철' : entry.kind === 'reforge' ? '새 검 +0' : entry.kind === 'enchant' ?
+        node('span', 'history-levels', entry.kind === 'reroll' ? entry.slot + '번 · ' + (Forge.enchantments.find(effect => effect.id === entry.replaced)?.name ?? '이전 효과') + ' → ' + (Forge.enchantments.find(effect => effect.id === entry.enchantment)?.name ?? '새 효과') : entry.kind === 'protected' ? entry.to !== undefined && BigInt(entry.to) < from ? level(from) + ' → ' + level(BigInt(entry.to)) : level(from) + ' 유지' : entry.kind === 'protection' ? level(target) + ' 전용 · ' + fmt(BigInt(entry.amount ?? 0)) + ' 별철' : entry.kind === 'sell' ? '+' + fmt(BigInt(entry.amount ?? 0)) + ' 별철' : entry.kind === 'reforge' ? '새 검 +0' : entry.kind === 'enchant' ?
           (Forge.enchantments.find(effect => effect.id === entry.enchantment)?.name ?? '효과 추가') : entry.kind === 'enchant-fail' ? level(from) + ' · 효과 유지' :
           level(from) + ' → ' + (entry.kind === 'success' ? level(target) : entry.kind === 'shatter' ?
             '파괴' + (entry.lostEffects ? ' · 효과 ' + entry.lostEffects + '개 소멸' : '') : '+0')),
@@ -318,8 +319,9 @@
       const previous = Forge.formAt(BigInt(event.from));
       copy = form.index !== previous.index || form.awakening !== previous.awakening ? form.name + (form.awakening > 0n ? ' · 각성 ' + fmt(form.awakening) : '') + '을 발견했어요.' : '한 번 더 벼릴 준비가 됐어요.';
     } else if (event.kind === 'protected') {
-      title = '보호권 발동! ' + level(BigInt(event.from)) + ' 유지';
-      copy = '보호권 1장으로 초기화와 파괴를 막았어요. 효과도 그대로예요. 재도전 보정 +' + percent(Forge.recoveryBonus).replace('%', '%p');
+      const dropped = event.to !== undefined && BigInt(event.to) < BigInt(event.from);
+      title = dropped ? '파괴 방어! ' + level(BigInt(event.from)) + ' → ' + level(BigInt(event.to)) : '보호권 발동! ' + level(BigInt(event.from)) + ' 유지';
+      copy = (dropped ? '현재 +100 이상에서는 보호권을 써도 1강 하락해요. 효과는 그대로예요.' : '보호권 1장으로 초기화와 파괴를 막았어요. 효과도 그대로예요.') + ' 재도전 보정 +' + percent(Forge.recoveryBonus).replace('%', '%p');
     } else if (event.kind === 'protection') {
       title = level(target) + ' 도전 보호권 구매 완료';
       copy = fmt(BigInt(event.amount)) + ' 별철 사용 · 실패할 때만 자동으로 한 장을 사용해요.';
@@ -458,6 +460,7 @@
     getState: () => state, fmt, asset,
     capture: (nickname, weaponName) => transaction(next => { Forge.rememberWeapon(next); return Forge.rankingRecord(next, nickname, weaponName); }),
     onBonus: rank => transaction(next => Forge.setRankBonus(next, rank)),
+    onGrant: grant => transaction(next => Forge.applyAdminGrant(next, grant)),
   });
   transaction(next => { if (next.rankingBest) Forge.rememberWeapon(next); });
 })();

@@ -4,6 +4,49 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const Forge = require('../games/mongle-forge/forge-engine.js');
 
+test('protected failures at current +100 and above drop exactly one, consume once and preserve effects and best', () => {
+  const now=Date.UTC(2026,10,22,0);
+  for(const level of [99n,100n,101n,9007199254740993123n]) {
+    const s=Forge.restore({level:level.toString(),shards:(10n**90n).toString(),enchantments:['lunar','lunar','lunar'],protections:{[level+1n]:true}},now);
+    const quote=Forge.preview(s,now),wallet=s.shards;
+    assert.equal(quote.protectionDrop,level>=100n?1n:0n);
+    const result=Forge.act(s,now,()=>.99999,quote.token);
+    assert.equal(result.kind,'protected');assert.equal(result.to,(level-quote.protectionDrop).toString());
+    assert.equal(s.level,level-quote.protectionDrop);assert.equal(s.bestLevel,level);assert.equal(s.broken,false);
+    assert.deepEqual(s.enchantments,['lunar','lunar','lunar']);assert.equal(s.protectionUses,1n);
+    assert.equal(s.shards,wallet-quote.cost);assert.equal(s.protections[(level+1n).toString()],undefined);
+    assert.equal(s.rankingBest.level,level.toString());assert.equal(s.pity[(level+1n).toString()],800);
+    if(level>=100n)assert.equal(s.pity[level.toString()],undefined);
+    const saved=Forge.serialize(s);assert.equal(Forge.act(s,now+1,()=>0,quote.token),null);assert.equal(Forge.serialize(s),saved);
+    assert.equal(Forge.restore(JSON.parse(saved),now+2000).history[0].to,result.to);
+    const success=Forge.restore({level:level.toString(),shards:(10n**90n).toString(),protections:{[level+1n]:true}},now);
+    assert.equal(Forge.act(success,now,()=>0).kind,'success');assert.equal(success.level,level+1n);
+    assert.equal(success.protections[(level+1n).toString()],true);assert.equal(success.protectionUses,0n);
+  }
+  const old=Forge.restore({level:104,history:[{kind:'protected',from:'104',target:'105',at:now}]},now);
+  assert.equal(old.history[0].to,undefined);
+});
+
+test('operator effects apply once to the matching pre-existing weapon and never resurrect or change a new sword', () => {
+  const now=Date.UTC(2026,10,22,0),effects=['astral','lunar','lunar'];
+  const seed=()=>Forge.restore({level:78,enchantments:effects,lastAt:now-1000,protectionUses:'135'},now);
+  const grant={id:'test-lunar-20261122',season:Forge.seasonId,issuedAt:now,source:Forge.weaponSnapshot(seed()),effects:['lunar','lunar','lunar']};
+  const state=seed();assert(Forge.applyAdminGrant(state,grant));assert.deepEqual(state.enchantments,grant.effects);
+  assert.equal(state.rankingBest.effect1,'lunar');assert.equal(state.rankingBest.protectionUses,'135');
+  const saved=Forge.serialize(state);assert.equal(Forge.applyAdminGrant(state,grant),false);assert.equal(Forge.serialize(state),saved);
+  const restored=Forge.restore(JSON.parse(saved),now);assert.equal(restored.appliedGrant,grant.id);assert.equal(Forge.applyAdminGrant(restored,grant),false);
+  for(const change of [{broken:true},{sold:true,broken:true},{lastAt:now+1},{level:0},{enchantments:['frost','lunar','lunar']}]) {
+    const s=Forge.restore({...JSON.parse(Forge.serialize(seed())),...change},now+2000),before=[...s.enchantments];
+    assert(Forge.applyAdminGrant(s,grant));assert.deepEqual(s.enchantments,before);assert.equal(s.rankingBest.effect1,'lunar');
+    assert.equal(s.broken,change.broken===true);
+  }
+  const stronger=Forge.restore({level:110,enchantments:['lunar','lunar','lunar']},now);Forge.rememberWeapon(stronger);
+  const best=stronger.rankingBest.value;Forge.applyAdminGrant(stronger,grant);assert.equal(stronger.rankingBest.value,best);
+  for(const invalid of [{...grant,season:'wrong'},{...grant,id:null},{...grant,effects:['lunar']},{...grant,source:null},{...grant,effects:['fake','lunar','lunar']}]) {
+    const s=seed(),before=Forge.serialize(s);assert.equal(Forge.applyAdminGrant(s,invalid),false);assert.equal(Forge.serialize(s),before);
+  }
+});
+
 test('special prices stay affordable after a high record and charge exact current-level quotes', () => {
   const full = Date.UTC(2026,10,21,0), happy = Date.UTC(2026,10,21,3);
   for (const [level, prices] of [[0,[110n,220n,330n]],[12,[1790n,3580n,5370n]],[32,[10990n,21980n,32970n]]]) {

@@ -40,6 +40,12 @@
           ".validate": "newData.isString() && newData.val().matches(/^(0|[1-9][0-9]{0,127})$/)"
         }
       }
+    },
+    "adminGrants": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": false
+      }
     }
   }
 }

@@ -6,8 +6,9 @@ const Forge = (() => {
   const seasonId = 'season-20261120-1';
   // Isolate the season from older tabs that still write the previous save format.
   const olderSaveKey = legacySaveKey + ':' + seasonId;
-  const previousSaveKey = olderSaveKey + ':market-1';
-  const saveKey = olderSaveKey + ':rainbow-1';
+  const marketSaveKey = olderSaveKey + ':market-1';
+  const previousSaveKey = olderSaveKey + ':rainbow-1';
+  const saveKey = olderSaveKey + ':risk-1';
   const startingShards = 10000n;
   const cooldown = 680;
   const offlineLimit = 8 * 60 * 60 * 1000;
@@ -119,6 +120,7 @@ const Forge = (() => {
       ...(entry.kind === 'reroll' ? { replaced: entry.replaced, slot: entry.slot, valueBefore: String(entry.valueBefore), valueAfter: String(entry.valueAfter) } : {}),
       ...(entry.kind === 'shatter' && Number.isInteger(entry.lostEffects) && entry.lostEffects >= 0 && entry.lostEffects <= enchantmentLimit ? { lostEffects: entry.lostEffects } : {}),
       ...(['protection', 'sell'].includes(entry.kind) && /^\d+$/.test(String(entry.amount)) ? { amount: String(entry.amount) } : {}),
+      ...(entry.kind === 'protected' && /^\d+$/.test(String(entry.to)) ? { to: String(entry.to) } : {}),
     })) : [];
     const protections = {};
     if (old.protections && typeof old.protections === 'object') {
@@ -145,6 +147,7 @@ const Forge = (() => {
       protections,
       protectionUses: natural(old.protectionUses, BigInt(history.filter(entry => entry.kind === 'protected').length)),
       rankingBest: normalizeSnapshot(old.rankingBest),
+      appliedGrant: typeof old.appliedGrant === 'string' && /^[A-Za-z0-9_-]{1,80}$/.test(old.appliedGrant) ? old.appliedGrant : null,
       rankBonus: old.rankBonus && Number.isInteger(old.rankBonus.rank) && old.rankBonus.rank >= 1 && old.rankBonus.rank <= 10 &&
         Number.isFinite(old.rankBonus.since) && old.rankBonus.since >= 0 && old.rankBonus.since <= now &&
         Number.isFinite(old.rankBonus.until) && old.rankBonus.until >= old.rankBonus.since && old.rankBonus.until <= old.rankBonus.since + 60000 ? { ...old.rankBonus } : null,
@@ -213,6 +216,27 @@ const Forge = (() => {
 
   function sameWeaponRecord(a, b) {
     return !!a && !!b && ['value', 'level', 'effect1', 'effect2', 'effect3'].every(key => a[key] === b[key]);
+  }
+
+  function applyAdminGrant(state, grant) {
+    if (!grant || grant.season !== seasonId || typeof grant.id !== 'string' || !/^[A-Za-z0-9_-]{1,80}$/.test(grant.id) ||
+        state.appliedGrant === grant.id || !Number.isFinite(grant.issuedAt) ||
+        !Array.isArray(grant.effects) || grant.effects.length !== enchantmentLimit ||
+        grant.effects.some(id => !enchantments.some(effect => effect.id === id))) return false;
+    const source = normalizeSnapshot(grant.source);
+    if (!source) return false;
+    // An authenticated owner may receive a one-time correction of an existing record.
+    // Never resurrect a destroyed weapon or grant its effects to a subsequently made sword.
+    if (!state.broken && state.lastAt <= grant.issuedAt && state.level >= BigInt(source.level) &&
+        ['effect1', 'effect2', 'effect3'].every((key, index) => source[key] === (state.enchantments[index] ?? 'none'))) {
+      state.enchantments = [...grant.effects]; state.enchantment = grant.effects[0];
+    }
+    const corrected = weaponSnapshot({ level: BigInt(source.level), enchantments: grant.effects, broken: false,
+      protectionUses: source.protectionUses === undefined ? undefined : BigInt(source.protectionUses) });
+    if (!state.rankingBest || corrected.value > state.rankingBest.value) state.rankingBest = corrected;
+    rememberWeapon(state);
+    state.appliedGrant = grant.id;
+    return true;
   }
 
   function rememberWeapon(state) {
@@ -317,7 +341,8 @@ const Forge = (() => {
     const destructionShare = target < 6n ? 0 : Math.min(40, 10 + Number(target > 36n ? 36n : target) - 6);
     const shatter = Math.floor(failure * destructionShare / 100);
     const quote = priceQuote(cost(target), now);
-    return { target, ...quote, token: state.generation + ':' + target + ':' + quote.cost + ':' + !!state.protections[target.toString()], success, reset: failure - shatter, shatter, bonus: success - base };
+    return { target, ...quote, token: state.generation + ':' + target + ':' + quote.cost + ':' + !!state.protections[target.toString()], success, reset: failure - shatter, shatter, bonus: success - base,
+      protectionDrop: state.level >= 100n ? 1n : 0n };
   }
 
   function enchantPreview(state, now = Date.now()) {
@@ -381,7 +406,10 @@ const Forge = (() => {
       } else {
         kind = state.protections[offer.target.toString()] ? 'protected' : roll < offer.success + offer.reset ? 'reset' : 'shatter';
         state.pity[offer.target.toString()] = Math.min(9000, (state.pity[offer.target.toString()] ?? 0) + recoveryBonus);
-        if (kind === 'protected') { delete state.protections[offer.target.toString()]; state.protectionUses += 1n; }
+        if (kind === 'protected') {
+          delete state.protections[offer.target.toString()]; state.protectionUses += 1n;
+          state.level -= offer.protectionDrop;
+        }
         else state.level = 0n;
         state.broken = kind === 'shatter';
         if (state.broken) {
@@ -395,6 +423,7 @@ const Forge = (() => {
     state.lastAt = now;
     rememberWeapon(state);
     const event = { kind, from: from.toString(), target: offer.target.toString(), at: now, spent: offer.cost.toString(),
+      ...(kind === 'protected' ? { to: state.level.toString() } : {}),
       ...(kind === 'shatter' ? { lostEffects: effectCount } : {}),
     };
     state.history.unshift(event);
@@ -458,7 +487,7 @@ const Forge = (() => {
     return event;
   }
 
-  return { saveKey, previousSaveKey, olderSaveKey, legacySaveKey, backupKey, seasonId, startingShards, cooldown, recoveryBonus, offlineLimit, enchantmentLimit, forms, enchantments, appraisal, restore, loadSeason, serialize, rankingName, rankingRecord, weaponSnapshot, sameWeaponRecord, rememberWeapon, formAt, cost, incomeBreakdown, discountInfo, baseIncome, income, rankReward, setRankBonus, preview, protectionOffer, buyProtection, saleOffer, sell, enchantPreview, collectPassive, act, enchant, reroll };
+  return { saveKey, previousSaveKey, marketSaveKey, olderSaveKey, legacySaveKey, backupKey, seasonId, startingShards, cooldown, recoveryBonus, offlineLimit, enchantmentLimit, forms, enchantments, appraisal, restore, loadSeason, serialize, rankingName, rankingRecord, weaponSnapshot, sameWeaponRecord, applyAdminGrant, rememberWeapon, formAt, cost, incomeBreakdown, discountInfo, baseIncome, income, rankReward, setRankBonus, preview, protectionOffer, buyProtection, saleOffer, sell, enchantPreview, collectPassive, act, enchant, reroll };
 })();
 
 if (typeof module !== 'undefined') module.exports = Forge;

@@ -59,8 +59,8 @@ const ForgeRanking = (() => {
 
   async function publish(record, onOwner) {
     const user = await identity();
-    onOwner(user.uid);
     const token = await user.getIdToken();
+    await onOwner(user.uid, token);
     const url = base + Forge.seasonId + '/' + encodeURIComponent(user.uid) + '.json?auth=' + encodeURIComponent(token);
     for (let attempt = 0; attempt < 3; attempt += 1) {
       const response = await request(url, { headers: { 'X-Firebase-ETag': 'true' } });
@@ -86,7 +86,7 @@ const ForgeRanking = (() => {
     await request(base + Forge.seasonId + '/' + encodeURIComponent(user.uid) + '.json?auth=' + encodeURIComponent(token), { method: 'DELETE' });
   }
 
-  function mount({ getState, capture, fmt, asset, onBonus }) {
+  function mount({ getState, capture, fmt, asset, onBonus, onGrant }) {
     const $ = id => document.getElementById(id);
     const dialog = $('ranking');
     let profile = {};
@@ -104,6 +104,7 @@ const ForgeRanking = (() => {
     let verifiedUid;
     let nextTry = 0;
     let benefitRequest = 0;
+    let grantOwner;
     function saveProfile() {
       try { localStorage.setItem(profileKey, JSON.stringify(profile)); } catch {}
     }
@@ -118,7 +119,16 @@ const ForgeRanking = (() => {
       $('auto-ranking-name').textContent = (profile.auto ? '자동 등록 · ' : '자동 등록 꺼짐 · ') + profile.nickname;
       $('auto-ranking-status').textContent = !profile.auto ? '이름·설정 변경' : pending() ? nextTry > Date.now() ? '기록 보관 중 · 연결 후 재전송' : '최고 무기 전송 대기' : '파괴 전 기록 자동 보관';
     }
-    function owner(uid) { verifiedUid = uid; profile.uid = uid; saveProfile(); }
+    async function owner(uid, token) {
+      verifiedUid = uid; profile.uid = uid; saveProfile();
+      if (grantOwner === uid) return;
+      try {
+        const response = await request(base + 'adminGrants/' + encodeURIComponent(uid) + '.json?auth=' + encodeURIComponent(token));
+        const grant = await response.json();
+        if (grant) await onGrant(grant);
+        grantOwner = uid;
+      } catch {}
+    }
     async function applyBenefits(rows) {
       const index = verifiedUid ? rows.findIndex(row => row.uid === verifiedUid) : -1;
       await onBonus(index >= 0 && index < 10 ? index + 1 : 0);
@@ -259,7 +269,7 @@ const ForgeRanking = (() => {
       } catch (error) { status(error.message); }
       finally { busy = false; controls(); autoStatus(); }
     });
-    if (profile.uid) identity().then(user => { owner(user.uid); syncBenefits(); }).catch(() => onBonus(0));
+    if (profile.uid) identity().then(async user => { await owner(user.uid, await user.getIdToken()); syncBenefits(); }).catch(() => onBonus(0));
     setInterval(() => { pump(); }, 10000);
     setInterval(syncBenefits, 30000);
     addEventListener('online', () => { nextTry = 0; pump(); syncBenefits(); });
