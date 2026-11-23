@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { DT, VIEW_H, WORLD_H, WORLD_W } from '../config/constants';
 import { Battle } from '../combat/battle';
 import { AimAdvisor } from '../combat/aimAdvisor';
+import { ShotReview } from '../combat/shotReview';
 import type { BattleConfig, SimEvent } from '../combat/types';
 import { AIActor, AIPlanner } from '../ai/ai';
 import { mapDef } from '../data/maps';
@@ -63,6 +64,7 @@ export class BattleScene extends Phaser.Scene {
   private resultTimer: Phaser.Time.TimerEvent | null = null;
   private rockSfxT = 0;
   private advisor = new AimAdvisor();
+  private shotReview = new ShotReview();
 
   constructor() {
     super('battle');
@@ -85,6 +87,7 @@ export class BattleScene extends Phaser.Scene {
     this.river = null;
     this.resultTimer = null;
     this.advisor.reset();
+    this.shotReview.reset();
     this.actors = data.cfg.controllers.map((c, i) => (c === 'ai' ? new AIActor(i, data.cfg.difficulty) : null));
   }
 
@@ -247,6 +250,8 @@ export class BattleScene extends Phaser.Scene {
     const zBase = narrow ? 1.25 : mobile ? 1.0 : 1.12;
     if (this.camMode === 'all') return { ...this.overview(), k: 4 };
     if (this.camMode === 'enemy' && b.isPlayerPhase()) return { x: b.enemy.x, y: b.enemy.y - 90, z: zBase, k: 4 };
+    if (b.cfg.starterMatch && this.camMode === 'auto' && this.humanTurn() &&
+        (b.phase === 'TURN_START' || b.isPlayerPhase())) return { ...this.overview(), k: 5 };
     switch (b.phase) {
       case 'BATTLE_START':
         return { ...this.overview(), k: 2 };
@@ -409,6 +414,7 @@ export class BattleScene extends Phaser.Scene {
     const b = this.battle;
     const ui = this.app.ui;
     for (const e of events) {
+      this.shotReview.record(b, e);
       switch (e.type) {
         case 'battleStart':
           ui.banner('싸움 시작!', `${this.names[e.first]} 먼저 쏩니다`);
@@ -587,16 +593,19 @@ export class BattleScene extends Phaser.Scene {
     else audio.charge(null);
 
     const actor = this.actors[b.current];
+    const previousShot = !actor && b.isPlayerPhase() ? this.shotReview.summary(b) : '';
+    const showFirstShotTip = b.cfg.starterMatch && b.turnNo === 1 && b.isPlayerPhase() && this.app.settings.aimHints;
     const status = actor && b.isPlayerPhase()
       ? actor.stage === 'think' ? `${character(b.cur.charId).name} AI가 궁리하는 중…` : actor.stage === 'walk' ? '자리를 옮기는 중…' : '조준하는 중…'
       : b.phase === 'TERRAIN_COLLAPSE' ? '땅이 무너지는 중…'
       : !b.isPlayerPhase() && (b.shotDamage.get(b.shotNo) ?? 0) > 0 ? `이번 포격: 상대에게 합계 ${b.shotDamage.get(b.shotNo)} 피해`
       : b.clouds.some((c) => (c.turns[b.current] ?? 0) > 0 && b.inCloud(b.cur, c)) ? '독무 속! 다음 자기 차례가 오기 전에 구름 밖으로 움직이세요'
-      : b.isPlayerPhase() && b.cfg.mapId === 'bridge' ? '다리를 끊어 떨어뜨리세요 · 추락선을 넘으면 체력과 무관하게 탈락'
+      : previousShot || (showFirstShotTip ? '추천 각도를 맞추고 금빛 힘 구간에서 떼어 보세요' : '') || (
+        b.isPlayerPhase() && b.cfg.mapId === 'bridge' ? '다리를 끊어 떨어뜨리세요 · 추락선을 넘으면 체력과 무관하게 탈락'
       : b.isPlayerPhase() && b.cur.charId === 'mudang' && b.cur.slot === 0 ? '고각 55~125° 추천 · 내려올 때 적을 추적합니다'
       : b.isPlayerPhase() && b.cur.charId === 'driller' ? b.cur.slot === 0 ? '지형을 길게 관통 · 벽 뒤와 발밑을 노리세요' : '넓은 지반 붕괴 · 높은 발판을 무너뜨리세요'
       : b.isPlayerPhase() && b.steadyReady(b.cur) ? '자리 잡은 포격 — 움직이지 않고 쏘면 피해 +15%'
-      : '';
+      : '');
     const aimHint=this.advisor.update(b,this.app.settings.aimHints&&this.humanTurn());
     this.app.ui.updateHud(b, { names: this.names, humanTurn: this.humanTurn(), status, aimHint });
   }

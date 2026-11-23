@@ -102,8 +102,8 @@ export class Battle {
     });
     for (const f of this.fighters) f.angle = this.nearestEnemy(f).x > f.x ? 50 : 130;
     // 먼저 쏠 편을 고른다(그 편의 첫 장수부터)
-    this.current = this.rng.next() < 0.5 ? 0 : 1;
-    this.wind = Math.round(this.rng.gauss() * 6 * (0.5 + def.windBias));
+    this.current = cfg.starterMatch ? 0 : this.rng.next() < 0.5 ? 0 : 1;
+    this.wind = cfg.starterMatch ? 0 : Math.round(this.rng.gauss() * 6 * (0.5 + def.windBias));
     this.emit({ type: 'battleStart', first: this.current });
   }
 
@@ -373,7 +373,8 @@ export class Battle {
     }
     this.timeLeft -= dt;
     if (this.phase === 'CHARGE') {
-      f.power += (f.chargeDir * 100 * dt) / CHARGE_TIME;
+      const chargeTime = this.cfg.starterMatch && this.cfg.controllers[f.idx] === 'human' ? 2.2 : CHARGE_TIME;
+      f.power += (f.chargeDir * 100 * dt) / chargeTime;
       if (f.power >= 100) { f.power = 100; f.chargeDir = -1; }
       if (f.power <= 0) { f.power = 0; f.chargeDir = 1; }
       if (this.timeLeft <= 0) this.fire(f.power);
@@ -456,7 +457,7 @@ export class Battle {
     f.stats.shots++;
     this.shotDamage.set(shot, 0);
     const [mx, my] = this.muzzle(f);
-    this.emit({ type: 'fire', owner: f.idx, weaponId: w.id, x: mx, y: my, angle: f.angle, power });
+    this.emit({ type: 'fire', owner: f.idx, weaponId: w.id, x: mx, y: my, angle: f.angle, power, shot, wind: this.wind });
     if (this.steadyReady(f)) this.emit({ type: 'trait', who: f.idx, kind: 'steady', x: f.x, y: f.y - 70 });
     this.setAnim(f, 'fire');
     if (w.pattern === 'triple') {

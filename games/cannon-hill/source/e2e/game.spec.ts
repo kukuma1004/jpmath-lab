@@ -44,6 +44,37 @@ async function waitAim(page: Page, who?: number, timeout = 30_000) {
   }, { timeout }).toBe(true);
 }
 
+test('바로 한 판: 선공으로 직접 쏘고 지난 포격을 본 뒤 같은 방식으로 재대전한다', async ({page}) => {
+  await page.addInitScript(() => localStorage.setItem('jpml.warureu.settings.v1', JSON.stringify({difficulty:'hard', turnTime:20, turnLimit:30, battleRules:2})));
+  await page.goto('./?qa=1');
+  const title = page.locator('[data-s=title]');
+  await expect(title).toHaveClass(/on/);
+  await title.getByRole('button', {name:/바로 한 판/}).click();
+  await waitAim(page, 0);
+  const cfg = await wr(page, '__wr.battle.cfg');
+  expect(cfg).toMatchObject({difficulty:'easy', turnLimit:0, turnTime:45, starterMatch:true});
+  expect(await wr(page, '__wr.battle.wind')).toBe(0);
+  expect(await wr(page, 'JSON.parse(localStorage.getItem("jpml.warureu.settings.v1")).difficulty')).toBe('hard');
+  const hud = page.locator('[data-s=hud]');
+  await expect(hud.locator('.power .suggested')).toBeVisible();
+  const shots = (await state(page)).shots[0];
+  await page.keyboard.down('Space');
+  await expect.poll(async () => (await state(page)).phase).toBe('CHARGE');
+  await page.waitForTimeout(450);
+  await page.keyboard.up('Space');
+  await expect.poll(async () => (await state(page)).shots[0]).toBe(shots + 1);
+  await waitAim(page, 0, 45000);
+  await expect(hud.locator('.status')).toHaveText(/지난 포격 [←→]\d+° · 힘 \d+ · 바람 잔잔/);
+  await wr(page, '__wr.kill(1); __wr.skip()');
+  const result = page.locator('[data-s=result]');
+  await expect(result.getByRole('heading', {name:'승리!'})).toBeVisible();
+  await result.getByRole('button', {name:'다시 한 판'}).click();
+  await waitAim(page, 0);
+  expect(await wr(page, '__wr.battle.cfg.starterMatch')).toBe(true);
+  expect((await state(page)).shots).toEqual([0,0]);
+  await expect(hud.locator('.status')).not.toContainText('지난 포격');
+});
+
 test('조준 도움: 정확한 값 대신 각도·힘 범위와 힘 게이지 띠를 보여준다',async({page})=>{
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
   await openBattle(page,'local',['driller','archer'],'bridge');await waitAim(page);

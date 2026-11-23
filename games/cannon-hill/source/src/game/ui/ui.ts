@@ -14,6 +14,7 @@ export type Mode = 'ai' | 'local';
 export interface UIHooks {
   /** chars는 장수 순서([1팀, 2팀, 1팀, 2팀]) 그대로 */
   startBattle(mode: Mode, chars: string[], mapId: string): void;
+  quickBattle(): void;
   toTitle(): void;
   rematch(): void;
   rechar(): void;
@@ -116,7 +117,8 @@ export class UI {
           <div class="logo" aria-label="${GAME_TITLE}">${letters}<i class="seal">한판</i></div>
           <div class="subtitle">${GAME_SUBTITLE}</div>
           <div class="menu">
-            <button class="btn primary" data-act="ai">AI와 겨루기<small>혼자서 한 판</small></button>
+            <button class="btn primary quick" data-act="quick">바로 한 판<small>쉬운 AI · 내가 먼저 발사</small></button>
+            <button class="btn" data-act="ai">AI와 겨루기<small>장수·전장 고르기</small></button>
             <button class="btn jade" data-act="local">둘이서 하기<small>한 기기로 번갈아</small></button>
             <button class="btn" data-act="howto">게임 방법</button>
             <button class="btn" data-act="settings">설정</button>
@@ -127,6 +129,7 @@ export class UI {
     el.addEventListener('click', (e) => {
       const act = (e.target as HTMLElement).closest('button')?.dataset.act;
       if (act === 'ai' || act === 'local') this.openChars(act);
+      else if (act === 'quick') this.hooks.quickBattle();
       else if (act === 'howto') this.show('howto');
       else if (act === 'settings') this.openSettings();
     });
@@ -503,11 +506,12 @@ export class UI {
     const mv = Math.max(0, (f.moveLeft / (MOVE_BUDGET * c.moveMul)) * 100);
     this.set('mv', `${Math.round(mv)}`, () => { el.querySelector<HTMLElement>('.movebar i')!.style.width = `${mv}%`; });
     const pw = b.phase === 'CHARGE' ? f.power : 0;
-    this.set('pw', `${Math.round(pw)}|${Math.round(f.lastPower)}`, () => {
+    this.set('pw', `${Math.round(pw)}|${Math.round(f.lastPower)}|${b.phase}|${f.stats.shots}`, () => {
       const p = el.querySelector<HTMLElement>('.power')!;
       p.querySelector<HTMLElement>('i')!.style.width = `${pw}%`;
       p.querySelector<HTMLElement>('.last')!.style.left = `${f.lastPower}%`;
-      p.querySelector('span')!.textContent = b.phase === 'CHARGE' ? `힘 ${Math.round(pw)}` : `지난 힘 ${Math.round(f.lastPower)}`;
+      const label = f.stats.shots > 0 ? '지난 힘' : '기준 힘';
+      p.querySelector('span')!.textContent = b.phase === 'CHARGE' ? `힘 ${Math.round(pw)}` : `${label} ${Math.round(f.lastPower)}`;
     });
     this.updateAimHint(el,b,opts.aimHint);
   }

@@ -23,6 +23,7 @@ export interface BattleConfig {
   chars: string[];
   controllers: Controller[];
   difficulty: Difficulty;
+  starterMatch?: boolean;
   turnTime: number;
   turnLimit: number; // 0은 상대 편 전멸까지 계속하는 끝장전
 }
@@ -154,7 +155,7 @@ export type DamageCause = 'blast' | 'fall' | 'rock' | 'crush' | 'lightning' | 'p
 export type SimEvent =
   | { type: 'battleStart'; first: number }
   | { type: 'turn'; player: number; turnNo: number; wind: number; prevWind: number }
-  | { type: 'fire'; owner: number; weaponId: string; x: number; y: number; angle: number; power: number }
+  | { type: 'fire'; owner: number; weaponId: string; x: number; y: number; angle: number; power: number; shot: number; wind: number }
   | { type: 'launch'; id: number; weaponId: string }
   | { type: 'explode'; x: number; y: number; radius: number; weaponId: string; big: boolean }
   | { type: 'damage'; target: number; amount: number; x: number; y: number; crit: boolean; cause: DamageCause }

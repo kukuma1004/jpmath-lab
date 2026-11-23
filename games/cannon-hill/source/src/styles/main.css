@@ -132,6 +132,7 @@ html, body {
 .subtitle { font: 400 clamp(18px, 2.4vw, 26px)/1.2 var(--title-font); color: var(--gold); letter-spacing: 0.08em; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6); }
 .menu { display: grid; grid-template-columns: repeat(2, minmax(180px, 240px)); gap: 14px; margin-top: 26px; }
 .menu .btn { font-size: 20px; padding: 18px 20px; }
+.menu .quick { grid-column: 1 / -1; }
 .foot { margin-top: 22px; display: flex; gap: 16px; align-items: center; font-size: 14px; color: var(--muted); }
 .foot a { color: var(--muted); text-decoration: none; border-bottom: 1px solid var(--line); padding-bottom: 2px; }
 .foot a:hover { color: var(--text); }
@@ -267,7 +268,7 @@ html, body {
 .wind .v { min-width: 44px; text-align: center; font: 400 16px/1 var(--title-font); }
 .wind.change { animation: windpop 0.7s ease; }
 @keyframes windpop { 30% { transform: scale(1.12); border-color: #9ad8ff; } }
-.status { font-size: 13px; color: var(--muted); padding: 5px 10px; border-radius: 999px; background: rgba(0, 0, 0, 0.35); opacity: 0; transition: opacity 0.2s; }
+.status { font-size: 13px; color: #fff2d6; padding: 5px 10px; border-radius: 999px; background: rgba(19, 17, 25, 0.86); opacity: 0; transition: opacity 0.2s; }
 .status.on { opacity: 1; }
 
 .pausebtn { position: absolute; top: calc(10px + var(--safe-t)); left: 50%; transform: translateX(calc(-50% + 230px)); pointer-events: auto; width: 46px; height: 46px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--glass); color: var(--text); font: 700 18px/1 var(--body-font); cursor: pointer; }
@@ -469,7 +470,7 @@ html, body {
   body.in-battle #game { inset: auto 0 auto 0; top: calc(176px + var(--safe-t)); height: 75vw; }
   .hud .top { grid-template-columns: 1fr 1fr; gap: 8px; }
   .hud .top .center { grid-column: 1 / -1; grid-row: 2; grid-template-columns: auto auto; justify-content: center; align-items: center; gap: 8px; }
-  .hud .top .center .status { grid-column: 1 / -1; }
+  .hud .top .center .status { grid-column: 1 / -1; max-width: calc(100vw - 64px); justify-self: start; font-size: 12px; border-radius: 12px; }
   .pcard { grid-template-columns: 40px 1fr; padding: 6px 8px 6px 6px; gap: 6px; }
   .pcard.p2 { grid-template-columns: 1fr 40px; }
   .pcard .who { width: 40px; height: 40px; }

@@ -23,18 +23,19 @@ export class App {
   ui: UI;
   game!: Phaser.Game;
   mode: Mode = 'ai';
-  last: { mode: Mode; chars: string[]; mapId: string } | null = null;
+  last: { mode: Mode; chars: string[]; mapId: string; starterMatch: boolean } | null = null;
 
   constructor() {
     this.settings = loadSettings();
     audio.setVolumes(this.settings.bgm, this.settings.sfx);
     this.ui = new UI(document.getElementById('ui')!, this.settings, {
       startBattle: (mode, chars, mapId) => this.startBattle(mode, chars, mapId),
+      quickBattle: () => this.startBattle('ai', ['general', 'archer'], 'quarry', true),
       toTitle: () => this.toTitle(),
-      rematch: () => this.last && this.startBattle(this.last.mode, this.last.chars, this.last.mapId),
+      rematch: () => this.rematch(),
       rechar: () => { this.toTitle(); this.ui.openChars(this.last?.mode ?? 'ai'); },
       resume: () => this.resume(),
-      restart: () => this.last && this.startBattle(this.last.mode, this.last.chars, this.last.mapId),
+      restart: () => this.rematch(),
       pause: () => this.pause(),
       weapon: (slot) => this.battleScene()?.selectWeapon(slot),
       flip: () => this.battleScene()?.flip(),
@@ -42,6 +43,12 @@ export class App {
       recenter: () => this.battleScene()?.recenter(),
       settingsChanged: (s) => this.applySettings(s),
     });
+  }
+
+  private rematch(): void {
+    if (!this.last) return;
+    const {mode, chars, mapId, starterMatch} = this.last;
+    this.startBattle(mode, chars, mapId, starterMatch);
   }
 
   boot(): void {
@@ -126,24 +133,28 @@ export class App {
   }
 
   /** chars는 장수 순서([1팀, 2팀] 또는 [1팀, 2팀, 1팀, 2팀]) */
-  startBattle(mode: Mode, chars: string[], mapId: string): void {
+  startBattle(mode: Mode, chars: string[], mapId: string, starterMatch = false): void {
     this.mode = mode;
-    this.last = { mode, chars, mapId };
-    const keep = [...this.settings.lastChars];
-    chars.forEach((c, i) => (keep[i] = c));
-    this.settings.lastChars = keep;
-    this.settings.lastMap = mapId;
-    saveSettings(this.settings);
+    this.ui.mode = mode;
+    this.last = { mode, chars, mapId, starterMatch };
+    if (!starterMatch) {
+      const keep = [...this.settings.lastChars];
+      chars.forEach((c, i) => (keep[i] = c));
+      this.settings.lastChars = keep;
+      this.settings.lastMap = mapId;
+      saveSettings(this.settings);
+    }
     const seed = (Math.random() * 2 ** 31) | 0;
     const perTeam = chars.length / 2;
     const cfg: BattleConfig = {
       mapId, seed, chars,
       // AI 대전: 1팀(짝수 자리)은 사람, 2팀은 AI. 둘이서: 모두 사람
       controllers: chars.map((_, i) => (mode === 'ai' && i % 2 === 1 ? 'ai' : 'human')),
-      difficulty: this.settings.difficulty,
-      turnTime: this.settings.turnTime,
+      difficulty: starterMatch ? 'easy' : this.settings.difficulty,
+      turnTime: starterMatch ? 45 : this.settings.turnTime,
       // 2:2는 장수 한 명이 쏘는 횟수가 1:1과 같도록 전체 턴을 늘린다
-      turnLimit: this.settings.turnLimit * perTeam,
+      turnLimit: starterMatch ? 0 : this.settings.turnLimit * perTeam,
+      starterMatch,
     };
     this.ui.hideResult();
     this.ui.show('pause', false);
