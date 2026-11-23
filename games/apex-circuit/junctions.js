@@ -67,6 +67,22 @@ export function buildJunctions(scene, course, kit) {
         if(Math.floor(d/3.4)%2===0)member(amber,route.point(d,g-edge*.19,.34),route.point(d+.46,g-edge*.19,.34),.081);
       }
     }
+    if(course.id==='metro'){
+      // A bowstring truss follows the elevated span, outside both driving edges.
+      // Short chords keep the inside diagonals outside the curved driving edge.
+      const start=route.length*.29,end=route.length*.75,bays=40;
+      const arch=t=>.94+2.7*Math.sin(Math.PI*t);
+      for(const side of [-1,1]){
+        const lane=side*(w+.28);
+        for(let i=0;i<bays;i++){
+          const t=i/bays,next=(i+1)/bays;
+          const a=T.MathUtils.lerp(start,end,t),b=T.MathUtils.lerp(start,end,next);
+          member(steel,route.point(a,lane,arch(t)),route.point(b,lane,arch(next)),.16);
+          member(warmLens,route.point(a,lane,arch(t)+.09),route.point(b,lane,arch(next)+.09),.075);
+          member(chalk,route.point(a,lane,i%2?.78:arch(t)),route.point(b,lane,i%2?arch(next):.78),.105);
+        }
+      }
+    }
     // A pair of inclined stripes makes an arrow painted flush with the bridge.
     for(let d=5;d<route.length-5;d+=17) {
       for(const e of [-1,1])member(amber,route.point(d,e*1.13,.04),route.point(d+1.42,0,.04),.15,.15);
@@ -205,6 +221,12 @@ export function buildJunctions(scene, course, kit) {
       block(scene,concrete,x+3,-1.63,z+1,1.74,.75,2.95);
       block(scene,beam,x+3,-1.56,z+2,1.78,.31,.065);
       block(scene,chalk,x+3,-1.19,z+1,1.94,.12,3.08);
+      for(const side of [-1,1]){
+        const flank=x+3+side*.89;
+        member(steel,new T.Vector3(flank,-1.52,z-.86),new T.Vector3(flank,-1.50,z+1.95),.22,.07);
+        member(warmLens,new T.Vector3(flank,-1.75,z-.76),new T.Vector3(flank,-1.75,z+1.71),.046);
+        member(chalk,new T.Vector3(flank,-1.85,z+2.92),new T.Vector3(x+3,-1.79,z+4.43),.055);
+      }
       member(steel,new T.Vector3(x+3,-1.7,z),new T.Vector3(x+3,4.8,z),.068);
       member(steel,new T.Vector3(x+3,3.9,z),new T.Vector3(x+3,-1.8,z+4),.028);
       member(steel,new T.Vector3(x+3,3.9,z),new T.Vector3(x+3,-1.8,z-3),.028);

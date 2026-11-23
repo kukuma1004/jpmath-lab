@@ -1,5 +1,6 @@
+import {marinaArchitecture} from './marina-architecture.js?v=17';
 import * as T from './vendor/three.module.min.js';
-import {grain, instances, matrix, nearest, pathSamples, random} from './world-landmarks.js?v=16';
+import {grain, instances, matrix, nearest, pathSamples, random} from './world-landmarks.js?v=17';
 
 const box=new T.BoxGeometry();
 const finish=(color,options={})=>new T.MeshStandardMaterial({color,roughness:.78,...options});
@@ -93,10 +94,13 @@ export function harborVillage(scene,course) {
 }
 
 export function streetShops(scene,course,placard){
+  marinaArchitecture(scene,course,scene.userData.officeGlazing);
   const shells=[], parapets=[], warm=[], frames=[], glass=[], planters=[], foliage=[], rng=random(731);
   const signs=[],coolSigns=[],path=pathSamples(course);
   for(let d=10;d<course.length;d+=15.5){
     for(const side of [-1,1]){
+      const approach=course.shortcuts[0].start;
+      if(side>0 && d>approach-54 && d<approach+23)continue;
       const p=course.point(d,side*(course.halfWidth+9.4)), s=course.sample(d);
       if(nearest(p.x,p.z,path).distance<course.halfWidth+7.4)continue;
       const yaw=Math.atan2(-s.dz,s.dx),base=-3, h=5.4+rng()*3.2;
@@ -105,19 +109,25 @@ export function streetShops(scene,course,placard){
       for(const level of [base+1.1,base+h-1.8]){
         glass.push(at(0,-side*2.43,level+.87,11.9,1.72,.08));
         for(let a=-5.3;a<=5.4;a+=1.55){
-          warm.push(at(a,-side*2.51,level+1.53,.95,.14,.09));
+          warm.push(at(a,-side*2.51,level+1.53,.92,.045,.09));
           frames.push(at(a-.59,-side*2.55,level+.82,.13,1.73,.12));
-          if(rng()>.5)warm.push(at(a,-side*2.51,level+.56,.34,.81,.08));
+          if(rng()>.72)warm.push(at(a,-side*2.51,level+.88,.12,.27,.08));
         }
         parapets.push(at(0,-side*2.64,level-.11,13,.30,.84));
       }
       const signFace=rng()>.48?signs:coolSigns;
       const edge=side* -3.12;
-      signFace.push(at(4.8,edge,base+h-.60,.69,2.45,.66));
-      for(let j=0;j<3;j++) warm.push(at(4.8,edge-side*.35,base+h+.1-j*.48,.36,.09,.05));
+      signFace.push(at(4.8,edge,base+h-.60,.31,1.62,.38));
+      for(let j=0;j<3;j++) warm.push(at(4.8,edge-side*.20,base+h-.12-j*.29,.19,.045,.05));
       coolSigns.push(at(-2.3,-side*2.72,base+h-1.69,5.1,.09,.14));
       parapets.push(at(0,0,base+h+.05,13,.4,5.25));
       parapets.push(at(-3.2,.34,base+h+.78,3.3,1.23,2.2));
+      // Wrap the short ends too. These are the first faces seen from a moving car.
+      for(const end of [-1,1]){
+        glass.push(at(end*6.34,0,base+h*.52,.11,h*.80,4.48));
+        for(const dz of [-1.52,0,1.52])frames.push(at(end*6.42,dz,base+h*.52,.14,h*.81,.08));
+        warm.push(at(end*6.41,0,base+h*.88,.12,.075,4.52));
+      }
       const tree=at(5.8,-side*4.1,base+1.4,1.4,1.6,1.4);
       planters.push(at(5.8,-side*4.1,base+.22,1.5,.6,1.5));foliage.push(tree);
     }
@@ -136,12 +146,12 @@ export function streetShops(scene,course,placard){
     warm.push(matrix(p.x,y-1.0,p.z,5.5,.07,.21,yaw));
   }
   instances(scene,box,textured(0x566376),shells);
-  instances(scene,box,finish(0x899197),parapets);
+  instances(scene,box,finish(0x706d69),parapets);
   instances(scene,box,lit(0xfbca84),warm);
   instances(scene,box,finish(0x855f43),frames);
-  instances(scene,box,lit(0x674e46),glass);
-  instances(scene,box,lit(0xf05282),signs);
-  instances(scene,box,lit(0x64d1e9),coolSigns);
+  instances(scene,box,new T.MeshBasicMaterial({map:scene.userData.officeGlazing,color:0xffefda}),glass);
+  instances(scene,box,finish(0x9d6748),signs);
+  instances(scene,box,lit(0xf6ca8b),coolSigns);
   instances(scene,box,finish(0x6d6f68),planters);
   instances(scene,new T.IcosahedronGeometry(1,1),finish(0x3d6256),foliage);
 }

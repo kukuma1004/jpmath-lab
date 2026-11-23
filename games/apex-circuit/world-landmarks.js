@@ -402,26 +402,42 @@ export function metropolis(scene,course) {
     const clearance=course.halfWidth+Math.hypot(w,d)/2+6;
     if(nearest(x,z,path).distance<clearance || bypassPath.some(p=>Math.hypot(x-p.x,z-p.z)<clearance))continue;
     const h=33+((i*17)%43),y=-3,m=i%2;
-    bodies[m].push(matrix(x,y+h/2,z,w,h,d));
-    bodies[m].push(matrix(x,y+h+2.2,z,w*.72,4.4,d*.73));
-    caps.push(matrix(x,y+h+.12,z,w+.5,.32,d+.5));
-    caps.push(matrix(x,y+h+4.5,z,w*.75,.3,d*.76));
-    trim[m].push(matrix(x,y+h+.34,z,w+.58,.12,d+.58));
-    for(const side of [-1,1]){
-      antennae.push(matrix(x+side*w*.39,y+h*.5,z-d*.505,.18,h,.19));
-      for(let floor=4;floor<h;floor+=3.6)caps.push(matrix(x,y+floor,z,w+.22,.11,d+.22));
+    // Shift upper volumes to one side so the skyline reads across open water.
+    const shoulders=i%3===1?[.88,1]:[.48,.79,1];
+    let bottom=0;
+    for(let tier=0;tier<shoulders.length;tier++){
+      const top=shoulders[tier]*h;
+      const width=w*(1-tier*.16),depth=d*(1-tier*.14);
+      const cx=x+(i%2?1:-1)*(w-width)*.42,cz=z-(d-depth)*.35;
+      bodies[m].push(matrix(cx,y+(bottom+top)/2,cz,width,top-bottom,depth));
+      caps.push(matrix(cx,y+top+.08,cz,width+.42,.22,depth+.42));
+      trim[m].push(matrix(cx,y+top-.28,cz,width+.12,.18,depth+.12));
+      for(let floor=bottom+3.5;floor<top-1;floor+=3.5){
+        caps.push(matrix(cx,y+floor,cz,width+.22,.13,depth+.22));
+      }
+      for(const side of [-1,1]){
+        antennae.push(matrix(cx+side*width*.42,y+(bottom+top)/2,cz-depth*.505,.21,top-bottom,.19));
+      }
+      bottom=top;
     }
   }
-  let finish;
-  scene.userData.facadeReady=new Promise(resolve=>{ finish=resolve; });
-  const glazing=new T.TextureLoader().load(new URL('./assets/metro-office.webp',import.meta.url).href,()=>finish(true),undefined,()=>finish(false));
-  glazing.wrapS=glazing.wrapT=T.RepeatWrapping;
-  glazing.colorSpace=T.SRGBColorSpace;
-  glazing.anisotropy=4;
-  scene.userData.officeGlazing = glazing;
+  const loader=new T.TextureLoader(), loads=[];
+  function facadeTexture(file){
+    let finish;
+    loads.push(new Promise(resolve=>{finish=resolve;}));
+    const texture=loader.load(new URL('./assets/'+file,import.meta.url).href,()=>finish(true),undefined,()=>finish(false));
+    texture.wrapS=texture.wrapT=T.RepeatWrapping;
+    texture.colorSpace=T.SRGBColorSpace;
+    texture.anisotropy=4;
+    return texture;
+  }
+  const glazing=facadeTexture('metro-office.webp');
+  const curtainWall=facadeTexture('metro-curtainwall-v17.webp');
+  scene.userData.facadeReady=Promise.all(loads).then(results=>results.every(Boolean));
+  scene.userData.officeGlazing=curtainWall;
   for(let i=0;i<2;i++){
     // A dark roof closes each lit facade at its skyline silhouette.
-    instances(scene,cube,facade(glazing,i),bodies[i]);
+    instances(scene,cube,facade(i ? glazing : curtainWall,i),bodies[i]);
     instances(scene,cube,glow(i?0xfd7696:0x67daf5),trim[i]);
   }
   instances(scene,cube,mat(0x1d293a),caps);

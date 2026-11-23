@@ -1,5 +1,5 @@
 import * as T from './vendor/three.module.min.js';
-import { instances, matrix, nearest, noise, pathSamples, spruceGrove, random } from './world-landmarks.js?v=16';
+import { instances, matrix, nearest, noise, pathSamples, spruceGrove, random } from './world-landmarks.js?v=17';
 
 // The road carries its own banks. Fit the adjoining landscape below its lowest edge.
 function landscape(scene, course, frost, grain, road) {

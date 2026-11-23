@@ -2,7 +2,7 @@ import { sampleDriver } from './bypass.js?v=14';
 import * as T from './vendor/three.module.min.js';
 import { tracks, courseRecordId } from './track.js?v=14';
 import { createRace, vehicleSpecs } from './race.js?v=14';
-import { buildWorld } from './world.js?v=16';
+import { buildWorld } from './world.js?v=17';
 import { buildCars, driveCar, selectVehicle } from './cars.js?v=16';
 import { drivingKeys, resolveDrivingKey } from './input.js?v=10';
 import { createAudio } from './audio.js?v=4';
