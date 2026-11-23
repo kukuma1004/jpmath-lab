@@ -49,7 +49,7 @@
   function loadStored() {
     if (!storageOkay) return { next: state, reset: false };
     try {
-      const previous = localStorage.getItem(Forge.previousSaveKey) ?? localStorage.getItem(Forge.riskSaveKey) ?? localStorage.getItem(Forge.rainbowSaveKey) ?? localStorage.getItem(Forge.marketSaveKey) ?? localStorage.getItem(Forge.olderSaveKey);
+      const previous = localStorage.getItem(Forge.previousSaveKey) ?? localStorage.getItem(Forge.storageSaveKey) ?? localStorage.getItem(Forge.riskSaveKey) ?? localStorage.getItem(Forge.rainbowSaveKey) ?? localStorage.getItem(Forge.marketSaveKey) ?? localStorage.getItem(Forge.olderSaveKey);
       const original = localStorage.getItem(Forge.saveKey) ?? previous;
       const raw = original ? JSON.parse(original) : null;
       return { next: Forge.loadSeason(raw), reset: previous !== null || (!!raw && raw.season !== Forge.seasonId) || localStorage.getItem(Forge.legacySaveKey) !== null };
@@ -65,6 +65,7 @@
       if (reset) {
         localStorage.removeItem(Forge.legacySaveKey);
         localStorage.removeItem(Forge.previousSaveKey);
+        localStorage.removeItem(Forge.storageSaveKey);
         localStorage.removeItem(Forge.riskSaveKey);
         localStorage.removeItem(Forge.rainbowSaveKey);
         localStorage.removeItem(Forge.marketSaveKey);
@@ -509,7 +510,15 @@
     getState: () => state, fmt, asset,
     capture: (nickname, weaponName) => transaction(next => { Forge.rememberWeapon(next); return Forge.rankingRecord(next, nickname, weaponName); }),
     onBonus: rank => transaction(next => Forge.setRankBonus(next, rank)),
-    onGrant: grant => transaction(next => Forge.applyAdminGrant(next, grant)),
+    onGrant: grant => transaction(next => {
+      const before = next.shards;
+      const applied = Forge.applyAdminGrant(next, grant);
+      if (next.shards > before) {
+        $('outcome-title').textContent = '운영자 별철 지급';
+        $('outcome-copy').textContent = '별철 ' + fmt(next.shards - before) + '개가 추가됐어요.';
+      }
+      return applied;
+    }),
     beforePublish: () => updater.check(),
   });
   transaction(next => { if (next.rankingBest) Forge.rememberWeapon(next); }).then(() => {

@@ -137,6 +137,30 @@ test('operator effects apply once to the matching pre-existing weapon and never 
   }
 });
 
+test('operator shard credits add exactly once, preserve all weapon data and remain above passive capacity', () => {
+  const now=Date.UTC(2026,10,24),state=Forge.restore({level:100,bestLevel:150,shards:'1234567',enchantments:['lunar','lunar','lunar'],magic:{id:'fire',peak:150},protections:{101:true},protectionUses:'227',appliedGrant:'old-lunar'},now);
+  Forge.rememberWeapon(state);
+  const before=JSON.parse(Forge.serialize(state)),grant={credits:{'test-credit-100m':{season:Forge.seasonId,amount:'100000000',issuedAt:now}}};
+  assert(Forge.applyAdminGrant(state,grant));assert.equal(state.shards,101234567n);
+  assert.deepEqual({...JSON.parse(Forge.serialize(state)),shards:before.shards,creditReceipts:{}},before);
+  assert.equal(Forge.applyAdminGrant(state,grant),false);assert.equal(state.shards,101234567n);
+  const restored=Forge.restore(JSON.parse(Forge.serialize(state)),now);
+  assert.equal(restored.creditReceipts['test-credit-100m'],true);assert.equal(Forge.applyAdminGrant(restored,grant),false);
+  const low=Forge.restore({level:0,shards:'10000',broken:true,version:2},now);
+  assert(Forge.applyAdminGrant(low,grant));assert.equal(low.shards,100010000n);assert.equal(low.broken,true);
+  Forge.collectPassive(low,now+Forge.offlineLimit);assert.equal(low.shards,100010000n);
+  assert(Forge.applyAdminGrant(low,{credits:{'second-credit':{season:Forge.seasonId,amount:'7',issuedAt:now}}}));assert.equal(low.shards,100010007n);
+});
+
+test('malformed or foreign-season credits cannot change balances or create receipts', () => {
+  const now=Date.UTC(2026,10,24),valid={season:Forge.seasonId,amount:'100000000',issuedAt:now};
+  for(const credit of [{...valid,season:'wrong'},{...valid,amount:100000000},{...valid,amount:'0'},{...valid,amount:'-1'},{...valid,amount:'01'},{...valid,amount:'1000000000000000000'},{...valid,issuedAt:null},{...valid,issuedAt:-1}]){
+    const state=Forge.restore(null,now),before=Forge.serialize(state);assert.equal(Forge.applyAdminGrant(state,{credits:{invalid:credit}}),false);assert.equal(Forge.serialize(state),before);
+  }
+  const state=Forge.restore({creditReceipts:{good:true,bad:false,'bad.id':true}},now);
+  assert.deepEqual(state.creditReceipts,{good:true});assert.equal(Forge.applyAdminGrant(state,{credits:{'bad.id':valid}}),false);
+});
+
 test('special prices stay affordable after a high record and charge exact current-level quotes', () => {
   const full = Date.UTC(2026,10,21,0), happy = Date.UTC(2026,10,21,3);
   for (const [level, prices] of [[0,[110n,220n,330n]],[12,[1790n,3580n,5370n]],[32,[10990n,21980n,32970n]]]) {

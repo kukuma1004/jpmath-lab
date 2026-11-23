@@ -1,7 +1,7 @@
 'use strict';
 
 const Forge = (() => {
-  const clientRevision = 2026112401;
+  const clientRevision = 2026112402;
   const rankingProtocol = 'forge-magic-1';
   const legacySaveKey = 'jp-math-lab:mongle-forge:v1';
   const backupKey = legacySaveKey + ':before-infinite';
@@ -11,8 +11,10 @@ const Forge = (() => {
   const marketSaveKey = olderSaveKey + ':market-1';
   const rainbowSaveKey = olderSaveKey + ':rainbow-1';
   const riskSaveKey = olderSaveKey + ':risk-1';
-  const previousSaveKey = olderSaveKey + ':storage-1';
-  const saveKey = olderSaveKey + ':magic-1';
+  const storageSaveKey = olderSaveKey + ':storage-1';
+  const previousSaveKey = olderSaveKey + ':magic-1';
+  const saveKey = olderSaveKey + ':credits-1';
+  const creditIdPattern = /^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$/;
   const startingShards = 10000n;
   const cooldown = 680;
   const offlineLimit = 8 * 60 * 60 * 1000;
@@ -192,6 +194,7 @@ const Forge = (() => {
       protectionUses: natural(old.protectionUses, BigInt(history.filter(entry => entry.kind === 'protected').length)),
       rankingBest: normalizeSnapshot(old.rankingBest),
       appliedGrant: typeof old.appliedGrant === 'string' && /^[A-Za-z0-9_-]{1,80}$/.test(old.appliedGrant) ? old.appliedGrant : null,
+      creditReceipts: Object.fromEntries(Object.entries(old.creditReceipts && typeof old.creditReceipts === 'object' ? old.creditReceipts : {}).filter(([id, applied]) => creditIdPattern.test(id) && applied === true)),
       rankBonus: old.rankBonus && Number.isInteger(old.rankBonus.rank) && old.rankBonus.rank >= 1 && old.rankBonus.rank <= 10 &&
         Number.isFinite(old.rankBonus.since) && old.rankBonus.since >= 0 && old.rankBonus.since <= now &&
         Number.isFinite(old.rankBonus.until) && old.rankBonus.until >= old.rankBonus.since && old.rankBonus.until <= old.rankBonus.since + 60000 ? { ...old.rankBonus } : null,
@@ -267,6 +270,25 @@ const Forge = (() => {
   }
 
   function applyAdminGrant(state, grant) {
+    const credited = applyCredits(state, grant?.credits);
+    return applyWeaponGrant(state, grant) || credited;
+  }
+
+  function applyCredits(state, credits) {
+    if (!credits || typeof credits !== 'object' || Array.isArray(credits)) return false;
+    let applied = false;
+    for (const [id, credit] of Object.entries(credits)) {
+      if (!creditIdPattern.test(id) || state.creditReceipts[id] === true || !credit || credit.season !== seasonId ||
+          typeof credit.amount !== 'string' || !/^[1-9][0-9]{0,17}$/.test(credit.amount) ||
+          !Number.isFinite(credit.issuedAt) || credit.issuedAt < 0) continue;
+      state.shards += BigInt(credit.amount);
+      state.creditReceipts[id] = true;
+      applied = true;
+    }
+    return applied;
+  }
+
+  function applyWeaponGrant(state, grant) {
     if (!grant || grant.season !== seasonId || typeof grant.id !== 'string' || !/^[A-Za-z0-9_-]{1,80}$/.test(grant.id) ||
         state.appliedGrant === grant.id || !Number.isFinite(grant.issuedAt) ||
         !Array.isArray(grant.effects) || grant.effects.length !== enchantmentLimit ||
@@ -564,7 +586,7 @@ const Forge = (() => {
     return event;
   }
 
-  return { clientRevision, rankingProtocol, saveKey, previousSaveKey, riskSaveKey, rainbowSaveKey, marketSaveKey, olderSaveKey, legacySaveKey, backupKey, seasonId, startingShards, cooldown, recoveryBonus, offlineLimit, enchantmentLimit, forms, enchantments, magics, magicAt, appraisal, restore, loadSeason, serialize, rankingName, rankingRecord, weaponSnapshot, sameWeaponRecord, applyAdminGrant, rememberWeapon, formAt, cost, incomeBreakdown, discountInfo, passiveCapacity, baseIncome, income, rankReward, setRankBonus, preview, protectionOffer, buyProtection, saleOffer, sell, enchantPreview, collectPassive, act, enchant, reroll };
+  return { clientRevision, rankingProtocol, saveKey, previousSaveKey, storageSaveKey, riskSaveKey, rainbowSaveKey, marketSaveKey, olderSaveKey, legacySaveKey, backupKey, seasonId, startingShards, cooldown, recoveryBonus, offlineLimit, enchantmentLimit, forms, enchantments, magics, magicAt, appraisal, restore, loadSeason, serialize, rankingName, rankingRecord, weaponSnapshot, sameWeaponRecord, applyAdminGrant, rememberWeapon, formAt, cost, incomeBreakdown, discountInfo, passiveCapacity, baseIncome, income, rankReward, setRankBonus, preview, protectionOffer, buyProtection, saleOffer, sell, enchantPreview, collectPassive, act, enchant, reroll };
 })();
 
 if (typeof module !== 'undefined') module.exports = Forge;
