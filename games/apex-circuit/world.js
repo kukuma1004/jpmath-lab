@@ -1,9 +1,9 @@
-import { frontier } from './world-frontiers.js?v=9';
+import { frontier } from './world-frontiers.js?v=14';
 import { buildJunctions } from './junctions.js?v=14';
 import * as T from './vendor/three.module.min.js';
 import { grain, alpine, metropolis, coastalBridge, roadFurniture } from './world-landmarks.js?v=14';
-import { harborVillage, quarryArch, streetShops } from './world-districts.js?v=9';
-import { expansion } from './world-expansion.js?v=11';
+import { harborVillage, quarryArch, streetShops } from './world-districts.js?v=14';
+import { expansion } from './world-expansion.js?v=14';
 import { courseFrame, coursePoint, track } from './track.js?v=14';
 
 const box = new T.BoxGeometry();
