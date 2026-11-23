@@ -1,0 +1,72 @@
+.bound-canvas { position:absolute; inset:0; width:100%; height:100%; z-index:2; pointer-events:none; }
+.bound-canvas[hidden],.bound-seal[hidden],.magic-value[hidden] { display:none; }
+.weapon-wrap .bound-plumes { opacity:0; pointer-events:none; z-index:2; mix-blend-mode:screen; filter:drop-shadow(0 0 7px #ff6c1980); }
+[data-bound-magic=fire] .weapon-wrap .bound-plumes { opacity:.96; animation:flame-breathe 3.2s ease-in-out infinite alternate; }
+[data-bound-magic=ice] .weapon-wrap .bound-plumes { opacity:.87;animation:flame-breathe 7s ease-in-out infinite alternate;filter:drop-shadow(0 0 6px #70d9ff66); }
+[data-bound-magic=thunder] .weapon-wrap .bound-plumes { opacity:.82;animation:flame-breathe 4.8s ease-in-out infinite alternate;filter:drop-shadow(0 0 6px #8b9dff66); }
+[data-bound-magic=void] .weapon-wrap .bound-plumes { opacity:.8;animation:flame-breathe 8s ease-in-out infinite alternate;filter:drop-shadow(0 0 7px #ad68ff66);mix-blend-mode:normal; }
+[data-bound-magic=radiance] .weapon-wrap .bound-plumes { opacity:.85;animation:flame-breathe 6s ease-in-out infinite alternate;filter:drop-shadow(0 0 6px #ffec9c66); }
+.weapon-stage .weapon-wrap .bound-plumes { filter:none; }
+[data-bound-magic=fire] .forge-light { background:radial-gradient(ellipse,#ff8d282b,transparent 65%); opacity:.9; }
+@keyframes flame-breathe { from { transform:translateY(2px) scale(.995);opacity:.88; } to { transform:translateY(-4px) scale(1.027);opacity:1; } }
+.weapon-stage:not([data-bound-magic=none]) .enchantment-layers { opacity:.055; }
+.bound-seal { position:absolute; top:19%; left:6%; z-index:4; display:flex; flex-direction:column; align-items:center; gap:7px; min-width:245px; padding:18px 24px 15px; border:4px double var(--bound); border-radius:34px 13px 34px 13px; background:linear-gradient(125deg,#491d24ed,#24131fec 60%,#4d2421e8); color:var(--bound); box-shadow:inset 0 0 0 3px #15111c,inset 0 0 0 4px color-mix(in srgb,var(--bound) 60%,transparent),0 0 23px color-mix(in srgb,var(--bound) 22%,transparent); text-align:center; }
+.bound-crown { position:absolute; top:-39px; width:180px; height:45px; filter:drop-shadow(0 0 5px var(--bound)); }
+.bound-crown svg { width:100%;height:100%;fill:#29131df2;stroke:var(--bound);stroke-width:1.5; }
+.bound-seal::before,.bound-seal::after { content:'❧';position:absolute;top:50%;left:-23px;transform:translateY(-50%);font-size:32px;color:var(--bound);text-shadow:0 0 9px var(--bound); }
+.bound-seal::after { left:auto;right:-23px;transform:translateY(-50%) rotate(180deg); }
+.bound-seal strong { font-size:22px; letter-spacing:.05em; text-shadow:0 0 18px color-mix(in srgb,var(--bound) 50%,transparent); }
+.bound-seal small { color:#f0d9c2; font-size:11px; }
+.magic-value { display:block; margin-top:8px; padding:5px 7px; border:1px solid var(--bound); border-radius:5px; color:var(--bound); font-size:12px; line-height:1.35; }
+.bound-hint { margin:10px 0 7px; padding-left:8px; border-left:2px solid #ba8d56; color:#7e623d; font-size:10px; line-height:1.65; word-break:keep-all; }
+.auto-goal { margin:6px 0 12px; padding:11px; border:1px solid #cdbd97; border-radius:9px; background:linear-gradient(#f8eed8,#f0e3c9); box-shadow:0 2px 4px #8d683717; }
+.auto-goal-heading { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; }
+.auto-goal-heading strong { font-size:12px; color:#59492e; }
+.auto-goal-heading span { font-size:9px; color:#8c795d; }
+.auto-goal-controls { display:flex; align-items:center; gap:6px; }
+.auto-goal-controls label { font-size:11px; white-space:nowrap; }
+.auto-goal-controls input { min-width:0; width:70px; padding:6px; border:1px solid #c5a774; border-radius:5px; background:#fffaf0; color:#56412b; font:700 16px Georgia,serif; }
+.auto-goal-controls button { flex:1; min-height:36px; padding:6px; border:1px solid #ba7a35; border-radius:5px; background:linear-gradient(#efa14a,#c47229); color:#fff9e8; font:700 11px "Malgun Gothic",sans-serif; }
+.auto-goal[data-running=true] .auto-goal-controls button { border-color:#8d6759; background:linear-gradient(#a7816c,#765d50); }
+.auto-protection { display:flex; align-items:center; gap:5px; margin-top:8px; color:#745e3c; font-size:10px; }
+.auto-protection input { accent-color:#b47c38; }
+.auto-goal p { margin-top:7px; min-height:1.5em; font-size:10px; line-height:1.5; color:#895f2b; }
+.auto-goal>small { display:block; margin-top:4px; font-size:9px; line-height:1.5; color:#978263; }
+.history-magic { color:#f0bb68; font-size:10px; }
+.ranking-bound { display:block; margin-top:6px; padding:3px 5px; border:1px solid color-mix(in srgb,var(--bound) 45%,transparent); border-radius:4px; color:var(--bound); background:#111e25; font-size:10px; }
+.ranking-weapon[data-bound] { filter:drop-shadow(0 0 5px var(--bound)); }
+@media(min-width:901px) {
+ .weapon-stage .weapon-wrap { transform:matrix(1.067,0,-.13,1.059,0,0);transform-origin:36% 68%; }
+ .weapon-stage:not([data-bound-magic=none]) .weapon-orbit { opacity:.18; }
+ .forge-panel { padding-top:15px; }
+ .resources { margin-bottom:9px; }
+ .enchantment-card { margin-bottom:12px;min-height:44px;padding-block:6px; }
+ .attempt-heading { margin-bottom:8px; }
+ .chances { margin-top:7px; }.chances>div { gap:3px; }.chances dd { font-size:21px; }
+ .risk-copy { margin-top:8px;font-size:10px;line-height:1.45; }
+ .strengthen { margin-top:12px;min-height:53px;padding-block:10px; }
+ .waiting { padding-top:7px;min-height:22px; }
+ .happy-hours { margin-top:2px; }
+ .auto-ranking { margin-top:5px;padding-top:4px; }
+ .special-forge { margin-top:6px; }.special-forge>p { margin-top:4px;font-size:9px;line-height:1.35; }
+ .special-rules { margin-top:6px;font-size:9px; }
+ .bound-hint { margin:6px 0;font-size:9px;line-height:1.45; }
+ .auto-goal { margin:5px 0 8px;padding:8px; }.auto-goal-heading { margin-bottom:6px; }
+ .auto-goal-controls button { min-height:31px; }.auto-goal-controls input { padding-block:4px; }
+ .auto-protection { margin-top:6px; }.auto-goal p { margin-top:5px;font-size:9px; }
+ .outcome { margin-top:7px;min-height:56px;padding:8px; }.outcome strong { font-size:11px; }.outcome p { font-size:10px;line-height:1.4;margin-top:3px; }
+ .smelter { margin-top:8px;padding-block:9px; }.smelter>div { display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 6px;min-width:0;flex:1; }
+ .smelter small { width:100%;font-size:9px;line-height:1.3;margin-top:0; }.smelter strong { font-size:13px; }
+}
+@media(max-width:700px) {
+ .bound-seal { top:24%; left:4%; min-width:0; max-width:47%; gap:3px; padding:9px 11px; border-width:1px; }
+ .bound-crown { top:-25px;width:110px;height:28px; }
+ .bound-seal::before,.bound-seal::after { font-size:18px;left:-13px; }.bound-seal::after { left:auto;right:-13px; }
+ .bound-seal strong { font-size:12px; }
+ .bound-seal small { font-size:8px; line-height:1.4; }
+ .magic-value { font-size:9px; margin-top:5px; padding:3px; }
+ .appraisal:has(.magic-value:not([hidden])) { max-width:53%; }
+ .auto-goal { margin-block:5px 8px; padding:9px; }
+ .bound-hint { margin-block:7px 4px; font-size:9px; }
+}
+@media(prefers-reduced-motion:reduce) { .weapon-stage .weapon-wrap .bound-plumes { animation:none; } }

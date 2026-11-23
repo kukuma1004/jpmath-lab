@@ -9,7 +9,7 @@ const ForgeRanking = (() => {
   const profileKey = 'jp-math-lab:mongle-forge:ranking-profile';
   let session;
   const knownUses = value => typeof value === 'string' && /^(0|[1-9][0-9]{0,127})$/.test(value);
-  const recordCore = record => ['value', 'level', 'effect1', 'effect2', 'effect3'].map(key => record[key]).join(':');
+  const recordCore = record => ['value', 'level', 'effect1', 'effect2', 'effect3'].map(key => record[key]).concat(record.magic ?? 'none', record.magicPeak ?? '0').join(':');
 
   async function identity() {
     if (!session) session = (async () => {
@@ -46,6 +46,8 @@ const ForgeRanking = (() => {
       typeof record.nickname === 'string' && record.nickname.length <= 12 &&
       typeof record.weaponName === 'string' && record.weaponName.length <= 16 &&
       (record.protectionUses == null || knownUses(record.protectionUses)) &&
+      (record.magic == null || record.magic === 'none' && record.magicPeak === '0' || Forge.magics.some(magic => magic.id === record.magic) &&
+        typeof record.magicPeak === 'string' && /^[1-9][0-9]{2,127}$/.test(record.magicPeak)) &&
       [record.effect1, record.effect2, record.effect3].every(id => id === 'none' || Forge.enchantments.some(effect => effect.id === id));
   }
 
@@ -70,6 +72,7 @@ const ForgeRanking = (() => {
         ...previous, nickname: record.nickname, weaponName: record.weaponName,
       } : record;
       payload.rulesVersion = Forge.rankingProtocol;
+      payload.magic ??= 'none'; payload.magicPeak ??= '0';
       if (Forge.sameWeaponRecord(previous, record) && knownUses(record.protectionUses) &&
           (!knownUses(previous.protectionUses) || BigInt(record.protectionUses) >= BigInt(previous.protectionUses))) payload.protectionUses = record.protectionUses;
       const update = await request(url, {
@@ -99,7 +102,7 @@ const ForgeRanking = (() => {
     if (profile.auto !== false) profile.auto = true;
     if (typeof profile.syncedValue !== 'string' || !/^[0-9]{512}$/.test(profile.syncedValue)) profile.syncedValue = null;
     if (!knownUses(profile.syncedProtectionUses)) profile.syncedProtectionUses = null;
-    if (typeof profile.syncedCore !== 'string') profile.syncedCore = null;
+    if (typeof profile.syncedCore !== 'string' || profile.syncedCore.split(':').length !== 7) profile.syncedCore = null;
     let busy = false;
     let generation = 0;
     let verifiedUid;
@@ -200,6 +203,12 @@ const ForgeRanking = (() => {
           effects.append(chip);
         }
         info.append(effects);
+        const magic = Forge.magicAt({ broken: false, level: BigInt(record.level), magic: { id: record.magic, peak: record.magicPeak } });
+        if (magic) {
+          const seal = element('span', 'ranking-bound', magic.mark + ' ' + magic.name + ' 결속 · 제' + fmt(magic.rank) + '마력');
+          seal.style.setProperty('--bound', magic.color); info.append(seal);
+          image.dataset.bound = magic.id; image.style.setProperty('--bound', magic.color);
+        }
         const uses = element('small', 'ranking-protection', knownUses(record.protectionUses) ? '보호권 ' + fmt(BigInt(record.protectionUses)) + '장 사용' : '보호권 미기록');
         uses.title = knownUses(record.protectionUses) ? '이 무기 기록 시점까지 누적 사용한 보호권 수' : '이전 기록에는 보호권 사용량이 저장되지 않았어요.';
         info.append(uses);

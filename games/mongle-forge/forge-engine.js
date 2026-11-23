@@ -1,8 +1,8 @@
 'use strict';
 
 const Forge = (() => {
-  const clientRevision = 2026112301;
-  const rankingProtocol = 'forge-sync-1';
+  const clientRevision = 2026112401;
+  const rankingProtocol = 'forge-magic-1';
   const legacySaveKey = 'jp-math-lab:mongle-forge:v1';
   const backupKey = legacySaveKey + ':before-infinite';
   const seasonId = 'season-20261120-1';
@@ -10,8 +10,9 @@ const Forge = (() => {
   const olderSaveKey = legacySaveKey + ':' + seasonId;
   const marketSaveKey = olderSaveKey + ':market-1';
   const rainbowSaveKey = olderSaveKey + ':rainbow-1';
-  const previousSaveKey = olderSaveKey + ':risk-1';
-  const saveKey = olderSaveKey + ':storage-1';
+  const riskSaveKey = olderSaveKey + ':risk-1';
+  const previousSaveKey = olderSaveKey + ':storage-1';
+  const saveKey = olderSaveKey + ':magic-1';
   const startingShards = 10000n;
   const cooldown = 680;
   const offlineLimit = 8 * 60 * 60 * 1000;
@@ -48,6 +49,18 @@ const Forge = (() => {
     { level: 40n, name: '불사조 톱날검', effect: 'phoenix', color: '#ffb19a', detail: '깃털 톱날을 따라 타오르는 불새' },
     { level: 44n, name: '궤도 부채검', effect: 'fanblade', color: '#dbbfff', detail: '펼쳐진 다섯 칼날 사이로 흐르는 궤도' },
     { level: 48n, name: '무한 매듭검', effect: 'infinity', color: '#c6ffe4', detail: '두 번 휘감긴 칼날로 이어지는 무한' },
+    { level: 56n, name: '룬서약 대검', effect: 'gravity', color: '#b6d7ec', detail: '북방의 서약을 품은 묵직한 룬 대검' },
+    { level: 64n, name: '용월 언월도', effect: 'leaf', color: '#a0e4b0', detail: '용의 수염처럼 갈라진 초승달 언월도' },
+    { level: 72n, name: '해신의 삼지창', effect: 'anchor', color: '#7fe8e5', detail: '파도의 세 갈래를 품은 해신의 창' },
+    { level: 80n, name: '번개벼림 망치', effect: 'lightning', color: '#d2e8ff', detail: '각진 쇳덩이와 짧은 자루에 담긴 천둥' },
+    { level: 90n, name: '여의 천금봉', effect: 'clockwork', color: '#f7ca6b', detail: '구름 금테와 붉은 옻칠로 완성한 신묘한 봉' },
+    { level: 100n, name: '성약의 왕검', effect: 'dawn', color: '#ffdca1', detail: '날개 모양 황금 가드와 붉은 보석의 왕검' },
+    { level: 120n, name: '흑조 쌍날검', effect: 'eclipse', color: '#b4bcf5', detail: '검은 백조의 날개처럼 양쪽으로 펼쳐진 날' },
+    { level: 150n, name: '태양수레 차크람', effect: 'keylight', color: '#ffd482', detail: '텅 빈 중심을 둘러싼 여덟 개의 태양 칼날' },
+    { level: 180n, name: '구름가름 대도', effect: 'comet', color: '#b8d9eb', detail: '구름을 가르는 거대한 직선 철판 칼날' },
+    { level: 220n, name: '달그림자 쌍도', effect: 'aurora', color: '#c6bcff', detail: '서로 다른 곡률로 포개진 한 쌍의 월도' },
+    { level: 270n, name: '운명가름 대낫', effect: 'galaxy', color: '#d6bcf5', detail: '긴 자루 끝을 가로지르는 운명의 검은 낫' },
+    { level: 330n, name: '별을꿰는 신창', effect: 'phoenix', color: '#fff0b7', detail: '세 겹의 궤도 고리에 떠 있는 별빛 창끝' },
   ];
 
   const enchantments = [
@@ -59,6 +72,29 @@ const Forge = (() => {
     { id: 'storm', name: '폭풍의 맹세', rank: '희귀', mark: 'ϟ', tenths: 19n, weight: 18 },
     { id: 'lunar', name: '월식의 계약', rank: '전설', mark: '☾', tenths: 32n, weight: 4 },
   ];
+
+  const magics = [
+    { id: 'fire', name: '화염', title: '불꽃의 서약', mark: '♨', color: '#ff9e3d', detail: '검날을 타고 오르는 불꽃과 흩날리는 불씨' },
+    { id: 'ice', name: '빙결', title: '영원의 서리', mark: '❄', color: '#9ce9ff', detail: '서리꽃과 공중에 부서지는 투명한 얼음 결정' },
+    { id: 'thunder', name: '전격', title: '뇌명의 심장', mark: 'ϟ', color: '#c6d8ff', detail: '칼날 사이를 가르는 번개와 떠 있는 전하 고리' },
+    { id: 'void', name: '공허', title: '심연의 부름', mark: '◈', color: '#d2a8ff', detail: '빛을 삼키는 검은 궤도와 안으로 빨려드는 별가루' },
+    { id: 'radiance', name: '성광', title: '여명의 축복', mark: '✧', color: '#fff0a6', detail: '검을 감싸는 날개빛과 겹겹이 펼쳐지는 성환' },
+  ];
+
+  function normalizeMagic(raw, level = 0n) {
+    if (!raw || !magics.some(entry => entry.id === raw.id)) return null;
+    const peak = natural(raw.peak);
+    if (peak < 100n) return null;
+    return { id: raw.id, peak: peak > level ? peak : level };
+  }
+
+  function magicAt(state) {
+    const bound = state.broken ? null : normalizeMagic(state.magic, state.level);
+    if (!bound) return null;
+    const rank = 1n + (bound.peak - 100n) / 25n;
+    return { ...magics.find(entry => entry.id === bound.id), peak: bound.peak, rank,
+      tier: Number(rank > 5n ? 5n : rank), tenths: 17n + rank };
+  }
 
   function rollEnchantment(random, excluded = []) {
     const available = enchantments.filter(entry => !excluded.includes(entry.id));
@@ -77,7 +113,10 @@ const Forge = (() => {
     const rawBase = state.broken ? 0n : 120n + 15n * state.level * (state.level + 1n) * (state.level + 2n);
     const levelTenths = 10n + state.level;
     const base = rawBase * levelTenths / 10n;
-    return { enchantment: effects[0], effects, numerator, denominator, rawBase, levelTenths, base, value: base * numerator / denominator };
+    const engravedValue = base * numerator / denominator;
+    const magic = magicAt(state);
+    const value = magic ? engravedValue * magic.tenths / 10n : engravedValue;
+    return { enchantment: effects[0], effects, numerator, denominator, rawBase, levelTenths, base, engravedValue, magic, magicBonus: value - engravedValue, value };
   }
 
   function natural(value, fallback = 0n) {
@@ -124,6 +163,7 @@ const Forge = (() => {
       ...(entry.kind === 'shatter' && Number.isInteger(entry.lostEffects) && entry.lostEffects >= 0 && entry.lostEffects <= enchantmentLimit ? { lostEffects: entry.lostEffects } : {}),
       ...(['protection', 'sell'].includes(entry.kind) && /^\d+$/.test(String(entry.amount)) ? { amount: String(entry.amount) } : {}),
       ...(entry.kind === 'protected' && /^\d+$/.test(String(entry.to)) ? { to: String(entry.to) } : {}),
+      ...(magics.some(magic => magic.id === entry.magicAwakened) ? { magicAwakened: entry.magicAwakened } : {}),
     })) : [];
     const protections = {};
     if (old.protections && typeof old.protections === 'object') {
@@ -143,6 +183,7 @@ const Forge = (() => {
       bestLevel,
       enchantment: savedEffects[0] ?? null,
       enchantments: savedEffects,
+      magic: broken ? null : normalizeMagic(old.magic, level),
       shards: natural(old.shards, startingShards),
       broken,
       sold: broken && old.sold === true,
@@ -203,6 +244,7 @@ const Forge = (() => {
     if (value.length > 512 || state.level.toString().length > 128) return null;
     return { level: state.level.toString(), value: value.padStart(512, '0'),
       effect1: state.enchantments[0], effect2: state.enchantments[1] ?? 'none', effect3: state.enchantments[2] ?? 'none',
+      magic: magicAt(state)?.id ?? 'none', magicPeak: magicAt(state)?.peak.toString() ?? '0',
       ...(typeof state.protectionUses === 'bigint' && state.protectionUses.toString().length <= 128 ? { protectionUses: state.protectionUses.toString() } : {}),
     };
   }
@@ -215,11 +257,13 @@ const Forge = (() => {
     const effects = ids.filter(id => id !== 'none');
     if (effects.some(id => !enchantments.some(effect => effect.id === id))) return null;
     return weaponSnapshot({ level: BigInt(row.level), enchantments: effects, broken: false,
+      magic: row.magic === 'none' || row.magic == null ? null : normalizeMagic({ id: row.magic, peak: row.magicPeak }, BigInt(row.level)),
       protectionUses: typeof row.protectionUses === 'string' && /^(0|[1-9][0-9]{0,127})$/.test(row.protectionUses) ? BigInt(row.protectionUses) : undefined });
   }
 
   function sameWeaponRecord(a, b) {
-    return !!a && !!b && ['value', 'level', 'effect1', 'effect2', 'effect3'].every(key => a[key] === b[key]);
+    return !!a && !!b && ['value', 'level', 'effect1', 'effect2', 'effect3'].every(key => a[key] === b[key]) &&
+      (a.magic ?? 'none') === (b.magic ?? 'none') && (a.magicPeak ?? '0') === (b.magicPeak ?? '0');
   }
 
   function applyAdminGrant(state, grant) {
@@ -236,6 +280,7 @@ const Forge = (() => {
       state.enchantments = [...grant.effects]; state.enchantment = grant.effects[0];
     }
     const corrected = weaponSnapshot({ level: BigInt(source.level), enchantments: grant.effects, broken: false,
+      magic: source.magic === 'none' ? null : { id: source.magic, peak: source.magicPeak },
       protectionUses: source.protectionUses === undefined ? undefined : BigInt(source.protectionUses) });
     if (!state.rankingBest || corrected.value > state.rankingBest.value) state.rankingBest = corrected;
     rememberWeapon(state);
@@ -251,13 +296,14 @@ const Forge = (() => {
   }
 
   function formAt(level) {
-    if (level <= 48n) {
+    const last = forms.at(-1).level;
+    if (level <= last) {
       const index = forms.findLastIndex(form => level >= form.level);
-      return { ...forms[index], index, awakening: 0n, next: forms[index + 1]?.level ?? 49n };
+      return { ...forms[index], index, awakening: 0n, next: forms[index + 1]?.level ?? last + 1n };
     }
-    const step = (level - 49n) / 4n;
-    const index = 10 + Number(step % 10n);
-    return { ...forms[index], index, awakening: step / 10n + 1n, next: 49n + (step + 1n) * 4n };
+    const step = (level - last - 1n) / 10n;
+    const index = 20 + Number(step % 12n);
+    return { ...forms[index], index, awakening: step / 12n + 1n, next: last + 1n + (step + 1n) * 10n };
   }
 
   function cost(target) {
@@ -411,6 +457,7 @@ const Forge = (() => {
       kind = 'reforge';
       state.enchantment = rollEnchantment(random);
       state.enchantments = [state.enchantment];
+      state.magic = null;
       state.broken = false;
       state.sold = false;
       state.generation += 1n;
@@ -436,14 +483,23 @@ const Forge = (() => {
           state.shattered += 1n;
           state.enchantments = [];
           state.enchantment = null;
+          state.magic = null;
         }
       }
     }
+    let magicAwakened;
+    if (kind === 'success' && state.level >= 100n && !state.magic && random() < 1 / 4096) {
+      const element = magics[Math.min(magics.length - 1, Math.floor(random() * magics.length))];
+      state.magic = { id: element.id, peak: state.level };
+      magicAwakened = element.id;
+    }
+    if (state.magic && state.level > state.magic.peak) state.magic.peak = state.level;
     state.shards -= offer.cost;
     state.lastAt = now;
     rememberWeapon(state);
     const event = { kind, from: from.toString(), target: offer.target.toString(), at: now, spent: offer.cost.toString(),
       ...(kind === 'protected' ? { to: state.level.toString() } : {}),
+      ...(magicAwakened ? { magicAwakened } : {}),
       ...(kind === 'shatter' ? { lostEffects: effectCount } : {}),
     };
     state.history.unshift(event);
@@ -503,11 +559,12 @@ const Forge = (() => {
     state.shards += offer.shards;
     state.broken = true; state.sold = true; state.level = 0n;
     state.enchantments = []; state.enchantment = null; state.lastAt = now;
+    state.magic = null;
     state.history.unshift(event); state.history.length = Math.min(state.history.length, 12);
     return event;
   }
 
-  return { clientRevision, rankingProtocol, saveKey, previousSaveKey, rainbowSaveKey, marketSaveKey, olderSaveKey, legacySaveKey, backupKey, seasonId, startingShards, cooldown, recoveryBonus, offlineLimit, enchantmentLimit, forms, enchantments, appraisal, restore, loadSeason, serialize, rankingName, rankingRecord, weaponSnapshot, sameWeaponRecord, applyAdminGrant, rememberWeapon, formAt, cost, incomeBreakdown, discountInfo, passiveCapacity, baseIncome, income, rankReward, setRankBonus, preview, protectionOffer, buyProtection, saleOffer, sell, enchantPreview, collectPassive, act, enchant, reroll };
+  return { clientRevision, rankingProtocol, saveKey, previousSaveKey, riskSaveKey, rainbowSaveKey, marketSaveKey, olderSaveKey, legacySaveKey, backupKey, seasonId, startingShards, cooldown, recoveryBonus, offlineLimit, enchantmentLimit, forms, enchantments, magics, magicAt, appraisal, restore, loadSeason, serialize, rankingName, rankingRecord, weaponSnapshot, sameWeaponRecord, applyAdminGrant, rememberWeapon, formAt, cost, incomeBreakdown, discountInfo, passiveCapacity, baseIncome, income, rankReward, setRankBonus, preview, protectionOffer, buyProtection, saleOffer, sell, enchantPreview, collectPassive, act, enchant, reroll };
 })();
 
 if (typeof module !== 'undefined') module.exports = Forge;

@@ -26,6 +26,8 @@
   let renderedOffers;
   let updatePending = false;
   let updater;
+  let magicVisual;
+  let automatic;
 
   function fmt(value) {
     const digits = value.toString();
@@ -47,7 +49,7 @@
   function loadStored() {
     if (!storageOkay) return { next: state, reset: false };
     try {
-      const previous = localStorage.getItem(Forge.previousSaveKey) ?? localStorage.getItem(Forge.rainbowSaveKey) ?? localStorage.getItem(Forge.marketSaveKey) ?? localStorage.getItem(Forge.olderSaveKey);
+      const previous = localStorage.getItem(Forge.previousSaveKey) ?? localStorage.getItem(Forge.riskSaveKey) ?? localStorage.getItem(Forge.rainbowSaveKey) ?? localStorage.getItem(Forge.marketSaveKey) ?? localStorage.getItem(Forge.olderSaveKey);
       const original = localStorage.getItem(Forge.saveKey) ?? previous;
       const raw = original ? JSON.parse(original) : null;
       return { next: Forge.loadSeason(raw), reset: previous !== null || (!!raw && raw.season !== Forge.seasonId) || localStorage.getItem(Forge.legacySaveKey) !== null };
@@ -63,6 +65,7 @@
       if (reset) {
         localStorage.removeItem(Forge.legacySaveKey);
         localStorage.removeItem(Forge.previousSaveKey);
+        localStorage.removeItem(Forge.riskSaveKey);
         localStorage.removeItem(Forge.rainbowSaveKey);
         localStorage.removeItem(Forge.marketSaveKey);
         localStorage.removeItem(Forge.olderSaveKey);
@@ -90,13 +93,25 @@
 
   function renderWeapon() {
     const form = Forge.formAt(state.level);
-    const { enchantment, effects, numerator, denominator, levelTenths, base, value } = Forge.appraisal(state);
+    const { enchantment, effects, numerator, denominator, levelTenths, base, value, magic, magicBonus } = Forge.appraisal(state);
+    magicVisual?.update(magic);
+    stage.dataset.boundMagic = magic?.id ?? 'none';
+    stage.style.setProperty('--bound', magic?.color ?? '#d9ba78');
+    const boundArt = document.querySelector('.bound-plumes');
+    if (magic && boundArt.dataset.magic !== magic.id) { boundArt.src = 'assets/magic-' + magic.id + '-plumes.webp'; boundArt.dataset.magic = magic.id; }
+    $('bound-seal').hidden = !magic;
+    $('bound-name').textContent = magic ? '고유 마법 · ' + magic.name : '';
+    $('bound-detail').textContent = magic ? magic.title + ' · 제' + fmt(magic.rank) + '마력' : '';
+    $('bound-seal').title = magic?.detail ?? '';
+    $('magic-value').hidden = !magic;
+    $('magic-value').textContent = magic ? '고유 마법 보너스  +' + fmt(magicBonus) + ' G' : '';
+    $('bound-hint').textContent = magic ? magic.name + ' 영혼 결속 · 강화할수록 마력과 가치가 자라요.' : '100강부터 강화 성공 시 아주 드물게 고유 마법이 깃들어요. 속성은 이 검에 결속돼요.';
     const multiplier = (Number(numerator) / Number(denominator)).toLocaleString('ko-KR', { maximumFractionDigits: 3 });
     stage.dataset.enchantment = enchantment?.id ?? 'none';
     $('enchantment-card').dataset.enchantment = enchantment?.id ?? 'none';
     $('enchantment-card').hidden = state.broken;
     $('magic-tag').hidden = state.broken;
-    $('magic-tag').textContent = !effects.length ? '' : effects.length === 1 ? enchantment.mark + ' ' + enchantment.name : effects.map(entry => entry.mark).join(' ') + ' ' + effects.length + '중 마법';
+    $('magic-tag').textContent = !effects.length ? '' : effects.length === 1 ? enchantment.mark + ' ' + enchantment.name : effects.map(entry => entry.mark).join(' ') + ' ' + effects.length + '중 각인';
     $('magic-tag').title = effects.map(entry => entry.name).join(' + ');
     $('magic-slots').textContent = effects.length + ' / ' + Forge.enchantmentLimit;
     $('magic-multiplier').textContent = '가치 ×' + multiplier;
@@ -135,7 +150,7 @@
     $('sword-value').title = number.format(value) + ' G';
     $('appraisal-label').textContent = state.broken ? '감정가' : '감정가 · 강화 ×' + fmt(levelTenths / 10n) + (levelTenths % 10n ? '.' + levelTenths % 10n : '');
     $('value-formula').textContent = state.broken ? '파괴된 검' : '기본 ' + fmt(base) + effects.map(entry => ' × ' + Number(entry.tenths) / 10).join('');
-    const name = state.sold ? '무기 판매 완료' : state.broken ? '깨진 검' : form.name;
+    const name = state.sold ? '무기 판매 완료' : state.broken ? '깨진 검' : (magic ? magic.name + ' · ' : '') + form.name;
     const src = asset(state.broken ? 'broken-sword' : 'sword-' + form.level);
     if (src !== shownWeapon) {
       weapon.src = src;
@@ -245,12 +260,13 @@
       const target = BigInt(entry.target);
       item.append(
         node('span', 'history-symbol', entry.kind === 'success' || entry.kind === 'enchant' ? '✦' : entry.kind === 'shatter' ? '✕' : '↻'),
-        node('strong', '', labels[entry.kind]),
+        node('strong', '', entry.magicAwakened ? '고유 마법 발현' : labels[entry.kind]),
         node('span', 'history-levels', entry.kind === 'reroll' ? entry.slot + '번 · ' + (Forge.enchantments.find(effect => effect.id === entry.replaced)?.name ?? '이전 효과') + ' → ' + (Forge.enchantments.find(effect => effect.id === entry.enchantment)?.name ?? '새 효과') : entry.kind === 'protected' ? entry.to !== undefined && BigInt(entry.to) < from ? level(from) + ' → ' + level(BigInt(entry.to)) : level(from) + ' 유지' : entry.kind === 'protection' ? level(target) + ' 전용 · ' + fmt(BigInt(entry.amount ?? 0)) + ' 별철' : entry.kind === 'sell' ? '+' + fmt(BigInt(entry.amount ?? 0)) + ' 별철' : entry.kind === 'reforge' ? '새 검 +0' : entry.kind === 'enchant' ?
           (Forge.enchantments.find(effect => effect.id === entry.enchantment)?.name ?? '효과 추가') : entry.kind === 'enchant-fail' ? level(from) + ' · 효과 유지' :
           level(from) + ' → ' + (entry.kind === 'success' ? level(target) : entry.kind === 'shatter' ?
             '파괴' + (entry.lostEffects ? ' · 효과 ' + entry.lostEffects + '개 소멸' : '') : '+0')),
       );
+      if (entry.magicAwakened) item.append(node('small', 'history-magic', Forge.magics.find(magic => magic.id === entry.magicAwakened)?.name + ' 영혼 결속'));
       return item;
     }));
   }
@@ -360,12 +376,17 @@
       title = '새 검이 준비됐어요.';
       copy = '새 효과 하나를 가진 검 +0으로 시작해요. 최고 기록 ' + level(state.bestLevel);
     }
+    if (event.magicAwakened) {
+      const magic = Forge.magics.find(entry => entry.id === event.magicAwakened);
+      title = magic.name + '이 검에 깃들었어요!';
+      copy = level(state.level) + ' · ' + magic.title + '. 이 검의 고유 마법은 바뀌지 않으며, 감정가와 이펙트가 강화에 따라 자라요.';
+    }
     $('outcome-title').textContent = title;
     $('outcome-copy').textContent = copy;
     if (animate) animateEvent(event);
   }
 
-  async function attempt(action = 'forge') {
+  async function attempt(action = 'forge', guard) {
     if (busy || updatePending) return;
     const displayed = renderedOffers;
     const specialOffer = action === 'special' ? displayed.special : null;
@@ -374,13 +395,15 @@
     let event;
     try {
       if (!await updater.check()) return;
-      event = await transaction(next => action === 'special' ? specialOffer.reroll ? Forge.reroll(next, Date.now(), Math.random, specialOffer.token) : Forge.enchant(next, Date.now(), Math.random, specialOffer.token) : action === 'protection' ? Forge.buyProtection(next, Date.now(), displayed.protection.token) : action === 'sell' ? Forge.sell(next, Date.now(), saleToken) : Forge.act(next, Date.now(), Math.random, displayed.normal.token));
+      if (guard && !guard()) return;
+      event = await transaction(next => guard && !guard() ? null : action === 'special' ? specialOffer.reroll ? Forge.reroll(next, Date.now(), Math.random, specialOffer.token) : Forge.enchant(next, Date.now(), Math.random, specialOffer.token) : action === 'protection' ? Forge.buyProtection(next, Date.now(), displayed.protection.token) : action === 'sell' ? Forge.sell(next, Date.now(), saleToken) : Forge.act(next, Date.now(), Math.random, displayed.normal.token));
       if (event) showOutcome(event, !['protection', 'sell'].includes(event.kind));
       else if (action !== 'sell') $('waiting').textContent = '비용이나 무기 상태가 바뀌었어요. 표시를 확인하고 다시 눌러 주세요.';
       if (action === 'sell') {
         if (event) $('sale-dialog').close();
         else $('sale-error').textContent = '무기가 바뀌었거나 거래 중이에요. 닫은 뒤 판매 가격을 다시 확인해 주세요.';
       }
+      return event;
     } finally {
       const delay = event ? Math.max(0, Forge.cooldown - (Date.now() - event.at)) : 0;
       setTimeout(() => {
@@ -466,9 +489,10 @@
     if (!document.hidden) transaction();
   }, 1000);
 
+  magicVisual = ForgeMagic.mount($('bound-canvas'), weapon);
   updater = ForgeUpdate.mount({
     revision: Forge.clientRevision,
-    onPending: () => { updatePending = true; renderControls(); },
+    onPending: () => { updatePending = true; automatic?.suspend(); renderControls(); },
     beforeReload: async () => {
       if (busy) return false;
       await transaction();
@@ -488,5 +512,7 @@
     onGrant: grant => transaction(next => Forge.applyAdminGrant(next, grant)),
     beforePublish: () => updater.check(),
   });
-  transaction(next => { if (next.rankingBest) Forge.rememberWeapon(next); });
+  transaction(next => { if (next.rankingBest) Forge.rememberWeapon(next); }).then(() => {
+    automatic = ForgeAuto.mount({ getState: () => state, step: action => attempt(action, () => automatic?.active()), canAct: () => !busy && !updatePending, fmt });
+  });
 })();

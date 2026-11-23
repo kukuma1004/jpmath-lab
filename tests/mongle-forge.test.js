@@ -4,6 +4,48 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const Forge = require('../games/mongle-forge/forge-engine.js');
 
+test('a rare bound magic can awaken only on a successful +100-or-higher normal enhancement', () => {
+  const now=Date.UTC(2026,10,24,0),funds=(10n**80n).toString();
+  const below=Forge.restore({level:98,shards:funds},now);let draws=0;
+  Forge.act(below,now,()=>{draws++;return 0});assert.equal(draws,1);assert.equal(below.magic,null);
+  const first=Forge.restore({level:99,shards:funds,enchantments:['lunar','lunar','lunar']},now);
+  const rolls=[0,0,.4],event=Forge.act(first,now,()=>rolls.shift());
+  assert.equal(event.magicAwakened,'thunder');assert.deepEqual(first.magic,{id:'thunder',peak:100n});assert.equal(rolls.length,0);
+  const missed=Forge.restore({level:99,shards:funds},now),missRolls=[0,.999999];
+  Forge.act(missed,now,()=>missRolls.shift());assert.equal(missed.magic,null);assert.equal(missRolls.length,0);
+  const failed=Forge.restore({level:104,shards:funds,protections:{105:true}},now);let failedDraws=0;
+  Forge.act(failed,now,()=>{failedDraws++;return .9999});assert.equal(failedDraws,1);assert.equal(failed.magic,null);
+  const rerolled=Forge.restore({level:100,shards:funds,enchantments:['cinder','cinder','cinder']},now);
+  Forge.reroll(rerolled,now,()=>0);assert.equal(rerolled.magic,null);
+});
+
+test('bound magic never rerolls, grows with its weapon peak, and raises exact appraisal and sale value', () => {
+  const now=Date.UTC(2026,10,24,0),funds=(10n**80n).toString();
+  for(const magic of Forge.magics) {
+    const s=Forge.restore({level:100,shards:funds,enchantments:['lunar','lunar','lunar'],magic:{id:magic.id,peak:'100'}},now);
+    const appraisal=Forge.appraisal(s);assert.equal(appraisal.value,appraisal.engravedValue*18n/10n);
+    assert.equal(appraisal.magicBonus,appraisal.value-appraisal.engravedValue);assert.equal(Forge.saleOffer(s).shards,appraisal.value/10n);
+    let draws=0;Forge.act(s,now,()=>{draws++;return 0});assert.equal(draws,1);assert.equal(s.magic.id,magic.id);assert.equal(s.magic.peak,101n);
+    s.level=124n;Forge.act(s,now+1000,()=>0);assert.equal(s.magic.peak,125n);assert.equal(Forge.magicAt(s).rank,2n);
+    s.protections['126']=true;Forge.act(s,now+2000,()=>.9999);assert.equal(s.level,124n);assert.equal(s.magic.peak,125n);
+    const restored=Forge.restore(JSON.parse(Forge.serialize(s)),now+3000);assert.deepEqual(restored.magic,s.magic);
+    Forge.reroll(restored,now+3000,()=>0);assert.deepEqual(restored.magic,s.magic);
+    const record=Forge.rankingRecord(restored,'대장장이','마법검');assert.equal(record.magic,magic.id);assert.equal(record.magicPeak,'125');
+    assert.equal(BigInt(record.value),Forge.appraisal(restored).value);
+  }
+});
+
+test('ordinary reset keeps bound magic while destruction, sale and a newly forged weapon remove it', () => {
+  const now=Date.UTC(2026,10,24,0),funds='9999999999',seed={level:100,shards:funds,enchantments:['lunar','lunar','lunar'],magic:{id:'fire',peak:'150'}};
+  const reset=Forge.restore(seed,now),quote=Forge.preview(reset,now);
+  assert.equal(Forge.act(reset,now,()=>(quote.success+1)/10000).kind,'reset');assert.equal(reset.level,0n);assert.equal(reset.magic.id,'fire');assert.equal(reset.magic.peak,150n);
+  const shattered=Forge.restore(seed,now);Forge.act(shattered,now,()=>.9999);assert.equal(shattered.magic,null);assert.equal(shattered.rankingBest.magic,'fire');
+  Forge.act(shattered,now+1000,()=>0);assert.equal(shattered.magic,null);
+  const sold=Forge.restore(seed,now);Forge.sell(sold,now,Forge.saleOffer(sold).token);assert.equal(sold.magic,null);assert.equal(sold.rankingBest.magic,'fire');
+  const invalid=Forge.restore({...seed,magic:{id:'fire',peak:'99'}},now);assert.equal(invalid.magic,null);
+  const broken=Forge.restore({...seed,version:2,broken:true},now);assert.equal(broken.magic,null);
+});
+
 test('engine, release manifest and ranking submissions agree on the release protocol', () => {
   const manifest=require('../games/mongle-forge/release.json');
   assert.equal(Forge.clientRevision,manifest.revision);
@@ -238,21 +280,24 @@ test('strengthening continues above JavaScript safe integer precision without ro
   assert(Forge.formAt(restored.level).next > restored.level);
 });
 
-test('post +48 forms keep changing and failed attempts cannot erase the collection', () => {
+test('32 distinct milestone forms and post +330 awakenings preserve collection after failure', () => {
   assert.equal(Forge.formAt(36n).level, 36n);
   assert.equal(Forge.formAt(40n).level, 40n);
   assert.equal(Forge.formAt(44n).level, 44n);
   assert.equal(Forge.formAt(48n).level, 48n);
-  assert.notEqual(Forge.formAt(49n).index, Forge.formAt(53n).index);
-  assert.equal(Forge.formAt(49n).index, Forge.formAt(89n).index);
-  assert(Forge.formAt(89n).awakening > Forge.formAt(49n).awakening);
+  assert.equal(Forge.forms.length,32);
+  assert.equal(new Set(Forge.forms.map(form=>form.name)).size,32);
+  for(const form of Forge.forms)assert.equal(Forge.formAt(form.level).name,form.name);
+  assert.notEqual(Forge.formAt(331n).index, Forge.formAt(341n).index);
+  assert.equal(Forge.formAt(331n).index, Forge.formAt(451n).index);
+  assert(Forge.formAt(451n).awakening > Forge.formAt(331n).awakening);
   const state = funded(80);
   state.pity['81'] = 9000;
   assert.equal(Forge.preview(state,100000).success, 9500);
   assert(Forge.preview(state,100000).shatter > 0);
   Forge.act(state, 100000, () => 0.9999);
   assert.equal(state.bestLevel, 80n);
-  assert.equal(Forge.forms.filter(form => form.level <= state.bestLevel).length, 20);
+  assert.equal(Forge.forms.filter(form => form.level <= state.bestLevel).length, 24);
 });
 
 test('same-level appraisal reflects the actual persistent magical affix', () => {
