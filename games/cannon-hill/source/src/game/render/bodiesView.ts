@@ -7,6 +7,7 @@ import type { TerrainPainter } from './terrainPainter';
 interface PView {
   img: Phaser.GameObjects.Image;
   glow: Phaser.GameObjects.Image;
+  wake: Phaser.GameObjects.Image;
   /** 밝은 하늘(구름 궁궐 등)에서도 포탄이 보이도록 깔아 두는 어두운 그늘 */
   shade: Phaser.GameObjects.Image;
   trail: Phaser.GameObjects.Particles.ParticleEmitter;
@@ -21,15 +22,23 @@ export class BodiesView {
   proj = new Map<number, PView>();
   private chunks = new Map<number, { img: Phaser.GameObjects.Image; key: string; seen: boolean }>();
   private boulders = new Map<number, { img: Phaser.GameObjects.Image; seen: boolean }>();
+  private cloudFx: Phaser.GameObjects.Graphics;
+  private cloudLabels = new Map<number, Phaser.GameObjects.Text>();
   onProjectileGone: (id: number) => void = () => {};
 
-  constructor(private scene: Phaser.Scene, private layer: Phaser.GameObjects.Layer, private painter: TerrainPainter, private quality: number) {}
+  constructor(private scene: Phaser.Scene, private layer: Phaser.GameObjects.Layer, private painter: TerrainPainter, private quality: number) {
+    this.cloudFx = scene.add.graphics().setDepth(24);
+    layer.add(this.cloudFx);
+  }
 
   private trailFor(look: string, follow: Phaser.GameObjects.Image): Phaser.GameObjects.Particles.ParticleEmitter {
     const q = this.quality;
     let cfg: Phaser.Types.GameObjects.Particles.ParticleEmitterConfig;
     let tex = 'smoke';
     switch (look) {
+      case 'poison':
+        cfg = { lifespan: 650, speed: { min: 3, max: 22 }, scale: { start: 0.14, end: 0.5 }, alpha: { start: 0.5, end: 0 }, tint: [0x99d85a, 0x6f9746, 0xd0e395], frequency: 24 / q, gravityY: -18 };
+        break;
       case 'arrow':
         tex = 'glow';
         cfg = { lifespan: 220, scale: { start: 0.18, end: 0 }, alpha: { start: 0.7, end: 0 }, blendMode: 'ADD', tint: 0xcfe8ff, frequency: 12 / q };
@@ -51,7 +60,7 @@ export class BodiesView {
         cfg = { lifespan: 420, speed: { min: 10, max: 60 }, scale: { start: 0.5, end: 0 }, alpha: { start: 1, end: 0 }, blendMode: 'ADD', tint: [0x9cff6b, 0xe0ff9a], frequency: 24 / q };
         break;
       default:
-        cfg = { lifespan: 900, speed: { min: 2, max: 16 }, scale: { start: 0.22, end: 0.7 }, alpha: { start: 0.5, end: 0 }, tint: [0xd8d0c8, 0xa89a90], frequency: 18 / q, gravityY: -14 };
+        cfg = { lifespan: 760, speed: { min: 3, max: 19 }, scale: { start: 0.13, end: 0.66 }, alpha: { start: 0.7, end: 0 }, tint: [0xc79972, 0x9f7c70, 0x766570], frequency: 14 / q, gravityY: -22 };
     }
     const e = this.scene.add.particles(0, 0, tex, { ...cfg, follow });
     e.setDepth(29);
@@ -60,6 +69,27 @@ export class BodiesView {
   }
 
   sync(b: Battle, t: number): void {
+    this.cloudFx.clear();
+    const seenClouds = new Set<number>();
+    for (const c of b.clouds) {
+      seenClouds.add(c.id);
+      const r = c.radius, g = this.cloudFx;
+      g.fillStyle(0x96c754, 0.12);g.fillEllipse(c.x,c.y,r*2,r*1.1);
+      g.lineStyle(1.5,0xb5e277,0.55);g.strokeEllipse(c.x,c.y,r*2,r*1.1);
+      const n = this.quality < 0.6 ? 5 : 10;
+      for (let i=0;i<n;i++) {
+        const u = i / (n-1), sway = Math.sin(t*1.3+i*2.1+c.id)*4;
+        const x=c.x+(u-0.5)*r*1.65, y=c.y+Math.sin(i*2.6+t*0.7)*r*0.22;
+        g.fillStyle(i%2 ? 0x77954e : 0xc0df79,0.12);
+        g.fillEllipse(x+sway,y,r*(0.45+0.07*Math.sin(i+t)),r*0.45);
+      }
+      let label = this.cloudLabels.get(c.id);
+      if (!label) {
+        label=this.scene.add.text(c.x,c.y-r*0.63,'독무 · 48/차례',{fontFamily:'sans-serif',fontSize:'13px',fontStyle:'bold',color:'#d8f5b1',stroke:'#25321d',strokeThickness:4}).setOrigin(0.5).setDepth(28);
+        this.layer.add(label);this.cloudLabels.set(c.id,label);
+      }
+    }
+    for (const [id,label] of this.cloudLabels) if(!seenClouds.has(id)){label.destroy();this.cloudLabels.delete(id);}
     // 포탄
     for (const v of this.proj.values()) v.seen = false;
     for (const p of b.projectiles) {
@@ -71,17 +101,26 @@ export class BodiesView {
         if (p.child) img.setScale(look === 'ball' ? 0.45 : 0.7);
         const glow = this.scene.add.image(p.x, p.y, 'glow').setBlendMode(Phaser.BlendModes.ADD).setTint(w.glow).setScale(p.child ? 0.35 : 0.6).setAlpha(0.65).setDepth(30);
         const shade = this.scene.add.image(p.x, p.y, 'glow').setTint(0x0c1020).setScale(p.child ? 0.34 : 0.58).setAlpha(0.62).setDepth(29);
-        this.layer.add([shade, glow, img]);
-        v = { img, glow, shade, trail: this.trailFor(look, img), look, seen: true };
+        const wake = this.scene.add.image(p.x,p.y,look === 'ball' || look === 'megabomb' ? 'cannon_wake' : 'ember_wake').setOrigin(1,0.5)
+          .setTint(look === 'ball' || look === 'megabomb' ? 0xffffff : w.glow).setDepth(30)
+          .setBlendMode(Phaser.BlendModes.ADD);
+        this.layer.add([shade, glow, wake, img]);
+        v = { img, glow, shade, wake, trail: this.trailFor(look, img), look, seen: true };
         this.proj.set(p.id, v);
       }
       v.seen = true;
       v.img.setPosition(p.x, p.y);
       v.glow.setPosition(p.x, p.y);
       v.shade.setPosition(p.x, p.y);
-      if (look === 'arrow' || look === 'iron') v.img.setRotation(Math.atan2(p.vy, p.vx));
+      const heading = Math.atan2(p.vy,p.vx);
+      const speed = Math.hypot(p.vx,p.vy);
+      const size = p.child ? 0.48 : 1;
+      v.wake.setPosition(p.x,p.y).setRotation(heading).setVisible(!p.stuck && speed > 38)
+        .setScale(size * Math.min(1.35, speed / 510), size * (look === 'arrow' ? 0.2 : 0.66 + 0.11*Math.sin(t*30)))
+        .setAlpha(look === 'paper' ? 0.52 : 0.96);
+      if (look === 'arrow' || look === 'iron' || look === 'rocket') v.img.setRotation(Math.atan2(p.vy, p.vx));
       else if (look === 'paper') v.img.setRotation(t * 12);
-      else if (look === 'bomb' || look === 'megabomb' || look === 'ball') v.img.rotation += 0.05;
+      else if (look === 'bomb' || look === 'megabomb' || look === 'ball' || look === 'poison') v.img.setRotation(t * 3);
       if (p.stuck) {
         // 심지가 타는 진천뢰: 빨갛게 깜빡
         const blink = Math.sin(t * (10 + (1.2 - p.fuse) * 30)) > 0;
@@ -92,7 +131,7 @@ export class BodiesView {
       if (v.seen) continue;
       v.img.destroy();
       v.glow.destroy();
-      v.shade.destroy();
+      v.shade.destroy(); v.wake.destroy();
       v.trail.stop();
       this.scene.time.delayedCall(1200, () => v.trail.destroy());
       this.proj.delete(id);
@@ -157,7 +196,10 @@ export class BodiesView {
   }
 
   destroy(): void {
-    for (const v of this.proj.values()) { v.img.destroy(); v.glow.destroy(); v.shade.destroy(); v.trail.destroy(); }
+    this.cloudFx.destroy();
+    for (const label of this.cloudLabels.values()) label.destroy();
+    this.cloudLabels.clear();
+    for (const v of this.proj.values()) { v.img.destroy(); v.glow.destroy(); v.shade.destroy(); v.wake.destroy(); v.trail.destroy(); }
     for (const v of this.chunks.values()) { v.img.destroy(); this.scene.textures.remove(v.key); }
     for (const v of this.boulders.values()) v.img.destroy();
     this.proj.clear();

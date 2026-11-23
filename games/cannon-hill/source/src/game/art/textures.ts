@@ -61,6 +61,52 @@ export function makeTextures(scene: Phaser.Scene): void {
     ctx.fillStyle = 'rgba(0,0,0,0.3)';
     ctx.beginPath(); ctx.moveTo(6, 5); ctx.lineTo(10, 4); ctx.lineTo(7, 10); ctx.closePath(); ctx.fill();
   });
+  // Tapered strokes point toward the leading edge; the render view follows velocity.
+  make(scene, 'ember_wake', 112, 30, (ctx) => {
+    const fade = ctx.createLinearGradient(0,0,112,0);
+    fade.addColorStop(0,'rgba(255,255,255,0)'); fade.addColorStop(0.48,'rgba(255,255,255,.52)');
+    fade.addColorStop(1,'white'); ctx.fillStyle=fade;
+    for (let j=0;j<7;j++) {
+      const a = 4+j*3.4, tip = (j*19)%41;
+      ctx.beginPath();ctx.moveTo(111,15);
+      ctx.quadraticCurveTo(68,a-3,tip,a+(j%2?3:-3));
+      ctx.quadraticCurveTo(63,a+2,100,18);ctx.fill();
+    }
+  });
+  make(scene, 'cannon_wake', 128, 32, (ctx) => {
+    const flame = ctx.createLinearGradient(0,0,128,0);
+    flame.addColorStop(0,'rgba(222,69,22,0)');
+    flame.addColorStop(.35,'rgba(248,79,14,.67)');
+    flame.addColorStop(.73,'#ff9a25');
+    flame.addColorStop(1,'#fff7b2');
+    ctx.fillStyle = flame;
+    for (let j=0; j<8; j++) {
+      const start = (j*17)%49, y = 3+j*3.7;
+      ctx.beginPath();ctx.moveTo(126,16);
+      ctx.quadraticCurveTo(72,y-2,start,y+(j%2?3:-3));
+      ctx.quadraticCurveTo(72,y+4,115,19);ctx.fill();
+    }
+    ctx.fillStyle='#ffe798';
+    ctx.beginPath();ctx.moveTo(79,13);ctx.lineTo(123,14);ctx.lineTo(125,19);ctx.fill();
+    for (let j=0; j<12; j++) {
+      const x=(j*23)%78, y=(j*13)%31;
+      ctx.fillStyle=j%3?'#ee752d':'#ffc76a';
+      ctx.fillRect(x,y,1+j%4,1);
+    }
+  });
+  make(scene, 'blast_fan', 240, 240, (ctx) => {
+    const light=ctx.createRadialGradient(120,120,0,120,120,115);
+    light.addColorStop(0,'white');light.addColorStop(0.24,'rgba(255,255,255,.95)');
+    light.addColorStop(0.67,'rgba(255,255,255,.6)');light.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle=light;
+    for(let j=0;j<22;j++) {
+      const a=Math.PI*(1.05+0.9*((j*13)%23)/22), length=38+(j*37)%79;
+      const dx=Math.cos(a),dy=Math.sin(a),width=1+(j*7)%5;
+      ctx.beginPath();ctx.moveTo(120-dy*width,120+dx*width);
+      ctx.lineTo(120+dx*length,120+dy*length);
+      ctx.lineTo(120+dy*width,120-dx*width);ctx.fill();
+    }
+  });
   make(scene, 'ring', 128, 128, (ctx) => {
     ctx.strokeStyle = 'rgba(255,255,255,0.95)';
     ctx.lineWidth = 6;
@@ -125,14 +171,14 @@ export function makeTextures(scene: Phaser.Scene): void {
   make(scene, 'proj_ball', 24, 24, (ctx) => {
     // radial은 네모를 칠하므로 둥글게 잘라 둔다(안 그러면 돌 때 네모가 보인다)
     ctx.beginPath(); ctx.arc(12, 12, 11, 0, Math.PI * 2); ctx.clip();
-    radial(ctx, 12, 12, 11, [[0, '#7a6a60'], [0.6, '#3a3330'], [1, '#120e0c']]);
+    radial(ctx, 12, 12, 11, [[0, '#523127'], [0.53, '#73331b'], [0.77, '#de6424'], [0.9, '#ffce64'], [1, '#ffed99']]);
     ctx.fillStyle = 'rgba(255,255,255,0.6)';
     ctx.beginPath(); ctx.arc(8, 8, 3, 0, Math.PI * 2); ctx.fill();
   });
   make(scene, 'proj_megabomb', 36, 36, (ctx) => {
     ctx.beginPath(); ctx.arc(18, 20, 14, 0, Math.PI * 2);
     const g = ctx.createRadialGradient(13, 14, 2, 18, 20, 15);
-    g.addColorStop(0, '#6a5e58'); g.addColorStop(1, '#141010');
+    g.addColorStop(0, '#ffba88'); g.addColorStop(0.36, '#bd3830'); g.addColorStop(1, '#4b1722');
     ctx.fillStyle = g; ctx.fill();
     ctx.strokeStyle = '#000'; ctx.lineWidth = 1.5; ctx.stroke();
     ctx.fillStyle = '#c8a040'; ctx.fillRect(14, 3, 8, 5);
@@ -178,5 +224,17 @@ export function makeTextures(scene: Phaser.Scene): void {
   });
   make(scene, 'proj_fox', 28, 28, (ctx) => {
     radial(ctx, 14, 14, 14, [[0, 'rgba(240,250,255,1)'], [0.35, 'rgba(127,216,255,0.95)'], [1, 'rgba(79,140,255,0)']]);
+  });
+  make(scene, 'proj_rocket', 36, 14, (ctx) => {
+    ctx.beginPath();ctx.moveTo(5,3);ctx.lineTo(26,3);ctx.lineTo(35,7);ctx.lineTo(26,11);ctx.lineTo(5,11);ctx.closePath();
+    const g=ctx.createLinearGradient(0,3,0,11);g.addColorStop(0,'#f5d58b');g.addColorStop(0.5,'#c96e37');g.addColorStop(1,'#5d3332');ctx.fillStyle=g;ctx.fill();ctx.strokeStyle='#362126';ctx.lineWidth=1.2;ctx.stroke();
+    ctx.fillStyle='#a43831';ctx.beginPath();ctx.moveTo(9,7);ctx.lineTo(0,0);ctx.lineTo(2,7);ctx.lineTo(0,14);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#fff1b2';ctx.fillRect(22,4,3,5);
+  });
+  make(scene, 'proj_poison', 28, 28, (ctx) => {
+    ctx.beginPath();ctx.moveTo(9,3);ctx.lineTo(19,3);ctx.lineTo(18,8);ctx.bezierCurveTo(30,14,26,25,14,26);ctx.bezierCurveTo(2,25,-2,14,10,8);ctx.closePath();
+    const g=ctx.createRadialGradient(10,11,1,14,17,15);g.addColorStop(0,'#dbef97');g.addColorStop(0.5,'#84ab4a');g.addColorStop(1,'#304f3d');ctx.fillStyle=g;ctx.fill();ctx.strokeStyle='#253629';ctx.lineWidth=1.6;ctx.stroke();
+    ctx.fillStyle='#8a5c3c';ctx.fillRect(9,1,10,4);ctx.fillStyle='#e1c78e';ctx.fillRect(7,10,14,3);
+    ctx.fillStyle='#f0f2bf';ctx.beginPath();ctx.ellipse(9,17,2,4,-0.4,0,Math.PI*2);ctx.fill();
   });
 }

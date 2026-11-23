@@ -1,5 +1,12 @@
 import type Phaser from 'phaser';
-import { ART } from './artData';
+import { ART as BASE_ART, type ArtData } from './artData';
+import { TEX } from './textures';
+import { WEAPON_BOX } from './characters';
+
+const ART: ArtData = { ...BASE_ART, chars: { ...BASE_ART.chars,
+  hwacha: { w: 177, h: 240, footX: 0.525, cx: 0.59 },
+  alchemist: { w: 207, h: 240, footX: 0.5, cx: 0.58 },
+} };
 
 /**
  * 그려 받은 그림(public/art)을 게임에 붙이는 자리 정보.
@@ -25,6 +32,8 @@ export const CHAR_RIG: Record<string, CharRig> = {
   mudang: { height: 60, hand: [0.907, 0.68] },
   turtle: { height: 58, hand: [0.76, 0.55] },
   gumiho: { height: 62, hand: [0.831, 0.645] },
+  hwacha: { height: 64, hand: [0.946, 0.457] },
+  alchemist: { height: 62, hand: [0.94, 0.55] },
 };
 
 export const WEAPON_RIG: Record<string, WeaponRig> = {
@@ -34,6 +43,8 @@ export const WEAPON_RIG: Record<string, WeaponRig> = {
   mudang: { width: 34, grip: [0.33, 0.42] },
   turtle: { width: 40, grip: [0.45, 0.5] },
   gumiho: { width: 28, grip: [0.3, 0.75] },
+  hwacha: { width: 38, grip: [WEAPON_BOX.pivotX / WEAPON_BOX.w, WEAPON_BOX.pivotY / WEAPON_BOX.h] },
+  alchemist: { width: 34, grip: [WEAPON_BOX.pivotX / WEAPON_BOX.w, WEAPON_BOX.pivotY / WEAPON_BOX.h] },
 };
 
 export const artKey = {
@@ -82,6 +93,7 @@ export interface WeaponArt {
 
 export function weaponArt(textures: Phaser.Textures.TextureManager, id: string): WeaponArt | null {
   const d = ART.weapons[id], rig = WEAPON_RIG[id];
+  if (!d && rig && textures.exists(`wpn_${id}`)) return { key: `wpn_${id}`, scale: rig.width / (WEAPON_BOX.w * TEX), originX: rig.grip[0], originY: rig.grip[1] };
   if (!d || !rig || !textures.exists(artKey.wpn(id))) return null;
   return { key: artKey.wpn(id), scale: rig.width / d.w, originX: rig.grip[0], originY: rig.grip[1] };
 }
@@ -115,14 +127,24 @@ export function makeArtPortrait(textures: Phaser.Textures.TextureManager, id: st
     oy = size * 0.02;
   } else {
     unit = size * 0.92;
+    if (id === 'hwacha' || id === 'alchemist') {
+      const wr = WEAPON_RIG[id]!;
+      const right = rig.hand[0] * (d.w / d.h) + (wr.width / rig.height) * (1-wr.grip[0]) * 0.9;
+      unit = Math.min(unit, size * 0.9 / right);
+      ox = (size-right*unit)/2;
+      oy = size-unit-size*0.02;
+    } else {
     const wpx = (d.w / d.h) * unit;
     ox = (size - wpx) / 2 - size * 0.04;
     oy = size - unit - size * 0.02;
+    }
   }
   const bw = (d.w / d.h) * unit;
   ctx.drawImage(body, ox, oy, bw, unit);
-  const wd = ART.weapons[id], wr = WEAPON_RIG[id];
-  const wimg = source(textures, artKey.wpn(id));
+  const raw = source(textures, `wpn_${id}`) as HTMLCanvasElement | null;
+  const wd = ART.weapons[id] ?? (raw ? { w: raw.width, h: raw.height } : null);
+  const wr = WEAPON_RIG[id] ?? { width: WEAPON_BOX.w, grip: [WEAPON_BOX.pivotX / WEAPON_BOX.w, WEAPON_BOX.pivotY / WEAPON_BOX.h] };
+  const wimg = source(textures, artKey.wpn(id)) ?? raw;
   if (wd && wr && wimg && !opts.bust) {
     const k = unit / rig.height; // 월드 px → 초상 px
     const ww = wr.width * k, wh = ww * (wd.h / wd.w);

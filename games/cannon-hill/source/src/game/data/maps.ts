@@ -118,10 +118,10 @@ const baekdu: MapDef = {
   features: '단단한 암석 · 바위 기둥 · 낙석 위험 큼', voidBottom: false, spawn: [230, 560], windBias: 0.5,
   sky: ['#2b1a2e', '#7a3b2e', '#e0874a'],
   colors: {
-    [Mat.Dirt]: { base: '#6b5248', dark: '#3d2c27', crust: '#8f8a84' },
-    [Mat.Rock]: { base: '#4a4450', dark: '#2a2630', crust: '#6f6878' },
-    [Mat.Bedrock]: { base: '#26202a', dark: '#141016' },
-    [Mat.Core]: { base: '#3b2f33', dark: '#1d1619' },
+    [Mat.Dirt]: { base: '#6a4a52', dark: '#38242c', crust: '#e3d9ee' },
+    [Mat.Rock]: { base: '#4d4560', dark: '#272138', crust: '#d6cde6' },
+    [Mat.Bedrock]: { base: '#2a2032', dark: '#140e1a' },
+    [Mat.Core]: { base: '#4a3040', dark: '#24141e' },
     [Mat.Wall]: { base: '#7a6a5e', dark: '#4a3e36' },
     [Mat.Wood]: { base: '#6e4a30', dark: '#3e2919' },
     [Mat.Leaf]: { base: '#4f6a3a', dark: '#2c3d20' },
@@ -160,11 +160,11 @@ const sanseong: MapDef = {
   features: '부서지는 성벽 · 높낮이 다른 발판', voidBottom: false, spawn: [260, 560], windBias: 0.45,
   sky: ['#1d2b4a', '#5a6f9a', '#f2c48a'],
   colors: {
-    [Mat.Dirt]: { base: '#7a5a3a', dark: '#4a3320', crust: '#5f8c3e' },
-    [Mat.Rock]: { base: '#6a6660', dark: '#3e3b37', crust: '#7c8a5c' },
-    [Mat.Bedrock]: { base: '#2f2a26', dark: '#1a1714' },
-    [Mat.Core]: { base: '#4a443c', dark: '#29251f' },
-    [Mat.Wall]: { base: '#b7ab96', dark: '#6d6455' },
+    [Mat.Dirt]: { base: '#7a5844', dark: '#3e2a24', crust: '#5c8a4a' },
+    [Mat.Rock]: { base: '#68667a', dark: '#34324a', crust: '#6f8a62' },
+    [Mat.Bedrock]: { base: '#2c2838', dark: '#15121c' },
+    [Mat.Core]: { base: '#4a4458', dark: '#24202e' },
+    [Mat.Wall]: { base: '#c2b8a8', dark: '#6a6070' },
     [Mat.Wood]: { base: '#7a4e2e', dark: '#432a17' },
     [Mat.Leaf]: { base: '#4e7a3a', dark: '#2b4620' },
   },
@@ -204,13 +204,13 @@ const forest: MapDef = {
   features: '쓰러지는 나무 · 바위 덩이 · 굴곡진 지형', voidBottom: false, spawn: [240, 560], windBias: 0.35,
   sky: ['#0d1a24', '#1f3d4a', '#4f7a6a'],
   colors: {
-    [Mat.Dirt]: { base: '#4a3a2c', dark: '#2a2018', crust: '#3f7a4a' },
-    [Mat.Rock]: { base: '#55605c', dark: '#2f3634', crust: '#5f7f62' },
-    [Mat.Bedrock]: { base: '#1d2220', dark: '#0f1211' },
-    [Mat.Core]: { base: '#2e3633', dark: '#161b19' },
-    [Mat.Wall]: { base: '#7e7a6a', dark: '#4a473e' },
-    [Mat.Wood]: { base: '#5a3a26', dark: '#2e1d12' },
-    [Mat.Leaf]: { base: '#2f6a4a', dark: '#173a28', crust: '#5aa86a' },
+    [Mat.Dirt]: { base: '#46385a', dark: '#211a33', crust: '#3e8a86' },
+    [Mat.Rock]: { base: '#4c5878', dark: '#232a44', crust: '#4a8a8e' },
+    [Mat.Bedrock]: { base: '#1a1a2c', dark: '#0c0c16' },
+    [Mat.Core]: { base: '#2c2c48', dark: '#141424' },
+    [Mat.Wall]: { base: '#7a7690', dark: '#3e3a52' },
+    [Mat.Wood]: { base: '#55402e', dark: '#2a1c14' },
+    [Mat.Leaf]: { base: '#6a4aa8', dark: '#33205e', crust: '#9a7ad8' },
   },
   generate(t, rng, seed) {
     const pts = mirrorPts([[0, 700], [160, 680], [330, 640], [520, 690], [700, 625], [880, 700], [1040, 760], [1200, 702]]);
@@ -248,8 +248,8 @@ const cloud: MapDef = {
   features: '떠 있는 섬 · 나무다리 · 낙사 위험 큼', voidBottom: true, spawn: [250, 560], windBias: 0.65,
   sky: ['#3a6ea8', '#8fbbe0', '#f6e6c8'],
   colors: {
-    [Mat.Dirt]: { base: '#8a6a4a', dark: '#5a4230', crust: '#7fbf6a' },
-    [Mat.Rock]: { base: '#9aa3b8', dark: '#5f6680', crust: '#c9d3e6' },
+    [Mat.Dirt]: { base: '#a07e5e', dark: '#5e4434', crust: '#7cc86a' },
+    [Mat.Rock]: { base: '#a8b0c6', dark: '#5a6286', crust: '#86c67a' },
     [Mat.Bedrock]: { base: '#4a5070', dark: '#2a2f45' },
     [Mat.Core]: { base: '#d9c9a0', dark: '#8a7a50' },
     [Mat.Wall]: { base: '#3d4a5c', dark: '#1f2733' },
@@ -304,8 +304,8 @@ const underworld: MapDef = {
   features: '얇은 돌다리 · 깎아지른 절벽 · 강에 빠지면 끝', voidBottom: true, spawn: [220, 560], windBias: 0.55,
   sky: ['#0b0814', '#2a1838', '#5a2f4a'],
   colors: {
-    [Mat.Dirt]: { base: '#3e3242', dark: '#211a24', crust: '#6a4a7a' },
-    [Mat.Rock]: { base: '#4c4a5e', dark: '#26243a', crust: '#6e6a8e' },
+    [Mat.Dirt]: { base: '#4a3452', dark: '#22142a', crust: '#8a4a8e' },
+    [Mat.Rock]: { base: '#55506e', dark: '#26203e', crust: '#7a5a9a' },
     [Mat.Bedrock]: { base: '#18141f', dark: '#0b090f' },
     [Mat.Core]: { base: '#2a2238', dark: '#15111c' },
     [Mat.Wall]: { base: '#5a4e5e', dark: '#30283a' },
@@ -401,6 +401,59 @@ export function findSpawns(t: Terrain, def: MapDef, rng: Rng): [number, number] 
         if (score > bestScore) {
           bestScore = score;
           best = [x1, x2];
+        }
+      }
+    }
+  }
+  return best;
+}
+
+/** 거울 자리 ±40px 안에서 가장 좋은 자리 */
+function mirrorSpot(t: Terrain, x: number): { x: number; s: number } | null {
+  let best: { x: number; s: number } | null = null;
+  for (let off = 0; off <= 40; off += 4) {
+    for (const sgn of [1, -1]) {
+      const m = WORLD_W - x + sgn * off;
+      const s = spotScore(t, m);
+      if (s < 0) continue;
+      const sc = s - Math.abs(t.topSurface(x) - t.topSurface(m)) * 0.8 - off * 0.3;
+      if (!best || sc > best.s) best = { x: m, s: sc };
+    }
+  }
+  return best;
+}
+
+/**
+ * 2:2 자리: [1팀 첫째, 2팀 첫째, 1팀 둘째, 2팀 둘째].
+ * 1팀은 왼쪽 출발 범위와 그 둘레(160~280px 떨어진 곳)에, 2팀은 거울 자리 근처에 선다.
+ */
+export function findTeamSpawns(t: Terrain, def: MapDef, rng: Rng): number[] {
+  const [a, b] = def.spawn;
+  const tries: number[] = [];
+  for (let x = a; x <= b; x += 6) tries.push(x);
+  for (let i = tries.length - 1; i > 0; i--) {
+    const j = Math.floor(rng.next() * (i + 1));
+    [tries[i], tries[j]] = [tries[j]!, tries[i]!];
+  }
+  let best = [a, WORLD_W - a, Math.min(a + 220, WORLD_W / 2 - 240), Math.max(WORLD_W - a - 220, WORLD_W / 2 + 240)];
+  let bestScore = -Infinity;
+  for (const x1 of tries.slice(0, 30)) {
+    const s1 = spotScore(t, x1);
+    if (s1 < 0) continue;
+    const m1 = mirrorSpot(t, x1);
+    if (!m1) continue;
+    for (const gap of [160, 200, 240, 280]) {
+      for (const sgn of [1, -1]) {
+        const x3 = x1 + sgn * gap;
+        if (x3 < 70 || x3 > WORLD_W / 2 - 220) continue;
+        const s3 = spotScore(t, x3);
+        if (s3 < 0) continue;
+        const m3 = mirrorSpot(t, x3);
+        if (!m3 || Math.abs(m3.x - m1.x) < 120) continue;
+        const score = s1 + s3 + m1.s + m3.s - Math.abs(t.topSurface(x1) - t.topSurface(x3)) * 0.3 + rng.next() * 6;
+        if (score > bestScore) {
+          bestScore = score;
+          best = [x1, m1.x, x3, m3.x];
         }
       }
     }

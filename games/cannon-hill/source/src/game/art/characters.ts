@@ -16,6 +16,8 @@ export const PIVOT: Record<string, { x: number; y: number }> = {
   mudang: { x: 6, y: -24 },
   turtle: { x: 2, y: -31 },
   gumiho: { x: 6, y: -24 },
+  hwacha: { x: 7, y: -27 },
+  alchemist: { x: 6, y: -24 },
 };
 
 type C = CanvasRenderingContext2D;
@@ -676,10 +678,60 @@ function gumihoWeapon(ctx: C) {
   fillStroke(ctx, '#f7d6c2', 1.1);
 }
 
-const BODY: Record<string, (c: C, m: Mood) => void> = { general, archer, dokkaebi, mudang, turtle, gumiho };
+function hwacha(ctx: C, mood: Mood): void {
+  for (let i = 0; i < 4; i++) {
+    rr(ctx, -27 + i * 5, -49 + i * 3, 6, 34, 2); fillStroke(ctx, '#92552b');
+    ctx.fillStyle = '#dcac50'; ctx.fillRect(-27 + i * 5, -31 + i * 3, 6, 3);
+  }
+  rr(ctx, -13, -29, 26, 22, 6); fillStroke(ctx, '#d88335');
+  for (const x of [-12, 3]) { rr(ctx, x, -8, 11, 8, 3); fillStroke(ctx, '#353b63'); }
+  ellipse(ctx, 0, -42, 16, 16, 0); fillStroke(ctx, '#efbd91');
+  ctx.beginPath();ctx.moveTo(-17,-43);ctx.lineTo(-8,-59);ctx.lineTo(13,-57);ctx.lineTo(18,-47);ctx.closePath();fillStroke(ctx,'#9d382a');
+  for (const x of [-8, 5]) { ellipse(ctx,x,-53,6,5,0);fillStroke(ctx,'#d3a54f');ellipse(ctx,x,-53,4,3,0);ctx.fillStyle='#6d9399';ctx.fill(); }
+  eye(ctx,8,-42,mood);mouth(ctx,8,-33,mood);
+  ellipse(ctx,14,-25,5,5,0);fillStroke(ctx,'#efbd91');
+}
+
+function alchemist(ctx: C, mood: Mood): void {
+  rr(ctx,-29,-39,19,31,6);fillStroke(ctx,'#825434');
+  for (let i=0;i<3;i++) { ellipse(ctx,-25+i*5,-45-i*3,5,7,0);fillStroke(ctx,'#89c256'); }
+  ellipse(ctx,0,-18,23,18,0);fillStroke(ctx,'#245e58');
+  for (const x of [-14,4]) { rr(ctx,x,-5,12,6,2);fillStroke(ctx,'#3c2f2e'); }
+  ellipse(ctx,3,-39,16,14,0);fillStroke(ctx,'#e8b68c');
+  ctx.beginPath();ctx.moveTo(-16,-35);ctx.lineTo(-12,-22);ctx.lineTo(3,-16);ctx.lineTo(18,-27);ctx.lineTo(18,-36);ctx.closePath();fillStroke(ctx,'#f2e6d3');
+  eye(ctx,10,-41,mood);mouth(ctx,12,-32,mood,2);
+  ellipse(ctx,0,-54,30,9,-0.08);fillStroke(ctx,'#c69a56');
+  ctx.beginPath();ctx.moveTo(-15,-58);ctx.lineTo(-1,-70);ctx.lineTo(16,-58);ctx.closePath();fillStroke(ctx,'#cfaa68');
+  ctx.fillStyle='#6d3b79';ctx.fillRect(-15,-61,30,4);
+  ellipse(ctx,21,-26,5,5,0);fillStroke(ctx,'#e8b68c');
+}
+
+function hwachaWeapon(ctx: C): void {
+  rr(ctx,-8,-9,42,18,3);fillStroke(ctx,vgrad(ctx,-9,9,'#d0a462','#6d3c26'),1.5);
+  for (let i=0;i<3;i++) {
+    rr(ctx,-5,-7+i*5,43,4,1);fillStroke(ctx,vgrad(ctx,-7+i*5,-3+i*5,'#e0bb6c','#95572e'),0.8);
+    ellipse(ctx,37,-5+i*5,3,2,0);fillStroke(ctx,'#251e21',0.8);
+  }
+  ctx.fillStyle='#bca05d';ctx.fillRect(2,-10,4,20);ctx.fillRect(23,-10,3,20);
+  rr(ctx,-3,6,9,9,2);fillStroke(ctx,'#583323');
+}
+
+function alchemistWeapon(ctx: C): void {
+  ctx.save();ctx.translate(11,0);
+  ellipse(ctx,0,1,16,10,0);fillStroke(ctx,rgrad(ctx,-2,0,20,'#d0e896','#397455'),1.5);
+  rr(ctx,8,-4,22,8,2);fillStroke(ctx,'#725132',1.3);
+  ctx.fillStyle='#d0aa69';ctx.fillRect(23,-5,4,10);
+  ctx.strokeStyle='#764279';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-10,-5);ctx.lineTo(7,8);ctx.moveTo(-7,8);ctx.lineTo(7,-6);ctx.stroke();
+  ellipse(ctx,-4,-2,4,2,-0.3);ctx.fillStyle='#e7f5cb';ctx.fill();
+  ctx.restore();
+  ellipse(ctx,0,0,4,4,0);fillStroke(ctx,'#dfb68b',1);
+}
+
+const BODY: Record<string, (c: C, m: Mood) => void> = { general, archer, dokkaebi, mudang, turtle, gumiho, hwacha, alchemist };
 const WEAPON: Record<string, (c: C) => void> = {
   general: generalWeapon, archer: archerWeapon, dokkaebi: dokkaebiWeapon,
   mudang: mudangWeapon, turtle: turtleWeapon, gumiho: gumihoWeapon,
+  hwacha: hwachaWeapon, alchemist: alchemistWeapon,
 };
 
 export function drawBody(ctx: C, id: string, mood: Mood): void {

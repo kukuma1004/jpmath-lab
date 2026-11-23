@@ -12,8 +12,11 @@ export interface Settings {
   difficulty: Difficulty;
   turnTime: number;
   turnLimit: number;
-  lastChars: [string, string];
+  battleRules: 2;
+  /** 장수 순서는 [1팀 첫째, 2팀 첫째, 1팀 둘째, 2팀 둘째]. 1:1은 앞의 둘만 쓴다 */
+  lastChars: string[];
   lastMap: string;
+  teamSize: 1 | 2;
 }
 
 const DEFAULTS: Settings = {
@@ -25,8 +28,10 @@ const DEFAULTS: Settings = {
   difficulty: 'normal',
   turnTime: TURN_TIME_DEFAULT,
   turnLimit: TURN_LIMIT_DEFAULT,
-  lastChars: ['general', 'archer'],
+  battleRules: 2,
+  lastChars: ['general', 'archer', 'mudang', 'gumiho'],
   lastMap: 'sanseong',
+  teamSize: 1,
 };
 
 const KEY = STORAGE_PREFIX + 'settings.v1';
@@ -58,8 +63,11 @@ export function loadSettings(): Settings {
   if (!['low', 'medium', 'high'].includes(s.quality)) s.quality = 'medium';
   if (!['easy', 'normal', 'hard'].includes(s.difficulty)) s.difficulty = 'normal';
   if (![20, 30, 45].includes(s.turnTime)) s.turnTime = TURN_TIME_DEFAULT;
-  if (![20, 30, 40].includes(s.turnLimit)) s.turnLimit = TURN_LIMIT_DEFAULT;
-  if (!Array.isArray(s.lastChars) || s.lastChars.length !== 2) s.lastChars = DEFAULTS.lastChars;
+  if (saved?.battleRules !== 2 || ![0, 20, 30, 40].includes(s.turnLimit)) s.turnLimit = TURN_LIMIT_DEFAULT;
+  s.battleRules = 2;
+  if (!Array.isArray(s.lastChars) || (s.lastChars.length !== 2 && s.lastChars.length !== 4)) s.lastChars = [...DEFAULTS.lastChars];
+  if (s.lastChars.length === 2) s.lastChars = [...s.lastChars, ...DEFAULTS.lastChars.slice(2)];
+  if (s.teamSize !== 1 && s.teamSize !== 2) s.teamSize = 1;
   return s;
 }
 

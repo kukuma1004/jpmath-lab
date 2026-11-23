@@ -34,16 +34,11 @@ export const FALL_DAMAGE_MAX = 320;
 export const ANGLE_SPEED = 42; // 도/초
 export const CHARGE_TIME = 1.6; // 0→100까지 걸리는 시간
 export const TURN_TIME_DEFAULT = 30;
-export const TURN_LIMIT_DEFAULT = 30;
+export const TURN_LIMIT_DEFAULT = 0;
+export const BASE_HP = 800;
 
 export const MAX_BOULDERS = 28;
 export const MAX_CHUNKS = 24;
 export const SETTLE_LIMIT = 8; // 발사 뒤 정착까지 허용하는 시뮬레이션 시간(초)
 export const FLIGHT_LIMIT = 14;
 export const MIN_SETTLE_HOLD = 0.55;
-
-export const GAUGE_MAX = 100;
-export const GAUGE_START = 30;
-export const GAUGE_PER_TURN = 22;
-export const GAUGE_PER_DAMAGE_DEALT = 0.22;
-export const GAUGE_PER_DAMAGE_TAKEN = 0.12;

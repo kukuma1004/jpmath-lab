@@ -184,6 +184,8 @@ html, body {
 .weap b { font: 400 16px/1.2 var(--title-font); color: var(--paper); }
 .weap b span { font: 400 12px/1 var(--body-font); color: var(--ink); background: var(--gold); padding: 3px 7px; border-radius: 6px; margin-right: 6px; vertical-align: 2px; }
 .weap b span.sp { background: var(--red-2); color: #fff; }
+.weap b span.tr { background: #2f6f5a; color: #eafff4; }
+.weap .trait { border-color: rgba(120, 220, 170, 0.35); }
 .weap p { margin: 4px 0 0; font-size: 14px; color: #cfc2a6; }
 .sel-foot { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .sel-foot .grow { flex: 1; }
@@ -201,7 +203,8 @@ html, body {
 .mapcard.rand b { font-size: 26px; }
 
 /* ───────── 전투 화면 HUD ───────── */
-.hud { pointer-events: none; }
+/* 전투 HUD는 화면 전체를 덮지만, 단추가 아닌 곳의 끌기·확대는 아래 전장으로 넘긴다 */
+.hud, .screen.hud.on { pointer-events: none; }
 .hud .top {
   position: absolute;
   top: calc(10px + var(--safe-t));
@@ -213,6 +216,19 @@ html, body {
   gap: 10px;
 }
 .pcard { display: grid; grid-template-columns: 54px 1fr; gap: 10px; align-items: center; padding: 8px 12px 8px 8px; border-radius: 16px; background: var(--glass); border: 1.5px solid var(--line); max-width: 360px; transition: box-shadow 0.25s, border-color 0.25s, transform 0.25s; backdrop-filter: blur(4px); }
+/* 편 상자: 1:1은 카드 하나, 2:2는 작은 카드 둘을 세로로 */
+.hud .team { display: grid; gap: 6px; align-content: start; min-width: 0; }
+.hud .team.t2 { justify-items: end; }
+.hud .team .pcard { width: 100%; }
+.pcard.mini { grid-template-columns: 34px 1fr; gap: 7px; padding: 4px 10px 4px 4px; border-radius: 12px; max-width: 300px; }
+.pcard.mini.p2 { grid-template-columns: 1fr 34px; padding: 4px 4px 4px 10px; }
+.pcard.mini .who { width: 34px; height: 34px; border-radius: 9px; }
+.pcard.mini .who i { font-size: 9px; padding: 2px 4px; left: 2px; bottom: 2px; }
+.pcard.mini.p2 .who i { right: 2px; left: auto; }
+.pcard.mini .name { font-size: 13px; }
+.pcard.mini .bar { height: 10px; margin-top: 3px; }
+.pcard.mini .bar span { font-size: 9px; }
+.pcard.dead { opacity: 0.5; filter: grayscale(0.7); }
 .pcard.p2 { justify-self: end; grid-template-columns: 1fr 54px; padding: 8px 8px 8px 12px; }
 .pcard.p2 .who { order: 2; }
 .pcard.turn { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(232, 182, 74, 0.3), 0 8px 18px rgba(0, 0, 0, 0.35); transform: translateY(2px); }
@@ -228,12 +244,7 @@ html, body {
 .pcard .bar.low > i { background: linear-gradient(180deg, #ffb36a, #e0663a); }
 .pcard .bar.crit > i { background: linear-gradient(180deg, #ff7a6a, #c8323c); }
 .pcard .bar span { position: absolute; inset: 0; display: grid; place-items: center; font: 700 11px/1 var(--body-font); color: #fff; text-shadow: 0 1px 2px #000; }
-.pcard .gauge { height: 6px; border-radius: 4px; background: rgba(0, 0, 0, 0.45); margin-top: 5px; overflow: hidden; }
-.pcard .gauge i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #8a6aff, #d26aff); transition: width 0.3s; }
-.pcard .gauge.full i { background: linear-gradient(90deg, var(--gold), #fff1b0); animation: shine 1s ease-in-out infinite; }
 @keyframes shine { 50% { filter: brightness(1.4); } }
-.pcard.p2 .bar > i, .pcard.p2 .bar > b, .pcard.p2 .gauge i { margin-left: auto; inset: 0 0 0 auto; }
-.pcard.p2 .gauge i { margin-left: auto; }
 
 .center { display: grid; justify-items: center; gap: 6px; }
 .turnpill { white-space: nowrap; display: flex; align-items: center; gap: 10px; padding: 7px 14px 7px 8px; border-radius: 999px; background: var(--glass); border: 1.5px solid var(--line); font: 400 16px/1 var(--title-font); }
@@ -260,6 +271,11 @@ html, body {
 .status.on { opacity: 1; }
 
 .pausebtn { position: absolute; top: calc(10px + var(--safe-t)); left: 50%; transform: translateX(calc(-50% + 230px)); pointer-events: auto; width: 46px; height: 46px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--glass); color: var(--text); font: 700 18px/1 var(--body-font); cursor: pointer; }
+/* 화면 보기 단추: 오른쪽 위, 체력판 아래 */
+.camtools { position: absolute; top: calc(118px + var(--safe-t)); right: calc(12px + var(--safe-r)); display: flex; gap: 6px; pointer-events: none; }
+.cambtn { pointer-events: auto; min-width: 44px; height: 38px; padding: 0 12px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--glass); color: var(--text); font: 700 14px/1 var(--body-font); cursor: pointer; backdrop-filter: blur(4px); }
+.cambtn.home { display: none; border-color: var(--gold); color: var(--gold-2); }
+.hud.freecam .cambtn.home { display: inline-block; }
 
 /* 아래 조작판 */
 .hud .bottom {
@@ -292,10 +308,7 @@ html, body {
 .wbtn b { font: 400 16px/1.1 var(--title-font); }
 .wbtn small { font-size: 12px; color: var(--muted); }
 .wbtn.on { border-color: var(--gold); background: rgba(232, 182, 74, 0.2); }
-.wbtn.sp.ready { animation: ready 1.2s ease-in-out infinite; }
-@keyframes ready { 50% { box-shadow: 0 0 0 3px rgba(232, 182, 74, 0.45); } }
 .wbtn[disabled] { opacity: 0.6; cursor: not-allowed; }
-.wbtn .gfill { position: absolute; left: 0; bottom: 0; height: 3px; background: linear-gradient(90deg, #8a6aff, #d26aff); }
 .firewrap { pointer-events: auto; display: grid; grid-template-columns: auto auto; gap: 10px; align-items: center; padding: 8px; border-radius: 18px; background: var(--glass); border: 1.5px solid var(--line); }
 .power { position: relative; width: 220px; height: 26px; border-radius: 13px; background: rgba(0, 0, 0, 0.55); overflow: hidden; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08); }
 .power i { position: absolute; inset: 0 auto 0 0; width: 0; background: linear-gradient(90deg, #ffd36a, #ff8a3a, #e0402a); }
@@ -352,6 +365,9 @@ html, body {
 .table td.best { color: var(--gold-2); font-weight: 700; }
 .table .p1 { color: #a8d0ff; }
 .table .p2 { color: #ffb4ab; }
+.table.four th, .table.four td { padding: 8px 8px; font-size: 14px; }
+.table.four th { font-size: 13px; line-height: 1.2; }
+.res .who img + img { margin-left: -24px; }
 .res .actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
 
 .toast { position: absolute; left: 50%; bottom: 140px; transform: translateX(-50%); padding: 10px 16px; border-radius: 12px; background: rgba(0, 0, 0, 0.75); color: #fff; font-size: 15px; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
@@ -402,11 +418,22 @@ html, body {
   .pcard .who { width: 40px; height: 40px; border-radius: 10px; }
   .pcard .name { font-size: 13px; }
   .pcard .bar { height: 11px; margin-top: 4px; }
+  .pcard.mini { grid-template-columns: 26px 1fr; padding: 2px 8px 2px 2px; gap: 5px; max-width: 220px; }
+  .pcard.mini.p2 { grid-template-columns: 1fr 26px; padding: 2px 2px 2px 8px; }
+  .pcard.mini .who { width: 26px; height: 26px; border-radius: 7px; }
+  .pcard.mini .who i { display: none; }
+  .pcard.mini .name { font-size: 11px; }
+  .pcard.mini .bar { height: 8px; margin-top: 2px; }
+  .pcard.mini .bar span { display: none; }
+  .hud .team { gap: 3px; }
+  .table.four th, .table.four td { padding: 3px 5px; font-size: 11px; }
   .turnpill { padding: 4px 10px 4px 5px; font-size: 13px; gap: 6px; }
   .timer { width: 30px; height: 30px; }
   .wind { padding: 4px 9px; font-size: 12px; }
   .wind .arrow { width: 70px; }
   .pausebtn { width: 38px; height: 38px; transform: translateX(calc(-50% + 160px)); }
+  .camtools { top: calc(84px + var(--safe-t)); }
+  .cambtn { height: 32px; padding: 0 9px; font-size: 12px; }
   .hud .bottom { gap: 6px; bottom: calc(6px + var(--safe-b)); }
   .pad { padding: 5px; gap: 4px; border-radius: 14px; }
   .kbtn { width: 50px; height: 46px; font-size: 18px; }
@@ -448,11 +475,22 @@ html, body {
   .pcard .who { width: 40px; height: 40px; }
   .pcard .name { font-size: 13px; }
   .pcard .name small { display: none; }
+  .pcard.mini { grid-template-columns: 28px 1fr; padding: 3px 6px 3px 3px; gap: 5px; }
+  .pcard.mini.p2 { grid-template-columns: 1fr 28px; padding: 3px 3px 3px 6px; }
+  .pcard.mini .who { width: 28px; height: 28px; }
+  .pcard.mini .who i { display: none; }
+  .pcard.mini .name { font-size: 11px; }
+  .pcard.mini .bar { height: 8px; }
+  .pcard.mini .bar span { display: none; }
+  .hud .team { gap: 4px; }
+  .table.four th, .table.four td { padding: 5px 4px; font-size: 12px; }
   .wind .arrow { width: 56px; }
   .wind .lbl { display: none; }
   .turnpill { font-size: 14px; gap: 6px; padding: 5px 10px 5px 5px; }
   .timer { width: 32px; height: 32px; }
   .pausebtn { left: auto; right: calc(10px + var(--safe-r)); transform: none; top: calc(124px + var(--safe-t)); width: 40px; height: 40px; }
+  .camtools { top: calc(184px + var(--safe-t)); right: calc(8px + var(--safe-r)); }
+  .cambtn { height: 32px; padding: 0 9px; font-size: 12px; }
   .hud .bottom { top: calc(186px + 75vw + var(--safe-t)); bottom: auto; grid-template-columns: 1fr auto; grid-template-areas: 'w w' 'a a' 'm f'; align-items: center; gap: 8px; }
   .hud .bottom .pad.move { grid-area: m; justify-self: start; }
   .hud .bottom .pad.aim { grid-area: a; justify-self: stretch; }

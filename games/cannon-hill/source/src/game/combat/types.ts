@@ -14,14 +14,17 @@ export type Phase =
 export type Controller = 'human' | 'ai';
 export type Difficulty = 'easy' | 'normal' | 'hard';
 
+/**
+ * 장수는 2명(1:1) 또는 4명(2:2). 순서는 [1팀, 2팀, 1팀, 2팀]이라 편은 idx % 2다.
+ */
 export interface BattleConfig {
   mapId: string;
   seed: number;
-  chars: [string, string];
-  controllers: [Controller, Controller];
+  chars: string[];
+  controllers: Controller[];
   difficulty: Difficulty;
   turnTime: number;
-  turnLimit: number;
+  turnLimit: number; // 0은 상대 편 전멸까지 계속하는 끝장전
 }
 
 export type AnimState = 'idle' | 'aim' | 'charge' | 'fire' | 'hit' | 'fall' | 'victory' | 'defeat';
@@ -35,8 +38,11 @@ export interface FighterStats {
   cellsDestroyed: number;
 }
 
+export type Team = 0 | 1;
+
 export interface Fighter {
-  idx: 0 | 1;
+  idx: number;
+  team: Team;
   charId: string;
   x: number;
   y: number; // 발 위치
@@ -50,8 +56,9 @@ export interface Fighter {
   slot: 0 | 1;
   hp: number;
   maxHp: number;
-  gauge: number;
   moveLeft: number;
+  /** 이번 차례에 걸었는가(화포장군 특기) */
+  moved: boolean;
   alive: boolean;
   deathCause: '' | 'hp' | 'fall';
   anim: AnimState;
@@ -63,7 +70,7 @@ export interface Fighter {
 
 export interface Projectile {
   id: number;
-  owner: 0 | 1;
+  owner: number;
   shot: number;
   weaponId: string;
   x: number;
@@ -77,6 +84,8 @@ export interface Projectile {
   pierced: number;
   carveAcc: number;
   child: '' | 'split' | 'frag';
+  /** 특기로 붙은 피해 배수(화포장군이 자리 잡고 쏘면 1보다 크다) */
+  boost: number;
   stuck: boolean;
   fuse: number;
   split: boolean;
@@ -93,7 +102,7 @@ export interface Boulder {
   rot: number;
   restT: number;
   age: number;
-  cool: [number, number];
+  cool: number[];
   dead: boolean;
 }
 
@@ -109,7 +118,7 @@ export interface Chunk {
   dRow: number;
   acc: number;
   vy: number;
-  hit: [boolean, boolean];
+  hit: boolean[];
   hard: number;
   dead: boolean;
 }
@@ -117,7 +126,7 @@ export interface Chunk {
 export interface Scheduled {
   t: number;
   kind: 'salvo' | 'strike';
-  owner: 0 | 1;
+  owner: number;
   shot: number;
   weaponId: string;
   x: number;
@@ -125,15 +134,26 @@ export interface Scheduled {
   power: number;
 }
 
-export type DamageCause = 'blast' | 'fall' | 'rock' | 'crush' | 'lightning';
+export interface PoisonCloud {
+  id: number;
+  owner: number;
+  shot: number;
+  x: number;
+  y: number;
+  radius: number;
+  damage: number;
+  turns: number[];
+}
+
+export type DamageCause = 'blast' | 'fall' | 'rock' | 'crush' | 'lightning' | 'poison';
 
 export type SimEvent =
-  | { type: 'battleStart'; first: 0 | 1 }
-  | { type: 'turn'; player: 0 | 1; turnNo: number; wind: number; prevWind: number }
-  | { type: 'fire'; owner: 0 | 1; weaponId: string; x: number; y: number; angle: number; power: number }
+  | { type: 'battleStart'; first: number }
+  | { type: 'turn'; player: number; turnNo: number; wind: number; prevWind: number }
+  | { type: 'fire'; owner: number; weaponId: string; x: number; y: number; angle: number; power: number }
   | { type: 'launch'; id: number; weaponId: string }
   | { type: 'explode'; x: number; y: number; radius: number; weaponId: string; big: boolean }
-  | { type: 'damage'; target: 0 | 1; amount: number; x: number; y: number; crit: boolean; cause: DamageCause }
+  | { type: 'damage'; target: number; amount: number; x: number; y: number; crit: boolean; cause: DamageCause }
   | { type: 'bounce'; x: number; y: number; weaponId: string }
   | { type: 'lightning'; x: number; y: number }
   | { type: 'split'; x: number; y: number }
@@ -143,8 +163,11 @@ export type SimEvent =
   | { type: 'chunkLand'; id: number; x: number; y: number; speed: number; size: number }
   | { type: 'boulder'; id: number }
   | { type: 'rockHit'; x: number; y: number; speed: number }
-  | { type: 'land'; target: 0 | 1; speed: number }
-  | { type: 'death'; target: 0 | 1; cause: 'hp' | 'fall' }
-  | { type: 'timeout'; player: 0 | 1 }
+  | { type: 'land'; target: number; speed: number }
+  | { type: 'death'; target: number; cause: 'hp' | 'fall' }
+  | { type: 'timeout'; player: number }
+  | { type: 'heal'; target: number; amount: number; x: number; y: number }
+  | { type: 'trait'; who: number; kind: 'steady' | 'eagle' | 'shove' | 'iron'; x: number; y: number }
   | { type: 'forced' }
-  | { type: 'gameOver'; winner: 0 | 1 | -1; reason: 'hp' | 'fall' | 'limit' | 'draw' };
+  /** winner는 이긴 편(0·1), 무승부는 -1 */
+  | { type: 'gameOver'; winner: Team | -1; reason: 'hp' | 'fall' | 'limit' | 'draw' };

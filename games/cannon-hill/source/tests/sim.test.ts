@@ -292,7 +292,6 @@ describe('승패와 턴', () => {
       const b = new Battle(defaultConfig({ mapId: m.id, seed: 21, chars: ['general', 'turtle'] }));
       runUntil(b, () => b.phase === 'AIM');
       const f = b.cur;
-      f.gauge = 100;
       b.selectWeapon(1);
       b.setAngle(f.x < 1200 ? 62 : 118);
       b.fireNow(78);

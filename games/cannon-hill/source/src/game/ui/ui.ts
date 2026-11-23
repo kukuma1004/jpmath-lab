@@ -1,4 +1,4 @@
-import { GAME_SUBTITLE, GAME_TITLE, GAUGE_MAX, MOVE_BUDGET, WIND_MAX } from '../config/constants';
+import { GAME_SUBTITLE, GAME_TITLE, MOVE_BUDGET, WIND_MAX } from '../config/constants';
 import { CHARACTERS, character } from '../data/characters';
 import { MAPS, mapDef } from '../data/maps';
 import { weapon } from '../data/weapons';
@@ -11,7 +11,8 @@ import { audio } from '../audio/audio';
 export type Mode = 'ai' | 'local';
 
 export interface UIHooks {
-  startBattle(mode: Mode, chars: [string, string], mapId: string): void;
+  /** chars는 장수 순서([1팀, 2팀, 1팀, 2팀]) 그대로 */
+  startBattle(mode: Mode, chars: string[], mapId: string): void;
   toTitle(): void;
   rematch(): void;
   rechar(): void;
@@ -20,6 +21,8 @@ export interface UIHooks {
   pause(): void;
   weapon(slot: 0 | 1): void;
   flip(): void;
+  camera(): void;
+  recenter(): void;
   settingsChanged(s: Settings): void;
 }
 
@@ -47,8 +50,9 @@ export class UI {
   mapThumbs: Record<string, string> = {};
   mode: Mode = 'ai';
   private screens = new Map<string, HTMLElement>();
-  private step: 0 | 1 = 0;
-  private picks: [string, string];
+  private step = 0;
+  /** 장수 순서대로 고른 것([1팀 첫째, 2팀 첫째, 1팀 둘째, 2팀 둘째]) */
+  private picks: string[];
   private mapPick: string;
   private hudCache = new Map<string, string>();
   private bannerT = 0;
@@ -56,7 +60,7 @@ export class UI {
 
   constructor(root: HTMLElement, public settings: Settings, private hooks: UIHooks) {
     this.root = root;
-    this.picks = [...settings.lastChars] as [string, string];
+    this.picks = [...settings.lastChars];
     this.mapPick = settings.lastMap;
     this.build();
     root.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -142,6 +146,8 @@ export class UI {
         </div>
         <div class="sel-foot">
           <button class="btn ghost" data-act="back">← 뒤로</button>
+          <span class="chip-label">인원</span>
+          <div class="chips size"><button data-size="1">1:1</button><button data-size="2">2:2</button></div>
           <span class="chip-label ai-only">AI 실력</span>
           <div class="chips ai-only diff">${(['easy', 'normal', 'hard'] as Difficulty[]).map((d) => `<button data-d="${d}">${DIFF_LABEL[d]}</button>`).join('')}</div>
           <span class="grow"></span>
@@ -153,8 +159,16 @@ export class UI {
       const t = e.target as HTMLElement;
       const card = t.closest<HTMLElement>('.card');
       if (card?.dataset.id) {
-        this.picks[this.step] = card.dataset.id;
+        this.picks[this.slotOf(this.step)] = card.dataset.id;
         audio.select();
+        this.renderChars();
+        return;
+      }
+      const size = t.closest<HTMLElement>('[data-size]')?.dataset.size;
+      if (size) {
+        this.settings.teamSize = size === '2' ? 2 : 1;
+        this.hooks.settingsChanged(this.settings);
+        this.step = 0;
         this.renderChars();
         return;
       }
@@ -167,15 +181,16 @@ export class UI {
       }
       const act = t.closest('button')?.dataset.act;
       if (act === 'back') {
-        if (this.step === 1) { this.step = 0; this.renderChars(); }
+        if (this.step > 0) { this.step--; this.renderChars(); }
         else this.showTitle();
       } else if (act === 'random') {
-        const pool = CHARACTERS.filter((c) => this.step === 0 || c.id !== this.picks[0]);
-        this.picks[this.step] = pool[Math.floor(Math.random() * pool.length)]!.id;
+        const taken = new Set(Array.from({ length: this.step }, (_, k) => this.picks[this.slotOf(k)]));
+        const pool = CHARACTERS.filter((c) => !taken.has(c.id));
+        this.picks[this.slotOf(this.step)] = pool[Math.floor(Math.random() * pool.length)]!.id;
         audio.select();
         this.renderChars();
       } else if (act === 'next') {
-        if (this.step === 0) { this.step = 1; this.renderChars(); }
+        if (this.step < this.steps - 1) { this.step++; this.renderChars(); }
         else this.openMaps();
       }
     });
@@ -191,23 +206,58 @@ export class UI {
     this.only('chars');
   }
 
+  /** 고르는 차례 수(1:1은 2번, 2:2는 4번) */
+  private get steps(): number {
+    return this.settings.teamSize * 2;
+  }
+
+  /** 고르는 차례 → 장수 순서 자리. 2:2는 1팀 둘을 먼저, 그다음 2팀 둘을 고른다 */
+  private slotOf(step: number): number {
+    if (this.settings.teamSize === 1) return step;
+    return [0, 2, 1, 3][step]!;
+  }
+
+  private stepLabel(step: number): { who: string; title: string; hint: string; team: 0 | 1 } {
+    const team = (this.slotOf(step) % 2) as 0 | 1;
+    const ai = this.mode === 'ai';
+    if (this.settings.teamSize === 1) {
+      if (step === 0) return { who: ai ? '나' : '1P', title: '장수 고르기', hint: '나와 함께 싸울 장수를 고르세요. 두 번 누르면 바로 넘어갑니다.', team };
+      return ai
+        ? { who: 'AI 상대', title: '상대 장수 고르기', hint: 'AI가 맡을 장수를 고르세요. 같은 장수끼리도 됩니다.', team }
+        : { who: '2P', title: '2P 장수 고르기', hint: '2P가 고를 차례입니다. 기기를 넘겨 주세요.', team };
+    }
+    const nth = this.slotOf(step) < 2 ? '첫째' : '둘째';
+    if (team === 0) return { who: ai ? `내 편 ${nth}` : `1P ${nth}`, title: ai ? `내 편 ${nth} 장수` : `1P ${nth} 장수`, hint: ai ? '내 편 장수 둘을 고르세요. 둘 다 내가 번갈아 조종합니다.' : '1P 편 장수 둘을 고르세요. 둘 다 1P가 조종합니다.', team };
+    return ai
+      ? { who: `AI ${nth}`, title: `상대 편 ${nth} 장수`, hint: 'AI가 맡을 장수 둘을 고르세요.', team }
+      : { who: `2P ${nth}`, title: `2P ${nth} 장수`, hint: '2P 편 장수 둘을 고르세요. 기기를 넘겨 주세요.', team };
+  }
+
   private renderChars(): void {
     const el = this.screens.get('chars')!;
-    const step = this.step;
+    const step = Math.min(this.step, this.steps - 1);
+    this.step = step;
+    const lab = this.stepLabel(step);
     const who = el.querySelector<HTMLElement>('.who')!;
-    who.textContent = step === 0 ? '1P' : this.mode === 'ai' ? 'AI 상대' : '2P';
-    who.classList.toggle('p2', step === 1);
-    el.querySelector('h2')!.textContent = step === 0 ? '장수 고르기' : this.mode === 'ai' ? '상대 장수 고르기' : '2P 장수 고르기';
-    el.querySelector('.hint')!.textContent = step === 0 ? '나와 함께 싸울 장수를 고르세요. 두 번 누르면 바로 넘어갑니다.' : this.mode === 'ai' ? 'AI가 맡을 장수를 고르세요. 같은 장수끼리도 됩니다.' : '2P가 고를 차례입니다. 기기를 넘겨 주세요.';
+    who.textContent = lab.who;
+    who.classList.toggle('p2', lab.team === 1);
+    el.querySelector('h2')!.textContent = lab.title;
+    el.querySelector('.hint')!.textContent = lab.hint;
     el.querySelectorAll<HTMLElement>('.ai-only').forEach((x) => (x.style.display = this.mode === 'ai' ? '' : 'none'));
     el.querySelectorAll<HTMLElement>('.diff button').forEach((b) => b.classList.toggle('on', b.dataset.d === this.settings.difficulty));
+    el.querySelectorAll<HTMLElement>('.size button').forEach((b) => b.classList.toggle('on', Number(b.dataset.size) === this.settings.teamSize));
     const grid = el.querySelector('.grid')!;
+    const slot = this.slotOf(step);
     grid.innerHTML = CHARACTERS.map((c) => {
-      const on = this.picks[step] === c.id;
-      const tags = step === 1 && this.picks[0] === c.id ? '<span class="tag p1">1P</span>' : '';
-      return `<button class="card${on ? ' on' : ''}" data-id="${c.id}" role="option" aria-selected="${on}">${tags}<img alt="" src="${this.portraits[c.id]?.[step === 1 ? 'flip' : 'normal'] ?? ''}"><b>${c.name}</b><em>${c.role}</em></button>`;
+      const on = this.picks[slot] === c.id;
+      // 앞에서 고른 장수 표시
+      const tags = Array.from({ length: step }, (_, k) => k)
+        .filter((k) => this.picks[this.slotOf(k)] === c.id)
+        .map((k) => { const l = this.stepLabel(k); return `<span class="tag p${l.team + 1}">${l.who}</span>`; })
+        .slice(0, 1).join('');
+      return `<button class="card${on ? ' on' : ''}" data-id="${c.id}" role="option" aria-selected="${on}">${tags}<img alt="" src="${this.portraits[c.id]?.[lab.team === 1 ? 'flip' : 'normal'] ?? ''}"><b>${c.name}</b><em>${c.role}</em></button>`;
     }).join('');
-    const c = character(this.picks[step]);
+    const c = character(this.picks[slot]!);
     const nw = weapon(c.normal), sw = weapon(c.special);
     const pip = (n: number) => `<span class="pips">${[1, 2, 3, 4, 5].map((k) => `<i class="${k <= n ? 'on' : ''}"></i>`).join('')}</span>`;
     el.querySelector('.detail')!.innerHTML = `
@@ -216,11 +266,12 @@ export class UI {
         <span>화력</span>${pip(c.stats.power)}<span>폭발 범위</span>${pip(c.stats.range)}<span>정확도</span>${pip(c.stats.accuracy)}<span>방어</span>${pip(c.stats.defense)}<span>기동</span>${pip(c.stats.mobility)}
       </div>
       <div class="weap">
-        <div><b><span>일반</span>${nw.name}</b><p>${esc(nw.desc)}</p></div>
-        <div><b><span class="sp">특수</span>${sw.name}</b><p>${esc(sw.desc)} 기세가 가득 차면 쓸 수 있습니다.</p></div>
+        <div class="trait"><b><span class="tr">특기</span>${c.trait.name}</b><p>${esc(c.trait.desc)}</p></div>
+        <div><b><span>1번 · ${esc(nw.use)}</span>${nw.name}</b><p>${esc(nw.desc)}</p></div>
+        <div><b><span class="sp">2번 · ${esc(sw.use)}</span>${sw.name}</b><p>${esc(sw.desc)} 두 탄 모두 매 차례 자유롭게 고릅니다.</p></div>
       </div>`;
     const next = el.querySelector<HTMLButtonElement>('[data-act=next]')!;
-    next.textContent = step === 0 ? '이 장수로 →' : '전장 고르기 →';
+    next.textContent = step < this.steps - 1 ? '이 장수로 →' : '전장 고르기 →';
   }
 
   // 전장 고르기
@@ -252,7 +303,7 @@ export class UI {
       const tl = t.closest<HTMLElement>('[data-tl]')?.dataset.tl;
       if (tl) { this.settings.turnLimit = Number(tl); this.hooks.settingsChanged(this.settings); this.renderMaps(); return; }
       const act = t.closest('button')?.dataset.act;
-      if (act === 'back') { this.step = 1; this.renderChars(); this.only('chars'); }
+      if (act === 'back') { this.step = this.steps - 1; this.renderChars(); this.only('chars'); }
       else if (act === 'go') this.go();
     });
     el.addEventListener('dblclick', (e) => { if ((e.target as HTMLElement).closest('.card')) this.go(); });
@@ -261,7 +312,7 @@ export class UI {
   private go(): void {
     let mapId = this.mapPick;
     if (mapId === 'random') mapId = MAPS[Math.floor(Math.random() * MAPS.length)]!.id;
-    this.hooks.startBattle(this.mode, [...this.picks] as [string, string], mapId);
+    this.hooks.startBattle(this.mode, this.picks.slice(0, this.steps), mapId);
   }
 
   openMaps(): void {
@@ -275,43 +326,40 @@ export class UI {
     grid.innerHTML = MAPS.map((m) => `<button class="card mapcard${this.mapPick === m.id ? ' on' : ''}" data-id="${m.id}"><img alt="" src="${this.mapThumbs[m.id] ?? ''}"><b>${m.name}</b><em>${m.features}</em></button>`).join('')
       + `<button class="card mapcard rand${this.mapPick === 'random' ? ' on' : ''}" data-id="random"><b>?</b><em>아무 전장이나</em></button>`;
     const d = this.mapPick === 'random' ? null : mapDef(this.mapPick);
-    const chips = (attr: string, vals: number[], cur: number, unit: string) => `<div class="chips">${vals.map((v) => `<button data-${attr}="${v}" class="${v === cur ? 'on' : ''}">${v}${unit}</button>`).join('')}</div>`;
+    const chips = (attr: string, vals: number[], cur: number, unit: string) => `<div class="chips">${vals.map((v) => `<button data-${attr}="${v}" class="${v === cur ? 'on' : ''}">${v === 0 ? '끝장전' : `${v}${unit}`}</button>`).join('')}</div>`;
     el.querySelector('.detail')!.innerHTML = `
       ${d ? `<img alt="" src="${this.mapThumbs[d.id] ?? ''}" style="width:100%;border-radius:14px;aspect-ratio:2/1;object-fit:cover">` : ''}
       <div><h3>${d ? d.name : '아무 전장이나'}</h3><p>${d ? esc(d.desc) : '다섯 전장 가운데 하나를 무작위로 고릅니다.'}</p>${d ? `<p style="margin-top:6px;color:var(--gold-2)">${d.features}</p>` : ''}</div>
       <div class="stats" style="grid-template-columns:auto 1fr;align-content:start">
         <span>턴 시간</span>${chips('tt', [20, 30, 45], this.settings.turnTime, '초')}
-        <span>전체 턴</span>${chips('tl', [20, 30, 40], this.settings.turnLimit, '턴')}
-      </div>`;
+        <span>승부 방식</span>${chips('tl', [0, 20, 30, 40], this.settings.turnLimit, '턴')}
+      </div><p>기본 체력 800 · 끝장전은 턴 제한 없이 상대 편이 모두 쓰러질 때까지 계속합니다.</p>`;
   }
 
   // ───────── 전투 화면 ─────────
 
   private buildHud(): void {
-    const pc = (p: 1 | 2) => `
-      <div class="pcard p${p}">
-        <div class="who"><img alt=""><i>${p}P</i></div>
-        <div><div class="name"><span class="nm"></span><small class="hpn"></small></div>
-        <div class="bar"><b></b><i></i><span></span></div>
-        <div class="gauge" title="기세"><i></i></div></div>
-      </div>`;
     const el = this.add('hud', h(`
       <section class="screen hud">
         <div class="top">
-          ${pc(1)}
+          <div class="team t1"></div>
           <div class="center">
             <div class="turnpill"><div class="timer"><svg viewBox="0 0 40 40"><circle class="bg" cx="20" cy="20" r="17"/><circle class="fg" cx="20" cy="20" r="17" stroke-dasharray="106.8" stroke-dashoffset="0"/></svg><b>30</b></div><span class="tp">1P 차례</span><span class="tno"></span></div>
             <div class="wind"><span class="lbl">바람</span><div class="arrow"><div class="track"></div><div class="mid"></div><div class="fill"></div></div><span class="v">0</span></div>
             <div class="status"></div>
           </div>
-          ${pc(2)}
+          <div class="team t2"></div>
         </div>
         <button class="pausebtn" data-act="pause" aria-label="일시정지">Ⅱ</button>
+        <div class="camtools">
+          <button class="cambtn" data-act="camera" aria-label="카메라 바꾸기(따라가기·상대·전체)">보기</button>
+          <button class="cambtn home" data-act="recenter" aria-label="내 장수로 돌아가기">내 장수로</button>
+        </div>
         <div class="bottom">
           <div class="pad move"><div class="row"><button class="kbtn" data-hold="left" aria-label="왼쪽으로 이동">◀<small>A</small></button><button class="kbtn" data-hold="right" aria-label="오른쪽으로 이동">▶<small>D</small></button></div><div class="movebar"><i></i></div><div class="lbl">이동</div></div>
           <div class="pad aim"><div class="row"><button class="kbtn" data-hold="aimDown" aria-label="포신 내리기">▼<small>↓</small></button><div class="angle-read"><span class="ang">45°</span><small>각도</small></div><button class="kbtn" data-hold="aimUp" aria-label="포신 올리기">▲<small>↑</small></button><button class="kbtn" data-act="flip" aria-label="방향 바꾸기">⇄<small>←→</small></button></div><div class="lbl">각도</div></div>
-          <div class="weapons"><button class="wbtn" data-w="0"><kbd>1</kbd><b class="wn0"></b><small>일반 공격</small></button><button class="wbtn sp" data-w="1"><kbd>2</kbd><b class="wn1"></b><small class="gs">기세 0%</small><span class="gfill"></span></button></div>
-          <div class="firewrap"><div class="power"><div class="ticks"></div><i></i><div class="last"></div><span>힘 0</span></div><button class="fire" data-hold="charge" aria-label="힘 모아 발사">발사<small>Space 꾹</small></button><div class="keyhint">Tab 카메라 · Esc 정지 · 드래그로 둘러보기</div></div>
+          <div class="weapons" aria-label="매 차례 자유롭게 고르는 두 종류 탄"><button class="wbtn" data-w="0"><kbd>1</kbd><b class="wn0"></b><small class="wu0"></small></button><button class="wbtn" data-w="1"><kbd>2</kbd><b class="wn1"></b><small class="wu1"></small></button></div>
+          <div class="firewrap"><div class="power"><div class="ticks"></div><i></i><div class="last"></div><span>힘 0</span></div><button class="fire" data-hold="charge" aria-label="힘 모아 발사">발사<small>Space 꾹</small></button><div class="keyhint">끌기·I J K L 둘러보기 · Tab 보기 · C 돌아오기 · Esc 정지</div></div>
         </div>
         <div class="banner"><b></b><span></span></div>
         <div class="toast"></div>
@@ -344,19 +392,27 @@ export class UI {
       const act = t.closest<HTMLElement>('[data-act]')?.dataset.act;
       if (act === 'pause') this.hooks.pause();
       else if (act === 'flip') this.hooks.flip();
+      else if (act === 'camera') this.hooks.camera();
+      else if (act === 'recenter') this.hooks.recenter();
     });
   }
 
-  showHud(b: Battle, names: [string, string]): void {
+  showHud(b: Battle, names: string[]): void {
     this.hudCache.clear();
     const el = this.screens.get('hud')!;
-    for (const i of [0, 1] as const) {
-      const f = b.fighters[i];
-      const c = character(f.charId);
-      const card = el.querySelector<HTMLElement>(`.pcard.p${i + 1}`)!;
-      card.querySelector<HTMLImageElement>('img')!.src = this.portraits[c.id]?.[i === 1 ? 'bustFlip' : 'bust'] ?? '';
-      card.querySelector('.nm')!.textContent = `${names[i]} · ${c.name}`;
-      card.querySelector<HTMLElement>('.who i')!.textContent = names[i];
+    const mini = b.fighters.length > 2;
+    for (const team of [0, 1] as const) {
+      const box = el.querySelector<HTMLElement>(`.team.t${team + 1}`)!;
+      box.innerHTML = b.fighters.filter((f) => f.team === team).map((f) => {
+        const c = character(f.charId);
+        return `
+        <div class="pcard p${team + 1}${mini ? ' mini' : ''}" data-f="${f.idx}">
+          <div class="who"><img alt="" src="${this.portraits[c.id]?.[team === 1 ? 'bustFlip' : 'bust'] ?? ''}"><i>${esc(names[f.idx] ?? '')}</i></div>
+          <div><div class="name"><span class="nm">${mini ? c.name : `${esc(names[f.idx] ?? '')} · ${c.name}`}</span><small class="hpn"></small></div>
+          <div class="bar"><b></b><i></i><span></span></div>
+          </div>
+        </div>`;
+      }).join('');
     }
     this.only('hud');
   }
@@ -367,11 +423,12 @@ export class UI {
     fn();
   }
 
-  updateHud(b: Battle, opts: { names: [string, string]; humanTurn: boolean; status: string }): void {
+  updateHud(b: Battle, opts: { names: string[]; humanTurn: boolean; status: string }): void {
     const el = this.screens.get('hud')!;
-    for (const i of [0, 1] as const) {
-      const f = b.fighters[i];
-      const card = el.querySelector<HTMLElement>(`.pcard.p${i + 1}`)!;
+    for (const f of b.fighters) {
+      const i = f.idx;
+      const card = el.querySelector<HTMLElement>(`.pcard[data-f="${i}"]`);
+      if (!card) continue;
       const pct = Math.max(0, (f.hp / f.maxHp) * 100);
       this.set(`hp${i}`, `${f.hp}`, () => {
         const bar = card.querySelector<HTMLElement>('.bar')!;
@@ -381,12 +438,7 @@ export class UI {
         bar.classList.toggle('low', pct <= 50 && pct > 25);
         bar.classList.toggle('crit', pct <= 25);
         card.querySelector('.hpn')!.textContent = f.alive ? '' : f.deathCause === 'fall' ? '낙사' : '쓰러짐';
-      });
-      const g = Math.min(100, Math.round((f.gauge / GAUGE_MAX) * 100));
-      this.set(`g${i}`, `${g}`, () => {
-        const gg = card.querySelector<HTMLElement>('.gauge')!;
-        gg.querySelector<HTMLElement>('i')!.style.width = `${g}%`;
-        gg.classList.toggle('full', g >= 100);
+        card.classList.toggle('dead', !f.alive);
       });
       this.set(`turn${i}`, `${b.current === i && b.phase !== 'GAME_OVER'}`, () => card.classList.toggle('turn', b.current === i && b.phase !== 'GAME_OVER'));
     }
@@ -403,9 +455,9 @@ export class UI {
     });
     this.set('tp', `${b.current}|${b.turnNo}`, () => {
       const tp = el.querySelector<HTMLElement>('.tp')!;
-      tp.textContent = `${opts.names[b.current]} 차례`;
-      tp.classList.toggle('p2', b.current === 1);
-      el.querySelector('.tno')!.textContent = `${Math.max(1, b.turnNo)} / ${b.cfg.turnLimit}턴`;
+      tp.textContent = b.fighters.length > 2 ? `${opts.names[b.current]} · ${character(b.cur.charId).name}` : `${opts.names[b.current]} 차례`;
+      tp.classList.toggle('p2', b.cur.team === 1);
+      el.querySelector('.tno')!.textContent = b.cfg.turnLimit > 0 ? `${Math.max(1, b.turnNo)} / ${b.cfg.turnLimit}턴` : `${Math.max(1, b.turnNo)}턴 · 끝장전`;
     });
     this.set('wind', `${b.wind}`, () => {
       const w = el.querySelector<HTMLElement>('.wind')!;
@@ -431,17 +483,17 @@ export class UI {
     this.set('wn', c.id, () => {
       el.querySelector('.wn0')!.textContent = weapon(c.normal).name;
       el.querySelector('.wn1')!.textContent = weapon(c.special).name;
+      el.querySelector('.wu0')!.textContent = weapon(c.normal).use;
+      el.querySelector('.wu1')!.textContent = weapon(c.special).use;
+      for (const slot of [0, 1] as const) {
+        const w = b.weaponOf(f, slot);
+        el.querySelector<HTMLButtonElement>(`[data-w="${slot}"]`)!.title = `${w.use} · ${w.desc}`;
+      }
     });
-    const ready = b.canSpecial(f);
-    const gp = Math.min(100, Math.round(f.gauge));
-    this.set('slot', `${f.slot}|${ready}|${gp}`, () => {
+    this.set('slot', `${f.slot}|${canAct}|${b.phase}`, () => {
       el.querySelector('[data-w="0"]')!.classList.toggle('on', f.slot === 0);
-      const sp = el.querySelector<HTMLButtonElement>('[data-w="1"]')!;
-      sp.classList.toggle('on', f.slot === 1);
-      sp.classList.toggle('ready', ready && f.slot !== 1);
-      sp.disabled = !ready;
-      sp.querySelector('.gs')!.textContent = ready ? '쓸 수 있음!' : `기세 ${gp}%`;
-      sp.querySelector<HTMLElement>('.gfill')!.style.width = `${gp}%`;
+      el.querySelector('[data-w="1"]')!.classList.toggle('on', f.slot === 1);
+      for (const slot of [0, 1]) el.querySelector<HTMLButtonElement>(`[data-w="${slot}"]`)!.disabled = !canAct || b.phase === 'CHARGE';
     });
     const rel = f.angle <= 90 ? f.angle : 180 - f.angle;
     this.set('ang', `${Math.round(rel)}|${f.angle <= 90}`, () => {
@@ -456,6 +508,11 @@ export class UI {
       p.querySelector<HTMLElement>('.last')!.style.left = `${f.lastPower}%`;
       p.querySelector('span')!.textContent = b.phase === 'CHARGE' ? `힘 ${Math.round(pw)}` : `지난 힘 ${Math.round(f.lastPower)}`;
     });
+  }
+
+  /** 둘러보는 중이면 「내 장수로」 단추를 보인다 */
+  setFreeCam(on: boolean): void {
+    this.set('freecam', `${on}`, () => this.screens.get('hud')!.classList.toggle('freecam', on));
   }
 
   banner(text: string, sub = '', cls = ''): void {
@@ -513,38 +570,48 @@ export class UI {
     });
   }
 
-  showResult(b: Battle, names: [string, string]): void {
+  showResult(b: Battle, names: string[]): void {
     const el = this.screens.get('result')!.querySelector('.res')!;
     const w = b.winner;
+    const team = b.fighters.length > 2;
     let title: string, cls = '';
     if (w === -1 || w === null) title = '무승부';
     else if (this.mode === 'ai') { title = w === 0 ? '승리!' : '패배…'; if (w !== 0) cls = 'lose'; }
     else title = `${names[w]} 승리!`;
-    const loser = w === 0 ? b.fighters[1] : w === 1 ? b.fighters[0] : null;
-    const ln = loser ? character(loser.charId).name : '';
-    const why = b.endReason === 'fall' ? `${josa(ln, '이', '가')} 낭떠러지로 떨어졌습니다.`
-      : b.endReason === 'hp' ? `${ln}의 기력이 다했습니다.`
-      : b.endReason === 'limit' ? '정해진 턴을 다 써서, 남은 체력이 많은 쪽이 이겼습니다.'
-      : b.fighters.every((f) => !f.alive) ? '둘이 함께 쓰러졌습니다.' : '남은 체력이 똑같습니다.';
-    const showId = w === 1 ? b.fighters[1].charId : b.fighters[0].charId;
-    const img = w === -1 || w === null ? '' : `<img alt="" src="${this.portraits[showId]?.happy ?? ''}">`;
-    const rows: [string, (i: 0 | 1) => number, (v: number) => string][] = [
+    const losers = w === 0 || w === 1 ? b.fighters.filter((f) => f.team !== w) : [];
+    const ln = !team && losers[0] ? character(losers[0].charId).name : '';
+    const why = team
+      ? (b.endReason === 'fall' ? '상대 편 장수가 모두 낭떠러지로 떨어졌습니다.'
+        : b.endReason === 'hp' ? '상대 편 장수가 모두 쓰러졌습니다.'
+        : b.endReason === 'limit' ? '정해진 턴을 다 써서, 남은 체력 합이 많은 편이 이겼습니다.'
+        : b.fighters.every((f) => !f.alive) ? '두 편이 함께 쓰러졌습니다.' : '두 편의 남은 체력이 똑같습니다.')
+      : (b.endReason === 'fall' ? `${josa(ln, '이', '가')} 낭떠러지로 떨어졌습니다.`
+        : b.endReason === 'hp' ? `${ln}의 기력이 다했습니다.`
+        : b.endReason === 'limit' ? '정해진 턴을 다 써서, 남은 체력이 많은 쪽이 이겼습니다.'
+        : b.fighters.every((f) => !f.alive) ? '둘이 함께 쓰러졌습니다.' : '남은 체력이 똑같습니다.');
+    const shown = w === 0 || w === 1 ? b.fighters.filter((f) => f.team === w) : [];
+    const img = shown.map((f) => `<img alt="" src="${this.portraits[f.charId]?.[f.team === 1 ? 'flip' : 'happy'] ?? ''}">`).join('');
+    const rows: [string, (i: number) => number, (v: number) => string][] = [
       ['명중률', (i) => (b.fighters[i].stats.shots ? b.fighters[i].stats.hits / b.fighters[i].stats.shots : 0), (v) => `${Math.round(v * 100)}%`],
       ['총 피해량', (i) => b.fighters[i].stats.damageDealt, (v) => `${v}`],
       ['가장 센 한 방', (i) => b.fighters[i].stats.maxHit, (v) => `${v}`],
       ['지형 파괴', (i) => b.fighters[i].stats.cellsDestroyed, (v) => `${Math.round(v * 4 / 100)}㎡`],
       ['쏜 횟수', (i) => b.fighters[i].stats.shots, (v) => `${v}발`],
     ];
-    const head = `<tr><th></th>${[0, 1].map((i) => `<th class="p${i + 1}">${names[i]} ${character(b.fighters[i].charId).name}</th>`).join('')}</tr>`;
+    // 표는 편끼리 모아서(1팀 → 2팀)
+    const order = [...b.fighters].sort((x, y) => x.team - y.team || x.idx - y.idx).map((f) => f.idx);
+    const head = `<tr><th></th>${order.map((i) => `<th class="p${b.fighters[i]!.team + 1}">${team ? '' : `${esc(names[i] ?? '')} `}${character(b.fighters[i]!.charId).name}</th>`).join('')}</tr>`;
     const body = rows.map(([label, get, fmt]) => {
-      const a = get(0), c = get(1);
-      return `<tr><td>${label}</td><td class="${a > c ? 'best' : ''}">${fmt(a)}</td><td class="${c > a ? 'best' : ''}">${fmt(c)}</td></tr>`;
+      const vals = order.map((i) => get(i));
+      const top = Math.max(...vals);
+      const unique = vals.filter((v) => v === top).length === 1;
+      return `<tr><td>${label}</td>${vals.map((v) => `<td class="${unique && v === top && v > 0 ? 'best' : ''}">${fmt(v)}</td>`).join('')}</tr>`;
     }).join('');
     el.innerHTML = `
       <h2 class="${cls}">${title}</h2>
       <div class="why">${esc(why)}</div>
       <div class="who">${img}</div>
-      <table class="table">${head}${body}</table>
+      <table class="table${team ? ' four' : ''}">${head}${body}</table>
       <div class="actions">
         <button class="btn primary" data-act="rematch">다시 한 판</button>
         <button class="btn" data-act="rechar">장수 다시 고르기</button>
@@ -601,7 +668,7 @@ export class UI {
       <div class="row"><label>예상 궤적</label>${chips('trajectory', [['1', '보이기'], ['0', '숨기기']], s.trajectory ? '1' : '0')}</div>
       <div class="row"><label>AI 실력</label>${chips('difficulty', [['easy', '쉬움'], ['normal', '보통'], ['hard', '어려움']], s.difficulty)}</div>
       <div class="row"><label>턴 시간</label>${chips('turnTime', [['20', '20초'], ['30', '30초'], ['45', '45초']], String(s.turnTime))}</div>
-      <div class="row"><label>전체 턴</label>${chips('turnLimit', [['20', '20턴'], ['30', '30턴'], ['40', '40턴']], String(s.turnLimit))}</div>
+      <div class="row"><label>승부 방식</label>${chips('turnLimit', [['0', '끝장전'], ['20', '20턴'], ['30', '30턴'], ['40', '40턴']], String(s.turnLimit))}</div>
       <p style="font-size:13px;color:var(--muted)">그래픽을 낮춰도 포탄 궤적과 판정은 똑같습니다. 턴 시간과 전체 턴은 다음 판부터 적용됩니다.</p>
       <div class="actions"><button class="btn primary" data-act="close">닫기</button></div>`;
   }
@@ -609,7 +676,7 @@ export class UI {
   // ───────── 게임 방법 ─────────
 
   private buildHowto(): void {
-    const weapons = CHARACTERS.map((c) => `<li><b>${c.name}</b> — ${weapon(c.normal).name} / 특수 ${weapon(c.special).name}</li>`).join('');
+    const weapons = CHARACTERS.map((c) => `<li><b>${c.name}</b> — 특기 <b>${c.trait.name}</b>: ${esc(c.trait.desc)} (1번: ${weapon(c.normal).name} / 2번: ${weapon(c.special).name})</li>`).join('');
     const el = this.add('howto', h(`
       <section class="screen modal"><div class="sheet">
         <h2>게임 방법</h2>
@@ -619,17 +686,21 @@ export class UI {
           <li><kbd>A</kbd> <kbd>D</kbd> 이동(한 턴에 갈 수 있는 거리가 정해져 있어요)</li>
           <li><kbd>←</kbd> <kbd>→</kbd> 포신을 왼쪽·오른쪽으로 돌리기, <kbd>↑</kbd> <kbd>↓</kbd> 포신 올리기·내리기</li>
           <li><kbd>Space</kbd> 꾹 눌러 힘 모으기 → 떼면 발사(힘은 끝까지 차면 다시 줄어듭니다)</li>
-          <li><kbd>1</kbd> <kbd>2</kbd> 무기 바꾸기 · <kbd>Tab</kbd> 카메라 · <kbd>Esc</kbd> 일시정지 · 마우스 끌기로 둘러보기, 휠로 확대</li>
+          <li><kbd>1</kbd> <kbd>2</kbd> 무기 바꾸기 · <kbd>Esc</kbd> 일시정지</li>
+          <li>화면 둘러보기: 마우스로 끌기 또는 <kbd>I</kbd> <kbd>J</kbd> <kbd>K</kbd> <kbd>L</kbd>, 휠로 확대 · <kbd>Tab</kbd> 따라가기/상대/전체 보기 · <kbd>C</kbd> 내 장수로 돌아오기</li>
         </ul>
         <h3>휴대폰·태블릿</h3>
-        <ul><li>왼쪽 ◀ ▶ 이동, ▲ ▼ 각도, ⇄ 방향 바꾸기, 오른쪽 큰 <b>발사</b> 단추를 누르고 있다가 떼면 발사. 화면을 끌면 둘러볼 수 있어요.</li></ul>
+        <ul><li>왼쪽 ◀ ▶ 이동, ▲ ▼ 각도, ⇄ 방향 바꾸기, 오른쪽 큰 <b>발사</b> 단추를 누르고 있다가 떼면 발사.</li>
+          <li>전장을 손가락으로 끌면 둘러볼 수 있고, 두 손가락으로 벌리면 확대됩니다. 「보기」 단추는 따라가기·상대·전체 보기를 바꾸고, 「내 장수로」는 다시 내 장수를 비춥니다.</li></ul>
         <h3>규칙</h3>
         <ul>
           <li>한 턴에 한 번만 쏩니다. 포탄·폭발·붕괴·낙석이 모두 멈춰야 다음 차례로 넘어갑니다.</li>
           <li>바람은 턴마다 바뀝니다. 화면 위 화살표가 방향과 세기(0~10)입니다. 무기마다 바람을 타는 정도가 다릅니다.</li>
           <li>지지점을 잃은 땅은 덩어리째 무너지고, 바위는 낙석이 되어 굴러갑니다. 깔리거나 높은 곳에서 떨어지면 다칩니다.</li>
-          <li>상대를 맞히거나 맞으면 <b>기세</b>가 찹니다. 가득 차면 특수 공격(2번)을 쓸 수 있습니다.</li>
+          <li><b>1번과 2번 탄은 매 차례 자유롭게 선택</b>합니다. 횟수 제한과 기세 조건이 없고, 발사 뒤에도 고른 탄을 기억합니다. 누르고 모으는 힘은 포탄의 날아갈 거리입니다.</li>
+          <li><b>독구름</b> 안에서 자기 차례를 맞으면 피해를 입습니다. 구름 밖으로 움직여 피할 수 있으며, 같은 편도 피해를 입습니다.</li>
           <li>정해진 턴을 다 쓰면 남은 체력 비율이 높은 쪽이 이깁니다. 둘이 함께 쓰러지면 무승부입니다.</li>
+          <li><b>2:2</b>는 편마다 장수 둘이 번갈아 쏩니다(편 → 상대 편 → 편의 다른 장수 …). 같은 편도 폭발에 다치니 조심하세요. 한 편이 모두 쓰러지면 끝나고, 전체 턴은 고른 수의 두 배입니다.</li>
         </ul>
         <h3>포탄 속의 수학</h3>
         <div class="mathbox">처음 속도 <code>v</code>, 각도 <code>θ</code>로 쏜 포탄의 위치는<br>

@@ -15,7 +15,6 @@ function shoot(charId: string, slot: 0 | 1, angle: number, power: number, second
   b.current = 0;
   b.phase = 'AIM';
   b.timeLeft = 30;
-  a.gauge = 100;
   b.selectWeapon(slot);
   b.setAngle(angle);
   b.fireNow(power);
@@ -79,6 +78,22 @@ describe('무기 여섯 종이 서로 다르게 작동한다', () => {
     expect(r.count('split')).toBe(1);
     expect(r.maxProj).toBe(5);
     expect(r.count('explode')).toBe(5);
+  });
+
+  it('화차장인: 1번 세 발 집중 연사와 2번 아홉 발 확산이 서로 다르다', () => {
+    const focused=shoot('hwacha',0,45,60),wide=shoot('hwacha',1,45,60);
+    expect(focused.afterFire).toEqual({proj:1,sched:2});
+    expect(focused.count('launch')).toBe(3);
+    expect(wide.afterFire).toEqual({proj:9,sched:0});
+    expect(wide.count('launch')).toBe(9);
+    expect(wide.count('explode')).toBe(9);
+  });
+
+  it('독술사: 1번은 즉시 폭발, 2번은 실제 독구름을 남긴다', () => {
+    const one=shoot('alchemist',0,45,45),two=shoot('alchemist',1,45,45);
+    expect(one.b.clouds).toHaveLength(0);
+    expect(two.b.clouds).toHaveLength(1);
+    expect(two.b.clouds[0]!.owner).toBe(0);
   });
 
   it('철갑 포탄은 바위를 흙처럼 부수고, 화포탄은 바위를 덜 판다', () => {

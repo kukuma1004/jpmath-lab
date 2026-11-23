@@ -5,7 +5,7 @@ import type { BattleConfig, SimEvent } from '../combat/types';
 import { AIActor, AIPlanner } from '../ai/ai';
 import { mapDef } from '../data/maps';
 import { weapon } from '../data/weapons';
-import { character } from '../data/characters';
+import { TRAIT, character } from '../data/characters';
 import { Mat } from '../terrain/terrain';
 import { TerrainView } from '../render/terrainView';
 import { BackgroundView } from '../render/backgroundView';
@@ -29,7 +29,8 @@ export class BattleScene extends Phaser.Scene {
   app!: App;
   battle!: Battle;
   mode: Mode = 'ai';
-  names: [string, string] = ['1P', '2P'];
+  /** 장수마다 붙는 이름(편 이름): AI 대전은 나/AI, 둘이서는 1P/2P */
+  names: string[] = ['1P', '2P'];
   paused = false;
   timeScale = 1;
   private acc = 0;
@@ -45,7 +46,7 @@ export class BattleScene extends Phaser.Scene {
   private guide!: Phaser.GameObjects.Graphics;
   private bottomFx: Phaser.GameObjects.GameObject[] = [];
   private river: Phaser.GameObjects.Graphics | null = null;
-  private actors: (AIActor | null)[] = [null, null];
+  private actors: (AIActor | null)[] = [];
   private t = 0;
   // 카메라
   private camX = WORLD_W / 2;
@@ -69,7 +70,8 @@ export class BattleScene extends Phaser.Scene {
     this.app = this.registry.get('app') as App;
     this.mode = data.mode;
     this.battle = new Battle(data.cfg);
-    this.names = data.mode === 'ai' ? ['나', 'AI'] : ['1P', '2P'];
+    const teamNames = data.mode === 'ai' ? ['나', 'AI'] : ['1P', '2P'];
+    this.names = this.battle.fighters.map((f) => teamNames[f.team]!);
     this.paused = false;
     this.acc = 0;
     this.t = 0;
@@ -80,7 +82,7 @@ export class BattleScene extends Phaser.Scene {
     this.bottomFx = [];
     this.river = null;
     this.resultTimer = null;
-    this.actors = data.cfg.controllers.map((c, i) => (c === 'ai' ? new AIActor(i as 0 | 1, data.cfg.difficulty) : null));
+    this.actors = data.cfg.controllers.map((c, i) => (c === 'ai' ? new AIActor(i, data.cfg.difficulty) : null));
   }
 
   create(): void {
@@ -107,6 +109,7 @@ export class BattleScene extends Phaser.Scene {
     this.guide = this.add.graphics().setDepth(25);
     this.world.add(this.guide);
     for (const f of b.fighters) this.fighters.push(new FighterView(this, this.world, f, this.names[f.idx]!));
+    if (b.fighters.length > 2) this.app.ui.toast(this.mode === 'ai' ? '2:2 — 내 편 장수 둘을 번갈아 조종해요' : '2:2 — 편마다 장수 둘이 번갈아 쏩니다');
 
     // 처음 카메라: 둘 다 보이게
     const ov = this.overview();
@@ -122,6 +125,7 @@ export class BattleScene extends Phaser.Scene {
       weapon: (slot) => this.selectWeapon(slot),
       pause: () => this.app.pause(),
       camera: () => this.cycleCamera(),
+      recenter: () => this.recenter(),
       zoom: (d) => { this.userZoom = Phaser.Math.Clamp(this.userZoom * (d > 0 ? 1.12 : 1 / 1.12), 0.6, 1.5); },
     };
     this.setupPointer();
@@ -198,19 +202,30 @@ export class BattleScene extends Phaser.Scene {
     return Math.max(0.42, this.scale.width / (WORLD_W + 240));
   }
 
+  /** 살아 있는 장수가 모두 보이게 */
   private overview(): { x: number; y: number; z: number } {
-    const [a, c] = this.battle.fighters;
-    const dx = Math.abs(a.x - c.x) + 560;
-    const dy = Math.abs(a.y - c.y) + 520;
+    const live = this.battle.fighters.filter((f) => f.alive && f.y < WORLD_H);
+    const fs = live.length ? live : this.battle.fighters;
+    const x0 = Math.min(...fs.map((f) => f.x)), x1 = Math.max(...fs.map((f) => f.x));
+    const y0 = Math.min(...fs.map((f) => f.y)), y1 = Math.max(...fs.map((f) => f.y));
+    const dx = x1 - x0 + 560;
+    const dy = y1 - y0 + 520;
     const z = Phaser.Math.Clamp(Math.min(this.scale.width / dx, VIEW_H / dy), this.minZoom(), 1);
-    return { x: (a.x + c.x) / 2, y: (a.y + c.y) / 2 - 80, z };
+    return { x: (x0 + x1) / 2, y: (y0 + y1) / 2 - 80, z };
   }
 
-  private cycleCamera(): void {
+  /** Tab·「보기」 단추: 따라가기 → 상대 보기 → 전체 보기 */
+  cycleCamera(): void {
     const order: typeof this.camMode[] = ['auto', 'enemy', 'all'];
     this.camMode = order[(order.indexOf(this.camMode) + 1) % order.length]!;
     this.free = false;
     this.app.ui.toast(this.camMode === 'auto' ? '카메라: 따라가기' : this.camMode === 'enemy' ? '카메라: 상대 보기' : '카메라: 전체 보기');
+  }
+
+  /** C·「내 장수로」 단추: 둘러보기를 끝내고 지금 차례 장수를 따라간다 */
+  recenter(): void {
+    this.free = false;
+    this.camMode = 'auto';
   }
 
   private target(): { x: number; y: number; z: number; k: number } {
@@ -219,7 +234,7 @@ export class BattleScene extends Phaser.Scene {
     const mobile = this.scale.width < 1100;
     // 세로 휴대폰처럼 화면이 좁으면 더 가까이
     const narrow = this.scale.displaySize.width < 560;
-    const zBase = narrow ? 1.12 : mobile ? 0.82 : 0.95;
+    const zBase = narrow ? 1.25 : mobile ? 1.0 : 1.12;
     if (this.camMode === 'all') return { ...this.overview(), k: 4 };
     if (this.camMode === 'enemy' && b.isPlayerPhase()) return { x: b.enemy.x, y: b.enemy.y - 90, z: zBase, k: 4 };
     switch (b.phase) {
@@ -233,26 +248,31 @@ export class BattleScene extends Phaser.Scene {
         return { x: f.x + (f.angle <= 90 ? 1 : -1) * 140, y: f.y - 110, z: zBase, k: 4 };
       case 'PROJECTILE_FLIGHT': {
         const p = this.bodies.lead(b);
-        if (p) return { x: p.x + p.vx * 0.22, y: p.y + p.vy * 0.12, z: 0.8, k: 6 };
-        return { x: this.lastBlast.x, y: this.lastBlast.y - 60, z: 0.85, k: 4 };
+        if (p) return { x: p.x + p.vx * 0.22, y: p.y + p.vy * 0.12, z: 0.95, k: 6 };
+        return { x: this.lastBlast.x, y: this.lastBlast.y - 60, z: 1.0, k: 4 };
       }
       case 'EXPLOSION':
       case 'TERRAIN_COLLAPSE': {
         let sx = 0, sy = 0, n = 0;
         for (const r of b.boulders) { sx += r.x; sy += r.y; n++; }
         for (const c of b.chunks) { sx += ((c.minX + c.maxX) / 2) * 2; sy += (c.minY + c.dRow) * 2; n++; }
-        if (n) return { x: (sx / n + this.lastBlast.x) / 2, y: (sy / n + this.lastBlast.y) / 2 - 40, z: 0.8, k: 3 };
-        return { x: this.lastBlast.x, y: this.lastBlast.y - 60, z: 0.85, k: 3 };
+        if (n) return { x: (sx / n + this.lastBlast.x) / 2, y: (sy / n + this.lastBlast.y) / 2 - 40, z: 0.9, k: 3 };
+        return { x: this.lastBlast.x, y: this.lastBlast.y - 60, z: 1.0, k: 3 };
       }
       case 'PHYSICS_SETTLING':
       case 'TURN_END': {
         const air = b.fighters.find((x) => !x.onGround && x.y < WORLD_H + 20);
-        if (air) return { x: air.x, y: air.y - 60, z: 0.8, k: 5 };
-        return { x: this.lastBlast.x, y: this.lastBlast.y - 60, z: 0.85, k: 2.5 };
+        if (air) return { x: air.x, y: air.y - 60, z: 0.95, k: 5 };
+        return { x: this.lastBlast.x, y: this.lastBlast.y - 60, z: 1.0, k: 2.5 };
       }
       case 'GAME_OVER': {
-        const w = b.winner === 0 || b.winner === 1 ? b.fighters[b.winner] : null;
-        if (w) return { x: w.x, y: w.y - 70, z: 1.15, k: 2 };
+        const ws = b.winner === 0 || b.winner === 1 ? b.fighters.filter((x) => x.team === b.winner && x.alive) : [];
+        if (ws.length === 1) return { x: ws[0]!.x, y: ws[0]!.y - 70, z: 1.15, k: 2 };
+        if (ws.length > 1) {
+          const cx = ws.reduce((s, x) => s + x.x, 0) / ws.length, cy = ws.reduce((s, x) => s + x.y, 0) / ws.length;
+          const spread = Math.max(...ws.map((x) => x.x)) - Math.min(...ws.map((x) => x.x));
+          return { x: cx, y: cy - 70, z: Phaser.Math.Clamp(this.scale.width / (spread + 500), this.minZoom(), 1.15), k: 2 };
+        }
         return { ...this.overview(), k: 2 };
       }
     }
@@ -265,6 +285,14 @@ export class BattleScene extends Phaser.Scene {
       if (b.phase === 'TURN_START' || b.phase === 'PROJECTILE_FLIGHT') { this.free = false; if (b.phase === 'TURN_START') this.camMode = 'auto'; }
       this.lastPhase = b.phase;
     }
+    // 키보드 I/J/K/L로 둘러보기
+    const pan = input.pan;
+    if (input.active && (pan.x || pan.y)) {
+      this.free = true;
+      this.camX += (pan.x * 620 * dt) / this.camZ;
+      this.camY += (pan.y * 620 * dt) / this.camZ;
+    }
+    this.app.ui.setFreeCam(this.free);
     if (!this.free) {
       const t = this.target();
       const k = 1 - Math.exp(-dt * t.k);
@@ -335,10 +363,6 @@ export class BattleScene extends Phaser.Scene {
   selectWeapon(slot: 0 | 1): void {
     const b = this.battle;
     if (this.actors[b.current] || !b.isPlayerPhase()) return;
-    if (slot === 1 && !b.canSpecial(b.cur)) {
-      this.app.ui.toast(`기세가 ${Math.round(b.cur.gauge)}%예요. 가득 차야 쓸 수 있어요`);
-      return;
-    }
     b.selectWeapon(slot);
   }
 
@@ -378,11 +402,14 @@ export class BattleScene extends Phaser.Scene {
       switch (e.type) {
         case 'battleStart':
           ui.banner('싸움 시작!', `${this.names[e.first]} 먼저 쏩니다`);
+          this.time.delayedCall(2200, () => ui.toast('화면을 끌면 둘러볼 수 있어요 · 「보기」로 전체 보기'));
           break;
         case 'turn': {
           input.newTurn();
           const w = e.wind === 0 ? '바람 잔잔' : `바람 ${e.wind > 0 ? '→' : '←'} ${Math.abs(e.wind)}`;
-          if (e.turnNo > 1) ui.banner(`${this.names[e.player]} 차례`, w, `p${e.player + 1}`);
+          const pf = b.fighters[e.player]!;
+          const who = b.fighters.length > 2 ? `${this.names[e.player]} · ${character(pf.charId).name}` : this.names[e.player]!;
+          if (e.turnNo > 1) ui.banner(`${who} 차례`, w, `p${pf.team + 1}`);
           audio.turn();
           if (e.wind !== e.prevWind && Math.abs(e.wind - e.prevWind) >= 3) audio.wind();
           break;
@@ -436,11 +463,11 @@ export class BattleScene extends Phaser.Scene {
           if (this.t - this.rockSfxT > 0.08) { audio.rock(e.speed); this.rockSfxT = this.t; }
           break;
         case 'land':
-          this.effects.land(b.fighters[e.target].x, b.fighters[e.target].y, e.speed);
+          this.effects.land(b.fighters[e.target]!.x, b.fighters[e.target]!.y, e.speed);
           audio.land(e.speed);
           break;
         case 'death': {
-          const f = b.fighters[e.target];
+          const f = b.fighters[e.target]!;
           this.effects.soul(f.x, Math.min(f.y, WORLD_H));
           this.effects.label(f.x, Math.min(f.y, WORLD_H - 40) - 70, e.cause === 'fall' ? '낙사!' : '쓰러짐!', '#ffd0c0');
           break;
@@ -448,9 +475,18 @@ export class BattleScene extends Phaser.Scene {
         case 'timeout':
           ui.toast('시간이 다 됐어요. 차례를 넘깁니다');
           break;
+        case 'heal':
+          this.effects.heal(e.x, e.y, e.amount);
+          break;
+        case 'trait': {
+          const text = e.kind === 'steady' ? '자리 잡은 포격!' : e.kind === 'eagle' ? '명중!' : e.kind === 'shove' ? '날려 버렸다!' : '철갑!';
+          const color = e.kind === 'steady' ? '#ffd36a' : e.kind === 'eagle' ? '#9ad8ff' : e.kind === 'shove' ? '#a8ff8a' : '#d8dde6';
+          this.effects.label(e.x, e.y, text, color);
+          break;
+        }
         case 'gameOver': {
           const w = e.winner;
-          if (w === 0 || w === 1) this.effects.confetti(b.fighters[w].x, b.fighters[w].y - 40);
+          if (w === 0 || w === 1) for (const f of b.fighters) if (f.team === w && f.alive) this.effects.confetti(f.x, f.y - 40);
           const iWon = this.mode === 'local' ? w !== -1 : w === 0;
           this.time.delayedCall(500, () => (iWon ? audio.victory() : audio.defeat()));
           this.resultTimer = this.time.delayedCall(1900, () => this.app.ui.showResult(b, this.names));
@@ -471,7 +507,7 @@ export class BattleScene extends Phaser.Scene {
     if (!b.isPlayerPhase()) return;
     const f = b.cur;
     if (!f.alive) return;
-    const col = PLAYER_COLORS[f.idx]!;
+    const col = PLAYER_COLORS[f.team]!;
     const a = f.angle * DEG;
     const [mx, my] = b.muzzle(f);
     // 각도 호
@@ -491,7 +527,7 @@ export class BattleScene extends Phaser.Scene {
     // 예상 궤적(실제 물리와 같은 계산, 처음 1.1초)
     if (this.app.settings.trajectory && this.humanTurn()) {
       const power = b.phase === 'CHARGE' ? f.power : f.lastPower;
-      const pts = b.previewPath(1.1, power);
+      const pts = b.previewPath(b.traitOf(f) === 'eagle' ? TRAIT.eaglePreview : 1.1, power);
       for (let i = 2; i < pts.length; i += 3) {
         const p = pts[i]!;
         const k = 1 - i / pts.length;
@@ -539,7 +575,11 @@ export class BattleScene extends Phaser.Scene {
     const actor = this.actors[b.current];
     const status = actor && b.isPlayerPhase()
       ? actor.stage === 'think' ? `${character(b.cur.charId).name} AI가 궁리하는 중…` : actor.stage === 'walk' ? '자리를 옮기는 중…' : '조준하는 중…'
-      : b.phase === 'TERRAIN_COLLAPSE' ? '땅이 무너지는 중…' : '';
+      : b.phase === 'TERRAIN_COLLAPSE' ? '땅이 무너지는 중…'
+      : !b.isPlayerPhase() && (b.shotDamage.get(b.shotNo) ?? 0) > 0 ? `이번 포격: 상대에게 합계 ${b.shotDamage.get(b.shotNo)} 피해`
+      : b.clouds.some((c) => (c.turns[b.current] ?? 0) > 0 && b.inCloud(b.cur, c)) ? '독무 속! 다음 자기 차례가 오기 전에 구름 밖으로 움직이세요'
+      : b.isPlayerPhase() && b.steadyReady(b.cur) ? '자리 잡은 포격 — 움직이지 않고 쏘면 피해 +15%'
+      : '';
     this.app.ui.updateHud(b, { names: this.names, humanTurn: this.humanTurn(), status });
   }
 
@@ -571,7 +611,6 @@ export class BattleScene extends Phaser.Scene {
       fire(angle: number, power: number, slot: 0 | 1 = 0) {
         const b = scene.battle;
         if (!b.isPlayerPhase()) return false;
-        if (slot === 1) b.cur.gauge = 100;
         b.selectWeapon(slot);
         b.setAngle(angle);
         b.fireNow(power);
@@ -580,17 +619,16 @@ export class BattleScene extends Phaser.Scene {
       aimFire(slot?: 0 | 1) {
         const b = scene.battle;
         if (!b.isPlayerPhase()) return false;
-        if (slot === 1) b.cur.gauge = 100;
         // 제자리에서 쏘는 계획만(보통 난이도는 움직이지 않는다), 오차 없이
         const plan = new AIPlanner(b, b.current, 'normal', slot === undefined ? undefined : [slot]).runToEnd();
-        if (plan.slot === 1) b.selectWeapon(1);
+        b.selectWeapon(plan.slot);
         b.setAngle(plan.exact.angle);
         b.fireNow(plan.exact.power);
         return true;
       },
       skip() { scene.battle.skipTurn(); },
-      kill(i: 0 | 1) { const f = scene.battle.fighters[i]; scene.battle.applyDamage(f, f.hp, f.x, f.y, false, 'blast', -1); },
-      setHp(i: 0 | 1, hp: number) { scene.battle.fighters[i].hp = hp; },
+      kill(i: number) { const f = scene.battle.fighters[i]!; scene.battle.applyDamage(f, f.hp, f.x, f.y, false, 'blast', -1); },
+      setHp(i: number, hp: number) { scene.battle.fighters[i]!.hp = hp; },
       /** 카메라를 한 곳에 고정해 크게 본다(그림 확인용) */
       look(x: number, y: number, z = 1.5) { scene.free = true; scene.camX = x; scene.camY = y; scene.camZ = z; },
     };

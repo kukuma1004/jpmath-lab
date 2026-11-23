@@ -30,7 +30,7 @@ async function openBattle(page: Page, mode: 'ai' | 'local', chars?: [string, str
     const t = w.scene.textures, b = w.battle;
     return {
       body: b.fighters.every((f) => t.exists(`art_char_${f.charId}`)),
-      weapon: b.fighters.every((f) => t.exists(`art_wpn_${f.charId}`)),
+      weapon: b.fighters.every((f) => t.exists(`art_wpn_${f.charId}`) || (['hwacha','alchemist'].includes(f.charId) && t.exists(`wpn_${f.charId}`))),
       bg: t.exists(`art_bg_${b.cfg.mapId}`),
     };
   });
@@ -43,6 +43,52 @@ async function waitAim(page: Page, who?: number, timeout = 30_000) {
     return s.phase === 'AIM' && (who === undefined || s.current === who);
   }, { timeout }).toBe(true);
 }
+
+test('새 장수 8명과 첫 차례의 자유 탄 선택: 2번 발사 후 1번으로 돌아간다', async ({page}) => {
+  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+  await openBattle(page,'local',['hwacha','alchemist'],'sanseong');
+  await waitAim(page);
+  const before=await state(page),who=before.current;
+  const hud=page.locator('[data-s=hud]');
+  await expect(hud.locator('.gauge')).toHaveCount(0);
+  await expect(hud.locator('[data-w="0"]')).toBeEnabled();
+  await expect(hud.locator('[data-w="1"]')).toBeEnabled();
+  await page.keyboard.press('2');
+  await expect.poll(()=>wr(page,'__wr.battle.cur.slot')).toBe(1);
+  await expect(hud.locator('[data-w="1"]')).toHaveClass(/on/);
+  await page.keyboard.down('Space');await page.waitForTimeout(850);await page.keyboard.up('Space');
+  await expect.poll(async()=>(await state(page)).shots[who]).toBe(before.shots[who]!+1);
+  await waitAim(page,1-who,45_000);
+  await expect(hud.locator('[data-w="1"]')).toBeEnabled();
+  await page.keyboard.press('2');await expect.poll(()=>wr(page,'__wr.battle.cur.slot')).toBe(1);
+  await page.keyboard.press('1');await expect.poll(()=>wr(page,'__wr.battle.cur.slot')).toBe(0);
+  expect(errors).toEqual([]);
+});
+
+test('새 장수 고르기: 8장 카드, 전용 그림과 두 탄 용도가 보인다', async({page})=>{
+  await page.goto('./?qa=1');await expect(page.locator('[data-s=title]')).toHaveClass(/on/);
+  await page.getByRole('button',{name:/둘이서 하기/}).click();
+  const screen=page.locator('[data-s=chars]');
+  await expect(screen.locator('.card')).toHaveCount(8);
+  for(const id of ['hwacha','alchemist']){
+    await screen.locator(`.card[data-id=${id}]`).click();
+    await expect(screen).toContainText(id==='hwacha'?'구룡 화차':'자욱한 독무');
+    await expect(screen).toContainText('두 탄 모두 매 차례 자유롭게');
+  }
+  await expect(screen).not.toContainText('가득 차면');
+});
+
+test('기본 체력 800 끝장전: 40턴 뒤에도 계속하고 쓰러뜨려야 끝난다',async({page})=>{
+  await openBattle(page,'local',['general','archer'],'sanseong');await waitAim(page);
+  expect((await state(page)).hp).toEqual([800,800]);
+  expect(await wr(page,'__wr.battle.cfg.turnLimit')).toBe(0);
+  await expect(page.locator('[data-s=hud] .tno')).toContainText('끝장전');
+  await wr(page,'__wr.battle.turnNo=40; __wr.skip();');await waitAim(page);
+  const s=await state(page);expect(s.turnNo).toBe(41);expect(s.winner).toBeNull();
+  await wr(page,`__wr.kill(${1-s.current}); __wr.skip();`);
+  await expect(page.locator('[data-s=result]')).toHaveClass(/on/);
+  expect(await wr(page,'__wr.battle.endReason')).toBe('hp');
+});
 
 test('AI 대전: 타이틀 → 장수 → 전장 → 전투, AI가 실제로 쏜다', async ({ page }) => {
   const errors: string[] = [];
@@ -98,7 +144,7 @@ test('게임 끝 → 결과 화면 → 재대전', async ({ page }) => {
   await expect(result).not.toHaveClass(/on/);
   await expect.poll(async () => {
     const n = await state(page);
-    return n.winner === null && n.hp[0] === 1000 && n.hp[1] === 1000 && n.turnNo <= 1 && n.shots[0] === 0;
+    return n.winner === null && n.hp[0] === 800 && n.hp[1] === 800 && n.turnNo <= 1 && n.shots[0] === 0;
   }).toBe(true);
   await waitAim(page);
 });
@@ -188,3 +234,84 @@ test('성능: 큰 폭발·붕괴 직후 시뮬레이션과 한 프레임 비용(
   // 시뮬레이션은 60fps 한 프레임(16.7ms) 안에서 넉넉해야 한다
   expect(out['보통-시뮬1걸음ms']).toBeLessThan(4);
 });
+
+test('화면 끌기로 둘러보고 「내 장수로」로 돌아온다', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await openBattle(page, 'local', ['general', 'archer'], 'baekdu');
+  await waitAim(page);
+  const camX = () => page.evaluate(() => (window as unknown as { __wr: { scene: { camX: number; free: boolean } } }).__wr.scene.camX);
+  const x0 = await camX();
+  // HUD가 끌기를 가로채지 않고 전장으로 넘기는지: 실제 마우스로 끈다
+  await page.mouse.move(800, 300);
+  await page.mouse.down();
+  const panSign=x0>1200?1:-1;
+  await page.mouse.move(800+panSign*100, 310, { steps: 4 });
+  await page.mouse.move(800+panSign*300, 320, { steps: 6 });
+  await page.mouse.up();
+  await expect.poll(async () => Math.abs((await camX()) - x0)).toBeGreaterThan(150);
+  const home = page.locator('[data-s=hud] .cambtn.home');
+  await expect(home).toBeVisible();
+  await home.click();
+  await expect(home).toBeHidden();
+  await expect.poll(async () => Math.abs((await camX()) - x0), { timeout: 15_000 }).toBeLessThan(40);
+});
+
+async function openTeamBattle(page: Page, chars: string[], map: string) {
+  await page.goto('./?qa=1');
+  await expect(page.locator('[data-s=title]')).toHaveClass(/on/, { timeout: 20_000 });
+  await page.getByRole('button', { name: /둘이서 하기/ }).click();
+  const chars$ = page.locator('[data-s=chars]');
+  await expect(chars$).toHaveClass(/on/);
+  await chars$.locator('[data-size="2"]').click();
+  for (let k = 0; k < 4; k++) {
+    await chars$.locator(`.card[data-id=${chars[k]}]`).click();
+    await chars$.getByRole('button', { name: k < 3 ? /이 장수로/ : /전장 고르기/ }).click();
+  }
+  const maps$ = page.locator('[data-s=maps]');
+  await expect(maps$).toHaveClass(/on/);
+  await maps$.locator(`.card[data-id=${map}]`).click();
+  await maps$.getByRole('button', { name: /싸움 시작/ }).click();
+  await expect(page.locator('[data-s=hud]')).toHaveClass(/on/);
+  await page.waitForFunction(() => !!(window as unknown as { __wr?: unknown }).__wr);
+}
+
+for (const vp of [{ name: '가로', width: 844, height: 390 }, { name: '세로', width: 390, height: 844 }]) {
+  test(`2:2 모바일 ${vp.name}: 장수 넷의 체력판이 화면 안에, 단추와 겹치지 않고, 끝나면 결과가 보인다`, async ({ browser }) => {
+    const ctx = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, hasTouch: true, isMobile: true, baseURL: 'http://127.0.0.1:5213/' });
+    const page = await ctx.newPage();
+    // 고른 순서: 1팀 첫째·둘째, 2팀 첫째·둘째
+    await openTeamBattle(page, ['general', 'mudang', 'archer', 'turtle'], 'sanseong');
+    await waitAim(page);
+    const n = await page.evaluate(() => (window as unknown as { __wr: { battle: { fighters: unknown[] } } }).__wr.battle.fighters.length);
+    expect(n).toBe(4);
+    const cards = page.locator('[data-s=hud] .pcard');
+    await expect(cards).toHaveCount(4);
+    const boxes = [];
+    for (let i = 0; i < 4; i++) {
+      const b = (await cards.nth(i).boundingBox())!;
+      expect(b.x, `카드 ${i} 왼쪽`).toBeGreaterThanOrEqual(0);
+      expect(b.y, `카드 ${i} 위`).toBeGreaterThanOrEqual(0);
+      expect(b.x + b.width, `카드 ${i} 오른쪽`).toBeLessThanOrEqual(vp.width + 1);
+      boxes.push(b);
+    }
+    for (const sel of ['.pausebtn', '.cambtn']) {
+      const c = (await page.locator(`[data-s=hud] ${sel}`).first().boundingBox())!;
+      for (const [i, a] of boxes.entries()) {
+        const overlap = a.x < c.x + c.width - 1 && c.x < a.x + a.width - 1 && a.y < c.y + c.height - 1 && c.y < a.y + a.height - 1;
+        expect(overlap, `카드 ${i} / ${sel} 겹침`).toBe(false);
+      }
+    }
+    // 상대 편을 모두 쓰러뜨리면 결과
+    const s = await state(page);
+    const foeTeam = 1 - (s.current % 2);
+    await wr(page, `__wr.battle.fighters.filter((f) => f.team === ${foeTeam}).forEach((f) => __wr.kill(f.idx)); __wr.skip();`);
+    const result = page.locator('[data-s=result]');
+    await expect(result).toHaveClass(/on/, { timeout: 20_000 });
+    await expect(result.locator('.table th')).toHaveCount(5);
+    await page.waitForTimeout(700);
+    const again = (await result.getByRole('button', { name: '다시 한 판' }).boundingBox())!;
+    expect(again.y + again.height).toBeLessThanOrEqual(vp.height + 1);
+    await page.screenshot({ path: `test-results/team-${vp.width}x${vp.height}.png` });
+    await ctx.close();
+  });
+}

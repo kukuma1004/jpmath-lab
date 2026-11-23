@@ -6,6 +6,8 @@ import type { MapDef } from '../data/maps';
 type Emitter = Phaser.GameObjects.Particles.ParticleEmitter;
 
 const WEAPON_TINTS: Record<string, number[]> = {
+  poison: [0xe0f3b1, 0xb6df6b, 0x7bac4b, 0x58823d],
+  rocket: [0xfff4cf, 0xffc264, 0xff894d, 0xd85334],
   fox: [0xe6f6ff, 0x7fd8ff, 0x4f8cff, 0xff7ad9],
   goblinfire: [0xe6ffe6, 0x6dff9e, 0x2ee6a6],
   paper: [0xfff4b0, 0xffd36a, 0xff5a5a],
@@ -36,7 +38,10 @@ export class Effects {
     };
     this.smoke = add('smoke', { speed: { min: 20, max: 110 }, lifespan: { min: 900, max: 1800 }, scale: { start: 0.45, end: 1.5 }, alpha: { start: 0.55, end: 0 }, gravityY: -40, tint: [0x6a5e58, 0x4a4440, 0x8a7e76], rotate: { min: 0, max: 360 } }, 38);
     this.fire = add('glow', { speed: { min: 60, max: 300 }, lifespan: { min: 260, max: 620 }, scale: { start: 0.9, end: 0 }, alpha: { start: 1, end: 0 }, blendMode: 'ADD', tint: WEAPON_TINTS.default }, 41);
-    this.spark = add('spark', { speed: { min: 220, max: 560 }, lifespan: { min: 380, max: 900 }, scale: { start: 0.7, end: 0.1 }, alpha: { start: 1, end: 0 }, gravityY: 700, blendMode: 'ADD', rotate: 0, tint: [0xfff0b0, 0xffb04a] }, 42);
+    this.spark = add('spark', { speed: { min: 220, max: 560 }, lifespan: { min: 380, max: 900 }, scale: { start: 0.7, end: 0.1 }, alpha: { start: 1, end: 0 }, gravityY: 700, blendMode: 'ADD',
+      angle: { min: 195, max: 345 },
+      rotate: { onUpdate: (particle: Phaser.GameObjects.Particles.Particle) => Math.atan2(particle.velocityY, particle.velocityX) * 180 / Math.PI },
+      tint: [0xffda76, 0xff832a] }, 42);
     this.debris = add('shard', { speed: { min: 120, max: 420 }, angle: { min: 200, max: 340 }, lifespan: { min: 700, max: 1400 }, scale: { min: 0.5, max: 1.3 }, gravityY: 900, rotate: { min: 0, max: 360 } }, 39);
     this.dust = add('smoke', { speed: { min: 30, max: 140 }, angle: { min: 180, max: 360 }, lifespan: { min: 700, max: 1400 }, scale: { start: 0.35, end: 1.1 }, alpha: { start: 0.5, end: 0 }, gravityY: -12, tint: [0xa89078, 0x8a7460, 0xc0a890] }, 37);
     this.glowEm = add('glow', { speed: { min: 40, max: 220 }, lifespan: { min: 300, max: 800 }, scale: { start: 0.7, end: 0 }, alpha: { start: 1, end: 0 }, blendMode: 'ADD' }, 43);
@@ -57,7 +62,7 @@ export class Effects {
       this.flashes.push(img);
     }
     img.setTexture(tex).setActive(true).setVisible(true).setPosition(x, y).setTint(tint).setAlpha(alpha).setScale(scale * 0.25).setDepth(depth).setBlendMode(Phaser.BlendModes.ADD);
-    this.scene.tweens.add({ targets: img, scale, alpha: 0, duration: dur, ease: 'Cubic.easeOut', onComplete: () => img!.setActive(false).setVisible(false) });
+    this.scene.tweens.add({ targets: img, scale, alpha: { value: 0, ease: 'Quad.easeIn' }, duration: dur, ease: 'Cubic.easeOut', onComplete: () => img!.setActive(false).setVisible(false) });
   }
 
   shake(power: number): void {
@@ -67,12 +72,14 @@ export class Effects {
 
   explosion(x: number, y: number, r: number, look: string, big: boolean, mat: number): void {
     const tints = WEAPON_TINTS[look] ?? WEAPON_TINTS.default!;
-    this.flash(x, y, r / 18, tints[1]!, 260);
-    this.flash(x, y, r / 34, 0xffffff, 140);
-    if (this.quality >= 0.6) this.flash(x, y, r / 46, 0xfff4e0, 420, 'ring', 0.85, 36);
+    this.flash(x, y, r / 24, tints[1]!, 220);
+    this.flash(x, y, r / 48, 0xffefc9, 95);
+    if (this.quality >= 0.6) this.flash(x, y, r / 46, 0xfff4e0, 350, 'ring', 0.42, 36);
+    this.flash(x, y, r / 41, tints[1]!, 440, 'blast_fan', 1, 43);
+    this.dust.explode(this.n(5 + r * 0.14), x, y);
     this.fire.particleTint = 0xffffff;
-    this.fire.setConfig({ speed: { min: 60, max: 120 + r * 3.2 }, lifespan: { min: 240, max: 520 + r * 3 }, scale: { start: 0.5 + r / 90, end: 0 }, alpha: { start: 1, end: 0 }, blendMode: 'ADD', tint: tints, emitting: false });
-    this.fire.explode(this.n(10 + r * 0.35), x, y);
+    this.fire.setConfig({ speed: { min: 60, max: 120 + r * 3.2 }, lifespan: { min: 240, max: 520 + r * 3 }, scale: { start: 0.18 + r / 225, end: 0 }, alpha: { start: 1, end: 0 }, blendMode: 'ADD', tint: tints, emitting: false });
+    this.fire.explode(this.n(4 + r * 0.13), x, y);
     this.smoke.explode(this.n(4 + r * 0.12), x, y - 6);
     this.spark.explode(this.n(6 + r * 0.12), x, y);
     this.debris.particleTint = this.matColor(mat);
@@ -175,9 +182,9 @@ export class Effects {
       this.layer.add(t);
       this.texts.push(t);
     }
-    const prefix = cause === 'fall' ? '낙하 ' : cause === 'rock' ? '낙석 ' : cause === 'crush' ? '깔림 ' : cause === 'lightning' ? '벼락 ' : '';
+    const prefix = cause === 'fall' ? '낙하 ' : cause === 'rock' ? '낙석 ' : cause === 'crush' ? '깔림 ' : cause === 'lightning' ? '벼락 ' : cause === 'poison' ? '독 ' : '';
     t.setText(`${crit ? '치명타! ' : prefix}-${amount}`);
-    t.setColor(crit ? '#ffd36a' : cause === 'blast' ? '#ffffff' : '#ffd0c0');
+    t.setColor(crit ? '#ffd36a' : cause === 'poison' ? '#c7ed91' : cause === 'blast' ? '#ffffff' : '#ffd0c0');
     t.setFontSize(crit ? 34 : amount >= 120 ? 30 : 24);
     t.setActive(true).setVisible(true).setPosition(x + (Math.random() - 0.5) * 16, y - 30).setAlpha(1).setScale(0.6);
     this.scene.tweens.add({ targets: t, scale: 1, duration: 160, ease: 'Back.easeOut' });
@@ -188,6 +195,15 @@ export class Effects {
     const t = this.scene.add.text(x, y, text, { fontFamily: 'Black Han Sans, sans-serif', fontSize: '30px', color, stroke: '#1a1210', strokeThickness: 7 }).setOrigin(0.5).setResolution(2).setDepth(51);
     this.layer.add(t);
     this.scene.tweens.add({ targets: t, y: y - 60, alpha: 0, duration: 1800, delay: 600, onComplete: () => t.destroy() });
+  }
+
+  /** 무당의 회복: 초록 숫자와 위로 오르는 빛 */
+  heal(x: number, y: number, amount: number): void {
+    const t = this.scene.add.text(x, y, `+${amount}`, { fontFamily: 'Black Han Sans, sans-serif', fontSize: '26px', color: '#8dffb0', stroke: '#0d2a18', strokeThickness: 6 }).setOrigin(0.5).setResolution(2).setDepth(51);
+    this.layer.add(t);
+    this.scene.tweens.add({ targets: t, y: y - 50, alpha: 0, duration: 1400, delay: 400, onComplete: () => t.destroy() });
+    this.glowEm.setConfig({ speed: { min: 20, max: 70 }, angle: { min: 250, max: 290 }, gravityY: -60, lifespan: { min: 600, max: 1100 }, scale: { start: 0.3, end: 0 }, alpha: { start: 0.9, end: 0 }, blendMode: 'ADD', tint: [0x8dffb0, 0xd8ffe0, 0xfff1a0], emitting: false });
+    this.glowEm.explode(this.n(18), x, y + 30);
   }
 
   confetti(x: number, y: number): void {

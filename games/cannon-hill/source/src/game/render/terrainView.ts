@@ -36,6 +36,7 @@ export class TerrainView {
     const t = this.tiles[i]!;
     this.painter.paint(this.img, t.x, t.y);
     t.tex.context.putImageData(this.img, 0, 0);
+    this.painter.dressSurface(t.tex.context, t.x, t.y, TILE);
     t.tex.refresh();
   }
 

@@ -36,7 +36,7 @@ export class FighterView {
     this.c = scene.add.container(f.x, f.y).setDepth(20);
     this.shadow = scene.add.ellipse(0, 1, 34, 7, 0x000000, 0.35);
     this.rig = scene.add.container(0, 0);
-    this.aura = scene.add.image(0, -22, 'glow').setBlendMode(Phaser.BlendModes.ADD).setAlpha(0).setTint(PLAYER_COLORS[f.idx]!);
+    this.aura = scene.add.image(0, -22, 'glow').setBlendMode(Phaser.BlendModes.ADD).setAlpha(0).setTint(PLAYER_COLORS[f.team]!);
     this.art = bodyArt(scene.textures, id);
     this.wart = weaponArt(scene.textures, id);
     this.body = this.art
@@ -47,17 +47,17 @@ export class FighterView {
       : scene.add.image(0, 0, `wpn_${id}`).setOrigin(WEAPON_BOX.pivotX / WEAPON_BOX.w, WEAPON_BOX.pivotY / WEAPON_BOX.h).setScale(1 / TEX);
     if (this.art) this.shadow.setSize(Math.max(30, this.art.width * 0.72), 7);
     this.rig.add([this.aura, this.body, this.wpn]);
-    this.tag = scene.add.text(0, -70, label, { fontFamily: 'Black Han Sans, sans-serif', fontSize: '13px', color: '#ffffff', backgroundColor: f.idx === 0 ? '#2f6ab8' : '#b8382f', padding: { x: 5, y: 2 } }).setOrigin(0.5, 1).setResolution(2);
+    this.tag = scene.add.text(0, -70, label, { fontFamily: 'Black Han Sans, sans-serif', fontSize: '13px', color: '#ffffff', backgroundColor: f.team === 0 ? '#2f6ab8' : '#b8382f', padding: { x: 5, y: 2 } }).setOrigin(0.5, 1).setResolution(2);
     this.hpBg = scene.add.rectangle(0, -64, 40, 5, 0x000000, 0.6).setOrigin(0.5, 0.5);
     this.hpFill = scene.add.rectangle(-20, -64, 40, 5, 0x6ad07a).setOrigin(0, 0.5);
-    this.arrow = scene.add.image(0, -92, 'arrowhead').setScale(0.7).setTint(PLAYER_COLORS[f.idx]!).setVisible(false);
+    this.arrow = scene.add.image(0, -92, 'arrowhead').setScale(0.7).setTint(PLAYER_COLORS[f.team]!).setVisible(false);
     for (let i = 0; i < 3; i++) this.stars.push(scene.add.image(0, -50, 'star').setScale(0.4).setTint(0xffe08a).setVisible(false));
     this.c.add([this.shadow, this.rig, this.tag, this.hpBg, this.hpFill, this.arrow, ...this.stars]);
     layer.add(this.c);
   }
 
   update(b: Battle, dt: number, isCurrent: boolean, showArrow: boolean): void {
-    const f = b.fighters[this.f.idx];
+    const f = b.fighters[this.f.idx]!;
     this.f = f;
     this.t += dt;
     const t = this.t;
@@ -127,7 +127,11 @@ export class FighterView {
       default:
         break;
     }
-    if (f.anim !== 'victory') this.aura.setTint(0xffffff).setTint(this.f.idx === 0 ? 0x4f9cf0 : 0xf05a4f);
+    if (f.anim !== 'victory') this.aura.setTint(PLAYER_COLORS[f.team]!);
+    // 화포장군이 자리를 잡고 있으면 둘레가 금빛으로 은은하게
+    if (isCurrent && b.isPlayerPhase() && f.anim !== 'charge' && b.steadyReady(f)) {
+      this.aura.setTint(0xffc94a).setAlpha(0.28 + Math.sin(t * 4) * 0.08).setScale(1.25);
+    }
     const lean = f.onGround && f.alive ? f.slope * DEG * 0.55 : 0;
     this.rig.setPosition(ox, bob);
     this.rig.setRotation(rot + lean);

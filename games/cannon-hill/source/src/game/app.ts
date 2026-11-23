@@ -23,7 +23,7 @@ export class App {
   ui: UI;
   game!: Phaser.Game;
   mode: Mode = 'ai';
-  last: { mode: Mode; chars: [string, string]; mapId: string } | null = null;
+  last: { mode: Mode; chars: string[]; mapId: string } | null = null;
 
   constructor() {
     this.settings = loadSettings();
@@ -38,6 +38,8 @@ export class App {
       pause: () => this.pause(),
       weapon: (slot) => this.battleScene()?.selectWeapon(slot),
       flip: () => this.battleScene()?.flip(),
+      camera: () => this.battleScene()?.cycleCamera(),
+      recenter: () => this.battleScene()?.recenter(),
       settingsChanged: (s) => this.applySettings(s),
     });
   }
@@ -123,19 +125,25 @@ export class App {
     }
   }
 
-  startBattle(mode: Mode, chars: [string, string], mapId: string): void {
+  /** chars는 장수 순서([1팀, 2팀] 또는 [1팀, 2팀, 1팀, 2팀]) */
+  startBattle(mode: Mode, chars: string[], mapId: string): void {
     this.mode = mode;
     this.last = { mode, chars, mapId };
-    this.settings.lastChars = chars;
+    const keep = [...this.settings.lastChars];
+    chars.forEach((c, i) => (keep[i] = c));
+    this.settings.lastChars = keep;
     this.settings.lastMap = mapId;
     saveSettings(this.settings);
     const seed = (Math.random() * 2 ** 31) | 0;
+    const perTeam = chars.length / 2;
     const cfg: BattleConfig = {
       mapId, seed, chars,
-      controllers: mode === 'ai' ? ['human', 'ai'] : ['human', 'human'],
+      // AI 대전: 1팀(짝수 자리)은 사람, 2팀은 AI. 둘이서: 모두 사람
+      controllers: chars.map((_, i) => (mode === 'ai' && i % 2 === 1 ? 'ai' : 'human')),
       difficulty: this.settings.difficulty,
       turnTime: this.settings.turnTime,
-      turnLimit: this.settings.turnLimit,
+      // 2:2는 장수 한 명이 쏘는 횟수가 1:1과 같도록 전체 턴을 늘린다
+      turnLimit: this.settings.turnLimit * perTeam,
     };
     this.ui.hideResult();
     this.ui.show('pause', false);

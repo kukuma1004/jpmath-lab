@@ -1,22 +1,24 @@
 /**
  * 키보드와 화면 단추가 같은 상태를 누른다. 전투 장면이 고정 걸음마다 읽어 간다.
- * A/D 이동, ←/→ 각도(왼쪽으로/오른쪽으로 돌리기), ↑/↓ 포신 올리기/내리기, Space 힘 모으기·발사.
+ * A/D 이동, ←/→ 각도(왼쪽으로/오른쪽으로 돌리기), ↑/↓ 포신 올리기/내리기, Space 힘 모으기·발사,
+ * I/J/K/L 화면 이동(둘러보기).
  */
-export type Hold = 'left' | 'right' | 'aimL' | 'aimR' | 'aimUp' | 'aimDown' | 'charge';
+export type Hold = 'left' | 'right' | 'aimL' | 'aimR' | 'aimUp' | 'aimDown' | 'charge' | 'camU' | 'camD' | 'camL' | 'camR';
 
 export class InputState {
-  held: Record<Hold, boolean> = { left: false, right: false, aimL: false, aimR: false, aimUp: false, aimDown: false, charge: false };
+  held: Record<Hold, boolean> = { left: false, right: false, aimL: false, aimR: false, aimUp: false, aimDown: false, charge: false, camU: false, camD: false, camL: false, camR: false };
   /** 다음 턴에 Space를 누른 채로 넘어가면, 한 번 뗄 때까지 무시한다 */
   chargeLatch = false;
   active = false;
   private onKey: ((e: KeyboardEvent) => void) | null = null;
-  listeners: { weapon?: (slot: 0 | 1) => void; pause?: () => void; camera?: () => void; zoom?: (d: number) => void } = {};
+  listeners: { weapon?: (slot: 0 | 1) => void; pause?: () => void; camera?: () => void; recenter?: () => void; zoom?: (d: number) => void } = {};
 
   attach(): void {
     if (this.onKey) return;
     const map: Record<string, Hold> = {
       KeyA: 'left', KeyD: 'right', ArrowLeft: 'aimL', ArrowRight: 'aimR', ArrowUp: 'aimUp', ArrowDown: 'aimDown', Space: 'charge',
       KeyW: 'aimUp', KeyS: 'aimDown',
+      KeyI: 'camU', KeyK: 'camD', KeyJ: 'camL', KeyL: 'camR',
     };
     this.onKey = (e: KeyboardEvent) => {
       if (!this.active) return;
@@ -35,6 +37,7 @@ export class InputState {
       else if (e.code === 'Digit2' || e.code === 'Numpad2') { e.preventDefault(); this.listeners.weapon?.(1); }
       else if (e.code === 'Escape' || e.code === 'KeyP') { e.preventDefault(); this.listeners.pause?.(); }
       else if (e.code === 'Tab') { e.preventDefault(); this.listeners.camera?.(); }
+      else if (e.code === 'KeyC' || e.code === 'Home') { e.preventDefault(); this.listeners.recenter?.(); }
       else if (e.code === 'Equal' || e.code === 'NumpadAdd') { this.listeners.zoom?.(1); }
       else if (e.code === 'Minus' || e.code === 'NumpadSubtract') { this.listeners.zoom?.(-1); }
     };
@@ -58,6 +61,11 @@ export class InputState {
   newTurn(): void {
     this.chargeLatch = this.held.charge;
     this.held.left = this.held.right = false;
+  }
+
+  /** 화면 이동 방향(키보드 I/J/K/L) */
+  get pan(): { x: number; y: number } {
+    return { x: (this.held.camR ? 1 : 0) - (this.held.camL ? 1 : 0), y: (this.held.camD ? 1 : 0) - (this.held.camU ? 1 : 0) };
   }
 
   get move(): -1 | 0 | 1 {

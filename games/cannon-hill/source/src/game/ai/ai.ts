@@ -21,14 +21,13 @@ interface Level {
   noiseAngle: number;
   noisePower: number;
   moves: number; // 고려하는 이동 위치 수(0이면 제자리)
-  specialChance: number; // 특수 공격을 쓸 수 있을 때 고려할 확률
   pickTop: number; // 상위 몇 개 중에서 고를지
 }
 
 const LEVELS: Record<Difficulty, Level> = {
-  easy: { angleLo: 22, angleHi: 74, angleStep: 7, powerLo: 32, powerStep: 7, refine: 0, refineTop: 0, full: 0, noiseAngle: 6.5, noisePower: 8, moves: 0, specialChance: 0.35, pickTop: 3 },
-  normal: { angleLo: 15, angleHi: 80, angleStep: 4, powerLo: 26, powerStep: 4, refine: 1, refineTop: 2, full: 2, noiseAngle: 2.3, noisePower: 3.2, moves: 0, specialChance: 0.8, pickTop: 1 },
-  hard: { angleLo: 10, angleHi: 85, angleStep: 4, powerLo: 20, powerStep: 4, refine: 2, refineTop: 3, full: 4, noiseAngle: 0.9, noisePower: 1.4, moves: 2, specialChance: 1, pickTop: 1 },
+  easy: { angleLo: 10, angleHi: 80, angleStep: 7, powerLo: 15, powerStep: 7, refine: 0, refineTop: 0, full: 0, noiseAngle: 6.5, noisePower: 8, moves: 1, pickTop: 3 },
+  normal: { angleLo: 5, angleHi: 85, angleStep: 4, powerLo: 10, powerStep: 4, refine: 1, refineTop: 2, full: 2, noiseAngle: 2.3, noisePower: 3.2, moves: 1, pickTop: 1 },
+  hard: { angleLo: 0, angleHi: 88, angleStep: 4, powerLo: 5, powerStep: 4, refine: 2, refineTop: 3, full: 4, noiseAngle: 0.9, noisePower: 1.4, moves: 2, pickTop: 1 },
 };
 
 export interface AIPlan {
@@ -76,13 +75,15 @@ export function predictWalk(b: Battle, f: Fighter, dir: -1 | 1, maxDist: number)
   return { x: copy.x, y: copy.y, dir, steps };
 }
 
-function scoreDry(r: DryResult, me: 0 | 1, foe: Fighter, slot: 0 | 1): number {
-  const enemy = r.damage[foe.idx];
-  const self = r.damage[me];
-  let s = enemy - 1.5 * self + r.enemyGroundHit * 45 - (slot === 1 ? 30 : 0);
+/** 상대(들)에게 준 피해 − 우리 편(나 포함)이 입은 피해의 1.5배 */
+function scoreDry(r: DryResult, allies: Fighter[], foes: Fighter[]): number {
+  let enemy = 0, self = 0;
+  for (const f of foes) enemy += r.damage[f.idx] ?? 0;
+  for (const f of allies) self += r.damage[f.idx] ?? 0;
+  let s = enemy - 1.5 * self + r.enemyGroundHit * 45;
   if (enemy <= 0) {
     let best = 1e9;
-    for (const p of r.impacts) best = Math.min(best, Math.hypot(p.x - foe.x, p.y - (foe.y - 20)));
+    for (const p of r.impacts) for (const foe of foes) best = Math.min(best, Math.hypot(p.x - foe.x, p.y - (foe.y - 20)));
     s -= best === 1e9 ? 400 : best / 5;
   }
   return s;
@@ -94,7 +95,7 @@ export class AIPlanner {
   sims = 0;
   private it: Generator<void, AIPlan, void>;
 
-  constructor(private b: Battle, private idx: 0 | 1, private diff: Difficulty, private forceSlots?: (0 | 1)[]) {
+  constructor(private b: Battle, private idx: number, private diff: Difficulty, private forceSlots?: (0 | 1)[]) {
     this.it = this.search();
   }
 
@@ -129,8 +130,8 @@ export class AIPlanner {
   }
 
   private fallback(): AIPlan {
-    const me = this.b.fighters[this.idx];
-    const foe = this.b.fighters[(1 - this.idx) as 0 | 1];
+    const me = this.b.fighters[this.idx]!;
+    const foe = this.b.nearestEnemy(me);
     const angle = foe.x > me.x ? 55 : 125;
     return { slot: 0, angle, power: 72, walkDir: 0, walkSteps: 0, score: 0, exact: { angle, power: 72 } };
   }
@@ -138,39 +139,52 @@ export class AIPlanner {
   private *search(): Generator<void, AIPlan, void> {
     const b = this.b;
     const lv = LEVELS[this.diff];
-    const me = b.fighters[this.idx];
-    const foe = b.fighters[(1 - this.idx) as 0 | 1];
+    const me = b.fighters[this.idx]!;
+    const foes = b.enemiesOf(me).filter((f) => f.alive);
+    const allies = b.alliesOf(me).filter((f) => f.alive);
     const rng = new Rng(hashString(`${b.cfg.seed}:${b.turnNo}:${this.idx}:${this.diff}`));
 
     const positions: Pos[] = [{ x: me.x, y: me.y, dir: 0, steps: 0 }];
-    if (lv.moves > 0) {
+    const inGas = b.clouds.some((c) => (c.turns[me.idx] ?? 0) > 0 && b.inCloud(me, c));
+    if (lv.moves > 0 || inGas) {
       for (const dir of [-1, 1] as const) {
-        const p = predictWalk(b, me, dir, Math.min(me.moveLeft, 95));
+        const p = predictWalk(b, me, dir, Math.min(me.moveLeft, inGas ? 150 : 95));
         if (p) positions.push(p);
       }
     }
-    const slots: (0 | 1)[] = [0];
-    if (b.canSpecial(me) && rng.next() < lv.specialChance) slots.push(1);
+    const slots: (0 | 1)[] = [0, 1];
     if (this.forceSlots) slots.splice(0, slots.length, ...this.forceSlots);
+    const gasPenalty = positions.map((p) => b.clouds.reduce((sum, c) =>
+      sum + ((c.turns[me.idx] ?? 0) > 0 && b.inCloud({ ...me, x: p.x, y: p.y }, c) ? c.damage * 1.4 : 0), 0));
 
-    const toAbs = (rel: number, px: number) => (foe.x >= px ? rel : 180 - rel);
+    // 쏠 방향: 가장 가까운 상대 쪽 먼저, 상대가 양쪽에 있으면 반대쪽도 본다
+    const dirsAt = (px: number): (1 | -1)[] => {
+      const near = b.nearestEnemy(me, px);
+      const first: 1 | -1 = near.x >= px ? 1 : -1;
+      const out: (1 | -1)[] = [first];
+      if (foes.some((f) => (f.x >= px ? 1 : -1) !== first)) out.push(-first as 1 | -1);
+      return out;
+    };
+    const toAbs = (rel: number, dir: 1 | -1) => (dir > 0 ? rel : 180 - rel);
     const all: Cand[] = [];
     const evalDry = (c: Cand) => {
       const pos = positions[c.pos]!;
       const r = b.dryShot(this.idx, c.slot, c.angle, c.power, { x: pos.x, y: pos.y });
       this.sims++;
-      c.score = scoreDry(r, this.idx, foe, c.slot);
+      c.score = scoreDry(r, allies, foes) - gasPenalty[c.pos]!;
       if (pos.dir !== 0) c.score -= 6; // 같은 값이면 덜 움직인다
       return c;
     };
 
     for (let pi = 0; pi < positions.length; pi++) {
       const px = positions[pi]!.x;
-      for (const slot of slots) {
-        for (let rel = lv.angleLo; rel <= lv.angleHi + 1e-6; rel += lv.angleStep) {
-          for (let pw = lv.powerLo; pw <= 100 + 1e-6; pw += lv.powerStep) {
-            all.push(evalDry({ pos: pi, slot, angle: toAbs(rel, px), power: Math.min(100, pw), score: 0 }));
-            yield;
+      for (const dir of dirsAt(px)) {
+        for (const slot of slots) {
+          for (let rel = lv.angleLo; rel <= lv.angleHi + 1e-6; rel += lv.angleStep) {
+            for (let pw = lv.powerLo; pw <= 100 + 1e-6; pw += lv.powerStep) {
+              all.push(evalDry({ pos: pi, slot, angle: toAbs(rel, dir), power: Math.min(100, pw), score: 0 }));
+              yield;
+            }
           }
         }
       }
@@ -208,13 +222,14 @@ export class AIPlanner {
     for (const c of distinct) {
       const pos = positions[c.pos]!;
       const sim = b.clone();
-      const f = sim.fighters[this.idx];
+      const f = sim.fighters[this.idx]!;
       f.x = pos.x;
       f.y = pos.y;
+      if (pos.dir !== 0) f.moved = true;
       f.slot = c.slot;
       f.angle = c.angle;
       sim.phase = 'AIM' as Phase;
-      const foeHp0 = sim.fighters[foe.idx].hp, meHp0 = f.hp;
+      const hp0 = sim.fighters.map((x) => x.hp);
       sim.fireNow(c.power);
       let n = 0;
       while (n < 900 && sim.phase !== 'TURN_END' && sim.phase !== 'GAME_OVER') {
@@ -222,8 +237,16 @@ export class AIPlanner {
         n++;
         if (n % 90 === 0) yield;
       }
-      const sf = sim.fighters[foe.idx], sm = sim.fighters[this.idx];
-      c.full = (foeHp0 - sf.hp) - 1.5 * (meHp0 - sm.hp) + (sf.alive ? 0 : 1500) - (sm.alive ? 0 : 2500) - (c.slot === 1 ? 30 : 0) - (pos.dir !== 0 ? 6 : 0);
+      let gain = 0;
+      for (const e of foes) {
+        const sf = sim.fighters[e.idx]!;
+        gain += (hp0[e.idx]! - sf.hp) + (sf.alive ? 0 : 1500);
+      }
+      for (const a of allies) {
+        const sa = sim.fighters[a.idx]!;
+        gain -= 1.5 * (hp0[a.idx]! - sa.hp) + (sa.alive ? 0 : a.idx === this.idx ? 2500 : 2000);
+      }
+      c.full = gain - gasPenalty[c.pos]! - (pos.dir !== 0 ? 6 : 0);
       yield;
     }
     let pool: Cand[];
@@ -255,7 +278,7 @@ export class AIActor {
   private waitT = 0;
   thinkT = 0;
 
-  constructor(public idx: 0 | 1, public diff: Difficulty, public minThink = 0.7) {}
+  constructor(public idx: number, public diff: Difficulty, public minThink = 0.7) {}
 
   /** 시뮬레이션 한 걸음 전에 부른다. budgetMs는 이번 프레임에 생각할 시간 */
   update(b: Battle, budgetMs: number, maxSims = Infinity): void {
@@ -271,14 +294,14 @@ export class AIActor {
       this.walked = 0;
       this.thinkT = 0;
     }
-    const f = b.fighters[this.idx];
+    const f = b.fighters[this.idx]!;
     switch (this.stage) {
       case 'think':
         this.thinkT += DT;
         if (this.planner!.work(budgetMs, maxSims) && this.thinkT >= this.minThink) {
           this.plan = this.planner!.plan;
           this.stage = this.plan!.walkDir !== 0 ? 'walk' : 'aim';
-          if (this.plan!.slot === 1) b.selectWeapon(1);
+          b.selectWeapon(this.plan!.slot);
         }
         break;
       case 'walk':
@@ -299,7 +322,7 @@ export class AIActor {
           b.setAngle(this.plan!.angle);
           this.waitT += DT;
           if (this.waitT > 0.25) {
-            if (this.plan!.slot === 1) b.selectWeapon(1);
+            b.selectWeapon(this.plan!.slot);
             b.setCharge(true);
             this.stage = 'charge';
           }

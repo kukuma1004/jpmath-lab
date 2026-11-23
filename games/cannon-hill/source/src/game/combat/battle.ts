@@ -1,24 +1,25 @@
 import {
   ANGLE_SPEED, CELL, CHARGE_TIME, CHAR_CENTER_Y, CHAR_RADIUS, COLS, DT, FALL_DAMAGE_MAX, FALL_DAMAGE_PER_SPEED,
-  FLIGHT_LIMIT, GAUGE_MAX, GAUGE_PER_DAMAGE_DEALT, GAUGE_PER_DAMAGE_TAKEN, GAUGE_PER_TURN, GAUGE_START, GRAVITY,
+  FLIGHT_LIMIT, GRAVITY,
   MAX_BOULDERS, MAX_CHUNKS, MAX_LAUNCH_SPEED, MIN_SETTLE_HOLD, MOVE_BUDGET, ROWS, SAFE_FALL_SPEED, SETTLE_LIMIT,
-  STEP_DOWN, STEP_UP, WALK_SPEED, WIND_ACC_PER_UNIT, WORLD_H, WORLD_W,
+  STEP_DOWN, STEP_UP, TURN_LIMIT_DEFAULT, WALK_SPEED, WIND_ACC_PER_UNIT, WORLD_H, WORLD_W,
 } from '../config/constants';
-import { CHARACTERS, character } from '../data/characters';
-import { findSpawns, generateTerrain, mapDef } from '../data/maps';
+import { CHARACTERS, TRAIT, character } from '../data/characters';
+import { findSpawns, findTeamSpawns, generateTerrain, mapDef } from '../data/maps';
 import { WEAPONS, weapon, type WeaponDef } from '../data/weapons';
 import { Mat, Terrain, type Component } from '../terrain/terrain';
 import { Rng, clamp } from '../utils/rng';
 import type {
-  BattleConfig, Boulder, Chunk, DamageCause, Fighter, Phase, Projectile, Scheduled, SimEvent,
+  BattleConfig, Boulder, Chunk, DamageCause, Fighter, Phase, PoisonCloud, Projectile, Scheduled, SimEvent, Team,
 } from './types';
 
 const DEG = Math.PI / 180;
 
 export interface DryResult {
-  damage: [number, number];
+  /** 장수별 피해(fighters 순서) */
+  damage: number[];
   impacts: { x: number; y: number }[];
-  enemyGroundHit: number; // 상대 발밑을 얼마나 파는지(0..1 근사)
+  enemyGroundHit: number; // 상대(들) 발밑을 얼마나 파는지(0..1 근사, 가장 큰 값)
   outOfWorld: boolean;
   flightTime: number;
 }
@@ -31,7 +32,7 @@ export function defaultConfig(partial: Partial<BattleConfig> = {}): BattleConfig
     controllers: ['human', 'human'],
     difficulty: 'normal',
     turnTime: 30,
-    turnLimit: 30,
+    turnLimit: TURN_LIMIT_DEFAULT,
     ...partial,
   };
 }
@@ -43,22 +44,26 @@ function newStats() {
 export class Battle {
   cfg: BattleConfig;
   terrain: Terrain;
-  fighters: [Fighter, Fighter];
+  fighters: Fighter[];
   projectiles: Projectile[] = [];
   boulders: Boulder[] = [];
   chunks: Chunk[] = [];
   scheduled: Scheduled[] = [];
+  clouds: PoisonCloud[] = [];
   events: SimEvent[] = [];
   rng: Rng;
   time = 0;
   stepNo = 0;
   phase: Phase = 'BATTLE_START';
   phaseT = 0;
-  current: 0 | 1 = 0;
+  current = 0;
+  /** 편마다 다음에 쏠 장수를 고를 때 어디부터 볼지(편 안의 순번) */
+  teamPtr: number[] = [0, 0];
   turnNo = 0;
   wind = 0;
   timeLeft = 0;
-  winner: 0 | 1 | -1 | null = null;
+  /** 이긴 편(0·1), 무승부 -1, 아직 null */
+  winner: Team | -1 | null = null;
   endReason: 'hp' | 'fall' | 'limit' | 'draw' | '' = '';
   /** 발사 뒤 흐른 시간과 마지막 폭발 시각 */
   shotT = 0;
@@ -82,27 +87,28 @@ export class Battle {
     this.rng = new Rng(cfg.seed);
     if (empty) {
       this.terrain = new Terrain();
-      this.fighters = [this.makeFighter(0, cfg.chars[0], 0), this.makeFighter(1, cfg.chars[1], 0)];
+      this.fighters = cfg.chars.map((id, i) => this.makeFighter(i, id, 0));
       return;
     }
     const def = mapDef(cfg.mapId);
     this.terrain = generateTerrain(def, cfg.seed);
-    const [x1, x2] = findSpawns(this.terrain, def, this.rng);
-    this.fighters = [this.makeFighter(0, cfg.chars[0], x1), this.makeFighter(1, cfg.chars[1], x2)];
-    this.fighters[0].angle = 50;
-    this.fighters[1].angle = 130;
+    const xs: number[] = cfg.chars.length > 2 ? findTeamSpawns(this.terrain, def, this.rng) : findSpawns(this.terrain, def, this.rng);
+    this.fighters = cfg.chars.map((id, i) => this.makeFighter(i, id, xs[i]!));
+    // 먼저 쏠 편을 고른다(그 편의 첫 장수부터)
     this.current = this.rng.next() < 0.5 ? 0 : 1;
     this.wind = Math.round(this.rng.gauss() * 6 * (0.5 + def.windBias));
     this.emit({ type: 'battleStart', first: this.current });
   }
 
-  private makeFighter(idx: 0 | 1, charId: string, x: number): Fighter {
+  private makeFighter(idx: number, charId: string, x: number): Fighter {
     const def = character(charId);
     const y = x > 0 ? this.terrain.topSurface(x) : 0;
+    const team = (idx % 2) as Team;
     return {
-      idx, charId, x, y: Math.max(0, y), vx: 0, vy: 0, onGround: true,
-      angle: idx === 0 ? 50 : 130, power: 0, lastPower: 70, chargeDir: 1, slot: 0,
-      hp: def.hp, maxHp: def.hp, gauge: GAUGE_START, moveLeft: MOVE_BUDGET * def.moveMul,
+      idx, team, charId, x, y: Math.max(0, y), vx: 0, vy: 0, onGround: true,
+      angle: team === 0 ? 50 : 130, power: 0, lastPower: 70, chargeDir: 1, slot: 0,
+      hp: def.hp, maxHp: def.hp,
+      moveLeft: MOVE_BUDGET * def.moveMul, moved: false,
       alive: true, deathCause: '', anim: 'idle', animT: 0, slope: 0, airPeakY: y, stats: newStats(),
     };
   }
@@ -121,8 +127,31 @@ export class Battle {
     return this.fighters[this.current];
   }
 
+  /** 지금 차례인 장수에게 가장 가까운 살아 있는 상대(없으면 아무 상대) */
   get enemy(): Fighter {
-    return this.fighters[(1 - this.current) as 0 | 1];
+    return this.nearestEnemy(this.cur);
+  }
+
+  nearestEnemy(f: Fighter, x = f.x): Fighter {
+    let best: Fighter | null = null, bd = Infinity;
+    for (const e of this.fighters) {
+      if (e.team === f.team || !e.alive) continue;
+      const d = Math.abs(e.x - x);
+      if (d < bd) { bd = d; best = e; }
+    }
+    return best ?? this.fighters.find((e) => e.team !== f.team)!;
+  }
+
+  enemiesOf(f: Fighter): Fighter[] {
+    return this.fighters.filter((e) => e.team !== f.team);
+  }
+
+  alliesOf(f: Fighter): Fighter[] {
+    return this.fighters.filter((e) => e.team === f.team);
+  }
+
+  get teamSize(): number {
+    return this.fighters.length / 2;
   }
 
   weaponOf(f: Fighter, slot: 0 | 1 = f.slot): WeaponDef {
@@ -130,8 +159,13 @@ export class Battle {
     return weapon(slot === 1 ? d.special : d.normal);
   }
 
-  canSpecial(f: Fighter): boolean {
-    return f.gauge >= GAUGE_MAX;
+  traitOf(f: Fighter): string {
+    return character(f.charId).trait.id;
+  }
+
+  /** 화포장군이 이번 차례에 자리를 지키고 있는가 */
+  steadyReady(f: Fighter): boolean {
+    return this.traitOf(f) === 'steady' && !f.moved;
   }
 
   isPlayerPhase(): boolean {
@@ -178,7 +212,6 @@ export class Battle {
 
   selectWeapon(slot: 0 | 1): void {
     if (!this.isPlayerPhase() || this.phase === 'CHARGE') return;
-    if (slot === 1 && !this.canSpecial(this.cur)) return;
     this.rec('slot', [slot]);
     this.cur.slot = slot;
   }
@@ -288,14 +321,29 @@ export class Battle {
     f.animT = 0;
   }
 
-  private startTurn(player: 0 | 1, first = false): void {
+  private startTurn(player: number, first = false): void {
     this.current = player;
+    // 이 편의 다음 차례는 이 장수 다음 사람부터
+    const me = this.fighters[player]!;
+    const mates = this.alliesOf(me);
+    this.teamPtr[me.team] = (mates.indexOf(me) + 1) % mates.length;
     if (!first) this.turnNo++;
     else this.turnNo = 1;
     const f = this.cur;
     f.moveLeft = MOVE_BUDGET * character(f.charId).moveMul;
-    f.gauge = Math.min(GAUGE_MAX, f.gauge + (first ? 0 : GAUGE_PER_TURN));
-    if (f.slot === 1 && !this.canSpecial(f)) f.slot = 0;
+    f.moved = false;
+    // 무당: 차례가 시작되면 자신과 가까운 같은 편을 조금 채운다
+    if (this.traitOf(f) === 'blessing' && f.alive) {
+      for (const a of this.alliesOf(f)) {
+        if (!a.alive || Math.abs(a.x - f.x) > TRAIT.blessRange) continue;
+        const amount = Math.min(TRAIT.blessHeal, a.maxHp - a.hp);
+        if (amount <= 0) continue;
+        a.hp += amount;
+        this.emit({ type: 'heal', target: a.idx, amount, x: a.x, y: a.y - 40 });
+      }
+    }
+    this.tickClouds(f);
+    if (!f.alive) { this.toTurnEnd(); return; }
     f.power = 0;
     this.timeLeft = this.cfg.turnTime;
     const prevWind = this.wind;
@@ -335,6 +383,7 @@ export class Battle {
       if (facing !== dir) f.angle = 180 - f.angle;
       const moved = this.walk(f, dir * Math.min(WALK_SPEED * dt, f.moveLeft));
       f.moveLeft = Math.max(0, f.moveLeft - Math.abs(moved));
+      if (Math.abs(moved) > 0.01) f.moved = true;
       this.setPhase('MOVE');
     } else if (this.phase === 'MOVE') {
       this.setPhase('AIM');
@@ -390,11 +439,8 @@ export class Battle {
 
   private fire(power: number): void {
     const f = this.cur;
-    let slot = f.slot;
-    if (slot === 1 && !this.canSpecial(f)) slot = 0;
+    const slot = f.slot;
     const w = this.weaponOf(f, slot);
-    if (slot === 1) f.gauge -= GAUGE_MAX;
-    f.slot = 0;
     f.power = power;
     f.lastPower = power;
     this.input = { move: 0, aim: 0, charge: false };
@@ -403,6 +449,7 @@ export class Battle {
     this.shotDamage.set(shot, 0);
     const [mx, my] = this.muzzle(f);
     this.emit({ type: 'fire', owner: f.idx, weaponId: w.id, x: mx, y: my, angle: f.angle, power });
+    if (this.steadyReady(f)) this.emit({ type: 'trait', who: f.idx, kind: 'steady', x: f.x, y: f.y - 70 });
     this.setAnim(f, 'fire');
     if (w.pattern === 'triple') {
       const n = w.count ?? 3;
@@ -436,14 +483,15 @@ export class Battle {
     const sp = (power / 100) * MAX_LAUNCH_SPEED * w.speedMul;
     const a = angle * DEG;
     const p = this.newProjectile(f.idx, shot, w.id, mx, my, Math.cos(a) * sp, -Math.sin(a) * sp);
+    if (this.steadyReady(f)) p.boost = TRAIT.steadyDamage;
     this.projectiles.push(p);
     this.emit({ type: 'launch', id: p.id, weaponId: w.id });
   }
 
-  newProjectile(owner: 0 | 1, shot: number, weaponId: string, x: number, y: number, vx: number, vy: number, child: Projectile['child'] = ''): Projectile {
+  newProjectile(owner: number, shot: number, weaponId: string, x: number, y: number, vx: number, vy: number, child: Projectile['child'] = ''): Projectile {
     return {
       id: this.nextId++, owner, shot, weaponId, x, y, px: x, py: y, vx, vy, age: 0, bounces: 0, pierced: 0,
-      carveAcc: 0, child, stuck: false, fuse: 0, split: false, dead: false,
+      carveAcc: 0, child, boost: 1, stuck: false, fuse: 0, split: false, dead: false,
     };
   }
 
@@ -494,6 +542,7 @@ export class Battle {
     }
     p.vx += this.wind * WIND_ACC_PER_UNIT * w.windMul * dt;
     p.vy += GRAVITY * w.gravityMul * dt;
+    if (w.seekRange && !p.child && p.age > 0.25) this.seek(p, w, dt);
     const dist = Math.hypot(p.vx, p.vy) * dt;
     const n = Math.max(1, Math.ceil(dist / 1.5));
     const sx = (p.vx * dt) / n;
@@ -548,6 +597,23 @@ export class Battle {
     }
   }
 
+  /** 유도 부적: 가까운 상대 쪽으로 휘어 든다(같은 편은 노리지 않는다) */
+  private seek(p: Projectile, w: WeaponDef, dt: number): void {
+    const owner = this.fighters[p.owner];
+    if (!owner) return;
+    let best: Fighter | null = null, bd = w.seekRange!;
+    for (const f of this.fighters) {
+      if (!f.alive || f.team === owner.team) continue;
+      const d = Math.hypot(f.x - p.x, f.y - CHAR_CENTER_Y - p.y);
+      if (d < bd) { bd = d; best = f; }
+    }
+    if (!best) return;
+    const dx = best.x - p.x, dy = best.y - CHAR_CENTER_Y - p.y;
+    const d = Math.max(1, Math.hypot(dx, dy));
+    p.vx += (dx / d) * w.seekAcc! * dt;
+    p.vy += (dy / d) * w.seekAcc! * dt;
+  }
+
   private bounce(p: Projectile, w: WeaponDef): void {
     const [nx, ny] = this.normalAt(p.x, p.y, p.vx, p.vy);
     const vn = p.vx * nx + p.vy * ny;
@@ -564,7 +630,7 @@ export class Battle {
     p.bounces++;
     this.emit({ type: 'bounce', x: p.x, y: p.y, weaponId: w.id });
     if (w.behavior === 'bounceBurst') {
-      this.explode(p.x, p.y, w.burstRadius ?? 34, w.burstCarve ?? 28, w.rockMul, w.burstDamage ?? 50, w.directBonus, w.knockback * 0.6, p, -1, w.id, false);
+      this.explode(p.x, p.y, w.burstRadius ?? 34, w.burstCarve ?? 28, w.rockMul, w.burstDamage ?? 50, w.directBonus, w.knockback * 0.2, p, -1, w.id, false);
     }
   }
 
@@ -634,7 +700,38 @@ export class Battle {
       default:
         p.dead = true;
         this.explode(x, y, w.radius, w.carve, w.rockMul, w.damage, w.directBonus, w.knockback, p, target, w.id, w.radius >= 60);
+        if (w.cloudRadius) this.makeCloud(p, w, x, y);
     }
+  }
+
+  inCloud(f: Fighter, c: PoisonCloud): boolean {
+    return Math.hypot((f.x - c.x) / c.radius, (f.y - CHAR_CENTER_Y - c.y) / (c.radius * 0.55)) <= 1;
+  }
+
+  private makeCloud(p: Projectile, w: WeaponDef, x: number, y: number): void {
+    const c: PoisonCloud = { id: this.nextId, owner: p.owner, shot: p.shot, x, y: y - 28,
+      radius: w.cloudRadius!, damage: w.cloudDamage ?? 48,
+      turns: this.fighters.map((f) => f.alive ? w.cloudTurns ?? 3 : 0) };
+    if (this.dry) {
+      for (const f of this.fighters) if (f.alive && this.inCloud(f, c)) {
+        this.dry.damage[f.idx] += c.damage * 1.5 * (this.traitOf(f) === 'antidote' ? TRAIT.poisonResistance : 1);
+      }
+      return;
+    }
+    this.nextId++;
+    if (this.clouds.length >= 6) this.clouds.shift();
+    this.clouds.push(c);
+  }
+
+  private tickClouds(f: Fighter): void {
+    for (const c of this.clouds) {
+      if ((c.turns[f.idx] ?? 0) <= 0) continue;
+      c.turns[f.idx] = (c.turns[f.idx] ?? 0) - 1;
+      if (f.alive && this.inCloud(f, c)) {
+        this.applyDamage(f, c.damage, f.x, f.y - 40, false, 'poison', c.owner, c.shot);
+      }
+    }
+    this.clouds = this.clouds.filter((c) => this.fighters.some((a) => a.alive && (c.turns[a.idx] ?? 0) > 0));
   }
 
   private megaBlast(p: Projectile, w: WeaponDef, target = -1): void {
@@ -647,6 +744,7 @@ export class Battle {
       const sp = this.rng.range(240, 420);
       const q = this.newProjectile(p.owner, p.shot, w.id, p.x, p.y - 6, Math.cos(a) * sp, Math.sin(a) * sp, 'frag');
       q.age = 0.3;
+      q.boost = p.boost;
       this.projectiles.push(q);
     }
   }
@@ -660,11 +758,12 @@ export class Battle {
     for (let i = 0; i < n; i++) {
       const q = this.newProjectile(p.owner, p.shot, w.id, p.x, p.y, p.vx + (i - (n - 1) / 2) * spread, p.vy - 30, 'split');
       q.age = p.age;
+      q.boost = p.boost;
       this.projectiles.push(q);
     }
   }
 
-  private lightningStrike(x: number, owner: 0 | 1, shot: number, w: WeaponDef): void {
+  private lightningStrike(x: number, owner: number, shot: number, w: WeaponDef): void {
     // 하늘에서 수직으로: 가장 먼저 닿는 캐릭터나 지면
     let hitY = this.terrain.topSurface(x);
     if (hitY < 0) hitY = WORLD_H + 40;
@@ -699,6 +798,17 @@ export class Battle {
     x: number, y: number, radius: number, carve: number, rockMul: number, damage: number, directBonus: number,
     knockback: number, p: Projectile, target: number, weaponId: string, big: boolean,
   ): void {
+    // 특기: 화포장군 자리 잡기(피해·폭발), 신궁 직격, 도깨비 밀어내기
+    const shooter = this.fighters[p.owner];
+    const st = shooter ? this.traitOf(shooter) : '';
+    if (p.boost !== 1) {
+      damage *= p.boost;
+      radius *= TRAIT.steadyBlast;
+      carve *= TRAIT.steadyBlast;
+    }
+    if (st === 'eagle') directBonus *= TRAIT.eagleDirect;
+    if (st === 'shove') knockback *= TRAIT.shoveKnock;
+    if (st === 'engineer') rockMul = Math.min(1, rockMul * TRAIT.engineerRock);
     if (this.dry) {
       const r = this.dry;
       r.impacts.push({ x, y });
@@ -706,9 +816,12 @@ export class Battle {
         if (!f.alive) continue;
         r.damage[f.idx] += this.blastDamageTo(f, x, y, radius, damage, directBonus, f.idx === target);
       }
-      const e = this.fighters[(1 - p.owner) as 0 | 1];
-      const dx = Math.abs(e.x - x), dy = Math.abs(e.y + 6 - y);
-      if (dx < carve && dy < carve) r.enemyGroundHit = Math.max(r.enemyGroundHit, 1 - Math.hypot(dx, dy) / (carve * 1.4));
+      const owner = this.fighters[p.owner]!;
+      for (const e of this.fighters) {
+        if (e.team === owner.team || !e.alive) continue;
+        const dx = Math.abs(e.x - x), dy = Math.abs(e.y + 6 - y);
+        if (dx < carve && dy < carve) r.enemyGroundHit = Math.max(r.enemyGroundHit, 1 - Math.hypot(dx, dy) / (carve * 1.4));
+      }
       return;
     }
     this.lastBlastT = this.time;
@@ -723,7 +836,14 @@ export class Battle {
         const cx = f.x, cy = f.y - CHAR_CENTER_Y;
         const dist = Math.max(1, Math.hypot(cx - x, cy - y));
         const k = clamp(1 - Math.max(0, dist - CHAR_RADIUS) / radius, 0, 1);
-        const imp = knockback * k;
+        let imp = knockback * k;
+        if (this.traitOf(f) === 'ironclad') {
+          if (imp > 160) this.emit({ type: 'trait', who: f.idx, kind: 'iron', x: f.x, y: f.y - 70 });
+          imp *= TRAIT.ironKnock;
+        } else if (st === 'shove' && shooter && f.team !== shooter.team && imp > 200) {
+          this.emit({ type: 'trait', who: f.idx, kind: 'shove', x: f.x, y: f.y - 70 });
+        }
+        if (direct && st === 'eagle') this.emit({ type: 'trait', who: f.idx, kind: 'eagle', x: f.x, y: f.y - 74 });
         if (imp > 40) {
           const ux = (cx - x) / dist;
           f.vx += ux * imp * 0.55;
@@ -735,8 +855,8 @@ export class Battle {
     }
     // 사람을 직접 맞혔으면 구덩이는 그 발밑에 판다(땅을 무너뜨리는 재미가 줄지 않게)
     let kx = x, ky = y;
-    if (target === 0 || target === 1) {
-      const tf = this.fighters[target];
+    if (target >= 0) {
+      const tf = this.fighters[target]!;
       kx = tf.x;
       ky = Math.max(y, tf.y - 8);
     }
@@ -744,26 +864,30 @@ export class Battle {
     if (removed > 0) this.emit({ type: 'debris', x: kx, y: ky, count: Math.min(40, 6 + (removed >> 5)), mat: Mat.Dirt });
   }
 
-  private carve(x: number, y: number, r: number, rockMul: number, owner: 0 | 1): number {
+  private carve(x: number, y: number, r: number, rockMul: number, owner: number): number {
     const removed = this.terrain.carveCircle(x, y, r, rockMul);
-    this.fighters[owner].stats.cellsDestroyed += removed;
+    this.fighters[owner]!.stats.cellsDestroyed += removed;
     return removed;
   }
 
   applyDamage(f: Fighter, dmg: number, x: number, y: number, crit: boolean, cause: DamageCause, from: number, shot = 0): void {
     if (!f.alive || dmg <= 0) return;
+    // 거북선 장수: 떨어짐·깔림·낙석 피해 절반
+    if ((cause === 'fall' || cause === 'crush' || cause === 'rock') && this.traitOf(f) === 'ironclad') dmg *= TRAIT.ironEnv;
+    if (cause === 'fall' && this.traitOf(f) === 'foxstep') dmg *= TRAIT.foxFall;
+    if (cause === 'poison' && this.traitOf(f) === 'antidote') dmg *= TRAIT.poisonResistance;
     dmg = Math.round(dmg);
+    if (dmg <= 0) return;
     this.emit({ type: 'damage', target: f.idx, amount: dmg, x, y, crit, cause });
     // 기록은 실제로 깎인 만큼만(넘친 피해는 빼고)
     dmg = Math.min(dmg, f.hp);
     f.hp = Math.max(0, f.hp - dmg);
     f.stats.damageTaken += dmg;
-    f.gauge = Math.min(GAUGE_MAX, f.gauge + dmg * GAUGE_PER_DAMAGE_TAKEN);
-    if (from === 0 || from === 1) {
-      const src = this.fighters[from as 0 | 1];
-      if (src.idx !== f.idx) {
+    if (from >= 0) {
+      const src = this.fighters[from]!;
+      // 같은 편을 맞힌 것은 공으로 치지 않는다(자기 자신 포함)
+      if (src.team !== f.team) {
         src.stats.damageDealt += dmg;
-        src.gauge = Math.min(GAUGE_MAX, src.gauge + dmg * GAUGE_PER_DAMAGE_DEALT);
         if (shot) {
           const total = (this.shotDamage.get(shot) ?? 0) + dmg;
           this.shotDamage.set(shot, total);
@@ -838,7 +962,7 @@ export class Battle {
     }
     const ch: Chunk = {
       id: this.nextId++, cells: c.cells, mats: c.mats, bottom: Int32Array.from(bottom),
-      minX: c.minX, minY: c.minY, maxX: c.maxX, maxY: c.maxY, dRow: 0, acc: 0, vy: 0, hit: [false, false],
+      minX: c.minX, minY: c.minY, maxX: c.maxX, maxY: c.maxY, dRow: 0, acc: 0, vy: 0, hit: this.fighters.map(() => false),
       hard: c.hardCount, dead: false,
     };
     this.chunks.push(ch);
@@ -863,7 +987,7 @@ export class Battle {
       const r = clamp(Math.sqrt((part.length * CELL * CELL) / Math.PI) * 0.92, 5, 20);
       const b: Boulder = {
         id: this.nextId++, x, y, vx: this.rng.range(-30, 30), vy: 0, r, rot: this.rng.range(0, 6.28),
-        restT: 0, age: 0, cool: [0, 0], dead: false,
+        restT: 0, age: 0, cool: this.fighters.map(() => 0), dead: false,
       };
       this.boulders.push(b);
       this.emit({ type: 'boulder', id: b.id });
@@ -906,7 +1030,7 @@ export class Battle {
             const bx = (ch.minX + this.rng.next() * (ch.maxX - ch.minX + 1)) * CELL;
             this.boulders.push({
               id: this.nextId++, x: bx, y: y - 10, vx: this.rng.range(-160, 160), vy: -this.rng.range(80, 180),
-              r: this.rng.range(5, 8), rot: 0, restT: 0, age: 0, cool: [0, 0], dead: false,
+              r: this.rng.range(5, 8), rot: 0, restT: 0, age: 0, cool: this.fighters.map(() => 0), dead: false,
             });
           }
         }
@@ -946,8 +1070,7 @@ export class Battle {
     for (const b of this.boulders) {
       if (b.dead) continue;
       b.age += dt;
-      b.cool[0] = Math.max(0, b.cool[0] - dt);
-      b.cool[1] = Math.max(0, b.cool[1] - dt);
+      for (let k = 0; k < b.cool.length; k++) b.cool[k] = Math.max(0, b.cool[k]! - dt);
       b.vy += GRAVITY * dt;
       const sp = Math.hypot(b.vx, b.vy);
       const n = Math.max(1, Math.ceil((sp * dt) / Math.max(2, b.r * 0.5)));
@@ -992,7 +1115,7 @@ export class Battle {
         }
         // 캐릭터와 충돌
         for (const f of this.fighters) {
-          if (!f.alive || b.cool[f.idx] > 0) continue;
+          if (!f.alive || (b.cool[f.idx] ?? 0) > 0) continue;
           const cx = f.x, cy = f.y - CHAR_CENTER_Y;
           const dx = b.x - cx, dy = b.y - cy;
           const d = Math.hypot(dx, dy);
@@ -1229,29 +1352,50 @@ export class Battle {
     this.setPhase('TURN_END');
   }
 
-  private resolveTurnEnd(): void {
-    const [a, b] = this.fighters;
-    const deadA = !a.alive, deadB = !b.alive;
-    if (deadA || deadB) {
-      if (deadA && deadB) return this.endGame(-1, 'draw');
-      const w = deadA ? 1 : 0;
-      const loser = deadA ? a : b;
-      return this.endGame(w, loser.deathCause === 'fall' ? 'fall' : 'hp');
+  teamAlive(team: Team): boolean {
+    return this.fighters.some((f) => f.team === team && f.alive);
+  }
+
+  /** 편의 남은 체력 비율(합계) */
+  teamHpRatio(team: Team): number {
+    let hp = 0, max = 0;
+    for (const f of this.fighters) if (f.team === team) { hp += f.hp; max += f.maxHp; }
+    return max ? hp / max : 0;
+  }
+
+  /** 다음 차례: 상대 편에서, 그 편이 지난번에 쏜 장수 다음 사람(쓰러진 장수는 건너뛴다) */
+  nextPlayer(): number {
+    const team = (1 - this.cur.team) as Team;
+    const mates = this.fighters.filter((f) => f.team === team);
+    for (let k = 0; k < mates.length; k++) {
+      const f = mates[(this.teamPtr[team]! + k) % mates.length]!;
+      if (f.alive) return f.idx;
     }
-    if (this.turnNo >= this.cfg.turnLimit) {
-      const ra = a.hp / a.maxHp, rb = b.hp / b.maxHp;
+    return this.fighters.find((f) => f.alive)?.idx ?? this.current;
+  }
+
+  private resolveTurnEnd(): void {
+    const aliveA = this.teamAlive(0), aliveB = this.teamAlive(1);
+    if (!aliveA || !aliveB) {
+      if (!aliveA && !aliveB) return this.endGame(-1, 'draw');
+      const w: Team = aliveA ? 0 : 1;
+      const losers = this.fighters.filter((f) => f.team !== w);
+      return this.endGame(w, losers.every((f) => f.deathCause === 'fall') ? 'fall' : 'hp');
+    }
+    if (this.cfg.turnLimit > 0 && this.turnNo >= this.cfg.turnLimit) {
+      const ra = this.teamHpRatio(0), rb = this.teamHpRatio(1);
       if (Math.abs(ra - rb) < 1e-9) return this.endGame(-1, 'draw');
       return this.endGame(ra > rb ? 0 : 1, 'limit');
     }
-    this.startTurn((1 - this.current) as 0 | 1);
+    this.startTurn(this.nextPlayer());
   }
 
-  private endGame(winner: 0 | 1 | -1, reason: 'hp' | 'fall' | 'limit' | 'draw'): void {
+  private endGame(winner: Team | -1, reason: 'hp' | 'fall' | 'limit' | 'draw'): void {
     this.winner = winner;
     this.endReason = winner === -1 ? 'draw' : reason;
     this.setPhase('GAME_OVER');
     for (const f of this.fighters) {
-      if (winner === f.idx) { f.anim = 'victory'; f.animT = 0; }
+      if (winner === f.team) { f.anim = 'victory'; f.animT = 0; }
       else if (f.alive && winner !== -1) { f.anim = 'defeat'; f.animT = 0; }
     }
     this.emit({ type: 'gameOver', winner, reason: this.endReason as 'hp' | 'fall' | 'limit' | 'draw' });
@@ -1260,12 +1404,12 @@ export class Battle {
   // ───────── 예상 궤적·AI용 ─────────
 
   /** 지형을 바꾸지 않고 한 발을 끝까지 따라가 본다 */
-  dryShot(fIdx: 0 | 1, slot: 0 | 1, angle: number, power: number, from?: { x: number; y: number }): DryResult {
-    const f = this.fighters[fIdx];
+  dryShot(fIdx: number, slot: 0 | 1, angle: number, power: number, from?: { x: number; y: number }): DryResult {
+    const f = this.fighters[fIdx]!;
     const saved = { x: f.x, y: f.y, angle: f.angle, proj: this.projectiles, sched: this.scheduled, quiet: this.quiet, rng: this.rng.state, nextId: this.nextId };
     if (from) { f.x = from.x; f.y = from.y; }
     f.angle = angle;
-    const res: DryResult = { damage: [0, 0], impacts: [], enemyGroundHit: 0, outOfWorld: false, flightTime: 0 };
+    const res: DryResult = { damage: this.fighters.map(() => 0), impacts: [], enemyGroundHit: 0, outOfWorld: false, flightTime: 0 };
     this.dry = res;
     this.quiet = true;
     this.projectiles = [];
@@ -1274,11 +1418,14 @@ export class Battle {
     const sp = (power / 100) * MAX_LAUNCH_SPEED * w.speedMul;
     const angles = w.pattern === 'triple' ? [-1, 0, 1].map((k) => angle + k * (w.spreadDeg ?? 3)) : [angle];
     const powers = w.pattern === 'salvo' ? [power, clamp(power + (w.salvoPowerStep ?? 3), 0, 100), clamp(power - (w.salvoPowerStep ?? 3), 0, 100)] : [power];
+    const steady = this.steadyReady(f) && (!from || (Math.abs(from.x - saved.x) < 0.5 && Math.abs(from.y - saved.y) < 0.5));
     for (const a of angles) {
       for (const pw of powers) {
         const [mx, my] = this.muzzle(f, a);
         const s = pw === power ? sp : (pw / 100) * MAX_LAUNCH_SPEED * w.speedMul;
-        this.projectiles.push(this.newProjectile(fIdx, 0, w.id, mx, my, Math.cos(a * DEG) * s, -Math.sin(a * DEG) * s));
+        const q = this.newProjectile(fIdx, 0, w.id, mx, my, Math.cos(a * DEG) * s, -Math.sin(a * DEG) * s);
+        if (steady) q.boost = TRAIT.steadyDamage;
+        this.projectiles.push(q);
       }
     }
     let steps = 0;
@@ -1323,11 +1470,13 @@ export class Battle {
   clone(): Battle {
     const b = new Battle(this.cfg, true);
     b.terrain = this.terrain.clone();
-    b.fighters = this.fighters.map((f) => ({ ...f, stats: { ...f.stats } })) as [Fighter, Fighter];
+    b.fighters = this.fighters.map((f) => ({ ...f, stats: { ...f.stats } }));
+    b.teamPtr = [...this.teamPtr];
     b.projectiles = this.projectiles.map((p) => ({ ...p }));
-    b.boulders = this.boulders.map((x) => ({ ...x, cool: [...x.cool] as [number, number] }));
-    b.chunks = this.chunks.map((c) => ({ ...c, hit: [...c.hit] as [boolean, boolean] }));
+    b.boulders = this.boulders.map((x) => ({ ...x, cool: [...x.cool] }));
+    b.chunks = this.chunks.map((c) => ({ ...c, hit: [...c.hit] }));
     b.scheduled = this.scheduled.map((s) => ({ ...s }));
+    b.clouds = this.clouds.map((c) => ({ ...c, turns: [...c.turns] }));
     b.rng = new Rng(0);
     b.rng.state = this.rng.state;
     b.time = this.time;
@@ -1356,8 +1505,9 @@ export class Battle {
 
   /** 상태 요약 해시(재현 시험용) */
   hash(): string {
-    const f = this.fighters.map((x) => `${x.x.toFixed(3)},${x.y.toFixed(3)},${x.hp},${x.alive ? 1 : 0},${x.gauge.toFixed(3)}`).join('|');
-    return `${this.terrain.checksum()}:${f}:${this.wind}:${this.turnNo}:${this.phase}:${this.rng.state}`;
+    const f = this.fighters.map((x) => `${x.x.toFixed(3)},${x.y.toFixed(3)},${x.hp},${x.alive ? 1 : 0},${x.slot}`).join('|');
+    const gas = this.clouds.map((c) => `${c.id},${c.x.toFixed(2)},${c.y.toFixed(2)},${c.turns.join(',')}`).join('|');
+    return `${this.terrain.checksum()}:${f}:${gas}:${this.wind}:${this.turnNo}:${this.phase}:${this.rng.state}`;
   }
 
   serialize(): string {
@@ -1369,6 +1519,7 @@ export class Battle {
       boulders: this.boulders,
       chunks: this.chunks.map((c) => ({ ...c, cells: Array.from(c.cells), mats: Array.from(c.mats), bottom: Array.from(c.bottom) })),
       scheduled: this.scheduled,
+      clouds: this.clouds,
       rng: this.rng.state,
       s: [this.time, this.stepNo, this.phaseT, this.current, this.turnNo, this.wind, this.timeLeft, this.shotT, this.lastBlastT, this.settleT, this.nextId, this.shotNo],
       phase: this.phase,
@@ -1376,6 +1527,7 @@ export class Battle {
       endReason: this.endReason,
       shotDamage: [...this.shotDamage],
       shotHit: [...this.shotHit],
+      teamPtr: this.teamPtr,
     });
   }
 
@@ -1388,6 +1540,7 @@ export class Battle {
     b.boulders = o.boulders;
     b.chunks = o.chunks.map((c: Chunk & { cells: number[]; mats: number[]; bottom: number[] }) => ({ ...c, cells: Int32Array.from(c.cells), mats: Uint8Array.from(c.mats), bottom: Int32Array.from(c.bottom) }));
     b.scheduled = o.scheduled;
+    b.clouds = o.clouds ?? [];
     b.rng.state = o.rng;
     [b.time, b.stepNo, b.phaseT, b.current, b.turnNo, b.wind, b.timeLeft, b.shotT, b.lastBlastT, b.settleT, b.nextId, b.shotNo] = o.s;
     b.phase = o.phase;
@@ -1395,6 +1548,7 @@ export class Battle {
     b.endReason = o.endReason;
     b.shotDamage = new Map(o.shotDamage);
     b.shotHit = new Set(o.shotHit);
+    b.teamPtr = o.teamPtr ?? [0, 0];
     return b;
   }
 }
