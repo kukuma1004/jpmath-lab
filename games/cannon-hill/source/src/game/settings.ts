@@ -9,6 +9,7 @@ export interface Settings {
   quality: Quality;
   shake: number; // 0, 0.5, 1, 1.5
   trajectory: boolean;
+  aimHints: boolean;
   difficulty: Difficulty;
   turnTime: number;
   turnLimit: number;
@@ -25,6 +26,7 @@ const DEFAULTS: Settings = {
   quality: 'medium',
   shake: 1,
   trajectory: true,
+  aimHints: true,
   difficulty: 'normal',
   turnTime: TURN_TIME_DEFAULT,
   turnLimit: TURN_LIMIT_DEFAULT,
@@ -62,6 +64,7 @@ export function loadSettings(): Settings {
   s.sfx = Math.min(1, Math.max(0, Number(s.sfx) || 0));
   if (!['low', 'medium', 'high'].includes(s.quality)) s.quality = 'medium';
   if (!['easy', 'normal', 'hard'].includes(s.difficulty)) s.difficulty = 'normal';
+  if (typeof s.aimHints !== 'boolean') s.aimHints = true;
   if (![20, 30, 45].includes(s.turnTime)) s.turnTime = TURN_TIME_DEFAULT;
   if (saved?.battleRules !== 2 || ![0, 20, 30, 40].includes(s.turnLimit)) s.turnLimit = TURN_LIMIT_DEFAULT;
   s.battleRules = 2;

@@ -44,6 +44,27 @@ async function waitAim(page: Page, who?: number, timeout = 30_000) {
   }, { timeout }).toBe(true);
 }
 
+test('조준 도움: 정확한 값 대신 각도·힘 범위와 힘 게이지 띠를 보여준다',async({page})=>{
+  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+  await openBattle(page,'local',['driller','archer'],'bridge');await waitAim(page);
+  const initialAngle=await wr(page,'__wr.battle.cur.angle');
+  const hud=page.locator('[data-s=hud]'),angle=hud.locator('.angle-hint'),power=hud.locator('.power-hint'),band=hud.locator('.power .suggested');
+  await expect(angle).toHaveText(/[←→] 추천 각도 \d+~\d+°/);await expect(power).toHaveText(/추천 힘 \d+~\d+/);await expect(band).toBeVisible();
+  const angles=(await angle.innerText()).match(/(\d+)~(\d+)/)!;expect(Number(angles[2])-Number(angles[1])).toBe(10);
+  const powers=(await power.innerText()).match(/(\d+)~(\d+)/)!;expect(Number(powers[2])-Number(powers[1])).toBe(15);
+  expect(await wr(page,'__wr.battle.cur.angle')).toBe(initialAngle);expect(await wr(page,'__wr.battle.cur.stats.shots')).toBe(0);
+  await page.keyboard.press('2');await expect(band).toHaveAttribute('data-slot','1');await expect(band).toBeVisible();
+  await wr(page,'__wr.scene.app.settings.aimHints=false');await expect(band).toBeHidden();await expect(angle).toHaveText('각도');
+  await wr(page,'__wr.scene.app.settings.aimHints=true');await expect(band).toBeVisible();expect(errors).toEqual([]);
+});
+
+test('조준 도움은 AI 차례에는 표시하지 않는다',async({page})=>{
+  await openBattle(page,'ai',['general','archer'],'bridge');
+  await wr(page,"__wr.scene.paused=true;__wr.battle.current=0;__wr.battle.phase='AIM';__wr.battle.timeLeft=30;");
+  const band=page.locator('[data-s=hud] .power .suggested');await expect(band).toBeVisible();
+  await wr(page,'__wr.battle.current=1');await expect(band).toBeHidden();await expect(page.locator('[data-s=hud] .angle-hint')).toHaveText('각도');
+});
+
 for(const teamSize of [1,2])test(`무작위 ${teamSize}:${teamSize} 배치는 같은 높이의 좌우 거울 위치다`,async({page})=>{
   if(teamSize===1)await openBattle(page,'local',['driller','mudang'],'bridge');
   else await openTeamBattle(page,['driller','mudang','general','alchemist'],'quarry');
@@ -203,6 +224,8 @@ for (const vp of [{ name: '가로', width: 844, height: 390 }, { name: '세로',
     const page = await ctx.newPage();
     await openBattle(page, 'local', ['mudang', 'turtle'], 'forest');
     await waitAim(page);
+    await expect(page.locator('[data-s=hud] .angle-hint')).toBeVisible();
+    await expect(page.locator('[data-s=hud] .power-hint')).toBeVisible();
     const ids = ['[data-hold=left]', '[data-hold=right]', '[data-hold=aimUp]', '[data-hold=aimDown]', '[data-act=flip]', '[data-hold=charge]', '[data-w="0"]', '[data-w="1"]', '.pausebtn'];
     const boxes = [];
     for (const sel of ids) {

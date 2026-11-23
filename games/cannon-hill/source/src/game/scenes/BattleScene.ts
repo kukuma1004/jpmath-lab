@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { DT, VIEW_H, WORLD_H, WORLD_W } from '../config/constants';
 import { Battle } from '../combat/battle';
+import { AimAdvisor } from '../combat/aimAdvisor';
 import type { BattleConfig, SimEvent } from '../combat/types';
 import { AIActor, AIPlanner } from '../ai/ai';
 import { mapDef } from '../data/maps';
@@ -61,6 +62,7 @@ export class BattleScene extends Phaser.Scene {
   private pinch: { d: number; z: number } | null = null;
   private resultTimer: Phaser.Time.TimerEvent | null = null;
   private rockSfxT = 0;
+  private advisor = new AimAdvisor();
 
   constructor() {
     super('battle');
@@ -82,6 +84,7 @@ export class BattleScene extends Phaser.Scene {
     this.bottomFx = [];
     this.river = null;
     this.resultTimer = null;
+    this.advisor.reset();
     this.actors = data.cfg.controllers.map((c, i) => (c === 'ai' ? new AIActor(i, data.cfg.difficulty) : null));
   }
 
@@ -594,7 +597,8 @@ export class BattleScene extends Phaser.Scene {
       : b.isPlayerPhase() && b.cur.charId === 'driller' ? b.cur.slot === 0 ? '지형을 길게 관통 · 벽 뒤와 발밑을 노리세요' : '넓은 지반 붕괴 · 높은 발판을 무너뜨리세요'
       : b.isPlayerPhase() && b.steadyReady(b.cur) ? '자리 잡은 포격 — 움직이지 않고 쏘면 피해 +15%'
       : '';
-    this.app.ui.updateHud(b, { names: this.names, humanTurn: this.humanTurn(), status });
+    const aimHint=this.advisor.update(b,this.app.settings.aimHints&&this.humanTurn());
+    this.app.ui.updateHud(b, { names: this.names, humanTurn: this.humanTurn(), status, aimHint });
   }
 
   // ───────── 시험용 손잡이(?qa=1) ─────────

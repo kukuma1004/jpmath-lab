@@ -516,3 +516,13 @@ html, body {
   .logo, .logo span, .res .who img { animation: none; }
   .screen { transition: opacity 0.2s; transform: none; }
 }
+
+/* 추천은 넓은 구간으로만 표시하고 조작·발사는 플레이어에게 맡긴다. */
+.angle-hint, .firewrap .power-hint { color: #f0ce85; }
+.angle-read.in-hint { color: #b8e6a8; }
+.power .suggested { position:absolute; top:0; bottom:0; z-index:2; border:2px dashed #f6da91; border-radius:4px; background:rgba(246,218,145,.2); pointer-events:none; }
+.power .suggested[hidden] { display:none; }
+.power span { z-index:3; }
+.power.in-hint { box-shadow:0 0 0 2px #b8e6a8,0 0 10px rgba(184,230,168,.3); }
+.firewrap .power-hint { display:block; grid-column:1/-1; min-height:13px; font-size:12px; line-height:1.2; }
+@media (max-height:500px) { .firewrap .power-hint { font-size:11px; min-height:12px; } }

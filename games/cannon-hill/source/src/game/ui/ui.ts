@@ -3,6 +3,7 @@ import { CHARACTERS, character } from '../data/characters';
 import { MAPS, mapDef } from '../data/maps';
 import { weapon } from '../data/weapons';
 import type { Battle } from '../combat/battle';
+import type { AimHint } from '../combat/aimAdvisor';
 import type { Difficulty } from '../combat/types';
 import { input, type Hold } from '../input/input';
 import type { Settings } from '../settings';
@@ -357,9 +358,9 @@ export class UI {
         </div>
         <div class="bottom">
           <div class="pad move"><div class="row"><button class="kbtn" data-hold="left" aria-label="왼쪽으로 이동">◀<small>A</small></button><button class="kbtn" data-hold="right" aria-label="오른쪽으로 이동">▶<small>D</small></button></div><div class="movebar"><i></i></div><div class="lbl">이동</div></div>
-          <div class="pad aim"><div class="row"><button class="kbtn" data-hold="aimDown" aria-label="포신 내리기">▼<small>↓</small></button><div class="angle-read"><span class="ang">45°</span><small>각도</small></div><button class="kbtn" data-hold="aimUp" aria-label="포신 올리기">▲<small>↑</small></button><button class="kbtn" data-act="flip" aria-label="방향 바꾸기">⇄<small>←→</small></button></div><div class="lbl">각도</div></div>
+          <div class="pad aim"><div class="row"><button class="kbtn" data-hold="aimDown" aria-label="포신 내리기">▼<small>↓</small></button><div class="angle-read"><span class="ang">45°</span><small>각도</small></div><button class="kbtn" data-hold="aimUp" aria-label="포신 올리기">▲<small>↑</small></button><button class="kbtn" data-act="flip" aria-label="방향 바꾸기">⇄<small>←→</small></button></div><div class="lbl angle-hint">각도</div></div>
           <div class="weapons" aria-label="매 차례 자유롭게 고르는 두 종류 탄"><button class="wbtn" data-w="0"><kbd>1</kbd><b class="wn0"></b><small class="wu0"></small></button><button class="wbtn" data-w="1"><kbd>2</kbd><b class="wn1"></b><small class="wu1"></small></button></div>
-          <div class="firewrap"><div class="power"><div class="ticks"></div><i></i><div class="last"></div><span>힘 0</span></div><button class="fire" data-hold="charge" aria-label="힘 모아 발사">발사<small>Space 꾹</small></button><div class="keyhint">끌기·I J K L 둘러보기 · Tab 보기 · C 돌아오기 · Esc 정지</div></div>
+          <div class="firewrap"><div class="power"><div class="ticks"></div><i></i><div class="last"></div><em class="suggested" hidden></em><span>힘 0</span></div><button class="fire" data-hold="charge" aria-label="힘 모아 발사">발사<small>Space 꾹</small></button><div class="keyhint power-hint" aria-live="polite">꾹 눌러 힘 모으기</div></div>
         </div>
         <div class="banner"><b></b><span></span></div>
         <div class="toast"></div>
@@ -423,7 +424,7 @@ export class UI {
     fn();
   }
 
-  updateHud(b: Battle, opts: { names: string[]; humanTurn: boolean; status: string }): void {
+  updateHud(b: Battle, opts: { names: string[]; humanTurn: boolean; status: string; aimHint: AimHint|null }): void {
     const el = this.screens.get('hud')!;
     for (const f of b.fighters) {
       const i = f.idx;
@@ -507,6 +508,33 @@ export class UI {
       p.querySelector<HTMLElement>('i')!.style.width = `${pw}%`;
       p.querySelector<HTMLElement>('.last')!.style.left = `${f.lastPower}%`;
       p.querySelector('span')!.textContent = b.phase === 'CHARGE' ? `힘 ${Math.round(pw)}` : `지난 힘 ${Math.round(f.lastPower)}`;
+    });
+    this.updateAimHint(el,b,opts.aimHint);
+  }
+
+  private updateAimHint(el:HTMLElement,b:Battle,hint:AimHint|null):void {
+    this.set('aimhint',`${JSON.stringify(hint)}:${b.current}:${b.cur.slot}`,()=>{
+      const angle=el.querySelector<HTMLElement>('.angle-hint')!;
+      const power=el.querySelector<HTMLElement>('.power-hint')!;
+      const band=el.querySelector<HTMLElement>('.power .suggested')!;
+      band.hidden=true;band.dataset.slot=String(b.cur.slot);
+      angle.textContent=hint?.kind==='thinking'?'추천 범위 계산 중…':hint?.kind==='moving'?'멈추면 추천 범위를 보여드려요':'각도';
+      power.textContent=hint?.kind==='thinking'?'현재 바람과 탄을 살펴보는 중':hint?.kind==='moving'?'이동 후 다시 추천해요':'꾹 눌러 힘 모으기';
+      if(hint?.kind==='blocked'){
+        angle.textContent=`${hint.direction>0?'→':'←'} 앞 지형이 막고 있어요`;power.textContent='조금 이동하면 다시 추천해요';
+      }else if(hint?.kind==='range'){
+        angle.textContent=`${hint.direction>0?'→':'←'} 추천 각도 ${hint.angle[0]}~${hint.angle[1]}°`;
+        power.textContent=`추천 힘 ${hint.power[0]}~${hint.power[1]}`;
+        band.hidden=false;band.style.left=`${hint.power[0]}%`;band.style.width=`${hint.power[1]-hint.power[0]}%`;
+        band.title=`추천 힘 ${hint.power[0]}~${hint.power[1]} 안에서 조절해 보세요`;
+      }
+    });
+    const f=b.cur,relative=f.angle<=90?f.angle:180-f.angle;
+    const angleOK=hint?.kind==='range'&&(f.angle<=90?1:-1)===hint.direction&&relative>=hint.angle[0]&&relative<=hint.angle[1];
+    const powerOK=hint?.kind==='range'&&b.phase==='CHARGE'&&f.power>=hint.power[0]&&f.power<=hint.power[1];
+    this.set('aimhint-match',`${angleOK}:${powerOK}`,()=>{
+      el.querySelector('.angle-read')!.classList.toggle('in-hint',angleOK);
+      el.querySelector('.power')!.classList.toggle('in-hint',powerOK);
     });
   }
 
@@ -642,7 +670,7 @@ export class UI {
         const k = b.dataset.k as keyof Settings;
         const v = b.dataset.v!;
         const s = this.settings as unknown as Record<string, unknown>;
-        s[k] = k === 'trajectory' ? v === '1' : k === 'shake' || k === 'turnTime' || k === 'turnLimit' ? Number(v) : v;
+        s[k] = k === 'trajectory' || k === 'aimHints' ? v === '1' : k === 'shake' || k === 'turnTime' || k === 'turnLimit' ? Number(v) : v;
         this.hooks.settingsChanged(this.settings);
         this.renderSettings();
         return;
@@ -666,6 +694,7 @@ export class UI {
       <div class="row"><label>그래픽</label>${chips('quality', [['low', '낮음'], ['medium', '보통'], ['high', '높음']], s.quality)}</div>
       <div class="row"><label>화면 흔들림</label>${chips('shake', [['0', '끔'], ['0.5', '약하게'], ['1', '보통'], ['1.5', '세게']], String(s.shake))}</div>
       <div class="row"><label>예상 궤적</label>${chips('trajectory', [['1', '보이기'], ['0', '숨기기']], s.trajectory ? '1' : '0')}</div>
+      <div class="row"><label>조준 도움</label>${chips('aimHints', [['1', '범위 힌트'], ['0', '끄기']], s.aimHints ? '1' : '0')}</div>
       <div class="row"><label>AI 실력</label>${chips('difficulty', [['easy', '쉬움'], ['normal', '보통'], ['hard', '어려움']], s.difficulty)}</div>
       <div class="row"><label>턴 시간</label>${chips('turnTime', [['20', '20초'], ['30', '30초'], ['45', '45초']], String(s.turnTime))}</div>
       <div class="row"><label>승부 방식</label>${chips('turnLimit', [['0', '끝장전'], ['20', '20턴'], ['30', '30턴'], ['40', '40턴']], String(s.turnLimit))}</div>
@@ -701,6 +730,7 @@ export class UI {
           <li><b>굴착대장</b>은 1번으로 긴 터널을 뚫고, 2번으로 넓은 발판을 허뭅니다. 드릴은 땅에 닿은 뒤 파고들며 기반암은 남깁니다.</li>
           <li>지지점을 잃은 땅은 덩어리째 무너지고, 바위는 낙석이 되어 굴러갑니다. 깔리거나 높은 곳에서 떨어지면 다칩니다.</li>
           <li><b>1번과 2번 탄은 매 차례 자유롭게 선택</b>합니다. 횟수 제한과 기세 조건이 없고, 발사 뒤에도 고른 탄을 기억합니다. 누르고 모으는 힘은 포탄의 날아갈 거리입니다.</li>
+          <li><b>추천 각도·힘</b>는 넓은 시작 범위입니다. 화살표 쪽으로 포신을 돌리고, 추천 범위 안에서 조금씩 조절해 보세요. 힘 게이지의 금빛 띠가 추천 구간입니다. 위치·바람·탄이 바뀌면 다시 안내하며, 설정의 「조준 도움」에서 끌 수 있습니다.</li>
           <li><b>독구름</b> 안에서 자기 차례를 맞으면 피해를 입습니다. 구름 밖으로 움직여 피할 수 있으며, 같은 편도 피해를 입습니다.</li>
           <li>기본은 <b>체력 800의 끝장전</b>입니다. 상대 편이 모두 쓰러져야 끝납니다. 20·30·40턴 판정전을 따로 고르면 제한 턴 뒤 체력 비율로 판정합니다. 함께 쓰러지면 무승부입니다.</li>
           <li><b>2:2</b>는 편마다 장수 둘이 번갈아 쏩니다(편 → 상대 편 → 편의 다른 장수 …). 같은 편도 폭발에 다치니 조심하세요. 한 편이 모두 쓰러지면 끝납니다.</li>
