@@ -1,0 +1,100 @@
+<!doctype html>
+<!--
+Three.js is distributed under the MIT License.
+
+Copyright © 2010-2026 three.js authors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#102531">
+    <meta name="description" content="동료를 구출하고 사격을 강화해 바다 위 방벽을 돌파하는 3D 슈팅 게임">
+    <title>해협 돌파</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="./src/style.css">
+  </head>
+  <body>
+    <main id="viewport" data-state="ready" aria-label="해협 돌파 게임">
+      <canvas id="canvas" aria-label="3D 해상 전투 화면"></canvas>
+
+      <header class="topbar" aria-label="전투 진행">
+        <div class="mission">
+          <div class="mission-line">
+            <span>돌파 진행</span>
+            <strong id="wave">준비</strong>
+          </div>
+          <div class="progress-track" aria-hidden="true"><div id="progress"></div></div>
+        </div>
+        <div class="controls">
+          <button class="icon-button" type="button" id="sound" aria-label="소리 끄기" aria-pressed="false" title="소리">
+            <span class="sound-icon" aria-hidden="true"></span>
+          </button>
+          <button class="icon-button" type="button" id="pause" aria-label="일시정지" title="일시정지">
+            <span class="pause-icon" aria-hidden="true"></span>
+          </button>
+        </div>
+      </header>
+
+      <div class="status-line" aria-label="부대 상태">
+        <div class="status status-squad">
+          <span class="status-icon squad-icon" aria-hidden="true"></span>
+          <span class="status-label">동료</span>
+          <strong id="squad">1</strong>
+        </div>
+        <div class="status status-weapon">
+          <span class="status-icon weapon-icon" aria-hidden="true"></span>
+          <span class="status-label">사격</span>
+          <strong id="weapon">단발</strong>
+        </div>
+      </div>
+
+      <div class="boss-hud" id="boss-hud" hidden>
+        <span>방벽 수호기</span>
+        <div class="boss-track" aria-hidden="true"><div id="boss-health"></div></div>
+      </div>
+
+      <div class="toast" id="toast" role="status" aria-atomic="true" hidden></div>
+      <div class="hint" id="hint" hidden>
+        <span class="hint-arrow" aria-hidden="true">↔</span>
+        <span class="hint-text">
+          <span class="touch-instruction">좌우로 밀어 이동</span>
+          <span class="keyboard-instruction">드래그 또는 ← → 키로 이동</span>
+        </span>
+      </div>
+
+      <section id="overlay" class="overlay" aria-labelledby="overlay-title" aria-describedby="overlay-copy">
+        <div class="overlay-content">
+          <p id="overlay-kicker" class="overlay-kicker">해상 구조대</p>
+          <h1 id="overlay-title">해협 돌파</h1>
+          <p id="overlay-copy">좌우로 이동하면 자동으로 사격합니다.</p>
+          <div class="overlay-actions">
+            <button id="action" class="action" type="button">작전 시작</button>
+            <button id="restart" class="restart" type="button" hidden>처음부터</button>
+          </div>
+        </div>
+      </section>
+
+      <noscript><p class="noscript">게임을 실행하려면 자바스크립트를 켜 주세요.</p></noscript>
+    </main>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

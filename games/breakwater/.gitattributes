@@ -1,0 +1,2 @@
+# Preserve the release bytes and whitespace inside the bundled Three.js shaders.
+/index.html -text whitespace=-blank-at-eol,-space-before-tab
