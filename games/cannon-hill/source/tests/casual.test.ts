@@ -68,19 +68,20 @@ describe('빠른 턴 전환과 큰 추락 피해',()=>{
   });
 });
 
-describe('무작위 고저 배치와 낙사 다리',()=>{
-  it.each(MAPS.map(m=>[m.id]))('%s는 안전한 시작점과 다양한 고저·좌우 배치를 가진다',(id)=>{
+describe('무작위 대칭 배치와 낙사 다리',()=>{
+  it.each(MAPS.map(m=>[m.id]))('%s는 같은 높이의 대칭 시작점을 무작위로 고른다',(id)=>{
     const def=MAPS.find(m=>m.id===id)!,t=generateTerrain(def,17);
-    const layouts=new Set<string>();let high=0,central=0,reverse=0;
-    for(let seed=0;seed<24;seed++){
+    const layouts=new Set<string>(),heights=new Set<number>();let central=0,reverse=0;
+    for(let seed=0;seed<64;seed++){
       const points=findSpawnPoints(t,def,new Rng(seed),2);
       expect(points).toEqual(findSpawnPoints(t,def,new Rng(seed),2));
       for(const p of points){expect(spotScore(t,p.x,p.y)).toBeGreaterThanOrEqual(0);expect(p.y).toBe(t.topSurface(p.x));}
-      layouts.add(JSON.stringify(points));high+=Math.abs(points[0]!.y-points[1]!.y)>=100?1:0;
+      layouts.add(JSON.stringify(points));heights.add(points[0]!.y);
+      expect(points[0]!.x+points[1]!.x).toBe(2400);expect(points[0]!.y).toBe(points[1]!.y);
       central+=points.some(p=>p.x>650&&p.x<1750)?1:0;reverse+=points[0]!.x>points[1]!.x?1:0;
     }
-    expect(layouts.size).toBeGreaterThan(16);expect(high).toBeGreaterThan(6);expect(central).toBeGreaterThan(12);
-    expect(reverse).toBeGreaterThan(3);expect(reverse).toBeLessThan(22);
+    expect(layouts.size).toBeGreaterThan(16);expect(heights.size).toBeGreaterThan(1);expect(central).toBeGreaterThan(24);
+    expect(reverse).toBeGreaterThan(16);expect(reverse).toBeLessThan(48);
   });
   it('다리 발밑을 끊으면 체력 800인 상대도 추락선 아래에서 탈락한다',()=>{
     const b=new Battle(defaultConfig({mapId:'bridge',seed:42}));

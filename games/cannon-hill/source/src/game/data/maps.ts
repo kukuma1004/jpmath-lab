@@ -399,6 +399,11 @@ export function mapDef(id: string): MapDef {
 export function generateTerrain(def: MapDef, seed: number): Terrain {
   const t = new Terrain();
   def.generate(t, new Rng(seed ^ 0x5eed), seed);
+  // 충돌 지형도 중앙을 기준으로 반사한다. 높이뿐 아니라 발판 두께·재질·지지점도 같다.
+  for (let cy=0;cy<ROWS;cy++) {
+    const row=cy*COLS;
+    for(let cx=0;cx<COLS/2;cx++) t.cells[row+COLS-1-cx]=t.cells[row+cx]!;
+  }
   // 생성 직후 떠 있는 조각(지지점 없는 덩어리)은 지운다
   t.extractUnsupported([{ x0: 0, y0: 0, x1: COLS - 1, y1: ROWS - 1 }]);
   t.dirty.length = 0;
@@ -422,60 +427,40 @@ export function spotScore(t: Terrain, x: number, y = t.topSurface(x)): number {
   return depth >= 10 ? 100 : -1;
 }
 
-function shuffle<T>(a: T[], rng: Rng): T[] {
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(rng.next() * (i + 1));
-    [a[i], a[j]] = [a[j]!, a[i]!];
+/** 셀 중심을 골라 x ↔ WORLD_W-x가 정확히 반대편 셀 중심이 되게 한다. */
+function symmetricSpawnCandidates(t: Terrain): SpawnPoint[] {
+  const pool: SpawnPoint[] = [];
+  const minX=300+CELL/2, maxX=(WORLD_W-380)/2;
+  for(let x=minX;x<=maxX;x+=8){
+    const y=t.topSurface(x), mirrorX=WORLD_W-x;
+    if(spotScore(t,x,y)<0 || t.topSurface(mirrorX)!==y || spotScore(t,mirrorX,y)<0)continue;
+    pool.push({x,y});
   }
-  return a;
+  return pool;
 }
 
-function spawnCandidates(t: Terrain, rng: Rng): SpawnPoint[] {
-  const all: SpawnPoint[] = [];
-  for (let x = 160; x <= WORLD_W - 160; x += 24) {
-    const y = t.topSurface(x);
-    if (spotScore(t, x, y) >= 0) all.push({ x, y });
-  }
-  const bins = new Map<string, number>();
-  return shuffle(all, rng).filter((p) => {
-    const key = `${Math.floor(p.x / 240)}:${Math.floor(p.y / 100)}`;
-    const n = bins.get(key) ?? 0;
-    if (n >= 3) return false;
-    bins.set(key, n + 1);
-    return true;
-  });
-}
-
-/** 시드 난수로 전장 전체의 고지·저지·발판을 섞는다. 장수 순서는 기존 편 순서를 유지한다. */
+/** 같은 높이·발판의 거울 위치를 한 쌍으로 뽑는다. 두 팀의 좌우와 아군 순서만 섞는다. */
 export function findSpawnPoints(t: Terrain, def: MapDef, rng: Rng, count: 2 | 4): SpawnPoint[] {
-  const pool = spawnCandidates(t, rng);
-  const highLow = rng.next() < 0.65;
-  const pairs: [SpawnPoint, SpawnPoint][] = [];
-  for (const minHeight of [highLow ? 100 : 0, 0]) {
-    for (let i = 0; i < pool.length; i++) for (let j = i + 1; j < pool.length; j++) {
-      const a = pool[i]!, b = pool[j]!, gap = Math.abs(a.x - b.x), h = Math.abs(a.y - b.y);
-      if (gap >= 380 && gap <= 1260 && h >= minHeight && h <= 420) pairs.push([a, b]);
+  const pool=symmetricSpawnCandidates(t);
+  let left: SpawnPoint[];
+  if(count===2 && pool.length){
+    const inner=pool.filter(p=>p.x>650),outer=pool.filter(p=>p.x<=650);
+    const preferred=rng.next()<0.65?inner:outer;
+    const choices=preferred.length?preferred:pool;
+    left=[choices[Math.floor(rng.next()*choices.length)]!];
+  }else{
+    const pairs: [SpawnPoint,SpawnPoint][]=[];
+    for(let i=0;i<pool.length;i++)for(let j=i+1;j<pool.length;j++){
+      const a=pool[i]!,b=pool[j]!;
+      if(Math.abs(a.x-b.x)>=160)pairs.push([a,b]);
     }
-    if (pairs.length) break;
+    if(!pairs.length)throw new Error(`${def.id}: 장수 ${count}명이 안전하게 설 대칭 자리를 찾지 못했습니다`);
+    left=[...pairs[Math.floor(rng.next()*pairs.length)]!];
+    if(rng.next()<0.5)left.reverse();
   }
-  shuffle(pairs, rng);
-  if (count === 2 && pairs[0]) return rng.next() < 0.5 ? [...pairs[0]] : [pairs[0][1], pairs[0][0]];
-  for (const [a, b] of pairs.slice(0, 40)) {
-    const quads: { points: SpawnPoint[]; balance: number }[] = [];
-    for (const c of pool) {
-      if (Math.abs(c.x - a.x) < 160 || Math.abs(c.x - b.x) < 280) continue;
-      for (const d of pool) {
-        if (Math.abs(d.x - b.x) < 160 || Math.abs(d.x - a.x) < 280 || Math.abs(d.x - c.x) < 280) continue;
-        const points = [a, b, c, d];
-        const span = Math.max(...points.map((p) => p.x)) - Math.min(...points.map((p) => p.x));
-        if (span > 1560) continue;
-        quads.push({ points, balance: Math.abs(a.y + c.y - b.y - d.y) });
-      }
-    }
-    if (!quads.length) continue;
-    quads.sort((a2, b2) => a2.balance - b2.balance);
-    const picked = quads[Math.floor(rng.next() * Math.min(8, quads.length))]!.points;
-    return rng.next() < 0.5 ? picked : [picked[1]!, picked[0]!, picked[3]!, picked[2]!];
-  }
-  throw new Error(`${def.id}: 장수 ${count}명이 안전하게 설 자리를 찾지 못했습니다`);
+  const swapSides=rng.next()<0.5;
+  return left.flatMap(p=>{
+    const q={x:WORLD_W-p.x,y:p.y};
+    return swapSides?[q,{...p}]:[{...p},q];
+  });
 }

@@ -44,6 +44,15 @@ async function waitAim(page: Page, who?: number, timeout = 30_000) {
   }, { timeout }).toBe(true);
 }
 
+for(const teamSize of [1,2])test(`무작위 ${teamSize}:${teamSize} 배치는 같은 높이의 좌우 거울 위치다`,async({page})=>{
+  if(teamSize===1)await openBattle(page,'local',['driller','mudang'],'bridge');
+  else await openTeamBattle(page,['driller','mudang','general','alchemist'],'quarry');
+  await waitAim(page);
+  const points=await page.evaluate(()=>(window as any).__wr.battle.fighters.map((f:any)=>({x:f.x,y:f.y,onGround:f.onGround})));
+  for(let i=0;i<points.length;i+=2){expect(points[i].x+points[i+1].x).toBe(2400);expect(points[i].y).toBe(points[i+1].y);expect(points[i].onGround&&points[i+1].onGround).toBe(true);}
+  if(teamSize===2)expect(Math.abs(points[0].x-points[2].x)).toBe(Math.abs(points[1].x-points[3].x));
+});
+
 test('굴착대장: 전용 몸·회전 드릴을 불러오고 실제 땅속 굴착이 보인다',async({page})=>{
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
   await openBattle(page,'local',['driller','mudang'],'quarry');await waitAim(page);

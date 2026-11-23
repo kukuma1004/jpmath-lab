@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CELL, COLS, DT, ROWS, SETTLE_LIMIT, WORLD_H } from '../src/game/config/constants';
+import { CELL, COLS, DT, ROWS, SETTLE_LIMIT, WORLD_H, WORLD_W } from '../src/game/config/constants';
 import { Battle, defaultConfig } from '../src/game/combat/battle';
 import { AIActor, AIPlanner } from '../src/game/ai/ai';
 import { MAPS } from '../src/game/data/maps';
@@ -396,9 +396,10 @@ it('모든 전장에서 두 캐릭터가 땅 위에 공정하게 선다', () => 
       expect(p.y, `${m.id}/${seed}`).toBeGreaterThan(0);
       expect(b.terrain.solidAt(p.x, p.y), `${m.id}/${seed} 1P 발밑`).toBe(true);
       expect(b.terrain.solidAt(q.x, q.y), `${m.id}/${seed} 2P 발밑`).toBe(true);
-      expect(Math.abs(p.y - q.y), `${m.id}/${seed} 높이 차`).toBeLessThanOrEqual(420);
+      expect(p.y, `${m.id}/${seed} 같은 높이`).toBe(q.y);
+      expect(p.x+q.x, `${m.id}/${seed} 거울 위치`).toBe(WORLD_W);
       expect(Math.abs(p.x-q.x), `${m.id}/${seed} 거리`).toBeGreaterThanOrEqual(380);
-      expect(Math.abs(p.x-q.x), `${m.id}/${seed} 거리`).toBeLessThanOrEqual(1260);
+      expect(Math.abs(p.x-q.x), `${m.id}/${seed} 거리`).toBeLessThanOrEqual(1800);
       // 서 있는 동안 떨어지지 않는다
       for (let i = 0; i < 30; i++) b.step();
       expect(b.fighters[0].onGround && b.fighters[1].onGround).toBe(true);
