@@ -1,8 +1,8 @@
 'use strict';
 
 const Forge = (() => {
-  const clientRevision = 2026112402;
-  const rankingProtocol = 'forge-magic-1';
+  const clientRevision = 2026112403;
+  const rankingProtocol = 'forge-wardrobe-1';
   const legacySaveKey = 'jp-math-lab:mongle-forge:v1';
   const backupKey = legacySaveKey + ':before-infinite';
   const seasonId = 'season-20261120-1';
@@ -12,8 +12,9 @@ const Forge = (() => {
   const rainbowSaveKey = olderSaveKey + ':rainbow-1';
   const riskSaveKey = olderSaveKey + ':risk-1';
   const storageSaveKey = olderSaveKey + ':storage-1';
-  const previousSaveKey = olderSaveKey + ':magic-1';
-  const saveKey = olderSaveKey + ':credits-1';
+  const magicSaveKey = olderSaveKey + ':magic-1';
+  const previousSaveKey = olderSaveKey + ':credits-1';
+  const saveKey = olderSaveKey + ':wardrobe-1';
   const creditIdPattern = /^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$/;
   const startingShards = 10000n;
   const cooldown = 680;
@@ -63,7 +64,19 @@ const Forge = (() => {
     { level: 220n, name: '달그림자 쌍도', effect: 'aurora', color: '#c6bcff', detail: '서로 다른 곡률로 포개진 한 쌍의 월도' },
     { level: 270n, name: '운명가름 대낫', effect: 'galaxy', color: '#d6bcf5', detail: '긴 자루 끝을 가로지르는 운명의 검은 낫' },
     { level: 330n, name: '별을꿰는 신창', effect: 'phoenix', color: '#fff0b7', detail: '세 겹의 궤도 고리에 떠 있는 별빛 창끝' },
-  ];
+    { level: 52n, name: '별유리 에스토크', effect: 'comet', color: '#badbff', detail: '투명한 별유리 속에 세 개의 수정이 떠 있어요', edition: 'new' },
+    { level: 60n, name: '황금 사자 플람베르주', effect: 'dawn', color: '#ffd182', detail: '물결치는 칼날과 황금 갈기 속에 새긴 용기', edition: 'new' },
+    { level: 68n, name: '흑룡 이빨 대검', effect: 'gravity', color: '#c6b3ee', detail: '흑요석 칼등에 용의 송곳니가 돋아난 대검', edition: 'new' },
+    { level: 76n, name: '벚꽃 초승도', effect: 'blossom', color: '#ffc5d8', detail: '한 줄기 달처럼 휜 날과 자개 벚꽃 장식', edition: 'new' },
+    { level: 85n, name: '시계태엽 레이피어', effect: 'clockwork', color: '#f2d8a5', detail: '정교한 황동 바구니 가드와 바늘 같은 검날', edition: 'new' },
+    { level: 95n, name: '진홍의 여왕대검', effect: 'phoenix', color: '#ffa7be', detail: '두 갈래 진홍빛 끝과 다섯 보석의 여왕관', edition: 'new' },
+    { level: 110n, name: '서리왕의 장검', effect: 'glacier', color: '#b2eeff', detail: '투명한 빙하와 세 갈래 결정 가시의 장검', edition: 'new' },
+    { level: 135n, name: '해무의 쌍곡도', effect: 'anchor', color: '#a3f0df', detail: '조개 가드와 두 개의 갈고리 날이 엇갈려요', edition: 'new' },
+    { level: 165n, name: '월광 수정검', effect: 'eclipse', color: '#d7c0ff', detail: '빈 초승달 칼날 속에 떠 있는 보랏빛 수정', edition: 'new' },
+    { level: 200n, name: '천뢰 쌍극검', effect: 'lightning', color: '#c3ddff', detail: '중앙 손잡이 양끝에서 뻗는 두 줄기의 번개날', edition: 'new' },
+    { level: 245n, name: '심연 파도대검', effect: 'aurora', color: '#9ddcde', detail: '심해의 용처럼 길게 굽이치는 흑청색 검날', edition: 'new' },
+    { level: 300n, name: '왕관 성채대검', effect: 'dawn', color: '#d9d9ff', detail: '세 겹의 성채 왕관과 푸른 유리창을 품은 대검', edition: 'new' },
+  ].sort((a, b) => a.level < b.level ? -1 : 1);
 
   const enchantments = [
     { id: 'cinder', name: '잿불의 숨결', rank: '일반', mark: '♨', tenths: 12n, weight: 38 },
@@ -183,6 +196,7 @@ const Forge = (() => {
       season: seasonId,
       level,
       bestLevel,
+      appearance: old.appearance === 'auto' || forms.some(form => form.level.toString() === old.appearance && form.level <= bestLevel) ? old.appearance : 'auto',
       enchantment: savedEffects[0] ?? null,
       enchantments: savedEffects,
       magic: broken ? null : normalizeMagic(old.magic, level),
@@ -246,6 +260,7 @@ const Forge = (() => {
     const value = appraisal(state).value.toString();
     if (value.length > 512 || state.level.toString().length > 128) return null;
     return { level: state.level.toString(), value: value.padStart(512, '0'),
+      appearance: forms.some(form => form.level.toString() === state.appearance) ? state.appearance : 'auto',
       effect1: state.enchantments[0], effect2: state.enchantments[1] ?? 'none', effect3: state.enchantments[2] ?? 'none',
       magic: magicAt(state)?.id ?? 'none', magicPeak: magicAt(state)?.peak.toString() ?? '0',
       ...(typeof state.protectionUses === 'bigint' && state.protectionUses.toString().length <= 128 ? { protectionUses: state.protectionUses.toString() } : {}),
@@ -260,6 +275,7 @@ const Forge = (() => {
     const effects = ids.filter(id => id !== 'none');
     if (effects.some(id => !enchantments.some(effect => effect.id === id))) return null;
     return weaponSnapshot({ level: BigInt(row.level), enchantments: effects, broken: false,
+      appearance: row.appearance,
       magic: row.magic === 'none' || row.magic == null ? null : normalizeMagic({ id: row.magic, peak: row.magicPeak }, BigInt(row.level)),
       protectionUses: typeof row.protectionUses === 'string' && /^(0|[1-9][0-9]{0,127})$/.test(row.protectionUses) ? BigInt(row.protectionUses) : undefined });
   }
@@ -302,6 +318,7 @@ const Forge = (() => {
       state.enchantments = [...grant.effects]; state.enchantment = grant.effects[0];
     }
     const corrected = weaponSnapshot({ level: BigInt(source.level), enchantments: grant.effects, broken: false,
+      appearance: source.appearance,
       magic: source.magic === 'none' ? null : { id: source.magic, peak: source.magicPeak },
       protectionUses: source.protectionUses === undefined ? undefined : BigInt(source.protectionUses) });
     if (!state.rankingBest || corrected.value > state.rankingBest.value) state.rankingBest = corrected;
@@ -324,8 +341,20 @@ const Forge = (() => {
       return { ...forms[index], index, awakening: 0n, next: forms[index + 1]?.level ?? last + 1n };
     }
     const step = (level - last - 1n) / 10n;
-    const index = 20 + Number(step % 12n);
-    return { ...forms[index], index, awakening: step / 12n + 1n, next: last + 1n + (step + 1n) * 10n };
+    const count = BigInt(forms.length - 20), index = 20 + Number(step % count);
+    return { ...forms[index], index, awakening: step / count + 1n, next: last + 1n + (step + 1n) * 10n };
+  }
+
+  function appearanceAt(appearance, level) {
+    return forms.find(form => form.level.toString() === appearance) ?? formAt(level);
+  }
+
+  function selectAppearance(state, appearance) {
+    if (appearance !== 'auto' && !forms.some(form => form.level.toString() === appearance && form.level <= state.bestLevel)) return false;
+    if (state.appearance === appearance) return false;
+    state.appearance = appearance;
+    if (state.rankingBest) state.rankingBest.appearance = appearance;
+    return true;
   }
 
   function cost(target) {
@@ -586,7 +615,7 @@ const Forge = (() => {
     return event;
   }
 
-  return { clientRevision, rankingProtocol, saveKey, previousSaveKey, storageSaveKey, riskSaveKey, rainbowSaveKey, marketSaveKey, olderSaveKey, legacySaveKey, backupKey, seasonId, startingShards, cooldown, recoveryBonus, offlineLimit, enchantmentLimit, forms, enchantments, magics, magicAt, appraisal, restore, loadSeason, serialize, rankingName, rankingRecord, weaponSnapshot, sameWeaponRecord, applyAdminGrant, rememberWeapon, formAt, cost, incomeBreakdown, discountInfo, passiveCapacity, baseIncome, income, rankReward, setRankBonus, preview, protectionOffer, buyProtection, saleOffer, sell, enchantPreview, collectPassive, act, enchant, reroll };
+  return { clientRevision, rankingProtocol, saveKey, previousSaveKey, magicSaveKey, storageSaveKey, riskSaveKey, rainbowSaveKey, marketSaveKey, olderSaveKey, legacySaveKey, backupKey, seasonId, startingShards, cooldown, recoveryBonus, offlineLimit, enchantmentLimit, forms, enchantments, magics, magicAt, appraisal, restore, loadSeason, serialize, rankingName, rankingRecord, weaponSnapshot, sameWeaponRecord, applyAdminGrant, rememberWeapon, formAt, appearanceAt, selectAppearance, cost, incomeBreakdown, discountInfo, passiveCapacity, baseIncome, income, rankReward, setRankBonus, preview, protectionOffer, buyProtection, saleOffer, sell, enchantPreview, collectPassive, act, enchant, reroll };
 })();
 
 if (typeof module !== 'undefined') module.exports = Forge;

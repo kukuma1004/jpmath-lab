@@ -7,21 +7,23 @@
   <meta name="description" content="한 번 더, 어디까지 갈까. 강화 제한 없이 검을 벼리고 실패와 파괴를 넘어 최고 기록에 도전하는 몽글 대장간.">
   <title>몽글 대장간 · 끝없는 강화</title>
   <link rel="stylesheet" href="forge-effects.css?v=infinite-1">
-  <link rel="stylesheet" href="forge.css?v=forge-credit-1">
-  <link rel="stylesheet" href="forge-magic.css?v=forge-credit-1">
-  <script src="forge-engine.js?v=forge-credit-1" defer></script>
-  <script src="forge-ranking.js?v=forge-credit-1" defer></script>
-  <script src="forge-update.js?v=forge-credit-1" defer></script>
-  <script src="forge-magic.js?v=forge-credit-1" defer></script>
-  <script src="forge-auto.js?v=forge-credit-1" defer></script>
-  <script src="forge.js?v=forge-credit-1" defer></script>
+  <link rel="stylesheet" href="forge.css?v=forge-wardrobe-1">
+  <link rel="stylesheet" href="forge-magic.css?v=forge-wardrobe-1">
+  <link rel="stylesheet" href="forge-wardrobe.css?v=forge-wardrobe-1">
+  <script src="forge-engine.js?v=forge-wardrobe-1" defer></script>
+  <script src="forge-ranking.js?v=forge-wardrobe-1" defer></script>
+  <script src="forge-update.js?v=forge-wardrobe-1" defer></script>
+  <script src="forge-magic.js?v=forge-wardrobe-1" defer></script>
+  <script src="forge-auto.js?v=forge-wardrobe-1" defer></script>
+  <script src="forge-wardrobe.js?v=forge-wardrobe-1" defer></script>
+  <script src="forge.js?v=forge-wardrobe-1" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#strengthen">강화 버튼으로 바로가기</a>
   <header class="site-header">
     <a class="back" href="../"><span aria-hidden="true">←</span> 게임 목록</a>
     <a class="lab" href="../../">JP Math Lab</a>
-    <div class="header-actions"><button class="quiet-button" id="open-ranking" type="button" aria-haspopup="dialog">무기 랭킹</button><button class="quiet-button" id="open-book" type="button" aria-label="검 도감">도감 <span id="book-count">1/32</span></button></div>
+    <div class="header-actions"><button class="quiet-button" id="open-ranking" type="button" aria-haspopup="dialog">무기 랭킹</button><button class="quiet-button" id="open-book" type="button" aria-label="외형 선택과 검 도감" aria-haspopup="dialog">외형·도감 <span id="book-count">1/44</span></button></div>
   </header>
 
   <main class="shell">
@@ -50,6 +52,7 @@
         <div class="stage-bottom">
           <p class="weapon-level" id="level">+0</p>
           <p class="next-form" id="next-form"></p>
+          <button id="open-wardrobe" class="appearance-control" type="button" aria-haspopup="dialog"><span id="appearance-status">외형 자동 변경</span><b>외형 선택 ›</b></button>
         </div>
       </section>
 
@@ -115,10 +118,24 @@
     <noscript><p>강화를 시작하려면 브라우저에서 자바스크립트를 켜 주세요.</p></noscript>
   </main>
 
-  <dialog id="book" aria-labelledby="book-title">
-    <div class="dialog-top"><div><p class="eyebrow">발견한 검의 원형</p><h2 id="book-title">몽글의 무기고</h2></div><form method="dialog"><button class="quiet-button" type="submit">닫기</button></form></div>
-    <p class="book-intro">32종의 원형을 찾아보세요. 신화와 전설을 새롭게 빚은 무기는 +56부터, 마지막 원형은 +330에서 열려요. 그 뒤에도 원형이 순환하며 각성이 이어집니다.</p>
-    <ul class="collection" id="sword-book"></ul>
+  <dialog id="book" class="wardrobe-dialog" aria-labelledby="book-title">
+    <div class="wardrobe-frame" aria-hidden="true"><i></i><i></i><i></i><i></i><img src="assets/wardrobe-crest.svg" alt="" width="250" height="42"></div>
+    <header class="wardrobe-heading"><span class="wardrobe-count" id="wardrobe-count">1 / 44 발견</span><div><h2 id="book-title">몽글의 무기고</h2><p>발견한 외형을 골라 나만의 검을 완성해요</p></div><form method="dialog"><button class="quiet-button" type="submit" aria-label="무기고 닫기">닫기</button></form></header>
+    <div class="wardrobe-layout">
+      <section class="wardrobe-preview" aria-label="선택한 외형 미리보기">
+        <div class="wardrobe-alcove"><div class="wardrobe-embers" aria-hidden="true"></div><img id="wardrobe-preview-image" src="assets/sword-0.webp" alt="연습용 나무검" width="400" height="400"></div>
+        <span class="wardrobe-level" id="wardrobe-preview-level">+0 발견</span>
+        <h3 id="wardrobe-preview-name">연습용 나무검</h3><p id="wardrobe-preview-detail"></p>
+        <button id="wardrobe-equip" class="wardrobe-equip" type="button">이 외형 장착</button>
+        <button id="wardrobe-auto" class="wardrobe-auto" type="button">↻ 강화 단계에 맞춰 자동 변경</button>
+        <p class="wardrobe-note">외형만 바뀌어요 · 강화와 감정가는 그대로</p><small id="wardrobe-equipped"></small>
+      </section>
+      <section class="wardrobe-catalog" aria-label="외형 목록">
+        <div class="wardrobe-filters" role="group" aria-label="외형 필터"><button type="button" data-wardrobe-filter="all" aria-pressed="true">전체 44</button><button type="button" data-wardrobe-filter="unlocked" aria-pressed="false">발견 1</button><button type="button" data-wardrobe-filter="new" aria-pressed="false">새 외형 12</button></div>
+        <div class="wardrobe-gallery" id="wardrobe-gallery" tabindex="0" aria-label="외형 목록 스크롤"><ul class="collection" id="sword-book"></ul></div><span class="wardrobe-scroll-hint" id="wardrobe-scroll-hint" aria-hidden="true">스크롤하여 더 보기 ↓</span>
+      </section>
+    </div>
+    <p id="wardrobe-status" class="wardrobe-status" role="status">발견한 외형을 자유롭게 장착해 보세요.</p>
   </dialog>
   <dialog id="ranking" class="ranking-dialog" aria-labelledby="ranking-title">
     <div class="dialog-top"><div><p class="eyebrow">시즌 1 · 모두의 대장간</p><h2 id="ranking-title">무기 랭킹</h2></div><form method="dialog"><button class="quiet-button" type="submit" aria-label="랭킹 닫기">닫기</button></form></div>

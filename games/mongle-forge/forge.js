@@ -16,7 +16,7 @@
   let state = Forge.restore(null);
   let storageOkay = true;
   let busy = false;
-  let bookSignature = '';
+  let wardrobe;
   let lastHistory = '';
   let shownWeapon = '';
   let shownEffects = null;
@@ -49,7 +49,7 @@
   function loadStored() {
     if (!storageOkay) return { next: state, reset: false };
     try {
-      const previous = localStorage.getItem(Forge.previousSaveKey) ?? localStorage.getItem(Forge.storageSaveKey) ?? localStorage.getItem(Forge.riskSaveKey) ?? localStorage.getItem(Forge.rainbowSaveKey) ?? localStorage.getItem(Forge.marketSaveKey) ?? localStorage.getItem(Forge.olderSaveKey);
+      const previous = localStorage.getItem(Forge.previousSaveKey) ?? localStorage.getItem(Forge.magicSaveKey) ?? localStorage.getItem(Forge.storageSaveKey) ?? localStorage.getItem(Forge.riskSaveKey) ?? localStorage.getItem(Forge.rainbowSaveKey) ?? localStorage.getItem(Forge.marketSaveKey) ?? localStorage.getItem(Forge.olderSaveKey);
       const original = localStorage.getItem(Forge.saveKey) ?? previous;
       const raw = original ? JSON.parse(original) : null;
       return { next: Forge.loadSeason(raw), reset: previous !== null || (!!raw && raw.season !== Forge.seasonId) || localStorage.getItem(Forge.legacySaveKey) !== null };
@@ -65,6 +65,7 @@
       if (reset) {
         localStorage.removeItem(Forge.legacySaveKey);
         localStorage.removeItem(Forge.previousSaveKey);
+        localStorage.removeItem(Forge.magicSaveKey);
         localStorage.removeItem(Forge.storageSaveKey);
         localStorage.removeItem(Forge.riskSaveKey);
         localStorage.removeItem(Forge.rainbowSaveKey);
@@ -94,6 +95,7 @@
 
   function renderWeapon() {
     const form = Forge.formAt(state.level);
+    const display = Forge.appearanceAt(state.appearance, state.level);
     const { enchantment, effects, numerator, denominator, levelTenths, base, value, magic, magicBonus } = Forge.appraisal(state);
     magicVisual?.update(magic);
     stage.dataset.boundMagic = magic?.id ?? 'none';
@@ -151,8 +153,8 @@
     $('sword-value').title = number.format(value) + ' G';
     $('appraisal-label').textContent = state.broken ? '감정가' : '감정가 · 강화 ×' + fmt(levelTenths / 10n) + (levelTenths % 10n ? '.' + levelTenths % 10n : '');
     $('value-formula').textContent = state.broken ? '파괴된 검' : '기본 ' + fmt(base) + effects.map(entry => ' × ' + Number(entry.tenths) / 10).join('');
-    const name = state.sold ? '무기 판매 완료' : state.broken ? '깨진 검' : (magic ? magic.name + ' · ' : '') + form.name;
-    const src = asset(state.broken ? 'broken-sword' : 'sword-' + form.level);
+    const name = state.sold ? '무기 판매 완료' : state.broken ? '깨진 검' : (magic ? magic.name + ' · ' : '') + display.name;
+    const src = asset(state.broken ? 'broken-sword' : 'sword-' + display.level);
     if (src !== shownWeapon) {
       weapon.src = src;
       shownWeapon = src;
@@ -165,8 +167,10 @@
     $('best').textContent = level(state.bestLevel);
     $('best').title = '+' + state.bestLevel;
     stage.dataset.broken = String(state.broken);
-    stage.dataset.motif = form.effect;
-    stage.style.setProperty('--spark', form.color);
+    stage.dataset.motif = display.effect;
+    stage.style.setProperty('--spark', display.color);
+    stage.dataset.appearance = state.appearance;
+    $('appearance-status').textContent = state.appearance === 'auto' ? '외형 자동 변경' : '선택한 외형 고정';
     stage.style.setProperty('--aura-angle', Number(state.level % 12n) * 7 + 'deg');
     stage.dataset.awakened = String(form.awakening > 0n);
     $('awakening').hidden = state.broken || form.awakening === 0n;
@@ -273,21 +277,7 @@
   }
 
   function renderBook() {
-    const signature = state.bestLevel.toString();
-    if (signature === bookSignature) return;
-    bookSignature = signature;
-    $('sword-book').replaceChildren(...Forge.forms.map(form => {
-      const unlocked = state.bestLevel >= form.level;
-      const item = node('li', 'collection-item' + (unlocked ? '' : ' undiscovered'));
-      const image = node('img', '');
-      image.src = asset('sword-' + form.level);
-      image.alt = '';
-      image.width = 140;
-      image.height = 120;
-      image.loading = 'lazy';
-      item.append(image, node('span', 'book-level', level(form.level)), node('strong', '', unlocked ? form.name : '미발견'), node('small', '', unlocked ? form.detail : '이 단계에 도달하면 발견해요.'));
-      return item;
-    }));
+    wardrobe?.render();
   }
 
   function render() {
@@ -305,7 +295,7 @@
     fx.replaceChildren();
     $('forge-fx').replaceChildren();
     if (!reducedMotion.matches) {
-      const form = Forge.formAt(state.level);
+      const form = Forge.appearanceAt(state.appearance, state.level);
       if (event.kind === 'success') {
         const effect = node('span', 'technique ' + form.effect);
         effect.append(node('i', 'technique-shape'), node('i', 'technique-shape'), node('i', 'technique-shape'));
@@ -464,9 +454,12 @@
   });
   $('confirm-sale').addEventListener('click', () => attempt('sell'));
   $('open-book').addEventListener('click', () => {
-    renderBook();
+    wardrobe?.open();
     book.showModal();
+    magicVisual?.pause(true);
   });
+  book.addEventListener('close', () => magicVisual?.pause(false));
+  $('open-wardrobe').addEventListener('click', () => $('open-book').click());
   document.addEventListener('keydown', event => {
     if (event.code !== 'Space' || event.repeat || event.ctrlKey || event.altKey || event.metaKey || book.open || $('ranking').open || $('sale-dialog').open) return;
     if (event.target instanceof HTMLButtonElement || event.target instanceof HTMLInputElement) return;
@@ -520,6 +513,12 @@
       return applied;
     }),
     beforePublish: () => updater.check(),
+  });
+  wardrobe = ForgeWardrobe.mount({ getState: () => state, asset, fmt,
+    select: async choice => {
+      if (updatePending || !await updater.check()) return false;
+      return transaction(next => !updatePending && Forge.selectAppearance(next, choice));
+    },
   });
   transaction(next => { if (next.rankingBest) Forge.rememberWeapon(next); }).then(() => {
     automatic = ForgeAuto.mount({ getState: () => state, step: action => attempt(action, () => automatic?.active()), canAct: () => !busy && !updatePending, fmt });

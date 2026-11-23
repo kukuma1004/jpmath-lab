@@ -304,24 +304,39 @@ test('strengthening continues above JavaScript safe integer precision without ro
   assert(Forge.formAt(restored.level).next > restored.level);
 });
 
-test('32 distinct milestone forms and post +330 awakenings preserve collection after failure', () => {
+test('44 distinct milestone forms and post +330 awakenings preserve collection after failure', () => {
   assert.equal(Forge.formAt(36n).level, 36n);
   assert.equal(Forge.formAt(40n).level, 40n);
   assert.equal(Forge.formAt(44n).level, 44n);
   assert.equal(Forge.formAt(48n).level, 48n);
-  assert.equal(Forge.forms.length,32);
-  assert.equal(new Set(Forge.forms.map(form=>form.name)).size,32);
+  assert.equal(Forge.forms.length,44);
+  assert.equal(new Set(Forge.forms.map(form=>form.name)).size,44);
   for(const form of Forge.forms)assert.equal(Forge.formAt(form.level).name,form.name);
   assert.notEqual(Forge.formAt(331n).index, Forge.formAt(341n).index);
-  assert.equal(Forge.formAt(331n).index, Forge.formAt(451n).index);
-  assert(Forge.formAt(451n).awakening > Forge.formAt(331n).awakening);
+  assert.equal(Forge.formAt(331n).index, Forge.formAt(571n).index);
+  assert(Forge.formAt(571n).awakening > Forge.formAt(331n).awakening);
   const state = funded(80);
   state.pity['81'] = 9000;
   assert.equal(Forge.preview(state,100000).success, 9500);
   assert(Forge.preview(state,100000).shatter > 0);
   Forge.act(state, 100000, () => 0.9999);
   assert.equal(state.bestLevel, 80n);
-  assert.equal(Forge.forms.filter(form => form.level <= state.bestLevel).length, 24);
+  assert.equal(Forge.forms.filter(form => form.level <= state.bestLevel).length, 28);
+});
+
+test('discovered appearances are purely cosmetic, survive failure/reforge/reload and update record style without changing value', () => {
+  const now=Date.UTC(2026,10,24),state=Forge.restore({level:100,bestLevel:150,shards:'100000000',enchantments:['lunar','lunar','lunar'],magic:{id:'fire',peak:150},protections:{101:true},creditReceipts:{'credit-kept':true}},now);
+  Forge.rememberWeapon(state);const before=Forge.serialize(state),value=Forge.appraisal(state).value;
+  assert(Forge.selectAppearance(state,'52'));assert.equal(Forge.appearanceAt(state.appearance,state.level).name,'별유리 에스토크');
+  const expected=JSON.parse(before);expected.appearance='52';expected.rankingBest.appearance='52';assert.deepEqual(JSON.parse(Forge.serialize(state)),expected);
+  assert.equal(Forge.appraisal(state).value,value);assert.equal(Forge.rankingRecord(state,'외형검수','검').appearance,'52');
+  const restored=Forge.restore(JSON.parse(Forge.serialize(state)),now);assert.equal(restored.appearance,'52');assert.equal(restored.creditReceipts['credit-kept'],true);
+  const unchanged=Forge.serialize(restored);for(const invalid of ['165','330','53',52,null,'052']){assert.equal(Forge.selectAppearance(restored,invalid),false);assert.equal(Forge.serialize(restored),unchanged)}
+  Forge.act(restored,now+1000,()=>.99999);assert.equal(restored.appearance,'52');
+  const broken=Forge.restore({...JSON.parse(Forge.serialize(restored)),broken:true,version:2},now+2000);assert.equal(broken.appearance,'52');
+  Forge.act(broken,now+3000,()=>0);assert.equal(broken.appearance,'52');assert.equal(broken.broken,false);
+  assert(Forge.selectAppearance(broken,'auto'));assert.equal(Forge.appearanceAt(broken.appearance,broken.level).level,0n);
+  for(const appearance of ['165','999','052',52])assert.equal(Forge.restore({level:10,bestLevel:100,appearance},now).appearance,'auto');
 });
 
 test('same-level appraisal reflects the actual persistent magical affix', () => {

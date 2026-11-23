@@ -5,7 +5,7 @@ const ForgeMagic = (() => {
     let ctx = canvas.getContext('2d');
     const layers = new Map(), sprites = new Map();
     const reduced = matchMedia('(prefers-reduced-motion: reduce)');
-    let magic = null, width = 1, height = 1, frame = 0, last = 0, geometry;
+    let magic = null, width = 1, height = 1, frame = 0, last = 0, geometry, paused = false;
     const noise = n => { const value = Math.sin(n * 12.9898 + 78.233) * 43758.5453; return value - Math.floor(value); };
     function resize() {
       const rect = canvas.getBoundingClientRect(), item = weapon.getBoundingClientRect();
@@ -109,7 +109,7 @@ const ForgeMagic = (() => {
     }
     function loop(time) {
       frame=0;
-      if(!magic||document.hidden||reduced.matches)return;
+      if(!magic||paused||document.hidden||reduced.matches)return;
       if(time-last>=30){draw(time);last=time;}
       frame=requestAnimationFrame(loop);
     }
@@ -119,13 +119,14 @@ const ForgeMagic = (() => {
       canvas.hidden=!magic;
       if(!magic){cancelAnimationFrame(frame);frame=0;ctx.clearRect(0,0,width,height);return;}
       if(changed)resize();
+      if(paused)return;
       if(reduced.matches)draw(0);else if(!frame)frame=requestAnimationFrame(loop);
     }
     new ResizeObserver(resize).observe(canvas.parentElement);
     weapon.addEventListener('load',resize);
     document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelAnimationFrame(frame);frame=0;}else update(magic)});
     reduced.addEventListener('change',()=>{cancelAnimationFrame(frame);frame=0;update(magic)});
-    resize();return {update};
+    resize();return {update,pause(value){paused=value;cancelAnimationFrame(frame);frame=0;if(!paused)update(magic);}};
   }
   return { mount };
 })();

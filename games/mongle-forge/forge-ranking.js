@@ -9,6 +9,7 @@ const ForgeRanking = (() => {
   const profileKey = 'jp-math-lab:mongle-forge:ranking-profile';
   let session;
   const knownUses = value => typeof value === 'string' && /^(0|[1-9][0-9]{0,127})$/.test(value);
+  const knownAppearance = value => value === 'auto' || Forge.forms.some(form => form.level.toString() === value);
   const recordCore = record => ['value', 'level', 'effect1', 'effect2', 'effect3'].map(key => record[key]).concat(record.magic ?? 'none', record.magicPeak ?? '0').join(':');
 
   async function identity() {
@@ -46,6 +47,7 @@ const ForgeRanking = (() => {
       typeof record.nickname === 'string' && record.nickname.length <= 12 &&
       typeof record.weaponName === 'string' && record.weaponName.length <= 16 &&
       (record.protectionUses == null || knownUses(record.protectionUses)) &&
+      (record.appearance == null || knownAppearance(record.appearance)) &&
       (record.magic == null || record.magic === 'none' && record.magicPeak === '0' || Forge.magics.some(magic => magic.id === record.magic) &&
         typeof record.magicPeak === 'string' && /^[1-9][0-9]{2,127}$/.test(record.magicPeak)) &&
       [record.effect1, record.effect2, record.effect3].every(id => id === 'none' || Forge.enchantments.some(effect => effect.id === id));
@@ -72,6 +74,7 @@ const ForgeRanking = (() => {
         ...previous, nickname: record.nickname, weaponName: record.weaponName,
       } : record;
       payload.rulesVersion = Forge.rankingProtocol;
+      payload.appearance = record.appearance ?? 'auto';
       payload.magic ??= 'none'; payload.magicPeak ??= '0';
       if (Forge.sameWeaponRecord(previous, record) && knownUses(record.protectionUses) &&
           (!knownUses(previous.protectionUses) || BigInt(record.protectionUses) >= BigInt(previous.protectionUses))) payload.protectionUses = record.protectionUses;
@@ -102,6 +105,7 @@ const ForgeRanking = (() => {
     if (profile.auto !== false) profile.auto = true;
     if (typeof profile.syncedValue !== 'string' || !/^[0-9]{512}$/.test(profile.syncedValue)) profile.syncedValue = null;
     if (!knownUses(profile.syncedProtectionUses)) profile.syncedProtectionUses = null;
+    if (!knownAppearance(profile.syncedAppearance)) profile.syncedAppearance = null;
     if (typeof profile.syncedCore !== 'string' || profile.syncedCore.split(':').length !== 7) profile.syncedCore = null;
     let busy = false;
     let generation = 0;
@@ -116,8 +120,9 @@ const ForgeRanking = (() => {
     function pending() {
       const best = getState().rankingBest;
       return profile.auto && best && (!profile.syncedValue || best.value > profile.syncedValue || best.value === profile.syncedValue &&
-        (!profile.syncedCore || recordCore(best) === profile.syncedCore) && knownUses(best.protectionUses) &&
-        (!knownUses(profile.syncedProtectionUses) || BigInt(best.protectionUses) > BigInt(profile.syncedProtectionUses)));
+        (!profile.syncedCore || recordCore(best) === profile.syncedCore) &&
+        ((best.appearance ?? 'auto') !== profile.syncedAppearance || knownUses(best.protectionUses) &&
+        (!knownUses(profile.syncedProtectionUses) || BigInt(best.protectionUses) > BigInt(profile.syncedProtectionUses))));
     }
     function autoStatus() {
       $('auto-ranking-name').textContent = (profile.auto ? '자동 등록 · ' : '자동 등록 꺼짐 · ') + profile.nickname;
@@ -152,9 +157,10 @@ const ForgeRanking = (() => {
         if (!await beforePublish()) return;
         const best = { ...getState().rankingBest };
         const record = { ...best, rulesVersion: Forge.rankingProtocol, nickname: Forge.rankingName(profile.nickname, 12),
-          weaponName: Forge.rankingName(profile.weaponName || Forge.formAt(BigInt(best.level)).name, 16) };
+          weaponName: Forge.rankingName(profile.weaponName || Forge.appearanceAt(best.appearance,BigInt(best.level)).name, 16) };
         const result = await publish(record, owner);
         profile.syncedValue = result.record.value; profile.syncedCore = recordCore(result.record);
+        profile.syncedAppearance = result.record.appearance ?? 'auto';
         profile.syncedProtectionUses = knownUses(result.record.protectionUses) ? result.record.protectionUses : null; saveProfile(); nextTry = 0;
         await syncBenefits();
         if (dialog.open) await refresh(false);
@@ -178,7 +184,7 @@ const ForgeRanking = (() => {
     }
     function preview() {
       const state = getState();
-      const form = Forge.formAt(state.level);
+      const form = Forge.appearanceAt(state.appearance,state.level);
       $('ranking-preview-image').src = asset(state.broken ? 'broken-sword' : 'sword-' + form.level);
       $('ranking-preview-title').textContent = state.broken ? '깨진 검은 등록할 수 없어요.' : form.name + ' +' + fmt(state.level);
       $('ranking-preview-value').textContent = fmt(Forge.appraisal(state).value) + ' G';
@@ -188,7 +194,7 @@ const ForgeRanking = (() => {
       $('ranking-list').replaceChildren(...rows.map((record, index) => {
         const rank = index + 1;
         const row = element('li', 'ranking-row' + (record.uid === profile.uid ? ' ranking-mine' : ''));
-        const form = Forge.formAt(BigInt(record.level));
+        const form = Forge.appearanceAt(record.appearance,BigInt(record.level));
         const image = element('img', 'ranking-weapon');
         image.src = asset('sword-' + form.level);
         image.width = 64; image.height = 64; image.alt = form.name; image.loading = 'lazy';
@@ -237,7 +243,7 @@ const ForgeRanking = (() => {
     }
     function openRanking() {
       $('ranking-nickname').value = typeof profile.nickname === 'string' ? profile.nickname : '';
-      $('ranking-weapon-name').value = typeof profile.weaponName === 'string' ? profile.weaponName : Forge.formAt(getState().level).name;
+      $('ranking-weapon-name').value = typeof profile.weaponName === 'string' ? profile.weaponName : Forge.appearanceAt(getState().appearance,getState().level).name;
       $('auto-ranking-enabled').checked = profile.auto;
       preview(); dialog.showModal(); refresh();
     }
@@ -259,6 +265,7 @@ const ForgeRanking = (() => {
         profile.nickname = record.nickname; profile.weaponName = record.weaponName;
         const result = await publish(record, owner);
         profile.syncedValue = result.record.value;
+        profile.syncedAppearance = result.record.appearance ?? 'auto';
         profile.syncedCore = recordCore(result.record);
         profile.syncedProtectionUses = knownUses(result.record.protectionUses) ? result.record.protectionUses : null;
         saveProfile();
@@ -275,7 +282,7 @@ const ForgeRanking = (() => {
       busy = true; controls(); ++generation;
       profile.auto = false; saveProfile();
       try {
-        await remove(); delete profile.uid; profile.syncedValue = null; profile.syncedCore = null; profile.syncedProtectionUses = null; saveProfile();
+        await remove(); delete profile.uid; profile.syncedValue = null; profile.syncedCore = null; profile.syncedProtectionUses = null; profile.syncedAppearance = null; saveProfile();
         status('내 공개 무기 기록을 삭제했어요.');
         await refresh(false);
       } catch (error) { status(error.message); }

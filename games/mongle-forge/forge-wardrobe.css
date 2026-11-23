@@ -1,0 +1,75 @@
+.appearance-control { pointer-events:auto; margin-top:8px; padding:6px 13px; border:1px solid #b98e4a; border-radius:20px; color:#f1d79b; background:#14242deb; font:700 11px "Malgun Gothic",sans-serif; cursor:pointer; }
+.appearance-control:hover { background:#36423a; border-color:#ffe5a1; }
+.appearance-control span::after {content:' · ';}.appearance-control b {font:inherit;}
+#book.wardrobe-dialog { width:min(1068px,calc(100vw - 48px)); max-width:none; height:min(860px,calc(100dvh - 48px)); max-height:none; padding:22px 22px 12px; overflow:hidden; border:4px double #d7a954; border-radius:23px; background:radial-gradient(ellipse at 0 0,#28404666,transparent 55%),linear-gradient(#08202726,#08202726),url('assets/wardrobe-leather.webp') center/650px,#0b232b; color:#f7e7bf; box-shadow:inset 0 0 0 3px #091b22,inset 0 0 0 4px #97723c,0 20px 90px #000b; }
+.wardrobe-dialog::backdrop { background:#030d13b8; backdrop-filter:blur(2px); }
+.wardrobe-dialog::before,.wardrobe-dialog::after { content:""; position:absolute; width:70px;height:70px;background:url('assets/gold-corner.svg') center/contain no-repeat; pointer-events:none; z-index:3; }
+.wardrobe-dialog::before { left:2px;top:2px; }.wardrobe-dialog::after { right:2px;bottom:2px;rotate:180deg; }
+.wardrobe-dialog::before,.wardrobe-dialog::after { display:none; }
+.wardrobe-frame { position:absolute;inset:0;pointer-events:none;z-index:3; }
+.wardrobe-frame i { position:absolute;width:70px;height:70px;background:url('assets/gold-corner.svg') center/contain no-repeat; }
+.wardrobe-frame i:nth-child(1) {left:2px;top:2px;}.wardrobe-frame i:nth-child(2) {right:2px;top:2px;transform:scaleX(-1);}.wardrobe-frame i:nth-child(3) {left:2px;bottom:2px;transform:scaleY(-1);}.wardrobe-frame i:nth-child(4) {right:2px;bottom:2px;rotate:180deg;}
+.wardrobe-frame>img { position:absolute;left:50%;top:-5px;transform:translateX(-50%);width:250px;height:42px; }
+.wardrobe-heading { display:grid;grid-template-columns:1fr 2fr 1fr;align-items:center;gap:12px;text-align:center;min-height:88px; margin-bottom:18px; }
+.wardrobe-heading>div { min-width:0; }.wardrobe-heading h2 { font:700 clamp(25px,3vw,40px) Georgia,"Batang","Malgun Gothic",serif;letter-spacing:.03em;text-shadow:0 2px 4px #0008; }
+.wardrobe-heading h2::before,.wardrobe-heading h2::after { content:'';display:inline-block;width:25px;height:38px;margin:0 15px;background:url('assets/laurel.svg') center/contain no-repeat;vertical-align:middle; }.wardrobe-heading h2::after { transform:scaleX(-1); }
+.wardrobe-heading p { margin-top:8px;font-size:13px;color:#dcc78e;line-height:1.5; }
+.wardrobe-heading form { justify-self:end; }.wardrobe-heading .quiet-button { border-color:#bd914c;padding:9px 17px;color:#ffe4ac; }
+.wardrobe-count { justify-self:start;padding:8px 14px;border:1px solid #a9803e;border-radius:7px;background:linear-gradient(110deg,#192d31,#0b1f29);box-shadow:inset 0 0 0 2px #172c32; font-size:13px;font-weight:700;color:#f5d58f;white-space:nowrap; }
+.wardrobe-count::before { content:'⚔'; margin-right:8px;color:#e4af5e; }
+.wardrobe-layout { display:grid;grid-template-columns:350px minmax(0,1fr);gap:22px;height:calc(100% - 145px);min-height:0; }
+.wardrobe-preview { position:relative;display:flex;flex-direction:column;align-items:center;overflow:hidden;border:3px double #b38e4e;border-radius:28px 28px 16px 16px;padding:0 22px 12px;background:linear-gradient(#15272f,#0b2028);box-shadow:inset 0 0 0 3px #091a22,0 2px 10px #0004;text-align:center;min-width:0; }
+.wardrobe-alcove { position:relative;flex:1;min-height:160px;width:calc(100% + 44px);overflow:hidden;background:radial-gradient(ellipse at 50% 85%,#f3b85b25,transparent 60%),url('assets/wardrobe-alcove.webp') center/cover,#122831; }
+.wardrobe-alcove img { position:absolute;inset:0;width:100%;height:100%;padding:16px 9px 25px;object-fit:contain;filter:drop-shadow(2px 8px 7px #0008);animation:wardrobe-hover 6s ease-in-out infinite; }
+.wardrobe-embers { position:absolute;inset:5% 5% 10%;background:radial-gradient(circle at 15% 75%,#ffc766 0 1px,transparent 2px),radial-gradient(circle at 72% 15%,#ffbd60 0 1px,transparent 2px),radial-gradient(circle at 40% 40%,#ffbd6080 0 1px,transparent 2px),radial-gradient(circle at 80% 65%,#ffe3a8 0 1px,transparent 2px);animation:wardrobe-embers 5s ease-in-out infinite alternate; }
+.wardrobe-level { position:relative;margin-top:-13px;padding:3px 15px;border:1px solid #c99b4e;border-radius:20px;background:#17282c;color:#f6d58b;font-size:12px;z-index:1; }
+.wardrobe-preview h3 { margin:10px 0 6px;font:700 28px Georgia,"Batang","Malgun Gothic",serif;line-height:1.3;color:#ffebbb;word-break:keep-all; }
+.wardrobe-preview>p:not(.wardrobe-note) { min-height:36px;margin:0 0 12px;font-size:13px;line-height:1.65;word-break:keep-all;color:#e6dabb; }
+.wardrobe-equip,.wardrobe-auto { width:100%;min-height:43px;flex-shrink:0;border:1px solid #c89c51;border-radius:8px;font:700 13px "Malgun Gothic",sans-serif;cursor:pointer; }
+.wardrobe-equip { color:#46301a;background:linear-gradient(#ffdc89,#e5ad4f 58%,#ca8d36);box-shadow:inset 0 0 0 2px #ffe1a24d,0 3px 0 #785326;min-height:48px;font-size:16px; }
+.wardrobe-equip::before { content:'⚔';margin-right:10px; }.wardrobe-auto { margin-top:10px;color:#eed49b;background:linear-gradient(#20353c,#102731); }
+.wardrobe-equip { box-shadow:inset 0 1px 2px #fff1bd,inset 0 0 0 3px #efc06b80,inset 0 -3px 5px #7a491546,0 3px 0 #785326; }
+.wardrobe-equip:disabled { cursor:default;background:linear-gradient(#d5b57b,#b79661);color:#483821; }.wardrobe-auto:disabled { opacity:.68;cursor:default; }
+.wardrobe-note { margin:10px 0 5px;font-size:11px;line-height:1.5;color:#d5c59f; }.wardrobe-preview>small { font-size:9px;line-height:1.4;color:#9bb6b8; }
+.wardrobe-catalog { display:flex;flex-direction:column;min-width:0;min-height:0;border-block:1px solid #9c7d43;border-radius:9px;padding-top:12px; }
+.wardrobe-filters { display:flex;gap:10px;flex-shrink:0;margin-bottom:12px; }
+.wardrobe-filters button { min-height:34px;min-width:100px;padding:5px 14px;border:1px solid #aa8b51;border-radius:22px;background:linear-gradient(#20383e,#0d2630);color:#efd9a9;font:700 12px "Malgun Gothic",sans-serif;cursor:pointer; }
+.wardrobe-filters [aria-pressed=true] { background:linear-gradient(#ffe0a1,#da9d42);color:#4a3117;box-shadow:inset 0 0 0 2px #f8d891; }
+.wardrobe-gallery { flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#d6b46d #10232d;padding:2px 9px 12px 2px; }
+.wardrobe-catalog { position:relative; }.wardrobe-scroll-hint { display:none; }.wardrobe-gallery::-webkit-scrollbar {width:6px;}.wardrobe-gallery::-webkit-scrollbar-thumb {background:#d6b46d;border-radius:6px;}.wardrobe-gallery::-webkit-scrollbar-track {background:#10232d;}
+.wardrobe-dialog .collection { grid-template-columns:repeat(3,minmax(0,1fr));gap:10px; }
+.wardrobe-dialog .collection-item { display:block;padding:0;border:0;border-radius:11px;background:transparent;min-width:0; }
+.weapon-card { display:flex;position:relative;flex-direction:column;align-items:center;width:100%;min-height:195px;padding:10px 9px 9px;border:1px solid #b08a45;border-radius:10px;background:radial-gradient(ellipse at 50% 45%,#24465066,transparent 75%),linear-gradient(135deg,#1e454642,#061d2966),url('assets/wardrobe-leather.webp') center/500px,#0b232c;color:#f5e2b2;text-align:center;cursor:pointer;transition:border-color .18s,background-color .18s; }
+.weapon-card[aria-pressed=true] { border-color:#fff1b2;box-shadow:0 0 0 1px #edc477,inset 0 0 12px #edba5260,0 0 12px #f1b74c70; }
+.weapon-card:hover:not(:disabled) { background-color:#1d3a41;border-color:#ffe4a0; }
+.weapon-card:focus-visible { outline:2px solid #fff3b6;outline-offset:3px; }
+.wardrobe-dialog .collection-item img { width:100%;height:138px;object-fit:contain;transform:scale(1.12);filter:drop-shadow(2px 4px 3px #0006); }
+.wardrobe-dialog .collection-item strong { font-size:14px;line-height:1.4;word-break:keep-all;min-height:19px; }
+.wardrobe-dialog .collection-item small { margin-top:5px;font-size:11px;color:#ead5a2;line-height:1.3; }
+.wardrobe-dialog .book-level { top:9px;left:10px;font:700 14px Georgia,serif;color:#f7d17d; }
+.equipped-badge,.new-appearance-badge { position:absolute;right:8px;top:8px;padding:3px 7px;border-radius:11px;font-size:9px;font-weight:700; }
+.equipped-badge { background:linear-gradient(#ffdf92,#db9e44);color:#452e18; }.new-appearance-badge { border:1px solid #6b9b92;color:#b9dcd0;background:#16372f; }
+.wardrobe-dialog .undiscovered img { filter:brightness(.12) saturate(.1);opacity:.5; }.weapon-card:disabled { cursor:default;border-color:#49605b;color:#91a7a4; }.weapon-card:disabled small { color:#8da7a3; }
+.wardrobe-status { margin-top:12px;min-height:20px;text-align:center;font-size:12px;color:#f0c879;line-height:1.5;word-break:keep-all; }
+@keyframes wardrobe-hover { 0%,100% {transform:translateY(2px) rotate(-1deg)}50% {transform:translateY(-5px) rotate(.5deg)} }
+@keyframes wardrobe-embers { from{opacity:.3;transform:translateY(5px)}to{opacity:.9;transform:translateY(-7px)} }
+@media(max-width:900px) {
+ #book.wardrobe-dialog { width:calc(100vw - 24px);height:calc(100dvh - 24px);padding:15px 12px 10px; }
+ .wardrobe-heading { grid-template-columns:1fr auto;gap:10px;min-height:75px;margin-bottom:10px; }.wardrobe-heading>div { grid-row:1;grid-column:1;text-align:left; }.wardrobe-heading h2 { font-size:27px; }.wardrobe-heading h2::before,.wardrobe-heading h2::after { display:none; }.wardrobe-heading p { margin-top:5px;font-size:10px; }.wardrobe-heading form { grid-row:1;grid-column:2; }.wardrobe-count { grid-row:2;grid-column:1/-1;padding:5px 10px;font-size:11px; }
+ .wardrobe-layout { height:calc(100% - 132px);grid-template-columns:260px minmax(0,1fr);gap:12px; }.wardrobe-preview { padding-inline:12px; }.wardrobe-alcove { width:calc(100% + 24px); }.wardrobe-preview h3 { font-size:21px; }.wardrobe-preview>p:not(.wardrobe-note) { font-size:10px;min-height:31px;margin-bottom:9px; }.wardrobe-filters { gap:5px; }.wardrobe-filters button { min-width:0;padding:5px 8px;font-size:10px; }.wardrobe-dialog .collection { grid-template-columns:repeat(2,minmax(0,1fr)); }.weapon-card { min-height:165px; }.wardrobe-dialog .collection-item img {height:105px; }
+}
+@media(max-width:600px) {
+ .weapon-stage .stage-bottom { left:56%;right:3%;bottom:12px;display:flex;flex-direction:column;align-items:center;gap:3px; }.weapon-stage .stage-bottom .weapon-level {font-size:42px;line-height:1;}.weapon-stage .stage-bottom .next-form {font-size:8px;line-height:1.4;white-space:normal;word-break:keep-all;}.appearance-control #appearance-status {display:none;}
+ .wardrobe-frame i { width:30px;height:30px; }.wardrobe-frame>img {width:130px;height:22px;top:-4px;}.wardrobe-heading>div {padding-left:7px;}
+ #book.wardrobe-dialog { width:calc(100vw - 16px);height:calc(100dvh - 16px);padding:12px 10px 8px;border-radius:17px; }
+ .wardrobe-heading { min-height:69px;gap:5px;margin-bottom:8px; }.wardrobe-heading h2 {font-size:23px; }.wardrobe-heading p { font-size:9px;margin-top:3px; }.wardrobe-heading .quiet-button { padding:8px 10px; }.wardrobe-count { padding:3px 8px;font-size:10px; }
+ .wardrobe-layout { display:flex;flex-direction:column;height:calc(100% - 115px);gap:9px; }
+ .wardrobe-preview { display:grid;grid-template-columns:40% minmax(0,1fr);grid-template-rows:auto auto auto auto auto;gap:3px 9px;flex-shrink:0;min-height:179px;padding:10px 9px 8px;border-radius:14px;text-align:left; }
+ .wardrobe-alcove { width:100%;height:100%;min-height:0;grid-column:1;grid-row:1/7;align-self:stretch;border-radius:9px; }.wardrobe-alcove img { padding:5px; }.wardrobe-level { grid-column:2;grid-row:1;margin:0;justify-self:start;padding:2px 8px;font-size:9px; }
+ .wardrobe-preview h3 { grid-column:2;grid-row:2;font-size:15px;margin:1px 0; }.wardrobe-preview>p:not(.wardrobe-note) { grid-column:2;grid-row:3;min-height:0;font-size:9px;line-height:1.45;margin:0 0 3px; }
+ .wardrobe-equip { grid-column:2;grid-row:4;font-size:12px;min-height:33px; }.wardrobe-auto { grid-column:2;grid-row:5;font-size:9px;min-height:30px;margin-top:3px; }.wardrobe-equip::before { margin-right:5px; }.wardrobe-note { grid-column:2;grid-row:6;font-size:8px;margin:2px 0;line-height:1.4; }.wardrobe-preview>small { display:none; }
+ .wardrobe-catalog { flex:1;min-height:0;padding-top:6px; }.wardrobe-filters { margin-bottom:7px;gap:6px; }.wardrobe-filters button { min-height:29px;padding:4px 11px; }.wardrobe-gallery {padding-right:5px; }
+ .wardrobe-dialog .collection { gap:8px; }.weapon-card { min-height:157px;padding:9px 5px 8px; }.wardrobe-dialog .collection-item img { height:103px; }.wardrobe-dialog .collection-item strong { font-size:10px; }.wardrobe-dialog .book-level { font-size:12px; }.wardrobe-dialog .collection-item small { font-size:9px; }.equipped-badge,.new-appearance-badge { right:6px;top:6px;font-size:8px;padding:3px 5px; }
+ .wardrobe-status { margin-top:7px;font-size:9px;min-height:24px; }.wardrobe-gallery { padding-bottom:30px;scroll-padding-bottom:30px; }.wardrobe-scroll-hint:not([hidden]) { display:block;position:absolute;bottom:0;right:8px;left:0;padding:10px 8px 3px;text-align:center;pointer-events:none;color:#f0d89e;background:linear-gradient(transparent,#09232cef 55%);font-size:9px; }.wardrobe-dialog .collection-item img {transform:none;}.appearance-control { padding:4px 9px;font-size:9px;margin-top:4px; }
+}
+@media(prefers-reduced-motion:reduce) { .wardrobe-alcove img,.wardrobe-embers { animation:none; }.weapon-card {transition:none;} }
