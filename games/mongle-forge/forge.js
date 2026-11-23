@@ -24,6 +24,8 @@
   let ranking;
   let saleToken;
   let renderedOffers;
+  let updatePending = false;
+  let updater;
 
   function fmt(value) {
     const digits = value.toString();
@@ -175,7 +177,7 @@
     $('happy-hours').textContent = happy.active ? '한국시간 할인 중 · 모든 별철 지출 50% · ' + (happy.endHour === 24 ? '자정' : happy.endHour + '시') + '까지' : '별철 50% 할인 · 한국시간 07~08 · 12~14 · 21~24시';
     $('happy-hours').dataset.active = String(happy.active);
     const parts = Forge.incomeBreakdown(state);
-    $('buy-protection').disabled = !!busy || cooling || !protection.eligible || protection.owned || state.shards < protection.cost;
+    $('buy-protection').disabled = !!busy || updatePending || cooling || !protection.eligible || protection.owned || state.shards < protection.cost;
     $('protection-label').textContent = protection.owned ? level(protection.target) + ' 보호권 적용 중' : state.broken ? '강화 보호권' : level(protection.target) + ' 강화 보호권';
     $('protection-price').textContent = protection.owned ? '보유 1장 · 자동 사용' : protection.eligible ? fmt(protection.cost) + ' 별철' + (protection.discount ? ' · 50%' : '') : state.broken ? '새 검 제작 후 구매' : '확정 성공 단계';
     $('protection-price').title = '원가 ' + fmt(protection.originalCost) + ' 별철';
@@ -183,10 +185,10 @@
     const tickets = Object.keys(state.protections).sort((a, b) => BigInt(a) < BigInt(b) ? -1 : 1);
     $('protection-stock').hidden = tickets.length === 0;
     $('protection-stock').textContent = '보관 중: ' + tickets.slice(0, 6).map(target => '+' + fmt(BigInt(target)) + ' 도전권').join(' · ') + (tickets.length > 6 ? ' 외 ' + (tickets.length - 6) + '종' : '');
-    $('open-sale').disabled = !!busy || cooling || state.broken;
+    $('open-sale').disabled = !!busy || updatePending || cooling || state.broken;
     $('sale-price').textContent = state.broken ? '판매할 무기 없음' : '+' + fmt(Forge.saleOffer(state).shards) + ' 별철';
     $('income-breakdown').textContent = '기본 ' + fmt(parts.base) + ' · 최고 +' + fmt(parts.record) + ' · 현재 +' + fmt(parts.current) + (state.rankBonus && rate > Forge.baseIncome(state) ? ' · 랭킹 +' + fmt(Forge.rankReward(state.rankBonus.rank)) : '');
-    specialButton.disabled = !!busy || cooling || state.broken || state.shards < special.cost;
+    specialButton.disabled = !!busy || updatePending || cooling || state.broken || state.shards < special.cost;
     $('special-label').textContent = busy === 'special' ? special.reroll ? '변환 중…' : '각인 중…' : special.reroll ? '효과 리롤' : '특수 강화';
     document.querySelector('.special-rules').hidden = state.broken;
     $('special-chance').textContent = state.broken ? '제작 필요' : special.reroll ? '무작위 1개 확정 변환' : '성공 ' + percent(special.success);
@@ -210,7 +212,7 @@
     $('broken-copy').hidden = !state.broken || state.sold;
     $('button-label').textContent = busy ? '벼리는 중…' : state.broken ? '새 검 제작' : '강화하기';
     $('button-icon').textContent = state.broken ? '↻' : '✦';
-    button.disabled = busy || cooling || !affordable;
+    button.disabled = busy || updatePending || cooling || !affordable;
     button.dataset.reforge = String(state.broken);
     $('chance-success').textContent = percent(offer.success);
     $('chance-reset-label').textContent = protection.owned ? offer.protectionDrop ? '1강 하락' : '단계 유지' : '+0 초기화';
@@ -364,13 +366,14 @@
   }
 
   async function attempt(action = 'forge') {
-    if (busy) return;
+    if (busy || updatePending) return;
     const displayed = renderedOffers;
     const specialOffer = action === 'special' ? displayed.special : null;
     busy = action;
     renderControls();
     let event;
     try {
+      if (!await updater.check()) return;
       event = await transaction(next => action === 'special' ? specialOffer.reroll ? Forge.reroll(next, Date.now(), Math.random, specialOffer.token) : Forge.enchant(next, Date.now(), Math.random, specialOffer.token) : action === 'protection' ? Forge.buyProtection(next, Date.now(), displayed.protection.token) : action === 'sell' ? Forge.sell(next, Date.now(), saleToken) : Forge.act(next, Date.now(), Math.random, displayed.normal.token));
       if (event) showOutcome(event, !['protection', 'sell'].includes(event.kind));
       else if (action !== 'sell') $('waiting').textContent = '비용이나 무기 상태가 바뀌었어요. 표시를 확인하고 다시 눌러 주세요.';
@@ -463,11 +466,27 @@
     if (!document.hidden) transaction();
   }, 1000);
 
+  updater = ForgeUpdate.mount({
+    revision: Forge.clientRevision,
+    onPending: () => { updatePending = true; renderControls(); },
+    beforeReload: async () => {
+      if (busy) return false;
+      await transaction();
+      try { return localStorage.getItem(Forge.saveKey) === Forge.serialize(state); }
+      catch { return false; }
+    },
+    onStatus: (message, retry) => {
+      $('update-status').textContent = message;
+      $('update-retry').hidden = !retry;
+    },
+  });
+  $('update-retry').addEventListener('click', () => updater.retry());
   ranking = ForgeRanking.mount({
     getState: () => state, fmt, asset,
     capture: (nickname, weaponName) => transaction(next => { Forge.rememberWeapon(next); return Forge.rankingRecord(next, nickname, weaponName); }),
     onBonus: rank => transaction(next => Forge.setRankBonus(next, rank)),
     onGrant: grant => transaction(next => Forge.applyAdminGrant(next, grant)),
+    beforePublish: () => updater.check(),
   });
   transaction(next => { if (next.rankingBest) Forge.rememberWeapon(next); });
 })();

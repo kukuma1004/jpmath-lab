@@ -1,6 +1,8 @@
 'use strict';
 
 const Forge = (() => {
+  const clientRevision = 2026112301;
+  const rankingProtocol = 'forge-sync-1';
   const legacySaveKey = 'jp-math-lab:mongle-forge:v1';
   const backupKey = legacySaveKey + ':before-infinite';
   const seasonId = 'season-20261120-1';
@@ -190,6 +192,7 @@ const Forge = (() => {
     if (!snapshot) throw new Error('이 무기는 랭킹의 표시 범위를 넘었어요. 강화는 계속할 수 있어요.');
     return {
       nickname: rankingName(nickname, 12), weaponName: rankingName(weaponName, 16),
+      rulesVersion: rankingProtocol,
       ...snapshot,
     };
   }
@@ -504,7 +507,7 @@ const Forge = (() => {
     return event;
   }
 
-  return { saveKey, previousSaveKey, rainbowSaveKey, marketSaveKey, olderSaveKey, legacySaveKey, backupKey, seasonId, startingShards, cooldown, recoveryBonus, offlineLimit, enchantmentLimit, forms, enchantments, appraisal, restore, loadSeason, serialize, rankingName, rankingRecord, weaponSnapshot, sameWeaponRecord, applyAdminGrant, rememberWeapon, formAt, cost, incomeBreakdown, discountInfo, passiveCapacity, baseIncome, income, rankReward, setRankBonus, preview, protectionOffer, buyProtection, saleOffer, sell, enchantPreview, collectPassive, act, enchant, reroll };
+  return { clientRevision, rankingProtocol, saveKey, previousSaveKey, rainbowSaveKey, marketSaveKey, olderSaveKey, legacySaveKey, backupKey, seasonId, startingShards, cooldown, recoveryBonus, offlineLimit, enchantmentLimit, forms, enchantments, appraisal, restore, loadSeason, serialize, rankingName, rankingRecord, weaponSnapshot, sameWeaponRecord, applyAdminGrant, rememberWeapon, formAt, cost, incomeBreakdown, discountInfo, passiveCapacity, baseIncome, income, rankReward, setRankBonus, preview, protectionOffer, buyProtection, saleOffer, sell, enchantPreview, collectPassive, act, enchant, reroll };
 })();
 
 if (typeof module !== 'undefined') module.exports = Forge;

@@ -69,6 +69,7 @@ const ForgeRanking = (() => {
       const payload = previous && previous.value === record.value ? {
         ...previous, nickname: record.nickname, weaponName: record.weaponName,
       } : record;
+      payload.rulesVersion = Forge.rankingProtocol;
       if (Forge.sameWeaponRecord(previous, record) && knownUses(record.protectionUses) &&
           (!knownUses(previous.protectionUses) || BigInt(record.protectionUses) >= BigInt(previous.protectionUses))) payload.protectionUses = record.protectionUses;
       const update = await request(url, {
@@ -86,7 +87,7 @@ const ForgeRanking = (() => {
     await request(base + Forge.seasonId + '/' + encodeURIComponent(user.uid) + '.json?auth=' + encodeURIComponent(token), { method: 'DELETE' });
   }
 
-  function mount({ getState, capture, fmt, asset, onBonus, onGrant }) {
+  function mount({ getState, capture, fmt, asset, onBonus, onGrant, beforePublish }) {
     const $ = id => document.getElementById(id);
     const dialog = $('ranking');
     let profile = {};
@@ -145,8 +146,9 @@ const ForgeRanking = (() => {
       if (busy || !pending() || Date.now() < nextTry) return;
       busy = true; controls(); autoStatus();
       try {
+        if (!await beforePublish()) return;
         const best = { ...getState().rankingBest };
-        const record = { ...best, nickname: Forge.rankingName(profile.nickname, 12),
+        const record = { ...best, rulesVersion: Forge.rankingProtocol, nickname: Forge.rankingName(profile.nickname, 12),
           weaponName: Forge.rankingName(profile.weaponName || Forge.formAt(BigInt(best.level)).name, 16) };
         const result = await publish(record, owner);
         profile.syncedValue = result.record.value; profile.syncedCore = recordCore(result.record);
@@ -243,6 +245,7 @@ const ForgeRanking = (() => {
       ++generation;
       status('무기를 등록하고 있어요.');
       try {
+        if (!await beforePublish()) { status('새 버전을 적용한 뒤 다시 등록해 주세요.'); return; }
         const record = await capture($('ranking-nickname').value, $('ranking-weapon-name').value);
         profile.nickname = record.nickname; profile.weaponName = record.weaponName;
         const result = await publish(record, owner);

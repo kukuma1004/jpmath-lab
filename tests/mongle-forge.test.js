@@ -4,6 +4,14 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const Forge = require('../games/mongle-forge/forge-engine.js');
 
+test('engine, release manifest and ranking submissions agree on the release protocol', () => {
+  const manifest=require('../games/mongle-forge/release.json');
+  assert.equal(Forge.clientRevision,manifest.revision);
+  assert.equal(Forge.rankingProtocol,manifest.rankingProtocol);
+  const row=Forge.rankingRecord(Forge.restore(null,100000,()=>0),'대장장이','나무검');
+  assert.equal(row.rulesVersion,manifest.rankingProtocol);
+});
+
 test('passive storage covers three protected attempts at the highest level and never shrinks on a broken weapon', () => {
   const now=Date.UTC(2026,10,23,0);let previous=0n;
   for(const [level,expected] of [[0n,10000n],[32n,2261000n],[100n,85538000n],[1000n,81542867000n],[9007199254740993123n,null]]) {
