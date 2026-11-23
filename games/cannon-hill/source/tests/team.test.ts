@@ -158,13 +158,13 @@ describe('2:2 대전', () => {
     expect(c.current).toBe(a.current);
   });
 
-  it('모든 전장에서 넷이 땅 위에, 편마다 한쪽에 선다', () => {
+  it('모든 전장에서 넷이 안전하게 서고 양 편이 충분히 떨어져 출발한다', () => {
     for (const m of MAPS) {
       for (const seed of [1, 2, 3, 4]) {
         const b = new Battle(defaultConfig({ mapId: m.id, seed, chars: FOUR, controllers: ['human', 'human', 'human', 'human'] }));
         for (const f of b.fighters) {
           expect(b.terrain.solidAt(f.x, f.y), `${m.id}/${seed} ${f.idx} 발밑`).toBe(true);
-          expect(f.team === 0 ? f.x < WORLD_W / 2 : f.x > WORLD_W / 2, `${m.id}/${seed} ${f.idx} 자리`).toBe(true);
+          for (const foe of b.fighters) if (foe.team !== f.team) expect(Math.abs(f.x-foe.x)).toBeGreaterThanOrEqual(280);
         }
         // 같은 편끼리 너무 붙어 서지 않는다
         expect(Math.abs(b.fighters[0]!.x - b.fighters[2]!.x)).toBeGreaterThan(100);

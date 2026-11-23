@@ -18,6 +18,7 @@ export const PIVOT: Record<string, { x: number; y: number }> = {
   gumiho: { x: 6, y: -24 },
   hwacha: { x: 7, y: -27 },
   alchemist: { x: 6, y: -24 },
+  driller: { x: 9, y: -25 },
 };
 
 type C = CanvasRenderingContext2D;
@@ -727,11 +728,35 @@ function alchemistWeapon(ctx: C): void {
   ellipse(ctx,0,0,4,4,0);fillStroke(ctx,'#dfb68b',1);
 }
 
-const BODY: Record<string, (c: C, m: Mood) => void> = { general, archer, dokkaebi, mudang, turtle, gumiho, hwacha, alchemist };
+function driller(ctx:C,mood:Mood):void {
+  rr(ctx,-27,-35,17,27,4);fillStroke(ctx,'#76543b');
+  ellipse(ctx,0,-18,22,18);fillStroke(ctx,'#344c68');
+  for(const x of [-16,3]){rr(ctx,x,-8,14,9,3);fillStroke(ctx,'#423a31');}
+  ctx.fillStyle='#bd8c47';ctx.fillRect(-18,-20,35,5);
+  ellipse(ctx,2,-40,17,16);fillStroke(ctx,'#e2ad85');
+  rr(ctx,-16,-60,34,16,6);fillStroke(ctx,'#b1884c');
+  rr(ctx,-19,-47,41,5,2);fillStroke(ctx,'#d4b773');
+  ellipse(ctx,10,-54,6,6);fillStroke(ctx,'#394752');ellipse(ctx,10,-54,3,3);fillStroke(ctx,'#fff1ab');
+  eye(ctx,10,-39,mood);mouth(ctx,10,-29,mood);
+  ellipse(ctx,7,-30,10,3);fillStroke(ctx,'#b6b5ab',0.8);
+  rr(ctx,9,-31,16,10,4);fillStroke(ctx,'#4f637a');ellipse(ctx,23,-26,5,5);fillStroke(ctx,'#926b48');
+}
+
+function drillerWeapon(ctx:C):void {
+  rr(ctx,-5,-9,25,18,4);fillStroke(ctx,vgrad(ctx,-9,9,'#829ba4','#314757'));
+  ctx.fillStyle='#c9984b';ctx.fillRect(0,-10,5,20);
+  ctx.beginPath();ctx.moveTo(18,-9);ctx.lineTo(42,0);ctx.lineTo(18,9);ctx.closePath();fillStroke(ctx,'#c4d5d6');
+  ctx.strokeStyle='#465c66';ctx.lineWidth=2;
+  for(let i=0;i<4;i++){ctx.beginPath();ctx.moveTo(19+i*5,-8+i*1.8);ctx.lineTo(23+i*5,7-i*1.8);ctx.stroke();}
+  rr(ctx,0,6,9,9,2);fillStroke(ctx,'#69482f');
+}
+
+const BODY: Record<string, (c: C, m: Mood) => void> = { general, archer, dokkaebi, mudang, turtle, gumiho, hwacha, alchemist, driller };
 const WEAPON: Record<string, (c: C) => void> = {
   general: generalWeapon, archer: archerWeapon, dokkaebi: dokkaebiWeapon,
   mudang: mudangWeapon, turtle: turtleWeapon, gumiho: gumihoWeapon,
   hwacha: hwachaWeapon, alchemist: alchemistWeapon,
+  driller: drillerWeapon,
 };
 
 export function drawBody(ctx: C, id: string, mood: Mood): void {

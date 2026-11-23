@@ -5,7 +5,7 @@ import { BASE_HP } from '../config/constants';
  * steady: 움직이지 않고 쏘면 세게 / eagle: 긴 예상 궤적·직격 강화 / shove: 멀리 날려 보냄
  * blessing: 차례마다 회복 / ironclad: 안 밀리고 환경 피해 절반 / foxstep: 낙하 피해 감소
  */
-export type TraitId = 'steady' | 'eagle' | 'shove' | 'blessing' | 'ironclad' | 'foxstep' | 'engineer' | 'antidote';
+export type TraitId = 'steady' | 'eagle' | 'shove' | 'blessing' | 'ironclad' | 'foxstep' | 'engineer' | 'antidote' | 'hardhat';
 
 export const TRAIT = {
   steadyDamage: 1.15, // 화포장군: 움직이지 않고 쏘면 피해 배수
@@ -20,6 +20,7 @@ export const TRAIT = {
   foxFall: 0.6,
   engineerRock: 1.25,
   poisonResistance: 0.4,
+  hardhatEnv: 0.75,
 };
 
 /** 캐릭터 표. 능력치·무기 연결은 여기서만 고친다. */
@@ -49,7 +50,7 @@ export const CHARACTERS: CharacterDef[] = [
   },
   {
     id: 'archer', name: '신궁', role: '정밀 저격형',
-    blurb: '갓끈을 질끈 맨 활잡이. 바람을 덜 타는 화살로 먼 곳을 꿰뚫는다.',
+    blurb: '갓끈을 질끈 맨 활잡이. 깊이 파고드는 관통 화살로 엄폐 뒤를 꿰뚫는다.',
     hp: BASE_HP, defense: 0, moveMul: 1.2, normal: 'arrow', special: 'samyeonsi',
     trait: { id: 'eagle', name: '명궁의 눈', desc: '예상 궤적이 두 배 넘게 길게 보이고, 몸에 직접 꽂히면 피해가 25% 더 붙습니다.' },
     stats: { power: 3, range: 2, accuracy: 5, defense: 1, mobility: 5 },
@@ -65,9 +66,9 @@ export const CHARACTERS: CharacterDef[] = [
   },
   {
     id: 'mudang', name: '무당', role: '마법형',
-    blurb: '방울과 부채를 든 큰무당. 부적이 떨어진 자리에 하늘의 벼락을 부른다.',
+    blurb: '높이 날린 부적이 내려오며 적을 뒤쫓습니다. 다른 탄으로는 하늘의 벼락을 부릅니다.',
     hp: BASE_HP, defense: 0.04, moveMul: 1.0, normal: 'bujeok', special: 'nakroe',
-    trait: { id: 'blessing', name: '신령의 가호', desc: '자기 차례가 시작될 때 자신과 가까이 선 같은 편의 체력을 25씩 채웁니다. 부적탄은 상대 곁을 지나면 그쪽으로 휘어 듭니다.' },
+    trait: { id: 'blessing', name: '신령의 가호', desc: '자기 차례가 시작될 때 자신과 가까이 선 같은 편의 체력을 25씩 채웁니다. 1번 부적은 고각으로 쏘면 하강 중 멀리 있는 적을 추적합니다.' },
     stats: { power: 4, range: 4, accuracy: 4, defense: 2, mobility: 3 },
     palette: { main: '#c8323c', sub: '#2f5d9c', accent: '#f7d354', skin: '#f0c7a0', dark: '#2a1420' },
   },
@@ -102,6 +103,14 @@ export const CHARACTERS: CharacterDef[] = [
     trait: { id: 'antidote', name: '백독불침', desc: '독구름 피해를 60% 덜 받습니다. 독구름은 장수의 차례가 시작될 때 작용하며, 바깥으로 걸어 나오면 피할 수 있습니다.' },
     stats: { power: 3, range: 5, accuracy: 3, defense: 3, mobility: 2 },
     palette: { main: '#275f58', sub: '#6d3b79', accent: '#b4df52', skin: '#e6b18b', dark: '#1b3030' },
+  },
+  {
+    id: 'driller', name: '굴착대장', role: '굴착 붕괴형',
+    blurb: '굵은 나선 드릴로 바위를 파는 광산 대장. 긴 터널을 뚫거나 발밑 지반을 통째로 허뭅니다.',
+    hp: BASE_HP, defense: 0.12, moveMul: 0.82, normal: 'drillBore', special: 'faultBreaker',
+    trait: { id: 'hardhat', name: '튼튼한 안전모', desc: '낙하·깔림·낙석 피해를 25% 덜 받습니다. 두 드릴탄 모두 바위와 성벽을 깊이 뚫고, 기반암과 구조물 핵은 남깁니다.' },
+    stats: { power: 3, range: 5, accuracy: 3, defense: 4, mobility: 2 },
+    palette: { main: '#344c68', sub: '#79523a', accent: '#e3ba6a', skin: '#e2ad85', dark: '#202a35' },
   },
 ];
 

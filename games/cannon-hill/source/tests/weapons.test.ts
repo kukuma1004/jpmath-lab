@@ -31,12 +31,13 @@ function shoot(charId: string, slot: 0 | 1, angle: number, power: number, second
 }
 
 describe('무기 여섯 종이 서로 다르게 작동한다', () => {
-  it('화포장군 진천뢰: 땅에 박혀 심지가 탄 뒤 크게 터지고 쇳조각이 튄다', () => {
+  it('화포장군 집중탄: 짧은 심지 뒤 한 번 터지고 후속 쇳조각을 기다리지 않는다', () => {
     const r = shoot('general', 1, 60, 55);
     expect(r.count('fuse')).toBe(1);
     const big = r.events.find((e) => e.type === 'explode' && e.big);
     expect(big).toBeTruthy();
-    expect(r.count('explode')).toBeGreaterThanOrEqual(1 + 3); // 큰 폭발 + 쇳조각
+    expect(r.count('explode')).toBe(1);
+    expect(r.maxProj).toBe(1);
   });
 
   it('신궁 관통 화살: 지면을 뚫고 들어가 땅속에서 터진다', () => {

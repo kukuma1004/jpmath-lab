@@ -30,7 +30,7 @@ async function openBattle(page: Page, mode: 'ai' | 'local', chars?: [string, str
     const t = w.scene.textures, b = w.battle;
     return {
       body: b.fighters.every((f) => t.exists(`art_char_${f.charId}`)),
-      weapon: b.fighters.every((f) => t.exists(`art_wpn_${f.charId}`) || (['hwacha','alchemist'].includes(f.charId) && t.exists(`wpn_${f.charId}`))),
+      weapon: b.fighters.every((f) => t.exists(`art_wpn_${f.charId}`) || (['hwacha','alchemist','driller'].includes(f.charId) && t.exists(`wpn_${f.charId}`))),
       bg: t.exists(`art_bg_${b.cfg.mapId}`),
     };
   });
@@ -44,7 +44,28 @@ async function waitAim(page: Page, who?: number, timeout = 30_000) {
   }, { timeout }).toBe(true);
 }
 
-test('새 장수 8명과 첫 차례의 자유 탄 선택: 2번 발사 후 1번으로 돌아간다', async ({page}) => {
+test('굴착대장: 전용 몸·회전 드릴을 불러오고 실제 땅속 굴착이 보인다',async({page})=>{
+  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+  await openBattle(page,'local',['driller','mudang'],'quarry');await waitAim(page);
+  await wr(page,`const b=__wr.battle;b.current=0;b.phase='AIM';b.timeLeft=30;b.wind=0;for(const [i,x] of [300,2100].entries()){const f=b.fighters[i];f.x=x;f.y=b.terrain.topSurface(x);f.airPeakY=f.y;f.vx=f.vy=0;f.onGround=true;} __wr.fire(45,50,0);`);
+  await page.waitForFunction(()=> (window as any).__wr.battle.projectiles.some((p:any)=>p.drilling),undefined,{polling:'raf'});
+  expect(await wr(page,`__wr.scene.textures.exists('proj_drill')`)).toBe(true);
+  await page.waitForFunction(()=> (window as any).__wr.battle.fighters[0].stats.cellsDestroyed>100,undefined,{polling:'raf'});
+  await page.screenshot({path:'test-results/driller-quarry.png'});
+  await waitAim(page,1,20_000);expect(errors).toEqual([]);
+});
+
+test('무당: 고각 사격 후 하강 중 적을 추적하여 맞힌다',async({page})=>{
+  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+  await openBattle(page,'local',['mudang','driller'],'bridge');await waitAim(page);
+  await wr(page,`const b=__wr.battle;b.terrain.cells.fill(0);for(let y=450;y<600;y++)for(let x=0;x<1200;x++)b.terrain.set(x,y,4);b.terrain.pending=[];b.current=0;b.phase='AIM';b.timeLeft=30;b.wind=0;for(const [i,x] of [400,1700].entries()){const f=b.fighters[i];f.x=x;f.y=900;f.airPeakY=900;f.vx=f.vy=0;f.onGround=true;} __wr.fire(65,80,0);`);
+  await page.waitForFunction(()=> (window as any).__wr.battle.projectiles.some((p:any)=>p.seekTarget===1),undefined,{polling:'raf'});
+  await page.screenshot({path:'test-results/loft-guidance.png'});
+  await page.waitForFunction(()=> (window as any).__wr.battle.fighters[1].hp<800,undefined,{polling:'raf'});
+  expect(errors).toEqual([]);
+});
+
+test('첫 차례의 자유 탄 선택: 2번 발사 후 1번으로 돌아간다', async ({page}) => {
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
   await openBattle(page,'local',['hwacha','alchemist'],'sanseong');
   await waitAim(page);
@@ -65,14 +86,14 @@ test('새 장수 8명과 첫 차례의 자유 탄 선택: 2번 발사 후 1번�
   expect(errors).toEqual([]);
 });
 
-test('새 장수 고르기: 8장 카드, 전용 그림과 두 탄 용도가 보인다', async({page})=>{
+test('새 장수 고르기: 9장 카드, 전용 그림과 두 탄 용도가 보인다', async({page})=>{
   await page.goto('./?qa=1');await expect(page.locator('[data-s=title]')).toHaveClass(/on/);
   await page.getByRole('button',{name:/둘이서 하기/}).click();
   const screen=page.locator('[data-s=chars]');
-  await expect(screen.locator('.card')).toHaveCount(8);
-  for(const id of ['hwacha','alchemist']){
+  await expect(screen.locator('.card')).toHaveCount(9);
+  for(const id of ['hwacha','alchemist','driller']){
     await screen.locator(`.card[data-id=${id}]`).click();
-    await expect(screen).toContainText(id==='hwacha'?'구룡 화차':'자욱한 독무');
+    await expect(screen).toContainText(id==='hwacha'?'구룡 화차':id==='alchemist'?'자욱한 독무':'지반 붕괴탄');
     await expect(screen).toContainText('두 탄 모두 매 차례 자유롭게');
   }
   await expect(screen).not.toContainText('가득 차면');
@@ -88,6 +109,24 @@ test('기본 체력 800 끝장전: 40턴 뒤에도 계속하고 쓰러뜨려야 
   await wr(page,`__wr.kill(${1-s.current}); __wr.skip();`);
   await expect(page.locator('[data-s=result]')).toHaveClass(/on/);
   expect(await wr(page,'__wr.battle.endReason')).toBe('hp');
+});
+
+test('벼랑 외나무다리: 새 배경을 읽고 다리를 끊어 체력 800 상대를 낙사시킨다',async({page})=>{
+  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+  await openBattle(page,'local',['general','turtle'],'bridge');await waitAim(page);
+  await wr(page,`(()=>{const b=__wr.battle,a=b.fighters[0],f=b.fighters[1];a.x=280;a.y=b.terrain.topSurface(280);a.airPeakY=a.y;f.x=1200;f.y=b.terrain.topSurface(1200);f.airPeakY=f.y;b.current=0;b.terrain.carveCircle(f.x,f.y,70,1);b.setPhase('TERRAIN_COLLAPSE');})()`);
+  await expect(page.locator('[data-s=result]')).toHaveClass(/on/,{timeout:10_000});
+  expect(await wr(page,'__wr.battle.endReason')).toBe('fall');
+  expect(await wr(page,'__wr.battle.winner')).toBe(0);expect(errors).toEqual([]);
+});
+
+test('착탄 후 남은 물리는 빠르게 정착하고 1.8초 안에 다음 조작이 열린다',async({page})=>{
+  await openBattle(page,'local',['general','archer'],'quarry');await waitAim(page);
+  const turn=(await state(page)).turnNo;
+  const t0=await wr(page,`(()=>{const b=__wr.battle;b.boulders.push({id:9999,x:1200,y:220,vx:30,vy:0,r:18,rot:0,restT:0,age:0,cool:[0,0],dead:false});b.setPhase('TERRAIN_COLLAPSE');return performance.now();})()`);
+  await page.waitForFunction(t=>__wr.battle.phase==='AIM'&&__wr.battle.turnNo>t,turn,{timeout:8000});
+  const elapsed=Number(await wr(page,'performance.now()'))-Number(t0);
+  console.log('POST_IMPACT_GAP_MS',Math.round(elapsed));expect(elapsed).toBeLessThan(1800);
 });
 
 test('AI 대전: 타이틀 → 장수 → 전장 → 전투, AI가 실제로 쏜다', async ({ page }) => {
@@ -239,6 +278,7 @@ test('화면 끌기로 둘러보고 「내 장수로」로 돌아온다', async 
   await page.setViewportSize({ width: 1280, height: 720 });
   await openBattle(page, 'local', ['general', 'archer'], 'baekdu');
   await waitAim(page);
+  await page.waitForTimeout(650);
   const camX = () => page.evaluate(() => (window as unknown as { __wr: { scene: { camX: number; free: boolean } } }).__wr.scene.camX);
   const x0 = await camX();
   // HUD가 끌기를 가로채지 않고 전장으로 넘기는지: 실제 마우스로 끈다

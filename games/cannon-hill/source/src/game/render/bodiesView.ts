@@ -36,6 +36,10 @@ export class BodiesView {
     let cfg: Phaser.Types.GameObjects.Particles.ParticleEmitterConfig;
     let tex = 'smoke';
     switch (look) {
+      case 'drill':
+        tex = 'dot';
+        cfg = { lifespan: 300, speed: { min: 12, max: 75 }, scale: { start: 0.55, end: 0 }, alpha: { start: 0.95, end: 0 }, tint: [0xffd485,0xd4e6e8,0x8eabb3], frequency: 18 / q, gravityY: 75 };
+        break;
       case 'poison':
         cfg = { lifespan: 650, speed: { min: 3, max: 22 }, scale: { start: 0.14, end: 0.5 }, alpha: { start: 0.5, end: 0 }, tint: [0x99d85a, 0x6f9746, 0xd0e395], frequency: 24 / q, gravityY: -18 };
         break;
@@ -98,7 +102,7 @@ export class BodiesView {
       const look = p.child === 'frag' ? 'ball' : w.look;
       if (!v) {
         const img = this.scene.add.image(p.x, p.y, `proj_${look}`).setDepth(31);
-        if (p.child) img.setScale(look === 'ball' ? 0.45 : 0.7);
+        img.setScale((p.child ? look === 'ball' ? 0.45 : 0.7 : 1) * (w.renderScale ?? 1));
         const glow = this.scene.add.image(p.x, p.y, 'glow').setBlendMode(Phaser.BlendModes.ADD).setTint(w.glow).setScale(p.child ? 0.35 : 0.6).setAlpha(0.65).setDepth(30);
         const shade = this.scene.add.image(p.x, p.y, 'glow').setTint(0x0c1020).setScale(p.child ? 0.34 : 0.58).setAlpha(0.62).setDepth(29);
         const wake = this.scene.add.image(p.x,p.y,look === 'ball' || look === 'megabomb' ? 'cannon_wake' : 'ember_wake').setOrigin(1,0.5)
@@ -118,9 +122,24 @@ export class BodiesView {
       v.wake.setPosition(p.x,p.y).setRotation(heading).setVisible(!p.stuck && speed > 38)
         .setScale(size * Math.min(1.35, speed / 510), size * (look === 'arrow' ? 0.2 : 0.66 + 0.11*Math.sin(t*30)))
         .setAlpha(look === 'paper' ? 0.52 : 0.96);
-      if (look === 'arrow' || look === 'iron' || look === 'rocket') v.img.setRotation(Math.atan2(p.vy, p.vx));
-      else if (look === 'paper') v.img.setRotation(t * 12);
+      if (look === 'arrow' || look === 'iron' || look === 'rocket' || look === 'drill') v.img.setRotation(Math.atan2(p.vy, p.vx));
+      else if (look === 'paper') v.img.setRotation((p.seekTarget ?? -1)>=0 ? heading+Math.PI/2 : t * 12);
       else if (look === 'bomb' || look === 'megabomb' || look === 'ball' || look === 'poison') v.img.setRotation(t * 3);
+      if ((p.seekTarget ?? -1)>=0) {
+        const target=b.fighters[p.seekTarget!]!;
+        const x=target.x,y=target.y-30,g=this.cloudFx,r=28+Math.sin(t*9)*3;
+        g.lineStyle(2,0xffdf79,0.85);
+        for(const [dx,dy] of [[-1,-1],[1,-1],[-1,1],[1,1]]){
+          g.beginPath();g.moveTo(x+dx*r,y+dy*(r-8));g.lineTo(x+dx*r,y+dy*r);g.lineTo(x+dx*(r-8),y+dy*r);g.strokePath();
+        }
+        g.lineStyle(1.5,0xffdf79,0.3);g.lineBetween(p.x,p.y,x,y);
+        v.glow.setTint(0xffde76).setScale(0.8+0.12*Math.sin(t*18));
+      }
+      if(p.drilling){
+        const g=this.cloudFx;g.lineStyle(2,0xffc879,0.9);
+        g.strokeEllipse(p.x,p.y,19+Math.sin(t*40)*4,19);
+        v.glow.setScale(0.8).setTint(0xffc879);
+      }
       if (p.stuck) {
         // 심지가 타는 진천뢰: 빨갛게 깜빡
         const blink = Math.sin(t * (10 + (1.2 - p.fuse) * 30)) > 0;

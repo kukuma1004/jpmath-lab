@@ -5,7 +5,7 @@ import {
   STEP_DOWN, STEP_UP, TURN_LIMIT_DEFAULT, WALK_SPEED, WIND_ACC_PER_UNIT, WORLD_H, WORLD_W,
 } from '../config/constants';
 import { CHARACTERS, TRAIT, character } from '../data/characters';
-import { findSpawns, findTeamSpawns, generateTerrain, mapDef } from '../data/maps';
+import { findSpawnPoints, generateTerrain, mapDef } from '../data/maps';
 import { WEAPONS, weapon, type WeaponDef } from '../data/weapons';
 import { Mat, Terrain, type Component } from '../terrain/terrain';
 import { Rng, clamp } from '../utils/rng';
@@ -43,6 +43,7 @@ function newStats() {
 
 export class Battle {
   cfg: BattleConfig;
+  readonly ringOutY: number;
   terrain: Terrain;
   fighters: Fighter[];
   projectiles: Projectile[] = [];
@@ -84,6 +85,7 @@ export class Battle {
 
   constructor(cfg: BattleConfig, empty = false) {
     this.cfg = cfg;
+    this.ringOutY = mapDef(cfg.mapId).ringOutY ?? WORLD_H + 30;
     this.rng = new Rng(cfg.seed);
     if (empty) {
       this.terrain = new Terrain();
@@ -92,8 +94,13 @@ export class Battle {
     }
     const def = mapDef(cfg.mapId);
     this.terrain = generateTerrain(def, cfg.seed);
-    const xs: number[] = cfg.chars.length > 2 ? findTeamSpawns(this.terrain, def, this.rng) : findSpawns(this.terrain, def, this.rng);
-    this.fighters = cfg.chars.map((id, i) => this.makeFighter(i, id, xs[i]!));
+    const spawns = findSpawnPoints(this.terrain, def, this.rng, cfg.chars.length > 2 ? 4 : 2);
+    this.fighters = cfg.chars.map((id, i) => {
+      const p = spawns[i]!, f = this.makeFighter(i, id, p.x);
+      f.y = p.y; f.airPeakY = p.y;
+      return f;
+    });
+    for (const f of this.fighters) f.angle = this.nearestEnemy(f).x > f.x ? 50 : 130;
     // 먼저 쏠 편을 고른다(그 편의 첫 장수부터)
     this.current = this.rng.next() < 0.5 ? 0 : 1;
     this.wind = Math.round(this.rng.gauss() * 6 * (0.5 + def.windBias));
@@ -265,10 +272,10 @@ export class Battle {
 
     switch (this.phase) {
       case 'BATTLE_START':
-        if (this.phaseT >= 1.4) this.startTurn(this.current, true);
+        if (this.phaseT >= 0.55) this.startTurn(this.current, true);
         break;
       case 'TURN_START':
-        if (this.phaseT >= 0.9) this.setPhase('AIM');
+        if (this.phaseT >= 0.18) this.setPhase('AIM');
         break;
       case 'AIM':
       case 'MOVE':
@@ -283,9 +290,10 @@ export class Battle {
         break;
       case 'TURN_END':
         // 걷다 떨어지는 중이라면 내려앉을 때까지 기다린다(오래 걸리면 강제 정착)
-        if (this.phaseT >= 0.6) {
-          if (!this.isQuiet() && this.phaseT > SETTLE_LIMIT) this.forceStabilize();
-          if (this.isQuiet() || this.phaseT > SETTLE_LIMIT) this.resolveTurnEnd();
+        if (this.phaseT >= 0.12) {
+          const limit = this.forced ? 0.2 : SETTLE_LIMIT;
+          if (!this.isQuiet() && this.phaseT > limit) this.forceStabilize();
+          if (this.isQuiet() || this.phaseT > limit) this.resolveTurnEnd();
         }
         break;
       case 'GAME_OVER':
@@ -480,7 +488,7 @@ export class Battle {
 
   private spawnShot(f: Fighter, w: WeaponDef, angle: number, power: number, shot: number): void {
     const [mx, my] = this.muzzle(f, angle);
-    const sp = (power / 100) * MAX_LAUNCH_SPEED * w.speedMul;
+    const sp = (power / 100) * MAX_LAUNCH_SPEED;
     const a = angle * DEG;
     const p = this.newProjectile(f.idx, shot, w.id, mx, my, Math.cos(a) * sp, -Math.sin(a) * sp);
     if (this.steadyReady(f)) p.boost = TRAIT.steadyDamage;
@@ -492,6 +500,7 @@ export class Battle {
     return {
       id: this.nextId++, owner, shot, weaponId, x, y, px: x, py: y, vx, vy, age: 0, bounces: 0, pierced: 0,
       carveAcc: 0, child, boost: 1, stuck: false, fuse: 0, split: false, dead: false,
+      lofted: -vy >= Math.abs(vx) * Math.tan(55 * DEG), seekTarget: -1, drilling: false,
     };
   }
 
@@ -540,9 +549,11 @@ export class Battle {
       this.splitShot(p, w);
       return;
     }
-    p.vx += this.wind * WIND_ACC_PER_UNIT * w.windMul * dt;
-    p.vy += GRAVITY * w.gravityMul * dt;
-    if (w.seekRange && !p.child && p.age > 0.25) this.seek(p, w, dt);
+    if (!p.drilling) {
+      p.vx += this.wind * WIND_ACC_PER_UNIT * dt;
+      p.vy += GRAVITY * dt;
+      if (w.seekRange && !p.child && p.age > 0.25 && p.vy >= 0) this.seek(p, w, dt);
+    }
     const dist = Math.hypot(p.vx, p.vy) * dt;
     const n = Math.max(1, Math.ceil(dist / 1.5));
     const sx = (p.vx * dt) / n;
@@ -570,6 +581,32 @@ export class Battle {
       }
       if (p.y < 0) continue;
       const m = this.terrain.matAt(p.x, p.y);
+      if (w.behavior === 'drill' && (p.drilling || m !== Mat.Empty)) {
+        if (m === Mat.Bedrock || m === Mat.Core) {
+          this.impact(p, w, ox, oy, -1, false);
+          return;
+        }
+        if (!p.drilling) {
+          p.drilling = true;
+          const speed = Math.hypot(p.vx, p.vy) || 1;
+          p.vx = p.vx / speed * (w.drillSpeed ?? 420);
+          p.vy = p.vy / speed * (w.drillSpeed ?? 420);
+          this.emit({ type: 'debris', x: p.x, y: p.y, count: 14, mat: m });
+          // 다음 걸음부터 굴착 속도를 써서 진입 순간의 고속 이동을 막는다.
+          break;
+        }
+        p.pierced += Math.hypot(sx, sy);
+        p.carveAcc += Math.hypot(sx, sy);
+        if (p.carveAcc >= 6) {
+          p.carveAcc = 0;
+          if (!this.dry) this.carve(p.x, p.y, w.drillRadius ?? 14, 1, p.owner);
+        }
+        if (p.pierced >= (w.drillDepth ?? 280)) {
+          this.impact(p, w, p.x, p.y, -1, false);
+          return;
+        }
+        continue;
+      }
       if (m === Mat.Empty) continue;
       if (w.behavior === 'pierce' && m !== Mat.Bedrock && m !== Mat.Core && p.pierced < (w.pierceDepth ?? 60)) {
         p.pierced += Math.hypot(sx, sy);
@@ -601,15 +638,26 @@ export class Battle {
   private seek(p: Projectile, w: WeaponDef, dt: number): void {
     const owner = this.fighters[p.owner];
     if (!owner) return;
-    let best: Fighter | null = null, bd = w.seekRange!;
+    const lofted = p.lofted && !!w.loftSeekRange;
+    let best: Fighter | null = null, bd = lofted ? w.loftSeekRange! : w.seekRange!;
     for (const f of this.fighters) {
       if (!f.alive || f.team === owner.team) continue;
       const d = Math.hypot(f.x - p.x, f.y - CHAR_CENTER_Y - p.y);
       if (d < bd) { bd = d; best = f; }
     }
+    p.seekTarget = best?.idx ?? -1;
     if (!best) return;
     const dx = best.x - p.x, dy = best.y - CHAR_CENTER_Y - p.y;
     const d = Math.max(1, Math.hypot(dx, dy));
+    if (lofted) {
+      // 각도 제한 유도: 순간이동하거나 장애물을 통과하지 않는다.
+      const heading = Math.atan2(p.vy,p.vx), desired = Math.atan2(dy,dx);
+      const delta = Math.atan2(Math.sin(desired-heading),Math.cos(desired-heading));
+      const angle = heading + clamp(delta,-w.seekTurnRate!*dt,w.seekTurnRate!*dt);
+      const speed = Math.max(220,Math.hypot(p.vx,p.vy));
+      p.vx = Math.cos(angle)*speed; p.vy = Math.sin(angle)*speed;
+      return;
+    }
     p.vx += (dx / d) * w.seekAcc! * dt;
     p.vy += (dy / d) * w.seekAcc! * dt;
   }
@@ -875,6 +923,7 @@ export class Battle {
     // 거북선 장수: 떨어짐·깔림·낙석 피해 절반
     if ((cause === 'fall' || cause === 'crush' || cause === 'rock') && this.traitOf(f) === 'ironclad') dmg *= TRAIT.ironEnv;
     if (cause === 'fall' && this.traitOf(f) === 'foxstep') dmg *= TRAIT.foxFall;
+    if ((cause === 'fall' || cause === 'crush' || cause === 'rock') && this.traitOf(f) === 'hardhat') dmg *= TRAIT.hardhatEnv;
     if (cause === 'poison' && this.traitOf(f) === 'antidote') dmg *= TRAIT.poisonResistance;
     dmg = Math.round(dmg);
     if (dmg <= 0) return;
@@ -1207,7 +1256,7 @@ export class Battle {
   }
 
   stepFighterPhysics(f: Fighter, dt: number): void {
-    if (f.y > WORLD_H + 30) {
+    if (f.y > this.ringOutY) {
       if (f.alive) this.kill(f, 'fall');
       f.onGround = false;
       return;
@@ -1291,7 +1340,7 @@ export class Battle {
       return;
     }
     this.settleT += dt;
-    if (this.time - this.lastBlastT < 0.3) this.setPhase('EXPLOSION');
+    if (this.time - this.lastBlastT < 0.12) this.setPhase('EXPLOSION');
     else if (this.chunks.length || this.boulders.length) this.setPhase('TERRAIN_COLLAPSE');
     else this.setPhase('PHYSICS_SETTLING');
     if (this.settleT > SETTLE_LIMIT && !this.forced) {
@@ -1299,7 +1348,7 @@ export class Battle {
       this.forceStabilize();
     }
     // 강제 안정화 뒤에도 멈추지 않으면 그냥 턴을 넘긴다(무한 대기 방지)
-    if ((this.isQuiet() && this.settleT >= MIN_SETTLE_HOLD) || this.settleT > SETTLE_LIMIT + 1.5) this.toTurnEnd();
+    if ((this.isQuiet() && this.settleT >= MIN_SETTLE_HOLD) || this.settleT > SETTLE_LIMIT + 0.3) this.toTurnEnd();
   }
 
   forceStabilize(): void {
@@ -1333,8 +1382,8 @@ export class Battle {
       this.unstick(f);
       if (!f.onGround) {
         const s = t.surfaceBelow(f.x, f.y);
-        if (s < 0) {
-          f.y = WORLD_H + 40;
+        if (s < 0 || s > this.ringOutY) {
+          f.y = this.ringOutY + 40;
           this.kill(f, 'fall');
         } else {
           const h = s - f.airPeakY;
@@ -1415,14 +1464,14 @@ export class Battle {
     this.projectiles = [];
     this.scheduled = [];
     const w = this.weaponOf(f, slot);
-    const sp = (power / 100) * MAX_LAUNCH_SPEED * w.speedMul;
-    const angles = w.pattern === 'triple' ? [-1, 0, 1].map((k) => angle + k * (w.spreadDeg ?? 3)) : [angle];
-    const powers = w.pattern === 'salvo' ? [power, clamp(power + (w.salvoPowerStep ?? 3), 0, 100), clamp(power - (w.salvoPowerStep ?? 3), 0, 100)] : [power];
+    const sp = (power / 100) * MAX_LAUNCH_SPEED;
+    const angles = w.pattern === 'triple' ? Array.from({length:w.count??3},(_,i)=>angle+(i-((w.count??3)-1)/2)*(w.spreadDeg??3)) : [angle];
+    const powers = w.pattern === 'salvo' ? Array.from({length:w.count??3},(_,i)=>clamp(power+(i===0?0:(i%2===1?1:-1)*Math.ceil(i/2)*(w.salvoPowerStep??3)),0,100)) : [power];
     const steady = this.steadyReady(f) && (!from || (Math.abs(from.x - saved.x) < 0.5 && Math.abs(from.y - saved.y) < 0.5));
     for (const a of angles) {
       for (const pw of powers) {
         const [mx, my] = this.muzzle(f, a);
-        const s = pw === power ? sp : (pw / 100) * MAX_LAUNCH_SPEED * w.speedMul;
+        const s = pw === power ? sp : (pw / 100) * MAX_LAUNCH_SPEED;
         const q = this.newProjectile(fIdx, 0, w.id, mx, my, Math.cos(a * DEG) * s, -Math.sin(a * DEG) * s);
         if (steady) q.boost = TRAIT.steadyDamage;
         this.projectiles.push(q);
@@ -1450,15 +1499,14 @@ export class Battle {
   /** 화면에 그릴 예상 궤적(실제 물리와 같은 계산). 처음 maxT초까지 */
   previewPath(maxT: number, power: number): { x: number; y: number }[] {
     const f = this.cur;
-    const w = this.weaponOf(f);
     const [mx, my] = this.muzzle(f);
-    const sp = (power / 100) * MAX_LAUNCH_SPEED * w.speedMul;
+    const sp = (power / 100) * MAX_LAUNCH_SPEED;
     const a = f.angle * DEG;
     let vx = Math.cos(a) * sp, vy = -Math.sin(a) * sp, x = mx, y = my;
     const pts = [{ x, y }];
     for (let t = 0; t < maxT; t += DT) {
-      vx += this.wind * WIND_ACC_PER_UNIT * w.windMul * DT;
-      vy += GRAVITY * w.gravityMul * DT;
+      vx += this.wind * WIND_ACC_PER_UNIT * DT;
+      vy += GRAVITY * DT;
       x += vx * DT;
       y += vy * DT;
       pts.push({ x, y });

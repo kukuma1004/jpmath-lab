@@ -80,9 +80,9 @@ describe('장수 특기', () => {
   });
 
   it('무당: 자기 차례가 시작되면 자신과 가까운 같은 편이 회복된다(먼 편은 아님)', () => {
-    const b = new Battle(defaultConfig({ seed: 3, chars: ['mudang', 'archer', 'general', 'gumiho'], controllers: ['human', 'human', 'human', 'human'] }));
+    const b = flat(['mudang', 'archer', 'general', 'gumiho']);
+    place(b,0,400);place(b,1,1800);place(b,2,500);place(b,3,2100);
     const me = b.fighters[0]!, near = b.fighters[2]!, foe = b.fighters[1]!;
-    near.x = me.x + 100;
     const hurtHp = me.maxHp - 200;
     me.hp = hurtHp;
     near.hp = hurtHp;

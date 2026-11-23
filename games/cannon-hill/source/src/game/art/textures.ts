@@ -168,6 +168,13 @@ export function makeTextures(scene: Phaser.Scene): void {
   });
 
   // 포탄
+  make(scene, 'proj_drill', 42, 20, (ctx) => {
+    const metal=ctx.createLinearGradient(0,1,0,19);metal.addColorStop(0,'#e7f6f7');metal.addColorStop(0.45,'#91adb6');metal.addColorStop(1,'#304652');
+    ctx.fillStyle=metal;ctx.strokeStyle='#172c39';ctx.lineWidth=1.6;
+    ctx.beginPath();ctx.moveTo(9,1);ctx.lineTo(41,10);ctx.lineTo(9,19);ctx.closePath();ctx.fill();ctx.stroke();
+    for(let i=0;i<5;i++){ctx.beginPath();ctx.moveTo(10+i*5,2+i*1.4);ctx.lineTo(15+i*5,17-i*1.4);ctx.stroke();}
+    ctx.fillStyle='#cc9b48';ctx.fillRect(3,4,8,12);ctx.fillStyle='#415767';ctx.fillRect(0,6,4,8);
+  });
   make(scene, 'proj_ball', 24, 24, (ctx) => {
     // radial은 네모를 칠하므로 둥글게 잘라 둔다(안 그러면 돌 때 네모가 보인다)
     ctx.beginPath(); ctx.arc(12, 12, 11, 0, Math.PI * 2); ctx.clip();

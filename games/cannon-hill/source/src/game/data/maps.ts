@@ -14,6 +14,7 @@ export interface MapDef {
   desc: string;
   features: string;
   voidBottom: boolean; // 바닥이 비어 있어 떨어지면 끝나는 전장
+  ringOutY?: number; // 이 선 아래로 떨어지면 체력과 무관하게 탈락
   spawn: [number, number]; // 1P가 설 수 있는 x 범위(px). 2P는 거울 위치 근처
   windBias: number; // 바람 세기 기본 치우침(0..1)
   colors: Record<number, MatColor>;
@@ -337,7 +338,57 @@ const underworld: MapDef = {
   },
 };
 
-export const MAPS: MapDef[] = [baekdu, sanseong, forest, cloud, underworld];
+const bridge: MapDef = {
+  id: 'bridge', name: '벼랑 외나무다리', desc: '협곡 위의 나무다리를 끊어 상대를 떨어뜨리세요. 아래 추락선을 넘으면 남은 체력과 무관하게 탈락합니다.',
+  features: '끊기는 나무다리 · 위아래 발판 · 추락 시 탈락', voidBottom: true, ringOutY: 900, spawn: [400, 900], windBias: 0.45,
+  sky: ['#614578', '#9c849f', '#d6a57c'],
+  colors: {
+    [Mat.Dirt]: { base: '#8d654c', dark: '#423641', crust: '#bf9d52' },
+    [Mat.Rock]: { base: '#666580', dark: '#373447', crust: '#b6a384' },
+    [Mat.Bedrock]: { base: '#353244', dark: '#181b2b' },
+    [Mat.Core]: { base: '#4d455a', dark: '#272335' },
+    [Mat.Wall]: { base: '#9c8d7d', dark: '#544a50' },
+    [Mat.Wood]: { base: '#aa783f', dark: '#55372b' },
+    [Mat.Leaf]: { base: '#b97849', dark: '#5e3b3e' },
+  },
+  generate(t) {
+    fillColumns(t, () => 570, (_x,y,d) => y > 820 ? Mat.Core : d < 8 ? Mat.Dirt : Mat.Rock, 0, 350, () => 850);
+    fillColumns(t, () => 570, (_x,y,d) => y > 820 ? Mat.Core : d < 8 ? Mat.Dirt : Mat.Rock, 2050, WORLD_W, () => 850);
+    thickLine(t, 320, 600, 2080, 600, 16, Mat.Wood, 90);
+    rect(t, 730, 472, 930, 488, Mat.Wood);
+    rect(t, 770, 480, 784, 675, Mat.Wood);
+    rect(t, 876, 480, 890, 680, Mat.Wood);
+    rect(t, 1420, 780, 1640, 796, Mat.Wood);
+    rect(t, 1460, 674, 1474, 788, Mat.Wood);
+    rect(t, 1586, 668, 1600, 788, Mat.Wood);
+  },
+};
+
+const quarry: MapDef = {
+  id: 'quarry', name: '층층 채석장', desc: '절벽과 작업대가 층층이 이어집니다. 고지의 발밑을 무너뜨리면 아래층까지 추락하며 큰 피해를 받습니다.',
+  features: '계단식 고저차 · 무너지는 암반 · 추락 피해 큼', voidBottom: false, spawn: [280, 740], windBias: 0.3,
+  sky: ['#93c6e4', '#aec8d5', '#d5c6a5'],
+  colors: {
+    [Mat.Dirt]: { base: '#a58b68', dark: '#584c43', crust: '#c6b78b' },
+    [Mat.Rock]: { base: '#81939c', dark: '#3d5062', crust: '#d0c9ad' },
+    [Mat.Bedrock]: { base: '#344758', dark: '#1d2c3d' },
+    [Mat.Core]: { base: '#637f8c', dark: '#344957' },
+    [Mat.Wall]: { base: '#a49e8e', dark: '#565c60' },
+    [Mat.Wood]: { base: '#8f6b44', dark: '#4b3a2d' },
+    [Mat.Leaf]: { base: '#749373', dark: '#354f4e' },
+  },
+  generate(t, _rng, seed) {
+    const surface = (x:number) => x < 200 ? 760 : x < 500 ? 480 : x < 760 ? 690 : x < 1040 ? 870 : x < 1350 ? 940 : x < 1650 ? 700 : x < 1920 ? 400 : x < 2200 ? 640 : 780;
+    fillColumns(t, surface, (_x,y,d) => y > 1160 ? Mat.Bedrock : d < 10 ? Mat.Dirt : Mat.Rock);
+    blob(t, 390, 720, 92, 85, Mat.Empty, seed+61,0.15);
+    blob(t, 1750, 760, 105, 100, Mat.Empty, seed+62,0.15);
+    rect(t, 1670, 350, 1890, 366, Mat.Wood);
+    rect(t, 1700, 360, 1714, 408, Mat.Wood);
+    rect(t, 1846, 360, 1860, 408, Mat.Wood);
+  },
+};
+
+export const MAPS: MapDef[] = [bridge, sanseong, quarry, baekdu, forest, cloud, underworld];
 
 export function mapDef(id: string): MapDef {
   const m = MAPS.find((x) => x.id === id);
@@ -356,107 +407,75 @@ export function generateTerrain(def: MapDef, seed: number): Terrain {
   return t;
 }
 
-/** 서 있을 자리 평가: 밑이 단단하고, 머리 위가 트이고, 평평할수록 좋다 */
-export function spotScore(t: Terrain, x: number): number {
-  const y = t.topSurface(x);
-  if (y < 0) return -1;
-  // 머리 위 70px가 비어 있어야 한다(topSurface이므로 항상 비어 있음)
+export interface SpawnPoint { x: number; y: number; }
+
+/** 발을 받치되 몸과 머리가 끼지 않는 자리. 얇은 다리와 높은 발판도 허용한다. */
+export function spotScore(t: Terrain, x: number, y = t.topSurface(x)): number {
+  if (y < 160 || y > 1000 || !t.solidAt(x, y)) return -1;
+  for (const dx of [-12, 0, 12]) {
+    for (const up of [8, 20, 36, 52]) if (t.solidAt(x + dx, y - up)) return -1;
+    const support = t.surfaceBelow(x + dx, y - 6, 20);
+    if (support < 0 || Math.abs(support - y) > 6) return -1;
+  }
   let depth = 0;
-  for (let d = 0; d < 60; d += CELL) if (t.solidAt(x, y + d)) depth += CELL;
-  if (depth < 40) return -1;
-  const yl = t.topSurface(x - 12), yr = t.topSurface(x + 12);
-  if (yl < 0 || yr < 0) return -1;
-  const slope = Math.abs(yl - yr);
-  if (slope > 14) return -1;
-  // 양옆 40px 안에 낭떠러지가 없어야 한다
-  for (const dx of [-40, 40]) {
-    const yy = t.topSurface(x + dx);
-    if (yy < 0 || yy - y > 120) return -1;
-  }
-  return 100 - slope * 3;
+  for (let d = 0; d < 16; d += CELL) if (t.solidAt(x, y + d)) depth += CELL;
+  return depth >= 10 ? 100 : -1;
 }
 
-export function findSpawns(t: Terrain, def: MapDef, rng: Rng): [number, number] {
-  const [a, b] = def.spawn;
-  const tries: number[] = [];
-  for (let x = a; x <= b; x += 6) tries.push(x);
-  // 시드에 따라 섞는다
-  for (let i = tries.length - 1; i > 0; i--) {
+function shuffle<T>(a: T[], rng: Rng): T[] {
+  for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(rng.next() * (i + 1));
-    [tries[i], tries[j]] = [tries[j]!, tries[i]!];
+    [a[i], a[j]] = [a[j]!, a[i]!];
   }
-  let best: [number, number] = [a, WORLD_W - a];
-  let bestScore = -Infinity;
-  for (const x1 of tries.slice(0, 40)) {
-    const s1 = spotScore(t, x1);
-    if (s1 < 0) continue;
-    // 2P는 거울 위치에서 ±40px 안에서 찾는다
-    for (let off = 0; off <= 40; off += 4) {
-      for (const sgn of [1, -1]) {
-        const x2 = WORLD_W - x1 + sgn * off;
-        const s2 = spotScore(t, x2);
-        if (s2 < 0) continue;
-        const hdiff = Math.abs(t.topSurface(x1) - t.topSurface(x2));
-        const score = s1 + s2 - hdiff * 0.8 - off * 0.3 + rng.next() * 6;
-        if (score > bestScore) {
-          bestScore = score;
-          best = [x1, x2];
-        }
+  return a;
+}
+
+function spawnCandidates(t: Terrain, rng: Rng): SpawnPoint[] {
+  const all: SpawnPoint[] = [];
+  for (let x = 160; x <= WORLD_W - 160; x += 24) {
+    const y = t.topSurface(x);
+    if (spotScore(t, x, y) >= 0) all.push({ x, y });
+  }
+  const bins = new Map<string, number>();
+  return shuffle(all, rng).filter((p) => {
+    const key = `${Math.floor(p.x / 240)}:${Math.floor(p.y / 100)}`;
+    const n = bins.get(key) ?? 0;
+    if (n >= 3) return false;
+    bins.set(key, n + 1);
+    return true;
+  });
+}
+
+/** 시드 난수로 전장 전체의 고지·저지·발판을 섞는다. 장수 순서는 기존 편 순서를 유지한다. */
+export function findSpawnPoints(t: Terrain, def: MapDef, rng: Rng, count: 2 | 4): SpawnPoint[] {
+  const pool = spawnCandidates(t, rng);
+  const highLow = rng.next() < 0.65;
+  const pairs: [SpawnPoint, SpawnPoint][] = [];
+  for (const minHeight of [highLow ? 100 : 0, 0]) {
+    for (let i = 0; i < pool.length; i++) for (let j = i + 1; j < pool.length; j++) {
+      const a = pool[i]!, b = pool[j]!, gap = Math.abs(a.x - b.x), h = Math.abs(a.y - b.y);
+      if (gap >= 380 && gap <= 1260 && h >= minHeight && h <= 420) pairs.push([a, b]);
+    }
+    if (pairs.length) break;
+  }
+  shuffle(pairs, rng);
+  if (count === 2 && pairs[0]) return rng.next() < 0.5 ? [...pairs[0]] : [pairs[0][1], pairs[0][0]];
+  for (const [a, b] of pairs.slice(0, 40)) {
+    const quads: { points: SpawnPoint[]; balance: number }[] = [];
+    for (const c of pool) {
+      if (Math.abs(c.x - a.x) < 160 || Math.abs(c.x - b.x) < 280) continue;
+      for (const d of pool) {
+        if (Math.abs(d.x - b.x) < 160 || Math.abs(d.x - a.x) < 280 || Math.abs(d.x - c.x) < 280) continue;
+        const points = [a, b, c, d];
+        const span = Math.max(...points.map((p) => p.x)) - Math.min(...points.map((p) => p.x));
+        if (span > 1560) continue;
+        quads.push({ points, balance: Math.abs(a.y + c.y - b.y - d.y) });
       }
     }
+    if (!quads.length) continue;
+    quads.sort((a2, b2) => a2.balance - b2.balance);
+    const picked = quads[Math.floor(rng.next() * Math.min(8, quads.length))]!.points;
+    return rng.next() < 0.5 ? picked : [picked[1]!, picked[0]!, picked[3]!, picked[2]!];
   }
-  return best;
-}
-
-/** 거울 자리 ±40px 안에서 가장 좋은 자리 */
-function mirrorSpot(t: Terrain, x: number): { x: number; s: number } | null {
-  let best: { x: number; s: number } | null = null;
-  for (let off = 0; off <= 40; off += 4) {
-    for (const sgn of [1, -1]) {
-      const m = WORLD_W - x + sgn * off;
-      const s = spotScore(t, m);
-      if (s < 0) continue;
-      const sc = s - Math.abs(t.topSurface(x) - t.topSurface(m)) * 0.8 - off * 0.3;
-      if (!best || sc > best.s) best = { x: m, s: sc };
-    }
-  }
-  return best;
-}
-
-/**
- * 2:2 자리: [1팀 첫째, 2팀 첫째, 1팀 둘째, 2팀 둘째].
- * 1팀은 왼쪽 출발 범위와 그 둘레(160~280px 떨어진 곳)에, 2팀은 거울 자리 근처에 선다.
- */
-export function findTeamSpawns(t: Terrain, def: MapDef, rng: Rng): number[] {
-  const [a, b] = def.spawn;
-  const tries: number[] = [];
-  for (let x = a; x <= b; x += 6) tries.push(x);
-  for (let i = tries.length - 1; i > 0; i--) {
-    const j = Math.floor(rng.next() * (i + 1));
-    [tries[i], tries[j]] = [tries[j]!, tries[i]!];
-  }
-  let best = [a, WORLD_W - a, Math.min(a + 220, WORLD_W / 2 - 240), Math.max(WORLD_W - a - 220, WORLD_W / 2 + 240)];
-  let bestScore = -Infinity;
-  for (const x1 of tries.slice(0, 30)) {
-    const s1 = spotScore(t, x1);
-    if (s1 < 0) continue;
-    const m1 = mirrorSpot(t, x1);
-    if (!m1) continue;
-    for (const gap of [160, 200, 240, 280]) {
-      for (const sgn of [1, -1]) {
-        const x3 = x1 + sgn * gap;
-        if (x3 < 70 || x3 > WORLD_W / 2 - 220) continue;
-        const s3 = spotScore(t, x3);
-        if (s3 < 0) continue;
-        const m3 = mirrorSpot(t, x3);
-        if (!m3 || Math.abs(m3.x - m1.x) < 120) continue;
-        const score = s1 + s3 + m1.s + m3.s - Math.abs(t.topSurface(x1) - t.topSurface(x3)) * 0.3 + rng.next() * 6;
-        if (score > bestScore) {
-          bestScore = score;
-          best = [x1, m1.x, x3, m3.x];
-        }
-      }
-    }
-  }
-  return best;
+  throw new Error(`${def.id}: 장수 ${count}명이 안전하게 설 자리를 찾지 못했습니다`);
 }

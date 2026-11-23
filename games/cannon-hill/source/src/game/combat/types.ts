@@ -89,6 +89,10 @@ export interface Projectile {
   stuck: boolean;
   fuse: number;
   split: boolean;
+  /** 기본 포물선 뒤 발동하는 특수 동작. 구형 저장에는 없을 수 있다. */
+  lofted?: boolean;
+  seekTarget?: number;
+  drilling?: boolean;
   dead: boolean;
 }
 

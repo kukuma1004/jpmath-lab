@@ -6,7 +6,8 @@ import { WEAPON_BOX } from './characters';
 const ART: ArtData = { ...BASE_ART, chars: { ...BASE_ART.chars,
   hwacha: { w: 177, h: 240, footX: 0.525, cx: 0.59 },
   alchemist: { w: 207, h: 240, footX: 0.5, cx: 0.58 },
-} };
+  driller: { w: 1199, h: 1312, footX: 0.5, cx: 0.58 },
+}, bgs: { ...BASE_ART.bgs, bridge: { w: 1536, h: 1024 }, quarry: { w: 1536, h: 1024 } } };
 
 /**
  * 그려 받은 그림(public/art)을 게임에 붙이는 자리 정보.
@@ -34,6 +35,7 @@ export const CHAR_RIG: Record<string, CharRig> = {
   gumiho: { height: 62, hand: [0.831, 0.645] },
   hwacha: { height: 64, hand: [0.946, 0.457] },
   alchemist: { height: 62, hand: [0.94, 0.55] },
+  driller: { height: 64, hand: [0.9, 0.43] },
 };
 
 export const WEAPON_RIG: Record<string, WeaponRig> = {
@@ -45,6 +47,7 @@ export const WEAPON_RIG: Record<string, WeaponRig> = {
   gumiho: { width: 28, grip: [0.3, 0.75] },
   hwacha: { width: 38, grip: [WEAPON_BOX.pivotX / WEAPON_BOX.w, WEAPON_BOX.pivotY / WEAPON_BOX.h] },
   alchemist: { width: 34, grip: [WEAPON_BOX.pivotX / WEAPON_BOX.w, WEAPON_BOX.pivotY / WEAPON_BOX.h] },
+  driller: { width: 42, grip: [WEAPON_BOX.pivotX / WEAPON_BOX.w, WEAPON_BOX.pivotY / WEAPON_BOX.h] },
 };
 
 export const artKey = {
@@ -54,9 +57,9 @@ export const artKey = {
 };
 
 export function preloadArt(load: Phaser.Loader.LoaderPlugin): void {
-  for (const id of Object.keys(ART.chars)) load.image(artKey.char(id), `art/char_${id}.webp`);
+  for (const id of Object.keys(ART.chars)) load.image(artKey.char(id), `art/char_${id}.${id === 'driller' ? 'png' : 'webp'}`);
   for (const id of Object.keys(ART.weapons)) load.image(artKey.wpn(id), `art/wpn_${id}.webp`);
-  for (const id of Object.keys(ART.bgs)) load.image(artKey.bg(id), `art/bg_${id}.webp`);
+  for (const id of Object.keys(ART.bgs)) load.image(artKey.bg(id), `art/bg_${id}.${id === 'bridge' || id === 'quarry' ? 'png' : 'webp'}`);
 }
 
 export interface BodyArt {
@@ -127,7 +130,7 @@ export function makeArtPortrait(textures: Phaser.Textures.TextureManager, id: st
     oy = size * 0.02;
   } else {
     unit = size * 0.92;
-    if (id === 'hwacha' || id === 'alchemist') {
+    if (id === 'hwacha' || id === 'alchemist' || id === 'driller') {
       const wr = WEAPON_RIG[id]!;
       const right = rig.hand[0] * (d.w / d.h) + (wr.width / rig.height) * (1-wr.grip[0]) * 0.9;
       unit = Math.min(unit, size * 0.9 / right);

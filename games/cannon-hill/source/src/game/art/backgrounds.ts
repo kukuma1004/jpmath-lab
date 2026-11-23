@@ -342,7 +342,7 @@ function underworld(): BgLayers {
   return { sky, far, mid, near, ambient: 'souls' };
 }
 
-const BUILDERS: Record<string, () => BgLayers> = { baekdu, sanseong, forest, cloud: cloudPalace, underworld };
+const BUILDERS: Record<string, () => BgLayers> = { baekdu, sanseong, forest, cloud: cloudPalace, underworld, bridge: sanseong, quarry: sanseong };
 
 const cache = new Map<string, BgLayers>();
 

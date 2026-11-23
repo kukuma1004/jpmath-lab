@@ -212,7 +212,9 @@ export class TerrainPainter {
         break;
       }
       case Mat.Wood: {
-        const s = Math.sin(px * 0.7 + noise1(py / 16, 3) * 5) * 9;
+        const plank=Math.floor(px/18),seam=px%18<2;
+        const grain=Math.sin(py*1.4+noise1(px/23,3)*4)*5;
+        const s=seam?-25:grain+(hash2(plank,Math.floor(py/24),3)-0.5)*21;
         r += s; gg += s * 0.8; b += s * 0.6;
         break;
       }

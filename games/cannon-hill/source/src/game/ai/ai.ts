@@ -278,7 +278,7 @@ export class AIActor {
   private waitT = 0;
   thinkT = 0;
 
-  constructor(public idx: number, public diff: Difficulty, public minThink = 0.7) {}
+  constructor(public idx: number, public diff: Difficulty, public minThink = 0.18) {}
 
   /** 시뮬레이션 한 걸음 전에 부른다. budgetMs는 이번 프레임에 생각할 시간 */
   update(b: Battle, budgetMs: number, maxSims = Infinity): void {
@@ -316,12 +316,12 @@ export class AIActor {
         break;
       case 'aim': {
         const d = this.plan!.angle - f.angle;
-        if (Math.abs(d) > 1.2) b.setAim(d > 0 ? 1 : -1);
+        if (Math.abs(d) > 1.2) { b.setAim(0); b.setAngle(f.angle + clamp(d, -150 * DT, 150 * DT)); }
         else {
           b.setAim(0);
           b.setAngle(this.plan!.angle);
           this.waitT += DT;
-          if (this.waitT > 0.25) {
+          if (this.waitT > 0.08) {
             b.selectWeapon(this.plan!.slot);
             b.setCharge(true);
             this.stage = 'charge';

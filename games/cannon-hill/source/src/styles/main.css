@@ -321,7 +321,7 @@ html, body {
 .keyhint { font-size: 12px; color: var(--muted); text-align: center; grid-column: 1 / -1; }
 
 .banner { position: absolute; left: 0; right: 0; top: 36%; display: grid; justify-items: center; gap: 6px; pointer-events: none; opacity: 0; }
-.banner.show { animation: banner 1.6s ease forwards; }
+.banner.show { animation: banner 0.72s ease forwards; }
 .banner b { font: 400 clamp(40px, 7vw, 72px)/1 var(--title-font); color: var(--paper); text-shadow: 0 4px 0 rgba(0, 0, 0, 0.5), 0 0 30px rgba(0, 0, 0, 0.6); }
 .banner span { font: 400 20px/1 var(--title-font); color: var(--gold); }
 .banner.p1 b { color: #cfe6ff; }

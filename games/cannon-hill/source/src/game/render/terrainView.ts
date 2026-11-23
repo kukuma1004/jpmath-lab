@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { CELL, WORLD_H, WORLD_W } from '../config/constants';
 import type { MapDef } from '../data/maps';
-import type { Terrain } from '../terrain/terrain';
+import { Mat, type Terrain } from '../terrain/terrain';
 import { TerrainPainter } from './terrainPainter';
 
 const TILE = 240;
@@ -15,6 +15,7 @@ export class TerrainView {
   private rows = Math.ceil(WORLD_H / TILE);
   private img: ImageData;
   private id = ++uid;
+  private bridgeRails: Phaser.GameObjects.Graphics | null = null;
 
   constructor(private scene: Phaser.Scene, layer: Phaser.GameObjects.Layer, public terrain: Terrain, def: MapDef, seed: number) {
     this.painter = new TerrainPainter(terrain, def, seed);
@@ -29,7 +30,30 @@ export class TerrainView {
       }
     }
     for (let i = 0; i < this.tiles.length; i++) this.drawTile(i);
+    if(def.id==='bridge'){
+      this.bridgeRails=scene.add.graphics().setDepth(9);layer.add(this.bridgeRails);this.drawBridgeRails();
+    }
     terrain.dirty.length = 0;
+  }
+
+  /** 난간은 목재 발판이 남은 곳에만 붙인다. 끊긴 다리 위에 장식이 떠 있지 않게 한다. */
+  private drawBridgeRails():void {
+    const g=this.bridgeRails;if(!g)return;g.clear();
+    const t=this.terrain;
+    const yAt=(x:number)=>600+90*Math.sin((x-320)/1760*Math.PI);
+    for(let x=332;x<2070;x+=6){
+      const y=yAt(x),ny=yAt(x+6);
+      if(t.matAt(x,y)!==Mat.Wood||t.matAt(x+6,ny)!==Mat.Wood)continue;
+      const sag=4*Math.sin(((x-332)%72)/72*Math.PI);
+      g.lineStyle(5,0x382833,0.9);g.lineBetween(x,y-40+sag,x+6,ny-40+sag);
+      g.lineStyle(2.5,0xd9b977,1);g.lineBetween(x,y-41+sag,x+6,ny-41+sag);
+      if((x-332)%72===0){
+        g.lineStyle(6,0x443038,1);g.lineBetween(x,y-9,x,y-47);
+        g.lineStyle(3,0xb58a51,1);g.lineBetween(x-1,y-10,x-1,y-47);
+        g.lineStyle(2,0xe5cd98,0.95);g.lineBetween(x-5,y-38,x+4,y-38);g.lineBetween(x-5,y-34,x+4,y-34);
+        g.lineStyle(1.5,0x9b7b58,0.85);g.lineBetween(x,y-36,x+30,yAt(x+30)-9);
+      }
+    }
   }
 
   private drawTile(i: number): void {
@@ -63,9 +87,11 @@ export class TerrainView {
       const tx = i % this.cols, ty = Math.floor(i / this.cols);
       d.push({ x0: (tx * TILE) / CELL, y0: (ty * TILE) / CELL, x1: ((tx + 1) * TILE) / CELL - 1, y1: ((ty + 1) * TILE) / CELL - 1 });
     }
+    this.drawBridgeRails();
   }
 
   destroy(): void {
+    this.bridgeRails?.destroy();
     for (const t of this.tiles) {
       t.img.destroy();
       this.scene.textures.remove(t.tex.key);

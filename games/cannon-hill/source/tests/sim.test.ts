@@ -312,7 +312,9 @@ describe('AI', () => {
       expect(plan.angle).toBeLessThanOrEqual(180);
       expect(plan.power).toBeGreaterThanOrEqual(5);
       expect(plan.power).toBeLessThanOrEqual(100);
-      const r = b.dryShot(b.current, plan.slot, plan.exact.angle, plan.exact.power);
+      const actor = { ...b.cur, stats: { ...b.cur.stats } };
+      for(let i=0;i<plan.walkSteps;i++) b.walk(actor,plan.walkDir*70*DT);
+      const r = b.dryShot(b.current, plan.slot, plan.exact.angle, plan.exact.power, {x:actor.x,y:actor.y});
       const foe = b.enemy;
       const d = Math.min(...r.impacts.map((p) => Math.hypot(p.x - foe.x, p.y - foe.y)));
       if (r.damage[foe.idx] > 0 || d < 120) near++;
@@ -394,8 +396,9 @@ it('모든 전장에서 두 캐릭터가 땅 위에 공정하게 선다', () => 
       expect(p.y, `${m.id}/${seed}`).toBeGreaterThan(0);
       expect(b.terrain.solidAt(p.x, p.y), `${m.id}/${seed} 1P 발밑`).toBe(true);
       expect(b.terrain.solidAt(q.x, q.y), `${m.id}/${seed} 2P 발밑`).toBe(true);
-      expect(Math.abs(p.y - q.y), `${m.id}/${seed} 높이 차`).toBeLessThan(90);
-      expect(Math.abs((2400 - q.x) - p.x), `${m.id}/${seed} 대칭`).toBeLessThan(60);
+      expect(Math.abs(p.y - q.y), `${m.id}/${seed} 높이 차`).toBeLessThanOrEqual(420);
+      expect(Math.abs(p.x-q.x), `${m.id}/${seed} 거리`).toBeGreaterThanOrEqual(380);
+      expect(Math.abs(p.x-q.x), `${m.id}/${seed} 거리`).toBeLessThanOrEqual(1260);
       // 서 있는 동안 떨어지지 않는다
       for (let i = 0; i < 30; i++) b.step();
       expect(b.fighters[0].onGround && b.fighters[1].onGround).toBe(true);

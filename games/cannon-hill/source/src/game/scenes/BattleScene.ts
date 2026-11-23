@@ -102,6 +102,13 @@ export class BattleScene extends Phaser.Scene {
 
     this.bg = new BackgroundView(this, this.bgLayer, def.id, s.quality, W);
     this.makeBottom(def.id);
+    if (def.ringOutY !== undefined) {
+      const line = this.add.graphics().setDepth(8);
+      line.lineStyle(2,0xffb589,0.5);
+      for(let x=0;x<WORLD_W;x+=48) line.lineBetween(x,def.ringOutY,x+24,def.ringOutY);
+      const label=this.add.text(WORLD_W/2,def.ringOutY+12,'추락 시 탈락',{fontFamily:'sans-serif',fontSize:'18px',color:'#ffd1ac',stroke:'#302339',strokeThickness:5}).setOrigin(0.5,0).setDepth(8);
+      this.world.add([line,label]);
+    }
     this.terrainView = new TerrainView(this, this.world, b.terrain, def, b.cfg.seed);
     this.bodies = new BodiesView(this, this.world, this.terrainView.painter, particleScale(s.quality));
     this.bodies.onProjectileGone = (id) => audio.whistleStop(id);
@@ -295,11 +302,11 @@ export class BattleScene extends Phaser.Scene {
     this.app.ui.setFreeCam(this.free);
     if (!this.free) {
       const t = this.target();
-      const k = 1 - Math.exp(-dt * t.k);
+      const k = 1 - Math.exp(-dt * (b.phase === 'TURN_START' || b.isPlayerPhase() ? Math.max(8,t.k) : t.k));
       this.camX += (t.x - this.camX) * k;
       this.camY += (t.y - this.camY) * k;
       const z = Phaser.Math.Clamp(t.z * this.userZoom, this.minZoom(), 1.4);
-      this.camZ += (z - this.camZ) * (1 - Math.exp(-dt * 2.5));
+      this.camZ += (z - this.camZ) * (1 - Math.exp(-dt * 6));
     }
     this.applyCamera();
   }
@@ -488,8 +495,8 @@ export class BattleScene extends Phaser.Scene {
           const w = e.winner;
           if (w === 0 || w === 1) for (const f of b.fighters) if (f.team === w && f.alive) this.effects.confetti(f.x, f.y - 40);
           const iWon = this.mode === 'local' ? w !== -1 : w === 0;
-          this.time.delayedCall(500, () => (iWon ? audio.victory() : audio.defeat()));
-          this.resultTimer = this.time.delayedCall(1900, () => this.app.ui.showResult(b, this.names));
+          this.time.delayedCall(220, () => (iWon ? audio.victory() : audio.defeat()));
+          this.resultTimer = this.time.delayedCall(900, () => this.app.ui.showResult(b, this.names));
           break;
         }
         default:
@@ -544,8 +551,11 @@ export class BattleScene extends Phaser.Scene {
     const b = this.battle;
     this.t += dt;
     if (!this.paused) {
-      this.acc += dt * this.timeScale;
-      const maxSteps = Math.ceil(6 * this.timeScale);
+      const fastSettle = !b.projectiles.length && !b.scheduled.length &&
+        (b.phase === 'EXPLOSION' || b.phase === 'TERRAIN_COLLAPSE' || b.phase === 'PHYSICS_SETTLING');
+      const rate = this.timeScale * (fastSettle ? 2.4 : 1);
+      this.acc += dt * rate;
+      const maxSteps = Math.ceil(6 * rate);
       let n = 0;
       const budget = { ms: 7 };
       while (this.acc >= DT && n < maxSteps) {
@@ -553,6 +563,7 @@ export class BattleScene extends Phaser.Scene {
         b.step();
         this.acc -= DT;
         n++;
+        if (fastSettle && (b.phase === 'TURN_START' || b.isPlayerPhase() || b.phase === 'GAME_OVER')) { this.acc = 0; break; }
       }
       if (n >= maxSteps) this.acc = 0;
     }
@@ -578,6 +589,9 @@ export class BattleScene extends Phaser.Scene {
       : b.phase === 'TERRAIN_COLLAPSE' ? '땅이 무너지는 중…'
       : !b.isPlayerPhase() && (b.shotDamage.get(b.shotNo) ?? 0) > 0 ? `이번 포격: 상대에게 합계 ${b.shotDamage.get(b.shotNo)} 피해`
       : b.clouds.some((c) => (c.turns[b.current] ?? 0) > 0 && b.inCloud(b.cur, c)) ? '독무 속! 다음 자기 차례가 오기 전에 구름 밖으로 움직이세요'
+      : b.isPlayerPhase() && b.cfg.mapId === 'bridge' ? '다리를 끊어 떨어뜨리세요 · 추락선을 넘으면 체력과 무관하게 탈락'
+      : b.isPlayerPhase() && b.cur.charId === 'mudang' && b.cur.slot === 0 ? '고각 55~125° 추천 · 내려올 때 적을 추적합니다'
+      : b.isPlayerPhase() && b.cur.charId === 'driller' ? b.cur.slot === 0 ? '지형을 길게 관통 · 벽 뒤와 발밑을 노리세요' : '넓은 지반 붕괴 · 높은 발판을 무너뜨리세요'
       : b.isPlayerPhase() && b.steadyReady(b.cur) ? '자리 잡은 포격 — 움직이지 않고 쏘면 피해 +15%'
       : '';
     this.app.ui.updateHud(b, { names: this.names, humanTurn: this.humanTurn(), status });

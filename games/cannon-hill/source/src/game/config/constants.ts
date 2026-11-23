@@ -17,7 +17,7 @@ export const ROWS = WORLD_H / CELL;
 
 export const DT = 1 / 60;
 export const GRAVITY = 560;
-export const MAX_LAUNCH_SPEED = 1000;
+export const MAX_LAUNCH_SPEED = 1100;
 export const WIND_ACC_PER_UNIT = 7;
 export const WIND_MAX = 10;
 
@@ -27,9 +27,9 @@ export const WALK_SPEED = 70;
 export const MOVE_BUDGET = 150;
 export const STEP_UP = 9;
 export const STEP_DOWN = 10;
-export const SAFE_FALL_SPEED = 380;
-export const FALL_DAMAGE_PER_SPEED = 0.55;
-export const FALL_DAMAGE_MAX = 320;
+export const SAFE_FALL_SPEED = 360;
+export const FALL_DAMAGE_PER_SPEED = 0.78;
+export const FALL_DAMAGE_MAX = 420;
 
 export const ANGLE_SPEED = 42; // 도/초
 export const CHARGE_TIME = 1.6; // 0→100까지 걸리는 시간
@@ -39,6 +39,6 @@ export const BASE_HP = 800;
 
 export const MAX_BOULDERS = 28;
 export const MAX_CHUNKS = 24;
-export const SETTLE_LIMIT = 8; // 발사 뒤 정착까지 허용하는 시뮬레이션 시간(초)
+export const SETTLE_LIMIT = 1.6; // 포탄이 끝난 뒤 남은 물리를 빠르게 정착시킨다
 export const FLIGHT_LIMIT = 14;
-export const MIN_SETTLE_HOLD = 0.55;
+export const MIN_SETTLE_HOLD = 0.18;
