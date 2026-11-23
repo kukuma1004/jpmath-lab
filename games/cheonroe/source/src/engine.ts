@@ -18,8 +18,8 @@ export const DASH_MAX=2, DASH_RECHARGE=2.2, DASH_TIME=.13, DASH_SPEED=1650, DASH
 export const ULT_TIME=3.2;
 /** Boss HP is sized from its attack script: this much damage per world second, for every second of attacks. */
 export const BOSS_DPS=250;
-/** Melee reach in front of the hit core, and the radius of bullets the swing knocks away. */
-export const MELEE_REACH:{[k in HeroId]:number}={rin:150,golem:150,ryu:190,hanui:150,arang:175}, MELEE_CANCEL=105;
+/** Automatic melee rewards close-range damage; it does not cancel bullets or grant invulnerability. */
+export const MELEE_REACH:{[k in HeroId]:number}={rin:150,golem:150,ryu:190,hanui:150,arang:175};
 
 /** World-space hit circles [x,y,r] of an enemy, derived from the drawn sprite. */
 export function hitCircles(e:Enemy):[number,number,number][] {
@@ -584,7 +584,6 @@ export class Engine {
           p.nearTimer=s.hero==='ryu'?.16:s.hero==='golem'?.32:s.hero==='arang'?.2:.24;
           const dmg=({rin:30,golem:60,ryu:46,hanui:34,arang:40}[s.hero])*(e.boss?.5:1);
           const hx=Math.max(p.x+40,c[0]-c[2]*.5),hy=clamp(c[1],p.y-70,p.y+70);
-          this.clears.push({x:hx,y:hy,r:MELEE_CANCEL,gold:true});
           this.event({kind:'near',x:hx,y:hy,value:dmg});
           this.damageEnemy(e,dmg,true,hx,hy);
         }

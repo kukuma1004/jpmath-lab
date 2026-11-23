@@ -15,3 +15,5 @@ Acceptance: all five heroes visibly evolve through awakening 1/4/8, actual equal
 Not included: account-level grinding, paid progression, changing old public scores, replacing existing artwork, unrelated game edits.
 
 Status: implementation and local acceptance complete. Release verification is recorded separately in `final-evidence.md` and ignored `.dream-loop/cheonroe-growth/` reports. Do not treat prior first-playable screenshots or older tests as current evidence.
+
+2026-11-23 follow-up: the user found close camping effectively safe. Automatic melee was clearing a 105-pixel circle every 0.16–0.32 seconds and converting cancelled bullets to gold. Remove that passive defense while retaining melee damage, reach, cadence and the close-kill score bonus. Keep charge/signature identity, source-kill rewards, dash, ultimate, awakening and rankings intact. Engine regression and real authored-boss browser pressure are recorded under `.dream-loop/cheonroe-melee/`.

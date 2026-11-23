@@ -47,3 +47,15 @@ node tests/cheonroe-growth-browser.test.mjs
 검증한 변경만 커밋하고 최신 `origin/main`의 다른 게임 변경 위에 반영한 뒤 `git push origin HEAD:main`으로 GitHub Pages에 배포한다. 해당 SHA의 Pages 작업 성공, 공개 HTML·JS·CSS의 해시 일치, 공개 사이트 브라우저 동작과 랭킹 읽기를 별도로 확인한다. 그 결과와 SHA는 `.dream-loop/cheonroe-growth/release.json`에 기록한다.
 
 이번 개편은 서버 규칙이나 기존 공개 기록을 쓰거나 삭제하지 않는다. 원화 추가 없이 기존 WebP와 공용 Three.js 번들을 사용하며, 공개 앱 JS는 약 165KB(압축 57KB), CSS는 약 30KB(압축 8KB)다. 물리 휴대폰·실제 계정 점수 제출·사람의 여덟 마당 완주는 이번 검증 범위에 포함하지 않는다.
+
+## 2026-11-23 자동 근접 방어 수정
+
+사용자 제보: 적에게 붙으면 자동 근접 공격이 탄을 계속 없애 위험을 무시할 수 있다. 확인 결과 근접마다 반경 105의 탄을 금화로 바꾸는 처리가 0.16~0.32초마다 반복됐다.
+
+자동 근접의 탄 소거만 제거했다. 근접 추가 피해·공격 간격·사거리·근접 격파 점수 ×1.5는 유지한다. 별개 기술인 차지·각성 비전, 회피·필살기와 적 격파 보상은 유지하며, 도움말도 탄을 막지 않는다는 설명으로 고쳤다.
+
+- `node --test tests/cheonroe-melee.test.mjs tests/cheonroe-growth.test.mjs tests/cheonroe-ranking-model.test.mjs`: 32개 통과. 새 근접 회귀 9개는 다섯 전사·두 난이도·각성 1/8단의 피해/탄 통과, 금화 생성 방지, 격파 보상, 몸체 접촉·광선, 회피·필살기 방어를 포함한다.
+- 고정 적 옆에서 조준탄을 맞는 2초 재현: 수정 전 20개 조합 모두 피격 0, 수정 후 모두 피격 1. 두 경우 모두 근접 공격이 계속 발동했다. 실제 엔진의 피격 후 무적 시간은 유지하며, 이 수치는 해당 고정 조건의 결과다. 원본: `.dream-loop/cheonroe-melee/{before-camping-metrics,camping-metrics}.json`.
+- `node tests/cheonroe-melee-browser.test.mjs`: 실제 첫 수호신의 패턴을 근접 추적하는 합성 봇을 데스크톱 린 1단·가로 모바일 철귀 8단에서 실행했다. 두 경우 모두 근접 연타 중 5회 피격하고 게임오버가 됐다. 회피·차지·필살기·탄 주입을 사용하지 않았다. 사람의 난도나 실기기 성능을 입증하는 검사는 아니다.
+- `node tests/cheonroe-growth-browser.test.mjs`: 새 공개용 정적 빌드에서 기존 성장·전환·조작·모바일 검사 39개 재통과. 실행·콘솔·리소스 오류 0.
+- TypeScript·Vite 빌드 및 `git diff --check` 통과. QA 훅은 계속 `?qa=1`에서만 동작하며 공개 기록을 쓰지 않는다. 이번 수정의 공개 SHA·Pages 작업·파일 해시·공개 보스 압박 검사는 `.dream-loop/cheonroe-melee/release.json` 및 `public-browser/results.json`에 기록한다.
