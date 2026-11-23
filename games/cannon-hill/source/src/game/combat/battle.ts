@@ -1,7 +1,7 @@
 import {
   ANGLE_SPEED, CELL, CHARGE_TIME, CHAR_CENTER_Y, CHAR_RADIUS, COLS, DT, FALL_DAMAGE_MAX, FALL_DAMAGE_PER_SPEED,
   FLIGHT_LIMIT, GRAVITY,
-  MAX_BOULDERS, MAX_CHUNKS, MAX_LAUNCH_SPEED, MIN_SETTLE_HOLD, MOVE_BUDGET, ROWS, SAFE_FALL_SPEED, SETTLE_LIMIT,
+  MAX_BOULDERS, MAX_CHUNKS, MAX_LAUNCH_SPEED, MAX_LAUNCH_TILT, MIN_SETTLE_HOLD, MOVE_BUDGET, ROWS, SAFE_FALL_SPEED, SETTLE_LIMIT,
   STEP_DOWN, STEP_UP, TURN_LIMIT_DEFAULT, WALK_SPEED, WIND_ACC_PER_UNIT, WORLD_H, WORLD_W,
 } from '../config/constants';
 import { CHARACTERS, TRAIT, character } from '../data/characters';
@@ -411,14 +411,14 @@ export class Battle {
     let moved = 0;
     while (remain > 0) {
       const s = Math.min(1, remain);
-      const nx = clamp(f.x + dir * s, 10, WORLD_W - 10);
-      if (nx === f.x) break;
+      const startX = f.x;
+      const nx = clamp(startX + dir * s, 10, WORLD_W - 10);
+      if (nx === startX) break;
       let ny = f.y;
       if (t.solidAt(nx, f.y - 1)) {
-        // 오르막: 이번 걸음으로 오를 수 있는 높이에는 기울기 한계가 있다
-        const maxUp = Math.min(STEP_UP, Math.ceil(s * 2.2) + 1);
+        // 짧은 둔턱은 한 걸음으로 오른다. 24px를 넘는 벽이나 머리가 닿을 천장은 막힌다.
         let ok = false;
-        for (let up = 1; up <= maxUp; up++) {
+        for (let up = 1; up <= STEP_UP; up++) {
           if (!t.solidAt(nx, f.y - 1 - up)) { ny = f.y - up; ok = true; break; }
         }
         if (!ok) break;
@@ -432,18 +432,39 @@ export class Battle {
           f.x = nx;
           f.onGround = false;
           f.airPeakY = f.y;
-          moved += s;
+          moved += Math.abs(nx - startX);
           break;
         }
       }
       // 머리가 막히면 못 간다
-      if (t.solidAt(nx, ny - 36) || t.solidAt(nx, ny - 20)) break;
+      let blocked = false;
+      for (let height = 2; height <= 36; height += CELL) {
+        if (t.solidAt(nx, ny - height)) { blocked = true; break; }
+      }
+      if (blocked) break;
       f.x = nx;
       f.y = ny;
-      moved += s;
+      moved += Math.abs(nx - startX);
       remain -= s;
     }
     return moved;
+  }
+
+  /** 발 아래의 경사. 낭떠러지나 한쪽에만 있는 둔턱은 포신을 기울이지 않는다. */
+  groundSlope(f: Fighter): number {
+    if (!f.onGround) return 0;
+    const left = this.terrain.surfaceBelow(f.x - 16, f.y - STEP_UP - 1, STEP_UP * 2 + 2);
+    const right = this.terrain.surfaceBelow(f.x + 16, f.y - STEP_UP - 1, STEP_UP * 2 + 2);
+    if (left < 0 || right < 0) return 0;
+    const a = f.y - left, b = right - f.y;
+    if (a * b <= 0) return 0;
+    const rise = Math.sign(a) * Math.min(Math.abs(a), Math.abs(b));
+    return clamp(Math.atan2(rise, 16) / DEG, -MAX_LAUNCH_TILT, MAX_LAUNCH_TILT);
+  }
+
+  /** 조준 입력은 몸 기준이다. 탄 계산에서는 지면 기울기를 반영한 월드 각도를 쓴다. */
+  launchAngle(f: Fighter, angle = f.angle): number {
+    return clamp(angle - this.groundSlope(f), 0, 180);
   }
 
   private fire(power: number): void {
@@ -456,21 +477,22 @@ export class Battle {
     const shot = ++this.shotNo;
     f.stats.shots++;
     this.shotDamage.set(shot, 0);
-    const [mx, my] = this.muzzle(f);
-    this.emit({ type: 'fire', owner: f.idx, weaponId: w.id, x: mx, y: my, angle: f.angle, power, shot, wind: this.wind });
+    const angle = this.launchAngle(f);
+    const [mx, my] = this.muzzle(f, angle);
+    this.emit({ type: 'fire', owner: f.idx, weaponId: w.id, x: mx, y: my, angle, power, shot, wind: this.wind });
     if (this.steadyReady(f)) this.emit({ type: 'trait', who: f.idx, kind: 'steady', x: f.x, y: f.y - 70 });
     this.setAnim(f, 'fire');
     if (w.pattern === 'triple') {
       const n = w.count ?? 3;
-      for (let i = 0; i < n; i++) this.spawnShot(f, w, f.angle + (i - (n - 1) / 2) * (w.spreadDeg ?? 3), power, shot);
+      for (let i = 0; i < n; i++) this.spawnShot(f, w, angle + (i - (n - 1) / 2) * (w.spreadDeg ?? 3), power, shot);
     } else {
-      this.spawnShot(f, w, f.angle, power, shot);
+      this.spawnShot(f, w, angle, power, shot);
       if (w.pattern === 'salvo') {
         const n = w.count ?? 3;
         for (let i = 1; i < n; i++) {
           this.scheduled.push({
             t: this.time + i * (w.salvoGap ?? 0.3), kind: 'salvo', owner: f.idx, shot, weaponId: w.id, x: 0,
-            angle: f.angle, power: clamp(power + (i % 2 === 1 ? 1 : -1) * Math.ceil(i / 2) * (w.salvoPowerStep ?? 3), 0, 100),
+            angle, power: clamp(power + (i % 2 === 1 ? 1 : -1) * Math.ceil(i / 2) * (w.salvoPowerStep ?? 3), 0, 100),
           });
         }
       }
@@ -482,7 +504,7 @@ export class Battle {
     this.setPhase('PROJECTILE_FLIGHT');
   }
 
-  muzzle(f: Fighter, angle = f.angle): [number, number] {
+  muzzle(f: Fighter, angle = this.launchAngle(f)): [number, number] {
     const a = angle * DEG;
     return [f.x + Math.cos(a) * 26, f.y - CHAR_CENTER_Y - 4 - Math.sin(a) * 26];
   }
@@ -1268,11 +1290,7 @@ export class Battle {
         f.airPeakY = f.y;
         f.vy = Math.max(f.vy, 0);
       } else {
-        // 기울기(화면용)
-        const t = this.terrain;
-        const yl = t.surfaceBelow(f.x - 9, f.y - 14, 40);
-        const yr = t.surfaceBelow(f.x + 9, f.y - 14, 40);
-        if (yl >= 0 && yr >= 0) f.slope = clamp(Math.atan2(yr - yl, 18) / DEG, -28, 28);
+        f.slope = this.groundSlope(f);
         return;
       }
     }
@@ -1466,7 +1484,8 @@ export class Battle {
     this.scheduled = [];
     const w = this.weaponOf(f, slot);
     const sp = (power / 100) * MAX_LAUNCH_SPEED;
-    const angles = w.pattern === 'triple' ? Array.from({length:w.count??3},(_,i)=>angle+(i-((w.count??3)-1)/2)*(w.spreadDeg??3)) : [angle];
+    const launch = this.launchAngle(f, angle);
+    const angles = w.pattern === 'triple' ? Array.from({length:w.count??3},(_,i)=>launch+(i-((w.count??3)-1)/2)*(w.spreadDeg??3)) : [launch];
     const powers = w.pattern === 'salvo' ? Array.from({length:w.count??3},(_,i)=>clamp(power+(i===0?0:(i%2===1?1:-1)*Math.ceil(i/2)*(w.salvoPowerStep??3)),0,100)) : [power];
     const steady = this.steadyReady(f) && (!from || (Math.abs(from.x - saved.x) < 0.5 && Math.abs(from.y - saved.y) < 0.5));
     for (const a of angles) {
@@ -1500,9 +1519,10 @@ export class Battle {
   /** 화면에 그릴 예상 궤적(실제 물리와 같은 계산). 처음 maxT초까지 */
   previewPath(maxT: number, power: number): { x: number; y: number }[] {
     const f = this.cur;
-    const [mx, my] = this.muzzle(f);
+    const angle = this.launchAngle(f);
+    const [mx, my] = this.muzzle(f, angle);
     const sp = (power / 100) * MAX_LAUNCH_SPEED;
-    const a = f.angle * DEG;
+    const a = angle * DEG;
     let vx = Math.cos(a) * sp, vy = -Math.sin(a) * sp, x = mx, y = my;
     const pts = [{ x, y }];
     for (let t = 0; t < maxT; t += DT) {

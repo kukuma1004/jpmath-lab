@@ -499,9 +499,13 @@ export class UI {
       el.querySelector('[data-w="1"]')!.classList.toggle('on', f.slot === 1);
       for (const slot of [0, 1]) el.querySelector<HTMLButtonElement>(`[data-w="${slot}"]`)!.disabled = !canAct || b.phase === 'CHARGE';
     });
-    const rel = f.angle <= 90 ? f.angle : 180 - f.angle;
-    this.set('ang', `${Math.round(rel)}|${f.angle <= 90}`, () => {
+    const rel = Math.min(f.angle, 180 - f.angle);
+    const launch = b.launchAngle(f);
+    const frameAngle = Math.round(Math.min(launch, 180 - launch));
+    const angleLabel = Math.abs(launch - f.angle) >= 0.5 ? `발사 ${launch <= 90 ? '→' : '←'}${frameAngle}°` : '몸 기준';
+    this.set('ang', `${Math.round(rel)}|${angleLabel}`, () => {
       el.querySelector('.ang')!.textContent = `${Math.round(rel)}°`;
+      el.querySelector('.angle-read small')!.textContent = angleLabel;
     });
     const mv = Math.max(0, (f.moveLeft / (MOVE_BUDGET * c.moveMul)) * 100);
     this.set('mv', `${Math.round(mv)}`, () => { el.querySelector<HTMLElement>('.movebar i')!.style.width = `${mv}%`; });
@@ -735,6 +739,7 @@ export class UI {
           <li>지지점을 잃은 땅은 덩어리째 무너지고, 바위는 낙석이 되어 굴러갑니다. 깔리거나 높은 곳에서 떨어지면 다칩니다.</li>
           <li><b>1번과 2번 탄은 매 차례 자유롭게 선택</b>합니다. 횟수 제한과 기세 조건이 없고, 발사 뒤에도 고른 탄을 기억합니다. 누르고 모으는 힘은 포탄의 날아갈 거리입니다.</li>
           <li><b>추천 각도·힘</b>는 넓은 시작 범위입니다. 화살표 쪽으로 포신을 돌리고, 추천 범위 안에서 조금씩 조절해 보세요. 힘 게이지의 금빛 띠가 추천 구간입니다. 위치·바람·탄이 바뀌면 다시 안내하며, 설정의 「조준 도움」에서 끌 수 있습니다.</li>
+          <li>낮은 둔턱은 걸어서 넘을 수 있습니다. 경사에 서면 몸과 포신이 함께 기울어집니다. 조작부의 큰 숫자는 몸 기준 조준각이고, 그 아래에 경사를 반영한 발사 방향과 각도가 표시됩니다.</li>
           <li><b>독구름</b> 안에서 자기 차례를 맞으면 피해를 입습니다. 구름 밖으로 움직여 피할 수 있으며, 같은 편도 피해를 입습니다.</li>
           <li>기본은 <b>체력 800의 끝장전</b>입니다. 상대 편이 모두 쓰러져야 끝납니다. 20·30·40턴 판정전을 따로 고르면 제한 턴 뒤 체력 비율로 판정합니다. 함께 쓰러지면 무승부입니다.</li>
           <li><b>2:2</b>는 편마다 장수 둘이 번갈아 쏩니다(편 → 상대 편 → 편의 다른 장수 …). 같은 편도 폭발에 다치니 조심하세요. 한 편이 모두 쓰러지면 끝납니다.</li>

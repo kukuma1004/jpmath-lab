@@ -23,10 +23,11 @@ export const WIND_MAX = 10;
 
 export const CHAR_RADIUS = 17;
 export const CHAR_CENTER_Y = 20;
-export const WALK_SPEED = 70;
-export const MOVE_BUDGET = 150;
-export const STEP_UP = 9;
-export const STEP_DOWN = 10;
+export const WALK_SPEED = 104;
+export const MOVE_BUDGET = 225;
+export const STEP_UP = 24;
+export const STEP_DOWN = 14;
+export const MAX_LAUNCH_TILT = 18;
 export const SAFE_FALL_SPEED = 360;
 export const FALL_DAMAGE_PER_SPEED = 0.78;
 export const FALL_DAMAGE_MAX = 420;

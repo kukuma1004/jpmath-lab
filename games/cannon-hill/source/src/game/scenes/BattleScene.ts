@@ -524,14 +524,16 @@ export class BattleScene extends Phaser.Scene {
     const f = b.cur;
     if (!f.alive) return;
     const col = PLAYER_COLORS[f.team]!;
-    const a = f.angle * DEG;
-    const [mx, my] = b.muzzle(f);
+    const launchAngle = b.launchAngle(f);
+    const a = launchAngle * DEG;
+    const [mx, my] = b.muzzle(f, launchAngle);
     // 각도 호
     const fc = f.angle <= 90 ? 1 : -1;
     const cx = f.x, cy = f.y - 24;
     g.lineStyle(2, 0xffffff, 0.25);
     g.beginPath();
-    g.arc(cx, cy, 46, fc > 0 ? -Math.PI / 2 : Math.PI, fc > 0 ? 0 : -Math.PI / 2, false);
+    const tilt = (f.angle - launchAngle) * DEG;
+    g.arc(cx, cy, 46, (fc > 0 ? -Math.PI / 2 : Math.PI) + tilt, (fc > 0 ? 0 : -Math.PI / 2) + tilt, false);
     g.strokePath();
     g.lineStyle(3, col, 0.9);
     g.beginPath();

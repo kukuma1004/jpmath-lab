@@ -52,6 +52,28 @@ export function makeTextures(scene: Phaser.Scene): void {
     }
     radial(ctx, 32, 32, 24, [[0, 'rgba(255,255,255,0.7)'], [1, 'rgba(255,255,255,0)']]);
   });
+  make(scene, 'blast_cloud', 68, 68, (ctx) => {
+    const lobes: [number, number, number][] = [[34, 43, 21], [47, 36, 15], [19, 33, 15], [34, 24, 18], [31, 38, 14]];
+    for (const [x, y, r] of lobes) {
+      const shade = ctx.createRadialGradient(x - r * .4, y - r * .5, 1, x, y, r);
+      shade.addColorStop(0, '#fff8e7');
+      shade.addColorStop(.66, '#c0aea1');
+      shade.addColorStop(.9, '#968783');
+      shade.addColorStop(1, 'rgba(122,112,110,0)');
+      ctx.fillStyle = shade;
+      ctx.fillRect(x - r, y - r, r * 2, r * 2);
+    }
+  });
+  make(scene, 'shock_crescent', 180, 180, (ctx) => {
+    ctx.shadowColor = '#ff8b28';
+    ctx.shadowBlur = 8;
+    ctx.fillStyle = '#fff5cb';
+    ctx.beginPath();
+    ctx.moveTo(104, 5);
+    ctx.bezierCurveTo(25, 28, 18, 101, 63, 142);
+    ctx.bezierCurveTo(27, 92, 40, 35, 104, 5);
+    ctx.fill();
+  });
   make(scene, 'shard', 10, 10, (ctx) => {
     ctx.fillStyle = '#fff';
     ctx.beginPath();
@@ -92,6 +114,25 @@ export function makeTextures(scene: Phaser.Scene): void {
       const x=(j*23)%78, y=(j*13)%31;
       ctx.fillStyle=j%3?'#ee752d':'#ffc76a';
       ctx.fillRect(x,y,1+j%4,1);
+    }
+  });
+  make(scene, 'impact_streaks', 320, 320, (ctx) => {
+    // Detached, curved tips leave open space between the impact and the ejecta.
+    for (let i = 0; i < 9; i++) {
+      const side = i % 2 ? 1 : -1;
+      const dx = side * (35 + (i * 37) % 115), dy = -(20 + (i * 53) % 111);
+      const x = 160 + dx, y = 160 + dy;
+      const tailX = x - dx * .39, tailY = y - dy * .37 + 3;
+      const trail = ctx.createLinearGradient(tailX, tailY, x, y);
+      trail.addColorStop(0, 'rgba(255,119,32,0)');
+      trail.addColorStop(.72, '#ff8e31');
+      trail.addColorStop(1, '#fff7be');
+      ctx.fillStyle = trail;
+      ctx.beginPath();
+      ctx.moveTo(tailX, tailY);
+      ctx.quadraticCurveTo(x - dx * .14, y - 6, x + side * 3, y);
+      ctx.quadraticCurveTo(x - dx * .12, y - 2, tailX, tailY);
+      ctx.fill();
     }
   });
   make(scene, 'blast_fan', 240, 240, (ctx) => {

@@ -44,6 +44,34 @@ async function waitAim(page: Page, who?: number, timeout = 30_000) {
   }, { timeout }).toBe(true);
 }
 
+test('낮은 둔턱은 이동 키로 넘고 경사에서 실제 발사각을 보여준다', async ({page}) => {
+  await openBattle(page, 'local', ['general', 'archer'], 'quarry');
+  await waitAim(page);
+  await wr(page, `(() => {
+    const b = __wr.battle;
+    b.current=0; b.phase='AIM'; b.timeLeft=30; b.wind=0;
+    const f=b.cur;
+    for (let x=470;x<650;x+=2) {
+      let height = x<500 ? 900 : 880;
+      if (x>=530) height -= Math.floor((x-530)/8)*2;
+      for (let y=380;y<920;y+=2) b.terrain.set(x/2,y/2,y<height?0:2);
+    }
+    f.x=491; f.y=900; f.onGround=true; f.airPeakY=900; f.angle=45;
+  })()`);
+  await page.keyboard.down('d');
+  await page.waitForFunction(() => (window as any).__wr.battle.cur.x >= 558, undefined, {polling:'raf'});
+  await page.keyboard.up('d');
+  const hud = page.locator('[data-s=hud]');
+  await expect(hud.locator('.angle-read small')).toHaveText(/발사 →\d+°/);
+  expect(await wr(page, '__wr.battle.cur.y')).toBeLessThan(880);
+  expect(await wr(page, '__wr.battle.launchAngle(__wr.battle.cur)')).toBeGreaterThan(55);
+  await page.keyboard.down('Space');
+  await page.waitForFunction(() => (window as any).__wr.battle.cur.power >= 40, undefined, {polling:'raf'});
+  await page.keyboard.up('Space');
+  await expect.poll(() => wr(page, '__wr.battle.projectiles.length')).toBe(1);
+  expect(await wr(page, '__wr.battle.projectiles[0].vy')).toBeLessThan(-330);
+});
+
 test('바로 한 판: 선공으로 직접 쏘고 지난 포격을 본 뒤 같은 방식으로 재대전한다', async ({page}) => {
   await page.addInitScript(() => localStorage.setItem('jpml.warureu.settings.v1', JSON.stringify({difficulty:'hard', turnTime:20, turnLimit:30, battleRules:2})));
   await page.goto('./?qa=1');

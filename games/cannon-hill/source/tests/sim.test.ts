@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CELL, COLS, DT, ROWS, SETTLE_LIMIT, WORLD_H, WORLD_W } from '../src/game/config/constants';
+import { CELL, COLS, DT, MAX_LAUNCH_SPEED, MOVE_BUDGET, ROWS, SETTLE_LIMIT, STEP_UP, WALK_SPEED, WORLD_H, WORLD_W } from '../src/game/config/constants';
 import { Battle, defaultConfig } from '../src/game/combat/battle';
 import { AIActor, AIPlanner } from '../src/game/ai/ai';
 import { MAPS } from '../src/game/data/maps';
@@ -46,6 +46,68 @@ function runUntil(b: Battle, pred: () => boolean, maxSteps = 6000) {
   }
   return n;
 }
+
+describe('지면을 따라 이동하고 경사를 반영해 발사한다', () => {
+  it('낮은 둔턱을 오르고, 허용 높이보다 높은 벽에서 멈춘다', () => {
+    const b = blank();
+    flatGround(b);
+    fillRect(b.terrain, 500, 900 - STEP_UP, 600, 900, Mat.Rock);
+    fillRect(b.terrain, 560, 850, 600, 900 - STEP_UP, Mat.Rock);
+    place(b, 0, 499);
+    expect(b.walk(b.cur, 20)).toBe(20);
+    expect(b.cur.y).toBe(900 - STEP_UP);
+    expect(b.walk(b.cur, 50)).toBe(40);
+    expect(b.cur.x).toBe(559);
+  });
+
+  it('걷기 속도와 이동 한도는 차례에서 실제로 적용된다', () => {
+    const b = blank({chars: ['mudang', 'archer']});
+    flatGround(b);
+    place(b, 0, 400);
+    place(b, 1, 2000);
+    aim(b);
+    b.setMove(1);
+    for (let i = 0; i < 60; i++) b.step();
+    expect(b.cur.x).toBeCloseTo(400 + WALK_SPEED, 8);
+    for (let i = 0; i < 160; i++) b.step();
+    expect(b.cur.x).toBeCloseTo(400 + MOVE_BUDGET, 8);
+    expect(b.cur.moveLeft).toBeCloseTo(0, 8);
+  });
+
+  it('경사에 따른 실제 각도와 첫 궤적이 미리보기·발사의 물리에서 일치한다', () => {
+    const b = blank();
+    flatGround(b);
+    for (let x = 450; x < 600; x += CELL) {
+      fillRect(b.terrain, x, 850 - Math.floor((x - 450) / 8) * CELL, x + CELL, 900, Mat.Rock);
+    }
+    place(b, 0, 512);
+    place(b, 1, 1900);
+    aim(b);
+    b.setAngle(45);
+    const angle = b.launchAngle(b.cur);
+    const path = b.previewPath(DT, 60);
+    expect(angle).toBeGreaterThan(55);
+    expect(b.launchAngle(b.cur, 135)).toBeGreaterThan(135);
+    b.fireNow(60);
+    const p = b.projectiles[0]!;
+    expect(p.vy).toBeCloseTo(-Math.sin(angle * Math.PI / 180) * MAX_LAUNCH_SPEED * 0.6, 8);
+    expect([p.x, p.y]).toEqual([path[0]!.x, path[0]!.y]);
+    b.step();
+    expect(p.x).toBeCloseTo(path[1]!.x, 8);
+    expect(p.y).toBeCloseTo(path[1]!.y, 8);
+  });
+
+  it('낭떠러지 가장자리는 각도를 바꾸지 않고 걸어 나가면 낙하한다', () => {
+    const b = blank();
+    fillRect(b.terrain, 300, 800, 540, 860, Mat.Rock);
+    place(b, 0, 532);
+    aim(b);
+    expect(b.groundSlope(b.cur)).toBe(0);
+    expect(b.walk(b.cur, 14)).toBe(8);
+    expect(b.cur.onGround).toBe(false);
+    expect(b.launchAngle(b.cur)).toBe(b.cur.angle);
+  });
+});
 
 describe('포탄 물리', () => {
   it('1. 같은 발사 조건이면 같은 궤적이 나온다', () => {
@@ -313,7 +375,7 @@ describe('AI', () => {
       expect(plan.power).toBeGreaterThanOrEqual(5);
       expect(plan.power).toBeLessThanOrEqual(100);
       const actor = { ...b.cur, stats: { ...b.cur.stats } };
-      for(let i=0;i<plan.walkSteps;i++) b.walk(actor,plan.walkDir*70*DT);
+      for(let i=0;i<plan.walkSteps;i++) b.walk(actor,plan.walkDir*WALK_SPEED*DT);
       const r = b.dryShot(b.current, plan.slot, plan.exact.angle, plan.exact.power, {x:actor.x,y:actor.y});
       const foe = b.enemy;
       const d = Math.min(...r.impacts.map((p) => Math.hypot(p.x - foe.x, p.y - foe.y)));

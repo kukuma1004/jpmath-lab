@@ -36,7 +36,7 @@ export class Effects {
       layer.add(e);
       return e;
     };
-    this.smoke = add('smoke', { speed: { min: 20, max: 110 }, lifespan: { min: 900, max: 1800 }, scale: { start: 0.45, end: 1.5 }, alpha: { start: 0.55, end: 0 }, gravityY: -40, tint: [0x6a5e58, 0x4a4440, 0x8a7e76], rotate: { min: 0, max: 360 } }, 38);
+    this.smoke = add('blast_cloud', { angle: { min: 202, max: 338 }, speed: { min: 28, max: 96 }, lifespan: { min: 900, max: 1800 }, scale: { start: 0.28, end: 1.2 }, alpha: { start: 0.85, end: 0 }, gravityY: -40, tint: [0x6a5e58, 0x4a4440, 0x8a7e76], rotate: { min: 0, max: 360 } }, 38);
     this.fire = add('glow', { speed: { min: 60, max: 300 }, lifespan: { min: 260, max: 620 }, scale: { start: 0.9, end: 0 }, alpha: { start: 1, end: 0 }, blendMode: 'ADD', tint: WEAPON_TINTS.default }, 41);
     this.spark = add('spark', { speed: { min: 220, max: 560 }, lifespan: { min: 380, max: 900 }, scale: { start: 0.7, end: 0.1 }, alpha: { start: 1, end: 0 }, gravityY: 700, blendMode: 'ADD',
       angle: { min: 195, max: 345 },
@@ -70,22 +70,49 @@ export class Effects {
     this.cam().shake(Math.min(600, 140 + power * 4), Math.min(0.022, power * 0.00018) * this.shakeK);
   }
 
+  /** Pressure pushes a rolling bank of smoke away from the contact point. */
+  private smokeBank(x: number, y: number, radius: number, direction: number): void {
+    const count = this.n(8);
+    for (let i = 0; i < count; i++) {
+      const t = (i + 1) / count;
+      const spread = radius * (0.25 + t * 1.55);
+      const height = radius * (0.16 + t * .67);
+      const cloud = this.scene.add.image(x + direction * spread * .48, y - height * .35, 'blast_cloud')
+        .setDepth(18).setAngle(direction * (i % 3 - 1) * 18)
+        .setTint([0x685850, 0xa08a77, 0x514d50][i % 3]!)
+        .setScale(radius / 68 * (.52 + .36 * t)).setAlpha(.93);
+      this.layer.add(cloud);
+      this.scene.tweens.add({
+        targets: cloud, x: x + direction * spread * 1.55, y: y - height * (1 + i % 2 * .55),
+        scale: radius / 68 * (.82 + .8 * t), duration: 1000 + 390 * t,
+        alpha: { value: 0, ease: 'Quad.easeIn' }, ease: 'Cubic.easeOut',
+        onComplete: () => cloud.destroy(),
+      });
+    }
+  }
+
   explosion(x: number, y: number, r: number, look: string, big: boolean, mat: number): void {
     const tints = WEAPON_TINTS[look] ?? WEAPON_TINTS.default!;
-    this.flash(x, y, r / 24, tints[1]!, 220);
+    this.flash(x - r * .12, y - r * .55, r / 52, tints[1]!, 480, 'shock_crescent', 0.94);
+    this.smokeBank(x, y, r, this.cam().midPoint.x < x ? 1 : -1);
+    this.flash(x, y, r / 48, tints[1]!, 155, 'glow', .75);
     this.flash(x, y, r / 48, 0xffefc9, 95);
     if (this.quality >= 0.6) this.flash(x, y, r / 46, 0xfff4e0, 350, 'ring', 0.42, 36);
-    this.flash(x, y, r / 41, tints[1]!, 440, 'blast_fan', 1, 43);
+    this.flash(x, y, r / 48, tints[1]!, 330, 'blast_fan', .88, 43);
+    this.flash(x, y, r / 60, 0xffcc81, 570, 'impact_streaks', 1, 42);
     this.dust.explode(this.n(5 + r * 0.14), x, y);
     this.fire.particleTint = 0xffffff;
-    this.fire.setConfig({ speed: { min: 60, max: 120 + r * 3.2 }, lifespan: { min: 240, max: 520 + r * 3 }, scale: { start: 0.18 + r / 225, end: 0 }, alpha: { start: 1, end: 0 }, blendMode: 'ADD', tint: tints, emitting: false });
+    this.fire.setConfig({ speed: { min: 60, max: 120 + r * 3.2 }, lifespan: { min: 240, max: 520 + r * 3 }, scale: { start: 0.11 + r / 350, end: 0 }, alpha: { start: 1, end: 0 }, blendMode: 'ADD', tint: tints, emitting: false });
     this.fire.explode(this.n(4 + r * 0.13), x, y);
-    this.smoke.explode(this.n(4 + r * 0.12), x, y - 6);
+    for (const side of [-1, 1]) {
+      this.smoke.explode(this.n(2 + r * .05), x + side * r * .38, y - 5);
+    }
+    this.smoke.explode(this.n(3), x, y - 12);
     this.spark.explode(this.n(6 + r * 0.12), x, y);
     this.debris.particleTint = this.matColor(mat);
     this.debris.explode(this.n(6 + r * 0.25), x, y);
     if (big) {
-      this.flash(x, y, r / 12, 0xffd36a, 520, 'glow', 0.6);
+      this.flash(x, y, r / 32, 0xffb552, 300, 'glow', 0.4);
       this.smoke.explode(this.n(10), x, y - 20);
     }
     this.shake(r * (big ? 1.6 : 1));
@@ -97,7 +124,18 @@ export class Effects {
     this.glowEm.setConfig({ speed: { min: 80, max: 260 }, angle: { min: -angleDeg - 20, max: -angleDeg + 20 }, lifespan: { min: 120, max: 320 }, scale: { start: 0.5, end: 0 }, alpha: { start: 1, end: 0 }, blendMode: 'ADD', tint: tints, emitting: false });
     this.glowEm.explode(this.n(10), x, y);
     if (look === 'ball' || look === 'iron' || look === 'megabomb') {
-      this.smoke.explode(this.n(5), x, y);
+      const angle = Phaser.Math.DegToRad(angleDeg);
+      const dx = Math.cos(angle), dy = -Math.sin(angle);
+      const jet = this.scene.add.image(x, y, 'cannon_wake').setOrigin(1, .5)
+        .setRotation(Math.atan2(dy, dx) + Math.PI).setScale(.14, .45).setDepth(40);
+      this.layer.add(jet);
+      this.scene.tweens.add({ targets: jet, scaleX: .68, scaleY: .85, alpha: { value: 0, ease: 'Quad.easeIn' },
+        duration: 245, ease: 'Quad.easeOut', onComplete: () => jet.destroy() });
+      this.smokeBank(x - dx * 8, y + 15, 23, dx >= 0 ? -1 : 1);
+      for (let step = 1; step <= 3; step++) {
+        this.smoke.explode(this.n(2), x + dx * step * 9, y + dy * step * 9);
+      }
+      this.spark.explode(this.n(4), x, y);
       this.shake(18);
     }
   }

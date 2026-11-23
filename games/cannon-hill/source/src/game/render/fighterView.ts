@@ -24,6 +24,9 @@ export class FighterView {
   private facing: 1 | -1;
   private t = Math.random() * 10;
   private flash = 0;
+  private stride = 0;
+  private stepOffset = 0;
+  private stepDust: Phaser.GameObjects.Particles.ParticleEmitter;
   private lastHp: number;
   /** 그려 받은 그림이 있으면 그것을, 없으면 코드로 그린 임시 그림을 쓴다 */
   private art: BodyArt | null;
@@ -53,7 +56,12 @@ export class FighterView {
     this.arrow = scene.add.image(0, -92, 'arrowhead').setScale(0.7).setTint(PLAYER_COLORS[f.team]!).setVisible(false);
     for (let i = 0; i < 3; i++) this.stars.push(scene.add.image(0, -50, 'star').setScale(0.4).setTint(0xffe08a).setVisible(false));
     this.c.add([this.shadow, this.rig, this.tag, this.hpBg, this.hpFill, this.arrow, ...this.stars]);
-    layer.add(this.c);
+    this.stepDust = scene.add.particles(0, 0, 'blast_cloud', {
+      emitting: false, speed: { min: 9, max: 23 }, angle: { min: 220, max: 320 },
+      lifespan: 320, scale: { start: .12, end: .27 }, alpha: { start: .72, end: 0 },
+      tint: [0xe7ceb0, 0xbea88e], gravityY: -22,
+    }).setDepth(19);
+    layer.add([this.stepDust, this.c]);
   }
 
   update(b: Battle, dt: number, isCurrent: boolean, showArrow: boolean): void {
@@ -63,6 +71,17 @@ export class FighterView {
     const t = this.t;
     if (f.alive) this.facing = f.angle <= 90 ? 1 : -1;
     const fc = this.facing;
+    const travel = f.x - this.c.x;
+    const groundRise = this.c.y - f.y;
+    const walking = f.alive && f.onGround && isCurrent && b.isPlayerPhase() && Math.abs(travel) > .01;
+    this.stepOffset *= Math.exp(-dt * 15);
+    if (walking) {
+      this.stepOffset = Phaser.Math.Clamp(this.stepOffset + groundRise * .65, -7, 6);
+      const lastStep = Math.floor(this.stride / Math.PI);
+      this.stride += Math.hypot(travel, Math.min(8, Math.abs(groundRise))) * Math.PI / 10;
+      if (Math.floor(this.stride / Math.PI) !== lastStep)
+        this.stepDust.explode(2, f.x - Math.sign(travel) * 9, f.y - 1);
+    }
     this.c.setPosition(f.x, f.y);
     if (f.hp < this.lastHp) this.flash = 0.35;
     this.lastHp = f.hp;
@@ -83,9 +102,8 @@ export class FighterView {
     const pv = this.art ? { x: this.art.handX, y: this.art.handY } : PIVOT[f.charId]!;
     let recoil = 0;
     if (f.anim === 'fire') recoil = Math.max(0, 1 - f.animT / 0.25) * 6;
-    const a = f.angle * DEG;
+    const a = b.launchAngle(f) * DEG;
     this.wpn.setPosition(fc * pv.x - Math.cos(a) * recoil, pv.y + Math.sin(a) * recoil);
-    this.wpn.setRotation(-a);
     if (this.wart) this.wpn.setScale(this.wart.scale, fc * this.wart.scale);
     else this.wpn.setFlipY(fc < 0);
 
@@ -133,10 +151,24 @@ export class FighterView {
       this.aura.setTint(0xffc94a).setAlpha(0.28 + Math.sin(t * 4) * 0.08).setScale(1.25);
     }
     const lean = f.onGround && f.alive ? f.slope * DEG * 0.55 : 0;
+    if (walking) {
+      const lift = Math.abs(Math.sin(this.stride));
+      bob -= lift * (3.6 + Math.min(2, Math.abs(f.slope) * .055));
+      rot += Math.sign(travel) * (.055 + Math.cos(this.stride) * .035);
+      sy *= .95 + lift * .08;
+      sx *= 1.04 - lift * .06;
+    }
+    if (f.onGround && f.alive) {
+      bob += Math.min(0, this.stepOffset);
+      sy *= 1 - Math.max(0, this.stepOffset) * .015;
+      sx *= 1 + Math.max(0, this.stepOffset) * .009;
+    }
+    this.wpn.setRotation(-a - lean);
     this.rig.setPosition(ox, bob);
     this.rig.setRotation(rot + lean);
     this.rig.setScale(sx, sy);
     this.shadow.setVisible(f.onGround);
+    this.shadow.setRotation(f.onGround ? f.slope * DEG : 0);
     this.shadow.setScale(1 - Math.min(0.4, Math.abs(bob) / 30), 1);
 
     // 맞으면 번쩍
@@ -176,6 +208,7 @@ export class FighterView {
   }
 
   destroy(): void {
+    this.stepDust.destroy();
     this.c.destroy(true);
   }
 }
