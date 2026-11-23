@@ -1,9 +1,9 @@
-import { frontier } from './world-frontiers.js?v=14';
-import { buildJunctions } from './junctions.js?v=14';
+import { frontier } from './world-frontiers.js?v=16';
+import { buildJunctions } from './junctions.js?v=16';
 import * as T from './vendor/three.module.min.js';
-import { grain, alpine, metropolis, coastalBridge, roadFurniture } from './world-landmarks.js?v=14';
-import { harborVillage, quarryArch, streetShops } from './world-districts.js?v=14';
-import { expansion } from './world-expansion.js?v=14';
+import { grain, alpine, metropolis, coastalBridge, roadFurniture } from './world-landmarks.js?v=16';
+import { harborVillage, quarryArch, streetShops } from './world-districts.js?v=16';
+import { expansion } from './world-expansion.js?v=16';
 import { courseFrame, coursePoint, track } from './track.js?v=14';
 
 const box = new T.BoxGeometry();
@@ -138,9 +138,10 @@ function road(scene, track, theme) {
         float distanceM = vMapUv.y * 7.;
         float grit = texture2D(map,vMapUv*4.8).r;
         float puddleNoise = texture2D(map, vMapUv*.41+vec2(.17,.53)).g;
-        float film = smoothstep(.025,.25,puddleNoise*.72 + .065*sin(lane*.8+distanceM*.18));
+        float pools = puddleNoise * .75 + .085 * sin(lane*.8+distanceM*.18);
+        float film = smoothstep(.06,.34,pools);
         float aggregate = texture2D(map,vMapUv*3.8).g;
-        diffuseColor.rgb = vec3(.008,.013,.020) + diffuseColor.rgb * (.46+.27*grit) + vec3(.023,.026,.030)*aggregate;
+        diffuseColor.rgb = vec3(.008,.013,.020) + diffuseColor.rgb * (.49+.42*grit) + vec3(.031,.033,.037)*aggregate;
         float lampZ = mod(distanceM-5.+9.,18.)-9.;
         float lateral = abs(lane-${width.toFixed(2)});
         float lampX = lateral-(${width.toFixed(2)}-1.65);
@@ -161,7 +162,7 @@ function road(scene, track, theme) {
             +texture2D(wetView,wetUv+ripple+smear).rgb*.25
             +texture2D(wetView,wetUv+ripple-smear).rgb*.25;
           float grazing=pow(1.-clamp(dot(normal,normalize(vViewPosition)),0.,1.),2.);
-          outgoingLight=mix(outgoingLight,echo,wetStrength*(.105+.32*film+.20*grazing));
+          outgoingLight=mix(outgoingLight,echo,wetStrength*(.035+.24*film+.19*grazing));
         }
         #include <opaque_fragment>
       `);

@@ -2,8 +2,8 @@ import { sampleDriver } from './bypass.js?v=14';
 import * as T from './vendor/three.module.min.js';
 import { tracks, courseRecordId } from './track.js?v=14';
 import { createRace, vehicleSpecs } from './race.js?v=14';
-import { buildWorld } from './world.js?v=15';
-import { buildCars, driveCar, selectVehicle } from './cars.js?v=14';
+import { buildWorld } from './world.js?v=16';
+import { buildCars, driveCar, selectVehicle } from './cars.js?v=16';
 import { drivingKeys, resolveDrivingKey } from './input.js?v=10';
 import { createAudio } from './audio.js?v=4';
 import { createEffects } from './effects.js?v=14';
@@ -311,6 +311,23 @@ function setup() {
     const practicals = new T.Group();
     if(course.id === 'metro') {
       const plane = new T.PlaneGeometry(1,1);
+      // The curved roof and rear glass see high floors above the street lamps.
+      // Borrow the same office atlas that is already resident for the skyline.
+      const windows = scene.userData.officeGlazing;
+      if (windows?.image) {
+        for (const [run,lane,height,width,rise,tint] of [
+          [-9,-7,9,14,16,0xffdec3], [6,8,11,10,19,0xc4d9ff],
+          [10,-6,13,8,12,0xffe8d8], [-12,5,8,8,11,0xc8dcff]
+        ]) {
+          const source = new T.MeshBasicMaterial({map:windows,color:tint,side:T.DoubleSide});
+          source.color.multiplyScalar(3.4);
+          const wall = new T.Mesh(plane,source);
+          wall.position.copy(course.point(run,lane,height));
+          wall.lookAt(probe.position.x,wall.position.y,probe.position.z);
+          wall.scale.set(width,rise,1);
+          practicals.add(wall);
+        }
+      }
       for(const [lane,height,run,length,width,color,power] of [
         [-8,6,2,13,.43,0xc9e8ff,3.6], [8,4,-3,9,.80,0xffcf91,3.0],
         [-5,3,-7,4,.48,0xffead1,3.5], [4,10,1,12,.88,0xa2b5ce,1.15]

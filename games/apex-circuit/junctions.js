@@ -27,6 +27,26 @@ export function buildJunctions(scene, course, kit) {
     obj.rotation.y=Math.atan2(p.dx,p.dz)+Math.PI;
     scene.add(obj);
   }
+  function marinaGuide(distance, lane, exit) {
+    const canvas=document.createElement('canvas');
+    canvas.width=640;canvas.height=224;
+    const ctx=canvas.getContext('2d');
+    const finish=ctx.createLinearGradient(0,0,0,224);
+    finish.addColorStop(0,'#244648');finish.addColorStop(1,'#102d31');
+    ctx.fillStyle=finish;ctx.fillRect(0,0,640,224);
+    ctx.strokeStyle='#b9cacc';ctx.lineWidth=4;
+    ctx.strokeRect(9,9,622,206);
+    ctx.fillStyle='#f1f5e7';ctx.textBaseline='middle';
+    ctx.font='bold 98px sans-serif';ctx.fillText(exit?'↗':'↑',28,111);
+    ctx.font='bold 64px sans-serif';ctx.fillText(exit?'한강 마리나':'센트럴시티',138,92);
+    ctx.font='32px sans-serif';ctx.fillStyle='#bfd3d0';
+    ctx.fillText(exit?'Hangang Marina':'Central City',140,162);
+    const map=new T.CanvasTexture(canvas);map.colorSpace=T.SRGBColorSpace;map.anisotropy=4;
+    const panel=new T.Mesh(new T.PlaneGeometry(4.6,1.61),new T.MeshBasicMaterial({map}));
+    panel.position.copy(course.point(distance,lane,6.42));
+    panel.rotation.y=course.frame(distance).rotation.y+Math.PI;
+    scene.add(panel);
+  }
   for (const route of course.shortcuts) {
     const w=route.halfWidth;
     const side=Math.sign(route.entryLane);
@@ -62,12 +82,25 @@ export function buildJunctions(scene, course, kit) {
     member(steel,route.point(portal,-w-.4,4.7),route.point(portal,w+.4,4.7),.24);
     sign(route,portal-.2,0,4.46,'❯❯  SHORTCUT',4.85,.92,'#271c15','#ffc658');
     // Highway signs are repeated in advance of the gate, high enough to read over rivals.
-    const d=route.start-35, span=course.halfWidth+1.2;
+    const metro=course.id==='metro';
+    const d=route.start-(metro?3:35), span=course.halfWidth+1.2;
     for(const e of [-1,1])member(steel,course.point(d,e*span,0),course.point(d,e*span,6.55),.33);
     for(const h of [5.5,6.6])member(beam,course.point(d,-span,h),course.point(d,span,h),.21);
     for(let l=-span;l<span-1;l+=1.5)member(steel,course.point(d,l,5.5),course.point(d,l+1.4,6.6),.083);
-    sign(course,d-.25,-side*3.1,5.94,course.id==='metro'?'↑  센트럴시티':'↑  외해 순환로',4.9,1.12,'#103c39','#e4f1e9');
-    sign(course,d-.25,side*3.1,5.94,course.id==='metro'?'↗  한강 마리나':'↖  해상 정비교',4.9,1.12,'#103c39','#e4f1e9');
+    if(metro) {
+      for(const e of [-1,1]) {
+        const lane=e*span;
+        member(concrete,course.point(d,lane,-.18),course.point(d,lane,1.03),.65,.78);
+        member(steel,course.point(d+.6,lane,.12),course.point(d+.6,lane,6.72),.19);
+        for(const h of [2,4.1,6.3])member(steel,course.point(d,lane,h),course.point(d+.6,lane,h+.41),.10);
+      }
+      member(beam,course.point(d+.6,-span,6.63),course.point(d+.6,span,6.63),.18);
+      marinaGuide(d-.48,-side*2.43,false);
+      marinaGuide(d-.48,side*2.43,true);
+    } else {
+      sign(course,d-.25,-side*3.1,5.94,'↑  외해 순환로',4.9,1.12,'#103c39','#e4f1e9');
+      sign(course,d-.25,side*3.1,5.94,'↖  해상 정비교',4.9,1.12,'#103c39','#e4f1e9');
+    }
     for(let n=0;n<4;n++){
       const d=route.start-17+n*4;
       member(amber,course.point(d,route.entryLane-side*.8,.045),course.point(d+1.55,route.entryLane,.045),.14);
@@ -82,6 +115,13 @@ export function buildJunctions(scene, course, kit) {
     const glass=new T.MeshBasicMaterial({map:facade,side:T.DoubleSide,color:0xe1d1bc});
     const warm=new T.MeshBasicMaterial({color:0xffdfa1});
     const d0=course.shortcuts[0].start;
+    const waterfrontSide=Math.sign(course.shortcuts[0].entryLane);
+    const railLane=(course.halfWidth+.52)*waterfrontSide;
+    for(let d=d0-109;d<d0-6;d+=5.6) {
+      member(beam,course.point(d,railLane,.46),course.point(d+.87,railLane,.46),.21,.19);
+      const lensLane=railLane-.101*waterfrontSide;
+      member(warmLens,course.point(d+.12,lensLane,.46),course.point(d+.75,lensLane,.46),.092,.065);
+    }
     for(let d=d0-108;d<d0-2;d+=12.8) {
       const g=new T.Group(), f=course.frame(d,-14.5);
       g.position.copy(f.position);g.rotation.y=f.rotation.y;scene.add(g);
@@ -122,6 +162,15 @@ export function buildJunctions(scene, course, kit) {
         member(foliage,world(-4.15,.64,z-.78),world(-4.15,.64,z+.78),.38,.45);
         member(warmLens,world(-3.79,5.24,z-.75),world(-3.79,5.24,z+.75),.045);
       }
+      // Recess the dining room behind its open terrace and reuse the interior atlas.
+      const upperWindow=new T.Mesh(window.geometry,glass);
+      upperWindow.position.set(-2.2,6.53,0);
+      upperWindow.rotation.y=window.rotation.y;
+      upperWindow.scale.y=.48;
+      g.add(upperWindow);
+      for(const z of [-5.9,-3.9,-1.95,0,1.95,3.9,5.9]){
+        member(beam,world(-2.26,5.62,z),world(-2.26,7.44,z),.08,.11);
+      }
       // Terrace uprights and inset horizontal rails replace an empty slab edge.
       for(let z=-5.7;z<=5.7;z+=.95)member(steel,world(-4.15,5.7,z),world(-4.15,6.4,z),.038);
       member(steel,world(-4.15,6.05,-6.25),world(-4.15,6.05,6.25),.045);
@@ -134,9 +183,11 @@ export function buildJunctions(scene, course, kit) {
       shader.vertexShader='varying vec3 marinaPosition;\n'+shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nmarinaPosition=(modelMatrix*vec4(position,1.)).xyz;');
       shader.fragmentShader='uniform float marinaTime; varying vec3 marinaPosition;\n'+shader.fragmentShader.replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
         vec2 p=marinaPosition.xz;
-        float swell=sin(p.x*1.7+p.y*.8+marinaTime*.74);
-        float chop=sin(p.x*4.7-p.y*2.9-marinaTime*1.1);
-        normal=normalize(normal+vec3(swell*.11,chop*.06,0.));
+        float phase=dot(p,vec2(1.7,.8))+sin(p.y*.42)+marinaTime*.74;
+        float detail=dot(p,vec2(4.7,-2.9))+sin(p.x*.91)-marinaTime*1.1;
+        float swell=sin(phase)*(1.-smoothstep(.4,2.6,fwidth(phase)));
+        float chop=sin(detail)*(1.-smoothstep(.4,2.6,fwidth(detail)));
+        normal=normalize(normal+mat3(viewMatrix)*vec3(swell*.09,0.,chop*.065));
       `).replace('#include <emissivemap_fragment>',`#include <emissivemap_fragment>
         float column=pow(max(0.,sin(marinaPosition.x*.29+sin(marinaPosition.z*2.9)*.12)),18.);
         float flicker=.4+.6*pow(max(0.,sin(marinaPosition.z*8.1+marinaTime+sin(marinaPosition.x*3.))),3.);

@@ -418,6 +418,7 @@ export function metropolis(scene,course) {
   glazing.wrapS=glazing.wrapT=T.RepeatWrapping;
   glazing.colorSpace=T.SRGBColorSpace;
   glazing.anisotropy=4;
+  scene.userData.officeGlazing = glazing;
   for(let i=0;i<2;i++){
     // A dark roof closes each lit facade at its skyline silhouette.
     instances(scene,cube,facade(glazing,i),bodies[i]);

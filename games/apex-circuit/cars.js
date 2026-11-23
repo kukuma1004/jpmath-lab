@@ -1,7 +1,7 @@
 import { sampleDriver } from './bypass.js?v=14';
 import * as T from './vendor/three.module.min.js';
 import { track } from './track.js?v=14';
-import { buildRoadCar } from './road-cars.js?v=14';
+import { buildRoadCar } from './road-cars.js?v=16';
 
 const box = new T.BoxGeometry();
 const tire = new T.CylinderGeometry(.37, .37, .22, 28);

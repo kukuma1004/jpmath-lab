@@ -48,7 +48,9 @@ export function buildRoadCar(id) {
   const glass = material(0x0d1926,.24,.11,0,1), black = material(0x121820,.24,.49);
   const tire = material(0x181b20,.03,.86), alloy = material(truck?0x87929b:0x89939e,.78,.24);
   const led = material(0xe6faff,.15,.24,0xc5edff), red = material(0xcf1826,.18,.25,0xab0810);
-  red.emissiveIntensity = 2.35;
+  red.emissive.setHex(0xf32c20);
+  red.emissiveIntensity = 2.55;
+  red.toneMapped = false;
   const rotor=material(0x58595a,.68,.39);
   const caliper=material(gt||hatch||model3?0xb82e22:0x414953,.34,.36);
   const cabin = material(0x232830,.06,.72);
@@ -96,6 +98,30 @@ export function buildRoadCar(id) {
     float skyBand = smoothstep(.9, 1.8, vPanel.y);
     diffuseColor.rgb *= mix(vec3(.49,.61,.75), vec3(.94,1.12,1.32), skyBand);
   `);
+  // Resolve reflected window bays on top of the filtered low-frequency probe.
+  const applyGlassFinish = glass.onBeforeCompile;
+  glass.onBeforeCompile = shader => {
+    applyGlassFinish(shader);
+    shader.fragmentShader = shader.fragmentShader.replace('#include <opaque_fragment>', `
+      #ifdef USE_ENVMAP
+      vec3 direction = inverseTransformDirection(reflect(-normalize(vViewPosition), normal), viewMatrix);
+      float bearing = atan(direction.z,direction.x);
+      float elevation = direction.y / max(.24,length(direction.xz));
+      vec2 facade = vec2(bearing * 15., elevation * 9.);
+      vec2 cell = floor(facade);
+      vec2 pane = abs(fract(facade)-.5);
+      vec2 aa = clamp(fwidth(facade),.012,.21);
+      vec2 frame = 1.-smoothstep(vec2(.32,.28)-aa,vec2(.32,.28)+aa,pane);
+      float occupancy = fract(sin(dot(cell,vec2(32.17,79.31)))*3174.32);
+      float roofline = 4.+3.*sin(floor(facade.x*.18)*5.13);
+      float tower = smoothstep(-1.3,-.5,facade.y)*(1.-smoothstep(roofline,roofline+.3,facade.y));
+      vec3 reflectedWindow = mix(vec3(.14,.24,.38),vec3(.76,.46,.21),smoothstep(.52,.86,occupancy));
+      outgoingLight += reflectedWindow*frame.x*frame.y*tower*(.05+.38*smoothstep(.51,.86,occupancy))*smoothstep(.7,1.15,envMapIntensity);
+      #endif
+      #include <opaque_fragment>
+    `);
+  };
+  glass.customProgramCacheKey = () => 'laminated-window-bays-v1';
   function collect(mat, geom) {
     const g = geom.index ? geom.toNonIndexed() : geom;
     const batch = batches.get(mat);
@@ -595,7 +621,11 @@ export function buildRoadCar(id) {
     const tail=model3 ? [[.470,.672,.731],[.754,.697,.749],[.964,.799,.875]]
       : [[.443,.674,.740],[.655,.727,.777],[.974,.79,.862]];
     pair(rear,red,tail,.026);
-    if(!model3) {
+    if(model3) {
+      // Returning the light guide down the outer shoulder gives the lens depth in chase view.
+      pair(rear,red,[[.902,.725,.751],[.933,.742,.825],[.962,.771,.859]],.031);
+      pair(rear,red,[[.704,.670,.690],[.891,.702,.725],[.942,.751,.772]],.032);
+    } else {
       rear.stripe(alloy,-.62,.62,.725,.75,.026);
       pair(rear,red,[[.523,.674,.719],[.736,.656,.727],[.947,.728,.784]],.027);
     }
@@ -644,6 +674,22 @@ export function buildRoadCar(id) {
     }
     if(model3) {
       pair(rear,red,[[.47,.672,.689],[.73,.675,.696],[.95,.746,.765]],.029);
+      // A narrow hot filament inside the red lens keeps the bent signature
+      // visible in shadow without washing out the surrounding paint.
+      const filament=material(0xff9878,.04,.27,0xff6545);
+      filament.emissiveIntensity=2.1;
+      filament.toneMapped=false;
+      pair(rear,filament,[[.492,.707,.723],[.754,.722,.737],[.947,.832,.853]],.039);
+      pair(rear,filament,[[.919,.762,.776],[.951,.797,.848]],.040);
+      const valance=[[-.91,.016,.105],[-.76,.022,.203],[-.55,.025,.212],
+        [0,.034,.168],[.55,.025,.212],[.76,.022,.203],[.91,.016,.105]];
+      rear.band(black,valance,.026);
+      pair(rear,red,[[.676,.172,.189],[.825,.172,.205],[.848,.174,.190]],.041);
+      rear.band(black,[[-.82,.596,.61],[-.64,.433,.447],[-.33,.386,.398],
+        [.33,.386,.398],[.64,.433,.447],[.82,.596,.61]],.023);
+      // The brushed-metal deck emblem is physically attached to the lid.
+      rear.band(alloy,[[-.056,.866,.873],[0,.855,.880],[.056,.866,.873]],.031);
+      rear.band(alloy,[[-.011,.849,.857],[0,.802,.859],[.011,.849,.857]],.032);
       const tailRow=crest[2];
       for(let i=1;i<tailRow.length;i++) {
         const a=tailRow[i-1].slice(), b=tailRow[i].slice();

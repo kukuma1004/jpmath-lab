@@ -1,5 +1,5 @@
 import * as T from './vendor/three.module.min.js';
-import {grain, instances, matrix, nearest, pathSamples, random} from './world-landmarks.js?v=14';
+import {grain, instances, matrix, nearest, pathSamples, random} from './world-landmarks.js?v=16';
 
 const box=new T.BoxGeometry();
 const finish=(color,options={})=>new T.MeshStandardMaterial({color,roughness:.78,...options});
