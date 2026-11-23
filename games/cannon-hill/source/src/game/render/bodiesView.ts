@@ -37,8 +37,8 @@ export class BodiesView {
     let tex = 'smoke';
     switch (look) {
       case 'drill':
-        tex = 'dot';
-        cfg = { lifespan: 300, speed: { min: 12, max: 75 }, scale: { start: 0.55, end: 0 }, alpha: { start: 0.95, end: 0 }, tint: [0xffd485,0xd4e6e8,0x8eabb3], frequency: 18 / q, gravityY: 75 };
+        tex = 'blast_cloud';
+        cfg = { lifespan: 470, speed: { min: 12, max: 75 }, scale: { start: 0.12, end: 0.37 }, alpha: { start: 0.8, end: 0 }, tint: [0x73605b,0xac968a,0x665c60], frequency: 18 / q, gravityY: 75 };
         break;
       case 'poison':
         cfg = { lifespan: 650, speed: { min: 3, max: 22 }, scale: { start: 0.14, end: 0.5 }, alpha: { start: 0.5, end: 0 }, tint: [0x99d85a, 0x6f9746, 0xd0e395], frequency: 24 / q, gravityY: -18 };
@@ -134,6 +134,20 @@ export class BodiesView {
         }
         g.lineStyle(1.5,0xffdf79,0.3);g.lineBetween(p.x,p.y,x,y);
         v.glow.setTint(0xffde76).setScale(0.8+0.12*Math.sin(t*18));
+      }
+      if (look === 'drill' && speed > 38 && !p.stuck) {
+        // Short corkscrew shavings follow the bit along its actual direction of travel.
+        const dx = Math.cos(heading), dy = Math.sin(heading);
+        const length = Math.min(62, speed * .12);
+        const g = this.cloudFx;
+        for (let i = 0; i < 12; i++) {
+          const u = i / 12, v = (i + 1) / 12;
+          const a = Math.sin(t * 31 - u * 13) * (3 + u * 5);
+          const b = Math.sin(t * 31 - v * 13) * (3 + v * 5);
+          g.lineStyle(2.3 - u, i % 6 < 3 ? 0xffde96 : 0x9f7054, .92 - u * .72);
+          g.lineBetween(p.x - dx * length * u - dy * a, p.y - dy * length * u + dx * a,
+            p.x - dx * length * v - dy * b, p.y - dy * length * v + dx * b);
+        }
       }
       if(p.drilling){
         const g=this.cloudFx;g.lineStyle(2,0xffc879,0.9);

@@ -122,38 +122,42 @@ export function makeArtPortrait(textures: Phaser.Textures.TextureManager, id: st
     ctx.translate(size, 0);
     ctx.scale(-1, 1);
   }
-  // 그림 한 장(몸 키 = 1)을 놓을 틀
-  let unit: number, ox: number, oy: number;
-  if (opts.bust) {
-    unit = size / 0.62; // 위쪽 62%가 정사각형에 들어오게
-    ox = size / 2 - d.cx * (d.w / d.h) * unit;
-    oy = size * 0.02;
-  } else {
-    unit = size * 0.92;
-    if (id === 'hwacha' || id === 'alchemist' || id === 'driller') {
-      const wr = WEAPON_RIG[id]!;
-      const right = rig.hand[0] * (d.w / d.h) + (wr.width / rig.height) * (1-wr.grip[0]) * 0.9;
-      unit = Math.min(unit, size * 0.9 / right);
-      ox = (size-right*unit)/2;
-      oy = size-unit-size*0.02;
-    } else {
-    const wpx = (d.w / d.h) * unit;
-    ox = (size - wpx) / 2 - size * 0.04;
-    oy = size - unit - size * 0.02;
-    }
-  }
-  const bw = (d.w / d.h) * unit;
-  ctx.drawImage(body, ox, oy, bw, unit);
   const raw = source(textures, `wpn_${id}`) as HTMLCanvasElement | null;
   const wd = ART.weapons[id] ?? (raw ? { w: raw.width, h: raw.height } : null);
   const wr = WEAPON_RIG[id] ?? { width: WEAPON_BOX.w, grip: [WEAPON_BOX.pivotX / WEAPON_BOX.w, WEAPON_BOX.pivotY / WEAPON_BOX.h] };
   const wimg = source(textures, artKey.wpn(id)) ?? raw;
+  const aspect = d.w / d.h;
+  const angle = -Math.PI / 6;
+  let unit: number, ox: number, oy: number;
+  if (opts.bust) {
+    unit = size / .62;
+    ox = size / 2 - d.cx * aspect * unit;
+    oy = size * .02;
+  } else {
+    // Frame the combined silhouette, including all four rotated weapon corners.
+    let left = 0, right = aspect, top = 0, bottom = 1;
+    if (wd && wimg) {
+      const width = wr.width / rig.height, height = width * wd.h / wd.w;
+      for (const edgeX of [0, 1]) for (const edgeY of [0, 1]) {
+        const dx = (edgeX - wr.grip[0]) * width, dy = (edgeY - wr.grip[1]) * height;
+        const x = rig.hand[0] * aspect + dx * Math.cos(angle) - dy * Math.sin(angle);
+        const y = rig.hand[1] + dx * Math.sin(angle) + dy * Math.cos(angle);
+        left = Math.min(left,x); right = Math.max(right,x);
+        top = Math.min(top,y); bottom = Math.max(bottom,y);
+      }
+    }
+    unit = size * .96 / Math.max(right-left,bottom-top);
+    ox = (size - unit*(right+left)) / 2;
+    oy = (size - unit*(bottom+top)) / 2;
+  }
+  const bw = aspect * unit;
+  ctx.drawImage(body, ox, oy, bw, unit);
   if (wd && wr && wimg && !opts.bust) {
     const k = unit / rig.height; // 월드 px → 초상 px
     const ww = wr.width * k, wh = ww * (wd.h / wd.w);
     ctx.save();
     ctx.translate(ox + rig.hand[0] * bw, oy + rig.hand[1] * unit);
-    ctx.rotate((-30 * Math.PI) / 180);
+    ctx.rotate(angle);
     ctx.drawImage(wimg, -wr.grip[0] * ww, -wr.grip[1] * wh, ww, wh);
     ctx.restore();
   }

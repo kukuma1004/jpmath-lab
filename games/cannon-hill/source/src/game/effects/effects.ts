@@ -6,6 +6,7 @@ import type { MapDef } from '../data/maps';
 type Emitter = Phaser.GameObjects.Particles.ParticleEmitter;
 
 const WEAPON_TINTS: Record<string, number[]> = {
+  drill: [0xfff6c9, 0xffcd7b, 0xd39556, 0x92847a],
   poison: [0xe0f3b1, 0xb6df6b, 0x7bac4b, 0x58823d],
   rocket: [0xfff4cf, 0xffc264, 0xff894d, 0xd85334],
   fox: [0xe6f6ff, 0x7fd8ff, 0x4f8cff, 0xff7ad9],
@@ -94,7 +95,11 @@ export class Effects {
   explosion(x: number, y: number, r: number, look: string, big: boolean, mat: number): void {
     const tints = WEAPON_TINTS[look] ?? WEAPON_TINTS.default!;
     this.flash(x - r * .12, y - r * .55, r / 52, tints[1]!, 480, 'shock_crescent', 0.94);
-    this.smokeBank(x, y, r, this.cam().midPoint.x < x ? 1 : -1);
+    const plumeDirection = this.cam().midPoint.x < x ? 1 : -1;
+    this.smokeBank(x, y, r, plumeDirection);
+    if (big || look === 'drill') {
+      this.smokeBank(x, y, r * .58, -plumeDirection);
+    }
     this.flash(x, y, r / 48, tints[1]!, 155, 'glow', .75);
     this.flash(x, y, r / 48, 0xffefc9, 95);
     if (this.quality >= 0.6) this.flash(x, y, r / 46, 0xfff4e0, 350, 'ring', 0.42, 36);

@@ -6,6 +6,7 @@ import type { Battle } from '../combat/battle';
 import type { Fighter } from '../combat/types';
 
 const DEG = Math.PI / 180;
+const FIGURE_SCALE = 1.13;
 export const PLAYER_COLORS = [0x4f9cf0, 0xf05a4f];
 
 /** 캐릭터 한 명의 화면 표현. 상태(Idle·Aim·Charge·Fire·Hit·Fall·Victory·Defeat)는 시뮬레이션의 anim 값을 따른다. */
@@ -55,6 +56,10 @@ export class FighterView {
     this.hpFill = scene.add.rectangle(-20, -64, 40, 5, 0x6ad07a).setOrigin(0, 0.5);
     this.arrow = scene.add.image(0, -92, 'arrowhead').setScale(0.7).setTint(PLAYER_COLORS[f.team]!).setVisible(false);
     for (let i = 0; i < 3; i++) this.stars.push(scene.add.image(0, -50, 'star').setScale(0.4).setTint(0xffe08a).setVisible(false));
+    const head = -(this.art ? this.body.displayHeight : 64) * FIGURE_SCALE;
+    this.hpBg.setPosition(0, head - 4).setStrokeStyle(1.5, 0x3a3029);
+    this.hpFill.y = head - 4;
+    this.tag.y = head - 9;
     this.c.add([this.shadow, this.rig, this.tag, this.hpBg, this.hpFill, this.arrow, ...this.stars]);
     this.stepDust = scene.add.particles(0, 0, 'blast_cloud', {
       emitting: false, speed: { min: 9, max: 23 }, angle: { min: 220, max: 320 },
@@ -166,7 +171,7 @@ export class FighterView {
     this.wpn.setRotation(-a - lean);
     this.rig.setPosition(ox, bob);
     this.rig.setRotation(rot + lean);
-    this.rig.setScale(sx, sy);
+    this.rig.setScale(sx * FIGURE_SCALE, sy * FIGURE_SCALE);
     this.shadow.setVisible(f.onGround);
     this.shadow.setRotation(f.onGround ? f.slope * DEG : 0);
     this.shadow.setScale(1 - Math.min(0.4, Math.abs(bob) / 30), 1);
@@ -204,7 +209,7 @@ export class FighterView {
     this.hpFill.setVisible(show);
     this.tag.setAlpha(isCurrent ? 1 : 0.8);
     this.arrow.setVisible(showArrow && f.alive);
-    if (showArrow) this.arrow.y = -96 + Math.sin(t * 6) * 4;
+    if (showArrow) this.arrow.y = this.tag.y - this.tag.height - 9 + Math.sin(t * 6) * 4;
   }
 
   destroy(): void {

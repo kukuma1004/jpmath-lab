@@ -15,6 +15,7 @@ export interface UIHooks {
   /** chars는 장수 순서([1팀, 2팀, 1팀, 2팀]) 그대로 */
   startBattle(mode: Mode, chars: string[], mapId: string): void;
   quickBattle(): void;
+  targetRange(): void;
   toTitle(): void;
   rematch(): void;
   rechar(): void;
@@ -118,6 +119,7 @@ export class UI {
           <div class="subtitle">${GAME_SUBTITLE}</div>
           <div class="menu">
             <button class="btn primary quick" data-act="quick">바로 한 판<small>쉬운 AI · 내가 먼저 발사</small></button>
+            <button class="btn jade target-entry" data-act="target">표적 10발<small>오늘의 순위에 도전</small></button>
             <button class="btn" data-act="ai">AI와 겨루기<small>장수·전장 고르기</small></button>
             <button class="btn jade" data-act="local">둘이서 하기<small>한 기기로 번갈아</small></button>
             <button class="btn" data-act="howto">게임 방법</button>
@@ -130,6 +132,7 @@ export class UI {
       const act = (e.target as HTMLElement).closest('button')?.dataset.act;
       if (act === 'ai' || act === 'local') this.openChars(act);
       else if (act === 'quick') this.hooks.quickBattle();
+      else if (act === 'target') this.hooks.targetRange();
       else if (act === 'howto') this.show('howto');
       else if (act === 'settings') this.openSettings();
     });
@@ -142,7 +145,7 @@ export class UI {
   // 장수 고르기
   private buildChars(): void {
     const el = this.add('chars', h(`
-      <section class="screen sel">
+      <section class="screen sel roster">
         <div class="sel-head"><h2>장수 고르기</h2><span class="who">1P</span><p class="hint"></p></div>
         <div class="sel-body">
           <div class="grid" role="listbox" aria-label="장수"></div>

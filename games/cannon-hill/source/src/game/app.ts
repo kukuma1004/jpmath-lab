@@ -12,6 +12,7 @@ import { BootScene } from './scenes/BootScene';
 import { TitleScene } from './scenes/TitleScene';
 import { BattleScene } from './scenes/BattleScene';
 import type { BattleConfig } from './combat/types';
+import { TargetRange } from './target/range';
 
 function viewWidth(): number {
   const w = window.innerWidth || 1280, h = window.innerHeight || 720;
@@ -23,6 +24,7 @@ export class App {
   ui: UI;
   game!: Phaser.Game;
   mode: Mode = 'ai';
+  private target: TargetRange | null = null;
   last: { mode: Mode; chars: string[]; mapId: string; starterMatch: boolean } | null = null;
 
   constructor() {
@@ -31,6 +33,7 @@ export class App {
     this.ui = new UI(document.getElementById('ui')!, this.settings, {
       startBattle: (mode, chars, mapId) => this.startBattle(mode, chars, mapId),
       quickBattle: () => this.startBattle('ai', ['general', 'archer'], 'quarry', true),
+      targetRange: () => this.openTargetRange(),
       toTitle: () => this.toTitle(),
       rematch: () => this.rematch(),
       rechar: () => { this.toTitle(); this.ui.openChars(this.last?.mode ?? 'ai'); },
@@ -166,7 +169,20 @@ export class App {
     audio.playBgm('battle');
   }
 
+  private openTargetRange(): void {
+    if (this.target) return;
+    this.game.scene.stop('title');
+    this.ui.only();
+    this.target = new TargetRange(this.ui.root, this.ui.portraits.general?.normal ?? '', () => {
+      this.toTitle();
+      this.ui.root.querySelector<HTMLButtonElement>('.target-entry')?.focus();
+    });
+    audio.playBgm('battle');
+  }
+
   toTitle(): void {
+    this.target?.destroy();
+    this.target = null;
     const sm = this.game.scene;
     if (sm.isActive('battle') || sm.isPaused('battle')) sm.stop('battle');
     if (!sm.isActive('title')) sm.start('title');
