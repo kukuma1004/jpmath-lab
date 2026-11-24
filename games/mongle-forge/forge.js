@@ -49,7 +49,7 @@
   function loadStored() {
     if (!storageOkay) return { next: state, reset: false };
     try {
-      const previous = localStorage.getItem(Forge.previousSaveKey) ?? localStorage.getItem(Forge.magicSaveKey) ?? localStorage.getItem(Forge.storageSaveKey) ?? localStorage.getItem(Forge.riskSaveKey) ?? localStorage.getItem(Forge.rainbowSaveKey) ?? localStorage.getItem(Forge.marketSaveKey) ?? localStorage.getItem(Forge.olderSaveKey);
+      const previous = localStorage.getItem(Forge.wardrobeSaveKey) ?? localStorage.getItem(Forge.previousSaveKey) ?? localStorage.getItem(Forge.magicSaveKey) ?? localStorage.getItem(Forge.storageSaveKey) ?? localStorage.getItem(Forge.riskSaveKey) ?? localStorage.getItem(Forge.rainbowSaveKey) ?? localStorage.getItem(Forge.marketSaveKey) ?? localStorage.getItem(Forge.olderSaveKey);
       const original = localStorage.getItem(Forge.saveKey) ?? previous;
       const raw = original ? JSON.parse(original) : null;
       return { next: Forge.loadSeason(raw), reset: previous !== null || (!!raw && raw.season !== Forge.seasonId) || localStorage.getItem(Forge.legacySaveKey) !== null };
@@ -64,6 +64,7 @@
       localStorage.setItem(Forge.saveKey, Forge.serialize(next));
       if (reset) {
         localStorage.removeItem(Forge.legacySaveKey);
+        localStorage.removeItem(Forge.wardrobeSaveKey);
         localStorage.removeItem(Forge.previousSaveKey);
         localStorage.removeItem(Forge.magicSaveKey);
         localStorage.removeItem(Forge.storageSaveKey);
@@ -160,7 +161,9 @@
       shownWeapon = src;
     }
     weapon.alt = name;
+    weapon.title = [display.name,display.owner,display.release,display.variant].filter(Boolean).join(' · ');
     $('weapon-name').textContent = name;
+    $('weapon-name').title = weapon.title;
     $('level').textContent = state.sold ? '판매 완료' : state.broken ? '파괴' : level(state.level);
     stage.dataset.sold = String(state.sold);
     $('sold-stage').hidden = !state.sold;

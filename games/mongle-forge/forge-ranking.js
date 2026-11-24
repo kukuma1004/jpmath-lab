@@ -186,7 +186,7 @@ const ForgeRanking = (() => {
       const state = getState();
       const form = Forge.appearanceAt(state.appearance,state.level);
       $('ranking-preview-image').src = asset(state.broken ? 'broken-sword' : 'sword-' + form.level);
-      $('ranking-preview-title').textContent = state.broken ? '깨진 검은 등록할 수 없어요.' : form.name + ' +' + fmt(state.level);
+      $('ranking-preview-title').textContent = state.broken ? '깨진 검은 등록할 수 없어요.' : [form.name,form.release,form.variant].filter(Boolean).join(' · ') + ' +' + fmt(state.level);
       $('ranking-preview-value').textContent = fmt(Forge.appraisal(state).value) + ' G';
       controls();
     }
@@ -197,9 +197,10 @@ const ForgeRanking = (() => {
         const form = Forge.appearanceAt(record.appearance,BigInt(record.level));
         const image = element('img', 'ranking-weapon');
         image.src = asset('sword-' + form.level);
-        image.width = 64; image.height = 64; image.alt = form.name; image.loading = 'lazy';
+        image.width = 64; image.height = 64; image.alt = [form.name,form.release,form.variant].filter(Boolean).join(' · '); image.loading = 'lazy';
         const info = element('div', 'ranking-weapon-info');
         info.append(element('strong', '', record.weaponName), element('span', 'ranking-nickname', record.nickname + (record.uid === profile.uid ? ' · 내 무기' : '')));
+        if(form.release)info.append(element('span','ranking-nickname',form.name+' · '+form.release+' · '+form.variant));
         const effects = element('div', 'ranking-effects');
         for (const id of [record.effect1, record.effect2, record.effect3]) {
           const effect = Forge.enchantments.find(entry => entry.id === id);

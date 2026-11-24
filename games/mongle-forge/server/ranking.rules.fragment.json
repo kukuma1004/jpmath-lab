@@ -7,7 +7,7 @@
       ],
       "$uid": {
         ".read": "auth != null && auth.uid == $uid && $season == 'season-20261120-1'",
-        ".write": "auth != null && auth.uid == $uid && $season == 'season-20261120-1' && (!newData.exists() || !data.exists() || newData.child('value').val() > data.child('value').val() || (newData.child('value').val() == data.child('value').val() && newData.child('level').val() == data.child('level').val() && newData.child('effect1').val() == data.child('effect1').val() && newData.child('effect2').val() == data.child('effect2').val() && newData.child('effect3').val() == data.child('effect3').val() && (newData.child('magic').val() == data.child('magic').val() || (!data.child('magic').exists() && newData.child('magic').val() == 'none')) && (newData.child('magicPeak').val() == data.child('magicPeak').val() || (!data.child('magicPeak').exists() && newData.child('magicPeak').val() == '0')))) && (!newData.exists() || newData.child('rulesVersion').val() == 'forge-wardrobe-1')",
+        ".write": "auth != null && auth.uid == $uid && $season == 'season-20261120-1' && (!newData.exists() || !data.exists() || newData.child('value').val() > data.child('value').val() || (newData.child('value').val() == data.child('value').val() && newData.child('level').val() == data.child('level').val() && newData.child('effect1').val() == data.child('effect1').val() && newData.child('effect2').val() == data.child('effect2').val() && newData.child('effect3').val() == data.child('effect3').val() && (newData.child('magic').val() == data.child('magic').val() || (!data.child('magic').exists() && newData.child('magic').val() == 'none')) && (newData.child('magicPeak').val() == data.child('magicPeak').val() || (!data.child('magicPeak').exists() && newData.child('magicPeak').val() == '0')))) && (!newData.exists() || newData.child('rulesVersion').val() == 'forge-legends-1')",
         ".validate": "newData.hasChildren(['nickname','weaponName','level','value','effect1','effect2','effect3','submittedAt']) && (newData.child('effect2').val() != 'none' || newData.child('effect3').val() == 'none') && (!data.child('protectionUses').exists() || newData.child('value').val() != data.child('value').val() || (newData.child('protectionUses').exists() && (newData.child('protectionUses').val().length > data.child('protectionUses').val().length || (newData.child('protectionUses').val().length == data.child('protectionUses').val().length && newData.child('protectionUses').val() >= data.child('protectionUses').val())))) && newData.hasChildren(['magic','magicPeak']) && ((newData.child('magic').val() == 'none' && newData.child('magicPeak').val() == '0') || (newData.child('magic').val() != 'none' && newData.child('magicPeak').val().matches(/^[1-9][0-9]{2,127}$/) && (newData.child('magicPeak').val().length > newData.child('level').val().length || (newData.child('magicPeak').val().length == newData.child('level').val().length && newData.child('magicPeak').val() >= newData.child('level').val()))))",
         "nickname": {
           ".validate": "newData.isString() && newData.val().matches(/^[가-힣ㄱ-ㅎㅏ-ㅣA-Za-z0-9 _.-]{1,12}$/) && newData.val().matches(/.*[^ ].*/)"
@@ -40,7 +40,7 @@
           ".validate": "newData.isString() && newData.val().matches(/^(0|[1-9][0-9]{0,127})$/)"
         },
         "rulesVersion": {
-          ".validate": "newData.isString() && newData.val() == 'forge-wardrobe-1'"
+          ".validate": "newData.isString() && newData.val() == 'forge-legends-1'"
         },
         "magic": {
           ".validate": "newData.isString() && (newData.val() == 'none' || newData.val() == 'fire' || newData.val() == 'ice' || newData.val() == 'thunder' || newData.val() == 'void' || newData.val() == 'radiance')"
@@ -49,7 +49,7 @@
           ".validate": "newData.isString() && newData.val().matches(/^(0|[1-9][0-9]{0,127})$/)"
         },
         "appearance": {
-          ".validate": "newData.isString() && newData.val().matches(/^(auto|0|2|4|6|9|12|14|16|18|20|22|24|26|28|30|32|36|40|44|48|52|56|60|64|68|72|76|80|85|90|95|100|110|120|135|150|165|180|200|220|245|270|300|330)$/)"
+          ".validate": "newData.isString() && newData.val().matches(/^(auto|0|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|28|29|30|31|32|33|35|36|38|40|41|43|44|46|48|49|51|52|54|56|57|58|60|61|62|64|66|68|69|70|72|73|76|77|78|80|81|82|85|86|88|89|90|93|95|96|98|100|101|103|106|108|110|112|114|115|117|120|121|123|125|127|129|130|133|135|136|139|141|144|145|147|150|151|153|155|158|160|161|164|165|167|170|172|175|176|178|180|182|184|187|189|191|194|195|197|200|201|203|205|207|209|212|214|215|218|220|221|224|226|228|231|233|236|238|240|242|244|245|248|250|253|255|258|260|262|265|267|270|271|273|276|278|281|283|285|287|289|292|294|296|299|300|302|305|306|308|311|313|316|318|320|322|324|327|329|330)$/)"
         }
       }
     },

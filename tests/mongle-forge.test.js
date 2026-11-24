@@ -304,24 +304,24 @@ test('strengthening continues above JavaScript safe integer precision without ro
   assert(Forge.formAt(restored.level).next > restored.level);
 });
 
-test('44 distinct milestone forms and post +330 awakenings preserve collection after failure', () => {
+test('184 distinct milestone forms and post +330 awakenings preserve collection after failure', () => {
   assert.equal(Forge.formAt(36n).level, 36n);
   assert.equal(Forge.formAt(40n).level, 40n);
   assert.equal(Forge.formAt(44n).level, 44n);
   assert.equal(Forge.formAt(48n).level, 48n);
-  assert.equal(Forge.forms.length,44);
-  assert.equal(new Set(Forge.forms.map(form=>form.name)).size,44);
+  assert.equal(Forge.forms.length,184);
+  assert.equal(new Set(Forge.forms.map(form=>[form.name,form.release,form.variant].join(':'))).size,184);
   for(const form of Forge.forms)assert.equal(Forge.formAt(form.level).name,form.name);
   assert.notEqual(Forge.formAt(331n).index, Forge.formAt(341n).index);
-  assert.equal(Forge.formAt(331n).index, Forge.formAt(571n).index);
-  assert(Forge.formAt(571n).awakening > Forge.formAt(331n).awakening);
+  assert.equal(Forge.formAt(331n).index, Forge.formAt(1731n).index);
+  assert(Forge.formAt(1731n).awakening > Forge.formAt(331n).awakening);
   const state = funded(80);
   state.pity['81'] = 9000;
   assert.equal(Forge.preview(state,100000).success, 9500);
   assert(Forge.preview(state,100000).shatter > 0);
   Forge.act(state, 100000, () => 0.9999);
   assert.equal(state.bestLevel, 80n);
-  assert.equal(Forge.forms.filter(form => form.level <= state.bestLevel).length, 28);
+  assert.equal(Forge.forms.filter(form => form.level <= state.bestLevel).length, 63);
 });
 
 test('discovered appearances are purely cosmetic, survive failure/reforge/reload and update record style without changing value', () => {
@@ -331,12 +331,27 @@ test('discovered appearances are purely cosmetic, survive failure/reforge/reload
   const expected=JSON.parse(before);expected.appearance='52';expected.rankingBest.appearance='52';assert.deepEqual(JSON.parse(Forge.serialize(state)),expected);
   assert.equal(Forge.appraisal(state).value,value);assert.equal(Forge.rankingRecord(state,'외형검수','검').appearance,'52');
   const restored=Forge.restore(JSON.parse(Forge.serialize(state)),now);assert.equal(restored.appearance,'52');assert.equal(restored.creditReceipts['credit-kept'],true);
-  const unchanged=Forge.serialize(restored);for(const invalid of ['165','330','53',52,null,'052']){assert.equal(Forge.selectAppearance(restored,invalid),false);assert.equal(Forge.serialize(restored),unchanged)}
+  const unchanged=Forge.serialize(restored);for(const invalid of ['165','330','999',52,null,'052']){assert.equal(Forge.selectAppearance(restored,invalid),false);assert.equal(Forge.serialize(restored),unchanged)}
   Forge.act(restored,now+1000,()=>.99999);assert.equal(restored.appearance,'52');
   const broken=Forge.restore({...JSON.parse(Forge.serialize(restored)),broken:true,version:2},now+2000);assert.equal(broken.appearance,'52');
   Forge.act(broken,now+3000,()=>0);assert.equal(broken.appearance,'52');assert.equal(broken.broken,false);
   assert(Forge.selectAppearance(broken,'auto'));assert.equal(Forge.appearanceAt(broken.appearance,broken.level).level,0n);
   for(const appearance of ['165','999','052',52])assert.equal(Forge.restore({level:10,bestLevel:100,appearance},now).appearance,'auto');
+});
+
+test('the new collection has eight distinct structural weapons per genre and safe automatic ranking names', () => {
+  const genres=['wuxia','fantasy','webtoon'];
+  for(const genre of genres)assert.equal(Forge.forms.filter(form=>form.genre===genre&&form.edition==='new').length,8);
+  assert.deepEqual(Forge.forms.filter(form=>form.genre==='onepiece').map(form=>form.name),['화도일문자','3대 귀철','슈스이','엔마','키코쿠','요루']);
+  assert.equal(Forge.forms.filter(form=>form.edition==='new').length,140);
+  assert.equal(new Set(Forge.forms.map(form=>form.level.toString())).size,184);
+  for(const form of Forge.forms)assert.equal(Forge.rankingName(form.name,16),form.name);
+  const state=Forge.restore({level:7,bestLevel:7,appearance:'7',shards:'100000000',creditReceipts:{'gift-kept':true}},100000);
+  assert.equal(Forge.appearanceAt(state.appearance,state.level).name,'도룡도');
+  assert.equal(Forge.forms.find(form=>form.level===54n).name,'엑스칼리버');
+  assert.equal(Forge.forms.find(form=>form.level===145n).name,'검은 삼월');
+  assert.equal(Forge.selectAppearance(state,'11'),false);assert(Forge.selectAppearance(state,'3'));
+  const restored=Forge.restore(JSON.parse(Forge.serialize(state)),100000);assert.equal(restored.appearance,'3');assert.equal(restored.creditReceipts['gift-kept'],true);
 });
 
 test('same-level appraisal reflects the actual persistent magical affix', () => {
@@ -722,4 +737,16 @@ test('Korean happy hours include starts and exclude ends, and halve every spendi
     const result=mode==='protection'?Forge.buyProtection(copy,sale,quote.token):mode==='enchant'?Forge.enchant(copy,sale,()=>0,quote.token):Forge.reroll(copy,sale,()=>0,quote.token);
     assert(result);assert.equal(copy.shards,before-quote.cost);
   }
+});
+
+
+test('110 individually named Bleach appearances distinguish releases, versions and unknown names without changing saved economics', () => {
+  const forms=Forge.forms.filter(f=>f.genre==='bleach');assert.equal(forms.length,110);
+  for(const f of forms){assert(f.owner&&f.originalName&&f.release&&f.variant&&f.continuity);assert.equal(Forge.formAt(f.level).level,f.level);}
+  assert.equal(forms.filter(f=>f.name==='천쇄참월').length,4);
+  assert.equal(forms.find(f=>f.name==='아악회랑').release,'시해');
+  assert.equal(forms.find(f=>f.name==='야쇄'&&f.release==='만해').variant,'이름 미공개');
+  const now=Date.UTC(2026,10,24),s=Forge.restore({level:100,bestLevel:330,shards:'100000000',creditReceipts:{'gift-kept':true},enchantments:['lunar','lunar','lunar'],magic:{id:'fire',peak:150},protectionUses:'123'},now);
+  const before=JSON.parse(Forge.serialize(s)),value=Forge.appraisal(s).value;
+  for(const f of forms){assert(Forge.selectAppearance(s,f.level.toString()));const saved=JSON.parse(Forge.serialize(s));for(const k of ['shards','level','bestLevel','creditReceipts','enchantments','magic','protectionUses'])assert.deepEqual(saved[k],before[k]);assert.equal(Forge.appraisal(s).value,value);assert.equal(Forge.restore(saved,now).appearance,f.level.toString());}
 });
