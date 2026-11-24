@@ -12,10 +12,10 @@ export const TRAIT = {
   steadyBlast: 1.06, // 폭발·구덩이 크기 배수
   eagleDirect: 1.25, // 신궁: 직접 맞혔을 때 더 붙는 배수
   eaglePreview: 2.6, // 신궁(사람): 예상 궤적 길이(초). 다른 장수는 1.1초
-  shoveKnock: 1.9, // 도깨비: 밀어내는 힘 배수
-  blessHeal: 25, // 무당: 차례가 시작될 때 회복량
+  shoveKnock: 1.78, // 도깨비: 밀어내는 힘 배수
+  blessHeal: 18, // 무당: 차례가 시작될 때 회복량
   blessRange: 230, // 무당과 이만큼 가까운 같은 편도 함께 회복
-  ironKnock: 0.3, // 거북선 장수: 밀려나는 힘 배수
+  ironKnock: 0.42, // 거북선 장수: 밀려나는 힘 배수
   ironEnv: 0.5, // 떨어짐·깔림·낙석 피해 배수
   foxFall: 0.6,
   engineerRock: 1.25,
@@ -60,7 +60,7 @@ export const CHARACTERS: CharacterDef[] = [
     id: 'dokkaebi', name: '도깨비', role: '변칙 공격형',
     blurb: '방망이를 휘두르는 장난꾸러기. 통통 튀는 폭탄으로 언덕 너머를 노린다.',
     hp: BASE_HP, defense: 0.08, moveMul: 1.0, normal: 'dokkaebiBomb', special: 'dokkaebiFire',
-    trait: { id: 'shove', name: '도깨비 힘', desc: '맞은 상대를 거의 두 배 멀리 날려 보냅니다. 낭떠러지 끝에 선 상대는 조심해야 합니다.' },
+    trait: { id: 'shove', name: '도깨비 힘', desc: '밀어내는 힘이 약 1.8배입니다. 발판 끝에 선 상대를 아래 단으로 밀어낼 때 강합니다.' },
     stats: { power: 4, range: 3, accuracy: 3, defense: 3, mobility: 3 },
     palette: { main: '#4a6b3a', sub: '#c46a2b', accent: '#f4d35e', skin: '#6fa3c9', dark: '#1f2d3d' },
   },
@@ -68,15 +68,15 @@ export const CHARACTERS: CharacterDef[] = [
     id: 'mudang', name: '무당', role: '마법형',
     blurb: '높이 날린 부적이 내려오며 적을 뒤쫓습니다. 다른 탄으로는 하늘의 벼락을 부릅니다.',
     hp: BASE_HP, defense: 0.04, moveMul: 1.0, normal: 'bujeok', special: 'nakroe',
-    trait: { id: 'blessing', name: '신령의 가호', desc: '자기 차례가 시작될 때 자신과 가까이 선 같은 편의 체력을 25씩 채웁니다. 1번 부적은 고각으로 쏘면 하강 중 멀리 있는 적을 추적합니다.' },
+    trait: { id: 'blessing', name: '신령의 가호', desc: `자기 차례가 시작될 때 자신과 가까이 선 같은 편의 체력을 ${TRAIT.blessHeal}씩 채웁니다. 1번 부적은 고각으로 쏘면 하강 중 멀리 있는 적을 추적합니다.` },
     stats: { power: 4, range: 4, accuracy: 4, defense: 2, mobility: 3 },
     palette: { main: '#c8323c', sub: '#2f5d9c', accent: '#f7d354', skin: '#f0c7a0', dark: '#2a1420' },
   },
   {
     id: 'turtle', name: '거북선 장수', role: '방어형',
     blurb: '작은 거북선을 끌고 다니는 수군 장수. 느리지만 쇠지붕이 웬만한 포탄을 받아낸다.',
-    hp: BASE_HP, defense: 0.25, moveMul: 0.72, normal: 'iron', special: 'salvo',
-    trait: { id: 'ironclad', name: '철갑 선체', desc: '폭발에 거의 밀려나지 않고, 떨어지거나 깔리거나 낙석에 맞는 피해가 절반입니다.' },
+    hp: BASE_HP, defense: 0.20, moveMul: 0.72, normal: 'iron', special: 'salvo',
+    trait: { id: 'ironclad', name: '철갑 선체', desc: '폭발에 덜 밀려나고, 떨어지거나 깔리거나 낙석에 맞는 피해가 절반입니다.' },
     stats: { power: 3, range: 3, accuracy: 4, defense: 5, mobility: 1 },
     palette: { main: '#7a4a2a', sub: '#2c4f6e', accent: '#d9a441', skin: '#e3b48c', dark: '#2b1d14' },
   },

@@ -179,6 +179,11 @@ export class BattleScene extends Phaser.Scene {
     } else if (mapId === 'underworld') {
       this.river = this.add.graphics().setDepth(46);
       this.world.add(this.river);
+    } else if (mapId === 'quarry') {
+      const gorge = this.add.graphics().setDepth(7);
+      gorge.fillGradientStyle(0x182c40, 0x182c40, 0x182c40, 0x182c40, 0, 0, 0.92, 0.92);
+      gorge.fillRect(0, 850, WORLD_W, 375);
+      this.world.add(gorge);
     }
   }
 
@@ -217,6 +222,9 @@ export class BattleScene extends Phaser.Scene {
 
   /** 살아 있는 장수가 모두 보이게 */
   private overview(): { x: number; y: number; z: number } {
+    if (this.battle.cfg.mapId === 'quarry' && !this.battle.cfg.starterMatch) {
+      return { x: WORLD_W / 2, y: 680, z: this.scale.width / (WORLD_W + 72) };
+    }
     const live = this.battle.fighters.filter((f) => f.alive && f.y < WORLD_H);
     const fs = live.length ? live : this.battle.fighters;
     const x0 = Math.min(...fs.map((f) => f.x)), x1 = Math.max(...fs.map((f) => f.x));
@@ -604,6 +612,7 @@ export class BattleScene extends Phaser.Scene {
       : b.clouds.some((c) => (c.turns[b.current] ?? 0) > 0 && b.inCloud(b.cur, c)) ? '독무 속! 다음 자기 차례가 오기 전에 구름 밖으로 움직이세요'
       : previousShot || (showFirstShotTip ? '추천 각도를 맞추고 금빛 힘 구간에서 떼어 보세요' : '') || (
         b.isPlayerPhase() && b.cfg.mapId === 'bridge' ? '다리를 끊어 떨어뜨리세요 · 추락선을 넘으면 체력과 무관하게 탈락'
+      : b.isPlayerPhase() && b.cfg.mapId === 'quarry' && b.turnNo <= 2 ? '중앙 쪽으로 한 단씩 착지 · 마지막 단 밖은 추락'
       : b.isPlayerPhase() && b.cur.charId === 'mudang' && b.cur.slot === 0 ? '고각 55~125° 추천 · 내려올 때 적을 추적합니다'
       : b.isPlayerPhase() && b.cur.charId === 'driller' ? b.cur.slot === 0 ? '지형을 길게 관통 · 벽 뒤와 발밑을 노리세요' : '넓은 지반 붕괴 · 높은 발판을 무너뜨리세요'
       : b.isPlayerPhase() && b.steadyReady(b.cur) ? '자리 잡은 포격 — 움직이지 않고 쏘면 피해 +15%'

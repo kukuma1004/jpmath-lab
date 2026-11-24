@@ -16,6 +16,7 @@ export interface MapDef {
   voidBottom: boolean; // 바닥이 비어 있어 떨어지면 끝나는 전장
   ringOutY?: number; // 이 선 아래로 떨어지면 체력과 무관하게 탈락
   spawn: [number, number]; // 1P가 설 수 있는 x 범위(px). 2P는 거울 위치 근처
+  spawnTiers?: readonly [readonly [number, number], readonly [number, number]];
   windBias: number; // 바람 세기 기본 치우침(0..1)
   colors: Record<number, MatColor>;
   sky: [string, string, string];
@@ -364,13 +365,22 @@ const bridge: MapDef = {
   },
 };
 
+// Each independent shelf reaches inward far enough to catch a walk off the shelf above.
+const quarryLedges = [
+  { start: 0, edge: 640, top: 442, thickness: 82 },
+  { start: 348, edge: 858, top: 568, thickness: 74 },
+  { start: 656, edge: 994, top: 692, thickness: 68 },
+  { start: 868, edge: 1082, top: 822, thickness: 62 },
+] as const;
+
 const quarry: MapDef = {
-  id: 'quarry', name: '층층 채석장', desc: '절벽과 작업대가 층층이 이어집니다. 고지의 발밑을 무너뜨리면 아래층까지 추락하며 큰 피해를 받습니다.',
-  features: '계단식 고저차 · 무너지는 암반 · 추락 피해 큼', voidBottom: false, spawn: [280, 740], windBias: 0.3,
-  sky: ['#93c6e4', '#aec8d5', '#d5c6a5'],
+  id: 'quarry', name: '층층 채석장', desc: '양끝의 긴 고지 아래로 짧아지는 네 개의 발판입니다. 중앙 쪽 끝에서 내려가면 바로 아래 발판에 닿습니다. 마지막 단 밖은 협곡입니다.',
+  features: '분리된 네 발판 · 한 단씩 착지 · 중앙 협곡 낙사', voidBottom: true, ringOutY: 1060,
+  spawn: [390, 816], spawnTiers: [[390, 530], [706, 816]], windBias: 0.3,
+  sky: ['#7cadd1', '#c9dddc', '#d9b991'],
   colors: {
-    [Mat.Dirt]: { base: '#a58b68', dark: '#584c43', crust: '#c6b78b' },
-    [Mat.Rock]: { base: '#81939c', dark: '#3d5062', crust: '#d0c9ad' },
+    [Mat.Dirt]: { base: '#ae8a5e', dark: '#5a463e', crust: '#eed296' },
+    [Mat.Rock]: { base: '#758998', dark: '#33485b', crust: '#c9bd9d' },
     [Mat.Bedrock]: { base: '#344758', dark: '#1d2c3d' },
     [Mat.Core]: { base: '#637f8c', dark: '#344957' },
     [Mat.Wall]: { base: '#a49e8e', dark: '#565c60' },
@@ -378,17 +388,24 @@ const quarry: MapDef = {
     [Mat.Leaf]: { base: '#749373', dark: '#354f4e' },
   },
   generate(t, _rng, seed) {
-    const surface = (x:number) => x < 200 ? 760 : x < 500 ? 480 : x < 760 ? 690 : x < 1040 ? 870 : x < 1350 ? 940 : x < 1650 ? 700 : x < 1920 ? 400 : x < 2200 ? 640 : 780;
-    fillColumns(t, surface, (_x,y,d) => y > 1160 ? Mat.Bedrock : d < 10 ? Mat.Dirt : Mat.Rock);
-    blob(t, 390, 720, 92, 85, Mat.Empty, seed+61,0.15);
-    blob(t, 1750, 760, 105, 100, Mat.Empty, seed+62,0.15);
-    rect(t, 1670, 350, 1890, 366, Mat.Wood);
-    rect(t, 1700, 360, 1714, 408, Mat.Wood);
-    rect(t, 1846, 360, 1860, 408, Mat.Wood);
+    for (const { start, edge, top, thickness } of quarryLedges) {
+      const span = edge - start;
+      const base = (x: number) => {
+        const bevel = Math.max(0, 24 - Math.min(x - start, edge - x) * 0.46);
+        return top + thickness - bevel + (noise1(x / 34, seed + top) - 0.5) * 12;
+      };
+      fillColumns(t, () => top, (x, y, depth) => {
+        if (depth < 12) return Mat.Dirt;
+        const seam = thickness * 0.56 + (noise1(x / 52, seed + 7) - 0.5) * 15;
+        return Math.abs(y - top - seam) < 4 ? Mat.Dirt : Mat.Rock;
+      }, start, edge - CELL, base);
+      // A short embedded support holds the outer end; the landing end can break off.
+      rect(t, start + span * 0.15, top + 26, start + span * 0.28, top + 38, Mat.Core);
+    }
   },
 };
 
-export const MAPS: MapDef[] = [bridge, sanseong, quarry, baekdu, forest, cloud, underworld];
+export const MAPS: MapDef[] = [quarry, bridge, sanseong, baekdu, forest, cloud, underworld];
 
 export function mapDef(id: string): MapDef {
   const m = MAPS.find((x) => x.id === id);
@@ -442,12 +459,19 @@ function symmetricSpawnCandidates(t: Terrain): SpawnPoint[] {
 /** 같은 높이·발판의 거울 위치를 한 쌍으로 뽑는다. 두 팀의 좌우와 아군 순서만 섞는다. */
 export function findSpawnPoints(t: Terrain, def: MapDef, rng: Rng, count: 2 | 4): SpawnPoint[] {
   const pool=symmetricSpawnCandidates(t);
+  const pick = (choices: SpawnPoint[]) => choices[Math.floor(rng.next() * choices.length)]!;
+  const tiers = def.spawnTiers?.map(([start, end]) => pool.filter(point => point.x >= start && point.x <= end));
   let left: SpawnPoint[];
-  if(count===2 && pool.length){
+  if (tiers?.[0]?.length && tiers[1]?.length) {
+    left = count === 2
+      ? [pick(rng.next() < 0.5 ? tiers[0] : tiers[1])]
+      : [pick(tiers[0]), pick(tiers[1])];
+    if (count === 4 && rng.next() < 0.5) left.reverse();
+  } else if(count===2 && pool.length){
     const inner=pool.filter(p=>p.x>650),outer=pool.filter(p=>p.x<=650);
     const preferred=rng.next()<0.65?inner:outer;
     const choices=preferred.length?preferred:pool;
-    left=[choices[Math.floor(rng.next()*choices.length)]!];
+    left=[pick(choices)];
   }else{
     const pairs: [SpawnPoint,SpawnPoint][]=[];
     for(let i=0;i<pool.length;i++)for(let j=i+1;j<pool.length;j++){

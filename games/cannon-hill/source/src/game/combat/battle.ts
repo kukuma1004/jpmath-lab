@@ -614,6 +614,9 @@ export class Battle {
           const speed = Math.hypot(p.vx, p.vy) || 1;
           p.vx = p.vx / speed * (w.drillSpeed ?? 420);
           p.vy = p.vy / speed * (w.drillSpeed ?? 420);
+          if (w.burstRadius && w.burstCarve && w.burstDamage) {
+            this.explode(p.x, p.y, w.burstRadius, w.burstCarve, w.rockMul, w.burstDamage, 1, 0, p, -1, w.id, false);
+          }
           this.emit({ type: 'debris', x: p.x, y: p.y, count: 14, mat: m });
           // 다음 걸음부터 굴착 속도를 써서 진입 순간의 고속 이동을 막는다.
           break;

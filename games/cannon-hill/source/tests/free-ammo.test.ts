@@ -90,7 +90,8 @@ describe('독무는 자기 차례에만 작용하고 걸어 나와 피할 수 �
   it('구름 밖으로 나온 상대는 다음 자기 차례에 피해를 받지 않는다', () => {
     const b = gasBattle();until(b, () => b.phase === 'AIM' && b.current === 1);
     const f=b.cur,hp=f.hp;
-    expect(b.walk(f,140)).toBeGreaterThan(130);
+    const radius = b.clouds[0]!.radius;
+    expect(b.walk(f, Math.min(f.moveLeft, radius + 10))).toBeGreaterThan(radius);
     expect(b.inCloud(f,b.clouds[0]!)).toBe(false);
     nextOwnTurn(b,1);expect(f.hp).toBe(hp);
   });

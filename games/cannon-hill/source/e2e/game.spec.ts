@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { MAX_LAUNCH_SPEED } from '../src/game/config/constants';
 
 type State = {
   phase: string; current: number; turnNo: number; winner: number | null; hp: number[]; shots: number[];
@@ -64,12 +65,15 @@ test('낮은 둔턱은 이동 키로 넘고 경사에서 실제 발사각을 보
   const hud = page.locator('[data-s=hud]');
   await expect(hud.locator('.angle-read small')).toHaveText(/발사 →\d+°/);
   expect(await wr(page, '__wr.battle.cur.y')).toBeLessThan(880);
-  expect(await wr(page, '__wr.battle.launchAngle(__wr.battle.cur)')).toBeGreaterThan(55);
+  const launchAngle = await wr(page, '__wr.battle.launchAngle(__wr.battle.cur)');
+  expect(launchAngle).toBeGreaterThan(55);
   await page.keyboard.down('Space');
   await page.waitForFunction(() => (window as any).__wr.battle.cur.power >= 40, undefined, {polling:'raf'});
   await page.keyboard.up('Space');
   await expect.poll(() => wr(page, '__wr.battle.projectiles.length')).toBe(1);
-  expect(await wr(page, '__wr.battle.projectiles[0].vy')).toBeLessThan(-330);
+  const { power, vx } = await wr(page, '({power: __wr.battle.cur.lastPower, vx: __wr.battle.projectiles[0].vx})');
+  // Wind is zero, so waiting a frame to read the projectile cannot change its horizontal speed.
+  expect(vx).toBeCloseTo(MAX_LAUNCH_SPEED * power / 100 * Math.cos(launchAngle * Math.PI / 180), 5);
 });
 
 test('바로 한 판: 선공으로 직접 쏘고 지난 포격을 본 뒤 같은 방식으로 재대전한다', async ({page}) => {
@@ -136,7 +140,7 @@ for(const teamSize of [1,2])test(`무작위 ${teamSize}:${teamSize} 배치는 �
 test('굴착대장: 전용 몸·회전 드릴을 불러오고 실제 땅속 굴착이 보인다',async({page})=>{
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
   await openBattle(page,'local',['driller','mudang'],'quarry');await waitAim(page);
-  await wr(page,`const b=__wr.battle;b.current=0;b.phase='AIM';b.timeLeft=30;b.wind=0;for(const [i,x] of [300,2100].entries()){const f=b.fighters[i];f.x=x;f.y=b.terrain.topSurface(x);f.airPeakY=f.y;f.vx=f.vy=0;f.onGround=true;} __wr.fire(45,50,0);`);
+  await wr(page,`const b=__wr.battle;b.current=0;b.phase='AIM';b.timeLeft=30;b.wind=0;for(const [i,x] of [300,2100].entries()){const f=b.fighters[i];f.x=x;f.y=b.terrain.topSurface(x);f.airPeakY=f.y;f.vx=f.vy=0;f.onGround=true;} __wr.fire(45,42,0);`);
   await page.waitForFunction(()=> (window as any).__wr.battle.projectiles.some((p:any)=>p.drilling),undefined,{polling:'raf'});
   expect(await wr(page,`__wr.scene.textures.exists('proj_drill')`)).toBe(true);
   await page.waitForFunction(()=> (window as any).__wr.battle.fighters[0].stats.cellsDestroyed>100,undefined,{polling:'raf'});
