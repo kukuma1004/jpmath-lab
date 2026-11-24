@@ -1,11 +1,13 @@
 'use strict';
 
 const Forge = (() => {
-  const clientRevision = 2026112405;
-  const rankingProtocol = 'forge-reserve-1';
+  const clientRevision = 2026112406;
+  const rankingProtocol = 'forge-current-1';
   const legacySaveKey = 'jp-math-lab:mongle-forge:v1';
   const backupKey = legacySaveKey + ':before-infinite';
   const seasonId = 'season-20261120-1';
+  const rankingBoard = seasonId + '-current-1';
+  const rankingProfileKey = 'jp-math-lab:mongle-forge:ranking-profile:current-1';
   // Isolate the season from older tabs that still write the previous save format.
   const olderSaveKey = legacySaveKey + ':' + seasonId;
   const marketSaveKey = olderSaveKey + ':market-1';
@@ -757,7 +759,7 @@ const Forge = (() => {
     return event;
   }
 
-  return { clientRevision, rankingProtocol, saveKey, legendsSaveKey, wardrobeSaveKey, previousSaveKey, magicSaveKey, storageSaveKey, riskSaveKey, rainbowSaveKey, marketSaveKey, olderSaveKey, legacySaveKey, backupKey, seasonId, startingShards, cooldown, recoveryBonus, offlineLimit, enchantmentLimit, forms, enchantments, magics, magicAt, appraisal, restore, loadSeason, serialize, rankingName, rankingRecord, weaponSnapshot, sameWeaponRecord, applyAdminGrant, rememberWeapon, formAt, appearanceAt, selectAppearance, cost, incomeBreakdown, discountInfo, passiveCapacity, baseIncome, income, rankReward, setRankBonus, preview, protectionOffer, buyProtection, saleOffer, sell, enchantPreview, collectPassive, act, enchant, reroll };
+  return { clientRevision, rankingProtocol, rankingBoard, rankingProfileKey, saveKey, legendsSaveKey, wardrobeSaveKey, previousSaveKey, magicSaveKey, storageSaveKey, riskSaveKey, rainbowSaveKey, marketSaveKey, olderSaveKey, legacySaveKey, backupKey, seasonId, startingShards, cooldown, recoveryBonus, offlineLimit, enchantmentLimit, forms, enchantments, magics, magicAt, appraisal, restore, loadSeason, serialize, rankingName, rankingRecord, weaponSnapshot, sameWeaponRecord, applyAdminGrant, rememberWeapon, formAt, appearanceAt, selectAppearance, cost, incomeBreakdown, discountInfo, passiveCapacity, baseIncome, income, rankReward, setRankBonus, preview, protectionOffer, buyProtection, saleOffer, sell, enchantPreview, collectPassive, act, enchant, reroll };
 })();
 
 if (typeof module !== 'undefined') module.exports = Forge;

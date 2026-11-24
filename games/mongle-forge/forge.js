@@ -519,7 +519,6 @@
   $('update-retry').addEventListener('click', () => updater.retry());
   ranking = ForgeRanking.mount({
     getState: () => state, fmt, asset,
-    capture: (nickname, weaponName) => transaction(next => { Forge.rememberWeapon(next); return Forge.rankingRecord(next, nickname, weaponName); }),
     onBonus: rank => transaction(next => Forge.setRankBonus(next, rank)),
     onGrant: grant => transaction(next => {
       const before = next.shards;

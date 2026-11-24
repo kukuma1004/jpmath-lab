@@ -615,7 +615,7 @@ test('sales return exactly ten percent once, keep the best weapon, and require a
   assert.notEqual(Forge.saleOffer(reload).token,offer.token);
 });
 
-test('best weapon snapshots survive destruction, reset and reload for automatic publishing', () => {
+test('best weapon snapshots survive destruction, reset and reload as private history', () => {
   const s=Forge.restore({level:32,shards:'999999',enchantments:['astral','lunar','storm']},100000);
   Forge.act(s,100000,()=>.99999);
   assert(s.broken);assert.deepEqual(s.enchantments,[]);assert.equal(s.rankingBest.level,'32');
@@ -623,6 +623,19 @@ test('best weapon snapshots survive destruction, reset and reload for automatic 
   const reload=Forge.restore(JSON.parse(Forge.serialize(s)),101000);
   assert.deepEqual(reload.rankingBest,s.rankingBest);
   Forge.act(reload,101000,()=>0);assert.equal(reload.rankingBest.level,'32');
+});
+
+test('current-ranking snapshots follow losses, rerolls, destruction and reforging instead of the private best', () => {
+  const now=Date.UTC(2026,10,24),s=Forge.restore({level:110,shards:'100000000000',enchantments:['lunar','lunar','lunar'],protections:{111:true}},now);
+  Forge.rememberWeapon(s);const best=JSON.parse(JSON.stringify(s.rankingBest));
+  Forge.act(s,now,()=>.99999);assert.equal(s.level,109n);
+  const lower=Forge.rankingRecord(s,'현재검','검');assert.equal(lower.level,'109');assert(BigInt(lower.value)<BigInt(best.value));
+  Forge.reroll(s,now+1000,()=>0);const rerolled=Forge.rankingRecord(s,'현재검','검');assert(BigInt(rerolled.value)<BigInt(lower.value));
+  Forge.act(s,now+2000,()=>.99999);assert(s.broken);assert.equal(Forge.weaponSnapshot(s),null);
+  assert.deepEqual(s.rankingBest,best);
+  Forge.act(s,now+3000,()=>0);assert.equal(Forge.weaponSnapshot(s).level,'0');
+  assert.notEqual(Forge.weaponSnapshot(s).value,best.value);
+  assert.notEqual(Forge.rankingBoard,Forge.seasonId);assert(Forge.rankingBoard.endsWith('-current-1'));
 });
 
 test('top ten rank bonuses are tiered, bounded by verification and never paid retroactively', () => {

@@ -6,11 +6,13 @@ const ForgeRanking = (() => {
     authDomain: 'jpmathlab.firebaseapp.com', appId: '1:1061208248935:web:839fa3cc986bc687cebac2',
   };
   const base = 'https://jpmathlab-default-rtdb.asia-southeast1.firebasedatabase.app/mongleForgeV1/';
-  const profileKey = 'jp-math-lab:mongle-forge:ranking-profile';
+  const profileKey = Forge.rankingProfileKey;
+  const legacyProfileKey = 'jp-math-lab:mongle-forge:ranking-profile';
   let session;
   const knownUses = value => typeof value === 'string' && /^(0|[1-9][0-9]{0,127})$/.test(value);
   const knownAppearance = value => value === 'auto' || Forge.forms.some(form => form.level.toString() === value);
   const recordCore = record => ['value', 'level', 'effect1', 'effect2', 'effect3'].map(key => record[key]).concat(record.magic ?? 'none', record.magicPeak ?? '0').join(':');
+  const recordSignature = record => record ? JSON.stringify([recordCore(record), record.appearance ?? 'auto', record.protectionUses ?? null, record.nickname, record.weaponName, record.rulesVersion]) : 'none';
 
   async function identity() {
     if (!session) session = (async () => {
@@ -42,7 +44,7 @@ const ForgeRanking = (() => {
   }
 
   function validRecord(record) {
-    return record && typeof record.value === 'string' && /^[0-9]{512}$/.test(record.value) &&
+    return record && record.rulesVersion === Forge.rankingProtocol && typeof record.value === 'string' && /^[0-9]{512}$/.test(record.value) &&
       typeof record.level === 'string' && /^(0|[1-9][0-9]{0,127})$/.test(record.level) &&
       typeof record.nickname === 'string' && record.nickname.length <= 12 &&
       typeof record.weaponName === 'string' && record.weaponName.length <= 16 &&
@@ -55,34 +57,29 @@ const ForgeRanking = (() => {
 
   async function list() {
     const query = new URLSearchParams({ orderBy: '"value"', limitToLast: '100' });
-    const response = await request(base + Forge.seasonId + '.json?' + query);
+    const response = await request(base + Forge.rankingBoard + '.json?' + query);
     return Object.entries(await response.json() || {}).filter(([, record]) => validRecord(record))
       .map(([uid, record]) => ({ ...record, uid })).sort((a, b) => a.value === b.value ?
         a.uid === b.uid ? 0 : a.uid > b.uid ? -1 : 1 : a.value > b.value ? -1 : 1);
   }
 
-  async function publish(record, onOwner) {
+  async function publish(currentRecord, onOwner) {
     const user = await identity();
     const token = await user.getIdToken();
     await onOwner(user.uid, token);
-    const url = base + Forge.seasonId + '/' + encodeURIComponent(user.uid) + '.json?auth=' + encodeURIComponent(token);
+    const url = base + Forge.rankingBoard + '/' + encodeURIComponent(user.uid) + '.json?auth=' + encodeURIComponent(token);
     for (let attempt = 0; attempt < 3; attempt += 1) {
       const response = await request(url, { headers: { 'X-Firebase-ETag': 'true' } });
       const previous = await response.json();
-      if (previous && previous.value > record.value) return { kept: true, record: previous };
-      const payload = previous && previous.value === record.value ? {
-        ...previous, nickname: record.nickname, weaponName: record.weaponName,
-      } : record;
-      payload.rulesVersion = Forge.rankingProtocol;
-      payload.appearance = record.appearance ?? 'auto';
-      payload.magic ??= 'none'; payload.magicPeak ??= '0';
-      if (Forge.sameWeaponRecord(previous, record) && knownUses(record.protectionUses) &&
-          (!knownUses(previous.protectionUses) || BigInt(record.protectionUses) >= BigInt(previous.protectionUses))) payload.protectionUses = record.protectionUses;
+      // Capture after identity/grants and after each ETag read. A weaker or new
+      // weapon replaces the row; a missing weapon removes it.
+      const record = currentRecord();
+      if (!record && !previous) return { record: null };
       const update = await request(url, {
-        method: 'PUT', headers: { 'Content-Type': 'application/json', 'if-match': response.headers.get('etag') },
-        body: JSON.stringify({ ...payload, submittedAt: { '.sv': 'timestamp' } }),
+        method: record ? 'PUT' : 'DELETE', headers: { 'Content-Type': 'application/json', 'if-match': response.headers.get('etag') },
+        ...(record ? { body: JSON.stringify({ ...record, submittedAt: { '.sv': 'timestamp' } }) } : {}),
       });
-      if (update.status !== 412) return { kept: false, record: payload };
+      if (update.status !== 412) return { record };
     }
     throw new Error('다른 창에서 기록이 갱신됐어요. 다시 등록해 주세요.');
   }
@@ -90,15 +87,15 @@ const ForgeRanking = (() => {
   async function remove() {
     const user = await identity();
     const token = await user.getIdToken();
-    await request(base + Forge.seasonId + '/' + encodeURIComponent(user.uid) + '.json?auth=' + encodeURIComponent(token), { method: 'DELETE' });
+    await request(base + Forge.rankingBoard + '/' + encodeURIComponent(user.uid) + '.json?auth=' + encodeURIComponent(token), { method: 'DELETE' });
   }
 
-  function mount({ getState, capture, fmt, asset, onBonus, onGrant, beforePublish }) {
+  function mount({ getState, fmt, asset, onBonus, onGrant, beforePublish }) {
     const $ = id => document.getElementById(id);
     const dialog = $('ranking');
     let profile = {};
     try {
-      const saved = JSON.parse(localStorage.getItem(profileKey) || '{}');
+      const saved = JSON.parse(localStorage.getItem(profileKey) || localStorage.getItem(legacyProfileKey) || '{}');
       if (saved && typeof saved === 'object' && !Array.isArray(saved)) profile = saved;
     } catch {}
     if (!profile.nickname) profile.nickname = '몽글' + String(crypto.getRandomValues(new Uint32Array(1))[0] % 10000).padStart(4, '0');
@@ -107,26 +104,44 @@ const ForgeRanking = (() => {
     if (!knownUses(profile.syncedProtectionUses)) profile.syncedProtectionUses = null;
     if (!knownAppearance(profile.syncedAppearance)) profile.syncedAppearance = null;
     if (typeof profile.syncedCore !== 'string' || profile.syncedCore.split(':').length !== 7) profile.syncedCore = null;
+    const migrated = profile.rankingBoard !== Forge.rankingBoard;
+    if (migrated) profile.syncedSignature = null;
+    profile.rankingBoard = Forge.rankingBoard;
     let busy = false;
     let generation = 0;
     let verifiedUid;
     let nextTry = 0;
     let benefitRequest = 0;
     let grantOwner;
-    function saveProfile() {
-      try { localStorage.setItem(profileKey, JSON.stringify(profile)); } catch {}
+    function saveProfile(settings = false) {
+      try {
+        const shared = JSON.parse(localStorage.getItem(profileKey) || 'null');
+        if (!settings && shared?.rankingBoard === Forge.rankingBoard) {
+          profile.auto = shared.auto !== false;
+          profile.nickname = shared.nickname || profile.nickname;
+          profile.weaponName = shared.weaponName;
+        }
+        localStorage.setItem(profileKey, JSON.stringify(profile));
+      } catch {}
     }
-    saveProfile();
+    saveProfile(migrated);
+    function currentRecord(validate = false) {
+      const state = getState();
+      if (!profile.auto || !Forge.weaponSnapshot(state)) return null;
+      const nickname = profile.nickname;
+      const weaponName = profile.weaponName || Forge.appearanceAt(state.appearance, state.level).name;
+      return validate ? Forge.rankingRecord(state, nickname, weaponName) : {
+        ...Forge.weaponSnapshot(state), nickname, weaponName, rulesVersion: Forge.rankingProtocol,
+      };
+    }
     function pending() {
-      const best = getState().rankingBest;
-      return profile.auto && best && (!profile.syncedValue || best.value > profile.syncedValue || best.value === profile.syncedValue &&
-        (!profile.syncedCore || recordCore(best) === profile.syncedCore) &&
-        ((best.appearance ?? 'auto') !== profile.syncedAppearance || knownUses(best.protectionUses) &&
-        (!knownUses(profile.syncedProtectionUses) || BigInt(best.protectionUses) > BigInt(profile.syncedProtectionUses))));
+      const state = getState();
+      const eligible = profile.uid || profile.auto && (state.attempts > 0n || state.rankingBest);
+      return !!eligible && recordSignature(currentRecord()) !== profile.syncedSignature;
     }
     function autoStatus() {
-      $('auto-ranking-name').textContent = (profile.auto ? '자동 등록 · ' : '자동 등록 꺼짐 · ') + profile.nickname;
-      $('auto-ranking-status').textContent = !profile.auto ? '이름·설정 변경' : pending() ? nextTry > Date.now() ? '기록 보관 중 · 연결 후 재전송' : '최고 무기 전송 대기' : '파괴 전 기록 자동 보관';
+      $('auto-ranking-name').textContent = (profile.auto ? '현재 검 자동 등록 · ' : '랭킹 참여 꺼짐 · ') + profile.nickname;
+      $('auto-ranking-status').textContent = pending() ? nextTry > Date.now() ? '연결 후 현재 검 반영' : '현재 검 동기화 중' : !profile.auto ? '이름·설정 변경' : getState().broken ? '검이 없어 랭킹 제외' : '현재 검 감정가 기준';
     }
     async function owner(uid, token) {
       verifiedUid = uid; profile.uid = uid; saveProfile();
@@ -139,7 +154,9 @@ const ForgeRanking = (() => {
       } catch {}
     }
     async function applyBenefits(rows) {
-      const index = verifiedUid ? rows.findIndex(row => row.uid === verifiedUid) : -1;
+      const current = currentRecord();
+      const index = verifiedUid && current && recordSignature(current) === profile.syncedSignature ?
+        rows.findIndex(row => row.uid === verifiedUid && recordCore(row) === recordCore(current)) : -1;
       await onBonus(index >= 0 && index < 10 ? index + 1 : 0);
     }
     async function syncBenefits() {
@@ -154,20 +171,26 @@ const ForgeRanking = (() => {
       if (busy || !pending() || Date.now() < nextTry) return;
       busy = true; controls(); autoStatus();
       try {
-        if (!await beforePublish()) return;
-        const best = { ...getState().rankingBest };
-        const record = { ...best, rulesVersion: Forge.rankingProtocol, nickname: Forge.rankingName(profile.nickname, 12),
-          weaponName: Forge.rankingName(profile.weaponName || Forge.appearanceAt(best.appearance,BigInt(best.level)).name, 16) };
-        const result = await publish(record, owner);
-        profile.syncedValue = result.record.value; profile.syncedCore = recordCore(result.record);
-        profile.syncedAppearance = result.record.appearance ?? 'auto';
-        profile.syncedProtectionUses = knownUses(result.record.protectionUses) ? result.record.protectionUses : null; saveProfile(); nextTry = 0;
+        if (!await beforePublish()) { nextTry = Date.now() + 1000; return; }
+        const result = await publish(() => currentRecord(true), owner);
+        acknowledge(result.record); nextTry = 0;
         await syncBenefits();
         if (dialog.open) await refresh(false);
       } catch { nextTry = Date.now() + 10000; }
-      finally { busy = false; controls(); autoStatus(); }
+      finally { busy = false; controls(); autoStatus(); if (pending() && Date.now() >= nextTry) queueMicrotask(pump); }
     }
-    function changed() { autoStatus(); queueMicrotask(pump); }
+    function acknowledge(record) {
+      profile.syncedValue = record?.value ?? null;
+      profile.syncedCore = record ? recordCore(record) : null;
+      profile.syncedAppearance = record?.appearance ?? null;
+      profile.syncedProtectionUses = knownUses(record?.protectionUses) ? record.protectionUses : null;
+      profile.syncedSignature = recordSignature(record); saveProfile();
+    }
+    function changed() {
+      if (getState().rankBonus && (!verifiedUid || !profile.auto || getState().broken || recordSignature(currentRecord()) !== profile.syncedSignature)) onBonus(0);
+      if (dialog.open) preview();
+      autoStatus(); queueMicrotask(pump);
+    }
     function element(tag, className, text) {
       const item = document.createElement(tag);
       item.className = className;
@@ -217,7 +240,7 @@ const ForgeRanking = (() => {
           image.dataset.bound = magic.id; image.style.setProperty('--bound', magic.color);
         }
         const uses = element('small', 'ranking-protection', knownUses(record.protectionUses) ? '보호권 ' + fmt(BigInt(record.protectionUses)) + '장 사용' : '보호권 미기록');
-        uses.title = knownUses(record.protectionUses) ? '이 무기 기록 시점까지 누적 사용한 보호권 수' : '이전 기록에는 보호권 사용량이 저장되지 않았어요.';
+        uses.title = knownUses(record.protectionUses) ? '현재 동기화 시점까지 누적 사용한 보호권 수' : '이 기록에는 보호권 사용량이 저장되지 않았어요.';
         info.append(uses);
         const value = element('div', 'ranking-value');
         value.append(element('strong', '', fmt(BigInt(record.value)) + ' G'), element('span', '', '+' + fmt(BigInt(record.level))));
@@ -237,7 +260,7 @@ const ForgeRanking = (() => {
         if (current !== generation) return;
         renderRows(rows);
         if (benefit === benefitRequest) await applyBenefits(rows);
-        if (announce) status(rows.length ? '상위 10명은 현재 순위에 따라 별철 보너스를 받아요.' : '이번 시즌의 첫 무기를 등록해 보세요.');
+        if (announce) status(rows.length ? '현재 검 감정가 순위예요. 상위 10명은 별철 보너스를 받아요.' : '접속 후 현재 검을 등록하면 랭킹에 표시돼요.');
       } catch (error) {
         if (current === generation) status(error.message);
       }
@@ -251,7 +274,7 @@ const ForgeRanking = (() => {
     $('open-ranking').addEventListener('click', openRanking);
     $('auto-ranking-name').addEventListener('click', openRanking);
     $('auto-ranking-enabled').addEventListener('change', () => {
-      profile.auto = $('auto-ranking-enabled').checked; nextTry = 0; saveProfile(); changed();
+      profile.auto = $('auto-ranking-enabled').checked; nextTry = 0; saveProfile(true); changed();
     });
     $('ranking-refresh').addEventListener('click', () => { preview(); refresh(); });
     $('ranking-form').addEventListener('submit', async event => {
@@ -261,16 +284,14 @@ const ForgeRanking = (() => {
       ++generation;
       status('무기를 등록하고 있어요.');
       try {
-        if (!await beforePublish()) { status('새 버전을 적용한 뒤 다시 등록해 주세요.'); return; }
-        const record = await capture($('ranking-nickname').value, $('ranking-weapon-name').value);
-        profile.nickname = record.nickname; profile.weaponName = record.weaponName;
-        const result = await publish(record, owner);
-        profile.syncedValue = result.record.value;
-        profile.syncedAppearance = result.record.appearance ?? 'auto';
-        profile.syncedCore = recordCore(result.record);
-        profile.syncedProtectionUses = knownUses(result.record.protectionUses) ? result.record.protectionUses : null;
-        saveProfile();
-        status(result.kept ? '등록된 최고 무기의 감정가가 더 높아 기존 기록을 유지했어요.' : '무기를 등록했어요! 더 가치 높은 검으로 기록을 갱신해 보세요.');
+        if (!await beforePublish()) { nextTry = Date.now() + 1000; status('새 버전을 적용한 뒤 다시 등록해 주세요.'); return; }
+        const nickname = Forge.rankingName($('ranking-nickname').value, 12);
+        const weaponName = Forge.rankingName($('ranking-weapon-name').value, 16);
+        profile.nickname = nickname; profile.weaponName = weaponName; profile.auto = true;
+        $('auto-ranking-enabled').checked = true; saveProfile(true);
+        const result = await publish(() => currentRecord(true), owner);
+        acknowledge(result.record); nextTry = 0;
+        status(result.record ? '현재 검을 등록했어요. 가치가 바뀌면 순위도 갱신돼요.' : '현재 검이 없어 랭킹에서 제외했어요.');
         await refresh(false);
       } catch (error) {
         status(error.message);
@@ -281,13 +302,23 @@ const ForgeRanking = (() => {
     $('ranking-delete').addEventListener('click', async () => {
       if (busy) return;
       busy = true; controls(); ++generation;
-      profile.auto = false; saveProfile();
+      profile.auto = false; saveProfile(true); changed();
       try {
-        await remove(); delete profile.uid; profile.syncedValue = null; profile.syncedCore = null; profile.syncedProtectionUses = null; profile.syncedAppearance = null; saveProfile();
+        await remove(); acknowledge(null);
         status('내 공개 무기 기록을 삭제했어요.');
         await refresh(false);
       } catch (error) { status(error.message); }
-      finally { busy = false; controls(); autoStatus(); }
+      finally { busy = false; controls(); changed(); }
+    });
+    addEventListener('storage', event => {
+      if (event.key !== profileKey || !event.newValue) return;
+      try {
+        const shared = JSON.parse(localStorage.getItem(profileKey) || 'null');
+        if (!shared || shared.rankingBoard !== Forge.rankingBoard) return;
+        profile = shared; nextTry = 0;
+        $('auto-ranking-enabled').checked = profile.auto !== false;
+        changed();
+      } catch {}
     });
     if (profile.uid) identity().then(async user => { await owner(user.uid, await user.getIdToken()); syncBenefits(); }).catch(() => onBonus(0));
     setInterval(() => { pump(); }, 10000);
