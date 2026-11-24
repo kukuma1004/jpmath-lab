@@ -1,5 +1,4 @@
 import * as THREE from 'three'
-import { LANES } from './combat.js'
 
 const colors = {
   mint: 0x26f0bf, mintDark: 0x085a60, amber: 0xffb958, amberDark: 0xa94e2e,
@@ -7,7 +6,6 @@ const colors = {
 }
 
 const boxGeo = new THREE.BoxGeometry(1, 1, 1)
-const planeGeo = new THREE.PlaneGeometry(1, 1)
 const diamondGeo = new THREE.OctahedronGeometry(1)
 const temp = new THREE.Object3D()
 const tint = new THREE.Color()
@@ -18,9 +16,10 @@ const surface = (color, emissive = 0) => new THREE.MeshStandardMaterial({
 const mint = material(colors.mint)
 const amber = material(colors.amber)
 const cream = material(colors.cream)
-const alloy = surface(colors.alloy)
-const tealShell = surface(0x38c9ab, 0x12866d)
-const orangeShell = surface(0xffa451, 0x862e17)
+const alloy = surface(0x42332e)
+const silver = surface(0x797475)
+const tealShell = surface(0x238f79, 0x124b42)
+const orangeShell = surface(0xa76a2a, 0x4f2910)
 const tealGround = material(colors.mintDark, { transparent: true, opacity: 0.27, depthWrite: false })
 const amberGround = material(colors.amberDark, { transparent: true, opacity: 0.24, depthWrite: false })
 const baseRose = material(0xff572f, { transparent: true, opacity: 0.26, depthWrite: false })
@@ -54,15 +53,15 @@ function card(type) {
       texture.dispose()
       mat.dispose()
     },
-    draw(number) {
-      const label = isRecruit ? `+${number}` : String(number)
+    draw(pickup) {
+      const label = isRecruit ? `${pickup.multiply ? '×' : '+'}${pickup.amount}` : String(pickup.hp)
       if (last === label) return
       last = label
       ctx.clearRect(0, 0, canvas.width, canvas.height)
       const accent = isRecruit ? '#66f9d5' : '#ffd18b'
       ctx.beginPath()
       ctx.roundRect(13, 12, 358, 199, 27)
-      ctx.fillStyle = isRecruit ? '#103c3f' : '#472d32'
+      ctx.fillStyle = isRecruit ? '#143e36' : '#553219'
       ctx.fill()
       ctx.strokeStyle = accent
       ctx.lineWidth = 7
@@ -74,63 +73,77 @@ function card(type) {
       ctx.fillText(label, 192, 91)
       ctx.fillStyle = accent
       ctx.font = '800 31px system-ui, Malgun Gothic, sans-serif'
-      ctx.fillText(isRecruit ? '동료 합류' : '사격 강화', 192, 173)
+      ctx.fillText(isRecruit ? (pickup.multiply ? '두 배 증원' : '증원') : '무기 상자', 192, 173)
       texture.needsUpdate = true
     },
   }
 }
 
-export function createGatePair() {
+function createPickup(kind) {
   const root = new THREE.Group()
-  const recruit = new THREE.Group()
-  const upgrade = new THREE.Group()
-  recruit.position.x = LANES.recruit
-  upgrade.position.x = LANES.upgrade
-  root.add(recruit, upgrade)
+  const model = new THREE.Group()
+  const sign = card(kind)
+  root.add(model, sign.sprite)
 
-  box(recruit, tealGround, 0, 0.04, 0, 3.32, 0.034, 1.65)
-  box(recruit, mint, 0, 0.071, 0.69, 3.25, 0.032, 0.06)
-  box(recruit, mint, 0, 0.071, -0.69, 3.25, 0.032, 0.06)
-  for (const side of [-1, 1]) {
-    const x = side * 1.53
-    box(recruit, alloy, x, 0.21, 0, 0.48, 0.42, 1.32)
-    box(recruit, tealShell, x, 1.06, 0, 0.28, 2, 0.35)
-    box(recruit, mint, x + side * -0.12, 1.13, 0.183, 0.07, 1.76, 0.024)
-    box(recruit, cream, x, 2.05, 0, 0.43, 0.18, 0.43)
-    box(recruit, tealShell, x, 0.27, 0.51, 0.34, 0.1, 0.13)
+  if (kind === 'recruit') {
+    box(model, tealGround, 0, 0.044, 0, 3.3, 0.042, 1.6)
+    box(model, mint, 0, 0.076, 0.57, 3.16, 0.028, 0.075)
+    box(model, mint, 0, 0.076, -0.57, 3.16, 0.028, 0.075)
+    for (const side of [-1, 1]) {
+      const x = side * 1.48
+      box(model, silver, x, 0.174, 0, 0.53, 0.33, 0.66)
+      box(model, alloy, x, 1.04, 0, 0.31, 1.95, 0.35)
+      box(model, tealShell, x, 1.38, 0.24, 0.37, 1.16, 0.15)
+      box(model, mint, x, 1.36, 0.33, 0.07, 0.76, 0.031)
+      box(model, cream, x, 2.02, 0, 0.39, 0.16, 0.44)
+    }
+    box(model, alloy, 0, 2.11, 0, 3.38, 0.19, 0.34)
+    sign.sprite.position.set(0, 2.48, 0.5)
+  } else {
+    box(model, amberGround, 0, 0.044, 0, 2.52, 0.039, 1.54)
+    box(model, alloy, 0, 0.16, 0, 2.48, 0.27, 1.29)
+    box(model, orangeShell, 0, 0.63, 0, 2.2, 0.79, 1.06)
+    box(model, orangeShell, 0, 1.07, 0, 2.25, 0.16, 1.12)
+    for (const side of [-1, 1]) {
+      box(model, silver, side * 0.93, 0.67, 0, 0.17, 0.99, 1.13)
+      box(model, amber, side * 0.93, 0.85, 0.57, 0.075, 0.09, 0.03)
+    }
+    box(model, amber, 0, 0.72, 0.568, 0.25, 0.3, 0.09)
+    box(model, alloy, 0, 0.71, 0.62, 0.068, 0.11, 0.02)
+    sign.sprite.position.set(0, 1.88, 0.34)
   }
-  box(recruit, alloy, 0, 2.38, 0, 3.34, 0.2, 0.38)
-  box(recruit, mint, 0, 2.395, 0.198, 3.03, 0.045, 0.04)
-
-  box(upgrade, amberGround, 0, 0.04, 0, 2.93, 0.034, 1.57)
-  box(upgrade, alloy, 0, 0.23, 0, 2.75, 0.46, 1.19)
-  box(upgrade, orangeShell, 0, 1.24, -0.06, 2.62, 1.88, 0.37)
-  box(upgrade, alloy, 0, 1.3, 0.153, 2.33, 1.6, 0.12)
-  box(upgrade, amber, 0, 0.542, 0.23, 2.32, 0.09, 0.044)
-  box(upgrade, amber, 0, 1.105, 0.603, 2.72, 0.041, 0.045)
-  for (const side of [-1, 1]) {
-    box(upgrade, amber, side * 1.28, 1.34, 0.139, 0.09, 1.53, 0.06)
-    box(upgrade, alloy, side * 1.18, 1.73, 0.271, 0.32, 0.25, 0.24)
-    box(upgrade, cream, side * 1.18, 1.76, 0.401, 0.2, 0.077, 0.025)
-  }
-  const left = card('recruit')
-  left.sprite.position.set(0, 2.74, 0.62)
-  recruit.add(left.sprite)
-  const right = card('upgrade')
-  right.sprite.position.set(0, 1.55, 0.48)
-  upgrade.add(right.sprite)
   return {
     root,
-    update(pair, time) {
-      root.position.z = pair.z
-      left.draw(pair.people)
-      right.draw(Math.ceil(pair.hp))
-      left.sprite.position.y = 2.7 + Math.sin(time * 3.1) * 0.05
-      upgrade.position.y = Math.sin(pair.hit * 95) * pair.hit * 0.47
+    update(pickup, time) {
+      root.position.set(pickup.x, 0, pickup.z)
+      sign.draw(pickup)
+      model.rotation.z = Math.sin(time * 70) * pickup.flash * 0.42
     },
-    dispose() {
-      left.dispose()
-      right.dispose()
+    dispose: sign.dispose,
+  }
+}
+
+export function createPickups(scene) {
+  const views = new Map()
+  return {
+    update(pickups, time) {
+      const visible = new Set()
+      for (const pickup of pickups) {
+        visible.add(pickup.id)
+        let view = views.get(pickup.id)
+        if (!view) {
+          view = createPickup(pickup.kind)
+          views.set(pickup.id, view)
+          scene.add(view.root)
+        }
+        view.update(pickup, time)
+      }
+      for (const [id, view] of views) {
+        if (visible.has(id)) continue
+        scene.remove(view.root)
+        view.dispose()
+        views.delete(id)
+      }
     },
   }
 }
@@ -157,7 +170,7 @@ export function createHazard() {
 }
 
 const limit = 360
-const shotPalette = [0x0da9be, 0xf99437, 0xc271e8]
+const shotPalette = [0x58e3c9, 0xeeee99, 0x95def7, 0xff7941]
 
 function instanced(geo, mat, size) {
   const mesh = new THREE.InstancedMesh(geo, mat, size)
@@ -168,7 +181,7 @@ function instanced(geo, mat, size) {
 }
 
 export function createEffects(scene) {
-  const shots = instanced(boxGeo, material(0xffffff), limit)
+  const shots = instanced(diamondGeo, material(0xffffff), limit)
   const glints = instanced(boxGeo, material(0xfff9df), limit)
   const sparks = instanced(diamondGeo, material(0xffffff), 320)
   const rings = instanced(new THREE.RingGeometry(0.84, 1, 32), material(0xffffff, {
@@ -209,13 +222,13 @@ export function createEffects(scene) {
         const muzzleOffset = 0.21 * Math.max(0, 1 - (shot.startZ - shot.z) / 2.1)
         temp.position.set(shot.x - muzzleOffset, 0.78, shot.z)
         temp.rotation.set(0, -Math.atan(shot.dx), 0)
-        temp.scale.set(shot.level === 2 ? 0.155 : 0.126, 0.087, 0.83)
+        temp.scale.set(shot.level === 2 ? 0.097 : 0.074, 0.06, 0.94)
         temp.updateMatrix()
         shots.setMatrixAt(i, temp.matrix)
         shots.setColorAt(i, tint.setHex(shotPalette[shot.level]))
         temp.position.z -= 0.12
         temp.position.y += 0.051
-        temp.scale.set(0.056, 0.024, 0.36)
+        temp.scale.set(0.035, 0.027, 0.29)
         temp.updateMatrix()
         glints.setMatrixAt(i, temp.matrix)
       }

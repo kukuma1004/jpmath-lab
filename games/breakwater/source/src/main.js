@@ -1,8 +1,8 @@
 import * as THREE from 'three'
-import { formation, LANES, makePreview, newCombat, tickCombat, WEAPONS } from './combat.js'
-import { createEffects, createGatePair, createHazard } from './field-effects.js'
+import { BOSS_TIME, formation, LANES, makePreview, newCombat, tickCombat, WEAPONS } from './combat.js'
+import { createEffects, createHazard, createPickups } from './field-effects.js'
 import { createAudio } from './sound.js'
-import { animateUnit, createAlly, createEnemy, createWorld } from './world.js'
+import { createCrowd, createWorld } from './world.js'
 
 const el = id => document.getElementById(id)
 const viewport = el('viewport')
@@ -14,12 +14,12 @@ const ui = {
   progress: el('progress'), hint: el('hint'), toast: el('toast'), boss: el('boss-hud'),
   bossHealth: el('boss-health'),
 }
-ui.boss.querySelector('span').textContent = '방파제 파수기'
+ui.boss.querySelector('span').textContent = '철문 수문장'
 
 const overlays = {
-  ready: ['해상 구조대', '해협 돌파', '좌우로 움직이면서 적을 쏘고, 방파제 끝까지 돌파하세요.', '작전 시작'],
-  paused: ['해상 구조대', '일시정지', '준비되면 전투를 이어가세요.', '계속하기'],
-  won: ['작전 성공', '방파제 돌파', '', '다시 도전'],
+  ready: ['성문 전선', '해협 돌파', '좌우로 움직여 병사를 모으고 무기 상자를 쏘세요.', '전투 시작'],
+  paused: ['성문 전선', '일시정지', '준비되면 전투를 이어가세요.', '계속하기'],
+  won: ['작전 성공', '성문 돌파', '', '다시 도전'],
   lost: ['작전 종료', '대열이 무너졌습니다', '', '다시 도전'],
   error: ['실행 오류', '3D 화면을 열 수 없어요', 'WebGL 2를 지원하는 브라우저에서 새로 열어 주세요.', '다시 불러오기'],
 }
@@ -32,13 +32,12 @@ function boot() {
   renderer.toneMappingExposure = 1.2
   const camera = new THREE.PerspectiveCamera(49, 1, 0.17, 155)
   const world = createWorld(scene)
-  const gate = createGatePair()
+  const crowd = createCrowd(scene)
+  const pickups = createPickups(scene)
   const hazard = createHazard()
   const effects = createEffects(scene)
-  scene.add(gate.root, hazard.root)
+  scene.add(hazard.root)
   const allies = []
-  const enemyModels = new Map()
-  const enemyPools = { grunt: [], runner: [], armor: [], boss: [] }
   const audio = createAudio()
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)')
   const keys = new Set()
@@ -57,6 +56,7 @@ function boot() {
   let artTime = 0
   let toastEnd = 0
   let shake = 0
+  let cameraPull = 0
   let frame = 0
   let stopped = false
   let screenshotPaused = false
@@ -98,7 +98,7 @@ function boot() {
     setText(ui.kicker, kicker)
     setText(ui.title, title)
     setText(ui.copy, message || (next === 'won'
-      ? `로봇 ${run.kills}기 격파 · 동료 ${run.count}명 생존`
+      ? `적 ${run.kills}명 격파 · 병사 ${run.count}명 생존`
       : battlefieldLoss()))
     setText(ui.action, action)
     if (next === 'paused' || next === 'won' || next === 'lost') ui.action.focus({ preventScroll: true })
@@ -106,9 +106,9 @@ function boot() {
   }
 
   function battlefieldLoss() {
-    return lastDamageWasBoss
-      ? '바닥에 표시된 공격 범위를 피하면 대열을 지킬 수 있어요.'
-      : '적 떼가 한쪽에 몰리면 빈 곳으로 이동해 보세요.'
+    if (lastDamageWasBoss) return '바닥에 표시된 공격 범위를 피하면 대열을 지킬 수 있어요.'
+    if (run.time < 12) return '첫 증원문을 통과하면 일곱 명이 함께 싸워요.'
+    return '측면 기습이 오면 반대편으로 움직여 대열을 지키세요.'
   }
 
   let lastDamageWasBoss = false
@@ -119,8 +119,11 @@ function boot() {
     desiredX = 0
     accumulator = 0
     shake = 0
+    cameraPull = 0
     toastEnd = 0
     lastDamageWasBoss = false
+    allies.length = 0
+    pickups.update([], artTime)
     effects.reset()
     if (unlockAudio) audio.unlock()
     stateTo('playing')
@@ -129,15 +132,15 @@ function boot() {
 
   function updateHud() {
     setText(ui.squad, run.count)
-    setText(ui.weapon, WEAPONS[run.weapon] + (run.power ? ' +' : ''))
+    setText(ui.weapon, WEAPONS[run.weapon])
     setText(ui.wave, state === 'ready' ? '준비' : run.boss ? '보스전' : `${run.wave} / 3 공세`)
     const progress = run.boss ? 82 + (1 - Math.max(0, run.boss.hp) / run.boss.maxHp) * 18
-      : 82 * Math.min(1, run.time / 37)
+      : 82 * Math.min(1, run.time / BOSS_TIME)
     ui.progress.style.width = `${progress.toFixed(1)}%`
     setHidden(ui.boss, !run.boss || (state !== 'playing' && state !== 'paused'))
     if (run.boss) ui.bossHealth.style.width = `${100 * Math.max(0, run.boss.hp) / run.boss.maxHp}%`
     setHidden(ui.toast, state !== 'playing' || artTime >= toastEnd)
-    setHidden(ui.hint, state !== 'playing' || run.time > 4.6 || run.traveled > 0.85)
+    setHidden(ui.hint, state !== 'playing' || run.time > 3.55 || run.x < -1.1)
   }
 
   function showToast(message, tone, duration = 1.36) {
@@ -150,13 +153,17 @@ function boot() {
     audio.play(type, data)
     switch (type) {
       case 'shoot':
-        effects.burst(data.x - 0.21, 0.79, data.z - 0.71, data.level ? 0xffce83 : 0x72efff, 4, 1.4)
+        effects.burst(data.x, 0.7, data.z - 0.51, data.level ? 0xffce83 : 0x72efff, 2, 1.3)
         return
       case 'target':
         effects.burst(data.x, 1.02, data.z + 0.26, 0xffd099, 5, 2.3)
         return
       case 'impact':
-        effects.burst(data.x, 0.96, data.z + 0.15, 0xffc985, 3, 2.2)
+        effects.burst(data.x, 0.79, data.z + 0.15, 0xffc985, 2, 2.2)
+        return
+      case 'blast':
+        effects.pulse(data.x, data.z, 0xff9c4b, 1.65)
+        effects.burst(data.x, 0.44, data.z, 0xffaa58, 14, 4.2)
         return
       case 'destroy': {
         const boss = data.kind === 'boss'
@@ -167,23 +174,26 @@ function boot() {
         return
       }
       case 'hurt':
-        lastDamageWasBoss = Boolean(run.boss)
+        lastDamageWasBoss = data.boss
         effects.burst(data.x, 0.82, 0, 0xff916d, 16, 4.2)
-        showToast(`동료 −${data.loss}`, 'danger')
+        showToast(`병력 −${data.loss}`, 'danger')
         shake = 0.6
         return
       case 'recruit':
         effects.pulse(data.x, data.z, 0x4ff6b1, 2.55)
         effects.burst(data.x, 0.76, data.z, 0x7affc7, 30, 4.6)
-        showToast(data.people ? `동료 +${data.people}` : '대열이 가득 찼어요', 'recruit')
+        showToast(data.people ? `병력 +${data.people}` : '대열이 가득 찼어요', 'recruit')
         return
       case 'upgrade':
         effects.pulse(data.x, data.z, 0xffbc67, 2.35)
         effects.burst(data.x, 1.18, data.z, 0xffba69, 38, 5.7)
-        showToast(data.power ? '탄환 위력 강화' : `${WEAPONS[data.level]} 장착`, 'upgrade')
+        showToast(`${WEAPONS[data.level]} 장착`, 'upgrade')
         return
       case 'boss':
-        showToast('방파제 파수기 접근', 'danger', 1.8)
+        showToast('철문 수문장 접근', 'danger', 1.8)
+        return
+      case 'flank':
+        showToast(data.side < 0 ? '왼쪽 기습 접근' : '오른쪽 기습 접근', 'danger', 1.4)
         return
       case 'alarm':
         showToast('바닥의 공격 범위를 피하세요', 'danger', 1.5)
@@ -195,52 +205,18 @@ function boot() {
   }
 
   function updateModels(dt) {
-    const alive = new Set()
-    for (const enemy of run.enemies) {
-      alive.add(enemy.id)
-      let present = enemyModels.get(enemy.id)
-      if (!present || present.kind !== enemy.kind) {
-        if (present) recycleEnemy(enemy.id, present)
-        const model = enemyPools[enemy.kind].pop() || createEnemy(enemy.kind)
-        present = { model, kind: enemy.kind }
-        enemyModels.set(enemy.id, present)
-        scene.add(model)
-      }
-      const unit = present.model
-      unit.position.set(enemy.x, 0, enemy.z)
-      unit.scale.y = 1 - (reduceEffects ? 0.017 : 0.072) * (enemy.flash / 0.11)
-      animateUnit(unit, artTime, enemy.phase, state !== 'paused' && (enemy.kind !== 'boss' || enemy.z < -10.9))
-    }
-    for (const [id, present] of enemyModels) {
-      if (!alive.has(id)) recycleEnemy(id, present)
-    }
     const people = formation(run.count, run.x)
     for (let i = 0; i < people.length; i += 1) {
       const member = people[i]
-      if (!allies[i]) {
-        allies[i] = createAlly(i === 0)
-        scene.add(allies[i])
-      }
-      const unit = allies[i]
-      const joining = !unit.visible || frame < 2
-      unit.visible = true
-      if (joining) unit.position.set(i ? run.x : member.x, 0, i ? 0 : member.z)
-      unit.position.x = THREE.MathUtils.damp(unit.position.x, member.x, 23, dt)
-      unit.position.z = THREE.MathUtils.damp(unit.position.z, member.z, 21, dt)
-      unit.rotation.y = THREE.MathUtils.damp(unit.rotation.y, (unit.position.x - member.x) * 0.22, 15, dt)
-      animateUnit(unit, artTime, i * 0.72, state === 'playing')
+      const unit = allies[i] ?? (allies[i] = { x: run.x, z: 0 })
+      unit.x = THREE.MathUtils.damp(unit.x, member.x, 25, dt)
+      unit.z = THREE.MathUtils.damp(unit.z, member.z, 19, dt)
     }
-    for (let i = run.count; i < allies.length; i += 1) allies[i].visible = false
-    gate.root.visible = Boolean(run.pair)
-    if (run.pair) gate.update(run.pair, artTime)
+    allies.length = people.length
+    crowd.update({ allies, enemies: run.enemies, time: artTime, moving: state === 'playing' })
+    pickups.update(run.pickups, artTime)
     hazard.update(run.alarm, artTime)
     effects.update(run.shots, dt)
-  }
-
-  function recycleEnemy(id, present) {
-    scene.remove(present.model)
-    enemyModels.delete(id)
-    enemyPools[present.kind].push(present.model)
   }
 
   function resize() {
@@ -252,14 +228,16 @@ function boot() {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, dprLimit))
     renderer.setSize(Math.round(bounds.width), Math.round(bounds.height), false)
     camera.aspect = viewAspect
-    camera.fov = THREE.MathUtils.clamp(49 + Math.max(0, 0.55 - viewAspect) * 32, 48, 61)
+    camera.fov = THREE.MathUtils.clamp(50.5 + Math.max(0, 0.55 - viewAspect) * 34, 49, 63)
     camera.updateProjectionMatrix()
   }
 
-  function cameraUpdate() {
+  function cameraUpdate(dt) {
     const offset = reduceEffects ? 0 : shake * shake
-    camera.position.set(run.x * 0.125 + offset * 0.27 * Math.sin(46 * artTime), 8.4 + offset * 0.16 * Math.cos(55 * artTime), 11.3)
-    camera.lookAt(run.x * 0.075, 0.57, -8.3)
+    const spread = THREE.MathUtils.smoothstep(run.count, 12, 34) * 1.55
+    cameraPull = THREE.MathUtils.damp(cameraPull, spread, 4.2, dt)
+    camera.position.set(run.x * 0.47 + offset * 0.27 * Math.sin(46 * artTime), 9.1 + cameraPull * 0.33 + offset * 0.16 * Math.cos(55 * artTime), 11.9 + cameraPull)
+    camera.lookAt(run.x * 0.32, 0.45, -8.6)
   }
 
   function render(now) {
@@ -278,7 +256,7 @@ function boot() {
       if (run.state !== 'playing') stateTo(run.state)
     }
     if (!screenshotPaused) shake = Math.max(0, shake - dt * 1.66)
-    cameraUpdate()
+    cameraUpdate(dt)
     world.update(artTime, run.distance)
     updateModels(state === 'paused' || screenshotPaused ? 0 : dt)
     updateHud()
@@ -353,7 +331,7 @@ function boot() {
       get state() {
         return {
           frame, state, x: run.x, time: run.time, squad: run.count, weapon: run.weapon, kills: run.kills,
-          pair: run.pair, boss: run.boss && { x: run.boss.x, z: run.boss.z, hp: run.boss.hp },
+          pickups: run.pickups, boss: run.boss && { x: run.boss.x, z: run.boss.z, hp: run.boss.hp },
           alarm: run.alarm, enemies: run.enemies.map(({ kind, x, z, hp }) => ({ kind, x, z, hp })),
           traveled: run.traveled, muted: audio.muted, shots: run.shots.length, dpr: renderer.getPixelRatio(),
         }
@@ -363,17 +341,19 @@ function boot() {
       setPausedForScreenshot(paused) { screenshotPaused = paused },
       setReducedMotion(reduced) { reduceEffects = reduced },
       setState(name) {
-        const at = { 'active-play': 14.42, 'boss-fight': 42.18 }[name]
+        const at = { 'active-play': 25.1, 'boss-fight': 41.9 }[name]
         if (!at) throw new Error(`Unknown capture state: ${name}`)
         start(false)
         while (run.time < at && run.state === 'playing') {
-          const x = run.time < 11.4 ? LANES.recruit
-            : run.time < 24.8 ? LANES.upgrade : run.time < 36.3 ? LANES.recruit : 0
+          const time = run.time
+          const switching = (time >= 3.6 && time < 7.05) || (time >= 11.1 && time < 15.8) || (time >= 19.56 && time < 24.45)
+          const x = time >= 35.2 ? 0 : switching ? LANES.upgrade : LANES.recruit
           tickCombat(run, fixedStep, x, 0, () => {})
         }
         if (run.state !== 'playing' || (name === 'boss-fight' && !run.boss)) throw new Error(`Failed to enter ${name}`)
         desiredX = run.x
         artTime = run.time
+        cameraUpdate(1)
         updateModels(1)
         updateHud()
         return { state: name }

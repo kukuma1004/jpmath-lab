@@ -26,15 +26,15 @@ THE SOFTWARE.
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#102531">
-    <meta name="description" content="동료를 구출하고 사격을 강화해 바다 위 방벽을 돌파하는 3D 슈팅 게임">
-    <title>해협 돌파</title>
+    <meta name="theme-color" content="#242520">
+    <meta name="description" content="돌다리에서 병력을 모으고 석궁을 강화해 철문 수문장을 쓰러뜨리는 3D 전투 게임">
+    <title>해협 돌파 · 성문 전선</title>
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="./src/style.css">
   </head>
   <body>
     <main id="viewport" data-state="ready" aria-label="해협 돌파 게임">
-      <canvas id="canvas" aria-label="3D 해상 전투 화면"></canvas>
+      <canvas id="canvas" aria-label="3D 성문 전투 화면"></canvas>
 
       <header class="topbar" aria-label="전투 진행">
         <div class="mission">
@@ -57,37 +57,37 @@ THE SOFTWARE.
       <div class="status-line" aria-label="부대 상태">
         <div class="status status-squad">
           <span class="status-icon squad-icon" aria-hidden="true"></span>
-          <span class="status-label">동료</span>
+          <span class="status-label">병력</span>
           <strong id="squad">1</strong>
         </div>
         <div class="status status-weapon">
           <span class="status-icon weapon-icon" aria-hidden="true"></span>
-          <span class="status-label">사격</span>
-          <strong id="weapon">단발</strong>
+          <span class="status-label">무기</span>
+          <strong id="weapon">석궁</strong>
         </div>
       </div>
 
       <div class="boss-hud" id="boss-hud" hidden>
-        <span>방벽 수호기</span>
+        <span>철문 수문장</span>
         <div class="boss-track" aria-hidden="true"><div id="boss-health"></div></div>
       </div>
 
       <div class="toast" id="toast" role="status" aria-atomic="true" hidden></div>
       <div class="hint" id="hint" hidden>
-        <span class="hint-arrow" aria-hidden="true">↔</span>
+        <span class="hint-arrow" aria-hidden="true">←</span>
         <span class="hint-text">
-          <span class="touch-instruction">좌우로 밀어 이동</span>
-          <span class="keyboard-instruction">드래그 또는 ← → 키로 이동</span>
+          <span class="touch-instruction">왼쪽으로 밀어 첫 병사 모집</span>
+          <span class="keyboard-instruction">드래그 또는 ← 키로 첫 병사 모집</span>
         </span>
       </div>
 
       <section id="overlay" class="overlay" aria-labelledby="overlay-title" aria-describedby="overlay-copy">
         <div class="overlay-content">
-          <p id="overlay-kicker" class="overlay-kicker">해상 구조대</p>
+          <p id="overlay-kicker" class="overlay-kicker">성문 전선</p>
           <h1 id="overlay-title">해협 돌파</h1>
-          <p id="overlay-copy">좌우로 이동하면 자동으로 사격합니다.</p>
+          <p id="overlay-copy">좌우로 움직여 병사를 모으고 무기 상자를 쏘세요.</p>
           <div class="overlay-actions">
-            <button id="action" class="action" type="button">작전 시작</button>
+            <button id="action" class="action" type="button">전투 시작</button>
             <button id="restart" class="restart" type="button" hidden>처음부터</button>
           </div>
         </div>
