@@ -49,10 +49,18 @@
   function loadStored() {
     if (!storageOkay) return { next: state, reset: false };
     try {
-      const previous = localStorage.getItem(Forge.wardrobeSaveKey) ?? localStorage.getItem(Forge.previousSaveKey) ?? localStorage.getItem(Forge.magicSaveKey) ?? localStorage.getItem(Forge.storageSaveKey) ?? localStorage.getItem(Forge.riskSaveKey) ?? localStorage.getItem(Forge.rainbowSaveKey) ?? localStorage.getItem(Forge.marketSaveKey) ?? localStorage.getItem(Forge.olderSaveKey);
+      const previous = localStorage.getItem(Forge.legendsSaveKey) ?? localStorage.getItem(Forge.wardrobeSaveKey) ?? localStorage.getItem(Forge.previousSaveKey) ?? localStorage.getItem(Forge.magicSaveKey) ?? localStorage.getItem(Forge.storageSaveKey) ?? localStorage.getItem(Forge.riskSaveKey) ?? localStorage.getItem(Forge.rainbowSaveKey) ?? localStorage.getItem(Forge.marketSaveKey) ?? localStorage.getItem(Forge.olderSaveKey);
       const original = localStorage.getItem(Forge.saveKey) ?? previous;
       const raw = original ? JSON.parse(original) : null;
-      return { next: Forge.loadSeason(raw), reset: previous !== null || (!!raw && raw.season !== Forge.seasonId) || localStorage.getItem(Forge.legacySaveKey) !== null };
+      const next = Forge.loadSeason(raw);
+      // A delayed autosave must not undo a completed purchase, action or grant.
+      if (raw?.season === Forge.seasonId &&
+          (['generation', 'attempts', 'shattered', 'protectionUses', 'bestLevel'].some(key => next[key] < state[key]) ||
+           Number.isFinite(raw.lastAt) && raw.lastAt < state.lastAt ||
+           Object.keys(state.creditReceipts).some(id => !next.creditReceipts[id]))) {
+        return { next: state, reset: false, stale: true };
+      }
+      return { next, reset: previous !== null || (!!raw && raw.season !== Forge.seasonId) || localStorage.getItem(Forge.legacySaveKey) !== null };
     } catch {
       storageOkay = false;
       return { next: state, reset: false };
@@ -61,9 +69,12 @@
 
   function persist(next, reset) {
     try {
-      localStorage.setItem(Forge.saveKey, Forge.serialize(next));
+      const saved = Forge.serialize(next);
+      localStorage.setItem(Forge.saveKey, saved);
+      if (localStorage.getItem(Forge.saveKey) !== saved) throw new Error('저장 결과를 확인하지 못했어요.');
       if (reset) {
         localStorage.removeItem(Forge.legacySaveKey);
+        localStorage.removeItem(Forge.legendsSaveKey);
         localStorage.removeItem(Forge.wardrobeSaveKey);
         localStorage.removeItem(Forge.previousSaveKey);
         localStorage.removeItem(Forge.magicSaveKey);
@@ -226,8 +237,8 @@
     $('income').textContent = full ? '가득 참 · 제련 멈춤' : '+' + fmt(rate) + ' /초';
     $('income').title = '제련 중 생산량 +' + fmt(rate) + ' /초';
     $('smelter').dataset.full = String(full);
-    $('income-capacity').textContent = '자동 수급 한도 ' + fmt(capacity) + ' 별철 · ' + (full ? '사용하면 다시 차요' : '가득 차면 멈춰요');
-    $('income-capacity').title = '최고 기록 기준 보호권과 강화 3회분 · 기존 보유분과 판매 대금은 차감하지 않아요.';
+    $('income-capacity').textContent = '최고 강화 12시간분 · 한도 ' + fmt(capacity) + ' 별철 · ' + (full ? '사용하면 다시 차요' : '가득 차면 멈춰요');
+    $('income-capacity').title = '최고 강화에서의 기본·기록·현재 강화 생산량 12시간분 · 순위 보너스 제외 · 오프라인 수령 최대 8시간 · 기존 보유분과 판매 대금은 차감하지 않아요.';
     $('attempt-cost').textContent = fmt(offer.cost) + ' 별철' + (offer.discount ? ' · 50%' : '');
     $('attempt-cost').title = '원가 ' + fmt(offer.originalCost) + ' 별철';
     $('attempt-title').textContent = state.broken ? '다시, 나무검부터' : level(offer.target) + '에 도전';
@@ -472,7 +483,11 @@
   addEventListener('storage', event => {
     if (event.key !== Forge.saveKey || !event.newValue) return;
     try {
-      state = Forge.loadSeason(JSON.parse(event.newValue));
+      // Storage events can arrive after a newer local purchase. Read the current
+      // stored value instead of replacing the UI with the event's old payload.
+      const loaded = loadStored();
+      if (loaded.stale) { transaction(); return; }
+      state = loaded.next;
       render();
       ranking?.changed();
     } catch {

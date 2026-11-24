@@ -1,8 +1,8 @@
 'use strict';
 
 const Forge = (() => {
-  const clientRevision = 2026112404;
-  const rankingProtocol = 'forge-legends-1';
+  const clientRevision = 2026112405;
+  const rankingProtocol = 'forge-reserve-1';
   const legacySaveKey = 'jp-math-lab:mongle-forge:v1';
   const backupKey = legacySaveKey + ':before-infinite';
   const seasonId = 'season-20261120-1';
@@ -15,7 +15,8 @@ const Forge = (() => {
   const magicSaveKey = olderSaveKey + ':magic-1';
   const previousSaveKey = olderSaveKey + ':credits-1';
   const wardrobeSaveKey = olderSaveKey + ':wardrobe-1';
-  const saveKey = olderSaveKey + ':legends-1';
+  const legendsSaveKey = olderSaveKey + ':legends-1';
+  const saveKey = olderSaveKey + ':reserve-1';
   const creditIdPattern = /^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$/;
   const startingShards = 10000n;
   const cooldown = 680;
@@ -529,12 +530,10 @@ const Forge = (() => {
   }
 
   function passiveCapacity(state) {
-    const target = state.bestLevel + 1n;
-    const attempt = cost(target);
-    const protection = 1000n + target ** 2n * 100n + attempt * 8n;
-    const capacity = (protection + attempt) * 3n;
-    // Three full-price protected attempts, rounded up; a broken sword keeps its capacity.
-    return capacity < startingShards ? startingShards : (capacity + 999n) / 1000n * 1000n;
+    // Twelve hours at the highest recorded level, excluding temporary rank bonuses.
+    // Current-level drops, destruction and sales must never shrink the reserve.
+    const capacity = baseIncome({ ...state, level: state.bestLevel, broken: false }) * 43200n;
+    return capacity < startingShards ? startingShards : capacity;
   }
 
   function discountInfo(now = Date.now()) {
@@ -758,7 +757,7 @@ const Forge = (() => {
     return event;
   }
 
-  return { clientRevision, rankingProtocol, saveKey, wardrobeSaveKey, previousSaveKey, magicSaveKey, storageSaveKey, riskSaveKey, rainbowSaveKey, marketSaveKey, olderSaveKey, legacySaveKey, backupKey, seasonId, startingShards, cooldown, recoveryBonus, offlineLimit, enchantmentLimit, forms, enchantments, magics, magicAt, appraisal, restore, loadSeason, serialize, rankingName, rankingRecord, weaponSnapshot, sameWeaponRecord, applyAdminGrant, rememberWeapon, formAt, appearanceAt, selectAppearance, cost, incomeBreakdown, discountInfo, passiveCapacity, baseIncome, income, rankReward, setRankBonus, preview, protectionOffer, buyProtection, saleOffer, sell, enchantPreview, collectPassive, act, enchant, reroll };
+  return { clientRevision, rankingProtocol, saveKey, legendsSaveKey, wardrobeSaveKey, previousSaveKey, magicSaveKey, storageSaveKey, riskSaveKey, rainbowSaveKey, marketSaveKey, olderSaveKey, legacySaveKey, backupKey, seasonId, startingShards, cooldown, recoveryBonus, offlineLimit, enchantmentLimit, forms, enchantments, magics, magicAt, appraisal, restore, loadSeason, serialize, rankingName, rankingRecord, weaponSnapshot, sameWeaponRecord, applyAdminGrant, rememberWeapon, formAt, appearanceAt, selectAppearance, cost, incomeBreakdown, discountInfo, passiveCapacity, baseIncome, income, rankReward, setRankBonus, preview, protectionOffer, buyProtection, saleOffer, sell, enchantPreview, collectPassive, act, enchant, reroll };
 })();
 
 if (typeof module !== 'undefined') module.exports = Forge;

@@ -54,13 +54,13 @@ test('engine, release manifest and ranking submissions agree on the release prot
   assert.equal(row.rulesVersion,manifest.rankingProtocol);
 });
 
-test('passive storage covers three protected attempts at the highest level and never shrinks on a broken weapon', () => {
+test('passive storage holds twelve peak-production hours and never shrinks on failure, destruction or a rank change', () => {
   const now=Date.UTC(2026,10,23,0);let previous=0n;
-  for(const [level,expected] of [[0n,10000n],[32n,2261000n],[100n,85538000n],[1000n,81542867000n],[9007199254740993123n,null]]) {
+  for(const [level,expected] of [[0n,172800n],[32n,69120000n],[100n,1655769600n],[1000n,1461599769600n],[9007199254740993123n,null]]) {
     const s=Forge.restore({level:level.toString(),shards:'0'},now),cap=Forge.passiveCapacity(s);
     if(expected!==null)assert.equal(cap,expected);
     assert(cap>=previous);previous=cap;
-    assert(cap>=3n*(Forge.preview(s,now).originalCost+Forge.protectionOffer(s,now).originalCost));
+    assert.equal(cap,Forge.baseIncome(s)*43200n);
     s.level=0n;s.broken=true;assert.equal(Forge.passiveCapacity(s),cap);
     Forge.setRankBonus(s,1,now);assert.equal(Forge.passiveCapacity(s),cap);
   }
@@ -68,18 +68,19 @@ test('passive storage covers three protected attempts at the highest level and n
 
 test('passive storage pays only remaining room and never banks full time for later spending', () => {
   const now=Date.UTC(2026,10,23,0);
-  const s=Forge.restore({shards:'9999',paidAt:now},now);
+  const s=Forge.restore({shards:'172799',paidAt:now},now);
   Forge.setRankBonus(s,1,now);
-  assert.equal(Forge.collectPassive(s,now+1500),1n);assert.equal(s.shards,10000n);assert.equal(s.paidAt,now+1500);
-  assert.equal(Forge.collectPassive(s,now+86400000),0n);assert.equal(s.shards,10000n);
-  const event=Forge.act(s,now+86400000,()=>0);assert(event);assert.equal(s.shards,10000n-event.spent);
+  assert.equal(Forge.collectPassive(s,now+1500),1n);assert.equal(s.shards,172800n);assert.equal(s.paidAt,now+1500);
+  assert.equal(Forge.collectPassive(s,now+86400000),0n);assert.equal(s.shards,172800n);
+  const event=Forge.act(s,now+86400000,()=>0);assert(event);assert.equal(s.shards,172800n-event.spent);
   assert.equal(Forge.collectPassive(s,now+86400000+999),0n);
   assert.equal(Forge.collectPassive(s,now+86400000+1000),4n);
   const offline=Forge.restore({level:32,shards:'0',paidAt:now},now);
-  assert.equal(Forge.collectPassive(offline,now+86400000),2261000n);
-  assert.equal(Forge.collectPassive(offline,now+172800000),0n);
+  assert.equal(Forge.collectPassive(offline,now+86400000),46080000n);
+  assert.equal(Forge.collectPassive(offline,now+86400000),0n);
+  assert.equal(Forge.collectPassive(offline,now+172800000),23040000n);
   const saved=Forge.restore(JSON.parse(Forge.serialize(offline)),now+172800000);
-  assert.equal(saved.shards,2261000n);assert.equal(Forge.collectPassive(saved,now+172800000),0n);
+  assert.equal(saved.shards,69120000n);assert.equal(Forge.collectPassive(saved,now+172800000),0n);
 });
 
 test('legacy excess and full-price sale rewards are preserved while passive income stays stopped', () => {
@@ -284,7 +285,7 @@ test('income is granted once, capped at eight hours and available with a broken 
   state.level = 0n;
   const rate = Forge.income(state);
   const now = 100000 + 24 * 60 * 60 * 1000;
-  assert.equal(Forge.collectPassive(state, now), Forge.passiveCapacity(state));
+  assert.equal(Forge.collectPassive(state, now), rate * 28800n);
   assert.equal(Forge.collectPassive(state, now), 0n);
   assert.equal(Forge.income(state), rate);
 });
@@ -637,7 +638,7 @@ test('top ten rank bonuses are tiered, bounded by verification and never paid re
   Forge.setRankBonus(s,10,170000);assert.equal(Forge.income(s,170000),59n);
   Forge.collectPassive(s,171000);Forge.setRankBonus(s,0,171000);assert.equal(Forge.income(s,171000),4n);
   const offline=Forge.restore({shards:'0',paidAt:100000},100000);Forge.setRankBonus(offline,1,100000);
-  assert.equal(Forge.collectPassive(offline,100000+24*60*60*1000),Forge.passiveCapacity(offline));
+  assert.equal(Forge.collectPassive(offline,100000+24*60*60*1000),115200n); // The first-minute rank bonus is outside the latest eight-hour window.
 });
 
 test('reroll selects one slot and can match another owned effect', () => {
