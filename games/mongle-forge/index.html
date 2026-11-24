@@ -7,16 +7,18 @@
   <meta name="description" content="한 번 더, 어디까지 갈까. 강화 제한 없이 검을 벼리고 실패와 파괴를 넘어 최고 기록에 도전하는 몽글 대장간.">
   <title>몽글 대장간 · 끝없는 강화</title>
   <link rel="stylesheet" href="forge-effects.css?v=infinite-1">
-  <link rel="stylesheet" href="forge.css?v=forge-current-1">
-  <link rel="stylesheet" href="forge-magic.css?v=forge-current-1">
-  <link rel="stylesheet" href="forge-wardrobe.css?v=forge-current-1">
-  <script src="forge-engine.js?v=forge-current-1" defer></script>
-  <script src="forge-ranking.js?v=forge-current-1" defer></script>
-  <script src="forge-update.js?v=forge-current-1" defer></script>
-  <script src="forge-magic.js?v=forge-current-1" defer></script>
-  <script src="forge-auto.js?v=forge-current-1" defer></script>
-  <script src="forge-wardrobe.js?v=forge-current-1" defer></script>
-  <script src="forge.js?v=forge-current-1" defer></script>
+  <link rel="stylesheet" href="forge.css?v=forge-duel-1">
+  <link rel="stylesheet" href="forge-magic.css?v=forge-duel-1">
+  <link rel="stylesheet" href="forge-wardrobe.css?v=forge-duel-1">
+  <script src="forge-engine.js?v=forge-duel-1" defer></script>
+  <script src="forge-ranking.js?v=forge-duel-1" defer></script>
+  <script src="forge-update.js?v=forge-duel-1" defer></script>
+  <script src="forge-magic.js?v=forge-duel-1" defer></script>
+  <script src="forge-auto.js?v=forge-duel-1" defer></script>
+  <script src="forge-wardrobe.js?v=forge-duel-1" defer></script>
+  <link rel="stylesheet" href="forge-duel.css?v=forge-duel-1">
+  <script src="forge-duel.js?v=forge-duel-1" defer></script>
+  <script src="forge.js?v=forge-duel-1" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#strengthen">강화 버튼으로 바로가기</a>
@@ -32,6 +34,7 @@
       <div class="record"><span>최고 기록</span><strong id="best">+0</strong><span class="record-mark" aria-hidden="true">✦</span></div>
     </header>
 
+    <button type="button" id="open-duel" aria-haspopup="dialog"><span>⚔ 시련의 문</span><b>보스와 대결 ›</b></button>
     <div class="forge-layout">
       <section class="weapon-stage" id="weapon-stage" aria-label="지금 벼리는 검">
         <div class="stage-filigree" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
@@ -145,7 +148,7 @@
       <button type="submit" id="ranking-submit" class="ranking-submit">현재 무기 등록</button>
       <label class="auto-ranking-option"><input type="checkbox" id="auto-ranking-enabled" checked> 현재 검 랭킹 자동 참여 · 해제하면 랭킹 제외</label>
       <p class="ranking-note">지금 가진 검의 감정가로 순위가 바뀌어요. 강화 하락·리롤도 반영하며 파괴·판매 시 제외해요. 오프라인 변경은 재접속 시 동기화해요.</p>
-      <p class="ranking-note">닉네임·무기 이름·강화 단계·효과·감정가·보호권 사용량이 공개돼요. 보호권은 해당 기록까지의 누적 사용량이며, 예전 기록에 정보가 없으면 ‘미기록’으로 표시해요. 등록 당시 기록은 검이 깨져도 남아요.</p>
+      <p class="ranking-note">닉네임·무기 이름·강화 단계·효과·감정가·보호권 사용량이 공개돼요. 보호권은 해당 기록까지의 누적 사용량이며, 예전 기록에 정보가 없으면 ‘미기록’으로 표시해요. 검이 깨지거나 판매되면 현재 랭킹에서 제외돼요.</p>
       <button type="button" id="ranking-delete" class="ranking-delete" hidden>내 공개 기록 삭제</button>
     </form>
     <p id="ranking-status" class="ranking-status" role="status" aria-live="polite"></p>
@@ -160,6 +163,24 @@
     <p id="sale-weapon"></p><p class="sale-quote">감정가 <span id="sale-value"></span><br><strong id="sale-reward"></strong> 별철 받기</p>
     <p class="ranking-note">감정가의 10%를 별철로 받아요. 판매한 검과 효과는 사라지고, 제작비를 내고 새 검을 만들 수 있어요. 보유 보호권은 보관하며 판매한 검은 랭킹에서 제외해요.</p>
     <p id="sale-error" role="status"></p><button type="button" id="confirm-sale" class="ranking-submit">판매하고 별철 받기</button>
+  </dialog>
+  <dialog id="boss-duel" aria-labelledby="duel-title">
+    <header class="duel-head"><h2 id="duel-title">시련의 문</h2><button id="duel-exit" type="button">⇥ 나가기</button></header>
+    <section class="duel-arena" aria-label="보스 전장">
+      <span class="duel-frame" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <div class="duel-boss"><span class="duel-portrait" aria-hidden="true"></span><b id="duel-boss-name">잿불의 파수꾼</b><div class="duel-hp"><i></i><strong id="duel-hp"></strong></div></div>
+      <div class="duel-paths" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="duel-blade"><img id="duel-sword" alt=""><img id="duel-magic-art" alt="" hidden></div>
+      <b class="duel-strike" aria-hidden="true"></b>
+      <div class="duel-cue"><b id="duel-clock"></b><strong id="duel-warning"></strong></div>
+    </section>
+    <section class="duel-panel">
+      <div class="duel-stats"><b id="duel-hearts" aria-label="체력"></b><strong id="duel-weapon"></strong><span>공격력 <b id="duel-power"></b></span></div>
+      <p id="duel-hint" role="status"></p>
+      <div class="duel-actions"><button id="duel-left" aria-label="왼쪽 회피">← 회피</button><button id="duel-parry">✦ 패링</button><button id="duel-right" aria-label="오른쪽 회피">회피 →</button></div>
+      <div class="duel-foot"><span>⚔ 자동 공격</span><span id="duel-lane"></span><span>검 손상 없음</span></div>
+    </section>
+    <section class="duel-overlay" hidden><div><small id="duel-chapter"></small><h3 id="duel-result"></h3><p id="duel-detail"></p><label>시련 단계 <select id="duel-tier"></select></label><button id="duel-start"></button><button id="duel-return">대장간으로</button></div></section>
   </dialog>
 </body>
 </html>

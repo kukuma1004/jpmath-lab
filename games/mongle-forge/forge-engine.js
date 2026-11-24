@@ -1,7 +1,7 @@
 'use strict';
 
 const Forge = (() => {
-  const clientRevision = 2026112406;
+  const clientRevision = 2026112407;
   const rankingProtocol = 'forge-current-1';
   const legacySaveKey = 'jp-math-lab:mongle-forge:v1';
   const backupKey = legacySaveKey + ':before-infinite';

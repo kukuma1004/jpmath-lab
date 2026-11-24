@@ -28,6 +28,7 @@
   let updater;
   let magicVisual;
   let automatic;
+  const duelOpen = () => $('boss-duel').open;
 
   function fmt(value) {
     const digits = value.toString();
@@ -198,6 +199,8 @@
   }
 
   function renderControls() {
+    $('open-duel').disabled = !!busy || updatePending || state.broken || state.sold;
+    $('open-duel').title = state.broken || state.sold ? '새 검을 제작하면 도전할 수 있어요.' : '';
     const offer = Forge.preview(state);
     const rate = Forge.income(state);
     const capacity = Forge.passiveCapacity(state);
@@ -392,7 +395,7 @@
   }
 
   async function attempt(action = 'forge', guard) {
-    if (busy || updatePending) return;
+    if (busy || updatePending || duelOpen()) return;
     const displayed = renderedOffers;
     const specialOffer = action === 'special' ? displayed.special : null;
     busy = action;
@@ -475,7 +478,7 @@
   book.addEventListener('close', () => magicVisual?.pause(false));
   $('open-wardrobe').addEventListener('click', () => $('open-book').click());
   document.addEventListener('keydown', event => {
-    if (event.code !== 'Space' || event.repeat || event.ctrlKey || event.altKey || event.metaKey || book.open || $('ranking').open || $('sale-dialog').open) return;
+    if (duelOpen() || event.code !== 'Space' || event.repeat || event.ctrlKey || event.altKey || event.metaKey || book.open || $('ranking').open || $('sale-dialog').open) return;
     if (event.target instanceof HTMLButtonElement || event.target instanceof HTMLInputElement) return;
     event.preventDefault();
     if (!button.disabled) attempt();
@@ -506,7 +509,7 @@
     revision: Forge.clientRevision,
     onPending: () => { updatePending = true; automatic?.suspend(); renderControls(); },
     beforeReload: async () => {
-      if (busy) return false;
+      if (busy || duelOpen()) return false;
       await transaction();
       try { return localStorage.getItem(Forge.saveKey) === Forge.serialize(state); }
       catch { return false; }
@@ -531,6 +534,8 @@
     }),
     beforePublish: () => updater.check(),
   });
+  ForgeDuel.mount({ getState: () => state, asset, fmt, canEnter: () => !busy && !updatePending,
+    onToggle: open => magicVisual?.pause(open) });
   wardrobe = ForgeWardrobe.mount({ getState: () => state, asset, fmt,
     select: async choice => {
       if (updatePending || !await updater.check()) return false;
@@ -538,6 +543,6 @@
     },
   });
   transaction(next => { if (next.rankingBest) Forge.rememberWeapon(next); }).then(() => {
-    automatic = ForgeAuto.mount({ getState: () => state, step: action => attempt(action, () => automatic?.active()), canAct: () => !busy && !updatePending, fmt });
+    automatic = ForgeAuto.mount({ getState: () => state, step: action => attempt(action, () => automatic?.active()), canAct: () => !busy && !updatePending && !duelOpen(), fmt });
   });
 })();
