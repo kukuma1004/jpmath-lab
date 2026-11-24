@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Battle, defaultConfig } from '../src/game/combat/battle';
 import { WORLD_W } from '../src/game/config/constants';
 import { generateTerrain, mapDef } from '../src/game/data/maps';
+import { Mat } from '../src/game/terrain/terrain';
 
 function quarryBattle(seed = 27, chars = ['general', 'archer']) {
   const battle = new Battle(defaultConfig({ mapId: 'quarry', seed, chars, starterMatch: true }));
@@ -96,5 +97,42 @@ describe('층층 채석장의 네 단 절벽', () => {
     } else {
       expect(foe!.deathCause).toBe('fall');
     }
+  });
+
+  it('굴착대장 2번은 몸에 맞히지 않아도 세 번째 단을 끊어 탈락시킨다', () => {
+    function fireAtShelf(slot: 0 | 1) {
+      const battle = quarryBattle(27, ['driller', 'archer']);
+      const [shooter, target] = battle.fighters;
+      shooter!.x = 1540;
+      target!.x = 977;
+      for (const fighter of [shooter!, target!]) {
+        fighter.y = battle.terrain.topSurface(fighter.x);
+        fighter.airPeakY = fighter.y;
+      }
+      const power = 92.5;
+      battle.wind = 0;
+      const prediction = battle.dryShot(0, slot, 100, power);
+      expect(prediction.damage[1]).toBe(0);
+      battle.setAngle(100);
+      battle.selectWeapon(slot);
+      battle.fireNow(power);
+      for (let frame = 0; frame < 420 && battle.phase !== 'GAME_OVER'; frame++) battle.step();
+      return { battle, target: target!, groundHit: prediction.enemyGroundHit };
+    }
+
+    const narrow = fireAtShelf(0);
+    expect(narrow.target.alive).toBe(true);
+    const wide = fireAtShelf(1);
+    expect(wide.groundHit).toBeGreaterThan(narrow.groundHit);
+    expect(wide.target.deathCause).toBe('fall');
+    expect(wide.battle.terrain.matAt(714, 722)).toBe(Mat.Core);
+  });
+
+  it('밑면의 빈 공간을 확인하며 매립된 구조물 핵과 두꺼운 땅을 절단하지 않는다', () => {
+    const quarry = generateTerrain(mapDef('quarry'), 27);
+    expect(quarry.shelfTopAndBottom(898, 692, 96)?.bottom).toBeGreaterThan(692);
+    expect(quarry.shelfTopAndBottom(714, 692, 96)).toBeNull();
+    const castle = generateTerrain(mapDef('sanseong'), 27);
+    expect(castle.shelfTopAndBottom(420, castle.topSurface(420), 96)).toBeNull();
   });
 });

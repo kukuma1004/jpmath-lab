@@ -52,6 +52,7 @@ export interface WeaponDef {
   drillDepth?: number;
   drillRadius?: number;
   drillSpeed?: number;
+  shelfCut?: { maxThickness: number; radius: number };
   cloudRadius?: number;
   cloudDamage?: number;
   cloudTurns?: number;
@@ -182,11 +183,12 @@ export const WEAPONS: Record<string, WeaponDef> = {
     look: 'drill', color: 0xd3e3e7, glow: 0xffc66d, size: 7,
   },
   faultBreaker: {
-    id: 'faultBreaker', name: '지반 붕괴탄', use: '넓은 발판 파괴', desc: '착탄 지점을 크게 깨뜨리고 110px 파고들어 공동을 만듭니다. 발밑을 무너뜨릴 때 강합니다. 기반암과 구조물 핵은 남습니다.',
+    id: 'faultBreaker', name: '지반 붕괴탄', use: '떠 있는 발판 절단', desc: '채석장처럼 아래가 빈 발판을 위에서 맞히면 밑면까지 가르고, 떨어져 나간 조각은 무너집니다. 두꺼운 지반에서는 원래대로 110px 파고듭니다. 기반암과 구조물 핵은 남습니다.',
     behavior: 'drill', pattern: 'single',
     radius: 76, carve: 94, rockMul: 1, damage: 112, directBonus: 1.1, knockback: 160,
     burstDamage: 44, burstRadius: 60, burstCarve: 62,
     drillDepth: 110, drillRadius: 27, drillSpeed: 350,
+    shelfCut: { maxThickness: 96, radius: 118 },
     look: 'drill', color: 0xe2b56d, glow: 0xffa654, size: 9, renderScale: 1.25,
   },
 };

@@ -614,6 +614,7 @@ export class Battle {
           const speed = Math.hypot(p.vx, p.vy) || 1;
           p.vx = p.vx / speed * (w.drillSpeed ?? 420);
           p.vy = p.vy / speed * (w.drillSpeed ?? 420);
+          if (w.shelfCut && p.vy > 0) this.cutShelf(p, w.shelfCut);
           if (w.burstRadius && w.burstCarve && w.burstDamage) {
             this.explode(p.x, p.y, w.burstRadius, w.burstCarve, w.rockMul, w.burstDamage, 1, 0, p, -1, w.id, false);
           }
@@ -936,6 +937,26 @@ export class Battle {
     }
     const removed = this.carve(kx, ky, carve, rockMul, p.owner);
     if (removed > 0) this.emit({ type: 'debris', x: kx, y: ky, count: Math.min(40, 6 + (removed >> 5)), mat: Mat.Dirt });
+  }
+
+  private cutShelf(p: Projectile, cut: NonNullable<WeaponDef['shelfCut']>): void {
+    const shelf = this.terrain.shelfTopAndBottom(p.x, p.y, cut.maxThickness);
+    if (!shelf) return;
+    const y = (shelf.top + shelf.bottom) / 2;
+    if (this.dry) {
+      for (const enemy of this.enemiesOf(this.fighters[p.owner]!)) {
+        if (!enemy.alive || Math.abs(enemy.y - shelf.top) > 28) continue;
+        const distance = Math.abs(enemy.x - p.x);
+        if (distance < cut.radius) {
+          this.dry.enemyGroundHit = Math.max(this.dry.enemyGroundHit, 1 - distance / (cut.radius * 1.4));
+        }
+      }
+      return;
+    }
+    const material = this.terrain.matAt(p.x, p.y);
+    if (this.carve(p.x, y, cut.radius, 1, p.owner) > 0) {
+      this.emit({ type: 'debris', x: p.x, y: shelf.bottom - CELL, count: 24, mat: material });
+    }
   }
 
   private carve(x: number, y: number, r: number, rockMul: number, owner: number): number {

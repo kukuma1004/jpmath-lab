@@ -100,6 +100,21 @@ export class Terrain {
     return this.surfaceBelow(x, 0);
   }
 
+  /** Find a thin platform's underside through its exposed top. */
+  shelfTopAndBottom(x: number, y: number, maxThickness: number): { top: number; bottom: number } | null {
+    const top = Math.floor(y / CELL) * CELL;
+    if (!this.solidAt(x, top) || this.solidAt(x, top - CELL)) return null;
+    const clearance = 18;
+    let emptyRun = 0;
+    for (let scan = top; scan <= top + maxThickness + clearance - CELL && scan < WORLD_H; scan += CELL) {
+      const mat = this.matAt(x, scan);
+      if (isAnchor(mat)) return null;
+      emptyRun = mat === Mat.Empty ? emptyRun + CELL : 0;
+      if (emptyRun === clearance) return { top, bottom: scan + CELL - clearance };
+    }
+    return null;
+  }
+
   markDirty(r: CellRect, stability: boolean): void {
     const rr = {
       x0: Math.max(0, r.x0),
