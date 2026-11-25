@@ -1,0 +1,235 @@
+{
+  "url": "http://127.0.0.1:5196/games/billiards/?qa=1",
+  "checks": [
+    {
+      "name": "Pinch actually changes zoom"
+    },
+    {
+      "name": "Pinch cannot fire"
+    },
+    {
+      "name": "First press charges without physics motion"
+    },
+    {
+      "name": "Cancel never starts a shot"
+    },
+    {
+      "name": "360x740 expanded primary control fits",
+      "data": {
+        "shot": {
+          "x": 216,
+          "y": 458.59375,
+          "width": 131,
+          "height": 58,
+          "top": 458.59375,
+          "right": 347,
+          "bottom": 516.59375,
+          "left": 216
+        },
+        "canvas": {
+          "x": 0,
+          "y": 154,
+          "width": 360,
+          "height": 177.203125,
+          "top": 154,
+          "right": 360,
+          "bottom": 331.203125,
+          "left": 0
+        },
+        "pageWidth": 360,
+        "width": 360,
+        "height": 740
+      }
+    },
+    {
+      "name": "390x844 expanded primary control fits",
+      "data": {
+        "shot": {
+          "x": 227,
+          "y": 556.59375,
+          "width": 145,
+          "height": 58,
+          "top": 556.59375,
+          "right": 372,
+          "bottom": 614.59375,
+          "left": 227
+        },
+        "canvas": {
+          "x": 0,
+          "y": 154,
+          "width": 390,
+          "height": 273.203125,
+          "top": 154,
+          "right": 390,
+          "bottom": 427.203125,
+          "left": 0
+        },
+        "pageWidth": 390,
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "name": "768x1024 expanded primary control fits",
+      "data": {
+        "shot": {
+          "x": 605,
+          "y": 736.59375,
+          "width": 145,
+          "height": 58,
+          "top": 736.59375,
+          "right": 750,
+          "bottom": 794.59375,
+          "left": 605
+        },
+        "canvas": {
+          "x": 0,
+          "y": 154,
+          "width": 768,
+          "height": 453.203125,
+          "top": 154,
+          "right": 768,
+          "bottom": 607.203125,
+          "left": 0
+        },
+        "pageWidth": 768,
+        "width": 768,
+        "height": 1024
+      }
+    },
+    {
+      "name": "844x390 expanded primary control fits",
+      "data": {
+        "shot": {
+          "x": 653,
+          "y": 191.59375,
+          "width": 178,
+          "height": 48,
+          "top": 191.59375,
+          "right": 831,
+          "bottom": 239.59375,
+          "left": 653
+        },
+        "canvas": {
+          "x": 0,
+          "y": 129,
+          "width": 639,
+          "height": 199,
+          "top": 129,
+          "right": 639,
+          "bottom": 328,
+          "left": 0
+        },
+        "pageWidth": 844,
+        "width": 844,
+        "height": 390
+      }
+    },
+    {
+      "name": "1366x768 expanded primary control fits",
+      "data": {
+        "shot": {
+          "x": 1109,
+          "y": 278.390625,
+          "width": 237,
+          "height": 64,
+          "top": 278.390625,
+          "right": 1346,
+          "bottom": 342.390625,
+          "left": 1109
+        },
+        "canvas": {
+          "x": 0,
+          "y": 172,
+          "width": 1088,
+          "height": 520,
+          "top": 172,
+          "right": 1088,
+          "bottom": 692,
+          "left": 0
+        },
+        "pageWidth": 1366,
+        "width": 1366,
+        "height": 768
+      }
+    },
+    {
+      "name": "Pool placement can be confirmed on touch"
+    },
+    {
+      "name": "Second touch launches a physical shot"
+    },
+    {
+      "name": "Keyboard fine aim works"
+    },
+    {
+      "name": "Space starts meter"
+    },
+    {
+      "name": "Escape cancels charging without firing"
+    },
+    {
+      "name": "Duplicate input while moving is blocked"
+    },
+    {
+      "name": "Human input blocked on AI turn"
+    },
+    {
+      "name": "No page or console errors",
+      "data": []
+    }
+  ],
+  "failures": [
+    {
+      "name": "Pinch with staggered release preserves aim",
+      "data": {
+        "before": -0.12,
+        "after": -0.8161348808981472
+      }
+    },
+    {
+      "name": "Fine aim is visible without opening details"
+    },
+    {
+      "name": "Fine aim has 44px targets",
+      "data": [
+        {
+          "id": "aim-left",
+          "visible": false,
+          "width": 0,
+          "height": 0
+        },
+        {
+          "id": "aim-right",
+          "visible": false,
+          "width": 0,
+          "height": 0
+        }
+      ]
+    },
+    {
+      "name": "Second press target stays under same finger",
+      "data": {
+        "before": {
+          "x": 227,
+          "y": 724.59375,
+          "width": 145,
+          "height": 58
+        },
+        "charging": {
+          "x": 227,
+          "y": 699,
+          "width": 145,
+          "height": 58
+        }
+      }
+    }
+  ],
+  "errors": [],
+  "observations": [
+    {
+      "renderer": "ANGLE (AMD, AMD Radeon 780M Graphics (0x00001900) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "limits": "Real browser pointer/key/touch input in touch emulation. Not a physical phone or human usability study."
+    }
+  ]
+}

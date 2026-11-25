@@ -9,3 +9,5 @@ artifacts/complete-*.png
 source/render-harness.html
 artifacts/control-debug.png
 artifacts/**/failure.json
+
+.dream-loop/

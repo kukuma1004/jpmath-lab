@@ -7,3 +7,96 @@
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
 #choice-controls{display:grid;grid-template-columns:1fr;gap:7px}#choice-controls p{max-width:none}#choice-controls button{width:100%;max-width:none;text-align:left;margin:0;line-height:1.6}.cue-console:has(#choice-controls:not([hidden])) .power-section,.cue-console:has(#choice-controls:not([hidden])) .strike-area,.cue-console:has(#placement-controls:not([hidden])) .power-section,.cue-console:has(#placement-controls:not([hidden])) .strike-area{display:none}.cue-console:has(#choice-controls:not([hidden])){overflow:auto}
+
+.cue-console > .fine-aim {
+  display:flex; flex-direction:row; align-items:center; justify-content:flex-start; gap:8px;
+}
+.cue-console > .fine-aim span { font-size:12px; color:#b9c9c4; margin-right:5px; }
+.cue-console > .fine-aim button, #collapse, .secondary-actions button {
+  border:1px solid #b7a78055; border-radius:5px;
+}
+.cue-console > .fine-aim button { width:44px; height:44px; min-height:44px; font-size:22px; }
+#collapse { font-size:11px; }
+.secondary-actions { gap:6px; }
+.secondary-actions button { flex:1; min-height:36px; }
+.cue-console:has(.special-controls:not([hidden])) > .fine-aim { display:none; }
+
+@media(max-width:900px) and (orientation:portrait) {
+  .cue-console { grid-template-columns:minmax(0,1.4fr) minmax(108px,1fr); padding:6px 14px max(7px,env(safe-area-inset-bottom)); gap:5px 12px; overflow:auto; }
+  .cue-console > .fine-aim { grid-column:1/-1; gap:7px; }
+  .power-section,.strike-area { grid-row:auto; }
+  .power-section { gap:6px; }
+  .console-heading h2 { font-size:14px; }
+  #collapse { min-height:34px; padding:4px 10px; }
+  .player-name,.match-center strong,#shot-banner,.view-switch button,.view-tools select { font-size:11px; }
+  .player-score small,.game-status,.stage-bottom { font-size:8px; }
+  .table-stage { grid-template-rows:86px minmax(0,1fr) 61px; }
+  .table-foot { gap:1px; padding:2px 14px; }
+  .view-tools>button { min-width:42px; }
+  .section-label h3,.secondary-actions button { font-size:11px; }
+  #power-hint { font-size:10px; margin-top:9px; }
+  .strike-button { font-size:15px; }
+  .secondary-actions { display:flex; padding-top:3px; }
+  .advanced-controls .tip-section { width:100%; }
+}
+.cue-console > .fine-aim #cancel-charge {
+  width:auto; margin-left:auto; padding:3px 7px; font-size:10px;
+}
+
+@media(max-width:900px) and (orientation:portrait) {
+  .view-switch button, .view-tools > button, .view-tools select { min-height:44px; }
+  .view-tools > button { min-width:44px; }
+  .view-switch button { min-width:62px; }
+  .view-tools label, .stage-bottom { font-size:9px; }
+  .view-switch button, .view-tools select, .section-label h3 { font-size:12px; }
+  .player-score small, .game-status { font-size:9px; }
+  #power-hint { font-size:11px; line-height:1.45; }
+  .power-section { align-self:center; }
+}
+
+@media(max-width:900px) and (orientation:portrait) {
+  .table-head { padding:4px 12px; gap:2px; }
+  .scoreboard {
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+    gap:8px;
+    width:100%;
+    max-width:540px;
+    margin-inline:auto;
+  }
+  .player-score {
+    min-width:0;
+    max-width:none;
+    grid-template-columns:minmax(0,1fr) auto;
+    gap:0 4px;
+    padding:0 3px 2px;
+  }
+  .player-score strong { grid-row:1; line-height:1; }
+  .player-score small {
+    grid-column:1/-1;
+    line-height:1.45;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .table-stage { grid-template-rows:86px minmax(0,1fr) 66px; }
+  .stage-bottom { line-height:1.3; }
+}
+
+/* Keep the strike within reach when call-shot controls share a short screen. */
+@media(max-height:570px) and (orientation:landscape) {
+  .cue-console:has(#pool-calls:not([hidden])) { padding:8px 10px; gap:6px; }
+  .cue-console:has(#pool-calls:not([hidden])) .pool-calls {
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr) 28px; gap:5px;
+  }
+  .cue-console:has(#pool-calls:not([hidden])) .safety-label { grid-column:3; flex-direction:column; }
+  .cue-console:has(#pool-calls:not([hidden])) .power-section {
+    display:grid; grid-template-columns:42px minmax(0,1fr); align-items:center; gap:4px;
+  }
+  .cue-console:has(#pool-calls:not([hidden])) .section-label h3,
+  .cue-console:has(#pool-calls:not([hidden])) #power-hint,
+  .cue-console:has(#pool-calls:not([hidden])) .power-ticks { display:none; }
+  .cue-console:has(#pool-calls:not([hidden])) #power-value { font-size:18px; }
+  .cue-console:has(#pool-calls:not([hidden])) .power-gauge { height:16px; }
+  .cue-console:has(#pool-calls:not([hidden])) .strike-area { margin-top:0; }
+}

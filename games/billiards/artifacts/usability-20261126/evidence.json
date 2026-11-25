@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "captures": [
+    {
+      "mode": "desktop",
+      "report": "../artifacts/usability-20261126/desktop-active.json",
+      "state": "active-play"
+    },
+    {
+      "mode": "desktop",
+      "report": "../artifacts/usability-20261126/desktop-charging.json",
+      "state": "charging"
+    },
+    {
+      "mode": "mobile",
+      "report": "../artifacts/usability-20261126/mobile-active.json",
+      "state": "active-play"
+    },
+    {
+      "mode": "mobile",
+      "report": "../artifacts/usability-20261126/mobile-charging.json",
+      "state": "charging"
+    },
+    {
+      "mode": "mobile",
+      "report": "../artifacts/usability-20261126/mobile-pool.json",
+      "state": "pool-play"
+    },
+    {
+      "mode": "mobile",
+      "report": "../artifacts/usability-20261126/mobile-cue.json",
+      "state": "cue-view"
+    }
+  ],
+  "artifacts": [
+    "../artifacts/usability-20261126/controls.json",
+    "../artifacts/usability-20261126/regression.json"
+  ],
+  "runId": "billiards-usability-20261126"
+}
