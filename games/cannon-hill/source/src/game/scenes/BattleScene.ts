@@ -481,6 +481,12 @@ export class BattleScene extends Phaser.Scene {
           this.effects.damage(e.x, e.y, e.amount, e.crit, e.cause);
           audio.hit();
           break;
+        case 'drillBreak':
+          this.effects.label(e.x, e.y - 36, e.kind === 'exit' ? '관통 폭발!' : '발판 절단!', '#ffdf91');
+          break;
+        case 'seekLock':
+          this.effects.label(e.x, e.y - 64, '표적 포착!', '#ffdf91');
+          break;
         case 'bounce':
           this.effects.bounce(e.x, e.y, weapon(e.weaponId).look);
           audio.bounce();
@@ -637,8 +643,8 @@ export class BattleScene extends Phaser.Scene {
         b.isPlayerPhase() && b.cfg.mapId === 'bridge' ? '다리를 끊어 떨어뜨리세요 · 추락선을 넘으면 체력과 무관하게 탈락'
       : b.isPlayerPhase() && b.cfg.mapId === 'quarry' && b.cur.charId === 'driller' && b.cur.slot === 1 ? '발판 윗면에 맞혀 밑면까지 절단 · 상대 발밑과 지지점 사이를 노리세요'
       : b.isPlayerPhase() && b.cfg.mapId === 'quarry' && b.turnNo <= 2 ? '중앙 쪽으로 한 단씩 착지 · 마지막 단 밖은 추락'
-      : b.isPlayerPhase() && b.cur.charId === 'mudang' && b.cur.slot === 0 ? '고각 55~125° 추천 · 내려올 때 적을 추적합니다'
-      : b.isPlayerPhase() && b.cur.charId === 'driller' ? b.cur.slot === 0 ? '지형을 길게 관통 · 벽 뒤와 발밑을 노리세요' : '넓은 지반 붕괴 · 높은 발판을 무너뜨리세요'
+      : b.isPlayerPhase() && b.cur.charId === 'mudang' && b.cur.slot === 0 ? '고각 55~125° · 하강 중 500px 안에서 표적 포착'
+      : b.isPlayerPhase() && b.cur.charId === 'driller' ? b.cur.slot === 0 ? '엄폐 뒤 출구 폭발 · 벽을 관통해 뒤에 숨은 적을 노리세요' : '넓은 지반 붕괴 · 높은 발판을 무너뜨리세요'
       : b.isPlayerPhase() && b.steadyReady(b.cur) ? '자리 잡은 포격 — 움직이지 않고 쏘면 피해 +15%'
       : '');
     const aimHint=this.advisor.update(b,this.app.settings.aimHints&&this.humanTurn());

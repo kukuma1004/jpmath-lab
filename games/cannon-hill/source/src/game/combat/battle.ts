@@ -575,7 +575,8 @@ export class Battle {
     if (!p.drilling) {
       p.vx += this.wind * WIND_ACC_PER_UNIT * dt;
       p.vy += GRAVITY * dt;
-      if (w.seekRange && !p.child && p.age > 0.25 && p.vy >= 0) this.seek(p, w, dt);
+      const tracking = p.lofted && (p.seekTarget ?? -1) >= 0;
+      if (w.seekRange && !p.child && p.age > 0.25 && (p.vy >= 0 || tracking)) this.seek(p, w, dt);
     }
     const dist = Math.hypot(p.vx, p.vy) * dt;
     const n = Math.max(1, Math.ceil(dist / 1.5));
@@ -612,6 +613,7 @@ export class Battle {
         if (!p.drilling) {
           p.drilling = true;
           const speed = Math.hypot(p.vx, p.vy) || 1;
+          if (w.drillExit) p.drillExitAt = this.findDrillExit(p.x, p.y, p.vx / speed, p.vy / speed, w.drillDepth ?? 280, w.drillExit.gap);
           p.vx = p.vx / speed * (w.drillSpeed ?? 420);
           p.vy = p.vy / speed * (w.drillSpeed ?? 420);
           if (w.shelfCut && p.vy > 0) this.cutShelf(p, w.shelfCut);
@@ -623,6 +625,12 @@ export class Battle {
           break;
         }
         p.pierced += Math.hypot(sx, sy);
+        if (w.drillExit && p.drillExitAt !== undefined && p.pierced >= p.drillExitAt && m === Mat.Empty) {
+          p.dead = true;
+          this.explode(p.x, p.y, w.drillExit.radius, w.carve, w.rockMul, w.drillExit.damage, 1, w.knockback, p, -1, w.id, true);
+          this.emit({ type: 'drillBreak', kind: 'exit', x: p.x, y: p.y });
+          return;
+        }
         p.carveAcc += Math.hypot(sx, sy);
         if (p.carveAcc >= 6) {
           p.carveAcc = 0;
@@ -661,17 +669,37 @@ export class Battle {
     }
   }
 
+  /** Sample the original wall before the entrance burst and drill erase the route. */
+  private findDrillExit(x: number, y: number, dx: number, dy: number, depth: number, gap: number): number | undefined {
+    let open = 0;
+    for (let distance = 1; distance <= depth + gap - 1; distance++) {
+      const px = x + dx * distance, py = y + dy * distance;
+      if (px < 0 || px >= WORLD_W || py >= WORLD_H) return;
+      const mat = this.terrain.matAt(px, py);
+      if (mat === Mat.Bedrock || mat === Mat.Core) return;
+      open = mat === Mat.Empty ? open + 1 : 0;
+      if (open === gap) return distance - gap + 1;
+    }
+  }
+
   /** 유도 부적: 가까운 상대 쪽으로 휘어 든다(같은 편은 노리지 않는다) */
   private seek(p: Projectile, w: WeaponDef, dt: number): void {
     const owner = this.fighters[p.owner];
     if (!owner) return;
     const lofted = p.lofted && !!w.loftSeekRange;
-    let best: Fighter | null = null, bd = lofted ? w.loftSeekRange! : w.seekRange!;
-    for (const f of this.fighters) {
-      if (!f.alive || f.team === owner.team) continue;
-      const d = Math.hypot(f.x - p.x, f.y - CHAR_CENTER_Y - p.y);
-      if (d < bd) { bd = d; best = f; }
+    const radius = lofted ? w.loftSeekRange! : w.seekRange!;
+    const distanceTo = (f: Fighter) => Math.hypot(f.x - p.x, f.y - CHAR_CENTER_Y - p.y);
+    const previous = lofted ? this.fighters[p.seekTarget ?? -1] : undefined;
+    let best = previous?.alive && previous.team !== owner.team && distanceTo(previous) < radius * 1.2 ? previous : null;
+    if (!best && p.vy >= 0) {
+      let distance = radius;
+      for (const f of this.fighters) {
+        if (!f.alive || f.team === owner.team) continue;
+        const d = distanceTo(f);
+        if (d < distance) { distance = d; best = f; }
+      }
     }
+    if (lofted && best && best.idx !== p.seekTarget) this.emit({ type: 'seekLock', x: best.x, y: best.y });
     p.seekTarget = best?.idx ?? -1;
     if (!best) return;
     const dx = best.x - p.x, dy = best.y - CHAR_CENTER_Y - p.y;
@@ -956,6 +984,7 @@ export class Battle {
     const material = this.terrain.matAt(p.x, p.y);
     if (this.carve(p.x, y, cut.radius, 1, p.owner) > 0) {
       this.emit({ type: 'debris', x: p.x, y: shelf.bottom - CELL, count: 24, mat: material });
+      this.emit({ type: 'drillBreak', kind: 'shelf', x: p.x, y: shelf.top });
     }
   }
 

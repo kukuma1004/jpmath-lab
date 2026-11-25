@@ -35,6 +35,22 @@ describe('무당의 고각 하강 유도',()=>{
     const ally={...b.fighters[0]!,idx:2,x:1450,y:900};b.fighters.push(ally);
     b.fighters[1]!.alive=false;p.vy=100;b.stepProjectile(p,DT);expect(p.seekTarget).toBe(-1);
   });
+  it('하강하면서 더 먼 적을 포착하고 약간 더 가까워진 다른 장수에게 바꾸지 않는다', () => {
+    const b = flat();
+    const target = b.fighters[1]!;
+    const p = b.newProjectile(0, 1, 'bujeok', 1250, 760, 240, -400);
+    p.age = .4;
+    p.vy = 150;
+    b.stepProjectile(p, DT);
+    expect(p.seekTarget).toBe(target.idx);
+    const other = {...target, idx: 2, x: 1460};
+    b.fighters.push(other);
+    b.stepProjectile(p, DT);
+    expect(p.seekTarget).toBe(target.idx);
+    target.alive = false;
+    b.stepProjectile(p, DT);
+    expect(p.seekTarget).toBe(other.idx);
+  });
   it('유도 중에도 성벽에 막힌다',()=>{
     const b=flat();
     for(let y=200;y<450;y++)for(let x=740;x<760;x++)b.terrain.set(x,y,Mat.Core);
@@ -59,6 +75,26 @@ describe('굴착대장의 실제 굴착',()=>{
     expect(p.x).toBeGreaterThan(1270);expect(p.x).toBeLessThan(1290);
     expect(b.terrain.solidAt(1130,802)).toBe(false);
     expect(b.fighters[0]!.stats.cellsDestroyed).toBeGreaterThan(1800);
+  });
+  it.each([false, true])('얇은 벽의 반대편에서 터져 엄폐 뒤 상대를 맞힌다 (좌우 반전 %s)', (mirror) => {
+    const b = flat('driller');
+    const xAt = (left: number) => mirror ? 2400 - left : left;
+    b.fighters[0]!.x = xAt(620);
+    b.fighters[1]!.x = xAt(970);
+    const left = mirror ? 1474 : 820;
+    for (let x = left; x < left + 106; x += 2) {
+      for (let y = 650; y < 900; y += 2) b.terrain.set(x / 2, y / 2, Mat.Rock);
+    }
+    const angle = mirror ? 168 : 12;
+    const dry = b.dryShot(0, 0, angle, 80);
+    expect(dry.impacts).toHaveLength(2);
+    expect(dry.impacts[1]!.x).toBeCloseTo(xAt(926), -1);
+    expect(dry.damage[1]).toBeGreaterThan(100);
+    b.setAngle(angle);
+    b.fireNow(80);
+    for (let i = 0; i < 360 && b.projectiles.length; i++) b.step();
+    expect(b.projectiles).toHaveLength(0);
+    expect(800 - b.fighters[1]!.hp).toBeCloseTo(dry.damage[1]!, 0);
   });
   it('2번은 1번보다 짧고 넓게 파며 파괴하는 지반이 더 많다',()=>{
     const a=drill(),b=drill('faultBreaker');

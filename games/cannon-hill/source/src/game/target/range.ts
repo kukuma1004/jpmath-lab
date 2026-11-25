@@ -1,14 +1,16 @@
 import {audio} from '../audio/audio';
 import {BANDS, FLOOR_HEIGHT, MAX_POWER, MAX_SCORE, MAX_SHOT_SCORE, MAX_SLOPE, MIN_SLOPE, ROUNDS, SLOPE_SCALE, WALL_SPAN, angleDegrees, formatTenths, heightAt, isCenter, scoreShot, summarize, type TargetAim, type TargetResult, type TargetShot} from './course';
 import {deleteScore, loadBoard, publishScore, type RecordRow} from './ranking';
+import {drawCliff, drawBarricade} from './rangeArt';
 import './range.css';
 
 const WIDTH = 1152;
-const HEIGHT = 352;
+const HEIGHT = 640;
 const MUZZLE_X = 87;
-const LINE_Y = 271;
-const SCALE_X = 0.59;
-const SCALE_Y = 0.265;
+const LINE_Y = 380;
+const NEAR_TARGET_X = 840;
+const FAR_TARGET_X = 1010;
+const SCALE_Y = 0.38;
 const BEST_KEY = 'jpml.warureu.target.best.v2';
 const NICKNAME_KEY = 'jpml.warureu.target.nickname.v1';
 const OWNER_KEY = 'jpml.warureu.target.owner.v2';
@@ -58,6 +60,7 @@ interface RenderShot {
 
 export class TargetRange {
   private readonly root = document.createElement('section');
+  private readonly rockTexture = new Image();
   private readonly portrait = new Image();
   private readonly controls = new AbortController();
   private readonly ctx: CanvasRenderingContext2D;
@@ -144,13 +147,18 @@ export class TargetRange {
     this.canvasSize = new ResizeObserver(([entry]) => {
       if (!entry?.contentRect.width) return;
       const { width, height } = entry.contentRect;
-      this.objectAspect = Math.max(1, Math.min(1.75, height * WIDTH / (width * HEIGHT)));
+      this.objectAspect = Math.max(1, Math.min(2.6, height * WIDTH / (width * HEIGHT)));
       this.needsPaint = true;
     });
     this.canvasSize.observe(canvas);
     this.board = this.select('dialog');
     const { signal } = this.controls;
     this.portrait.addEventListener('load', () => { this.needsPaint = true; }, { signal });
+    this.rockTexture.addEventListener('load', () => {
+      this.rampartImage = undefined;
+      this.needsPaint = true;
+    }, {signal});
+    this.rockTexture.src = new URL('art/bg_quarry.png', document.baseURI).href;
     if (portrait) this.portrait.src = portrait;
     for (const field of ['slope', 'power'] as const) {
       this.select<HTMLInputElement>(`#target-${field}`).addEventListener('input', event => {
@@ -317,51 +325,93 @@ export class TargetRange {
   };
 
   private rampartImage?: HTMLCanvasElement;
+  private sceneryKey = -1;
 
   private draw(now: number): void {
     const g = this.ctx;
     const activeRound = this.trajectory ? this.aims.length - 1 : this.recent.length;
     const target = ROUNDS[Math.min(ROUNDS.length-1, activeRound)]!;
-    const targetX = (distance: number) => MUZZLE_X + (this.objectAspect - 1) * 28 + distance * SCALE_X;
+    const muzzle = MUZZLE_X + (this.objectAspect - 1) * 64;
+    const distanceRatio = (target.distance - ROUNDS[0].distance) / (ROUNDS[ROUNDS.length-1]!.distance - ROUNDS[0].distance);
+    const nearX = NEAR_TARGET_X + (this.objectAspect - 1) * 48;
+    const targetLine = nearX + (FAR_TARGET_X - nearX) * distanceRatio;
+    const scaleX = (targetLine - muzzle) / target.distance;
+    const targetX = (distance: number) => muzzle + distance * scaleX;
     const targetY = (height: number) => LINE_Y - height * SCALE_Y;
     const x = targetX(target.distance);
     g.clearRect(0, 0, WIDTH, HEIGHT);
-    if (!this.rampartImage) {
+    if (!this.rampartImage || this.sceneryKey !== muzzle + activeRound * WIDTH) {
+      this.sceneryKey = muzzle + activeRound * WIDTH;
       this.rampartImage = document.createElement('canvas');
       this.rampartImage.width = WIDTH*2;
       this.rampartImage.height = HEIGHT*2;
       const stone = this.rampartImage.getContext('2d')!;
       stone.scale(2,2);
-      drawRampart(stone, 0, LINE_Y+16, 145);
-      drawRampart(stone, 145, targetY(FLOOR_HEIGHT), WIDTH-145);
+      const floor = targetY(FLOOR_HEIGHT);
+      const launch = LINE_Y + 16;
+      drawCliff(stone, [[0,launch],[muzzle+50,launch],[muzzle+68,floor+30],[muzzle+116,floor+36],[muzzle+150,floor+92],[muzzle+224,floor+105],[muzzle+270,HEIGHT]], this.rockTexture);
+      drawCliff(stone, [[x-310,HEIGHT],[x-255,floor+129],[x-209,floor+120],[x-168,floor+70],[x-119,floor+58],[x-90,floor],[WIDTH,floor]], this.rockTexture);
+      if ('wall' in target) {
+        drawBarricade(stone, targetX(target.wall.distance), targetY(target.wall.height), WALL_SPAN * scaleX, HEIGHT, this.rockTexture);
+      }
     }
     g.drawImage(this.rampartImage,0,0,WIDTH,HEIGHT);
-    if ('wall' in target) {
-      const wallX = targetX(target.wall.distance);
-      const wallY = targetY(target.wall.height);
-      drawRampart(g, wallX, wallY, WALL_SPAN * SCALE_X);
-    }
-    drawRangeStand(g, x, targetY(target.height), targetY(FLOOR_HEIGHT), this.objectAspect);
-    if (this.portrait.complete && this.portrait.naturalWidth) g.drawImage(this.portrait, 13, LINE_Y-55, 74 * this.objectAspect, 74);
+    const elapsed = this.trajectory ? Math.max(0, now - this.trajectory.start) : Infinity;
+    const contactAge = this.trajectory ? elapsed - this.trajectory.flightMs : Infinity;
+    const boardKick = !this.reducedMotion && this.phase === 'feedback' && (this.trajectory?.shot.points ?? 0) > 0
+      ? Math.sin(contactAge / 44) * Math.exp(-contactAge / 135) * .12 : 0;
+    drawRangeStand(g, x, targetY(target.height), targetY(FLOOR_HEIGHT), this.objectAspect, boardKick);
+    if (this.portrait.complete && this.portrait.naturalWidth) g.drawImage(this.portrait, muzzle-78*this.objectAspect, LINE_Y-77, 96 * this.objectAspect, 96);
     const tangent = this.aim.slope / SLOPE_SCALE;
-    const direction = Math.atan2(-tangent * SCALE_Y, SCALE_X);
+    const direction = Math.atan2(-tangent * SCALE_Y, scaleX);
     g.save();
     g.translate(targetX(0), LINE_Y);
     g.rotate(direction);
-    g.fillStyle = '#332829'; g.fillRect(-25, -6, 27, 12);
-    g.fillStyle = '#b58448'; g.fillRect(-24, -5, 23, 3);
-    g.fillStyle = '#e9bc76'; g.fillRect(-5, -6, 4, 12);
+    if (!this.reducedMotion && elapsed < 220 && this.aim.power > 0) {
+      const recoil = elapsed < 32 ? elapsed / 32 : (1 - (elapsed - 32) / 188) ** 2;
+      g.translate(-10 * recoil, 0);
+      if (elapsed < 105) {
+        g.save();
+        const flash = 1 - elapsed / 105;
+        g.globalAlpha = flash;
+        g.scale(.45 + flash * .55, .5 + flash * .5);
+        g.fillStyle = '#ffae4b';
+        g.beginPath(); g.moveTo(0,-5); g.lineTo(16,-12); g.lineTo(13,-5); g.lineTo(38,0);
+        g.lineTo(16,4); g.lineTo(20,10); g.lineTo(0,5); g.closePath(); g.fill();
+        g.fillStyle = '#fff5bb';
+        g.beginPath(); g.moveTo(0,-3); g.lineTo(24,0); g.lineTo(0,3); g.fill();
+        g.restore();
+      }
+    }
+    const iron = g.createLinearGradient(0,-8,0,8);
+    iron.addColorStop(0,'#273143'); iron.addColorStop(.28,'#838b92'); iron.addColorStop(.5,'#364756'); iron.addColorStop(1,'#172133');
+    g.fillStyle = iron; g.strokeStyle = '#332622'; g.lineWidth = 2;
+    g.beginPath(); g.moveTo(-31,-5); g.lineTo(-3,-8); g.lineTo(1,-8); g.lineTo(1,8); g.lineTo(-31,6); g.closePath(); g.fill(); g.stroke();
+    for (const band of [-25,-6]) { g.fillStyle='#a06f3e'; g.fillRect(band,-8,5,16); g.fillStyle='#ffe4a0'; g.fillRect(band,-7,2,13); }
     g.restore();
 
     if (!this.trajectory) return;
     const {shot, wind, start, flightMs} = this.trajectory;
     const progress = Math.min(1, (now-start)/flightMs);
     const position = (t: number) => {
+      if (shot.power === 0) return {x:muzzle, y:targetY(FLOOR_HEIGHT * Math.max(0,t) ** 2)};
       const x = Math.max(0, t) * shot.impactX;
       return {x:targetX(x), y:targetY(x ? heightAt(x, shot, wind) : 0)};
     };
     if (this.phase === 'flight') {
       if (!this.reducedMotion) {
+        // Puffs stay at their emission coordinates while the shell travels ahead.
+        g.save();
+        for (let i=Math.max(0,Math.floor((progress-.24)*120));i<progress*120;i++) {
+          const age=(progress-i/120)/.24;
+          const puff=position(i/120);
+          const size=1.5+age*(4+2*Math.sin(i));
+          g.fillStyle='rgba(102,91,89,'+(Math.max(0,1-age)*.6)+')';
+          g.beginPath();
+          g.ellipse(puff.x,puff.y-age*(8+Math.sin(i*3.7)*10),size*this.objectAspect,size,0,0,Math.PI*2);
+          g.fill();
+        }
+        g.restore();
         const count = 16;
         let prev = position(progress - .10);
         g.save();
@@ -376,11 +426,21 @@ export class TargetRange {
         }
         g.restore();
       }
-      for (let i = this.reducedMotion ? 1 : 8; i >= 0; i--) {
-        const p = position(progress - i * .013);
-        g.fillStyle = i === 0 ? '#fff4ce' : `rgba(255,161,61,${0.72-i*0.07})`;
-        g.beginPath(); g.arc(p.x, p.y, Math.max(2,6-i*.4), 0, Math.PI*2); g.fill();
+      const ball = position(progress);
+      const behind = position(progress - .008);
+      g.save();
+      g.translate(ball.x,ball.y);
+      g.scale(this.objectAspect,1);
+      if (!this.reducedMotion) {
+        g.rotate(Math.atan2(ball.y-behind.y,(ball.x-behind.x)/this.objectAspect));
+        g.fillStyle='#ffac48'; g.shadowColor='#ff922d'; g.shadowBlur=13;
+        g.beginPath(); g.moveTo(-2,-5); g.lineTo(-22,-2); g.lineTo(-14,0); g.lineTo(-26,3); g.lineTo(0,5); g.fill();
       }
+      g.shadowBlur=0;
+      const shell=g.createRadialGradient(-2,-3,0,0,0,7);
+      shell.addColorStop(0,'#fff5ce'); shell.addColorStop(.32,'#968679'); shell.addColorStop(.74,'#33323a'); shell.addColorStop(1,'#191c24');
+      g.fillStyle=shell; g.strokeStyle='#ffbd64'; g.lineWidth=1.4;
+      g.beginPath(); g.arc(0,0,7,0,Math.PI*2); g.fill(); g.stroke(); g.restore();
     } else if (this.phase === 'feedback') {
       const landingX = targetX(shot.impactX);
       const landingY = Math.max(12, targetY(shot.impactHeight));
@@ -389,18 +449,20 @@ export class TargetRange {
       const spread = this.reducedMotion ? 12 : 12 + (1-fade)*30;
       g.save();
       g.translate(landingX, landingY);
-      g.globalAlpha = fade;
-      g.lineWidth = 3;
-      g.strokeStyle = center ? '#ffe89a' : '#f1d1a6';
-      g.beginPath(); g.ellipse(0, 0, spread, spread*.32, 0, 0, Math.PI*2); g.stroke();
-      if (!this.reducedMotion) {
-        for (let i=0; i<7; i++) {
-          const angle = Math.PI*(1.06+i*.145);
-          const reach = spread*(i%2 ? .98 : 1.32);
-          g.beginPath();
-          g.moveTo(Math.cos(angle)*reach*.62, Math.sin(angle)*reach*.62);
-          g.lineTo(Math.cos(angle)*reach, Math.sin(angle)*reach);
-          g.stroke();
+      if (shot.stop === 'wall' || shot.points > 0) {
+        g.globalAlpha = fade;
+        g.lineWidth = 3;
+        g.strokeStyle = center ? '#ffe89a' : '#f1d1a6';
+        g.beginPath(); g.ellipse(0, 0, spread, spread*.32, 0, 0, Math.PI*2); g.stroke();
+        if (!this.reducedMotion) {
+          for (let i=0; i<7; i++) {
+            const angle = Math.PI*(1.06+i*.145);
+            const reach = spread*(i%2 ? .98 : 1.32);
+            g.beginPath();
+            g.moveTo(Math.cos(angle)*reach*.62, Math.sin(angle)*reach*.62);
+            g.lineTo(Math.cos(angle)*reach, Math.sin(angle)*reach);
+            g.stroke();
+          }
         }
       }
       g.restore();
@@ -495,30 +557,7 @@ export class TargetRange {
     this.select('[data-online]').textContent = err instanceof Error ? err.message : '온라인 순위를 처리하지 못했어요.';
   }
 }
-/** Dressed stone at the firing line, with staggered joints and beveled caps. */
-function drawRampart(g: CanvasRenderingContext2D, left: number, top: number, width: number): void {
-  const stones = ['#78797c','#77747a','#87868a','#696d75','#8b8988'];
-  g.save();
-  g.beginPath(); g.rect(left, top, width, HEIGHT-top); g.clip();
-  g.fillStyle = '#40424b'; g.fillRect(left,top,width,HEIGHT-top);
-  for (let row = 0; top+row*15 < HEIGHT; row++) {
-    for (let col = -1; col*38 < width; col++) {
-      const sx = left+col*38+(row%2)*19;
-      const sy = top+row*15;
-      const variation = Math.abs(col*11+row*7);
-      g.fillStyle = stones[variation%stones.length]!;
-      g.beginPath(); g.moveTo(sx+2,sy+2); g.lineTo(sx+34,sy+1);
-      g.lineTo(sx+37,sy+5); g.lineTo(sx+35,sy+13); g.lineTo(sx+5,sy+14); g.lineTo(sx+1,sy+11); g.closePath(); g.fill();
-      g.strokeStyle = '#b8b1a17a'; g.lineWidth = 1;
-      g.beginPath(); g.moveTo(sx+3,sy+4); g.lineTo(sx+6,sy+2); g.lineTo(sx+33,sy+2); g.stroke();
-    }
-  }
-  g.fillStyle = '#d2b277'; g.fillRect(left,top,width,3);
-  g.fillStyle = '#a59372'; g.fillRect(left,top+3,width,3);
-  g.restore();
-}
-
-function drawRangeStand(g: CanvasRenderingContext2D, x: number, y: number, floor: number, aspect: number): void {
+function drawRangeStand(g: CanvasRenderingContext2D, x: number, y: number, floor: number, aspect: number, kick: number): void {
   g.save();
   g.translate(x,y);
   const beam = (x1: number,y1: number,x2: number,y2: number,diameter: number) => {
@@ -533,10 +572,33 @@ function drawRangeStand(g: CanvasRenderingContext2D, x: number, y: number, floor
   }
   beam(-35,standTop,35,standTop,7);
   beam(0,0,0,standTop,7);
+  g.save();
+  g.transform(1, 0, kick * aspect, 1, -standTop * kick * aspect, 0);
   const rings = [[BANDS[2] * SCALE_Y, '#432c27'], [BANDS[2] * SCALE_Y - 2, '#a84e36'],
-    [BANDS[1] * SCALE_Y, '#ffdf9b'], [BANDS[0] * SCALE_Y, '#fff3cc']] as const;
+    [BANDS[1] * SCALE_Y, '#ffdf9b'], [BANDS[0] * SCALE_Y, '#bb4731']] as const;
   for (const [radius, color] of rings) { g.fillStyle=color; g.beginPath(); g.ellipse(0,0,radius * aspect,radius,0,0,Math.PI*2); g.fill(); }
-  beam(40,standTop,40,-47,4);
+  g.save(); g.scale(aspect,1);
+  const radius = BANDS[2]*SCALE_Y;
+  g.save();
+  g.beginPath(); g.arc(0,0,radius-4,0,Math.PI*2); g.clip();
+  const lacquer = g.createLinearGradient(-radius,-radius,radius,radius);
+  lacquer.addColorStop(0,'rgba(255,226,151,.52)'); lacquer.addColorStop(.45,'rgba(255,219,164,.05)'); lacquer.addColorStop(1,'rgba(83,30,21,.46)');
+  g.fillStyle=lacquer; g.fillRect(-radius,-radius,radius*2,radius*2);
+  for(let i=-3;i<=3;i++) {
+    const offset=i*radius*.35;
+    g.lineWidth=.85; g.strokeStyle='rgba(70,32,25,.30)';
+    g.beginPath(); g.moveTo(offset+6,-radius); g.lineTo(offset,radius*.1); g.lineTo(offset-5,radius); g.stroke();
+  }
+  g.restore();
+  g.strokeStyle='#dfad58'; g.lineWidth=3; g.beginPath(); g.arc(0,0,radius-3,0,Math.PI*2); g.stroke();
+  for(let i=0;i<16;i++) {
+    const angle=i*Math.PI/8;
+    g.fillStyle=i%2?'#6b421c':'#fff1af'; g.beginPath(); g.arc(Math.cos(angle)*(radius-3),Math.sin(angle)*(radius-3),1.4,0,Math.PI*2); g.fill();
+  }
+  g.restore();
+  g.restore();
+  g.translate(40*(aspect-1),0);
+  beam(40,standTop,40,-53,4);
   g.fillStyle='#953b33'; g.strokeStyle='#d4a158'; g.lineWidth=1.5;
   g.beginPath(); g.moveTo(41,-47); g.lineTo(67,-47); g.lineTo(62,-40); g.lineTo(67,-33); g.lineTo(41,-33); g.closePath(); g.fill(); g.stroke();
   g.fillStyle='#eed18c'; g.beginPath(); g.moveTo(51,-45); g.lineTo(56,-40); g.lineTo(51,-35); g.lineTo(47,-40); g.closePath(); g.fill();

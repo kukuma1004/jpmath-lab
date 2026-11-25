@@ -52,6 +52,7 @@ export interface WeaponDef {
   drillDepth?: number;
   drillRadius?: number;
   drillSpeed?: number;
+  drillExit?: { gap: number; damage: number; radius: number };
   shelfCut?: { maxThickness: number; radius: number };
   cloudRadius?: number;
   cloudDamage?: number;
@@ -108,10 +109,10 @@ export const WEAPONS: Record<string, WeaponDef> = {
     look: 'goblinfire', color: 0x6dff9e, glow: 0x2ee6a6, size: 8,
   },
   bujeok: {
-    id: 'bujeok', name: '추적 부적탄', use: '고각 하강 유도', desc: '55~125°로 높이 쏘면 내려올 때 420px 안의 적을 추적합니다. 낮게 쏘면 유도 범위가 130px로 줄어듭니다. 땅과 장애물은 통과하지 못합니다.',
+    id: 'bujeok', name: '추적 부적탄', use: '고각 추적 고정', desc: '55~125°로 높이 쏘면 내려올 때 500px 안의 적을 포착해 계속 추적합니다. 낮게 쏘면 130px 안에서만 살짝 휘고, 땅과 장애물에 닿으면 막힙니다.',
     behavior: 'shell', pattern: 'single',
     radius: 52, carve: 48, rockMul: 0.7, damage: 126, directBonus: 1.15, knockback: 230,
-    seekRange: 130, seekAcc: 1100, loftSeekRange: 420, seekTurnRate: 3.8,
+    seekRange: 130, seekAcc: 1100, loftSeekRange: 500, seekTurnRate: 5.0,
     look: 'paper', color: 0xf7d354, glow: 0xff5a5a, size: 7,
   },
   nakroe: {
@@ -175,11 +176,12 @@ export const WEAPONS: Record<string, WeaponDef> = {
     look: 'poison', color: 0xd2fa79, glow: 0x9bdf64, size: 9,
   },
   drillBore: {
-    id: 'drillBore', name: '관통 나선탄', use: '길고 좁은 굴착', desc: '닿는 곳을 먼저 깨뜨린 뒤 280px를 직진해 터집니다. 벽 뒤를 노릴 때 유리합니다. 기반암과 구조물 핵은 뚫지 못합니다.',
+    id: 'drillBore', name: '관통 나선탄', use: '엄폐 뒤 출구 폭발', desc: '바위를 최대 280px 직진으로 뚫습니다. 벽 반대편에 나오면 출구에서 더 넓고 강하게 터져 뒤에 숨은 적을 노릴 수 있습니다. 기반암과 구조물 핵은 뚫지 못합니다.',
     behavior: 'drill', pattern: 'single',
     radius: 64, carve: 50, rockMul: 1, damage: 178, directBonus: 1.2, knockback: 135,
     burstDamage: 80, burstRadius: 65, burstCarve: 44,
     drillDepth: 280, drillRadius: 14, drillSpeed: 420,
+    drillExit: { gap: 18, damage: 235, radius: 102 },
     look: 'drill', color: 0xd3e3e7, glow: 0xffc66d, size: 7,
   },
   faultBreaker: {

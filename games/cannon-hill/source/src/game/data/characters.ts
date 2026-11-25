@@ -106,7 +106,7 @@ export const CHARACTERS: CharacterDef[] = [
   },
   {
     id: 'driller', name: '굴착대장', role: '굴착 붕괴형',
-    blurb: '굵은 나선 드릴로 바위를 파는 광산 대장. 긴 터널을 뚫거나 발밑 지반을 통째로 허뭅니다.',
+    blurb: '벽 뒤에 숨은 적은 출구 폭발로, 높은 발판 위의 적은 지반 붕괴로 노리는 광산 대장입니다.',
     hp: BASE_HP, defense: 0.12, moveMul: 0.94, normal: 'drillBore', special: 'faultBreaker',
     trait: { id: 'hardhat', name: '튼튼한 안전모', desc: '낙하·깔림·낙석 피해를 25% 덜 받습니다. 채석장에서는 2번 탄으로 발판을 끊어 상대를 떨어뜨릴 수 있습니다.' },
     stats: { power: 3, range: 5, accuracy: 3, defense: 4, mobility: 3 },

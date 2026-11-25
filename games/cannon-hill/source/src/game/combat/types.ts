@@ -94,6 +94,7 @@ export interface Projectile {
   lofted?: boolean;
   seekTarget?: number;
   drilling?: boolean;
+  drillExitAt?: number;
   dead: boolean;
 }
 
@@ -158,6 +159,8 @@ export type SimEvent =
   | { type: 'fire'; owner: number; weaponId: string; x: number; y: number; angle: number; power: number; shot: number; wind: number }
   | { type: 'launch'; id: number; weaponId: string }
   | { type: 'explode'; x: number; y: number; radius: number; weaponId: string; big: boolean }
+  | { type: 'drillBreak'; x: number; y: number; kind: 'exit' | 'shelf' }
+  | { type: 'seekLock'; x: number; y: number }
   | { type: 'damage'; target: number; amount: number; x: number; y: number; crit: boolean; cause: DamageCause }
   | { type: 'bounce'; x: number; y: number; weaponId: string }
   | { type: 'lightning'; x: number; y: number }
