@@ -11,7 +11,7 @@ export class InputState {
   chargeLatch = false;
   active = false;
   private onKey: ((e: KeyboardEvent) => void) | null = null;
-  listeners: { weapon?: (slot: 0 | 1) => void; pause?: () => void; camera?: () => void; recenter?: () => void; zoom?: (d: number) => void } = {};
+  listeners: { weapon?: (slot: 0 | 1) => void; power?: (delta: number | null) => void; firePrepared?: () => boolean; pause?: () => void; camera?: () => void; recenter?: () => void; zoom?: (d: number) => void } = {};
 
   attach(): void {
     if (this.onKey) return;
@@ -23,18 +23,22 @@ export class InputState {
     this.onKey = (e: KeyboardEvent) => {
       if (!this.active) return;
       const tgt = e.target as HTMLElement | null;
-      if (tgt && (tgt.tagName === 'INPUT' || tgt.tagName === 'SELECT')) return;
+      if (tgt instanceof HTMLInputElement && (tgt.type !== 'range' || !['Space', 'KeyQ', 'KeyE', 'KeyR'].includes(e.code))) return;
+      if (tgt instanceof HTMLSelectElement) return;
       const down = e.type === 'keydown';
       const h = map[e.code];
       if (h) {
         e.preventDefault();
         if (e.repeat && down) return;
+        if (h === 'charge' && down && this.listeners.firePrepared?.()) return;
         this.set(h, down);
         return;
       }
       if (!down) return;
       if (e.code === 'Digit1' || e.code === 'Numpad1') { e.preventDefault(); this.listeners.weapon?.(0); }
       else if (e.code === 'Digit2' || e.code === 'Numpad2') { e.preventDefault(); this.listeners.weapon?.(1); }
+      else if (e.code === 'KeyQ' || e.code === 'KeyE') { e.preventDefault(); this.listeners.power?.((e.code === 'KeyQ' ? -1 : 1) * (e.shiftKey ? 1 : 0.1)); }
+      else if (e.code === 'KeyR') this.listeners.power?.(null);
       else if (e.code === 'Escape' || e.code === 'KeyP') { e.preventDefault(); this.listeners.pause?.(); }
       else if (e.code === 'Tab') { e.preventDefault(); this.listeners.camera?.(); }
       else if (e.code === 'KeyC' || e.code === 'Home') { e.preventDefault(); this.listeners.recenter?.(); }

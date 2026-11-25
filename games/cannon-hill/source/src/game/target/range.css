@@ -82,7 +82,6 @@
 .target-mode button:disabled { cursor: default; opacity: .55; }
 
 .target-control { display: grid; grid-template-columns: minmax(0, 1fr) minmax(73px, 104px); gap: 14px; align-items: center; }
-.target-progress { display: grid; gap: 5px; }
 .target-shots { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 4px; margin: 0 0 4px; padding: 0; list-style: none; }
 .target-shots li { display: grid; place-items: center; min-height: 24px; border: 1px solid var(--range-line); border-radius: 5px; color: var(--range-muted); font: 700 clamp(9px, 2.2vw, 14px)/1 system-ui, sans-serif; }
 .target-shots li[aria-current] { border-color: #f7e0a1; color: #fff5d4; background: #3f5049; }
@@ -90,13 +89,7 @@
 .target-shots [data-hit="inner"] { border-color: #cc9d63; background: #845935; color: #fff4da; }
 .target-shots [data-hit="outer"] { border-color: #63a69a; background: #285c55; color: #eeffef; }
 .target-shots [data-hit="miss"] { color: #d6c9bc; }
-.target-meter { position: relative; height: clamp(21px, 4vh, 31px); overflow: hidden; background: #0f1820; border: 1px solid #67726a; border-radius: 7px; }
-.target-meter > i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, #96c681, #f6b45a); }
-.target-meter > b { position: absolute; bottom: 0; width: 3px; height: 54%; transform: translateX(-50%); background: #fff6c5; box-shadow: 0 0 0 1px #23333b; }
-.target-meter > span { position: absolute; inset: 0; display: grid; place-items: center; color: #fff8ec; font: 700 13px/1 system-ui, sans-serif; text-shadow: 0 1px 2px #000, 0 0 4px #000; }
-.target-scale { display: flex; justify-content: space-between; color: var(--range-muted); font: 11px/1 system-ui, sans-serif; }
 .target-control .target-fire { position: static; min-width: 0; width: 100%; height: auto; min-height: 68px; padding: 9px 4px; border-radius: 12px; font-size: clamp(18px, 3vw, 24px); touch-action: none; -webkit-user-select: none; user-select: none; }
-.target-fire.held { filter: brightness(1.16); transform: translateY(2px); }
 .target-tip { margin: 0; color: var(--range-muted); font-size: 13px; text-align: center; line-height: 1.45; }
 .target-tip span { color: #ffe0a3; white-space: nowrap; }
 .target-mode :focus-visible { outline: 2px solid #fff3be; outline-offset: 3px; }
@@ -151,9 +144,34 @@
   .target-title p { font-size: 11px; }
   .target-field { height: clamp(152px, 52vw, 220px); }
   .target-control { gap: 5px 10px; grid-template-columns: minmax(0, 1fr) 88px; }
-  .target-progress { display: contents; }
   .target-shots { grid-column: 1 / -1; }
-  .target-meter { grid-column: 1; grid-row: 2; }
-  .target-scale { grid-column: 1; grid-row: 3; }
-  .target-control .target-fire { grid-column: 2; grid-row: 2 / 4; min-height: 59px; }
+}
+
+.target-control > .target-shots { grid-column: 1 / -1; margin-bottom: 0; }
+.target-aim-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; min-width: 0; }
+.target-adjust {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 4px 6px;
+  align-items: center;
+  padding: 6px 8px;
+  background: #1f1c24;
+  border: 1px solid var(--range-line);
+  border-radius: 8px;
+}
+.target-adjust label { grid-column: 1 / -1; display: flex; justify-content: space-between; color: var(--range-muted); font-size: 13px; }
+.target-adjust output { color: #ffe0a3; font-variant-numeric: tabular-nums; font-weight: bold; }
+.target-adjust input { width: 100%; min-width: 0; margin: 0; accent-color: #eac778; cursor: pointer; }
+.target-mode .target-adjust .btn { min-width: 35px; min-height: 34px; padding: 2px 7px; }
+.target-control .target-fire { grid-column: 2; grid-row: 2; }
+@media (max-width: 570px) {
+  .target-aim-controls { grid-template-columns: 1fr; gap: 5px; }
+  .target-adjust { padding: 4px 6px; }
+  .target-control { grid-template-columns: minmax(0, 1fr) 72px; }
+  .target-control .target-fire { min-height: 65px; }
+}
+@media (max-height: 480px) and (orientation: landscape) {
+  .target-mode { padding-block: 7px; }
+  .target-control .target-fire { min-height: 56px; }
+  .target-mode .target-adjust .btn { min-height: 29px; }
 }

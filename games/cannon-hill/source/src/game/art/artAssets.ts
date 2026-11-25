@@ -110,7 +110,7 @@ function source(textures: Phaser.Textures.TextureManager, key: string): CanvasIm
  * 고르기 화면·전투 화면 카드에 쓰는 초상(PNG dataURL). 몸 그림에 무기를 비스듬히 들려 그린다.
  * bust면 머리·어깨만 크게 보이도록 위쪽을 잘라 쓴다.
  */
-export function makeArtPortrait(textures: Phaser.Textures.TextureManager, id: string, size: number, opts: { flip?: boolean; bust?: boolean } = {}): string | null {
+export function makeArtPortrait(textures: Phaser.Textures.TextureManager, id: string, size: number, opts: { flip?: boolean; bust?: boolean; bodyOnly?: boolean } = {}): string | null {
   const d = ART.chars[id], rig = CHAR_RIG[id];
   const body = source(textures, artKey.char(id));
   if (!d || !rig || !body) return null;
@@ -125,7 +125,7 @@ export function makeArtPortrait(textures: Phaser.Textures.TextureManager, id: st
   const raw = source(textures, `wpn_${id}`) as HTMLCanvasElement | null;
   const wd = ART.weapons[id] ?? (raw ? { w: raw.width, h: raw.height } : null);
   const wr = WEAPON_RIG[id] ?? { width: WEAPON_BOX.w, grip: [WEAPON_BOX.pivotX / WEAPON_BOX.w, WEAPON_BOX.pivotY / WEAPON_BOX.h] };
-  const wimg = source(textures, artKey.wpn(id)) ?? raw;
+  const wimg = opts.bodyOnly ? null : source(textures, artKey.wpn(id)) ?? raw;
   const aspect = d.w / d.h;
   const angle = -Math.PI / 6;
   let unit: number, ox: number, oy: number;

@@ -41,6 +41,8 @@ export class App {
       restart: () => this.rematch(),
       pause: () => this.pause(),
       weapon: (slot) => this.battleScene()?.selectWeapon(slot),
+      power: (delta, absolute) => this.battleScene()?.adjustPower(delta, absolute),
+      firePrepared: () => this.battleScene()?.firePrepared() ?? false,
       flip: () => this.battleScene()?.flip(),
       camera: () => this.battleScene()?.cycleCamera(),
       recenter: () => this.battleScene()?.recenter(),
@@ -173,7 +175,8 @@ export class App {
     if (this.target) return;
     this.game.scene.stop('title');
     this.ui.only();
-    this.target = new TargetRange(this.ui.root, this.ui.portraits.general?.normal ?? '', () => {
+    const gunner = makeArtPortrait(this.game.textures, 'general', 192, { bodyOnly: true });
+    this.target = new TargetRange(this.ui.root, gunner ?? this.ui.portraits.general?.normal ?? '', () => {
       this.toTitle();
       this.ui.root.querySelector<HTMLButtonElement>('.target-entry')?.focus();
     });

@@ -373,7 +373,7 @@ export class Battle {
     }
     this.timeLeft -= dt;
     if (this.phase === 'CHARGE') {
-      const chargeTime = this.cfg.starterMatch && this.cfg.controllers[f.idx] === 'human' ? 2.2 : CHARGE_TIME;
+      const chargeTime = this.cfg.controllers[f.idx] === 'human' ? (this.cfg.starterMatch ? 2.8 : 2.4) : CHARGE_TIME;
       f.power += (f.chargeDir * 100 * dt) / chargeTime;
       if (f.power >= 100) { f.power = 100; f.chargeDir = -1; }
       if (f.power <= 0) { f.power = 0; f.chargeDir = 1; }

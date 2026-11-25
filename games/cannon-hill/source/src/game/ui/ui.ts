@@ -23,6 +23,8 @@ export interface UIHooks {
   restart(): void;
   pause(): void;
   weapon(slot: 0 | 1): void;
+  power(delta: number | null, absolute?: boolean): void;
+  firePrepared(): boolean;
   flip(): void;
   camera(): void;
   recenter(): void;
@@ -119,7 +121,7 @@ export class UI {
           <div class="subtitle">${GAME_SUBTITLE}</div>
           <div class="menu">
             <button class="btn primary quick" data-act="quick">바로 한 판<small>쉬운 AI · 내가 먼저 발사</small></button>
-            <button class="btn jade target-entry" data-act="target">표적 10발<small>오늘의 순위에 도전</small></button>
+            <button class="btn jade target-entry" data-act="target">표적 10발<small>각도와 힘으로 누적 순위 도전</small></button>
             <button class="btn" data-act="ai">AI와 겨루기<small>장수·전장 고르기</small></button>
             <button class="btn jade" data-act="local">둘이서 하기<small>한 기기로 번갈아</small></button>
             <button class="btn" data-act="howto">게임 방법</button>
@@ -366,7 +368,12 @@ export class UI {
           <div class="pad move"><div class="row"><button class="kbtn" data-hold="left" aria-label="왼쪽으로 이동">◀<small>A</small></button><button class="kbtn" data-hold="right" aria-label="오른쪽으로 이동">▶<small>D</small></button></div><div class="movebar"><i></i></div><div class="lbl">이동</div></div>
           <div class="pad aim"><div class="row"><button class="kbtn" data-hold="aimDown" aria-label="포신 내리기">▼<small>↓</small></button><div class="angle-read"><span class="ang">45°</span><small>각도</small></div><button class="kbtn" data-hold="aimUp" aria-label="포신 올리기">▲<small>↑</small></button><button class="kbtn" data-act="flip" aria-label="방향 바꾸기">⇄<small>←→</small></button></div><div class="lbl angle-hint">각도</div></div>
           <div class="weapons" aria-label="매 차례 자유롭게 고르는 두 종류 탄"><button class="wbtn" data-w="0"><kbd>1</kbd><b class="wn0"></b><small class="wu0"></small></button><button class="wbtn" data-w="1"><kbd>2</kbd><b class="wn1"></b><small class="wu1"></small></button></div>
-          <div class="firewrap"><div class="power"><div class="ticks"></div><i></i><div class="last"></div><em class="suggested" hidden></em><span>힘 0</span></div><button class="fire" data-hold="charge" aria-label="힘 모아 발사">발사<small>Space 꾹</small></button><div class="keyhint power-hint" aria-live="polite">꾹 눌러 힘 모으기</div></div>
+          <div class="firewrap">
+            <div class="power"><div class="ticks"></div><i></i><div class="last"></div><em class="suggested" hidden></em><span>힘 0</span><input class="power-picker" type="range" min="0" max="100" step="0.1" aria-label="발사 힘 직접 설정"></div>
+            <button class="fire" data-hold="charge" aria-label="힘 모아 발사">발사<small>Space 꾹</small></button>
+            <div class="power-fine"><button type="button" data-act="power-down" aria-label="힘 0.1 줄이기">−</button><button type="button" data-act="power-hold" aria-label="꾹 눌러 발사 모드로 전환" hidden>꾹</button><button type="button" data-act="power-up" aria-label="힘 0.1 높이기">+</button></div>
+            <div class="keyhint power-hint" aria-live="polite">힘 막대 · Q/E 미세 조정</div>
+          </div>
         </div>
         <div class="banner"><b></b><span></span></div>
         <div class="toast"></div>
@@ -378,6 +385,7 @@ export class UI {
       const on = (e: PointerEvent) => {
         e.preventDefault();
         audio.unlock();
+        if (hold === 'charge' && this.hooks.firePrepared()) return;
         try { b.setPointerCapture(e.pointerId); } catch { /* 일부 브라우저 */ }
         b.classList.add('held');
         input.set(hold, true);
@@ -392,8 +400,12 @@ export class UI {
       b.addEventListener('pointercancel', off);
       b.addEventListener('lostpointercapture', off);
     });
+    el.querySelector<HTMLInputElement>('.power-picker')!.addEventListener('input', (event) => {
+      this.hooks.power((event.currentTarget as HTMLInputElement).valueAsNumber, true);
+    });
     el.addEventListener('click', (e) => {
       const t = e.target as HTMLElement;
+      if (e.detail === 0 && t.closest('[data-hold=charge]') && this.hooks.firePrepared()) return;
       const w = t.closest<HTMLElement>('[data-w]')?.dataset.w;
       if (w !== undefined) { this.hooks.weapon(Number(w) as 0 | 1); return; }
       const act = t.closest<HTMLElement>('[data-act]')?.dataset.act;
@@ -401,6 +413,9 @@ export class UI {
       else if (act === 'flip') this.hooks.flip();
       else if (act === 'camera') this.hooks.camera();
       else if (act === 'recenter') this.hooks.recenter();
+      else if (act === 'power-down') this.hooks.power(-0.1);
+      else if (act === 'power-up') this.hooks.power(0.1);
+      else if (act === 'power-hold') this.hooks.power(null);
     });
   }
 
@@ -430,7 +445,7 @@ export class UI {
     fn();
   }
 
-  updateHud(b: Battle, opts: { names: string[]; humanTurn: boolean; status: string; aimHint: AimHint|null }): void {
+  updateHud(b: Battle, opts: { names: string[]; humanTurn: boolean; status: string; aimHint: AimHint|null; preparedPower: number|null }): void {
     const el = this.screens.get('hud')!;
     for (const f of b.fighters) {
       const i = f.idx;
@@ -512,25 +527,36 @@ export class UI {
     });
     const mv = Math.max(0, (f.moveLeft / (MOVE_BUDGET * c.moveMul)) * 100);
     this.set('mv', `${Math.round(mv)}`, () => { el.querySelector<HTMLElement>('.movebar i')!.style.width = `${mv}%`; });
-    const pw = b.phase === 'CHARGE' ? f.power : 0;
-    this.set('pw', `${Math.round(pw)}|${Math.round(f.lastPower)}|${b.phase}|${f.stats.shots}`, () => {
+    const manual = opts.preparedPower !== null;
+    const pw = b.phase === 'CHARGE' ? f.power : opts.preparedPower ?? 0;
+    const editPower = canAct && b.phase !== 'CHARGE';
+    this.set('pw', `${pw.toFixed(1)}|${f.lastPower.toFixed(1)}|${manual}|${editPower}|${b.phase}|${f.stats.shots}`, () => {
       const p = el.querySelector<HTMLElement>('.power')!;
       p.querySelector<HTMLElement>('i')!.style.width = `${pw}%`;
       p.querySelector<HTMLElement>('.last')!.style.left = `${f.lastPower}%`;
       const label = f.stats.shots > 0 ? '지난 힘' : '기준 힘';
-      p.querySelector('span')!.textContent = b.phase === 'CHARGE' ? `힘 ${Math.round(pw)}` : `${label} ${Math.round(f.lastPower)}`;
+      p.querySelector('span')!.textContent = b.phase === 'CHARGE' || manual ? `힘 ${pw.toFixed(1)}` : `${label} ${f.lastPower.toFixed(1)}`;
+      const picker = p.querySelector<HTMLInputElement>('.power-picker')!;
+      picker.value = String(opts.preparedPower ?? f.lastPower);
+      picker.disabled = !editPower;
+      picker.setAttribute('aria-valuetext', Number(picker.value).toFixed(1));
+      el.querySelectorAll<HTMLButtonElement>('.power-fine button').forEach(button => { button.disabled = !editPower; });
+      el.querySelector<HTMLButtonElement>('[data-act=power-hold]')!.hidden = !manual;
+      const fire = el.querySelector<HTMLButtonElement>('.fire')!;
+      fire.querySelector('small')!.textContent = manual ? 'Space' : 'Space 꾹';
+      fire.setAttribute('aria-label', manual ? '설정한 힘으로 발사' : '힘 모아 발사');
     });
-    this.updateAimHint(el,b,opts.aimHint);
+    this.updateAimHint(el,b,opts.aimHint,opts.preparedPower);
   }
 
-  private updateAimHint(el:HTMLElement,b:Battle,hint:AimHint|null):void {
+  private updateAimHint(el:HTMLElement,b:Battle,hint:AimHint|null,preparedPower:number|null):void {
     this.set('aimhint',`${JSON.stringify(hint)}:${b.current}:${b.cur.slot}`,()=>{
       const angle=el.querySelector<HTMLElement>('.angle-hint')!;
       const power=el.querySelector<HTMLElement>('.power-hint')!;
       const band=el.querySelector<HTMLElement>('.power .suggested')!;
       band.hidden=true;band.dataset.slot=String(b.cur.slot);
       angle.textContent=hint?.kind==='thinking'?'추천 범위 계산 중…':hint?.kind==='moving'?'멈추면 추천 범위를 보여드려요':'각도';
-      power.textContent=hint?.kind==='thinking'?'현재 바람과 탄을 살펴보는 중':hint?.kind==='moving'?'이동 후 다시 추천해요':'꾹 눌러 힘 모으기';
+      power.textContent=hint?.kind==='thinking'?'현재 바람과 탄을 살펴보는 중':hint?.kind==='moving'?'이동 후 다시 추천해요':'힘 막대 · Q/E 미세 조정';
       if(hint?.kind==='blocked'){
         angle.textContent=`${hint.direction>0?'→':'←'} 앞 지형이 막고 있어요`;power.textContent='조금 이동하면 다시 추천해요';
       }else if(hint?.kind==='range'){
@@ -542,7 +568,8 @@ export class UI {
     });
     const f=b.cur,relative=f.angle<=90?f.angle:180-f.angle;
     const angleOK=hint?.kind==='range'&&(f.angle<=90?1:-1)===hint.direction&&relative>=hint.angle[0]&&relative<=hint.angle[1];
-    const powerOK=hint?.kind==='range'&&b.phase==='CHARGE'&&f.power>=hint.power[0]&&f.power<=hint.power[1];
+    const chosenPower = b.phase === 'CHARGE' ? f.power : preparedPower;
+    const powerOK=hint?.kind==='range'&&chosenPower!==null&&chosenPower>=hint.power[0]&&chosenPower<=hint.power[1];
     this.set('aimhint-match',`${angleOK}:${powerOK}`,()=>{
       el.querySelector('.angle-read')!.classList.toggle('in-hint',angleOK);
       el.querySelector('.power')!.classList.toggle('in-hint',powerOK);
@@ -738,6 +765,7 @@ export class UI {
           <li>시작 위치는 고지·저지·다리·발판 중 무작위로 고르며, 양 팀은 같은 높이·발판의 좌우 대칭 위치에서 시작합니다. 2:2도 서로 대응하는 두 자리를 대칭으로 놓습니다. 높은 곳에서 떨어지면 큰 피해를 받고, 벼랑 외나무다리의 추락선을 넘으면 체력과 무관하게 탈락합니다.</li>
           <li>바람은 턴마다 바뀝니다. 화면 위 화살표가 방향과 세기(0~10)입니다. 모든 탄의 기본 발사속도·중력·바람 영향은 같습니다.</li>
           <li><b>무당의 추적 부적탄</b>은 55~125°로 높이 쏘면 내려올 때 가까운 적을 따라갑니다. 표적에 금빛 조준 표시가 뜨며, 장애물에 먼저 닿으면 막힙니다.</li>
+          <li>힘 막대를 끌어 힘을 정하고 <kbd>Q</kbd>/<kbd>E</kbd> 또는 −/+로 0.1씩 조절한 뒤 발사할 수 있습니다. <kbd>R</kbd>이나 「꾹」으로 누르고 떼는 방식으로 돌아갑니다.</li>
           <li><b>굴착대장</b>은 1번으로 긴 터널을 뚫습니다. 2번을 채석장처럼 아래가 빈 발판 위에 맞히면 밑면까지 절단해 지지점에서 떨어진 조각을 무너뜨립니다.</li>
           <li>지지점을 잃은 땅은 덩어리째 무너지고, 바위는 낙석이 되어 굴러갑니다. 깔리거나 높은 곳에서 떨어지면 다칩니다.</li>
           <li><b>1번과 2번 탄은 매 차례 자유롭게 선택</b>합니다. 횟수 제한과 기세 조건이 없고, 발사 뒤에도 고른 탄을 기억합니다. 누르고 모으는 힘은 포탄의 날아갈 거리입니다.</li>

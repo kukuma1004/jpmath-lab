@@ -1,6 +1,6 @@
-import { MAX_SCORE, ROUNDS, isCenter, playableDay, summarize, validNickname, type TargetResult } from './course';
+import { MAX_SCORE, ROUNDS, isCenter, summarize, validNickname, type TargetResult } from './course';
 
-const BASE = 'https://jpmathlab-default-rtdb.asia-southeast1.firebasedatabase.app/warureuTargetV1';
+const BASE = 'https://jpmathlab-default-rtdb.asia-southeast1.firebasedatabase.app/warureuTargetV2';
 const SDK = 'https://www.gstatic.com/firebasejs/12.16.0';
 const config = {
   projectId: 'jpmathlab',
@@ -60,9 +60,9 @@ async function request(endpoint: string, init?: RequestInit): Promise<Response> 
   return response;
 }
 
-export async function loadBoard(day: number): Promise<RecordRow[]> {
+export async function loadBoard(): Promise<RecordRow[]> {
   const params = new URLSearchParams({orderBy: JSON.stringify('rank'), limitToLast:'50'});
-  const raw: unknown = await (await request(`${BASE}/${day}/board.json?${params}`)).json();
+  const raw: unknown = await (await request(`${BASE}/board.json?${params}`)).json();
   if (raw === null) return [];
   if (typeof raw !== 'object' || Array.isArray(raw)) throw new Error('순위 목록을 읽지 못했어요.');
   return Object.entries(raw).map(([uid, value]) => decode(uid, value)).filter((row): row is RecordRow => row !== null)
@@ -70,36 +70,36 @@ export async function loadBoard(day: number): Promise<RecordRow[]> {
 }
 
 export async function publishScore(result: TargetResult, nickname: string): Promise<{uid: string; kept: boolean}> {
-  const verified = summarize(result.day, result.shots.map(shot => shot.power));
+  const verified = summarize(result.shots);
   if (!verified || verified.rank < 1 || verified.rank !== result.rank) throw new Error('10발을 마친 득점 기록을 등록할 수 있어요.');
-  if (!playableDay(verified.day)) throw new Error('오늘의 도전이 끝났어요. 새 코스로 다시 도전해 주세요.');
   if (!validNickname(nickname)) throw new Error('별명은 한글, 영문, 숫자, 공백, _ . - 로 1~12자 입력해 주세요.');
 
   const user = (await identity(true))!;
   const token = encodeURIComponent(await user.getIdToken());
-  const rowUrl = `${BASE}/${verified.day}/board/${encodeURIComponent(user.uid)}.json?auth=${token}`;
+  const rowUrl = `${BASE}/board/${encodeURIComponent(user.uid)}.json?auth=${token}`;
   const previous = decode(user.uid, await (await request(rowUrl)).json());
   // Firebase rejects concurrent lower scores atomically. This read avoids unnecessary writes.
   if (previous && previous.rank >= verified.rank) return {uid:user.uid, kept:true};
 
   const proof = Object.fromEntries(verified.shots.map((shot, index) => [`s${index}`, {
     power:shot.power,
+    slope:shot.slope,
     value:shot.points * rankFactor + Number(isCenter(shot)),
   }]));
-  await request(`${BASE}/${verified.day}.json?auth=${token}`, {
+  await request(`${BASE}.json?auth=${token}`, {
     method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({
-      [`proof/${user.uid}`]:{day:verified.day, rank:verified.rank, ...proof},
+      [`proof/${user.uid}`]:{rank:verified.rank, ...proof},
       [`board/${user.uid}`]:{nickname, rank:verified.rank, submittedAt:{'.sv':'timestamp'}},
     }),
   });
   return {uid:user.uid, kept:false};
 }
 
-export async function deleteScore(day: number): Promise<void> {
+export async function deleteScore(): Promise<void> {
   const user = await identity(false);
   if (!user) throw new Error('기록을 등록한 브라우저에서 삭제할 수 있어요.');
   const token = encodeURIComponent(await user.getIdToken());
-  await request(`${BASE}/${day}.json?auth=${token}`, {
+  await request(`${BASE}.json?auth=${token}`, {
     method:'PATCH', headers:{'Content-Type':'application/json'},
     body:JSON.stringify({[`proof/${user.uid}`]:null, [`board/${user.uid}`]:null}),
   });

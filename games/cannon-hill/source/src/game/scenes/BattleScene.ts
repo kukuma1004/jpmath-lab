@@ -56,6 +56,7 @@ export class BattleScene extends Phaser.Scene {
   private camZ = 0.6;
   private free = false;
   private camMode: 'auto' | 'self' | 'enemy' | 'all' = 'auto';
+  private preparedPower: number | null = null;
   private userZoom = 1;
   private lastPhase = '';
   private lastBlast = { x: WORLD_W / 2, y: 800 };
@@ -81,6 +82,7 @@ export class BattleScene extends Phaser.Scene {
     this.t = 0;
     this.free = false;
     this.camMode = 'auto';
+    this.preparedPower = null;
     this.userZoom = 1;
     this.fighters = [];
     this.bottomFx = [];
@@ -136,6 +138,8 @@ export class BattleScene extends Phaser.Scene {
     input.reset();
     input.listeners = {
       weapon: (slot) => this.selectWeapon(slot),
+      power: (delta) => this.adjustPower(delta),
+      firePrepared: () => this.firePrepared(),
       pause: () => this.app.pause(),
       camera: () => this.cycleCamera(),
       recenter: () => this.recenter(),
@@ -389,6 +393,24 @@ export class BattleScene extends Phaser.Scene {
     b.selectWeapon(slot);
   }
 
+  adjustPower(delta: number | null, absolute = false): void {
+    const b = this.battle;
+    if (this.paused || !this.humanTurn() || !b.isPlayerPhase() || b.phase === 'CHARGE') return;
+    if (delta === null) {
+      this.preparedPower = null;
+      return;
+    }
+    const power = absolute ? delta : (this.preparedPower ?? b.cur.lastPower) + delta;
+    this.preparedPower = Phaser.Math.Clamp(Math.round(power * 10) / 10, 0, 100);
+  }
+
+  firePrepared(): boolean {
+    const b = this.battle;
+    if (this.preparedPower === null || this.paused || !this.humanTurn() || !b.isPlayerPhase() || b.phase === 'CHARGE') return false;
+    b.fireNow(this.preparedPower);
+    return true;
+  }
+
   flip(): void {
     const b = this.battle;
     if (this.actors[b.current] || !b.isPlayerPhase() || b.phase === 'CHARGE') return;
@@ -429,6 +451,7 @@ export class BattleScene extends Phaser.Scene {
           this.time.delayedCall(2200, () => ui.toast('화면을 끌면 둘러볼 수 있어요 · 「보기」로 전체 보기'));
           break;
         case 'turn': {
+          this.preparedPower = null;
           input.newTurn();
           const w = e.wind === 0 ? '바람 잔잔' : `바람 ${e.wind > 0 ? '→' : '←'} ${Math.abs(e.wind)}`;
           const pf = b.fighters[e.player]!;
@@ -552,7 +575,7 @@ export class BattleScene extends Phaser.Scene {
     g.fillCircle(mx + Math.cos(a) * 38, my - Math.sin(a) * 38, 3.5);
     // 예상 궤적(실제 물리와 같은 계산, 처음 1.1초)
     if (this.app.settings.trajectory && this.humanTurn()) {
-      const power = b.phase === 'CHARGE' ? f.power : f.lastPower;
+      const power = b.phase === 'CHARGE' ? f.power : this.preparedPower ?? f.lastPower;
       const pts = b.previewPath(b.traitOf(f) === 'eagle' ? TRAIT.eaglePreview : 1.1, power);
       for (let i = 2; i < pts.length; i += 3) {
         const p = pts[i]!;
@@ -610,7 +633,7 @@ export class BattleScene extends Phaser.Scene {
       : b.phase === 'TERRAIN_COLLAPSE' ? '땅이 무너지는 중…'
       : !b.isPlayerPhase() && (b.shotDamage.get(b.shotNo) ?? 0) > 0 ? `이번 포격: 상대에게 합계 ${b.shotDamage.get(b.shotNo)} 피해`
       : b.clouds.some((c) => (c.turns[b.current] ?? 0) > 0 && b.inCloud(b.cur, c)) ? '독무 속! 다음 자기 차례가 오기 전에 구름 밖으로 움직이세요'
-      : previousShot || (showFirstShotTip ? '추천 각도를 맞추고 금빛 힘 구간에서 떼어 보세요' : '') || (
+      : previousShot || (showFirstShotTip ? '추천 각도와 금빛 힘 구간을 참고하세요' : '') || (
         b.isPlayerPhase() && b.cfg.mapId === 'bridge' ? '다리를 끊어 떨어뜨리세요 · 추락선을 넘으면 체력과 무관하게 탈락'
       : b.isPlayerPhase() && b.cfg.mapId === 'quarry' && b.cur.charId === 'driller' && b.cur.slot === 1 ? '발판 윗면에 맞혀 밑면까지 절단 · 상대 발밑과 지지점 사이를 노리세요'
       : b.isPlayerPhase() && b.cfg.mapId === 'quarry' && b.turnNo <= 2 ? '중앙 쪽으로 한 단씩 착지 · 마지막 단 밖은 추락'
@@ -619,7 +642,7 @@ export class BattleScene extends Phaser.Scene {
       : b.isPlayerPhase() && b.steadyReady(b.cur) ? '자리 잡은 포격 — 움직이지 않고 쏘면 피해 +15%'
       : '');
     const aimHint=this.advisor.update(b,this.app.settings.aimHints&&this.humanTurn());
-    this.app.ui.updateHud(b, { names: this.names, humanTurn: this.humanTurn(), status, aimHint });
+    this.app.ui.updateHud(b, { names: this.names, humanTurn: this.humanTurn(), status, aimHint, preparedPower: this.preparedPower });
   }
 
   // ───────── 시험용 손잡이(?qa=1) ─────────
