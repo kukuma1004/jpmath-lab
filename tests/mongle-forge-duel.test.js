@@ -1,12 +1,157 @@
-const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
-const Forge=require('../games/mongle-forge/forge-engine.js');
-const D=vm.runInNewContext(fs.readFileSync(require('node:path').join(__dirname,'../games/mongle-forge/forge-duel.js'),'utf8')+';ForgeDuel',{Forge});
-const sword=(level,magic)=>Forge.restore({level,bestLevel:level,enchantments:['lunar','lunar','lunar'],...(magic?{magic:{id:magic,peak:level}}:{})});
-const advanceTo=(f,time)=>{while(f.elapsed<time&&['warning','recovery'].includes(f.phase))D.advance(f,Math.min(16,time-f.elapsed))};
-test('automatic attack uses stronger current weapons without changing the forge state',()=>{const s=sword(10),before=Forge.serialize(s),f=D.makeFight(s,10);advanceTo(f,800);assert(f.hp<f.maxHp);assert.equal(f.strikes,1);assert(D.makeFight(sword(100),10).power>f.power);assert.equal(Forge.serialize(s),before)});
-test('visible warning hurts on impact, and later hits end the fight after three hearts',()=>{const f=D.makeFight(sword(0),30);advanceTo(f,f.impact);assert.equal(f.hearts,2);assert.equal(f.event,'피격');for(let i=0;i<3000&&f.phase!=='lost';i++)D.advance(f,16);assert.equal(f.phase,'lost');assert.equal(f.hearts,0);const t=f.elapsed;D.advance(f,1000);assert.equal(f.elapsed,t)});
-test('dodge changes lanes and prevents a warned hit; boundaries cannot be crossed',()=>{const f=D.makeFight(sword(0),30);assert(D.action(f,'left'));assert.equal(f.lane,0);assert.equal(D.action(f,'left'),false);advanceTo(f,f.impact);assert.equal(f.hearts,3);assert.equal(f.event,'회피 성공')});
-test('a late parry counters for three damage and cannot be spammed or held permanently',()=>{const f=D.makeFight(sword(0),30);advanceTo(f,f.impact-200);assert(D.action(f,'parry'));assert.equal(D.action(f,'parry'),false);const before=f.hp;advanceTo(f,f.impact);assert.equal(f.hearts,3);assert.equal(f.event,'패링 성공 · 3배 반격');assert.equal(before-f.hp,30);const early=D.makeFight(sword(0),30);D.action(early,'parry');advanceTo(early,early.impact);assert.equal(early.hearts,2)});
-test('all five bound magics affect combat power and retain their identities',()=>{for(const id of ['fire','ice','thunder','void','radiance']){const f=D.makeFight(sword(100,id),20);assert.equal(f.magic.id,id);assert(f.power>D.makeFight(sword(100),20).power)}});
-test('arbitrary supported large enhancement levels and magic ranks remain finite',()=>{const level=10n**120n;const f=D.makeFight(sword(level,'fire'),30);for(const k of ['power','maxHp','hp'])assert(Number.isFinite(f[k])&&f[k]>0,k);advanceTo(f,800);assert.equal(f.phase,'won')});
-test('tactical play can clear a matching boss and winning freezes the outcome',()=>{const f=D.makeFight(sword(0),1);for(let i=0;i<5000&&f.phase!=='won';i++){if(f.phase==='warning'&&f.impact-f.elapsed<200&&f.danger.includes(f.lane))D.action(f,'parry');D.advance(f,16)}assert.equal(f.phase,'won');assert.equal(f.hearts,3);const t=f.elapsed;D.advance(f,16);assert.equal(f.elapsed,t)});
+'use strict';
+
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const path = require('node:path');
+const Forge = require('../games/mongle-forge/forge-engine.js');
+const source = fs.readFileSync(path.join(__dirname, '../games/mongle-forge/forge-duel-combat.js'), 'utf8');
+const Duel = vm.runInNewContext(source + ';ForgeDuelCombat', { Forge });
+const blade = (level, enchantments = ['lunar', 'lunar', 'lunar'], magic) =>
+  Forge.restore({ level, bestLevel: level, enchantments, ...(magic && { magic: { id: magic, peak: level } }) });
+const tick = (fight, ms, input) => {
+  for (let remaining = ms; remaining > 0 && fight.status === 'active'; remaining -= 10) {
+    Duel.step(fight, Math.min(remaining, 10), input);
+  }
+};
+const inRange = fight => {
+  fight.player.x = fight.boss.x;
+  fight.player.y = fight.boss.y + 13;
+  return fight;
+};
+
+test('manual combat can be lost without dealing any damage, even with a +100 magic sword', () => {
+  const state = blade(100, undefined, 'fire');
+  const saved = Forge.serialize(state);
+  const fight = Duel.create(state);
+  tick(fight, 15000);
+  assert.equal(fight.boss.hp, 240000);
+  assert.equal(fight.hits, 0);
+  assert.equal(fight.status, 'lost');
+  assert.equal(Forge.serialize(state), saved);
+});
+
+test('melee range, startup and recovery make position and attack timing matter', () => {
+  const fight = Duel.create(blade(100));
+  assert(Duel.act(fight, 'heavy'));
+  assert.equal(Duel.act(fight, 'dodge'), false);
+  tick(fight, 345);
+  assert.equal(fight.boss.hp, fight.boss.maxHp);
+  assert(fight.events.some(e => e.type === 'miss'));
+  tick(fight, 500);
+  inRange(fight);
+  assert(Duel.act(fight, 'attack'));
+  tick(fight, 120);
+  assert.equal(fight.hits, 1);
+  assert(fight.boss.hp < fight.boss.maxHp);
+});
+
+test('a well-timed parry protects HP and opens a manual counter, and evasion spends stamina', () => {
+  const fight = Duel.create(blade(100));
+  tick(fight, 1250);
+  const attack = fight.attack;
+  assert(attack.parryable);
+  tick(fight, attack.at - fight.time - 120);
+  assert(Duel.act(fight, 'parry'));
+  tick(fight, 120);
+  assert.equal(fight.player.hp, 100);
+  assert.equal(fight.boss.hp, fight.boss.maxHp);
+  assert.equal(fight.parries, 1);
+  assert.equal(Duel.act(fight, 'parry'), false);
+  inRange(fight);
+  assert(Duel.act(fight, 'heavy'));
+  tick(fight, 345);
+  assert(fight.events.some(e => e.label === '패링 반격' && e.value > fight.power * 4));
+  tick(fight, 480);
+  const before = fight.player.x;
+  const stamina = fight.player.stamina;
+  assert(Duel.act(fight, 'dodge', { x: -1, y: 0 }));
+  tick(fight, 150);
+  assert(fight.player.x < before - 9);
+  assert(fight.player.stamina < stamina);
+});
+
+test('three identical engravings contribute individually and leave the stored weapon untouched', () => {
+  const state = blade(100, ['lunar', 'lunar', 'lunar']);
+  const before = Forge.serialize(state);
+  const triple = inRange(Duel.create(state));
+  const single = inRange(Duel.create(blade(100, ['lunar'])));
+  assert.equal(triple.effects.length, 3);
+  assert(triple.power > single.power);
+  for (const f of [triple, single]) {
+    f.recoverUntil = 2000;
+    Duel.act(f, 'attack');
+    tick(f, 120);
+  }
+  assert(triple.boss.hp < single.boss.hp);
+  assert.equal(Forge.serialize(state), before);
+});
+
+test('an earned element has a distinct combat outcome, and higher magic stage increases potency', () => {
+  const fire = inRange(Duel.create(blade(100, ['lunar'], 'fire')));
+  assert(Duel.act(fire, 'attack'));
+  tick(fire, 600);
+  assert(fire.events.some(e => e.type === 'burn' && e.label === '화염 연소'));
+  const ice = inRange(Duel.create(blade(100, ['lunar'], 'ice')));
+  assert(Duel.act(ice, 'attack'));
+  tick(ice, 150);
+  assert(ice.chillUntil > ice.time);
+  const thunder = inRange(Duel.create(blade(100, ['lunar'], 'thunder')));
+  thunder.hits = 2;
+  assert(Duel.act(thunder, 'attack'));
+  tick(thunder, 150);
+  assert(thunder.events.some(e => e.label === '전격 연쇄'));
+  const normal = inRange(Duel.create(blade(100, ['lunar'])));
+  const voidFight = inRange(Duel.create(blade(100, ['lunar'], 'void')));
+  for (const f of [normal, voidFight]) {
+    Duel.act(f, 'heavy');
+    tick(f, 350);
+  }
+  assert(voidFight.boss.hp < normal.boss.hp);
+  const radiance = Duel.create(blade(100, ['lunar'], 'radiance'));
+  radiance.player.hp = 50;
+  tick(radiance, 1250);
+  tick(radiance, radiance.attack.at - radiance.time - 100);
+  assert(Duel.act(radiance, 'parry'));
+  tick(radiance, 100);
+  assert(radiance.player.hp > 50);
+  const highPeak = Duel.create(Forge.restore({ level: 100, magic: { id: 'fire', peak: 200 }, enchantments: ['lunar'] }));
+  assert(highPeak.power > fire.power);
+});
+
+test('HP thresholds add patterns without scaling boss HP to player strength', () => {
+  const fight = inRange(Duel.create(blade(100)));
+  assert(fight.power > Duel.create(blade(80)).power);
+  assert.equal(fight.boss.maxHp, Duel.create(blade(0)).boss.maxHp);
+  fight.boss.hp = 156100;
+  Duel.act(fight, 'attack');
+  tick(fight, 130);
+  assert.equal(fight.phase, 2);
+  tick(fight, 1120);
+  assert.equal(fight.attack.id, 'volley');
+  const hpBefore = fight.player.hp;
+  tick(fight, fight.attack.at - fight.time);
+  assert.equal(fight.player.hp, hpBefore);
+  assert(fight.shots.length >= 5);
+  const later = inRange(Duel.create(blade(100)));
+  later.boss.hp = 72100;
+  Duel.act(later, 'attack');
+  tick(later, 1250);
+  assert.equal(later.phase, 3);
+  assert.equal(later.attack.id, 'ring');
+  assert.equal(later.attack.parryable, false);
+});
+
+test('win is terminal and huge saved enhancement values keep combat finite', () => {
+  const fight = inRange(Duel.create(blade(10n ** 120n, undefined, 'void')));
+  assert(Number.isFinite(fight.power));
+  fight.boss.hp = 1;
+  Duel.act(fight, 'attack');
+  tick(fight, 200);
+  assert.equal(fight.status, 'won');
+  const time = fight.time;
+  Duel.step(fight, 100);
+  assert.equal(fight.time, time);
+  assert.equal(Duel.act(fight, 'heavy'), false);
+});
