@@ -13,7 +13,7 @@ export const TRAIT = {
   eagleDirect: 1.25, // 신궁: 직접 맞혔을 때 더 붙는 배수
   eaglePreview: 2.6, // 신궁(사람): 예상 궤적 길이(초). 다른 장수는 1.1초
   shoveKnock: 1.78, // 도깨비: 밀어내는 힘 배수
-  blessHeal: 18, // 무당: 차례가 시작될 때 회복량
+  blessHeal: 12, // 무당: 차례가 시작될 때 회복량
   blessRange: 230, // 무당과 이만큼 가까운 같은 편도 함께 회복
   ironKnock: 0.42, // 거북선 장수: 밀려나는 힘 배수
   ironEnv: 0.5, // 떨어짐·깔림·낙석 피해 배수

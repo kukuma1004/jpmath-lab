@@ -95,7 +95,7 @@ export const WEAPONS: Record<string, WeaponDef> = {
   dokkaebiBomb: {
     id: 'dokkaebiBomb', name: '도깨비 폭탄', use: '강하게 밀기', desc: '땅에 두 번 튀고 나서 터집니다. 맞으면 바로 터집니다. 낭떠러지로 밀 때 좋습니다.',
     behavior: 'bounce', pattern: 'single',
-    radius: 70, carve: 60, rockMul: 0.62, damage: 184, directBonus: 1.15, knockback: 260,
+    radius: 70, carve: 60, rockMul: 0.62, damage: 192, directBonus: 1.15, knockback: 260,
     bounces: 2, restitution: 0.42, fuse: 4.2,
     look: 'bomb', color: 0x3d2f5a, glow: 0x9cff6b, size: 8,
   },
@@ -110,7 +110,7 @@ export const WEAPONS: Record<string, WeaponDef> = {
   bujeok: {
     id: 'bujeok', name: '추적 부적탄', use: '고각 하강 유도', desc: '55~125°로 높이 쏘면 내려올 때 420px 안의 적을 추적합니다. 낮게 쏘면 유도 범위가 130px로 줄어듭니다. 땅과 장애물은 통과하지 못합니다.',
     behavior: 'shell', pattern: 'single',
-    radius: 52, carve: 48, rockMul: 0.7, damage: 138, directBonus: 1.15, knockback: 230,
+    radius: 52, carve: 48, rockMul: 0.7, damage: 126, directBonus: 1.15, knockback: 230,
     seekRange: 130, seekAcc: 1100, loftSeekRange: 420, seekTurnRate: 3.8,
     look: 'paper', color: 0xf7d354, glow: 0xff5a5a, size: 7,
   },

@@ -76,6 +76,20 @@ test('낮은 둔턱은 이동 키로 넘고 경사에서 실제 발사각을 보
   expect(vx).toBeCloseTo(MAX_LAUNCH_SPEED * power / 100 * Math.cos(launchAngle * Math.PI / 180), 5);
 });
 
+test('힘 막대와 미세 조정 단추로 고른 소수점 힘 그대로 발사한다', async ({page}) => {
+  await openBattle(page, 'local', ['general', 'archer'], 'quarry');
+  await waitAim(page);
+  const hud = page.locator('[data-s=hud]');
+  const power = hud.getByRole('slider', { name: '발사 힘 직접 설정' });
+  await power.focus();
+  await power.press('ArrowRight');
+  await hud.getByRole('button', { name: '힘 0.1 높이기' }).click();
+  await expect(hud.locator('.power span')).toHaveText('힘 70.2');
+  await hud.getByRole('button', { name: '설정한 힘으로 발사' }).click();
+  expect(await wr(page, '__wr.battle.cur.lastPower')).toBeCloseTo(70.2, 8);
+  expect(await wr(page, '__wr.battle.cur.stats.shots')).toBe(1);
+});
+
 test('바로 한 판: 선공으로 직접 쏘고 지난 포격을 본 뒤 같은 방식으로 재대전한다', async ({page}) => {
   await page.addInitScript(() => localStorage.setItem('jpml.warureu.settings.v1', JSON.stringify({difficulty:'hard', turnTime:20, turnLimit:30, battleRules:2})));
   await page.goto('./?qa=1');
