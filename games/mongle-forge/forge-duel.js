@@ -2,14 +2,8 @@ const ForgeDuel = (() => {
   'use strict';
   const number = new Intl.NumberFormat('ko-KR');
   const seconds = ms => (ms / 1000).toFixed(1) + '초';
-  const emptyMove = { x: 0, y: 0 };
-  const moveKeys = {
-    ArrowLeft: [-1, 0], KeyA: [-1, 0], ArrowRight: [1, 0], KeyD: [1, 0],
-    ArrowUp: [0, -1], KeyW: [0, -1], ArrowDown: [0, 1], KeyS: [0, 1],
-  };
-  const actionKeys = { KeyJ: 'attack', KeyK: 'heavy', Space: 'dodge', KeyL: 'parry', KeyF: 'parry' };
-  const actionCosts = { attack: 6, heavy: 23, dodge: 17, parry: 13 };
-  const feedbackEvents = new Set(['guard', 'dodge', 'miss', 'hit', 'heavy', 'hurt', 'parry', 'windup', 'effect', 'phase']);
+  const actionKeys = { KeyJ: 'attack', Space: 'dodge' };
+  const feedbackEvents = new Set(['dodge', 'miss', 'hit', 'heavy', 'hurt', 'evade', 'effect', 'phase']);
   const effectColors = { cinder: '#ffad72', solar: '#ffdb79', astral: '#c7dfff', verdant: '#b9ef96', frost: '#a7efff', storm: '#bad5ff', lunar: '#e6b5ff' };
 
   function mount({ getState, asset, fmt, canEnter, onToggle, onVictory, onExchangeGuide }) {
@@ -18,10 +12,8 @@ const ForgeDuel = (() => {
     const overlay = modal.querySelector('.duel-overlay');
     const arena = modal.querySelector('.duel-arena');
     const field = modal.querySelector('.duel-field');
-    const hud = modal.querySelector('.duel-boss');
     const guardian = modal.querySelector('.duel-enemy');
     const blade = modal.querySelector('.duel-blade');
-    const stick = $('duel-stick');
     const start = $('duel-start');
     const pauseButton = $('duel-pause');
     const controls = modal.querySelector('.duel-controls');
@@ -29,9 +21,8 @@ const ForgeDuel = (() => {
     const floor = $('duel-danger').getContext('2d');
     const fx = $('duel-effects').getContext('2d');
     const reduced = matchMedia('(prefers-reduced-motion: reduce)');
-    const keys = new Set();
     let fight, pendingFrame, prev, run = 0, active = false, paused = false;
-    let pointer = null, touchMove = emptyMove, width = 0, height = 0, ratio = 1;
+    let width = 0, height = 0, ratio = 1;
     let marks = [], seenId = null, lastAction = null, impact = null, lastStrike = null;
     let attackShapeMemo = null, rejected = null;
 
@@ -47,52 +38,6 @@ const ForgeDuel = (() => {
       if (fight) draw();
     }
     new ResizeObserver(layout).observe(field);
-
-    function resetMovement() {
-      keys.clear();
-      const id = pointer;
-      pointer = null;
-      if (id !== null && stick.hasPointerCapture(id)) stick.releasePointerCapture(id);
-      touchMove = emptyMove;
-      stick.style.setProperty('--stick-offset-x', '0px');
-      stick.style.setProperty('--stick-offset-y', '0px');
-    }
-
-    function movement() {
-      if (pointer !== null) return touchMove;
-      let x = 0, y = 0;
-      for (const key of keys) { x += moveKeys[key][0]; y += moveKeys[key][1]; }
-      const size = Math.max(1, Math.hypot(x, y));
-      return { x: x / size, y: y / size };
-    }
-
-    function setStick(event) {
-      const rect = stick.getBoundingClientRect();
-      const travel = rect.width * .3 || 1;
-      const x = event.clientX - rect.left - rect.width / 2;
-      const y = event.clientY - rect.top - rect.height / 2;
-      const length = Math.hypot(x, y);
-      const scale = 1 / Math.max(travel, length);
-      touchMove = length < travel * .13 ? emptyMove : { x: x * scale, y: y * scale };
-      stick.style.setProperty('--stick-offset-x', touchMove.x * travel + 'px');
-      stick.style.setProperty('--stick-offset-y', touchMove.y * travel + 'px');
-    }
-
-    stick.addEventListener('pointerdown', event => {
-      if (!active || pointer !== null || (event.pointerType === 'mouse' && event.button !== 0)) return;
-      pointer = event.pointerId;
-      stick.setPointerCapture(pointer);
-      setStick(event);
-      event.preventDefault();
-    });
-    stick.addEventListener('pointermove', event => {
-      if (event.pointerId === pointer) setStick(event);
-    });
-    for (const name of ['pointerup', 'pointercancel', 'lostpointercapture']) {
-      stick.addEventListener(name, event => {
-        if (event.pointerId === pointer) resetMovement();
-      });
-    }
 
     function worldX(x) { return x * width / 100; }
     function worldY(y) { return y * height / 100; }
@@ -156,15 +101,10 @@ const ForgeDuel = (() => {
       floor.shadowBlur = 0;
     }
 
-    function swordReach(f, strike = false) {
-      const swing = f.swing || (strike ? lastStrike : null);
-      return ForgeDuelCombat.reach(swing?.heavy);
-    }
-
     function drawSwordReach(f) {
       const timeSinceStrike = lastStrike ? f.time - lastStrike.time : Infinity;
       if (!f.swing && timeSinceStrike >= 220) return;
-      const radius = swordReach(f, true);
+      const radius = ForgeDuelCombat.reach;
       const center = f.swing ? f.player : lastStrike.player;
       shapePath(floor, { type: 'circle', x: center.x, y: center.y, r: radius });
       floor.save();
@@ -326,7 +266,7 @@ const ForgeDuel = (() => {
         fx.textAlign = 'center'; fx.textBaseline = 'middle';
         fx.lineWidth = 4;
         fx.strokeStyle = '#30150b'; fx.strokeText(text, x, y);
-        fx.fillStyle = hurt ? '#ff8b90' : mark.type === 'parry' ? '#fff5a2' : '#ffdaa0';
+        fx.fillStyle = hurt ? '#ff8b90' : mark.type === 'evade' ? '#fff5a2' : '#ffdaa0';
         fx.fillText(text, x, y);
         fx.globalAlpha = 1;
       }
@@ -342,12 +282,8 @@ const ForgeDuel = (() => {
     function stats(f) {
       modal.style.setProperty('--boss-hp', f.boss.hp / f.boss.maxHp * 100 + '%');
       modal.style.setProperty('--player-hp', f.player.hp / f.player.maxHp * 100 + '%');
-      const stamina = Math.ceil(f.player.stamina);
-      modal.style.setProperty('--stamina', stamina + '%');
       setText($('duel-hp'), number.format(Math.ceil(f.boss.hp)) + ' / ' + number.format(f.boss.maxHp));
       setText($('duel-hearts'), Math.ceil(f.player.hp) + ' / ' + f.player.maxHp);
-      setText($('duel-stamina'), String(stamina));
-      $('duel-stamina').parentElement.setAttribute('aria-valuenow', stamina);
       setText($('duel-phase'), f.phase + '페이즈 · ' + ForgeDuelCombat.names[f.phase - 1]);
       const remaining = Math.ceil(Math.max(0, ForgeDuelCombat.limit - f.time) / 1000);
       setText($('duel-time'), Math.floor(remaining / 60) + ':' + String(remaining % 60).padStart(2, '0'));
@@ -357,12 +293,11 @@ const ForgeDuel = (() => {
 
     function act(kind) {
       if (!active) return;
-      if (ForgeDuelCombat.act(fight, kind, movement())) {
+      if (ForgeDuelCombat.act(fight, kind)) {
         rejected = null;
         lastAction = { kind, time: fight.time };
       } else {
-        const message = fight.player.stamina < actionCosts[kind] ? '스태미나 부족' :
-          fight.time < fight.lockUntil ? '동작이 끝나면 다시 누르세요' : kind === 'parry' ? '패링 준비 중' : '회피 준비 중';
+        const message = fight.time < fight.stunUntil ? '피격에서 회복 중' : kind === 'dodge' ? '회피 준비 중' : '공격 준비 중';
         rejected = { message, until: fight.time + 650 };
       }
       draw();
@@ -381,13 +316,13 @@ const ForgeDuel = (() => {
       const recent = events.findIndex(event => event.id === seenId);
       if (events.length && events.at(-1).id !== seenId) {
         for (const event of events.slice(recent + 1)) {
-          if (Number.isFinite(event.x) && Number.isFinite(event.y) && (event.value || event.type === 'parry')) {
+          if (Number.isFinite(event.x) && Number.isFinite(event.y) && (event.value || event.type === 'evade')) {
             marks.push({ ...event, time: f.time });
           }
           if (event.type === 'miss' || event.type === 'hit' || event.type === 'heavy') {
             lastStrike = {
               player: { ...f.player }, boss: { ...f.boss }, time: event.time,
-              heavy: lastAction?.kind === 'heavy', hit: event.type !== 'miss',
+              heavy: event.type === 'heavy', hit: event.type !== 'miss',
             };
           }
         }
@@ -398,14 +333,14 @@ const ForgeDuel = (() => {
       const recovery = !attack && f.time < f.recoverUntil;
       const windup = f.swing || (lastAction && f.time - lastAction.time < 210);
       const exposed = f.time < f.exposedUntil;
-      const inReach = Math.hypot(f.boss.x - f.player.x, f.boss.y - f.player.y) <= swordReach(f);
+      const inReach = Math.hypot(f.boss.x - f.player.x, f.boss.y - f.player.y) <= ForgeDuelCombat.reach;
       modal.dataset.phase = f.status === 'active' ? attack ? 'warning' : recovery ? 'recovery' : 'chase' : f.status;
       modal.dataset.pattern = attack?.id || '';
       modal.dataset.stage = f.phase;
-      modal.dataset.flash = String(!!attack?.parryable && remaining <= 190);
+      const dodgeNow = ForgeDuelCombat.dodgeCue(f);
+      const dodgeReady = ForgeDuelCombat.ready(f, 'dodge');
+      modal.dataset.flash = String(dodgeNow);
       modal.dataset.inReach = String(inReach);
-      modal.dataset.danger = attack ? attack.parryable ? 'parryable' : 'unblockable' : '';
-      modal.dataset.guarding = String(f.time < f.parryUntil);
       modal.dataset.invulnerable = String(f.time < f.immunityUntil);
       modal.dataset.action = windup ? lastAction?.kind || '' : '';
       modal.dataset.chilled = String(f.time < f.chillUntil);
@@ -419,13 +354,15 @@ const ForgeDuel = (() => {
       setText($('duel-clock'), attack ? (remaining / 1000).toFixed(1) : recovery ? '✦' : '◇');
       const event = events.findLast(entry => f.time - entry.time < 625 && entry.label && feedbackEvents.has(entry.type));
       const feedback = rejected?.until > f.time ? rejected.message : event?.label;
-      const cue = attack?.cue || (recovery && inReach ? '검이 닿는 거리 · 지금 공격하세요' :
-        recovery ? '가까이 다가가 빈틈을 노리세요' : '공격을 읽고 빈틈을 노리세요');
-      setText($('duel-hint'), modal.dataset.flash === 'true' ? '✦ 패링 타이밍' : feedback || cue);
+      const cue = attack?.cue || (exposed ? '빈틈이에요 · 공격을 눌러 반격' :
+        recovery ? '공격을 눌러 보스의 빈틈을 노리세요' : '공격을 누르면 내 검이 다가가 베어요.');
+      setText($('duel-hint'), dodgeNow && dodgeReady ? '지금 회피!' : feedback || cue);
       for (const button of buttons) {
         button.dataset.unavailable = String(!ForgeDuelCombat.ready(f, button.id.slice(5)));
       }
-      $('duel-parry').dataset.ready = String(modal.dataset.flash === 'true' && ForgeDuelCombat.ready(f, 'parry'));
+      $('duel-dodge').dataset.ready = String(dodgeNow && dodgeReady);
+      $('duel-attack').dataset.counter = String(exposed && ForgeDuelCombat.ready(f, 'attack'));
+      setText($('duel-attack-label'), exposed ? '반격' : '공격');
       drawFloor(f);
       drawEffects(f);
     }
@@ -506,11 +443,10 @@ const ForgeDuel = (() => {
 
     async function finish(f, runId) {
       active = false;
-      resetMovement();
       const won = f.status === 'won', ms = Math.max(1, Math.round(f.time));
       showOverlay('잿불의 파수꾼', won ? '시련 돌파' : '파수꾼의 승리',
         won ? '돌파 ' + seconds(ms) + ' · 보상 확인 중…' : f.time >= ForgeDuelCombat.limit ? '제한 시간 안에 파수꾼을 쓰러뜨려야 해요.' :
-          '공격 예고를 읽고 빈틈에 접근하세요.', '다시 도전');
+          '붉은 예고에는 회피, 보스의 빈틈에는 공격을 눌러요.', '다시 도전');
       if (!won) return;
       const award = await onVictory({ ms, damageTaken: f.damageTaken }).catch(() => null);
       if (runId !== run || !modal.open) return;
@@ -534,7 +470,7 @@ const ForgeDuel = (() => {
       if (document.hidden) { pause(); return; }
       const delta = Math.min(75, Math.max(0, now - prev));
       prev = now;
-      ForgeDuelCombat.step(fight, delta, movement());
+      ForgeDuelCombat.step(fight, delta);
       draw();
       if (fight.status !== 'active') { void finish(fight, run); return; }
       pendingFrame = requestAnimationFrame(tick);
@@ -544,7 +480,6 @@ const ForgeDuel = (() => {
       if (!modal.open || !active) return;
       paused = true;
       cancelAnimationFrame(pendingFrame);
-      resetMovement();
       showOverlay('잿불의 파수꾼', '잠시 멈춤', '준비되면 전투를 이어가세요.', '계속하기');
     }
 
@@ -556,11 +491,11 @@ const ForgeDuel = (() => {
       modal.showModal();
       onToggle(true);
       layout();
-      const keysHelp = matchMedia('(pointer: fine)').matches ? '\nWASD/방향키 이동 · J 공격 · K 강공격 · Space 회피 · L 패링' : '';
+      const keysHelp = matchMedia('(pointer: fine)').matches ? '\nSpace 회피 · J 공격' : '';
       const rewards = Forge.duelRewards(state);
       const best = rewards.bestMs;
       showOverlay('권장 강화 +100', '잿불의 파수꾼',
-        '붉은 범위를 피하고 빈틈에 접근해 검을 휘두르세요.' + (best ? '\n내 최고 기록 ' + seconds(best) : '') + keysHelp, '전투 시작');
+        '붉은 예고에 회피, 빈틈이 보이면 공격! 내 검이 다가가 베어요.' + (best ? '\n내 최고 기록 ' + seconds(best) : '') + keysHelp, '전투 시작');
       showRewardGuide(rewards, true);
     };
 
@@ -572,7 +507,6 @@ const ForgeDuel = (() => {
         equip();
         run++;
       }
-      resetMovement();
       paused = false;
       active = true;
       overlay.hidden = true;
@@ -597,13 +531,11 @@ const ForgeDuel = (() => {
       cancelAnimationFrame(pendingFrame);
       active = paused = false;
       run++;
-      resetMovement();
       onToggle(false);
       $('open-duel').focus({ preventScroll: true });
     });
     document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
     window.addEventListener('pagehide', pause);
-    window.addEventListener('blur', resetMovement);
 
     for (const button of buttons) {
       const kind = button.id.slice(5);
@@ -629,16 +561,11 @@ const ForgeDuel = (() => {
     }
     document.addEventListener('keydown', event => {
       if (!active || !modal.open || event.altKey || event.metaKey || event.ctrlKey) return;
-      if (moveKeys[event.code]) {
-        event.preventDefault();
-        keys.add(event.code);
-      }
       const action = actionKeys[event.code];
       if (!action || (event.code === 'Space' && event.target instanceof HTMLButtonElement)) return;
       event.preventDefault();
       if (!event.repeat) act(action);
     });
-    document.addEventListener('keyup', event => keys.delete(event.code));
   }
 
   return { mount };

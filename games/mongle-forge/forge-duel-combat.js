@@ -3,14 +3,12 @@
 const ForgeDuelCombat = (() => {
   const HP = 240000;
   const LIMIT = 165000;
+  const DODGE_WINDOW = 430;
+  const DODGE_TIME = 200;
   const bounds = [7, 93];
   const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
-  const direction = (x, y) => {
-    const d = Math.hypot(x, y);
-    return d > 1 ? { x: x / d, y: y / d } : { x, y };
-  };
   const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
-  const reach = heavy => heavy ? 24 : 19;
+  const reach = 19;
   const toward = (a, b) => Math.atan2(b.y - a.y, b.x - a.x);
   const circle = (x, y, r) => ({ type: 'circle', x, y, r });
   const names = ['불씨', '용광로', '최후의 불꽃'];
@@ -44,13 +42,13 @@ const ForgeDuelCombat = (() => {
     const power = Math.round((45 + 1660 * quality) * (1 + engraving) * (magic ? 1.09 + .025 * magic.tier : 1));
     return {
       time: 0, status: 'active', phase: 1,
-      player: { x: 50, y: 78, hp: 100, maxHp: 100, stamina: 100, fx: 0, fy: -1 },
+      player: { x: 50, y: 78, hp: 100, maxHp: 100, fx: 0 },
       boss: { x: 50, y: 35, hp: HP, maxHp: HP },
-      effects, magic, count, power, attacks: 0, hits: 0, parries: 0, damageTaken: 0,
+      effects, magic, count, power, attacks: 0, hits: 0, evades: 0, damageTaken: 0,
       attack: null, nextAt: 1250, recoverUntil: 0, nextPattern: 0,
       zones: [], shots: [], events: [], eventId: 0,
-      lockUntil: 0, immunityUntil: 0, parryUntil: 0, exposedUntil: 0,
-      parryReadyAt: 0, dodgeReadyAt: 0, staminaAt: 0, dash: null, swing: null,
+      lockUntil: 0, immunityUntil: 0, exposedUntil: 0, stunUntil: 0,
+      dodgeReadyAt: 0, dash: null, swing: null, evasion: null,
       burn: null, chillUntil: 0, chillReadyAt: 0,
     };
   }
@@ -60,46 +58,56 @@ const ForgeDuelCombat = (() => {
     if (f.events.length > 32) f.events.shift();
   }
 
-  function spend(f, cost) {
-    if (f.player.stamina < cost) return false;
-    f.player.stamina -= cost;
-    f.staminaAt = f.time + 430;
-    return true;
-  }
-
   function ready(f, kind) {
-    if (f.status !== 'active' || f.time < f.lockUntil) return false;
-    if (kind === 'attack') return f.player.stamina >= 6;
-    if (kind === 'heavy') return f.player.stamina >= 23;
-    if (kind === 'dodge') return f.player.stamina >= 17 && f.time >= f.dodgeReadyAt;
-    return kind === 'parry' && f.player.stamina >= 13 && f.time >= f.parryReadyAt;
+    if (f.status !== 'active' || f.time < f.stunUntil) return false;
+    if (kind === 'attack') return f.time >= f.lockUntil;
+    return kind === 'dodge' && f.time >= f.dodgeReadyAt;
   }
 
-  function act(f, kind, input = { x: 0, y: 0 }) {
+  function dodgeCue(f) {
+    return !!f.attack && f.attack.at - f.time <= DODGE_WINDOW &&
+      f.attack.shapes.some(shape => contains(shape, f.player));
+  }
+
+  function dodgeDestination(f) {
+    const p = f.player;
+    const danger = [...(f.attack?.shapes ?? []), ...f.zones.map(zone => zone.shape)];
+    const startingAngle = toward(f.boss, p);
+    let best = null;
+    let bestScore = Infinity;
+    for (let index = 0; index < 16; index++) {
+      const angle = startingAngle + index * Math.PI / 8;
+      const point = { x: clamp(p.x + Math.cos(angle) * 25, ...bounds), y: clamp(p.y + Math.sin(angle) * 25, ...bounds) };
+      const covered = danger.filter(shape => contains(shape, point)).length;
+      const shots = f.shots.filter(shot => distance(shot, point) < 7).length;
+      const toBoss = distance(f.boss, point);
+      const score = 100 * covered + 80 * shots + Math.abs(toBoss - 30) + (distance(p, point) < 8 ? 35 : 0);
+      if (score < bestScore) {
+        best = point;
+        bestScore = score;
+      }
+    }
+    return best;
+  }
+
+  function act(f, kind) {
     if (!ready(f, kind)) return false;
     const p = f.player;
-    if (kind === 'parry') {
-      spend(f, 13);
-      f.parryUntil = f.time + 215;
-      f.lockUntil = f.time + 315;
-      f.parryReadyAt = f.time + 800;
-      emit(f, 'guard', p, '패링 자세');
-    } else if (kind === 'dodge') {
-      spend(f, 17);
-      const move = direction(input.x, input.y);
-      const active = Math.hypot(move.x, move.y) > .1;
-      f.dash = { x: active ? move.x : p.fx, y: active ? move.y : p.fy, until: f.time + 205 };
-      f.immunityUntil = f.time + 205;
-      f.lockUntil = f.time + 250;
-      f.dodgeReadyAt = f.time + 580;
-      emit(f, 'dodge', p, '회피');
+    if (kind === 'dodge') {
+      f.evasion = dodgeCue(f) ? f.attack : null;
+      f.swing = null;
+      f.dash = { fromX: p.x, fromY: p.y, ...dodgeDestination(f), from: f.time, until: f.time + DODGE_TIME };
+      f.immunityUntil = Math.max(f.immunityUntil, f.time + DODGE_TIME);
+      f.lockUntil = f.dash.until;
+      f.dodgeReadyAt = f.time + 550;
+      emit(f, 'dodge', p, '회피 중');
     } else {
-      const heavy = kind === 'heavy';
-      spend(f, heavy ? 23 : 6);
       f.attacks++;
-      f.lockUntil = f.time + (heavy ? 805 : 455) - f.count.storm * 22;
-      f.swing = { heavy, at: f.time + (heavy ? 345 : 120) };
-      emit(f, heavy ? 'windup' : 'swing', p, heavy ? '강공격 준비' : '');
+      const travel = Math.max(0, distance(p, f.boss) - 14);
+      const at = f.time + 155 + travel * 8.5;
+      f.swing = { at };
+      f.lockUntil = at + 270 - f.count.storm * 22;
+      emit(f, 'swing', p, '');
     }
     return true;
   }
@@ -123,18 +131,16 @@ const ForgeDuelCombat = (() => {
   }
 
   function resolveSwing(f) {
-    const { heavy } = f.swing;
     f.swing = null;
     const { player: p, boss: b, count, magic } = f;
-    if (heavy) emit(f, 'swing', p, '');
-    if (distance(p, b) > reach(heavy)) {
+    if (distance(p, b) > reach) {
       emit(f, 'miss', p, '검이 닿지 않음');
       return;
     }
     f.hits++;
     const exposed = f.time < f.exposedUntil;
     const recovering = f.time < f.recoverUntil;
-    let scale = heavy ? 2.65 + .15 * count.solar : 1;
+    let scale = 1.9 + .1 * count.solar;
     if (recovering) scale *= 1.45 + .08 * count.lunar;
     if (exposed) {
       scale *= 1.75;
@@ -143,11 +149,11 @@ const ForgeDuelCombat = (() => {
     const critical = count.astral > 0 && f.hits % 4 === 0;
     if (critical) scale *= 1 + .17 * count.astral;
     const element = magic?.id;
-    if (element === 'void' && (heavy || exposed)) scale *= 1.22 + .035 * magic.tier;
-    damageBoss(f, f.power * scale, exposed ? '패링 반격' : critical ? '별빛 치명타' : heavy ? '강공격' : recovering ? '빈틈 타격' : '', heavy ? 'heavy' : 'hit');
+    if (element === 'void' && (recovering || exposed)) scale *= 1.22 + .035 * magic.tier;
+    damageBoss(f, f.power * scale, exposed ? '회피 반격' : critical ? '별빛 치명타' : recovering ? '빈틈 타격' : '', exposed ? 'heavy' : 'hit');
     if (f.status !== 'active') return;
 
-    if (count.verdant) p.stamina = Math.min(100, p.stamina + count.verdant * 2);
+    if (count.verdant) f.dodgeReadyAt = Math.max(f.time, f.dodgeReadyAt - count.verdant * 32);
     if (count.cinder || element === 'fire') {
       const burn = .055 * count.cinder + (element === 'fire' ? .18 + .025 * magic.tier : 0);
       f.burn = { at: f.burn?.at ?? f.time + 430, until: f.time + 1550, damage: f.power * burn };
@@ -162,34 +168,30 @@ const ForgeDuelCombat = (() => {
     }
   }
 
-  function hurt(f, damage, label, parryable = false) {
+  function hurt(f, damage, label) {
     if (f.time < f.immunityUntil || f.status !== 'active') return false;
     const p = f.player;
-    if (parryable && f.time < f.parryUntil) {
-      f.parryUntil = 0;
-      f.immunityUntil = f.time + 175;
-      f.lockUntil = f.time;
-      f.exposedUntil = f.time + 1800;
-      f.parries++;
-      p.stamina = Math.min(100, p.stamina + 18);
-      if (f.magic?.id === 'radiance') {
-        p.hp = Math.min(p.maxHp, p.hp + 6 + f.magic.tier);
-        emit(f, 'effect', p, '성광 · 회복');
-      }
-      emit(f, 'parry', p, '패링 성공 · 공격으로 반격');
-      return true;
-    }
     const amount = Math.round(damage * (1 + (f.phase - 1) * .07));
     p.hp = Math.max(0, p.hp - amount);
     f.damageTaken += amount;
     f.immunityUntil = f.time + 340;
-    f.lockUntil = f.time + 220;
+    f.stunUntil = f.lockUntil = f.time + 220;
     f.swing = null;
     f.dash = null;
-    f.parryUntil = 0;
+    f.evasion = null;
     emit(f, 'hurt', p, label, amount);
     if (!p.hp) f.status = 'lost';
-    return false;
+    return true;
+  }
+
+  function rewardEvade(f) {
+    f.evades++;
+    f.exposedUntil = f.time + 1800;
+    if (f.magic?.id === 'radiance') {
+      f.player.hp = Math.min(f.player.maxHp, f.player.hp + 6 + f.magic.tier);
+      emit(f, 'effect', f.player, '성광 · 회복');
+    }
+    emit(f, 'evade', f.player, '회피 성공 · 반격 기회');
   }
 
   function telegraph(f, id, followup = false) {
@@ -199,27 +201,27 @@ const ForgeDuelCombat = (() => {
     const shotCount = f.phase === 3 ? 7 : 5;
     const shotAngles = Array.from({ length: shotCount }, (_, i) => angle + (i - (shotCount - 1) / 2) * .235);
     const patterns = {
-      sweep: ['화염 휩쓸기', '옆으로 빠지거나 섬광에 패링', 1050, 31, true, [{ type: 'cone', x: b.x, y: b.y, angle, spread: 2.15, r: 37 }]],
-      crush: ['망치 내려찍기', '찍히기 전에 원 밖으로', 980, 40, true, [circle(p.x, p.y, 14)]],
-      rush: ['용광로 돌진', '돌진 경로 옆으로 회피', 900, 36, true, [line(17, 76)]],
-      magma: ['용암 균열', '붉은 자리를 벗어나고 장판을 피하기', 1130, 25, false, [
+      sweep: ['화염 휩쓸기', '붉은 범위가 빛날 때 회피', 1050, 31, [{ type: 'cone', x: b.x, y: b.y, angle, spread: 2.15, r: 37 }]],
+      crush: ['망치 내려찍기', '찍히기 전에 원 밖으로', 980, 40, [circle(p.x, p.y, 14)]],
+      rush: ['용광로 돌진', '돌진 경로 옆으로 회피', 900, 36, [line(17, 76)]],
+      magma: ['용암 균열', '붉은 자리를 벗어나고 장판을 피하기', 1130, 25, [
         circle(p.x, p.y, 12), circle(clamp(p.x - 18, 12, 88), clamp(p.y + 15, 12, 88), 10),
         circle(clamp(p.x + 18, 12, 88), clamp(p.y - 15, 12, 88), 10),
       ]],
-      volley: ['불씨 산탄', '불씨가 날아갈 경로 사이로 이동', 940, 24, false,
+      volley: ['불씨 산탄', '불씨가 날아갈 경로 사이로 이동', 940, 24,
         shotAngles.map(angle => ({ ...line(3, 105), angle }))],
-      ring: ['용광로 파동', '고리 안쪽이나 바깥쪽으로', 1080, 39, false, [
+      ring: ['용광로 파동', '고리 안쪽이나 바깥쪽으로', 1080, 39, [
         { type: 'ring', x: b.x, y: b.y, inner: 15, r: 44 },
       ]],
       double: ['연속 강타', followup ? '두 번째 강타 · 한 번 더 회피' : '두 번 내려쳐요 · 후속 공격 주의',
-        followup ? 630 : 1020, 32, true, [circle(p.x, p.y, followup ? 15 : 13)]],
-      meteor: ['불꽃 낙하', '붉은 원과 떨어진 자리를 피하기', 1030, 43, false, [
+        followup ? 630 : 1020, 32, [circle(p.x, p.y, followup ? 15 : 13)]],
+      meteor: ['불꽃 낙하', '붉은 원과 떨어진 자리를 피하기', 1030, 43, [
         circle(p.x, p.y, 15), circle(26, 35, 13), circle(73, 64, 13), circle(55, 31, 10),
       ]],
     };
-    const [name, cue, windup, damage, parryable, shapes] = patterns[id];
+    const [name, cue, windup, damage, shapes] = patterns[id];
     const delay = (followup ? windup : windup - (f.phase - 1) * 95) + (f.time < f.chillUntil ? 170 : 0);
-    f.attack = { id, name, cue, at: f.time + delay, damage, parryable, shapes, angle, followup,
+    f.attack = { id, name, cue, at: f.time + delay, damage, shapes, angle, followup,
       shotAngles: id === 'volley' ? shotAngles : [] };
     emit(f, 'warning', b, name);
   }
@@ -228,13 +230,15 @@ const ForgeDuelCombat = (() => {
     const a = f.attack, b = f.boss, p = f.player;
     f.attack = null;
     emit(f, 'impact', a.shapes[0] || b, a.name);
-    const parried = a.id !== 'volley' && a.shapes.some(shape => contains(shape, p)) && hurt(f, a.damage, a.name, a.parryable);
+    const hit = a.id !== 'volley' && a.shapes.some(shape => contains(shape, p)) && hurt(f, a.damage, a.name);
+    if (!hit && f.evasion === a) rewardEvade(f);
+    f.evasion = null;
     if (f.status !== 'active') return;
-    if (a.id === 'double' && !a.followup && !parried) {
+    if (a.id === 'double' && !a.followup) {
       telegraph(f, 'double', true);
       return;
     }
-    if (a.id === 'rush' && !parried) {
+    if (a.id === 'rush') {
       const travel = clamp(distance(b, p), 16, 31);
       b.x = clamp(b.x + Math.cos(a.angle) * travel, ...bounds);
       b.y = clamp(b.y + Math.sin(a.angle) * travel, ...bounds);
@@ -245,23 +249,27 @@ const ForgeDuelCombat = (() => {
     for (const angle of a.shotAngles) {
       f.shots.push({ x: b.x, y: b.y, r: 2.75, dx: Math.cos(angle), dy: Math.sin(angle), until: f.time + 3000, damage: a.damage });
     }
-    f.recoverUntil = f.time + (parried ? 1420 : a.id === 'meteor' ? 1050 : 920 - f.phase * 95);
+    f.recoverUntil = f.time + (a.id === 'meteor' ? 1050 : 1030 - f.phase * 95);
     f.nextAt = f.recoverUntil + 370 - f.phase * 55;
   }
 
-  function move(f, dt, input) {
+  function move(f, dt) {
     const p = f.player, b = f.boss;
-    const dashing = f.dash && f.time < f.dash.until;
-    const vec = dashing ? f.dash : direction(input.x, input.y);
-    if (Math.hypot(vec.x, vec.y) > .05) {
-      if (!dashing) {
-        p.fx = vec.x;
-        p.fy = vec.y;
+    if (f.dash) {
+      const d = f.dash;
+      const ratio = clamp((f.time - d.from) / DODGE_TIME, 0, 1);
+      p.x = d.fromX + (d.x - d.fromX) * ratio;
+      p.y = d.fromY + (d.y - d.fromY) * ratio;
+      if (ratio === 1) f.dash = null;
+    } else if (f.swing) {
+      const distanceToBoss = distance(p, b);
+      if (distanceToBoss > 14) {
+        const fraction = Math.min(distanceToBoss - 14, dt * .13) / distanceToBoss;
+        p.x += (b.x - p.x) * fraction;
+        p.y += (b.y - p.y) * fraction;
       }
-      const speed = dashing ? 84 : f.time < f.lockUntil ? 8 : 31;
-      p.x = clamp(p.x + vec.x * speed * dt / 1000, ...bounds);
-      p.y = clamp(p.y + vec.y * speed * dt / 1000, ...bounds);
     }
+    p.fx = Math.sign(b.x - p.x);
     if (!f.attack && f.time >= f.recoverUntil && distance(b, p) > 16) {
       const angle = toward(b, p);
       const speed = (13 + f.phase * 2) * (f.time < f.chillUntil ? .53 : 1);
@@ -275,7 +283,7 @@ const ForgeDuelCombat = (() => {
     }
   }
 
-  function step(f, ms, input = { x: 0, y: 0 }) {
+  function step(f, ms) {
     if (f.status !== 'active' || !Number.isFinite(ms) || ms <= 0) return;
     // Substeps keep movement and projectile impacts stable across render rates.
     for (let remaining = Math.min(ms, 100); remaining > 0 && f.status === 'active';) {
@@ -287,8 +295,7 @@ const ForgeDuelCombat = (() => {
         emit(f, 'timeout', f.player, '시간 초과 · 용광로 붕괴');
         break;
       }
-      move(f, dt, input);
-      if (f.time > f.staminaAt) f.player.stamina = Math.min(100, f.player.stamina + dt * .031);
+      move(f, dt);
       if (f.attack && f.time >= f.attack.at) impact(f);
       if (f.status !== 'active') break;
       if (f.swing && f.time >= f.swing.at) resolveSwing(f);
@@ -318,5 +325,5 @@ const ForgeDuelCombat = (() => {
     }
   }
 
-  return { create, step, act, ready, reach, contains, names, limit: LIMIT };
+  return { create, step, act, ready, reach, dodgeCue, contains, names, limit: LIMIT };
 })();
