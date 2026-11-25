@@ -93,10 +93,10 @@ export const WEAPONS: Record<string, WeaponDef> = {
     look: 'arrow', color: 0xfff4c2, glow: 0x66e0ff, size: 6,
   },
   dokkaebiBomb: {
-    id: 'dokkaebiBomb', name: '도깨비 폭탄', use: '강하게 밀기', desc: '땅에 두 번 튀고 나서 터집니다. 맞으면 바로 터집니다. 낭떠러지로 밀 때 좋습니다.',
+    id: 'dokkaebiBomb', name: '도깨비 폭탄', use: '강하게 밀기', desc: '땅에 두 번 낮게 튀고 첫 착탄 부근에서 터집니다. 상대에게 맞으면 바로 터지고, 발판 밖으로 밀기 좋습니다.',
     behavior: 'bounce', pattern: 'single',
     radius: 70, carve: 60, rockMul: 0.62, damage: 192, directBonus: 1.15, knockback: 260,
-    bounces: 2, restitution: 0.42, fuse: 4.2,
+    bounces: 2, restitution: 0.28, fuse: 4.2,
     look: 'bomb', color: 0x3d2f5a, glow: 0x9cff6b, size: 8,
   },
   dokkaebiFire: {
@@ -104,7 +104,7 @@ export const WEAPONS: Record<string, WeaponDef> = {
     behavior: 'bounceBurst', pattern: 'single',
     radius: 62, carve: 40, rockMul: 0.62, damage: 150, directBonus: 1.1, knockback: 150,
     bounces: 3, restitution: 0.5, fuse: 5,
-    burstDamage: 75, burstRadius: 58, burstCarve: 16,
+    burstDamage: 82, burstRadius: 65, burstCarve: 16,
     look: 'goblinfire', color: 0x6dff9e, glow: 0x2ee6a6, size: 8,
   },
   bujeok: {
