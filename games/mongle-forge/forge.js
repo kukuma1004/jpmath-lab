@@ -50,14 +50,18 @@
   function loadStored() {
     if (!storageOkay) return { next: state, reset: false };
     try {
-      const previous = localStorage.getItem(Forge.legendsSaveKey) ?? localStorage.getItem(Forge.wardrobeSaveKey) ?? localStorage.getItem(Forge.previousSaveKey) ?? localStorage.getItem(Forge.magicSaveKey) ?? localStorage.getItem(Forge.storageSaveKey) ?? localStorage.getItem(Forge.riskSaveKey) ?? localStorage.getItem(Forge.rainbowSaveKey) ?? localStorage.getItem(Forge.marketSaveKey) ?? localStorage.getItem(Forge.olderSaveKey);
-      const original = localStorage.getItem(Forge.saveKey) ?? previous;
+      const current = localStorage.getItem(Forge.saveKey);
+      const previous = current === null ? localStorage.getItem(Forge.reserveSaveKey) ?? localStorage.getItem(Forge.legendsSaveKey) ?? localStorage.getItem(Forge.wardrobeSaveKey) ?? localStorage.getItem(Forge.previousSaveKey) ?? localStorage.getItem(Forge.magicSaveKey) ?? localStorage.getItem(Forge.storageSaveKey) ?? localStorage.getItem(Forge.riskSaveKey) ?? localStorage.getItem(Forge.rainbowSaveKey) ?? localStorage.getItem(Forge.marketSaveKey) ?? localStorage.getItem(Forge.olderSaveKey) : null;
+      const original = current ?? previous;
       const raw = original ? JSON.parse(original) : null;
       const next = Forge.loadSeason(raw);
       // A delayed autosave must not undo a completed purchase, action or grant.
       if (raw?.season === Forge.seasonId &&
           (['generation', 'attempts', 'shattered', 'protectionUses', 'bestLevel'].some(key => next[key] < state[key]) ||
            Number.isFinite(raw.lastAt) && raw.lastAt < state.lastAt ||
+           next.duel.spentTokens < state.duel.spentTokens ||
+           state.duel.flawless && !next.duel.flawless ||
+           state.duel.bestMs !== null && (next.duel.bestMs === null || state.duel.bestMs < next.duel.bestMs) ||
            Object.keys(state.creditReceipts).some(id => !next.creditReceipts[id]))) {
         return { next: state, reset: false, stale: true };
       }
@@ -112,6 +116,7 @@
     const { enchantment, effects, numerator, denominator, levelTenths, base, value, magic, magicBonus } = Forge.appraisal(state);
     magicVisual?.update(magic);
     stage.dataset.boundMagic = magic?.id ?? 'none';
+    stage.dataset.guardianAura = String(!state.broken && Forge.duelRewards(state).aura);
     stage.style.setProperty('--bound', magic?.color ?? '#d9ba78');
     const boundArt = document.querySelector('.bound-plumes');
     if (magic && boundArt.dataset.magic !== magic.id) { boundArt.src = 'assets/magic-' + magic.id + '-plumes.webp'; boundArt.dataset.magic = magic.id; }
@@ -209,6 +214,7 @@
     const cooling = Date.now() - state.lastAt < Forge.cooldown;
     const special = Forge.enchantPreview(state);
     const protection = Forge.protectionOffer(state);
+    const rewards = Forge.duelRewards(state);
     renderedOffers = { normal: offer, special, protection };
     const happy = Forge.discountInfo();
     $('happy-hours').textContent = happy.active ? '한국시간 할인 중 · 모든 별철 지출 50% · ' + (happy.endHour === 24 ? '자정' : happy.endHour + '시') + '까지' : '별철 50% 할인 · 한국시간 07~08 · 12~14 · 21~24시';
@@ -218,6 +224,16 @@
     $('protection-label').textContent = protection.owned ? level(protection.target) + ' 보호권 적용 중' : state.broken ? '강화 보호권' : level(protection.target) + ' 강화 보호권';
     $('protection-price').textContent = protection.owned ? '보유 1장 · 자동 사용' : protection.eligible ? fmt(protection.cost) + ' 별철' + (protection.discount ? ' · 50%' : '') : state.broken ? '새 검 제작 후 구매' : '확정 성공 단계';
     $('protection-price').title = '원가 ' + fmt(protection.originalCost) + ' 별철';
+    $('duel-entry-rewards').textContent = rewards.flawless ? '◆ 불길을 걷는 자' : rewards.tokens ? '파수꾼의 증표 ' + rewards.tokens + '개 ›' : '보스 도전 · 클리어 보상 ›';
+    $('guardian-exchange').hidden = rewards.bestMs === null;
+    $('guardian-token-count').textContent = '파수꾼의 증표 ' + rewards.tokens + '개';
+    $('guardian-exchange-note').textContent = rewards.tokens === 0 ? '첫 클리어 증표를 모두 썼어요.' :
+      state.broken ? '새 검 제작 후 +101~+110 도전에서 교환할 수 있어요.' :
+      protection.target < 101n || protection.target > 110n ? '+101~+110 도전용 보호권에 쓸 수 있어요.' :
+      protection.owned ? level(protection.target) + ' 보호권을 이미 가지고 있어요.' :
+      '증표 1개 → ' + level(protection.target) + ' 보호권 1장';
+    $('exchange-protection').disabled = !!busy || updatePending || cooling || !protection.exchange;
+    $('exchange-protection').textContent = protection.exchange ? level(protection.target) + ' 보호권 받기' : '보호권 교환';
     $('protection-note').textContent = state.level >= 100n ? '현재 +100 이상: 실패 시 1강 하락 · 효과 유지·파괴 방지 · 실패할 때만 1장 사용' : '실패 시 단계·효과 유지 · 현재 +100부터는 1강 하락 · 파괴 방지 · 성공하면 보관';
     const tickets = Object.keys(state.protections).sort((a, b) => BigInt(a) < BigInt(b) ? -1 : 1);
     $('protection-stock').hidden = tickets.length === 0;
@@ -283,7 +299,7 @@
       item.append(
         node('span', 'history-symbol', entry.kind === 'success' || entry.kind === 'enchant' ? '✦' : entry.kind === 'shatter' ? '✕' : '↻'),
         node('strong', '', entry.magicAwakened ? '고유 마법 발현' : labels[entry.kind]),
-        node('span', 'history-levels', entry.kind === 'reroll' ? entry.slot + '번 · ' + (Forge.enchantments.find(effect => effect.id === entry.replaced)?.name ?? '이전 효과') + ' → ' + (Forge.enchantments.find(effect => effect.id === entry.enchantment)?.name ?? '새 효과') : entry.kind === 'protected' ? entry.to !== undefined && BigInt(entry.to) < from ? level(from) + ' → ' + level(BigInt(entry.to)) : level(from) + ' 유지' : entry.kind === 'protection' ? level(target) + ' 전용 · ' + fmt(BigInt(entry.amount ?? 0)) + ' 별철' : entry.kind === 'sell' ? '+' + fmt(BigInt(entry.amount ?? 0)) + ' 별철' : entry.kind === 'reforge' ? '새 검 +0' : entry.kind === 'enchant' ?
+        node('span', 'history-levels', entry.kind === 'reroll' ? entry.slot + '번 · ' + (Forge.enchantments.find(effect => effect.id === entry.replaced)?.name ?? '이전 효과') + ' → ' + (Forge.enchantments.find(effect => effect.id === entry.enchantment)?.name ?? '새 효과') : entry.kind === 'protected' ? entry.to !== undefined && BigInt(entry.to) < from ? level(from) + ' → ' + level(BigInt(entry.to)) : level(from) + ' 유지' : entry.kind === 'protection' ? level(target) + ' 전용 · ' + (entry.tokenUsed ? '파수꾼의 증표 1개' : fmt(BigInt(entry.amount ?? 0)) + ' 별철') : entry.kind === 'sell' ? '+' + fmt(BigInt(entry.amount ?? 0)) + ' 별철' : entry.kind === 'reforge' ? '새 검 +0' : entry.kind === 'enchant' ?
           (Forge.enchantments.find(effect => effect.id === entry.enchantment)?.name ?? '효과 추가') : entry.kind === 'enchant-fail' ? level(from) + ' · 효과 유지' :
           level(from) + ' → ' + (entry.kind === 'success' ? level(target) : entry.kind === 'shatter' ?
             '파괴' + (entry.lostEffects ? ' · 효과 ' + entry.lostEffects + '개 소멸' : '') : '+0')),
@@ -357,7 +373,7 @@
       copy = (dropped ? '현재 +100 이상에서는 보호권을 써도 1강 하락해요. 효과는 그대로예요.' : '보호권 1장으로 초기화와 파괴를 막았어요. 효과도 그대로예요.') + ' 재도전 보정 +' + percent(Forge.recoveryBonus).replace('%', '%p');
     } else if (event.kind === 'protection') {
       title = level(target) + ' 도전 보호권 구매 완료';
-      copy = fmt(BigInt(event.amount)) + ' 별철 사용 · 실패할 때만 자동으로 한 장을 사용해요.';
+      copy = (event.tokenUsed ? '파수꾼의 증표 1개 사용' : fmt(BigInt(event.amount)) + ' 별철 사용') + ' · 실패할 때만 자동으로 한 장을 사용해요.';
     } else if (event.kind === 'sell') {
       title = '무기 판매 · +' + fmt(BigInt(event.amount)) + ' 별철';
       copy = '감정가의 10%를 받았어요. 새 검을 제작해 다시 시작할 수 있어요.';
@@ -404,7 +420,15 @@
     try {
       if (!await updater.check()) return;
       if (guard && !guard()) return;
-      event = await transaction(next => guard && !guard() ? null : action === 'special' ? specialOffer.reroll ? Forge.reroll(next, Date.now(), Math.random, specialOffer.token) : Forge.enchant(next, Date.now(), Math.random, specialOffer.token) : action === 'protection' ? Forge.buyProtection(next, Date.now(), displayed.protection.token) : action === 'sell' ? Forge.sell(next, Date.now(), saleToken) : Forge.act(next, Date.now(), Math.random, displayed.normal.token));
+      event = await transaction(next => {
+        if (guard && !guard()) return null;
+        const now = Date.now();
+        if (action === 'special') return specialOffer.reroll ? Forge.reroll(next, now, Math.random, specialOffer.token) : Forge.enchant(next, now, Math.random, specialOffer.token);
+        if (action === 'exchange') return Forge.buyProtection(next, now, displayed.protection.exchangeToken, true);
+        if (action === 'protection') return Forge.buyProtection(next, now, displayed.protection.token);
+        if (action === 'sell') return Forge.sell(next, now, saleToken);
+        return Forge.act(next, now, Math.random, displayed.normal.token);
+      });
       if (event) showOutcome(event, !['protection', 'sell'].includes(event.kind));
       else if (action !== 'sell') $('waiting').textContent = '비용이나 무기 상태가 바뀌었어요. 표시를 확인하고 다시 눌러 주세요.';
       if (action === 'sell') {
@@ -428,7 +452,7 @@
     tapStart = null;
     if (event.touches.length !== 1) return;
     const touch = event.touches[0];
-    for (const control of [button, specialButton, $('buy-protection'), $('open-sale')]) {
+    for (const control of [button, specialButton, $('buy-protection'), $('exchange-protection'), $('open-sale')]) {
       const bounds = control.getBoundingClientRect();
       if (touch.clientX >= bounds.left && touch.clientX <= bounds.right &&
           touch.clientY >= bounds.top && touch.clientY <= bounds.bottom) {
@@ -460,6 +484,7 @@
   button.addEventListener('click', () => attempt());
   specialButton.addEventListener('click', () => attempt('special'));
   $('buy-protection').addEventListener('click', () => attempt('protection'));
+  $('exchange-protection').addEventListener('click', () => attempt('exchange'));
   $('open-sale').addEventListener('click', () => {
     const offer = Forge.saleOffer(state);
     saleToken = offer.token;
@@ -535,14 +560,31 @@
     beforePublish: () => updater.check(),
   });
   ForgeDuel.mount({ getState: () => state, asset, fmt, canEnter: () => !busy && !updatePending,
-    onToggle: open => magicVisual?.pause(open) });
+    onToggle: open => magicVisual?.pause(open),
+    onVictory: async result => {
+      const award = await transaction(next => Forge.recordDuelVictory(next, result));
+      return award && { ...award, saved: storageOkay };
+    },
+    onExchangeGuide: () => {
+      const exchange = $('guardian-exchange');
+      exchange.focus({ preventScroll: true });
+      exchange.scrollIntoView({ block: 'center' });
+    },
+  });
   wardrobe = ForgeWardrobe.mount({ getState: () => state, asset, fmt,
     select: async choice => {
       if (updatePending || !await updater.check()) return false;
       return transaction(next => !updatePending && Forge.selectAppearance(next, choice));
     },
   });
-  transaction(next => { if (next.rankingBest) Forge.rememberWeapon(next); }).then(() => {
+  transaction(next => {
+    if (next.rankingBest) Forge.rememberWeapon(next);
+    if (next.duel.bestMs === null) {
+      try {
+        Forge.recordDuelVictory(next, { ms: Number(localStorage.getItem(Forge.duelRecordKey)) });
+      } catch {}
+    }
+  }).then(() => {
     automatic = ForgeAuto.mount({ getState: () => state, step: action => attempt(action, () => automatic?.active()), canAct: () => !busy && !updatePending && !duelOpen(), fmt });
   });
 })();

@@ -1,6 +1,5 @@
 const ForgeDuel = (() => {
   'use strict';
-  const recordKey = 'mongle-forge-duel-manual-v1';
   const number = new Intl.NumberFormat('ko-KR');
   const seconds = ms => (ms / 1000).toFixed(1) + '초';
   const emptyMove = { x: 0, y: 0 };
@@ -13,26 +12,7 @@ const ForgeDuel = (() => {
   const feedbackEvents = new Set(['guard', 'dodge', 'miss', 'hit', 'heavy', 'hurt', 'parry', 'windup', 'effect', 'phase']);
   const effectColors = { cinder: '#ffad72', solar: '#ffdb79', astral: '#c7dfff', verdant: '#b9ef96', frost: '#a7efff', storm: '#bad5ff', lunar: '#e6b5ff' };
 
-  function readBest() {
-    try {
-      const time = Number(localStorage.getItem(recordKey));
-      return Number.isSafeInteger(time) && time > 0 ? time : null;
-    } catch { return null; }
-  }
-
-  async function saveBest(ms) {
-    const write = () => {
-      const best = Math.min(ms, readBest() ?? ms);
-      localStorage.setItem(recordKey, String(best));
-      return readBest() === best ? best : null;
-    };
-    try {
-      if (navigator.locks) return await navigator.locks.request(recordKey, write);
-      return write();
-    } catch { return null; }
-  }
-
-  function mount({ getState, asset, fmt, canEnter, onToggle }) {
+  function mount({ getState, asset, fmt, canEnter, onToggle, onVictory, onExchangeGuide }) {
     const $ = id => document.getElementById(id);
     const modal = $('boss-duel');
     const overlay = modal.querySelector('.duel-overlay');
@@ -460,6 +440,7 @@ const ForgeDuel = (() => {
       $('duel-magic-art').hidden = !bound;
       if (bound) $('duel-magic-art').src = 'assets/magic-' + bound.id + '-plumes.webp';
       modal.dataset.magic = bound?.id || 'none';
+      modal.dataset.guardianAura = String(Forge.duelRewards(state).aura);
       modal.style.setProperty('--magic-color', bound?.color || '#ffd475');
       const weapon = $('duel-weapon');
       weapon.textContent = '+' + fmt(state.level) + ' ' + app.name;
@@ -497,6 +478,9 @@ const ForgeDuel = (() => {
       active = false;
       pauseButton.disabled = true;
       controls.inert = true;
+      $('duel-reward-guide').hidden = true;
+      $('duel-token-guide').hidden = true;
+      $('duel-exchange-guide').hidden = true;
       $('duel-chapter').textContent = chapter;
       $('duel-result').textContent = title;
       $('duel-detail').textContent = detail;
@@ -505,20 +489,44 @@ const ForgeDuel = (() => {
       start.focus({ preventScroll: true });
     }
 
+    function showRewardGuide(rewards, linkToExchange = false) {
+      $('duel-reward-guide').hidden = false;
+      $('duel-token-guide').hidden = false;
+      $('duel-exchange-guide').hidden = !linkToExchange || !rewards.tokens;
+      const rules = [
+        ['duel-token-reward', rewards.bestMs !== null, rewards.bestMs === null ? '파수꾼의 증표 ×3' : '받음 · 증표 ' + rewards.tokens + '개 보유'],
+        ['duel-title-reward', rewards.flawless, (rewards.flawless ? '획득 · ' : '칭호 · ') + '불길을 걷는 자'],
+        ['duel-aura-reward', rewards.aura, (rewards.aura ? '획득 · ' : '검 이펙트 · ') + '황혼의 검륜'],
+      ];
+      for (const [id, earned, text] of rules) {
+        $(id).parentElement.dataset.earned = String(earned);
+        $(id).textContent = text;
+      }
+    }
+
     async function finish(f, runId) {
       active = false;
       resetMovement();
       const won = f.status === 'won', ms = Math.max(1, Math.round(f.time));
-      const old = readBest();
       showOverlay('잿불의 파수꾼', won ? '시련 돌파' : '파수꾼의 승리',
-        won ? '돌파 ' + seconds(ms) : f.time >= ForgeDuelCombat.limit ? '제한 시간 안에 파수꾼을 쓰러뜨려야 해요.' :
+        won ? '돌파 ' + seconds(ms) + ' · 보상 확인 중…' : f.time >= ForgeDuelCombat.limit ? '제한 시간 안에 파수꾼을 쓰러뜨려야 해요.' :
           '공격 예고를 읽고 빈틈에 접근하세요.', '다시 도전');
       if (!won) return;
-      const saved = await saveBest(ms);
+      const award = await onVictory({ ms, damageTaken: f.damageTaken }).catch(() => null);
       if (runId !== run || !modal.open) return;
-      $('duel-result').textContent = saved && (!old || ms < old) ? '새 기록!' : '시련 돌파';
-      $('duel-detail').textContent = '돌파 ' + seconds(ms) +
-        (saved ? ' · 내 최고 ' + seconds(saved) : ' · 이 기기에 기록을 저장하지 못했어요.');
+      if (!award?.saved) {
+        $('duel-detail').textContent = '돌파 ' + seconds(ms) + '\n이 기기에 기록과 보상을 저장하지 못했어요.';
+        return;
+      }
+      $('duel-result').textContent = award.earnedTokens ? '첫 승리!' : award.newBest ? '새 기록!' : '시련 돌파';
+      const earned = [];
+      if (award.earnedTokens) earned.push('파수꾼의 증표 +' + award.earnedTokens);
+      if (award.newTitle) earned.push('칭호 획득');
+      if (award.newAura) earned.push('검 이펙트 획득');
+      $('duel-detail').textContent = '돌파 ' + seconds(ms) + ' · 내 최고 ' + seconds(award.bestMs) +
+        (earned.length ? '\n' + earned.join(' · ') : '');
+      modal.dataset.guardianAura = String(award.aura);
+      showRewardGuide(award, true);
     }
 
     function tick(now) {
@@ -549,9 +557,11 @@ const ForgeDuel = (() => {
       onToggle(true);
       layout();
       const keysHelp = matchMedia('(pointer: fine)').matches ? '\nWASD/방향키 이동 · J 공격 · K 강공격 · Space 회피 · L 패링' : '';
-      const best = readBest();
+      const rewards = Forge.duelRewards(state);
+      const best = rewards.bestMs;
       showOverlay('권장 강화 +100', '잿불의 파수꾼',
         '붉은 범위를 피하고 빈틈에 접근해 검을 휘두르세요.' + (best ? '\n내 최고 기록 ' + seconds(best) : '') + keysHelp, '전투 시작');
+      showRewardGuide(rewards, true);
     };
 
     start.onclick = () => {
@@ -575,6 +585,10 @@ const ForgeDuel = (() => {
     };
 
     pauseButton.onclick = pause;
+    $('duel-exchange-guide').onclick = () => {
+      modal.addEventListener('close', onExchangeGuide, { once: true });
+      modal.close();
+    };
     $('duel-return').onclick = $('duel-exit').onclick = () => modal.close();
     modal.addEventListener('cancel', event => {
       if (active) { event.preventDefault(); pause(); }

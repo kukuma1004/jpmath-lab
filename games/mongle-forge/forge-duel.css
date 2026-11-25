@@ -423,3 +423,91 @@
   .duel-hp i { transition: width 140ms ease-out; }
   .duel-enemy img, .duel-blade-body { transition: rotate 110ms ease-out, filter 85ms; }
 }
+
+/* Clear rewards in the trial guide and beside the protection shop. */
+.duel-overlay { overflow: auto; }
+.duel-overlay > div { max-height: calc(100dvh - 62px); overflow: auto; }
+.duel-reward-guide {
+  display: grid;
+  gap: 4px;
+  margin: 1px 0;
+  font: 700 12px / 1.4 system-ui, sans-serif;
+  text-align: left;
+}
+.duel-reward-guide > div {
+  display: grid;
+  grid-template-columns: minmax(60px, auto) 1fr;
+  gap: 7px;
+  padding: 5px 7px;
+  border: 1px solid #aa773d54;
+  border-radius: 6px;
+  background: #fff6dcaa;
+}
+.duel-reward-guide dt { color: #74401a; white-space: nowrap; }
+.duel-reward-guide dd { margin: 0; }
+.duel-reward-guide [data-earned="true"] { background: #d9edcf; border-color: #63874f70; }
+#duel-token-guide { color: #68401d; font-size: 11px; line-height: 1.4; }
+.duel-overlay #duel-exchange-guide {
+  border: 1px solid #956128;
+  background: #f3d994;
+  color: #4d2b14;
+  font-size: 13px;
+  padding: 6px;
+}
+.guardian-exchange {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0 8px;
+  padding: 8px;
+  color: #49270f;
+  background: #fff1c5;
+  border: 1px solid #ba873e;
+  border-radius: 7px;
+  scroll-margin-top: 8px;
+}
+.guardian-exchange strong { font-size: 12px; }
+.guardian-exchange p { color: #6a4a26; font-size: 11px; line-height: 1.4; }
+.guardian-exchange button {
+  min-height: 38px;
+  padding: 5px 7px;
+  color: #fff4d8;
+  background: #674018;
+  border: 1px solid #927030;
+  border-radius: 6px;
+  font-weight: 750;
+  font-size: 11px;
+  touch-action: manipulation;
+}
+.guardian-exchange button:disabled { color: #6d5532; background: #eee1ba; }
+.guardian-aura {
+  display: none;
+  pointer-events: none;
+  position: absolute;
+  inset: 11% 15%;
+  transform: rotate(-32deg) scaleY(.55);
+  border: 1px solid #f5b65b;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, transparent 59%, #e4f5ff1a 66%, transparent 74%);
+  box-shadow: 0 0 14px #ffad5a99, inset 0 0 12px #9cfaff55;
+  color: #ffdf9e;
+  font-size: clamp(13px, 2.5vw, 26px);
+}
+[data-guardian-aura="true"] .guardian-aura { display: block; }
+.guardian-aura::before, .guardian-aura::after {
+  position: absolute;
+  content: '✦';
+  line-height: 1;
+  text-shadow: 0 0 8px currentColor;
+}
+.guardian-aura::before { left: 9%; top: 5%; }
+.guardian-aura::after { right: 9%; bottom: 5%; color: #affcff; }
+.duel-blade .guardian-aura { inset: 16% 8%; font-size: 16px; opacity: .8; }
+@keyframes guardian-glint {
+  0%, 100% { opacity: .7; }
+  50% { opacity: 1; box-shadow: 0 0 24px #ffad5abb, inset 0 0 16px #9cfaff88; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  [data-guardian-aura="true"] .guardian-aura { animation: guardian-glint 2.8s ease-in-out infinite; }
+}

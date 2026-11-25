@@ -1,7 +1,7 @@
 'use strict';
 
 const Forge = (() => {
-  const clientRevision = 2026112501;
+  const clientRevision = 2026112502;
   const rankingProtocol = 'forge-current-1';
   const legacySaveKey = 'jp-math-lab:mongle-forge:v1';
   const backupKey = legacySaveKey + ':before-infinite';
@@ -18,7 +18,11 @@ const Forge = (() => {
   const previousSaveKey = olderSaveKey + ':credits-1';
   const wardrobeSaveKey = olderSaveKey + ':wardrobe-1';
   const legendsSaveKey = olderSaveKey + ':legends-1';
-  const saveKey = olderSaveKey + ':reserve-1';
+  const reserveSaveKey = olderSaveKey + ':reserve-1';
+  const saveKey = olderSaveKey + ':trial-1';
+  const duelRecordKey = 'mongle-forge-duel-manual-v1';
+  const duelSpeedTarget = 30000;
+  const duelTokenAward = 3;
   const creditIdPattern = /^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$/;
   const startingShards = 10000n;
   const cooldown = 680;
@@ -324,6 +328,7 @@ const Forge = (() => {
       ...(entry.kind === 'shatter' && Number.isInteger(entry.lostEffects) && entry.lostEffects >= 0 && entry.lostEffects <= enchantmentLimit ? { lostEffects: entry.lostEffects } : {}),
       ...(['protection', 'sell'].includes(entry.kind) && /^\d+$/.test(String(entry.amount)) ? { amount: String(entry.amount) } : {}),
       ...(entry.kind === 'protected' && /^\d+$/.test(String(entry.to)) ? { to: String(entry.to) } : {}),
+      ...(entry.kind === 'protection' && entry.tokenUsed === true ? { tokenUsed: true } : {}),
       ...(magics.some(magic => magic.id === entry.magicAwakened) ? { magicAwakened: entry.magicAwakened } : {}),
     })) : [];
     const protections = {};
@@ -350,6 +355,7 @@ const Forge = (() => {
       broken,
       sold: broken && old.sold === true,
       generation: natural(old.generation),
+      duel: normalizeDuel(old.duel),
       protections,
       protectionUses: natural(old.protectionUses, BigInt(history.filter(entry => entry.kind === 'protected').length)),
       rankingBest: normalizeSnapshot(old.rankingBest),
@@ -380,6 +386,45 @@ const Forge = (() => {
 
   function loadSeason(raw, now = Date.now(), random = Math.random) {
     return restore(raw?.season === seasonId ? raw : null, now, random);
+  }
+
+  function validDuelTime(ms) {
+    return Number.isSafeInteger(ms) && ms > 0 && ms < 165000;
+  }
+
+  function normalizeDuel(raw) {
+    if (!validDuelTime(raw?.bestMs)) return { bestMs: null, spentTokens: 0, flawless: false };
+    return {
+      bestMs: raw.bestMs,
+      spentTokens: Number.isInteger(raw.spentTokens) ? Math.max(0, Math.min(duelTokenAward, raw.spentTokens)) : 0,
+      flawless: raw.flawless === true,
+    };
+  }
+
+  function duelRewards(state) {
+    const { bestMs, spentTokens, flawless } = state.duel;
+    return {
+      bestMs,
+      tokens: bestMs === null ? 0 : duelTokenAward - spentTokens,
+      flawless,
+      aura: bestMs !== null && bestMs <= duelSpeedTarget,
+    };
+  }
+
+  function recordDuelVictory(state, { ms, damageTaken }) {
+    if (!validDuelTime(ms)) return null;
+    const before = duelRewards(state);
+    const newBest = before.bestMs === null || ms < before.bestMs;
+    if (newBest) state.duel.bestMs = ms;
+    if (damageTaken === 0) state.duel.flawless = true;
+    const rewards = duelRewards(state);
+    return {
+      newBest,
+      ...rewards,
+      earnedTokens: before.bestMs === null ? duelTokenAward : 0,
+      newTitle: !before.flawless && rewards.flawless,
+      newAura: !before.aura && rewards.aura,
+    };
   }
 
   function rankingName(value, limit) {
@@ -726,17 +771,26 @@ const Forge = (() => {
   function protectionOffer(state, now = Date.now()) {
     const offer = preview(state, now);
     const quote = priceQuote(offer.target ? 1000n + offer.target ** 2n * 100n + cost(offer.target) * 8n : 0n, now);
-    return { target: offer.target, ...quote, token: state.generation + ':' + offer.target + ':' + quote.cost,
-      owned: state.protections[offer.target.toString()] === true, eligible: !state.broken && offer.success < 10000 };
+    const owned = state.protections[offer.target.toString()] === true;
+    const eligible = !state.broken && offer.success < 10000;
+    const exchange = eligible && !owned && offer.target >= 101n && offer.target <= 110n && duelRewards(state).tokens > 0;
+    return { target: offer.target, ...quote, token: state.generation + ':' + offer.target + ':' + quote.cost, owned, eligible, exchange,
+      exchangeToken: exchange ? state.generation + ':' + offer.target + ':guardian:' + state.duel.spentTokens : null };
   }
 
-  function buyProtection(state, now = Date.now(), expectedToken) {
+  function buyProtection(state, now = Date.now(), expectedToken, useGuardianToken = false) {
     const offer = protectionOffer(state, now);
-    if (!offer.eligible || offer.owned || state.shards < offer.cost || now - state.lastAt < cooldown || expectedToken !== undefined && expectedToken !== offer.token) return null;
+    if (!offer.eligible || offer.owned || now - state.lastAt < cooldown) return null;
+    const token = useGuardianToken ? offer.exchangeToken : offer.token;
+    if (expectedToken !== undefined && expectedToken !== token) return null;
+    if (useGuardianToken ? !offer.exchange : state.shards < offer.cost) return null;
+    const paid = useGuardianToken ? 0n : offer.cost;
     state.protections[offer.target.toString()] = true;
-    state.shards -= offer.cost;
+    state.shards -= paid;
+    if (useGuardianToken) state.duel.spentTokens++;
     state.lastAt = now;
-    const event = { kind: 'protection', from: state.level.toString(), target: offer.target.toString(), at: now, amount: offer.cost.toString() };
+    const event = { kind: 'protection', from: state.level.toString(), target: offer.target.toString(), at: now, amount: paid.toString(),
+      ...(useGuardianToken && { tokenUsed: true }) };
     state.history.unshift(event); state.history.length = Math.min(state.history.length, 12);
     return event;
   }
@@ -759,7 +813,7 @@ const Forge = (() => {
     return event;
   }
 
-  return { clientRevision, rankingProtocol, rankingBoard, rankingProfileKey, saveKey, legendsSaveKey, wardrobeSaveKey, previousSaveKey, magicSaveKey, storageSaveKey, riskSaveKey, rainbowSaveKey, marketSaveKey, olderSaveKey, legacySaveKey, backupKey, seasonId, startingShards, cooldown, recoveryBonus, offlineLimit, enchantmentLimit, forms, enchantments, magics, magicAt, appraisal, restore, loadSeason, serialize, rankingName, rankingRecord, weaponSnapshot, sameWeaponRecord, applyAdminGrant, rememberWeapon, formAt, appearanceAt, selectAppearance, cost, incomeBreakdown, discountInfo, passiveCapacity, baseIncome, income, rankReward, setRankBonus, preview, protectionOffer, buyProtection, saleOffer, sell, enchantPreview, collectPassive, act, enchant, reroll };
+  return { clientRevision, rankingProtocol, rankingBoard, rankingProfileKey, saveKey, reserveSaveKey, duelRecordKey, duelRewards, recordDuelVictory, legendsSaveKey, wardrobeSaveKey, previousSaveKey, magicSaveKey, storageSaveKey, riskSaveKey, rainbowSaveKey, marketSaveKey, olderSaveKey, legacySaveKey, backupKey, seasonId, startingShards, cooldown, recoveryBonus, offlineLimit, enchantmentLimit, forms, enchantments, magics, magicAt, appraisal, restore, loadSeason, serialize, rankingName, rankingRecord, weaponSnapshot, sameWeaponRecord, applyAdminGrant, rememberWeapon, formAt, appearanceAt, selectAppearance, cost, incomeBreakdown, discountInfo, passiveCapacity, baseIncome, income, rankReward, setRankBonus, preview, protectionOffer, buyProtection, saleOffer, sell, enchantPreview, collectPassive, act, enchant, reroll };
 })();
 
 if (typeof module !== 'undefined') module.exports = Forge;

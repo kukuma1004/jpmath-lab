@@ -10,16 +10,16 @@
   <link rel="stylesheet" href="forge.css?v=forge-duel-1">
   <link rel="stylesheet" href="forge-magic.css?v=forge-duel-1">
   <link rel="stylesheet" href="forge-wardrobe.css?v=forge-duel-1">
-  <script src="forge-engine.js?v=forge-duel-2" defer></script>
+  <script src="forge-engine.js?v=forge-trial-1" defer></script>
   <script src="forge-ranking.js?v=forge-duel-1" defer></script>
   <script src="forge-update.js?v=forge-duel-1" defer></script>
   <script src="forge-magic.js?v=forge-duel-1" defer></script>
   <script src="forge-auto.js?v=forge-duel-1" defer></script>
   <script src="forge-wardrobe.js?v=forge-duel-1" defer></script>
-  <link rel="stylesheet" href="forge-duel.css?v=forge-duel-2">
+  <link rel="stylesheet" href="forge-duel.css?v=forge-trial-1">
   <script src="forge-duel-combat.js?v=forge-duel-2" defer></script>
-  <script src="forge-duel.js?v=forge-duel-2" defer></script>
-  <script src="forge.js?v=forge-duel-1" defer></script>
+  <script src="forge-duel.js?v=forge-trial-1" defer></script>
+  <script src="forge.js?v=forge-trial-1" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#strengthen">강화 버튼으로 바로가기</a>
@@ -35,7 +35,7 @@
       <div class="record"><span>최고 기록</span><strong id="best">+0</strong><span class="record-mark" aria-hidden="true">✦</span></div>
     </header>
 
-    <button type="button" id="open-duel" aria-haspopup="dialog"><span>⚔ 시련의 문</span><b>보스와 대결 ›</b></button>
+    <button type="button" id="open-duel" aria-haspopup="dialog"><span>⚔ 시련의 문</span><b id="duel-entry-rewards">보스 도전 · 클리어 보상 ›</b></button>
     <div class="forge-layout">
       <section class="weapon-stage" id="weapon-stage" aria-label="지금 벼리는 검">
         <div class="stage-filigree" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
@@ -48,6 +48,7 @@
         <div class="weapon-wrap" id="weapon-wrap">
           <img id="weapon" src="assets/sword-0.webp" alt="연습용 나무검" width="360" height="360" fetchpriority="high">
           <img class="bound-plumes" src="assets/magic-fire-plumes.webp" alt="" aria-hidden="true" width="360" height="360">
+          <span class="guardian-aura" aria-hidden="true"></span>
         </div>
         <div class="sold-stage" id="sold-stage" hidden><span aria-hidden="true">◇</span><strong>무기 판매 완료</strong><p>새 검을 제작해 다시 벼려 보세요.</p></div>
         <div class="technique-fx" id="technique-fx" aria-hidden="true"></div>
@@ -89,6 +90,10 @@
         <div class="forge-market"><button type="button" id="buy-protection" class="market-button"><span id="protection-label">강화 보호권</span><strong id="protection-price"></strong></button><button type="button" id="open-sale" class="market-button sale-button"><span>무기 판매 · 감정가 10%</span><strong id="sale-price"></strong></button></div>
         <p class="market-note" id="protection-note"></p>
         <p class="market-note" id="protection-stock" hidden></p>
+        <section id="guardian-exchange" class="guardian-exchange" aria-labelledby="guardian-token-count" tabindex="-1" hidden>
+          <div><strong id="guardian-token-count"></strong><p id="guardian-exchange-note"></p></div>
+          <button type="button" id="exchange-protection" aria-describedby="guardian-exchange-note">보호권 교환</button>
+        </section>
         <div class="auto-ranking"><button type="button" id="auto-ranking-name">자동 등록 이름 설정</button><span id="auto-ranking-status" role="status"></span></div>
         <div class="special-forge">
           <button class="special-strengthen" id="special-strengthen" type="button" aria-describedby="special-copy special-waiting"><span>✧ <strong id="special-label">특수 강화</strong></span><span><b id="special-chance"></b><small id="special-cost"></small></span></button>
@@ -173,7 +178,7 @@
       <div class="duel-field" aria-hidden="true">
         <canvas id="duel-danger"></canvas>
         <div class="duel-actor duel-enemy"><div class="duel-shadow"></div><img src="assets/manual-guardian.webp" alt="" draggable="false"></div>
-        <div class="duel-actor duel-blade"><div class="duel-footring"></div><div class="duel-blade-body"><img id="duel-magic-art" alt="" draggable="false" hidden><img id="duel-sword" alt="" draggable="false"></div></div>
+        <div class="duel-actor duel-blade"><div class="duel-footring"></div><div class="duel-blade-body"><img id="duel-magic-art" alt="" draggable="false" hidden><img id="duel-sword" alt="" draggable="false"><span class="guardian-aura"></span></div></div>
         <canvas id="duel-effects"></canvas>
       </div>
       <div class="duel-cue"><strong id="duel-warning"></strong><b id="duel-clock"></b></div>
@@ -196,7 +201,21 @@
       </div>
       <div class="duel-foot"><span>직접 조작 · 검 손상 없음</span><span>남은 시간 <b id="duel-time"></b></span></div>
     </section>
-    <section class="duel-overlay" aria-labelledby="duel-result" hidden><div><small id="duel-chapter"></small><h3 id="duel-result"></h3><p id="duel-detail"></p><button id="duel-start" type="button"></button><button id="duel-return" type="button">대장간으로</button></div></section>
+    <section class="duel-overlay" aria-labelledby="duel-result" hidden>
+      <div>
+        <small id="duel-chapter"></small><h3 id="duel-result"></h3>
+        <p id="duel-detail" role="status"></p>
+        <dl id="duel-reward-guide" class="duel-reward-guide" aria-label="파수꾼 클리어 보상" hidden>
+          <div><dt>첫 클리어</dt><dd id="duel-token-reward">파수꾼의 증표 ×3</dd></div>
+          <div><dt>무피격</dt><dd id="duel-title-reward">칭호 · 불길을 걷는 자</dd></div>
+          <div><dt>30초 이내</dt><dd id="duel-aura-reward">검 이펙트 · 황혼의 검륜</dd></div>
+        </dl>
+        <p id="duel-token-guide" hidden>증표 1개로 현재 도전할 +101~+110 보호권 1장을 교환할 수 있어요.</p>
+        <button id="duel-start" type="button"></button>
+        <button id="duel-exchange-guide" type="button" hidden>대장간에서 증표 사용하기</button>
+        <button id="duel-return" type="button">대장간으로</button>
+      </div>
+    </section>
   </dialog>
 </body>
 </html>

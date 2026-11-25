@@ -764,3 +764,49 @@ test('110 individually named Bleach appearances distinguish releases, versions a
   const before=JSON.parse(Forge.serialize(s)),value=Forge.appraisal(s).value;
   for(const f of forms){assert(Forge.selectAppearance(s,f.level.toString()));const saved=JSON.parse(Forge.serialize(s));for(const k of ['shards','level','bestLevel','creditReceipts','enchantments','magic','protectionUses'])assert.deepEqual(saved[k],before[k]);assert.equal(Forge.appraisal(s).value,value);assert.equal(Forge.restore(saved,now).appearance,f.level.toString());}
 });
+
+test('guardian achievements award three tokens only once and keep the best time across reloads', () => {
+  const s = Forge.restore({ level:100, shards:'1234', protections:{101:true} });
+  assert.equal(Forge.recordDuelVictory(s, { ms:0, damageTaken:0 }), null);
+  assert.equal(Forge.recordDuelVictory(s, { ms:31927 }).earnedTokens, 3);
+  assert.deepEqual(Forge.duelRewards(s), { bestMs:31927, tokens:3, flawless:false, aura:false });
+  s.duel.spentTokens = 2;
+  const restored = Forge.restore(JSON.parse(Forge.serialize(s)));
+  assert.equal(Forge.recordDuelVictory(restored, { ms:30001, damageTaken:0 }).newAura, false);
+  const next = Forge.recordDuelVictory(restored, { ms:30000, damageTaken:1 });
+  assert.equal(next.newAura, true);
+  assert.equal(next.earnedTokens, 0);
+  assert.equal(next.flawless, true);
+  assert.equal(next.tokens, 1);
+  assert.equal(Forge.recordDuelVictory(restored, { ms:48000, damageTaken:2 }).bestMs, 30000);
+  assert.equal(restored.shards, 1234n);
+  assert.deepEqual(restored.protections, { 101:true });
+});
+
+test('guardian exchanges spend one token atomically for eligible protection without spending shards', () => {
+  const now = 100000;
+  const seed = level => Forge.restore({ level, duel:{ bestMs:31000, spentTokens:2 }, shards:'50000000' }, now);
+  for (const level of [99, 110]) {
+    const s = seed(level);
+    const offer = Forge.protectionOffer(s, now);
+    assert(!offer.exchange);
+    assert.equal(Forge.buyProtection(s, now, offer.exchangeToken, true), null);
+    assert.equal(Forge.duelRewards(s).tokens, 1);
+  }
+  for (const level of [100, 109]) {
+    const s = seed(level);
+    const offer = Forge.protectionOffer(s, now);
+    assert(offer.exchange);
+    assert.equal(Forge.buyProtection(s, now, offer.exchangeToken, true).tokenUsed, true);
+    assert.equal(Forge.buyProtection(s, now + 1000, offer.exchangeToken, true), null);
+    assert.equal(Forge.duelRewards(s).tokens, 0);
+    assert.equal(s.shards, 50000000n);
+    assert.equal(s.protections[offer.target.toString()], true);
+    const reloaded = Forge.restore(JSON.parse(Forge.serialize(s)), now + 1000);
+    assert(reloaded.history[0].tokenUsed);
+    assert.equal(Forge.act(reloaded, now + 1000, () => .9999).kind, 'protected');
+    assert.equal(reloaded.level, BigInt(level - 1));
+    assert.equal(reloaded.protectionUses, 1n);
+    assert.equal(Forge.duelRewards(reloaded).tokens, 0);
+  }
+});
