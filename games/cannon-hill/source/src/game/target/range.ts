@@ -123,7 +123,7 @@ export class TargetRange {
               <progress id="target-power" max="${MAX_POWER}" value="0"></progress>
             </div>
           </div>
-          <button class="fire target-fire" type="button">발사<small>길게 누르기</small></button>
+          <button class="fire target-fire" type="button">발사<small>꾹 누르기</small></button>
         </div>
         <p class="target-tip">↑↓ 각도 · 스페이스바를 눌러 힘을 모으고 떼면 발사 <span>엄폐물을 넘겨 표적 중심을 맞히세요.</span></p>
       </div>

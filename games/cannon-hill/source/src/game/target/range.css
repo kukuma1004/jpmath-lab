@@ -229,6 +229,7 @@
   .target-adjust,.target-adjust:last-child { grid-row:2; grid-column:1; padding:4px; }
   .target-adjust:last-child { grid-column:2; }
   .target-control .target-fire { grid-column:3; grid-row:2; min-height:0; }
+  .target-fire small { white-space:nowrap; font-size:10px; }
   .target-tip { display:none; }
 }
 @media(orientation:portrait) {
