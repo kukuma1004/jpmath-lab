@@ -15,7 +15,7 @@ export type Controller = 'human' | 'ai';
 export type Difficulty = 'easy' | 'normal' | 'hard';
 
 /**
- * 장수는 2명(1:1) 또는 4명(2:2). 순서는 [1팀, 2팀, 1팀, 2팀]이라 편은 idx % 2다.
+ * 팀전의 장수 순서는 [1팀, 2팀, 1팀, 2팀]. 개인전에서는 각 장수가 별도 편이다.
  */
 export interface BattleConfig {
   mapId: string;
@@ -24,6 +24,7 @@ export interface BattleConfig {
   controllers: Controller[];
   difficulty: Difficulty;
   starterMatch?: boolean;
+  freeForAll?: boolean;
   turnTime: number;
   turnLimit: number; // 0은 상대 편 전멸까지 계속하는 끝장전
 }
@@ -39,7 +40,7 @@ export interface FighterStats {
   cellsDestroyed: number;
 }
 
-export type Team = 0 | 1;
+export type Team = 0 | 1 | 2 | 3;
 export type WeaponSlot = 0 | 1 | 2;
 
 export interface Fighter {
@@ -181,5 +182,5 @@ export type SimEvent =
   | { type: 'heal'; target: number; amount: number; x: number; y: number }
   | { type: 'trait'; who: number; kind: 'steady' | 'eagle' | 'shove' | 'iron'; x: number; y: number }
   | { type: 'forced' }
-  /** winner는 이긴 편(0·1), 무승부는 -1 */
+  /** winner는 이긴 편, 무승부는 -1 */
   | { type: 'gameOver'; winner: Team | -1; reason: 'hp' | 'fall' | 'limit' | 'draw' };

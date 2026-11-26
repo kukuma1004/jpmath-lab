@@ -93,7 +93,7 @@ export const WEAPONS: Record<string, WeaponDef> = {
   dokkaebiBomb: {
     id: 'dokkaebiBomb', name: '도깨비 폭탄', use: '강하게 밀기', desc: '땅에 두 번 낮게 튀고 첫 착탄 부근에서 터집니다. 상대에게 맞으면 바로 터지고, 발판 밖으로 밀기 좋습니다.',
     behavior: 'bounce', pattern: 'single',
-    radius: 70, carve: 60, rockMul: 0.62, damage: 192, directBonus: 1.15, knockback: 260,
+    radius: 78, carve: 66, rockMul: 0.62, damage: 192, directBonus: 1.15, knockback: 260,
     bounces: 2, restitution: 0.28, fuse: 4.2,
     look: 'bomb', color: 0x3d2f5a, glow: 0x9cff6b, size: 8,
   },
@@ -148,7 +148,7 @@ export const WEAPONS: Record<string, WeaponDef> = {
   singijeon: {
     id: 'singijeon', name: '삼연 신기전', use: '세 발 집중', desc: '신기전 세 발을 거의 같은 궤도로 쏩니다. 한 곳에 모아 맞히면 강합니다.',
     behavior: 'shell', pattern: 'salvo',
-    radius: 44, carve: 34, rockMul: 0.7, damage: 75, directBonus: 1.18, knockback: 45,
+    radius: 47, carve: 34, rockMul: 0.7, damage: 84, directBonus: 1.18, knockback: 45,
     count: 3, salvoGap: 0.1, salvoPowerStep: 0.7,
     look: 'rocket', color: 0xe59a51, glow: 0xffb357, size: 6,
   },
@@ -203,7 +203,7 @@ export const WEAPONS: Record<string, WeaponDef> = {
     id: 'fanBreeze', name: '부채바람', use: '넓은 한 발',
     desc: '부채에서 부른 바람 한 발이 넓게 터집니다. 지형은 얕게 깎습니다.',
     behavior: 'shell', pattern: 'single',
-    damage: 155, directBonus: 1.13, radius: 68, carve: 30, rockMul: 0.48, knockback: 185,
+    damage: 169, directBonus: 1.13, radius: 73, carve: 42, rockMul: 0.54, knockback: 235,
     look: 'fan', color: 0x56bca7, glow: 0x99f0ca, size: 8,
   },
   offbeat: {
@@ -212,7 +212,7 @@ export const WEAPONS: Record<string, WeaponDef> = {
     behavior: 'bounceBurst', pattern: 'single',
     damage: 136, directBonus: 1.12, radius: 65, carve: 33, rockMul: 0.55, knockback: 130,
     bounces: 2, restitution: 0.32, fuse: 4.5,
-    burstDamage: 58, burstRadius: 63, burstCarve: 17,
+    burstDamage: 64, burstRadius: 70, burstCarve: 17,
     look: 'fan', color: 0x79b7a2, glow: 0xd0eaa4, size: 8,
   },
   fanFestival: {
@@ -239,7 +239,7 @@ WEAPONS.signalFlare = { ...WEAPONS.iron!, id: 'signalFlare', name: '봉화 화�
 WEAPONS.lanternSalvo = { ...WEAPONS.singijeon!, id: 'lanternSalvo', name: '연등탄', use: '세 발 연속',
     desc: '힘을 조금씩 달리한 불꽃탄 세 발이 짧은 간격으로 날아갑니다.', damage: 80, salvoPowerStep: 1.4, salvoGap: 0.13, glow: 16759654 };
 WEAPONS.stoneChip = { ...WEAPONS.arrow!, id: 'stoneChip', name: '암편 포탄', use: '바위 관통',
-    desc: '단단한 암편이 흙과 바위를 파고들어 터집니다.', look: 'iron', pierceDepth: 60, radius: 50, carve: 45, rockMul: 1, damage: 174, knockback: 200, glow: 0xc5dc97 };
+    desc: '단단한 암편이 흙과 바위를 파고들어 터집니다.', look: 'iron', pierceDepth: 60, radius: 57, carve: 45, rockMul: 1, damage: 182, knockback: 200, glow: 0xc5dc97 };
 WEAPONS.ledgeWedge = { ...WEAPONS.hwapo!, id: 'ledgeWedge', name: '쐐기 바위', use: '넓게 지형 깎기',
     desc: '폭발로 발밑과 엄폐물을 크게 깎습니다.', radius: 66, carve: 91, rockMul: 1, damage: 123, knockback: 120, glow: 15907702 };
 WEAPONS.inkDart = { ...WEAPONS.arrow!, id: 'inkDart', name: '먹빛 침', use: '빠른 직격',

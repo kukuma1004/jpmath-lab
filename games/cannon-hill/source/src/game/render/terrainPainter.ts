@@ -150,7 +150,11 @@ export class TerrainPainter {
       }
       for (let cy = cy0; cy <= cy1; cy++) {
         const m = t[cy * COLS + cx]!;
-        if (m === Mat.Empty) { depth = 0; continue; }
+        if (m === Mat.Empty) {
+          depth = 0;
+          if (this.def.id === 'windrift') this.paintLedgeDepth(dst, px0, py0, cx, cy);
+          continue;
+        }
         depth++;
         const air = dist.d[(cy - dist.y0) * dist.w + (cx - dist.x0)]! / 2;
         const col = this.cellColor(t, cx, cy, m, depth, air);
@@ -168,6 +172,48 @@ export class TerrainPainter {
           }
         }
       }
+    }
+  }
+
+  // Sample the live silhouette along two short projections. Upper faces
+  // recede into the scene, while a fragmented keel sits below the front lip.
+  private paintLedgeDepth(dst: ImageData, x0: number, y0: number, cx: number, cy: number): void {
+    const cells = this.terrain.cells;
+    const material = (x: number, y: number) =>
+      x < 0 || x >= COLS || y < 0 || y >= ROWS ? Mat.Empty : cells[y * COLS + x];
+    const backX = cx - 4, backY = cy + 4;
+    const top = material(backX, backY) !== Mat.Empty;
+    if (!top) {
+      let nearby = false;
+      for (let d = 1; d <= 13; d += 3) {
+        if (material(cx - 3, cy - d) !== Mat.Empty) { nearby = true; break; }
+      }
+      if (!nearby) return;
+    }
+    const fracture = this.relief.light(cx, cy, true);
+    const facet = Math.floor((cx + Math.sin(cx * .067) * 4) / 9);
+    const block = Math.sin(facet * 17.9);
+    const keel = 3 + Math.round((1 + block) * 1.7);
+    if (!top && material(cx - 3, cy - 3) === Mat.Empty && material(cx - 3, cy - keel) === Mat.Empty) return;
+    let r: number, g: number, b: number;
+    if (top && material(backX, cy) !== Mat.Empty) {
+      // The displaced vertical edge faces away from the sun.
+      const shade = fracture * .38 + block * 10;
+      r = 87 + shade; g = 81 + shade; b = 95 + shade;
+    } else if (top) {
+      const seam = Math.floor((cx + cy * .79) / 15) !== Math.floor((cx + cy * .79 - 1) / 15);
+      const bevel = material(backX, backY - 1) === Mat.Empty;
+      const light = seam ? -48 : bevel ? 29 : fracture * .46 + block * 12;
+      r = 215 + light; g = 161 + light * .8; b = 113 + light * .68;
+    } else {
+      const shade = fracture * .48 + block * 13;
+      r = 54 + shade; g = 57 + shade; b = 69 + shade;
+    }
+    for (let sy = 0; sy < CELL; sy++) for (let sx = 0; sx < CELL; sx++) {
+      const x = cx * CELL + sx - x0, y = cy * CELL + sy - y0;
+      if (x < 0 || x >= dst.width || y < 0 || y >= dst.height) continue;
+      const i = (y * dst.width + x) * 4;
+      dst.data[i] = r; dst.data[i+1] = g; dst.data[i+2] = b; dst.data[i+3] = 255;
     }
   }
 
@@ -272,6 +318,16 @@ export class TerrainPainter {
       b = (b + lift) * shade * 1.02;
     }
 
+    // Sky-facing shelves catch warm light. Overhangs pick up cool reflected light.
+    if (stone || m === Mat.Dirt) {
+      const below = i + COLS * 4;
+      if (depth > 3 && below < t.length && t[below] === Mat.Empty) {
+        r *= .60; gg *= .67; b *= .78;
+      } else if (depth <= 3) {
+        r += 12; gg += 6;
+      }
+    }
+
     // 먹선: 공기와 닿은 가장자리는 굵고 진하게
     const e = this.edgeDist(t, cx, cy);
     if (e === 1 && depth > 1) {
@@ -308,6 +364,29 @@ export class TerrainPainter {
         if (cells[i] !== Mat.Dirt || cells[i-COLS] !== Mat.Empty) continue;
         const y = cy*CELL;
         const n = hash2(cx,cy,this.seed);
+        if (this.def.id === 'windrift') {
+          // Tufts gather at broken ends of a shelf, where the bare slabs give way to soil.
+          const edge = this.terrain.matAt(x - 19, y + 4) === Mat.Empty
+            || this.terrain.matAt(x + 19, y + 4) === Mat.Empty;
+          if (!edge && n > .12) continue;
+          ctx.fillStyle = '#787141';
+          ctx.beginPath();
+          ctx.ellipse(x, y - 1, 5 + n * 3, 2.6, -.12, 0, Math.PI * 2);
+          ctx.fill();
+          for (let blade = 0; blade < 7; blade++) {
+            const bend = hash2(cx, blade, this.seed + 23);
+            const root = x + blade * 1.5 - 5;
+            const tip = root + bend * 6 - 1;
+            const height = 2 + bend * 6;
+            ctx.fillStyle = blade % 3 === 0 ? '#82804b' : blade % 3 === 1 ? '#e0b75c' : '#ffe6a0';
+            ctx.beginPath();
+            ctx.moveTo(root - 1, y);
+            ctx.quadraticCurveTo(root + 1, y - height * .8, tip, y - height);
+            ctx.lineTo(root + 1.3, y);
+            ctx.fill();
+          }
+          continue;
+        }
         if (n < 0.29) {
           const length = 2 + n * 20;
           for (let j=0;j<4;j++) {
@@ -335,7 +414,32 @@ export class TerrainPainter {
         const choice = hash2(gx,gy,this.seed+41);
         if (choice < 0.49) continue;
         const x = gx*25 + hash2(gx,gy,91)*23, y = gy*19 + hash2(gx,gy,63)*17;
-        if (cells[Math.floor(y/CELL)*COLS+Math.floor(x/CELL)] !== Mat.Dirt) continue;
+        const material = this.terrain.matAt(x, y);
+        if (material === Mat.Rock && choice > .82) {
+          // Fine mineral planes break up the cell-sized relief when the camera moves in.
+          const width = 7 + choice * 5;
+          if (this.terrain.matAt(x - width, y + 2) !== material ||
+              this.terrain.matAt(x + width, y - 2) !== material) continue;
+          const rise = hash2(gx, gy, 29) * 4;
+          ctx.beginPath();
+          ctx.moveTo(x - width, y + 2);
+          ctx.lineTo(x - 3, y - rise);
+          ctx.lineTo(x + width, y - 2);
+          ctx.lineTo(x + 2, y + .5);
+          ctx.closePath();
+          ctx.fillStyle = 'rgba(255,226,195,.20)';
+          ctx.fill();
+          ctx.beginPath();
+          ctx.moveTo(x - width, y + 2);
+          ctx.lineTo(x + 2, y + .5);
+          ctx.lineTo(x + width, y - 2);
+          ctx.lineTo(x + 3, y + 2);
+          ctx.closePath();
+          ctx.fillStyle = 'rgba(32,35,56,.29)';
+          ctx.fill();
+          continue;
+        }
+        if (material !== Mat.Dirt) continue;
         const radius = 1.3 + 9*Math.pow(choice,8);
         ctx.save(); ctx.translate(x,y);ctx.rotate((hash2(gx,gy,19)-0.6)*0.8);ctx.scale(radius,radius*0.64);
         ctx.fillStyle = 'rgba(42,22,22,.50)';

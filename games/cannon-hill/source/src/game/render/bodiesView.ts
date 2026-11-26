@@ -69,7 +69,7 @@ export class BodiesView {
         cfg = { lifespan: 420, speed: { min: 10, max: 60 }, scale: { start: 0.5, end: 0 }, alpha: { start: 1, end: 0 }, blendMode: 'ADD', tint: [0x9cff6b, 0xe0ff9a], frequency: 24 / q };
         break;
       default:
-        cfg = { lifespan: 760, speed: { min: 3, max: 19 }, scale: { start: 0.13, end: 0.66 }, alpha: { start: 0.7, end: 0 }, tint: [0xc79972, 0x9f7c70, 0x766570], frequency: 14 / q, gravityY: -22 };
+        cfg = { lifespan: 625, speed: { min: 5, max: 26 }, scale: { start: 0.20, end: 0.71 }, alpha: { start: 0.53, end: 0 }, tint: [0xe6ccac, 0xb59d91, 0x998e91], frequency: 11 / q, gravityY: -31 };
     }
     const e = this.scene.add.particles(0, 0, tex, { ...cfg, follow });
     e.setDepth(29);
@@ -120,7 +120,7 @@ export class BodiesView {
       v.seen = true;
       v.img.setPosition(p.x, p.y);
       v.glow.setPosition(p.x, p.y);
-      v.shade.setPosition(p.x, p.y);
+      v.shade.setPosition(p.x + 2.5, p.y + 3);
       const heading = Math.atan2(p.vy,p.vx);
       const speed = Math.hypot(p.vx,p.vy);
       const size = p.child ? 0.48 : 1;
@@ -224,15 +224,6 @@ export class BodiesView {
   }
 
   /** 지금 가장 눈여겨볼 포탄 */
-  lead(b: Battle): { x: number; y: number; vx: number; vy: number } | null {
-    let best = null as null | { x: number; y: number; vx: number; vy: number };
-    let age = -1;
-    for (const p of b.projectiles) {
-      if (p.age > age) { age = p.age; best = p; }
-    }
-    return best;
-  }
-
   destroy(): void {
     this.cloudFx.destroy();
     for (const label of this.cloudLabels.values()) label.destroy();

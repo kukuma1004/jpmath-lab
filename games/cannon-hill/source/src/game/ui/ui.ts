@@ -5,16 +5,22 @@ import { weapon } from '../data/weapons';
 import type { Battle } from '../combat/battle';
 import { ULTIMATE_RECHARGE_TURNS, ULTIMATE_TURN } from '../combat/battle';
 import type { AimHint } from '../combat/aimAdvisor';
-import type { Difficulty, WeaponSlot } from '../combat/types';
+import type { Difficulty, Team, WeaponSlot } from '../combat/types';
 import { input, type Hold } from '../input/input';
 import type { Settings } from '../settings';
 import { audio } from '../audio/audio';
 
 export type Mode = 'ai' | 'local';
 
+export function playerLabel(mode: Mode, team: Team, freeForAll: boolean): string {
+  if (mode === 'local') return `${team + 1}P`;
+  if (team === 0) return '나';
+  return freeForAll ? `AI ${team}` : 'AI';
+}
+
 export interface UIHooks {
   /** chars는 장수 순서([1팀, 2팀, 1팀, 2팀]) 그대로 */
-  startBattle(mode: Mode, chars: string[], mapId: string): void;
+  startBattle(mode: Mode, chars: string[], mapId: string, freeForAll: boolean): void;
   quickBattle(): void;
   targetRange(): void;
   toTitle(): void;
@@ -123,7 +129,7 @@ export class UI {
             <button class="btn primary quick" data-act="quick">바로 한 판<small>쉬운 AI · 내가 먼저 발사</small></button>
             <button class="btn jade target-entry" data-act="target">표적 10발<small>각도와 힘으로 누적 순위 도전</small></button>
             <button class="btn" data-act="ai">AI와 겨루기<small>장수·전장 고르기</small></button>
-            <button class="btn jade" data-act="local">둘이서 하기<small>한 기기로 번갈아</small></button>
+            <button class="btn jade" data-act="local">함께 하기<small>한 기기로 2~4명</small></button>
             <button class="btn" data-act="howto">게임 방법</button>
             <button class="btn" data-act="settings">설정</button>
           </div>
@@ -155,8 +161,8 @@ export class UI {
         </div>
         <div class="sel-foot">
           <button class="btn ghost" data-act="back">← 뒤로</button>
-          <span class="chip-label">인원</span>
-          <div class="chips size"><button data-size="1">1:1</button><button data-size="2">2:2</button></div>
+          <span class="chip-label">대전</span>
+          <div class="chips size"><button data-size="1">1:1</button><button data-size="2">2:2</button><button data-size="ffa">1:1:1:1</button></div>
           <span class="chip-label ai-only">AI 실력</span>
           <div class="chips ai-only diff">${(['easy', 'normal', 'hard'] as Difficulty[]).map((d) => `<button data-d="${d}">${DIFF_LABEL[d]}</button>`).join('')}</div>
           <span class="grow"></span>
@@ -175,7 +181,7 @@ export class UI {
       }
       const size = t.closest<HTMLElement>('[data-size]')?.dataset.size;
       if (size) {
-        this.settings.teamSize = size === '2' ? 2 : 1;
+        this.settings.teamSize = size === 'ffa' ? 'ffa' : size === '2' ? 2 : 1;
         this.hooks.settingsChanged(this.settings);
         this.step = 0;
         this.renderChars();
@@ -215,16 +221,20 @@ export class UI {
 
   /** 고르는 차례 수(1:1은 2번, 2:2는 4번) */
   private get steps(): number {
-    return this.settings.teamSize * 2;
+    return this.settings.teamSize === 1 ? 2 : 4;
   }
 
   /** 고르는 차례 → 장수 순서 자리. 2:2는 1팀 둘을 먼저, 그다음 2팀 둘을 고른다 */
   private slotOf(step: number): number {
-    if (this.settings.teamSize === 1) return step;
-    return [0, 2, 1, 3][step]!;
+    return this.settings.teamSize === 2 ? [0, 2, 1, 3][step]! : step;
   }
 
-  private stepLabel(step: number): { who: string; title: string; hint: string; team: 0 | 1 } {
+  private stepLabel(step: number): { who: string; title: string; hint: string; team: Team } {
+    if (this.settings.teamSize === 'ffa') {
+      const team = step as Team;
+      const who = playerLabel(this.mode, team, true);
+      return { who, title: `${who} 장수 고르기`, hint: '개인전 · 장수 넷이 각자 싸워 마지막 한 명이 이깁니다.', team };
+    }
     const team = (this.slotOf(step) % 2) as 0 | 1;
     const ai = this.mode === 'ai';
     if (this.settings.teamSize === 1) {
@@ -247,12 +257,12 @@ export class UI {
     const lab = this.stepLabel(step);
     const who = el.querySelector<HTMLElement>('.who')!;
     who.textContent = lab.who;
-    who.classList.toggle('p2', lab.team === 1);
+    who.dataset.team = String(lab.team + 1);
     el.querySelector('h2')!.textContent = lab.title;
     el.querySelector('.hint')!.textContent = lab.hint;
     el.querySelectorAll<HTMLElement>('.ai-only').forEach((x) => (x.style.display = this.mode === 'ai' ? '' : 'none'));
     el.querySelectorAll<HTMLElement>('.diff button').forEach((b) => b.classList.toggle('on', b.dataset.d === this.settings.difficulty));
-    el.querySelectorAll<HTMLElement>('.size button').forEach((b) => b.classList.toggle('on', Number(b.dataset.size) === this.settings.teamSize));
+    el.querySelectorAll<HTMLElement>('.size button').forEach((b) => b.classList.toggle('on', b.dataset.size === String(this.settings.teamSize)));
     const grid = el.querySelector('.grid')!;
     const slot = this.slotOf(step);
     const random = this.picks[slot] === RANDOM_CHARACTER;
@@ -334,7 +344,7 @@ export class UI {
       const [draw] = pool.splice(Math.floor(Math.random() * pool.length), 1);
       return draw!.id;
     });
-    this.hooks.startBattle(this.mode, chars, mapId);
+    this.hooks.startBattle(this.mode, chars, mapId, this.settings.teamSize === 'ffa');
   }
 
   openMaps(): void {
@@ -344,6 +354,10 @@ export class UI {
 
   private renderMaps(): void {
     const el = this.screens.get('maps')!;
+    const freeForAll = this.settings.teamSize === 'ffa';
+    el.querySelector('.sel-head p')!.textContent = freeForAll
+      ? '네 자리를 무작위로 배정합니다. 마지막까지 살아남으세요.'
+      : '시작 위치는 매판 무작위 · 양 팀은 같은 높이의 좌우 대칭 배치입니다.';
     const grid = el.querySelector('.grid')!;
     grid.innerHTML = MAPS.map((m) => `<button class="card mapcard${this.mapPick === m.id ? ' on' : ''}" data-id="${m.id}"><img alt="" src="${this.mapThumbs[m.id] ?? ''}"><b>${m.name}</b><em>${m.features}</em></button>`).join('')
       + `<button class="card mapcard rand${this.mapPick === 'random' ? ' on' : ''}" data-id="random"><b>?</b><em>아무 전장이나</em></button>`;
@@ -355,7 +369,7 @@ export class UI {
       <div class="stats" style="grid-template-columns:auto 1fr;align-content:start">
         <span>턴 시간</span>${chips('tt', [20, 30, 45], this.settings.turnTime, '초')}
         <span>승부 방식</span>${chips('tl', [0, 20, 30, 40], this.settings.turnLimit, '턴')}
-      </div><p>장수별 체력과 특기가 다릅니다. 끝장전은 상대 편이 모두 쓰러질 때까지 계속합니다.</p>`;
+      </div><p>${freeForAll ? '끝장전은 장수 한 명만 남을 때까지 계속합니다.' : '끝장전은 상대 편이 모두 쓰러질 때까지 계속합니다.'}</p>`;
   }
 
   // ───────── 전투 화면 ─────────
@@ -372,24 +386,24 @@ export class UI {
           </div>
           <div class="team t2"></div>
         </div>
-        <button class="pausebtn" data-act="pause" aria-label="일시정지">Ⅱ</button>
-        <div class="camtools">
-          <button class="cambtn" data-act="camera" aria-label="카메라 바꾸기(따라가기·상대·전체)">보기</button>
-          <button class="cambtn home" data-act="recenter" aria-label="내 장수로 돌아가기">내 장수로</button>
+        <div class="battle-window">
+          <button class="pausebtn" data-act="pause" aria-label="일시정지">Ⅱ</button>
+          <div class="camtools">
+            <button class="cambtn" data-act="camera" aria-pressed="false">전체 보기</button>
+            <button class="cambtn home" data-act="recenter" aria-label="내 장수로 돌아가기">내 장수로</button>
+          </div>
+          <div class="banner" role="status"><b></b><div class="map-matchup" hidden></div><span></span></div>
+          <div class="toast"></div>
         </div>
         <div class="bottom">
           <div class="pad move"><div class="row"><button class="kbtn" data-hold="left" aria-label="왼쪽으로 이동">◀<small>A</small></button><button class="kbtn" data-hold="right" aria-label="오른쪽으로 이동">▶<small>D</small></button></div><div class="movebar"><i></i></div><div class="lbl">이동</div></div>
           <div class="pad aim"><div class="row"><button class="kbtn" data-hold="aimDown" aria-label="포신 내리기">▼<small>↓</small></button><div class="angle-read"><span class="ang">45°</span><small>각도</small></div><button class="kbtn" data-hold="aimUp" aria-label="포신 올리기">▲<small>↑</small></button><button class="kbtn" data-act="flip" aria-label="방향 바꾸기">⇄<small>←→</small></button></div><div class="lbl angle-hint">각도</div></div>
           <div class="weapons" aria-label="포탄과 궁극기"><button class="wbtn" data-w="0"><kbd>1</kbd><b class="wn0"></b><small class="wu0"></small></button><button class="wbtn" data-w="1"><kbd>2</kbd><b class="wn1"></b><small class="wu1"></small></button><button class="wbtn ult-btn" data-w="2"><kbd>R</kbd><b class="wn2"></b><small class="wu2"></small></button></div>
           <div class="firewrap">
-            <div class="power"><div class="ticks"></div><i></i><div class="last"></div><em class="suggested" hidden></em><span>힘 0</span></div>
+            <div class="power"><div class="ticks"></div><i></i><div class="last" hidden></div><span>힘 0</span></div>
             <button class="fire" data-hold="charge" aria-label="힘 모아 발사">발사<small>Space 꾹</small></button>
-            <div class="keyhint power-hint" aria-live="polite">누르고 떼면 발사</div>
           </div>
         </div>
-        <div class="banner" role="status"><b></b><div class="map-matchup" hidden></div><span></span></div>
-        <div class="toast"></div>
-        <div class="rotate-hint">가로로 돌리면 더 넓게 보여요</div>
       </section>`));
     // 누르고 있는 단추
     el.querySelectorAll<HTMLElement>('[data-hold]').forEach((b) => {
@@ -431,12 +445,12 @@ export class UI {
     const mini = b.fighters.length > 2;
     for (const team of [0, 1] as const) {
       const box = el.querySelector<HTMLElement>(`.team.t${team + 1}`)!;
-      box.innerHTML = b.fighters.filter((f) => f.team === team).map((f) => {
+      box.innerHTML = b.fighters.filter((f) => f.team % 2 === team).map((f) => {
         const c = character(f.charId);
         return `
-        <div class="pcard p${team + 1}${mini ? ' mini' : ''}" data-f="${f.idx}">
+        <div class="pcard p${team + 1}${mini ? ' mini' : ''}" data-f="${f.idx}" data-team="${f.team + 1}">
           <div class="who"><img alt="" src="${this.portraits[c.id]?.[team === 1 ? 'bustFlip' : 'bust'] ?? ''}"><i>${esc(names[f.idx] ?? '')}</i></div>
-          <div><div class="name"><span class="nm">${mini ? c.name : `${esc(names[f.idx] ?? '')} · ${c.name}`}</span><small class="hpn"></small></div>
+          <div><div class="name"><span class="nm">${mini && !b.cfg.freeForAll ? c.name : `${esc(names[f.idx] ?? '')} · ${c.name}`}</span><small class="hpn"></small></div>
           <div class="bar"><b></b><i></i><span></span></div>
           </div>
         </div>`;
@@ -484,7 +498,7 @@ export class UI {
     this.set('tp', `${b.current}|${b.turnNo}`, () => {
       const tp = el.querySelector<HTMLElement>('.tp')!;
       tp.textContent = b.fighters.length > 2 ? `${opts.names[b.current]} · ${character(b.cur.charId).name}` : `${opts.names[b.current]} 차례`;
-      tp.classList.toggle('p2', b.cur.team === 1);
+      tp.dataset.team = String(b.cur.team + 1);
       el.querySelector('.tno')!.textContent = b.cfg.turnLimit > 0 ? `${Math.max(1, b.turnNo)} / ${b.cfg.turnLimit}턴` : `${Math.max(1, b.turnNo)}턴 · 끝장전`;
     });
     this.set('wind', `${b.wind}`, () => {
@@ -501,6 +515,7 @@ export class UI {
     this.set('status', opts.status, () => {
       const s = el.querySelector<HTMLElement>('.status')!;
       s.textContent = opts.status;
+      s.title = opts.status;
       s.classList.toggle('on', !!opts.status);
     });
     // 조작판
@@ -546,9 +561,10 @@ export class UI {
     this.set('pw', `${pw.toFixed(1)}|${f.lastPower.toFixed(1)}|${b.phase}|${f.stats.shots}`, () => {
       const p = el.querySelector<HTMLElement>('.power')!;
       p.querySelector<HTMLElement>('i')!.style.width = `${pw}%`;
-      p.querySelector<HTMLElement>('.last')!.style.left = `${f.lastPower}%`;
-      const label = f.stats.shots > 0 ? '지난 힘' : '기준 힘';
-      p.querySelector('span')!.textContent = b.phase === 'CHARGE' ? `힘 ${pw.toFixed(1)}` : `${label} ${f.lastPower.toFixed(1)}`;
+      const last = p.querySelector<HTMLElement>('.last')!;
+      last.hidden = f.stats.shots === 0;
+      last.style.left = `${f.lastPower}%`;
+      p.querySelector('span')!.textContent = b.phase === 'CHARGE' ? `힘 ${pw.toFixed(1)}` : f.stats.shots ? `지난 힘 ${f.lastPower.toFixed(1)}` : '발사 힘';
     });
     this.updateAimHint(el,b,opts.aimHint);
   }
@@ -556,38 +572,34 @@ export class UI {
   private updateAimHint(el:HTMLElement,b:Battle,hint:AimHint|null):void {
     this.set('aimhint',`${JSON.stringify(hint)}:${b.current}:${b.cur.slot}`,()=>{
       const angle=el.querySelector<HTMLElement>('.angle-hint')!;
-      const power=el.querySelector<HTMLElement>('.power-hint')!;
-      const band=el.querySelector<HTMLElement>('.power .suggested')!;
-      band.hidden=true;band.dataset.slot=String(b.cur.slot);
-      angle.textContent=hint?.kind==='thinking'?'추천 범위 계산 중…':hint?.kind==='moving'?'멈추면 추천 범위를 보여드려요':'각도';
-      power.textContent=hint?.kind==='thinking'?'현재 바람과 탄을 살펴보는 중':hint?.kind==='moving'?'이동 후 다시 추천해요':'누르고 떼면 발사';
+      angle.textContent=hint?.kind==='thinking'?'추천 각도 계산 중…':'각도';
       if(hint?.kind==='blocked'){
-        angle.textContent=`${hint.direction>0?'→':'←'} 앞 지형이 막고 있어요`;power.textContent='조금 이동하면 다시 추천해요';
+        angle.textContent=`${hint.direction>0?'→':'←'} 앞 지형이 막고 있어요`;
       }else if(hint?.kind==='range'){
         angle.textContent=`${hint.direction>0?'→':'←'} 추천 각도 ${hint.angle[0]}~${hint.angle[1]}°`;
-        power.textContent=`추천 힘 ${hint.power[0]}~${hint.power[1]}`;
-        band.hidden=false;band.style.left=`${hint.power[0]}%`;band.style.width=`${hint.power[1]-hint.power[0]}%`;
-        band.title=`추천 힘 ${hint.power[0]}~${hint.power[1]} 안에서 조절해 보세요`;
       }
     });
     const f=b.cur,relative=f.angle<=90?f.angle:180-f.angle;
     const angleOK=hint?.kind==='range'&&(f.angle<=90?1:-1)===hint.direction&&relative>=hint.angle[0]&&relative<=hint.angle[1];
-    const chosenPower = b.phase === 'CHARGE' ? f.power : null;
-    const powerOK=hint?.kind==='range'&&chosenPower!==null&&chosenPower>=hint.power[0]&&chosenPower<=hint.power[1];
-    this.set('aimhint-match',`${angleOK}:${powerOK}`,()=>{
+    this.set('aimhint-match',String(angleOK),()=>{
       el.querySelector('.angle-read')!.classList.toggle('in-hint',angleOK);
-      el.querySelector('.power')!.classList.toggle('in-hint',powerOK);
     });
   }
 
   /** 둘러보는 중이면 「내 장수로」 단추를 보인다 */
-  setFreeCam(on: boolean): void {
-    this.set('freecam', `${on}`, () => this.screens.get('hud')!.classList.toggle('freecam', on));
+  setCameraMode(mode: 'auto' | 'enemy' | 'all', free: boolean): void {
+    this.set('camera', `${mode}:${free}`, () => {
+      const hud = this.screens.get('hud')!;
+      hud.classList.toggle('freecam', free || mode === 'enemy');
+      const button = hud.querySelector<HTMLButtonElement>('[data-act=camera]')!;
+      button.textContent = mode === 'all' && !free ? '따라가기' : '전체 보기';
+      button.setAttribute('aria-pressed', String(mode === 'all' && !free));
+    });
   }
 
   battleIntro(b: Battle, names: string[], first: number): void {
     const matchup = this.screens.get('hud')!.querySelector('.map-matchup')!;
-    matchup.innerHTML = [0, 1].map(team => {
+    matchup.innerHTML = b.sides.map(team => {
       const fighters = b.fighters.filter(f => f.team === team);
       const roster = fighters.map(f => {
         const portrait = this.portraits[f.charId]?.[team === 1 ? 'bustFlip' : 'bust'] ?? '';
@@ -658,14 +670,23 @@ export class UI {
   showResult(b: Battle, names: string[]): void {
     const el = this.screens.get('result')!.querySelector('.res')!;
     const w = b.winner;
-    const team = b.fighters.length > 2;
+    const four = b.fighters.length > 2;
+    const freeForAll = b.cfg.freeForAll;
+    const shown = w !== null && w !== -1 ? b.fighters.filter((f) => f.team === w) : [];
     let title: string, cls = '';
     if (w === -1 || w === null) title = '무승부';
-    else if (this.mode === 'ai') { title = w === 0 ? '승리!' : '패배…'; if (w !== 0) cls = 'lose'; }
+    else if (this.mode === 'ai') {
+      title = w === 0 ? '승리!' : freeForAll ? `${names[shown[0]!.idx]} 승리!` : '패배…';
+      if (w !== 0) cls = 'lose';
+    }
     else title = `${names[w]} 승리!`;
-    const losers = w === 0 || w === 1 ? b.fighters.filter((f) => f.team !== w) : [];
-    const ln = !team && losers[0] ? character(losers[0].charId).name : '';
-    const why = team
+    const losers = w !== null && w !== -1 ? b.fighters.filter((f) => f.team !== w) : [];
+    const ln = !four && losers[0] ? character(losers[0].charId).name : '';
+    const why = freeForAll
+      ? (b.endReason === 'limit' ? '턴 제한에 도달해 남은 체력 비율로 승부를 가렸습니다.'
+        : w !== -1 ? `${names[shown[0]!.idx]} ${character(shown[0]!.charId).name} 생존`
+        : b.fighters.every(f => !f.alive) ? '장수가 모두 쓰러졌습니다.' : '가장 높은 남은 체력 비율이 같습니다.')
+      : four
       ? (b.endReason === 'fall' ? '상대 편 장수가 모두 낭떠러지로 떨어졌습니다.'
         : b.endReason === 'hp' ? '상대 편 장수가 모두 쓰러졌습니다.'
         : b.endReason === 'limit' ? '정해진 턴을 다 써서, 남은 체력 합이 많은 편이 이겼습니다.'
@@ -674,7 +695,6 @@ export class UI {
         : b.endReason === 'hp' ? `${ln}의 기력이 다했습니다.`
         : b.endReason === 'limit' ? '정해진 턴을 다 써서, 남은 체력이 많은 쪽이 이겼습니다.'
         : b.fighters.every((f) => !f.alive) ? '둘이 함께 쓰러졌습니다.' : '남은 체력이 똑같습니다.');
-    const shown = w === 0 || w === 1 ? b.fighters.filter((f) => f.team === w) : [];
     const img = shown.map((f) => `<img alt="" src="${this.portraits[f.charId]?.[f.team === 1 ? 'flip' : 'happy'] ?? ''}">`).join('');
     const rows: [string, (i: number) => number, (v: number) => string][] = [
       ['명중률', (i) => (b.fighters[i].stats.shots ? b.fighters[i].stats.hits / b.fighters[i].stats.shots : 0), (v) => `${Math.round(v * 100)}%`],
@@ -685,7 +705,7 @@ export class UI {
     ];
     // 표는 편끼리 모아서(1팀 → 2팀)
     const order = [...b.fighters].sort((x, y) => x.team - y.team || x.idx - y.idx).map((f) => f.idx);
-    const head = `<tr><th></th>${order.map((i) => `<th class="p${b.fighters[i]!.team + 1}">${team ? '' : `${esc(names[i] ?? '')} `}${character(b.fighters[i]!.charId).name}</th>`).join('')}</tr>`;
+    const head = `<tr><th></th>${order.map((i) => `<th class="p${b.fighters[i]!.team + 1}">${four && !freeForAll ? '' : `${esc(names[i] ?? '')} `}${character(b.fighters[i]!.charId).name}</th>`).join('')}</tr>`;
     const body = rows.map(([label, get, fmt]) => {
       const vals = order.map((i) => get(i));
       const top = Math.max(...vals);
@@ -696,7 +716,7 @@ export class UI {
       <h2 class="${cls}">${title}</h2>
       <div class="why">${esc(why)}</div>
       <div class="who">${img}</div>
-      <table class="table${team ? ' four' : ''}">${head}${body}</table>
+      <table class="table${four ? ' four' : ''}">${head}${body}</table>
       <div class="actions">
         <button class="btn primary" data-act="rematch">다시 한 판</button>
         <button class="btn" data-act="rechar">장수 다시 고르기</button>
@@ -777,7 +797,7 @@ export class UI {
         </ul>
         <h3>휴대폰·태블릿</h3>
         <ul><li>왼쪽 ◀ ▶ 이동, ▲ ▼ 각도, ⇄ 방향 바꾸기, 오른쪽 큰 <b>발사</b> 단추를 누르고 있다가 떼면 발사.</li>
-          <li>전장을 손가락으로 끌면 둘러볼 수 있고, 두 손가락으로 벌리면 확대됩니다. 「보기」 단추는 따라가기·상대·전체 보기를 바꾸고, 「내 장수로」는 다시 내 장수를 비춥니다.</li></ul>
+          <li>전장을 끌어서 둘러보고, 두 손가락으로 벌려 확대할 수 있습니다. 「전체 보기」와 「따라가기」로 전환하고, <kbd>Tab</kbd>으로 상대도 볼 수 있습니다.</li></ul>
         <h3>규칙</h3>
         <ul>
           <li>한 턴에 한 번만 쏩니다. 착탄과 추락 판정이 정리되면 빠르게 다음 차례로 넘어갑니다.</li>
@@ -785,15 +805,16 @@ export class UI {
           <li>시작 위치는 고지·저지·다리·발판 중 무작위로 고르며, 양 팀은 같은 높이·발판의 좌우 대칭 위치에서 시작합니다. 2:2도 서로 대응하는 두 자리를 대칭으로 놓습니다. 높은 곳에서 떨어지면 큰 피해를 받고, 벼랑 외나무다리의 추락선을 넘으면 체력과 무관하게 탈락합니다.</li>
           <li>바람은 턴마다 바뀝니다. 화면 위 화살표가 방향과 세기(0~10)입니다. 모든 탄의 기본 발사속도·중력·바람 영향은 같습니다.</li>
           <li><b>무당의 추적 부적탄</b>은 가까운 적을 찾아 따라갑니다. 표적에 금빛 조준 표시가 뜨며, 장애물에 먼저 닿으면 막힙니다.</li>
-          <li>힘 막대를 끌어 힘을 정하고 <kbd>Q</kbd>/<kbd>E</kbd> 또는 −/+로 0.1씩 조절한 뒤 발사할 수 있습니다. <kbd>R</kbd>이나 「꾹」으로 누르고 떼는 방식으로 돌아갑니다.</li>
-          <li><b>굴착대장</b>은 1번으로 긴 터널을 뚫습니다. 2번을 채석장처럼 아래가 빈 발판 위에 맞히면 밑면까지 절단해 지지점에서 떨어진 조각을 무너뜨립니다.</li>
+          <li><kbd>Space</kbd>나 「발사」를 누르면 힘이 차고, 떼는 순간 쏩니다. 힘 게이지에는 현재 모은 힘과 지난 발사 힘이 표시됩니다.</li>
+          <li><b>굴착대장</b>의 1번 탄은 벽을 뚫고, 채석장의 얇은 발판은 아래까지 끊을 수 있습니다. 2번 탄은 철편 세 발을 펼쳐 명중을 노립니다.</li>
           <li>지지점을 잃은 땅은 덩어리째 무너지고, 바위는 낙석이 되어 굴러갑니다. 깔리거나 높은 곳에서 떨어지면 다칩니다.</li>
           <li><b>1번과 2번 탄은 매 차례 자유롭게 선택</b>합니다. 횟수 제한과 기세 조건이 없고, 발사 뒤에도 고른 탄을 기억합니다. 누르고 모으는 힘은 포탄의 날아갈 거리입니다.</li>
-          <li><b>추천 각도·힘</b>는 넓은 시작 범위입니다. 화살표 쪽으로 포신을 돌리고, 추천 범위 안에서 조금씩 조절해 보세요. 힘 게이지의 금빛 띠가 추천 구간입니다. 위치·바람·탄이 바뀌면 다시 안내하며, 설정의 「조준 도움」에서 끌 수 있습니다.</li>
+          <li><b>추천 각도</b>는 넓은 시작 범위입니다. 화살표 쪽으로 포신을 돌려 각도를 조절하세요. 설정의 「조준 도움」에서 끌 수 있습니다.</li>
           <li>낮은 둔턱은 걸어서 넘을 수 있습니다. 경사에 서면 몸과 포신이 함께 기울어집니다. 조작부의 큰 숫자는 몸 기준 조준각이고, 그 아래에 경사를 반영한 발사 방향과 각도가 표시됩니다.</li>
           <li><b>독구름</b> 안에서 자기 차례를 맞으면 피해를 입습니다. 구름 밖으로 움직여 피할 수 있으며, 같은 편도 피해를 입습니다.</li>
           <li>장수마다 최대 체력이 다릅니다. 기본은 상대 편이 모두 쓰러져야 끝나는 끝장전입니다. 20·30·40턴 판정전은 제한 턴 뒤 체력 비율로 판정합니다. 함께 쓰러지면 무승부입니다.</li>
           <li><b>2:2</b>는 편마다 장수 둘이 번갈아 쏩니다(편 → 상대 편 → 편의 다른 장수 …). 같은 편도 폭발에 다치니 조심하세요. 한 편이 모두 쓰러지면 끝납니다.</li>
+          <li><b>1:1:1:1</b>은 네 장수가 각자 싸우는 개인전입니다. 쓰러진 장수는 차례를 건너뛰고, 끝장전에서는 마지막 한 명이 이깁니다.</li>
         </ul>
         <h3>포탄 속의 수학</h3>
         <div class="mathbox">처음 속도 <code>v</code>, 각도 <code>θ</code>로 쏜 포탄의 위치는<br>

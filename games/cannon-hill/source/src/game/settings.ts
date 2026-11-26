@@ -17,7 +17,7 @@ export interface Settings {
   /** 장수 순서는 [1팀 첫째, 2팀 첫째, 1팀 둘째, 2팀 둘째]. 1:1은 앞의 둘만 쓴다 */
   lastChars: string[];
   lastMap: string;
-  teamSize: 1 | 2;
+  teamSize: 1 | 2 | 'ffa';
 }
 
 const DEFAULTS: Settings = {
@@ -70,7 +70,7 @@ export function loadSettings(): Settings {
   s.battleRules = 2;
   if (!Array.isArray(s.lastChars) || (s.lastChars.length !== 2 && s.lastChars.length !== 4)) s.lastChars = [...DEFAULTS.lastChars];
   if (s.lastChars.length === 2) s.lastChars = [...s.lastChars, ...DEFAULTS.lastChars.slice(2)];
-  if (s.teamSize !== 1 && s.teamSize !== 2) s.teamSize = 1;
+  if (s.teamSize !== 1 && s.teamSize !== 2 && s.teamSize !== 'ffa') s.teamSize = 1;
   return s;
 }
 

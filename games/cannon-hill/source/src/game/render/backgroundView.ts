@@ -14,6 +14,7 @@ export class BackgroundView {
   private layers: { img: Phaser.GameObjects.Image; f: number; fy: number }[] = [];
   /** 그려 받은 배경 한 장(있으면 겹 배경 대신 쓴다) */
   private painted: Phaser.GameObjects.Image | null = null;
+  private valleyMist: Phaser.GameObjects.Image | null = null;
   private ambient: Phaser.GameObjects.Particles.ParticleEmitter | null = null;
   private keys: string[] = [];
   private bg: BgLayers;
@@ -32,8 +33,66 @@ export class BackgroundView {
     layer.add(this.sky);
     const spec: [keyof BgLayers, number, number][] = [['far', 0.06, 0.04], ['mid', 0.16, 0.1], ['near', 0.3, 0.2]];
     if (scene.textures.exists(artKey.bg(mapId))) {
-      this.painted = scene.add.image(0, 0, artKey.bg(mapId)).setOrigin(0, 0);
+      let key = artKey.bg(mapId);
+      if (mapId === 'windrift') {
+        const source = scene.textures.get(key).getSourceImage() as HTMLImageElement;
+        const canvas = document.createElement('canvas');
+        canvas.width = source.width;
+        canvas.height = source.height;
+        const ctx = canvas.getContext('2d')!;
+        ctx.filter = 'contrast(1.13) saturate(.96)';
+        ctx.drawImage(source, 0, 0);
+        ctx.filter = 'none';
+        const depth = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        depth.addColorStop(0, 'rgba(36,31,64,.13)');
+        depth.addColorStop(.30, 'rgba(36,31,64,0)');
+        depth.addColorStop(.49, 'rgba(23,51,69,.43)');
+        depth.addColorStop(.70, 'rgba(17,62,84,.73)');
+        depth.addColorStop(1, 'rgba(17,47,63,.87)');
+        ctx.fillStyle = depth;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // Amber light is strongest beside the painted sun; the far valley stays cool.
+        const dusk = ctx.createRadialGradient(canvas.width * .24, canvas.height * .24, 0,
+          canvas.width * .24, canvas.height * .24, canvas.width * .40);
+        dusk.addColorStop(0, 'rgba(253,161,69,.22)');
+        dusk.addColorStop(.53, 'rgba(238,139,77,.11)');
+        dusk.addColorStop(1, 'rgba(238,139,77,0)');
+        ctx.globalCompositeOperation = 'soft-light';
+        ctx.fillStyle = dusk;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        key = add('sunset', canvas);
+      }
+      this.painted = scene.add.image(0, 0, key).setOrigin(0, 0);
       layer.add(this.painted);
+      if (mapId === 'windrift') {
+        // Overlapping lit banks follow the slopes and float ahead of the distant ridges.
+        const fog = document.createElement('canvas');
+        fog.width = 960;
+        fog.height = 480;
+        const mist = fog.getContext('2d')!;
+        for (let bank = 0; bank < 6; bank++) {
+          const side = bank % 2 === 0 ? 1 : -1;
+          const level = Math.floor(bank / 2);
+          for (let i = 0; i < 9; i++) {
+            const u = i / 8;
+            const x = side === 1 ? u * 360 : fog.width - u * 360;
+            const y = 173 + level * 103 + u * (52 - level * 14) + Math.sin(i * 2.3 + bank) * 5;
+            mist.save();
+            mist.translate(x, y);
+            mist.rotate(side * (.11 - level * .035));
+            mist.scale(85 + 22 * Math.cos(i + bank), 9 + level * 3);
+            const haze = mist.createRadialGradient(0, 0, 0, 0, 0, 1);
+            haze.addColorStop(0, 'rgba(193,213,220,.105)');
+            haze.addColorStop(.5, 'rgba(168,198,211,.055)');
+            haze.addColorStop(1, 'rgba(162,194,207,0)');
+            mist.fillStyle = haze;
+            mist.fillRect(-1, -1, 2, 2);
+            mist.restore();
+          }
+        }
+        this.valleyMist = scene.add.image(0, 0, add('mist', fog)).setOrigin(.5, 0);
+        layer.add(this.valleyMist);
+      }
       spec.length = 0;
     }
     for (const [name, f, fy] of spec) {
@@ -65,7 +124,7 @@ export class BackgroundView {
         break;
       case 'clouds':
         tex = 'puff';
-        cfg = { x: -160, y: { min: 120, max: VIEW_H - 40 }, speedX: { min: 18, max: 38 }, lifespan: 60000, scale: { min: 0.6, max: 1.3 }, alpha: { min: 0.35, max: 0.7 }, frequency: 2600 / k };
+        cfg = { x: -160, y: { min: 120, max: VIEW_H - 40 }, speedX: { min: 18, max: 38 }, lifespan: 60000, scaleX: { min: 1.5, max: 2.9 }, scaleY: { min: 0.12, max: 0.27 }, tint: 0xc8deec, alpha: { min: 0.045, max: 0.12 }, frequency: 4500 / k };
         break;
       case 'souls':
       default:
@@ -96,6 +155,10 @@ export class BackgroundView {
       const uy = Phaser.Math.Clamp((camY - 760) / 500, -1, 1);
       p.x = this.viewW / 2 - w / 2 - ux * slackX * 0.9;
       p.y = -slackY * (0.55 + uy * 0.4);
+      if (this.valleyMist) {
+        this.valleyMist.setDisplaySize(this.viewW * 1.16, VIEW_H);
+        this.valleyMist.setPosition(this.viewW * (.5 - .045 * ux) + Math.sin(this.t * .055) * 9, -uy * 11);
+      }
     }
     for (const { img, f, fy } of this.layers) {
       const s = 0.92 + zoom * 0.1;
@@ -109,6 +172,7 @@ export class BackgroundView {
   destroy(): void {
     this.sky.destroy();
     this.painted?.destroy();
+    this.valleyMist?.destroy();
     for (const l of this.layers) l.img.destroy();
     this.ambient?.destroy();
     for (const k of this.keys) if (this.scene.textures.exists(k)) this.scene.textures.remove(k);

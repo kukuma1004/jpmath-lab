@@ -19,19 +19,23 @@ function viewWidth(): number {
   return Math.round(Math.min(VIEW_W_MAX, Math.max(VIEW_W_MIN, (VIEW_H * w) / h)));
 }
 
+const PORTRAIT_BATTLE = '(orientation: portrait) and (max-width: 820px)';
+
 export class App {
   settings: Settings;
   ui: UI;
   game!: Phaser.Game;
   mode: Mode = 'ai';
   private target: TargetRange | null = null;
-  last: { mode: Mode; chars: string[]; mapId: string; starterMatch: boolean } | null = null;
+  private field = document.querySelector<HTMLElement>('#game')!;
+  private resizeFrame = 0;
+  last: { mode: Mode; chars: string[]; mapId: string; starterMatch: boolean; freeForAll: boolean } | null = null;
 
   constructor() {
     this.settings = loadSettings();
     audio.setVolumes(this.settings.bgm, this.settings.sfx);
     this.ui = new UI(document.getElementById('ui')!, this.settings, {
-      startBattle: (mode, chars, mapId) => this.startBattle(mode, chars, mapId),
+      startBattle: (mode, chars, mapId, freeForAll) => this.startBattle(mode, chars, mapId, false, freeForAll),
       quickBattle: () => this.startBattle('ai', ['general', 'archer'], 'quarry', true),
       targetRange: () => this.openTargetRange(),
       toTitle: () => this.toTitle(),
@@ -42,7 +46,7 @@ export class App {
       pause: () => this.pause(),
       weapon: (slot) => this.battleScene()?.selectWeapon(slot),
       flip: () => this.battleScene()?.flip(),
-      camera: () => this.battleScene()?.cycleCamera(),
+      camera: () => this.battleScene()?.toggleOverview(),
       recenter: () => this.battleScene()?.recenter(),
       settingsChanged: (s) => this.applySettings(s),
     });
@@ -50,8 +54,8 @@ export class App {
 
   private rematch(): void {
     if (!this.last) return;
-    const {mode, chars, mapId, starterMatch} = this.last;
-    this.startBattle(mode, chars, mapId, starterMatch);
+    const {mode, chars, mapId, starterMatch, freeForAll} = this.last;
+    this.startBattle(mode, chars, mapId, starterMatch, freeForAll);
   }
 
   boot(): void {
@@ -61,7 +65,7 @@ export class App {
       backgroundColor: '#0d0a09',
       width: viewWidth(),
       height: VIEW_H,
-      scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
+      scale: { mode: Phaser.Scale.FIT, expandParent: false },
       render: { antialias: true, pixelArt: false, roundPixels: false, powerPreference: 'high-performance' },
       fps: { target: 60, smoothStep: true },
       input: { activePointers: 3 },
@@ -70,20 +74,37 @@ export class App {
       scene: [BootScene, TitleScene, BattleScene],
       callbacks: { preBoot: (g) => g.registry.set('app', this) },
     });
-    let rt = 0;
-    window.addEventListener('resize', () => {
-      window.clearTimeout(rt);
-      rt = window.setTimeout(() => {
-        const w = viewWidth();
-        if (Math.abs(w - this.game.scale.width) > 2) this.game.scale.setGameSize(w, VIEW_H);
+    const stage = document.querySelector<HTMLElement>('.battle-window')!;
+    const queueResize = () => {
+      if (this.resizeFrame) return;
+      this.resizeFrame = requestAnimationFrame(() => {
+        this.resizeFrame = 0;
+        let width = viewWidth();
+        if (this.portraitBattle) {
+          const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+          document.body.style.setProperty('--visible-height', `${Math.floor(viewportHeight)}px`);
+          document.body.style.setProperty('--field-top', `${stage.offsetTop}px`);
+          document.body.style.setProperty('--field-height', `${stage.offsetHeight}px`);
+          if (stage.offsetHeight > 0)
+            width = Math.round(Math.min(VIEW_W_MAX, Math.max(360, (VIEW_H * this.field.clientWidth) / stage.offsetHeight)));
+        }
+        if (width !== this.game.scale.width) this.game.scale.setGameSize(width, VIEW_H);
         else this.game.scale.refresh();
-      }, 120);
-    });
+      });
+    };
+    new ResizeObserver(queueResize).observe(stage);
+    window.addEventListener('resize', queueResize);
+    window.visualViewport?.addEventListener('resize', queueResize);
+    this.resizeBattle = queueResize;
     document.addEventListener('visibilitychange', () => {
       audio.suspend(document.hidden);
       // 탭을 가리면 멈추기만 한다(이미 멈춰 있으면 그대로 둔다)
       if (document.hidden) this.pauseOnly();
     });
+  }
+
+  get portraitBattle(): boolean {
+    return document.body.classList.contains('in-battle') && matchMedia(PORTRAIT_BATTLE).matches;
   }
 
   battleScene(): BattleScene | null {
@@ -136,10 +157,10 @@ export class App {
   }
 
   /** chars는 장수 순서([1팀, 2팀] 또는 [1팀, 2팀, 1팀, 2팀]) */
-  startBattle(mode: Mode, chars: string[], mapId: string, starterMatch = false): void {
+  startBattle(mode: Mode, chars: string[], mapId: string, starterMatch = false, freeForAll = false): void {
     this.mode = mode;
     this.ui.mode = mode;
-    this.last = { mode, chars, mapId, starterMatch };
+    this.last = { mode, chars, mapId, starterMatch, freeForAll };
     if (!starterMatch) {
       const keep = [...this.settings.lastChars];
       chars.forEach((c, i) => (keep[i] = c));
@@ -148,16 +169,16 @@ export class App {
       saveSettings(this.settings);
     }
     const seed = (Math.random() * 2 ** 31) | 0;
-    const perTeam = chars.length / 2;
     const cfg: BattleConfig = {
       mapId, seed, chars,
-      // AI 대전: 1팀(짝수 자리)은 사람, 2팀은 AI. 둘이서: 모두 사람
-      controllers: chars.map((_, i) => (mode === 'ai' && i % 2 === 1 ? 'ai' : 'human')),
+      // AI 개인전에서는 1P만, AI 팀전에서는 1팀 장수만 사람이 조작한다.
+      controllers: chars.map((_, i) => (mode === 'ai' && (freeForAll ? i > 0 : i % 2 === 1) ? 'ai' : 'human')),
       difficulty: starterMatch ? 'easy' : this.settings.difficulty,
       turnTime: starterMatch ? 45 : this.settings.turnTime,
-      // 2:2는 장수 한 명이 쏘는 횟수가 1:1과 같도록 전체 턴을 늘린다
-      turnLimit: starterMatch ? 0 : this.settings.turnLimit * perTeam,
+      // 네 명이 싸우는 판정전은 한 장수가 쏘는 횟수를 맞추기 위해 턴 수를 두 배로 둔다.
+      turnLimit: starterMatch ? 0 : this.settings.turnLimit * (chars.length / 2),
       starterMatch,
+      freeForAll,
     };
     this.ui.hideResult();
     this.ui.show('pause', false);
@@ -195,9 +216,10 @@ export class App {
   /** 세로 화면에서는 전투 중에만 게임 화면을 위로 붙인다 */
   private setBattleLayout(on: boolean): void {
     document.body.classList.toggle('in-battle', on);
-    requestAnimationFrame(() => this.game.scale.refresh());
-    window.setTimeout(() => this.game.scale.refresh(), 120);
+    this.resizeBattle();
   }
+
+  private resizeBattle = () => {};
 
   /** Esc·정지 단추: 멈춤과 계속을 오간다 */
   pause(): void {

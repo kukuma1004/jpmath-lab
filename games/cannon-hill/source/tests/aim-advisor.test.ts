@@ -17,14 +17,13 @@ function ready(a:AimAdvisor,b:Battle){
 }
 
 describe('정답 대신 제공하는 넓은 조준 시작 범위',()=>{
-  it.each([false,true])('좌우 상대 방향에 맞춰 각도 10도·힘 15의 구간만 반환한다 (%s)',reverse=>{
+  it.each([false,true])('좌우 상대 방향에 맞춰 각도 10도의 구간만 반환한다 (%s)',reverse=>{
     const b=flat('general',reverse),a=new AimAdvisor(),before=b.serialize();
     const hint=ready(a,b);expect(hint?.kind).toBe('range');
     if(hint?.kind!=='range')return;
     expect(hint.direction).toBe(reverse?-1:1);
     expect(hint.angle[1]-hint.angle[0]).toBe(10);expect(hint.angle[0]%10).toBe(0);
-    expect(hint.power[1]-hint.power[0]).toBe(15);expect(hint.power[0]%5).toBe(0);
-    expect(Object.keys(hint).sort()).toEqual(['angle','direction','kind','power']);
+    expect(Object.keys(hint).sort()).toEqual(['angle','direction','kind']);
     expect(b.serialize()).toBe(before);
   });
   it.each(CHARACTERS.flatMap(c=>[0,1].map(slot=>[c.id,slot] as const)))('%s %s번 탄도 같은 방식의 시작 범위로 안내한다',(id,slot)=>{

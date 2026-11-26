@@ -80,8 +80,8 @@ export class Effects {
       const height = radius * (0.16 + t * .67);
       const cloud = this.scene.add.image(x + direction * spread * .48, y - height * .35, 'blast_cloud')
         .setDepth(18).setAngle(direction * (i % 3 - 1) * 18)
-        .setTint([0x685850, 0xa08a77, 0x514d50][i % 3]!)
-        .setScale(radius / 68 * (.52 + .36 * t)).setAlpha(.93);
+        .setTint(0xffe4bb, 0xf0ceb1, 0xa6a4aa, 0x93949c)
+        .setScale(radius / 68 * (.52 + .36 * t)).setAlpha(.80);
       this.layer.add(cloud);
       this.scene.tweens.add({
         targets: cloud, x: x + direction * spread * 1.55, y: y - height * (1 + i % 2 * .55),

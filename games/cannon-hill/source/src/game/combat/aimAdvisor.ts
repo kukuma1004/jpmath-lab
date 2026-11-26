@@ -4,7 +4,7 @@ export type HintBand = readonly [number,number];
 export type AimHint =
   | {kind:'thinking'|'moving'}
   | {kind:'blocked';direction:1|-1}
-  | {kind:'range';direction:1|-1;angle:HintBand;power:HintBand};
+  | {kind:'range';direction:1|-1;angle:HintBand};
 
 interface Sample {
   angle: number;
@@ -64,7 +64,7 @@ export class AimAdvisor {
     }
     seeds.sort((a, other) => other.quality - a.quality);
     const checked = new Set<string>();
-    let best: {angle: HintBand; power: HintBand; score: number} | undefined;
+    let best: {angle: HintBand; score: number} | undefined;
     for (const seed of seeds) {
       const angleStart = Math.floor(seed.angle / 10) * 10;
       // 구간 중앙에 좋은 샷이 오도록 5 단위로 배치한다.
@@ -88,9 +88,9 @@ export class AimAdvisor {
       if (!usable && !seed.usable) continue;
       score = score / 10 + usable * 12 + seed.quality * 0.15;
       if (!best || score > best.score) {
-        best = {angle: [angleStart, angleStart+10], power: [powerStart, powerStart+15], score};
+        best = {angle: [angleStart, angleStart+10], score};
       }
     }
-    return best ? {kind:'range', direction, angle:best.angle, power:best.power} : {kind:'blocked',direction};
+    return best ? {kind:'range', direction, angle:best.angle} : {kind:'blocked',direction};
   }
 }

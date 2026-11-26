@@ -6,8 +6,9 @@ import type { Battle } from '../combat/battle';
 import type { Fighter } from '../combat/types';
 
 const DEG = Math.PI / 180;
-const FIGURE_SCALE = 1.13;
-export const PLAYER_COLORS = [0x4f9cf0, 0xf05a4f];
+const FIGURE_SCALE = 1.19;
+export const PLAYER_COLORS = [0x4f9cf0, 0xf05a4f, 0x61bb80, 0xc691ff];
+const TAG_COLORS = ['#2f6ab8', '#b8382f', '#397652', '#7247a0'];
 
 /** 캐릭터 한 명의 화면 표현. 상태(Idle·Aim·Charge·Fire·Hit·Fall·Victory·Defeat)는 시뮬레이션의 anim 값을 따른다. */
 export class FighterView {
@@ -38,7 +39,7 @@ export class FighterView {
     this.lastHp = f.hp;
     const id = f.charId;
     this.c = scene.add.container(f.x, f.y).setDepth(20);
-    this.shadow = scene.add.ellipse(0, 1, 34, 7, 0x000000, 0.35);
+    this.shadow = scene.add.ellipse(3, 1, 34, 7, 0x18212d, 0.56);
     this.rig = scene.add.container(0, 0);
     this.aura = scene.add.image(0, -22, 'glow').setBlendMode(Phaser.BlendModes.ADD).setAlpha(0).setTint(PLAYER_COLORS[f.team]!);
     this.art = bodyArt(scene.textures, id);
@@ -51,7 +52,7 @@ export class FighterView {
       : scene.add.image(0, 0, `wpn_${id}`).setOrigin(WEAPON_BOX.pivotX / WEAPON_BOX.w, WEAPON_BOX.pivotY / WEAPON_BOX.h).setScale(1 / TEX);
     if (this.art) this.shadow.setSize(Math.max(30, this.art.width * 0.72), 7);
     this.rig.add([this.aura, this.body, this.wpn]);
-    this.tag = scene.add.text(0, -70, label, { fontFamily: 'Black Han Sans, sans-serif', fontSize: '13px', color: '#ffffff', backgroundColor: f.team === 0 ? '#2f6ab8' : '#b8382f', padding: { x: 5, y: 2 } }).setOrigin(0.5, 1).setResolution(2);
+    this.tag = scene.add.text(0, -70, label, { fontFamily: 'Black Han Sans, sans-serif', fontSize: '13px', color: '#ffffff', backgroundColor: TAG_COLORS[f.team]!, padding: { x: 5, y: 2 } }).setOrigin(0.5, 1).setResolution(2);
     this.hpBg = scene.add.rectangle(0, -64, 40, 5, 0x000000, 0.6).setOrigin(0.5, 0.5);
     this.hpFill = scene.add.rectangle(-20, -64, 40, 5, 0x6ad07a).setOrigin(0, 0.5);
     this.arrow = scene.add.image(0, -92, 'arrowhead').setScale(0.7).setTint(PLAYER_COLORS[f.team]!).setVisible(false);
@@ -185,8 +186,8 @@ export class FighterView {
       this.body.setTint(0x8a8a96);
       this.wpn.setTint(0x8a8a96);
     } else {
-      this.body.clearTint();
-      this.wpn.clearTint();
+      this.body.setTint(0xfff7e9, 0xfff6ea, 0xe4e2e3, 0xdbdfe8);
+      this.wpn.setTint(0xfffaf0, 0xffffff, 0xece8e5, 0xd7dce3);
     }
 
     // 기절 별
@@ -209,7 +210,15 @@ export class FighterView {
     this.hpFill.setVisible(show);
     this.tag.setAlpha(isCurrent ? 1 : 0.8);
     this.arrow.setVisible(showArrow && f.alive);
-    if (showArrow) this.arrow.y = this.tag.y - this.tag.height - 9 + Math.sin(t * 6) * 4;
+    if (showArrow) this.arrow.y = this.tag.y - this.tag.displayHeight - 9 + Math.sin(t * 6) * 4;
+  }
+
+  setMarkerScale(scale: number): void {
+    this.tag.setScale(scale);
+    this.arrow.setScale(.7 * Math.sqrt(scale));
+    this.hpBg.setScale(scale, Math.sqrt(scale));
+    this.hpFill.setScale(scale, Math.sqrt(scale));
+    this.hpFill.x = -20 * scale;
   }
 
   destroy(): void {

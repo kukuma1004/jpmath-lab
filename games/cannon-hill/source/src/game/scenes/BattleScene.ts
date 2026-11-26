@@ -3,7 +3,7 @@ import { CHAR_CENTER_Y, DT, VIEW_H, WORLD_H, WORLD_W } from '../config/constants
 import { Battle } from '../combat/battle';
 import { AimAdvisor } from '../combat/aimAdvisor';
 import { ShotReview } from '../combat/shotReview';
-import type { BattleConfig, SimEvent, WeaponSlot } from '../combat/types';
+import type { BattleConfig, Projectile, SimEvent, WeaponSlot } from '../combat/types';
 import { bodyArt } from '../art/artAssets';
 import { AIActor, AIPlanner } from '../ai/ai';
 import { mapDef } from '../data/maps';
@@ -19,7 +19,7 @@ import { input } from '../input/input';
 import { audio } from '../audio/audio';
 import { particleScale } from '../settings';
 import type { App } from '../app';
-import type { Mode } from '../ui/ui';
+import { playerLabel, type Mode } from '../ui/ui';
 
 const DEG = Math.PI / 180;
 
@@ -56,7 +56,10 @@ export class BattleScene extends Phaser.Scene {
   private camY = 760;
   private camZ = 0.6;
   private free = false;
-  private camMode: 'auto' | 'self' | 'enemy' | 'all' = 'auto';
+  private camMode: 'auto' | 'enemy' | 'all' = 'auto';
+  private followId: number | null = null;
+  private followShot: Projectile | null = null;
+  private ringOutLabel: Phaser.GameObjects.Text | null = null;
   private userZoom = 1;
   private lastPhase = '';
   private lastBlast = { x: WORLD_W / 2, y: 800 };
@@ -75,13 +78,16 @@ export class BattleScene extends Phaser.Scene {
     this.app = this.registry.get('app') as App;
     this.mode = data.mode;
     this.battle = new Battle(data.cfg);
-    const teamNames = data.mode === 'ai' ? ['나', 'AI'] : ['1P', '2P'];
-    this.names = this.battle.fighters.map((f) => teamNames[f.team]!);
+    this.names = this.battle.fighters.map(f => playerLabel(data.mode, f.team, !!data.cfg.freeForAll));
     this.paused = false;
     this.acc = 0;
     this.t = 0;
     this.free = false;
     this.camMode = 'auto';
+    this.lastPhase = '';
+    this.followId = null;
+    this.followShot = null;
+    this.ringOutLabel = null;
     this.userZoom = 1;
     this.fighters = [];
     this.bottomFx = [];
@@ -113,8 +119,8 @@ export class BattleScene extends Phaser.Scene {
       const line = this.add.graphics().setDepth(8);
       line.lineStyle(2,0xffb589,0.5);
       for(let x=0;x<WORLD_W;x+=48) line.lineBetween(x,def.ringOutY,x+24,def.ringOutY);
-      const label=this.add.text(WORLD_W/2,def.ringOutY+12,'추락 시 탈락',{fontFamily:'sans-serif',fontSize:'18px',color:'#ffd1ac',stroke:'#302339',strokeThickness:5}).setOrigin(0.5,0).setDepth(8);
-      this.world.add([line,label]);
+      this.ringOutLabel = this.add.text(WORLD_W/2,def.ringOutY+12,'추락 시 탈락',{fontFamily:'sans-serif',fontSize:'18px',color:'#ffd1ac',stroke:'#302339',strokeThickness:5}).setOrigin(0.5,0).setDepth(8).setResolution(2);
+      this.world.add([line,this.ringOutLabel]);
     }
     this.terrainView = new TerrainView(this, this.world, b.terrain, def, b.cfg.seed);
     this.bodies = new BodiesView(this, this.world, this.terrainView.painter, particleScale(s.quality));
@@ -186,7 +192,7 @@ export class BattleScene extends Phaser.Scene {
       this.world.add(gorge);
     } else if (mapId === 'windrift') {
       const gorge = this.add.graphics().setDepth(7);
-      const color = 0x29253d;
+      const color = 0x102c3a;
       gorge.fillGradientStyle(color, color, color, color, 0, 0, 0.7, 0.7);
       gorge.fillRect(-400, 705, WORLD_W + 800, WORLD_H - 705);
       gorge.fillStyle(color, 0.7).fillRect(-400, WORLD_H, WORLD_W + 800, 600);
@@ -224,39 +230,67 @@ export class BattleScene extends Phaser.Scene {
   // ───────── 카메라 ─────────
 
   private minZoom(): number {
-    return Math.max(0.42, this.scale.width / (WORLD_W + 240));
+    return this.scale.width / (WORLD_W + 240);
   }
 
   /** 살아 있는 장수가 모두 보이게 */
   private overview(): { x: number; y: number; z: number } {
-    if (this.battle.cfg.mapId === 'windrift') {
-      return { x: WORLD_W / 2, y: 510, z: this.scale.width / (WORLD_W + 72) };
-    }
-    if (this.battle.cfg.mapId === 'quarry' && !this.battle.cfg.starterMatch) {
-      return { x: WORLD_W / 2, y: 680, z: this.scale.width / (WORLD_W + 72) };
-    }
     const live = this.battle.fighters.filter((f) => f.alive && f.y < WORLD_H);
     const fs = live.length ? live : this.battle.fighters;
     const x0 = Math.min(...fs.map((f) => f.x)), x1 = Math.max(...fs.map((f) => f.x));
     const y0 = Math.min(...fs.map((f) => f.y)), y1 = Math.max(...fs.map((f) => f.y));
-    const dx = x1 - x0 + 560;
-    const dy = y1 - y0 + 520;
-    const z = Phaser.Math.Clamp(Math.min(this.scale.width / dx, VIEW_H / dy), this.minZoom(), 1);
+    const map = this.battle.cfg.mapId;
+    if (this.camMode === 'all' || map === 'windrift' || (map === 'quarry' && !this.battle.cfg.starterMatch)) {
+      const ringOut = mapDef(map).ringOutY;
+      const fieldBottom = Math.max(y1 + 85, ringOut ?? y1 + 180);
+      const z = Math.min(this.scale.width / (WORLD_W + 48), VIEW_H / (fieldBottom - y0 + 230));
+      return { x: WORLD_W / 2, y: (y0 + fieldBottom - 125) / 2, z };
+    }
+    const z = Phaser.Math.Clamp(Math.min(this.scale.width / (x1 - x0 + 430), VIEW_H / (y1 - y0 + 440)), this.minZoom(), 1);
     return { x: (x0 + x1) / 2, y: (y0 + y1) / 2 - 80, z };
   }
 
-  /** Tab·「보기」 단추: 따라가기 → 상대 보기 → 전체 보기 */
+  /** Tab: 따라가기 → 상대 보기 → 전체 보기 */
   cycleCamera(): void {
     const order: typeof this.camMode[] = ['auto', 'enemy', 'all'];
     this.camMode = order[(order.indexOf(this.camMode) + 1) % order.length]!;
     this.free = false;
+    this.userZoom = 1;
     this.app.ui.toast(this.camMode === 'auto' ? '카메라: 따라가기' : this.camMode === 'enemy' ? '카메라: 상대 보기' : '카메라: 전체 보기');
+  }
+
+  toggleOverview(): void {
+    if (!this.free && this.camMode === 'all') {
+      this.recenter();
+      return;
+    }
+    this.free = false;
+    this.camMode = 'all';
+    this.userZoom = 1;
   }
 
   /** C·「내 장수로」 단추: 둘러보기를 끝내고 지금 차례 장수를 따라간다 */
   recenter(): void {
     this.free = false;
     this.camMode = 'auto';
+    this.userZoom = 1;
+  }
+
+  private trackProjectile(b: Battle): Projectile | null {
+    const shots = b.projectiles;
+    const following = shots.find(p => p.id === this.followId);
+    if (following) return following;
+    const main = shots.filter(p => p.child !== 'frag');
+    const candidates = main.length ? main : shots;
+    if (!candidates.length) return null;
+    let next = candidates[Math.floor(candidates.length / 2)]!;
+    if (this.followId !== null) {
+      // When a shell bursts, keep following the nearest surviving part of the volley.
+      const distance = (p: Projectile) => Math.hypot(p.x - this.camX, p.y - this.camY);
+      for (const p of candidates) if (distance(p) < distance(next)) next = p;
+    }
+    this.followId = next.id;
+    return next;
   }
 
   private target(): { x: number; y: number; z: number; k: number } {
@@ -265,32 +299,42 @@ export class BattleScene extends Phaser.Scene {
     const mobile = this.scale.width < 1100;
     // 세로 휴대폰처럼 화면이 좁으면 더 가까이
     const narrow = this.scale.displaySize.width < 560;
-    const zBase = narrow ? 1.25 : mobile ? 1.0 : 1.12;
-    if (this.camMode === 'all') return { ...this.overview(), k: 4 };
+    const portrait = this.app.portraitBattle;
+    const displayScale = this.scale.displaySize.width / this.scale.width;
+    const zBase = portrait ? Phaser.Math.Clamp(.49 / Math.max(.1, displayScale), 1.23, 1.4)
+      : narrow ? 1.18 : mobile ? 1.0 : 1.12;
+    const aimLead = Math.min(140, this.scale.width * .14);
+    if (this.camMode === 'all' && b.phase !== 'GAME_OVER') return { ...this.overview(), k: 10 };
     if (this.camMode === 'enemy' && b.isPlayerPhase()) return { x: b.enemy.x, y: b.enemy.y - 90, z: zBase, k: 4 };
-    if ((b.cfg.starterMatch || b.cfg.mapId === 'windrift') && this.camMode === 'auto' && this.humanTurn() &&
+    if (!portrait && b.cfg.starterMatch && this.camMode === 'auto' && this.humanTurn() &&
         (b.phase === 'TURN_START' || b.isPlayerPhase())) return { ...this.overview(), k: 5 };
     switch (b.phase) {
       case 'BATTLE_START':
         return { ...this.overview(), k: 2 };
       case 'TURN_START':
-        return { x: f.x + (f.angle <= 90 ? 1 : -1) * 120, y: f.y - 100, z: zBase, k: 3 };
+        return { x: f.x + (f.angle <= 90 ? 1 : -1) * aimLead, y: f.y - 100, z: zBase, k: 3 };
       case 'AIM':
       case 'MOVE':
       case 'CHARGE':
-        return { x: f.x + (f.angle <= 90 ? 1 : -1) * 140, y: f.y - 110, z: zBase, k: 4 };
+        return { x: f.x + (f.angle <= 90 ? 1 : -1) * aimLead, y: f.y - 110, z: zBase, k: 4 };
       case 'PROJECTILE_FLIGHT': {
-        const p = this.bodies.lead(b);
-        if (p) return { x: p.x + p.vx * 0.22, y: p.y + p.vy * 0.12, z: 0.95, k: 6 };
-        return { x: this.lastBlast.x, y: this.lastBlast.y - 60, z: 1.0, k: 4 };
+        const p = this.followShot;
+        if (p) {
+          const z = portrait ? 1.16 : 1.03;
+          const leadX = Phaser.Math.Clamp(p.vx * .095, -aimLead, aimLead);
+          const leadY = Phaser.Math.Clamp(p.vy * .07, -68, 68);
+          return { x: p.x + leadX, y: p.y + leadY, z, k: 12 };
+        }
+        return { x: this.lastBlast.x, y: this.lastBlast.y - 65, z: zBase, k: 8 };
       }
       case 'EXPLOSION':
       case 'TERRAIN_COLLAPSE': {
         let sx = 0, sy = 0, n = 0;
         for (const r of b.boulders) { sx += r.x; sy += r.y; n++; }
         for (const c of b.chunks) { sx += ((c.minX + c.maxX) / 2) * 2; sy += (c.minY + c.dRow) * 2; n++; }
-        if (n) return { x: (sx / n + this.lastBlast.x) / 2, y: (sy / n + this.lastBlast.y) / 2 - 40, z: 0.9, k: 3 };
-        return { x: this.lastBlast.x, y: this.lastBlast.y - 60, z: 1.0, k: 3 };
+        if (n) return { x: this.lastBlast.x + Phaser.Math.Clamp((sx / n - this.lastBlast.x) * .25, -110, 110),
+          y: this.lastBlast.y - 65 + Phaser.Math.Clamp((sy / n - this.lastBlast.y) * .25, -50, 75), z: portrait ? 1.07 : 0.95, k: 8 };
+        return { x: this.lastBlast.x, y: this.lastBlast.y - 65, z: portrait ? 1.12 : 1.0, k: 8 };
       }
       case 'PHYSICS_SETTLING':
       case 'TURN_END': {
@@ -299,7 +343,7 @@ export class BattleScene extends Phaser.Scene {
         return { x: this.lastBlast.x, y: this.lastBlast.y - 60, z: 1.0, k: 2.5 };
       }
       case 'GAME_OVER': {
-        const ws = b.winner === 0 || b.winner === 1 ? b.fighters.filter((x) => x.team === b.winner && x.alive) : [];
+        const ws = b.fighters.filter(x => x.team === b.winner && x.alive);
         if (ws.length === 1) return { x: ws[0]!.x, y: ws[0]!.y - 70, z: 1.15, k: 2 };
         if (ws.length > 1) {
           const cx = ws.reduce((s, x) => s + x.x, 0) / ws.length, cy = ws.reduce((s, x) => s + x.y, 0) / ws.length;
@@ -314,8 +358,13 @@ export class BattleScene extends Phaser.Scene {
 
   private updateCamera(dt: number): void {
     const b = this.battle;
+    this.followShot = null;
     if (b.phase !== this.lastPhase) {
-      if (b.phase === 'TURN_START' || b.phase === 'PROJECTILE_FLIGHT') { this.free = false; if (b.phase === 'TURN_START') this.camMode = 'auto'; }
+      if (b.phase === 'TURN_START' || b.phase === 'PROJECTILE_FLIGHT') {
+        this.free = false;
+        this.followId = null;
+        if (b.phase === 'TURN_START' && this.camMode === 'enemy') this.camMode = 'auto';
+      }
       this.lastPhase = b.phase;
     }
     // 키보드 I/J/K/L로 둘러보기
@@ -325,14 +374,21 @@ export class BattleScene extends Phaser.Scene {
       this.camX += (pan.x * 620 * dt) / this.camZ;
       this.camY += (pan.y * 620 * dt) / this.camZ;
     }
-    this.app.ui.setFreeCam(this.free);
+    this.app.ui.setCameraMode(this.camMode, this.free);
     if (!this.free) {
+      if (b.phase === 'PROJECTILE_FLIGHT' && this.camMode !== 'all') this.followShot = this.trackProjectile(b);
       const t = this.target();
       const k = 1 - Math.exp(-dt * (b.phase === 'TURN_START' || b.isPlayerPhase() ? Math.max(8,t.k) : t.k));
       this.camX += (t.x - this.camX) * k;
       this.camY += (t.y - this.camY) * k;
       const z = Phaser.Math.Clamp(t.z * this.userZoom, this.minZoom(), 1.4);
       this.camZ += (z - this.camZ) * (1 - Math.exp(-dt * 6));
+      if (this.followShot) {
+        const xRoom = this.scale.width * .34 / this.camZ;
+        const yRoom = VIEW_H * .33 / this.camZ;
+        this.camX = Phaser.Math.Clamp(this.camX, this.followShot.x - xRoom, this.followShot.x + xRoom);
+        this.camY = Phaser.Math.Clamp(this.camY, this.followShot.y - yRoom, this.followShot.y + yRoom);
+      }
     }
     this.applyCamera();
   }
@@ -343,10 +399,18 @@ export class BattleScene extends Phaser.Scene {
     const hw = W / 2 / z, hh = VIEW_H / 2 / z;
     const x0 = -120 + hw, x1 = WORLD_W + 120 - hw;
     this.camX = x0 < x1 ? Phaser.Math.Clamp(this.camX, x0, x1) : WORLD_W / 2;
-    const y0 = -300 + hh, y1 = WORLD_H + 60 - hh;
-    this.camY = y0 < y1 ? Phaser.Math.Clamp(this.camY, y0, y1) : WORLD_H / 2;
+    const shot = this.followShot;
+    const y0 = Math.min(-300, shot ? shot.y - hh : -300) + hh;
+    const y1 = Math.max(WORLD_H + 60, shot ? shot.y + hh : WORLD_H + 60) - hh;
+    if (y0 < y1) this.camY = Phaser.Math.Clamp(this.camY, y0, y1);
     this.cam.setZoom(z);
     this.cam.centerOn(this.camX, this.camY);
+    const cssScale = this.scale.displaySize.width / W * z;
+    if (cssScale > 0) {
+      const markerScale = Phaser.Math.Clamp(.72 / cssScale, 1, 3.6);
+      for (const fighter of this.fighters) fighter.setMarkerScale(markerScale);
+      this.ringOutLabel?.setScale(Phaser.Math.Clamp(.55 / cssScale, 1, 4));
+    }
   }
 
   private setupPointer(): void {
@@ -438,9 +502,9 @@ export class BattleScene extends Phaser.Scene {
         case 'battleStart':
           ui.battleIntro(b, this.names, e.first);
           if (b.fighters.length > 2) {
-            this.time.delayedCall(2700, () => ui.toast(this.mode === 'ai' ? '2:2 — 내 편 장수 둘을 번갈아 조종해요' : '2:2 — 편마다 장수 둘이 번갈아 쏩니다'));
+            this.time.delayedCall(2700, () => ui.toast(b.cfg.freeForAll ? '개인전 · 마지막 한 명이 이겨요'
+              : this.mode === 'ai' ? '2:2 · 내 편 장수 둘을 번갈아 조종해요' : '2:2 · 편마다 장수 둘이 번갈아 쏩니다'));
           }
-          this.time.delayedCall(b.fighters.length > 2 ? 4400 : 2700, () => ui.toast('화면을 끌면 둘러볼 수 있어요 · 「보기」로 전체 보기'));
           break;
         case 'turn': {
           input.newTurn();
@@ -596,7 +660,7 @@ export class BattleScene extends Phaser.Scene {
         }
         case 'gameOver': {
           const w = e.winner;
-          if (w === 0 || w === 1) for (const f of b.fighters) if (f.team === w && f.alive) this.effects.confetti(f.x, f.y - 40);
+          for (const f of b.fighters) if (f.team === w && f.alive) this.effects.confetti(f.x, f.y - 40);
           const iWon = this.mode === 'local' ? w !== -1 : w === 0;
           this.time.delayedCall(220, () => (iWon ? audio.victory() : audio.defeat()));
           this.resultTimer = this.time.delayedCall(900, () => this.app.ui.showResult(b, this.names));
@@ -690,16 +754,15 @@ export class BattleScene extends Phaser.Scene {
 
     const actor = this.actors[b.current];
     const previousShot = !actor && b.isPlayerPhase() ? this.shotReview.summary(b) : '';
-    const showFirstShotTip = b.cfg.starterMatch && b.turnNo === 1 && b.isPlayerPhase() && this.app.settings.aimHints;
     const status = actor && b.isPlayerPhase()
       ? actor.stage === 'think' ? `${character(b.cur.charId).name} AI가 궁리하는 중…` : actor.stage === 'walk' ? '자리를 옮기는 중…' : '조준하는 중…'
       : b.phase === 'TERRAIN_COLLAPSE' ? '땅이 무너지는 중…'
       : !b.isPlayerPhase() && (b.shotDamage.get(b.shotNo) ?? 0) > 0 ? `이번 포격: 상대에게 합계 ${b.shotDamage.get(b.shotNo)} 피해`
       : b.clouds.some((c) => (c.turns[b.current] ?? 0) > 0 && b.inCloud(b.cur, c)) ? '독무 속! 다음 자기 차례가 오기 전에 구름 밖으로 움직이세요'
-      : previousShot || (showFirstShotTip ? '추천 각도와 금빛 힘 구간을 참고하세요' : '') || (
+      : previousShot || (
         b.isPlayerPhase() && b.cur.charId === 'driller' && b.cur.slot === 1 ? '철편 세 발로 조준선과 양옆을 함께 맞힙니다 · 드러난 상대를 노리세요'
       : b.isPlayerPhase() && b.cfg.mapId === 'windrift' ? '협곡 너머로 장거리 포격 · 맞은편 발판을 끊으면 낙사'
-      : b.isPlayerPhase() && b.cfg.mapId === 'bridge' ? '다리를 끊어 떨어뜨리세요 · 추락선을 넘으면 체력과 무관하게 탈락'
+      : b.isPlayerPhase() && b.cfg.mapId === 'bridge' ? '다리를 끊어 상대를 추락시키세요'
       : b.isPlayerPhase() && b.cfg.mapId === 'quarry' && b.cur.charId === 'driller' ? '발판 윗면에 맞혀 밑면까지 절단 · 상대 발밑과 지지점 사이를 노리세요'
       : b.isPlayerPhase() && b.cfg.mapId === 'quarry' && b.turnNo <= 2 ? '중앙 쪽으로 한 단씩 착지 · 마지막 단 밖은 추락'
       : b.isPlayerPhase() && b.cur.slot === 2 ? `${b.weaponOf(b.cur).name} · 스페이스바를 떼면 궁극기를 발사합니다`

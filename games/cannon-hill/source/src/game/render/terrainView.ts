@@ -11,6 +11,7 @@ let uid = 0;
 export class TerrainView {
   painter: TerrainPainter;
   private tiles: { tex: Phaser.Textures.CanvasTexture; img: Phaser.GameObjects.Image; x: number; y: number }[] = [];
+  private pendingTiles = new Set<number>();
   private cols = Math.ceil(WORLD_W / TILE);
   private rows = Math.ceil(WORLD_H / TILE);
   private img: ImageData;
@@ -67,25 +68,21 @@ export class TerrainView {
   /** 바뀐 영역만 다시 그린다(한 프레임에 너무 많으면 다음 프레임으로 미룬다) */
   flush(maxTiles = 10): void {
     const d = this.terrain.dirty;
-    if (!d.length) return;
-    const want = new Set<number>();
+    if (!d.length && !this.pendingTiles.size) return;
+    const want = this.pendingTiles;
     for (const r of d) {
-      const x0 = Math.floor((r.x0 * CELL) / TILE), x1 = Math.floor(((r.x1 + 1) * CELL) / TILE);
-      const y0 = Math.floor((r.y0 * CELL) / TILE), y1 = Math.floor(((r.y1 + 1) * CELL) / TILE);
+      const x0 = Math.floor((r.x0 * CELL - 32) / TILE), x1 = Math.floor(((r.x1 + 1) * CELL + 32) / TILE);
+      const y0 = Math.floor((r.y0 * CELL - 32) / TILE), y1 = Math.floor(((r.y1 + 1) * CELL + 32) / TILE);
       for (let ty = Math.max(0, y0); ty <= Math.min(this.rows - 1, y1); ty++)
         for (let tx = Math.max(0, x0); tx <= Math.min(this.cols - 1, x1); tx++) want.add(ty * this.cols + tx);
     }
     d.length = 0;
     let n = 0;
-    const later: number[] = [];
     for (const i of want) {
-      if (n < maxTiles) { this.drawTile(i); n++; }
-      else later.push(i);
-    }
-    // 남은 조각은 다음에 다시 그리도록 영역으로 되돌려 둔다
-    for (const i of later) {
-      const tx = i % this.cols, ty = Math.floor(i / this.cols);
-      d.push({ x0: (tx * TILE) / CELL, y0: (ty * TILE) / CELL, x1: ((tx + 1) * TILE) / CELL - 1, y1: ((ty + 1) * TILE) / CELL - 1 });
+      if (n >= maxTiles) break;
+      this.drawTile(i);
+      want.delete(i);
+      n++;
     }
     this.drawBridgeRails();
   }

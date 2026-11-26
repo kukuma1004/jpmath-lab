@@ -74,7 +74,7 @@ export const CHARACTERS: CharacterDef[] = [
   {
     id: 'turtle', name: '거북선 장수', role: '방어형',
     blurb: '작은 거북선을 끌고 다니는 수군 장수. 느리지만 쇠지붕이 웬만한 포탄을 받아낸다.',
-    hp: 920, defense: 0.20, moveMul: 0.82, normal: 'iron', special: 'salvo', ultimate: 'ironBroadside',
+    hp: 905, defense: 0.14, moveMul: 0.82, normal: 'iron', special: 'salvo', ultimate: 'ironBroadside',
     trait: { id: 'ironclad', name: '철갑 선체', desc: '폭발에 덜 밀려나고, 떨어지거나 깔리거나 낙석에 맞는 피해가 절반입니다.' },
     stats: { power: 4, range: 3, accuracy: 4, defense: 5, mobility: 2 },
     palette: { main: '#7a4a2a', sub: '#2c4f6e', accent: '#d9a441', skin: '#e3b48c', dark: '#2b1d14' },
@@ -98,7 +98,7 @@ export const CHARACTERS: CharacterDef[] = [
   {
     id: 'alchemist', name: '독술사', role: '독구름 견제형',
     blurb: '독과 약을 함께 다루는 산속 도사. 항아리로 한 방, 독구름으로 자리를 빼앗습니다.',
-    hp: 805, defense: 0.08, moveMul: 0.88, normal: 'venomJar', special: 'poisonCloud', ultimate: 'greenDeluge',
+    hp: 820, defense: 0.08, moveMul: 0.93, normal: 'venomJar', special: 'poisonCloud', ultimate: 'greenDeluge',
     trait: { id: 'antidote', name: '백독불침', desc: '독구름 피해를 60% 덜 받습니다. 독구름은 장수의 차례가 시작될 때 작용하며, 바깥으로 걸어 나오면 피할 수 있습니다.' },
     stats: { power: 3, range: 5, accuracy: 3, defense: 3, mobility: 2 },
     palette: { main: '#275f58', sub: '#6d3b79', accent: '#b4df52', skin: '#e6b18b', dark: '#1b3030' },
@@ -154,7 +154,7 @@ export const CHARACTERS: CharacterDef[] = [
   {
     id: 'cheongyeon', name: '청연', role: '풍류·장단 견제',
     blurb: '부채춤과 장단에 능한 예인. 부채로 바람을 날리고, 탄이 튕길 때마다 장단을 울려 주변을 몰아칩니다.',
-    hp: 765, defense: 0.05, moveMul: 1.12, normal: 'fanBreeze', special: 'offbeat', ultimate: 'fanFestival',
+    hp: 780, defense: 0.05, moveMul: 1.12, normal: 'fanBreeze', special: 'offbeat', ultimate: 'fanFestival',
     trait: { id: 'foxstep', name: '가벼운 발놀림', desc: '이동이 빠르며 낙하 피해를 40% 덜 받습니다.' },
     stats: { power: 3, range: 4, accuracy: 3, defense: 2, mobility: 4 },
     palette: { main: '#1e625c', sub: '#873d3b', accent: '#eed49c', skin: '#edb894', dark: '#1d3033' },

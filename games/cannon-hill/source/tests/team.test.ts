@@ -38,6 +38,43 @@ function aim(b: Battle, who: number) {
   b.timeLeft = 30;
 }
 
+describe('1:1:1:1 개인전', () => {
+  it('각 장수가 독립이며 번호 순으로 돌고 탈락자를 건너뛴다', () => {
+    const b = blank4({ freeForAll: true });
+    for (const f of b.fighters) place(b, f.idx, 300 + f.idx * 500);
+    aim(b, 0);
+    expect(b.fighters.map(f => f.team)).toEqual([0, 1, 2, 3]);
+    expect(b.alliesOf(b.cur)).toEqual([b.cur]);
+    expect(b.enemiesOf(b.cur)).toHaveLength(3);
+    b.applyDamage(b.fighters[1]!, 9999, 0, 0, false, 'blast', 0);
+    for (const expected of [2, 3, 0]) {
+      b.skipTurn();
+      runUntil(b, () => b.phase === 'AIM');
+      expect(b.current).toBe(expected);
+    }
+    for (const player of [0, 2]) b.applyDamage(b.fighters[player]!, 9999, 0, 0, false, 'blast', 3);
+    b.skipTurn();
+    runUntil(b, () => b.phase === 'GAME_OVER');
+    expect(b.winner).toBe(3);
+    expect(b.fighters[3]!.anim).toBe('victory');
+    expect(Battle.deserialize(b.serialize()).winner).toBe(3);
+  });
+
+  it('턴 제한에서는 서로 다른 최대 체력을 남은 비율로 비교한다', () => {
+    const b = blank4({ freeForAll: true, turnLimit: 1 });
+    b.fighters.forEach((f, i) => {
+      place(b, i, 300 + i * 500);
+      f.hp = f.maxHp * (i === 3 ? .8 : .75);
+    });
+    aim(b, 0);
+    b.turnNo = 1;
+    b.skipTurn();
+    runUntil(b, () => b.phase === 'GAME_OVER');
+    expect(b.endReason).toBe('limit');
+    expect(b.winner).toBe(3);
+  });
+});
+
 describe('2:2 대전', () => {
   it('편이 번갈아 쏘고, 같은 편 안에서는 차례가 돌아간다', () => {
     const b = new Battle(defaultConfig({ seed: 31, chars: FOUR, controllers: ['human', 'human', 'human', 'human'] }));

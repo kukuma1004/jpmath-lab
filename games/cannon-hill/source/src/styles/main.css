@@ -13,6 +13,8 @@
   --gold-2: #ffd98a;
   --p1: #4f9cf0;
   --p2: #f05a4f;
+  --p3: #397652;
+  --p4: #7247a0;
   --text: #f4ecd8;
   --muted: #b9aa8f;
   --line: rgba(244, 236, 216, 0.16);
@@ -44,7 +46,7 @@ html, body {
   -webkit-tap-highlight-color: transparent;
 }
 
-#game { position: fixed; inset: 0; display: grid; place-items: center; background: #0d0a09; }
+#game { position: fixed; inset: 0; display: grid; grid-template: minmax(0, 1fr) / minmax(0, 1fr); place-items: center; overflow: hidden; background: #0d0a09; }
 #game canvas { display: block; }
 
 #ui { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
@@ -142,7 +144,6 @@ html, body {
 .sel-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
 .sel-head h2 { margin: 0; font: 400 34px/1 var(--title-font); letter-spacing: 0.01em; }
 .sel-head .who { font: 400 18px/1 var(--title-font); padding: 8px 14px; border-radius: 999px; background: var(--p1); color: #fff; }
-.sel-head .who.p2 { background: var(--p2); }
 .sel-head p { margin: 0; color: var(--muted); font-size: 15px; }
 .sel-body { display: grid; grid-template-columns: 1.35fr 1fr; gap: 18px; min-height: 0; }
 .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; align-content: start; overflow: auto; padding: 4px; }
@@ -170,6 +171,8 @@ html, body {
 .card .tag { position: absolute; top: 8px; left: 8px; font: 400 12px/1 var(--title-font); padding: 5px 8px; border-radius: 999px; color: #fff; }
 .card .tag.p1 { background: var(--p1); }
 .card .tag.p2 { background: var(--p2); left: auto; right: 8px; }
+.card .tag.p3 { background: var(--p3); }
+.card .tag.p4 { background: var(--p4); }
 .detail { display: grid; grid-template-rows: auto auto 1fr; gap: 12px; padding: 16px 18px; border-radius: 20px; background: rgba(244, 236, 216, 0.06); border: 1.5px solid var(--line); min-height: 0; overflow: auto; }
 .detail-top { display: grid; grid-template-columns: 128px 1fr; gap: 14px; align-items: center; }
 .detail-top img { width: 128px; height: 128px; filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.5)); }
@@ -258,7 +261,12 @@ html, body {
 .timer b { position: absolute; inset: 0; display: grid; place-items: center; font: 400 15px/1 var(--title-font); }
 .turnpill .tno { color: var(--muted); font-size: 13px; }
 .turnpill .tp { padding: 5px 10px; border-radius: 999px; background: var(--p1); color: #fff; }
-.turnpill .tp.p2 { background: var(--p2); }
+:is(.who, .tp)[data-team='2'] { background: var(--p2); }
+:is(.who, .tp)[data-team='3'], .pcard[data-team='3'] .who i { background: var(--p3); }
+:is(.who, .tp)[data-team='4'], .pcard[data-team='4'] .who i { background: var(--p4); }
+.pcard[data-team='3'] .nm, .banner.p3 b, .table th.p3 { color: #b5ebc7; }
+.pcard[data-team='4'] .nm, .banner.p4 b, .table th.p4 { color: #e4c8ff; }
+.pcard .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .wind { display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; background: var(--glass); border: 1.5px solid var(--line); font: 600 14px/1 var(--body-font); }
 .wind .lbl { color: var(--muted); }
 .wind .arrow { position: relative; width: 104px; height: 16px; }
@@ -383,7 +391,6 @@ html, body {
 .loading .bar i { display: block; height: 100%; width: 30%; background: var(--gold); animation: load 1s ease-in-out infinite; }
 @keyframes load { 0% { transform: translateX(-100%); } 100% { transform: translateX(330%); } }
 
-.rotate-hint { position: absolute; left: 50%; top: calc(8px + var(--safe-t)); transform: translateX(-50%); padding: 8px 14px; border-radius: 999px; background: rgba(0, 0, 0, 0.7); font-size: 13px; color: var(--gold-2); display: none; pointer-events: none; z-index: 9; }
 
 /* ───────── 화면 크기별 ───────── */
 @media (max-width: 1100px) {
@@ -470,10 +477,12 @@ html, body {
   .maps { grid-template-columns: repeat(2, 1fr); }
   .card img { width: 64px; height: 64px; }
   .mapcard img { width: 100%; height: auto; }
-  body.in-battle #game { inset: auto 0 auto 0; top: calc(176px + var(--safe-t)); height: 75vw; }
-  .hud .top { grid-template-columns: 1fr 1fr; gap: 8px; }
-  .hud .top .center { grid-column: 1 / -1; grid-row: 2; grid-template-columns: auto auto; justify-content: center; align-items: center; gap: 8px; }
-  .hud .top .center .status { grid-column: 1 / -1; max-width: calc(100vw - 64px); justify-self: start; font-size: 12px; border-radius: 12px; }
+  body.in-battle #ui { bottom: auto; height: 100dvh; height: var(--visible-height, 100dvh); }
+  body.in-battle #game { inset: var(--field-top, 110px) 0 auto; height: var(--field-height, 42dvh); }
+  .hud { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; padding: var(--safe-t) 0 var(--safe-b); }
+  .hud .top { position: static; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 6px; padding: 6px 8px 2px; }
+  .hud .top .center { grid-column: 1 / -1; grid-row: 2; grid-template-columns: auto auto; justify-content: center; align-items: center; gap: 2px 6px; min-width: 0; }
+  .hud .top .center .status { grid-column: 1 / -1; width: 100%; max-width: calc(100vw - 18px); height: 19px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 2px 6px; font-size: 11px; text-align: center; }
   .pcard { grid-template-columns: 40px 1fr; padding: 6px 8px 6px 6px; gap: 6px; }
   .pcard.p2 { grid-template-columns: 1fr 40px; }
   .pcard .who { width: 40px; height: 40px; }
@@ -488,25 +497,52 @@ html, body {
   .pcard.mini .bar span { display: none; }
   .hud .team { gap: 4px; }
   .table.four th, .table.four td { padding: 5px 4px; font-size: 12px; }
-  .wind .arrow { width: 56px; }
+  .wind .arrow { width: 48px; }
   .wind .lbl { display: none; }
-  .turnpill { font-size: 14px; gap: 6px; padding: 5px 10px 5px 5px; }
-  .timer { width: 32px; height: 32px; }
-  .pausebtn { left: auto; right: calc(10px + var(--safe-r)); transform: none; top: calc(124px + var(--safe-t)); width: 40px; height: 40px; }
-  .camtools { top: calc(184px + var(--safe-t)); right: calc(8px + var(--safe-r)); }
-  .cambtn { height: 32px; padding: 0 9px; font-size: 12px; }
-  .hud .bottom { top: calc(186px + 75vw + var(--safe-t)); bottom: auto; grid-template-columns: 1fr auto; grid-template-areas: 'w w' 'a a' 'm f'; align-items: center; gap: 8px; }
-  .hud .bottom .pad.move { grid-area: m; justify-self: start; }
-  .hud .bottom .pad.aim { grid-area: a; justify-self: stretch; }
+  .turnpill { font-size: 12px; gap: 5px; padding: 2px 8px 2px 3px; }
+  .turnpill .tp { padding: 4px 7px; }
+  .turnpill .tno { font-size: 11px; }
+  .timer { width: 27px; height: 27px; }
+  .battle-window { position: relative; min-height: 0; }
+  .hud .pausebtn { left: auto; right: 7px; transform: none; top: 5px; width: 44px; height: 44px; }
+  .hud .camtools { top: 5px; right: 56px; gap: 4px; }
+  .hud .cambtn { height: 44px; padding: 0 9px; font-size: 12px; }
+  .hud .bottom { position: static; grid-template-columns: minmax(0, 1fr) minmax(82px, 26%); grid-template-areas: 'w w' 'a f' 'm f'; align-items: stretch; gap: 4px; padding: 4px 6px 8px; }
+  .hud .bottom .pad { padding: 3px; gap: 3px; }
+  .hud .bottom .pad .row { gap: 3px; }
+  .hud .bottom .kbtn { width: 44px; min-width: 44px; height: 44px; min-height: 44px; border-radius: 10px; }
+  .hud .bottom .pad.move { grid-area: m; grid-template-columns: auto minmax(0, 1fr); align-items: center; }
+  .hud .bottom .movebar { width: auto; margin-inline: 4px; }
+  .hud .bottom .pad.move .lbl { display: none; }
+  .hud .bottom .pad.aim { grid-area: a; }
   .hud .bottom .pad.aim .row { justify-content: center; }
-  .hud .bottom .weapons { grid-area: w; justify-self: stretch; }
-  .hud .bottom .weapons .wbtn { flex: 1; min-width: 0; }
-  .hud .bottom .firewrap { grid-area: f; justify-self: end; grid-template-columns: auto auto; }
-  .hud .bottom .power { width: 96px; }
+  .hud .bottom .angle-read { width: clamp(47px, 15vw, 67px); font-size: 20px; }
+  .hud .bottom .angle-hint { font-size: 10px; min-height: 12px; }
+  .hud .bottom .weapons { grid-area: w; padding: 3px; gap: 3px; justify-self: stretch; }
+  .hud .bottom .weapons .wbtn { flex: 1; min-width: 0; min-height: 44px; padding: 3px; }
+  .hud .bottom .wbtn b { font-size: clamp(11px, 3.3vw, 14px); }
+  .hud .bottom .wbtn:not(.ult-btn) small { display: none; }
+  .hud .bottom .wbtn kbd, .hud .bottom .kbtn small { display: none; }
+  .hud .bottom .firewrap { grid-area: f; display: flex; flex-direction: column; justify-content: center; gap: 6px; padding: 4px; }
+  .hud .bottom .power { order: 0; width: 100%; height: 20px; }
+  .hud .bottom .power span { font-size: 11px; white-space: nowrap; }
+  .hud .bottom .fire { width: 62px; height: 62px; font-size: 20px; }
+  .hud .bottom .fire small { display: none; }
   .keyhint { display: none; }
-  .rotate-hint { display: block; top: auto; bottom: calc(10px + var(--safe-b)); }
-  .banner { top: calc(176px + 20vw); }
-  .toast { bottom: auto; top: calc(186px + 60vw); }
+  .hud .banner, .hud .map-banner { top: 30%; }
+  .hud .toast { bottom: 8px; width: max-content; max-width: calc(100% - 20px); text-align: center; font-size: 12px; }
+  .result { overflow: auto; padding: calc(10px + var(--safe-t)) 8px calc(10px + var(--safe-b)); }
+  .res { gap: 9px; }
+  .res h2 { font-size: 44px; }
+  .res .who img { width: 86px; height: 86px; }
+  .res .why { font-size: 13px; text-align: center; }
+  .res .table th, .res .table td { font-size: 12px; padding: 6px 3px; }
+  .res .actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; width: 100%; max-width: 370px; }
+  .res .actions .btn { padding: 7px 4px; min-height: 44px; font-size: 14px; }
+  .res .actions [data-act=home] { grid-column: 1 / -1; }
+}
+@media (orientation: portrait) and (max-width: 359px) {
+  .turnpill .tno { display: none; }
 }
 
 /* 손가락 조작 기기: 단추를 더 크게 */
@@ -521,15 +557,9 @@ html, body {
   .screen { transition: opacity 0.2s; transform: none; }
 }
 
-/* 추천은 넓은 구간으로만 표시하고 조작·발사는 플레이어에게 맡긴다. */
-.angle-hint, .firewrap .power-hint { color: #f0ce85; }
+.angle-hint { color: #f0ce85; }
 .angle-read.in-hint { color: #b8e6a8; }
-.power .suggested { position:absolute; top:0; bottom:0; z-index:2; border:2px dashed #f6da91; border-radius:4px; background:rgba(246,218,145,.2); pointer-events:none; }
-.power .suggested[hidden] { display:none; }
 .power span { z-index:3; }
-.power.in-hint { box-shadow:0 0 0 2px #b8e6a8,0 0 10px rgba(184,230,168,.3); }
-.firewrap .power-hint { display:block; grid-column:1/-1; grid-row:2; min-height:13px; font-size:12px; line-height:1.2; }
-@media (max-height:500px) { .firewrap .power-hint { font-size:11px; min-height:12px; } }
 @media (max-height: 520px) {
   .firewrap .power { order: 0; }
   .firewrap .fire { grid-column: 2; grid-row: 1 / 3; }
@@ -579,7 +609,7 @@ html, body {
   .roster .stats { column-gap: 8px; }
   .roster .stats .pips i { width: min(1.3vw, 18px); }
 }
-.hud .pcard, .hud .pad, .hud .firewrap { border-color:#a68b64; background:linear-gradient(170deg,#3e3634ee,#201e24ee); box-shadow:inset 0 0 0 2px #201d22,0 3px 8px #18151b77; }
+.hud .pcard, .hud .pad, .hud .firewrap, .hud .weapons { border-color:#b59669; background:linear-gradient(165deg,#29313bf5,#191e26f5 76%); box-shadow:inset 0 1px 1px #eee1bd35,inset 0 0 0 2px #171b22,0 5px 12px #10182066; }
 
 
 .roster .card {
@@ -677,6 +707,8 @@ html, body {
 .map-matchup[hidden] { display:none; }
 .map-team { display:grid; grid-template-columns:auto 1fr; align-items:center; gap:6px; min-width:0; padding:3px 7px; border:1px solid #6195c9; border-radius:7px; background:#1a2d47f2; color:#f0f6ff; }
 .map-team[data-team='2'] { border-color:#cc8179; background:#45282df2; color:#fff1eb; }
+.map-team[data-team='3'] { border-color:#78ad89; background:#244332f2; color:#e1ffed; }
+.map-team[data-team='4'] { border-color:#b891d8; background:#403051f2; color:#f1e6ff; }
 .map-team strong { font-size:12px; white-space:nowrap; }
 .map-team ul { display:grid; gap:1px; margin:0; padding:0; list-style:none; }
 .map-team li { display:flex; align-items:center; gap:4px; font-size:clamp(12px, 3.6vw, 16px); line-height:1.15; }

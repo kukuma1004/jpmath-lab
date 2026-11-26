@@ -14,6 +14,8 @@ import type {
 } from './types';
 
 const DEG = Math.PI / 180;
+const TEAM_SIDES = [0, 1] as const;
+const SOLO_SIDES = [0, 1, 2, 3] as const;
 export const ULTIMATE_TURN = 3;
 export const ULTIMATE_RECHARGE_TURNS = 3;
 
@@ -65,7 +67,7 @@ export class Battle {
   turnNo = 0;
   wind = 0;
   timeLeft = 0;
-  /** 이긴 편(0·1), 무승부 -1, 아직 null */
+  /** 이긴 편, 무승부 -1, 아직 null */
   winner: Team | -1 | null = null;
   endReason: 'hp' | 'fall' | 'limit' | 'draw' | '' = '';
   /** 발사 뒤 흐른 시간과 마지막 폭발 시각 */
@@ -97,6 +99,12 @@ export class Battle {
     const def = mapDef(cfg.mapId);
     this.terrain = generateTerrain(def, cfg.seed);
     const spawns = findSpawnPoints(this.terrain, def, this.rng, cfg.chars.length > 2 ? 4 : 2);
+    if (cfg.freeForAll) {
+      for (let i = spawns.length - 1; i > 0; i--) {
+        const j = this.rng.int(0, i);
+        [spawns[i], spawns[j]] = [spawns[j]!, spawns[i]!];
+      }
+    }
     this.fighters = cfg.chars.map((id, i) => {
       const p = spawns[i]!, f = this.makeFighter(i, id, p.x);
       f.y = p.y; f.airPeakY = p.y;
@@ -104,7 +112,7 @@ export class Battle {
     });
     for (const f of this.fighters) f.angle = this.nearestEnemy(f).x > f.x ? 50 : 130;
     // 먼저 쏠 편을 고른다(그 편의 첫 장수부터)
-    this.current = cfg.starterMatch ? 0 : this.rng.next() < 0.5 ? 0 : 1;
+    this.current = cfg.starterMatch ? 0 : cfg.freeForAll ? this.rng.int(0, 3) : this.rng.next() < 0.5 ? 0 : 1;
     this.wind = cfg.starterMatch ? 0 : Math.round(this.rng.gauss() * 6 * (0.5 + def.windBias));
     this.emit({ type: 'battleStart', first: this.current });
   }
@@ -112,7 +120,7 @@ export class Battle {
   private makeFighter(idx: number, charId: string, x: number): Fighter {
     const def = character(charId);
     const y = x > 0 ? this.terrain.topSurface(x) : 0;
-    const team = (idx % 2) as Team;
+    const team = (this.cfg.freeForAll ? idx : idx % 2) as Team;
     return {
       idx, team, charId, x, y: Math.max(0, y), vx: 0, vy: 0, onGround: true,
       angle: team === 0 ? 50 : 130, power: 0, lastPower: 70, chargeDir: 1, slot: 0,
@@ -135,6 +143,10 @@ export class Battle {
 
   get cur(): Fighter {
     return this.fighters[this.current];
+  }
+
+  get sides(): readonly Team[] {
+    return this.cfg.freeForAll ? SOLO_SIDES : TEAM_SIDES;
   }
 
   /** 지금 차례인 장수에게 가장 가까운 살아 있는 상대(없으면 아무 상대) */
@@ -351,8 +363,10 @@ export class Battle {
     this.current = player;
     // 이 편의 다음 차례는 이 장수 다음 사람부터
     const me = this.fighters[player]!;
-    const mates = this.alliesOf(me);
-    this.teamPtr[me.team] = (mates.indexOf(me) + 1) % mates.length;
+    if (!this.cfg.freeForAll) {
+      const mates = this.alliesOf(me);
+      this.teamPtr[me.team] = (mates.indexOf(me) + 1) % mates.length;
+    }
     if (!first) this.turnNo++;
     else this.turnNo = 1;
     const f = this.cur;
@@ -1327,7 +1341,8 @@ export class Battle {
     const t = this.terrain;
     for (const dx of [-6, 0, 6]) {
       const x = f.x + dx;
-      if ((t.solidAt(x, f.y) || t.solidAt(x, f.y + 1)) && (dx === 0 || !t.solidAt(x, f.y - 4))) return true;
+      // 착지 뒤 겹친 몸을 꺼내면서 발이 한 그리드 칸 위로 올라갈 수 있다.
+      if ((t.solidAt(x, f.y) || t.solidAt(x, f.y + CELL)) && (dx === 0 || !t.solidAt(x, f.y - 4))) return true;
     }
     return false;
   }
@@ -1522,6 +1537,13 @@ export class Battle {
 
   /** 다음 차례: 상대 편에서, 그 편이 지난번에 쏜 장수 다음 사람(쓰러진 장수는 건너뛴다) */
   nextPlayer(): number {
+    if (this.cfg.freeForAll) {
+      for (let step = 1; step < this.fighters.length; step++) {
+        const next = (this.current + step) % this.fighters.length;
+        if (this.fighters[next]!.alive) return next;
+      }
+      return this.current;
+    }
     const team = (1 - this.cur.team) as Team;
     const mates = this.fighters.filter((f) => f.team === team);
     for (let k = 0; k < mates.length; k++) {
@@ -1532,17 +1554,18 @@ export class Battle {
   }
 
   private resolveTurnEnd(): void {
-    const aliveA = this.teamAlive(0), aliveB = this.teamAlive(1);
-    if (!aliveA || !aliveB) {
-      if (!aliveA && !aliveB) return this.endGame(-1, 'draw');
-      const w: Team = aliveA ? 0 : 1;
+    const alive = this.sides.filter(team => this.teamAlive(team));
+    if (alive.length === 0) return this.endGame(-1, 'draw');
+    if (alive.length === 1) {
+      const w = alive[0]!;
       const losers = this.fighters.filter((f) => f.team !== w);
       return this.endGame(w, losers.every((f) => f.deathCause === 'fall') ? 'fall' : 'hp');
     }
     if (this.cfg.turnLimit > 0 && this.turnNo >= this.cfg.turnLimit) {
-      const ra = this.teamHpRatio(0), rb = this.teamHpRatio(1);
-      if (Math.abs(ra - rb) < 1e-9) return this.endGame(-1, 'draw');
-      return this.endGame(ra > rb ? 0 : 1, 'limit');
+      const ratios = alive.map(team => this.teamHpRatio(team));
+      const max = Math.max(...ratios);
+      const leaders = alive.filter((_, i) => Math.abs(ratios[i]! - max) < 1e-9);
+      return leaders.length === 1 ? this.endGame(leaders[0]!, 'limit') : this.endGame(-1, 'draw');
     }
     this.startTurn(this.nextPlayer());
   }

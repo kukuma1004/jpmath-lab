@@ -29,7 +29,7 @@ async function pickCharacter(page: Page, id: string, last: boolean) {
 async function openBattle(page: Page, mode: 'ai' | 'local', chars?: [string, string], map?: string) {
   await page.goto('./?qa=1');
   await expect(page.locator('[data-s=title]')).toHaveClass(/on/, { timeout: 20_000 });
-  await page.getByRole('button', { name: mode === 'ai' ? /AI와 겨루기/ : /둘이서 하기/ }).click();
+  await page.getByRole('button', { name: mode === 'ai' ? /AI와 겨루기/ : /함께 하기/ }).click();
   const chars$ = page.locator('[data-s=chars]');
   await expect(chars$).toHaveClass(/on/);
   if (chars) {
@@ -129,7 +129,7 @@ test('바로 한 판: 선공으로 직접 쏘고 지난 포격을 본 뒤 같은
   expect(await wr(page, '__wr.battle.wind')).toBe(0);
   expect(await wr(page, 'JSON.parse(localStorage.getItem("jpml.warureu.settings.v1")).difficulty')).toBe('hard');
   const hud = page.locator('[data-s=hud]');
-  await expect(hud.locator('.power .suggested')).toBeVisible();
+  await expect(hud.locator('.power')).toHaveText('발사 힘');
   const shots = (await state(page)).shots[0];
   await page.keyboard.down('Space');
   await expect.poll(async () => (await state(page)).phase).toBe('CHARGE');
@@ -148,25 +148,29 @@ test('바로 한 판: 선공으로 직접 쏘고 지난 포격을 본 뒤 같은
   await expect(hud.locator('.status')).not.toContainText('지난 포격');
 });
 
-test('조준 도움: 정확한 값 대신 각도·힘 범위와 힘 게이지 띠를 보여준다',async({page})=>{
+test('조준 도움은 각도만 범위로 표시하고 발사 힘을 제안하지 않는다',async({page})=>{
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
   await openBattle(page,'local',['driller','archer'],'bridge');await waitAim(page);
   const initialAngle=await wr(page,'__wr.battle.cur.angle');
-  const hud=page.locator('[data-s=hud]'),angle=hud.locator('.angle-hint'),power=hud.locator('.power-hint'),band=hud.locator('.power .suggested');
-  await expect(angle).toHaveText(/[←→] 추천 각도 \d+~\d+°/);await expect(power).toHaveText(/추천 힘 \d+~\d+/);await expect(band).toBeVisible();
+  const hud=page.locator('[data-s=hud]'),angle=hud.locator('.angle-hint'),power=hud.locator('.power');
+  await expect(angle).toHaveText(/[←→] 추천 각도 \d+~\d+°/);
+  await expect(power).toHaveText('발사 힘');
+  await expect(power.locator('.last')).toBeHidden();
+  await expect(hud.getByText(/추천 힘/)).toHaveCount(0);
   const angles=(await angle.innerText()).match(/(\d+)~(\d+)/)!;expect(Number(angles[2])-Number(angles[1])).toBe(10);
-  const powers=(await power.innerText()).match(/(\d+)~(\d+)/)!;expect(Number(powers[2])-Number(powers[1])).toBe(15);
   expect(await wr(page,'__wr.battle.cur.angle')).toBe(initialAngle);expect(await wr(page,'__wr.battle.cur.stats.shots')).toBe(0);
-  await page.keyboard.press('2');await expect(band).toHaveAttribute('data-slot','1');await expect(band).toBeVisible();
-  await wr(page,'__wr.scene.app.settings.aimHints=false');await expect(band).toBeHidden();await expect(angle).toHaveText('각도');
-  await wr(page,'__wr.scene.app.settings.aimHints=true');await expect(band).toBeVisible();expect(errors).toEqual([]);
+  await page.keyboard.press('2');
+  await expect.poll(() => wr(page,'__wr.battle.cur.slot')).toBe(1);
+  await wr(page,'__wr.scene.app.settings.aimHints=false');await expect(angle).toHaveText('각도');
+  await wr(page,'__wr.scene.app.settings.aimHints=true');await expect(angle).toHaveText(/추천 각도/);expect(errors).toEqual([]);
 });
 
 test('조준 도움은 AI 차례에는 표시하지 않는다',async({page})=>{
   await openBattle(page,'ai',['general','archer'],'bridge');
   await wr(page,"__wr.scene.paused=true;__wr.battle.current=0;__wr.battle.phase='AIM';__wr.battle.timeLeft=30;");
-  const band=page.locator('[data-s=hud] .power .suggested');await expect(band).toBeVisible();
-  await wr(page,'__wr.battle.current=1');await expect(band).toBeHidden();await expect(page.locator('[data-s=hud] .angle-hint')).toHaveText('각도');
+  const angle=page.locator('[data-s=hud] .angle-hint');
+  await expect(angle).toHaveText(/추천 각도/);
+  await wr(page,'__wr.battle.current=1');await expect(angle).toHaveText('각도');
 });
 
 for(const teamSize of [1,2])test(`무작위 ${teamSize}:${teamSize} 배치는 같은 높이의 좌우 거울 위치다`,async({page})=>{
@@ -278,7 +282,7 @@ test('첫 차례의 자유 탄 선택: 2번 발사 후 1번으로 돌아간다',
 
 test('새 장수 고르기: 15장 카드와 궁극기 재충전 설명이 보인다', async({page})=>{
   await page.goto('./?qa=1');await expect(page.locator('[data-s=title]')).toHaveClass(/on/);
-  await page.getByRole('button',{name:/둘이서 하기/}).click();
+  await page.getByRole('button',{name:/함께 하기/}).click();
   const screen=page.locator('[data-s=chars]');
   await expect(screen.locator('.card')).toHaveCount(15);
   const rounds = {
@@ -384,14 +388,14 @@ test('게임 끝 → 결과 화면 → 재대전', async ({ page }) => {
   await waitAim(page);
 });
 
-for (const vp of [{ name: '가로', width: 844, height: 390 }, { name: '세로', width: 390, height: 844 }]) {
+for (const vp of [{ name: '가로', width: 844, height: 390 }, { name: '세로', width: 390, height: 630 }]) {
   test(`모바일 ${vp.name} 화면: 조작 단추가 손가락 크기로 화면 안에 있고 누르면 쏜다`, async ({ browser }) => {
     const ctx = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, hasTouch: true, isMobile: true, baseURL: 'http://127.0.0.1:5213/' });
     const page = await ctx.newPage();
     await openBattle(page, 'local', ['mudang', 'turtle'], 'forest');
     await waitAim(page);
     await expect(page.locator('[data-s=hud] .angle-hint')).toBeVisible();
-    await expect(page.locator('[data-s=hud] .power-hint')).toBeVisible();
+    await expect(page.locator('[data-s=hud] .power')).toBeVisible();
     const ids = ['[data-hold=left]', '[data-hold=right]', '[data-hold=aimUp]', '[data-hold=aimDown]', '[data-act=flip]', '[data-hold=charge]', '[data-w="0"]', '[data-w="1"]', '[data-w="2"]', '.pausebtn'];
     const boxes = [];
     for (const sel of ids) {
@@ -472,6 +476,41 @@ test('성능: 큰 폭발·붕괴 직후 시뮬레이션과 한 프레임 비용(
   expect(out['보통-시뮬1걸음ms']).toBeLessThan(4);
 });
 
+test('짧은 모바일 세로 화면에서 전체 보기와 포탄 따라가기를 전환한다', async ({browser}) => {
+  const ctx = await browser.newContext({viewport:{width:390,height:610}, hasTouch:true, isMobile:true, baseURL:'http://127.0.0.1:5213/'});
+  const page = await ctx.newPage();
+  await openBattle(page, 'local', ['general','archer'], 'windrift');
+  await waitAim(page);
+  const overview = page.getByRole('button', {name:'전체 보기'});
+  await expect.poll(() => wr(page, '__wr.scene.cam.zoom')).toBeGreaterThan(1.05);
+  await overview.tap();
+  await expect(page.getByRole('button', {name:'따라가기'})).toHaveAttribute('aria-pressed','true');
+  await expect.poll(() => wr(page, '__wr.scene.cam.worldView.left <= 35 && __wr.scene.cam.worldView.right >= 2365')).toBe(true);
+  await page.getByRole('button',{name:'따라가기'}).tap();
+  await expect.poll(() => wr(page, '__wr.scene.cam.zoom')).toBeGreaterThan(1.05);
+  const frames = await wr(page, `(() => {
+    const {scene,battle} = __wr;
+    scene.game.loop.stop();
+    battle.wind = 0;
+    const aim = battle.cur.angle < 90 ? 76 : 104;
+    __wr.fire(aim, 100, 0);
+    let tracked = 0, missing = 0, apex = 900;
+    for (let n = 0; n < 360; n++) {
+      __wr.frames(1);
+      const p = scene.followShot;
+      if (!p) continue;
+      tracked++;
+      if (!scene.cam.worldView.contains(p.x,p.y)) missing++;
+      apex = Math.min(apex,p.y);
+    }
+    return {tracked,missing,apex};
+  })()`) as {tracked:number;missing:number;apex:number};
+  expect(frames.tracked).toBeGreaterThan(100);
+  expect(frames.apex).toBeLessThan(-350);
+  expect(frames.missing).toBe(0);
+  await ctx.close();
+});
+
 test('화면 끌기로 둘러보고 「내 장수로」로 돌아온다', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 720 });
   await openBattle(page, 'local', ['general', 'archer'], 'baekdu');
@@ -494,13 +533,13 @@ test('화면 끌기로 둘러보고 「내 장수로」로 돌아온다', async 
   await expect.poll(async () => Math.abs((await camX()) - x0), { timeout: 15_000 }).toBeLessThan(40);
 });
 
-async function openTeamBattle(page: Page, chars: string[], map: string) {
+async function openTeamBattle(page: Page, chars: string[], map: string, size = '2', mode = 'local') {
   await page.goto('./?qa=1');
   await expect(page.locator('[data-s=title]')).toHaveClass(/on/, { timeout: 20_000 });
-  await page.getByRole('button', { name: /둘이서 하기/ }).click();
+  await page.getByRole('button', { name: mode === 'ai' ? /AI와 겨루기/ : /함께 하기/ }).click();
   const chars$ = page.locator('[data-s=chars]');
   await expect(chars$).toHaveClass(/on/);
-  await chars$.locator('[data-size="2"]').click();
+  await chars$.locator(`[data-size="${size}"]`).click();
   for (let k = 0; k < 4; k++) {
     await pickCharacter(page, chars[k]!, k === 3);
   }
@@ -511,6 +550,28 @@ async function openTeamBattle(page: Page, chars: string[], map: string) {
   await expect(page.locator('[data-s=hud]')).toHaveClass(/on/);
   await page.waitForFunction(() => !!(window as unknown as { __wr?: unknown }).__wr);
 }
+
+test('1:1:1:1 개인전에서 네 장수가 각자 싸우고 4P도 승리할 수 있다', async ({page}) => {
+  await openTeamBattle(page, ['general','archer','mudang','hwacha'], 'bridge', 'ffa');
+  await waitAim(page);
+  expect(await wr(page, '__wr.battle.fighters.map(f=>f.team)')).toEqual([0, 1, 2, 3]);
+  await expect(page.locator('[data-s=hud] .map-team')).toHaveCount(4);
+  await expect(page.locator('[data-s=hud] .pcard')).toHaveCount(4);
+  await wr(page, '__wr.kill(0); __wr.kill(1); __wr.kill(2); __wr.skip();');
+  const result = page.locator('[data-s=result]');
+  await expect(result.getByRole('heading', {name:'4P 승리!'})).toBeVisible();
+  await result.getByRole('button', {name:'다시 한 판'}).click();
+  await waitAim(page);
+  expect(await wr(page, '__wr.battle.cfg.freeForAll')).toBe(true);
+});
+
+test('AI 개인전은 세 상대를 AI가 맡고 실제 조작으로 발사한다', async ({page}) => {
+  await openTeamBattle(page, ['general','archer','hwacha','mudang'], 'bridge', 'ffa', 'ai');
+  expect((await state(page)).controllers).toEqual(['human','ai','ai','ai']);
+  await waitAim(page);
+  if ((await state(page)).current === 0) await wr(page, '__wr.skip()');
+  await expect.poll(async () => (await state(page)).shots.slice(1).some(n=>n>0), {timeout:30_000}).toBe(true);
+});
 
 for (const vp of [{ name: '가로', width: 844, height: 390 }, { name: '세로', width: 390, height: 844 }]) {
   test(`2:2 모바일 ${vp.name}: 장수 넷의 체력판이 화면 안에, 단추와 겹치지 않고, 끝나면 결과가 보인다`, async ({ browser }) => {
