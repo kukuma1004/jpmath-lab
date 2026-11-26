@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Battle, defaultConfig, ULTIMATE_TURN } from '../src/game/combat/battle';
+import { Battle, defaultConfig, ULTIMATE_RECHARGE_TURNS, ULTIMATE_TURN } from '../src/game/combat/battle';
 import { CHARACTERS } from '../src/game/data/characters';
 import { weapon } from '../src/game/data/weapons';
 import { Mat } from '../src/game/terrain/terrain';
@@ -20,7 +20,7 @@ function stepUntil(b: Battle, ready: () => boolean) {
 }
 
 describe('장수마다 자기 세 번째 차례에 궁극기가 열린다', () => {
-  it('2:2에서도 각자 따로 충전하고, 선택이나 취소가 아닌 발사에서 한 번 사용한다', () => {
+  it('2:2에서 각자 따로 충전하고, 발사 뒤 자기 차례가 세 번 돌아오면 다시 발사한다', () => {
     const b = battle(['mukyeong', 'archer', 'yeonhwa', 'dolbi']);
     stepUntil(b, () => b.phase === 'AIM');
     b.selectWeapon(2);
@@ -41,7 +41,32 @@ describe('장수마다 자기 세 번째 차례에 궁극기가 열린다', () =
     expect(b.fighters[0]!.slot).toBe(0);
     expect(b.projectiles.map(p => p.weaponId)).toEqual(['inkAmbush', 'inkAmbush', 'inkAmbush']);
     expect(b.drainEvents().filter(e => e.type === 'ultimate')).toHaveLength(1);
-    expect(Battle.deserialize(b.serialize()).fighters[0]!.ultimateUsed).toBe(true);
+    const nextTurn = ULTIMATE_TURN + ULTIMATE_RECHARGE_TURNS;
+    expect(Battle.deserialize(b.serialize()).fighters[0]!.nextUltimateTurn).toBe(nextTurn);
+    stepUntil(b, () => b.phase === 'AIM');
+    for (let turn = ULTIMATE_TURN + 1; turn <= nextTurn; turn++) {
+      do {
+        b.skipTurn();
+        stepUntil(b, () => b.phase === 'AIM');
+      } while (b.cur.idx !== 0);
+      expect(b.cur.turnsTaken).toBe(turn);
+      b.selectWeapon(2);
+      expect(b.cur.slot).toBe(turn === nextTurn ? 2 : 0);
+    }
+    b.fireNow(60);
+    expect(b.cur.nextUltimateTurn).toBe(nextTurn + ULTIMATE_RECHARGE_TURNS);
+    expect(b.drainEvents().filter(e => e.type === 'ultimate')).toHaveLength(1);
+  });
+
+  it('한 판 한 번 규칙에서 이미 사용한 장수도 저장을 불러오면 다시 충전할 수 있다', () => {
+    const b = battle();
+    const saved = JSON.parse(b.serialize());
+    saved.fighters[0].turnsTaken = 4;
+    saved.fighters[0].ultimateUsed = true;
+    delete saved.fighters[0].nextUltimateTurn;
+    const restored = Battle.deserialize(JSON.stringify(saved));
+    expect(restored.cur.nextUltimateTurn).toBe(7);
+    expect(restored.ultimateReady(restored.cur)).toBe(false);
   });
 
   it('그림자 위치 사이에 벽이 있으면 적을 관통해 복제하지 않는다', () => {

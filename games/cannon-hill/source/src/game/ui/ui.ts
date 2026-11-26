@@ -3,7 +3,7 @@ import { CHARACTERS, character } from '../data/characters';
 import { MAPS, mapDef } from '../data/maps';
 import { weapon } from '../data/weapons';
 import type { Battle } from '../combat/battle';
-import { ULTIMATE_TURN } from '../combat/battle';
+import { ULTIMATE_RECHARGE_TURNS, ULTIMATE_TURN } from '../combat/battle';
 import type { AimHint } from '../combat/aimAdvisor';
 import type { Difficulty, WeaponSlot } from '../combat/types';
 import { input, type Hold } from '../input/input';
@@ -277,7 +277,7 @@ export class UI {
         <div class="trait"><b><span class="tr">특기</span>${c.trait.name}</b><p>${esc(c.trait.desc)}</p></div>
         <div><b><span>1번 · ${esc(nw.use)}</span>${nw.name}</b><p>${esc(nw.desc)}</p></div>
         <div><b><span class="sp">2번 · ${esc(sw.use)}</span>${sw.name}</b><p>${esc(sw.desc)} 두 탄 모두 매 차례 자유롭게 고릅니다.</p></div>
-        <div class="ultimate-detail"><b><span>궁극기</span>${ult.name}</b><p>${esc(ult.desc)} 자기 ${ULTIMATE_TURN}번째 차례부터 한 판에 한 번 사용합니다.</p></div>
+        <div class="ultimate-detail"><b><span>궁극기</span>${ult.name}</b><p>${esc(ult.desc)} 자기 ${ULTIMATE_TURN}번째 차례에 열리고, 발사 후 자기 차례가 ${ULTIMATE_RECHARGE_TURNS}번 돌아오면 다시 쓸 수 있습니다.</p></div>
       </div>`;
     const next = el.querySelector<HTMLButtonElement>('[data-act=next]')!;
     next.textContent = step < this.steps - 1 ? '이 장수로 →' : '전장 고르기 →';
@@ -507,7 +507,7 @@ export class UI {
       }
     });
     const ready = b.ultimateReady(f);
-    this.set('slot', `${b.current}|${f.slot}|${canAct}|${b.phase}|${f.turnsTaken}|${f.ultimateUsed}`, () => {
+    this.set('slot', `${b.current}|${f.slot}|${canAct}|${b.phase}|${f.turnsTaken}|${f.nextUltimateTurn}`, () => {
       for (const slot of [0, 1, 2]) {
         const button = el.querySelector<HTMLButtonElement>(`[data-w="${slot}"]`)!;
         button.classList.toggle('on', f.slot === slot);
@@ -515,7 +515,9 @@ export class UI {
         button.setAttribute('aria-pressed', String(f.slot === slot));
         if (slot === 2) button.classList.toggle('ready', ready);
       }
-      el.querySelector('.wu2')!.textContent = f.ultimateUsed ? '사용 완료' : ready ? '궁극기 준비' : `궁극기 · ${Math.max(1, ULTIMATE_TURN - f.turnsTaken)}턴 후`;
+      const until = Math.max(1, f.nextUltimateTurn - f.turnsTaken);
+      const waiting = f.nextUltimateTurn === ULTIMATE_TURN ? '궁극기' : '재충전';
+      el.querySelector('.wu2')!.textContent = ready ? '궁극기 준비' : `${waiting} · ${until}턴 후`;
     });
     const rel = Math.min(f.angle, 180 - f.angle);
     const launch = b.launchAngle(f);
@@ -751,10 +753,10 @@ export class UI {
         <h3>규칙</h3>
         <ul>
           <li>한 턴에 한 번만 쏩니다. 착탄과 추락 판정이 정리되면 빠르게 다음 차례로 넘어갑니다.</li>
-          <li>장수마다 자기 ${ULTIMATE_TURN}번째 차례부터 궁극기를 한 판에 한 번 쓸 수 있어요. 궁극기를 고른 다음 평소처럼 힘을 모아 발사하세요.</li>
+          <li>장수마다 자기 ${ULTIMATE_TURN}번째 차례에 궁극기가 열리고, 발사 후 자기 차례가 ${ULTIMATE_RECHARGE_TURNS}번 돌아오면 다시 쓸 수 있어요. 궁극기를 고른 다음 평소처럼 힘을 모아 발사하세요.</li>
           <li>시작 위치는 고지·저지·다리·발판 중 무작위로 고르며, 양 팀은 같은 높이·발판의 좌우 대칭 위치에서 시작합니다. 2:2도 서로 대응하는 두 자리를 대칭으로 놓습니다. 높은 곳에서 떨어지면 큰 피해를 받고, 벼랑 외나무다리의 추락선을 넘으면 체력과 무관하게 탈락합니다.</li>
           <li>바람은 턴마다 바뀝니다. 화면 위 화살표가 방향과 세기(0~10)입니다. 모든 탄의 기본 발사속도·중력·바람 영향은 같습니다.</li>
-          <li><b>무당의 추적 부적탄</b>은 55~125°로 높이 쏘면 내려올 때 가까운 적을 따라갑니다. 표적에 금빛 조준 표시가 뜨며, 장애물에 먼저 닿으면 막힙니다.</li>
+          <li><b>무당의 추적 부적탄</b>은 가까운 적을 찾아 따라갑니다. 표적에 금빛 조준 표시가 뜨며, 장애물에 먼저 닿으면 막힙니다.</li>
           <li>힘 막대를 끌어 힘을 정하고 <kbd>Q</kbd>/<kbd>E</kbd> 또는 −/+로 0.1씩 조절한 뒤 발사할 수 있습니다. <kbd>R</kbd>이나 「꾹」으로 누르고 떼는 방식으로 돌아갑니다.</li>
           <li><b>굴착대장</b>은 1번으로 긴 터널을 뚫습니다. 2번을 채석장처럼 아래가 빈 발판 위에 맞히면 밑면까지 절단해 지지점에서 떨어진 조각을 무너뜨립니다.</li>
           <li>지지점을 잃은 땅은 덩어리째 무너지고, 바위는 낙석이 되어 굴러갑니다. 깔리거나 높은 곳에서 떨어지면 다칩니다.</li>

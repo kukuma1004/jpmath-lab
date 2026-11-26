@@ -262,6 +262,17 @@ export function makeTextures(scene: Phaser.Scene): void {
     ctx.strokeStyle = '#c8323c'; ctx.lineWidth = 1.6;
     ctx.beginPath(); ctx.moveTo(8, 3); ctx.lineTo(8, 19); ctx.moveTo(4, 7); ctx.lineTo(12, 7); ctx.moveTo(4, 12); ctx.lineTo(12, 15); ctx.moveTo(12, 11); ctx.lineTo(4, 16); ctx.stroke();
   });
+  make(scene, 'proj_fan', 34, 25, (ctx) => {
+    ctx.beginPath(); ctx.moveTo(3, 12.5); ctx.lineTo(24, 2);
+    ctx.quadraticCurveTo(37, 12.5, 24, 23); ctx.closePath();
+    const silk = ctx.createLinearGradient(0, 3, 0, 22);
+    silk.addColorStop(0, '#fff1ba'); silk.addColorStop(1, '#61caae');
+    ctx.fillStyle = silk; ctx.fill();
+    ctx.lineWidth = 1.5; ctx.strokeStyle = '#416c62'; ctx.stroke();
+    for (const y of [5, 12.5, 20]) {
+      ctx.beginPath(); ctx.moveTo(5, 12.5); ctx.lineTo(y === 12.5 ? 31 : 26, y); ctx.stroke();
+    }
+  });
   make(scene, 'proj_iron', 28, 14, (ctx) => {
     ctx.beginPath(); ctx.moveTo(2, 2); ctx.lineTo(18, 2); ctx.quadraticCurveTo(27, 7, 18, 12); ctx.lineTo(2, 12); ctx.closePath();
     const g = ctx.createLinearGradient(0, 2, 0, 12);

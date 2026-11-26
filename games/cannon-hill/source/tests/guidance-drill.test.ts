@@ -12,37 +12,40 @@ function flat(char='mudang') {
   return b;
 }
 
-describe('무당의 고각 하강 유도',()=>{
-  it.each([false,true])('고각으로 빗나갈 탄을 적에게 꺾어 맞힌다 (좌우 반전 %s)',(mirror)=>{
+describe('무당의 각도와 무관한 자동 유도',()=>{
+  it.each([
+    {relative:25,power:67,mirror:false}, {relative:25,power:67,mirror:true},
+    {relative:65,power:80,mirror:false}, {relative:65,power:80,mirror:true},
+  ])('$relative°에서 빗나갈 탄을 적에게 꺾어 맞힌다 (좌우 반전 $mirror)',({relative,power,mirror})=>{
     const b=flat(),normal=flat('general');
     for(const s of [b,normal])if(mirror)s.fighters.forEach(f=>{f.x=2400-f.x;});
-    const angle=mirror?115:65;
-    expect(normal.dryShot(0,0,angle,80).damage[1]).toBe(0);
-    const predicted=b.dryShot(0,0,angle,80);
-    expect(predicted.damage[1]).toBeGreaterThan(100);
-    b.setAngle(angle);b.fireNow(80);
-    let acquired=false,turned=false;
+    const angle=mirror?180-relative:relative;
+    expect(normal.dryShot(0,0,angle,power).damage[1]).toBe(0);
+    const predicted=b.dryShot(0,0,angle,power);
+    expect(predicted.damage[1]).toBe(145);
+    b.setAngle(angle);b.fireNow(power);
+    let acquired=false;
     for(let n=0;n<600&&b.projectiles.length;n++){
       b.step();
-      for(const p of b.projectiles)if((p.seekTarget??-1)>=0){acquired=true;expect(p.lofted).toBe(true);turned ||= Math.abs(p.vx)>400;}
+      acquired ||= b.projectiles.some(p => p.seekTarget === 1);
     }
-    expect(acquired).toBe(true);expect(turned).toBe(true);
+    expect(acquired).toBe(true);
     expect(b.fighters[1]!.maxHp-b.fighters[1]!.hp).toBeCloseTo(predicted.damage[1]!,0);
   });
-  it('상승 중에는 유도하지 않고 같은 편을 표적으로 삼지 않는다',()=>{
+  it('막 발사한 탄은 그대로 날리고, 유도가 시작돼도 같은 편을 표적으로 삼지 않는다',()=>{
     const b=flat();const p=b.newProjectile(0,1,'bujeok',1450,650,240,-600);
     b.stepProjectile(p,DT);expect(p.seekTarget).toBe(-1);expect(p.vx).toBe(240);
     const ally={...b.fighters[0]!,idx:2,x:1450,y:900};b.fighters.push(ally);
-    b.fighters[1]!.alive=false;p.vy=100;b.stepProjectile(p,DT);expect(p.seekTarget).toBe(-1);
+    b.fighters[1]!.alive=false;p.age=.4;b.stepProjectile(p,DT);expect(p.seekTarget).toBe(-1);
   });
-  it('하강하면서 더 먼 적을 포착하고 약간 더 가까워진 다른 장수에게 바꾸지 않는다', () => {
+  it('상승 중에도 적을 포착하고 더 가까워진 다른 장수에게 갑자기 바꾸지 않는다', () => {
     const b = flat();
     const target = b.fighters[1]!;
     const p = b.newProjectile(0, 1, 'bujeok', 1250, 760, 240, -400);
     p.age = .4;
-    p.vy = 150;
     b.stepProjectile(p, DT);
     expect(p.seekTarget).toBe(target.idx);
+    expect(p.vy).toBeLessThan(0);
     const other = {...target, idx: 2, x: 1460};
     b.fighters.push(other);
     b.stepProjectile(p, DT);

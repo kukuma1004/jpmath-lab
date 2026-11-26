@@ -51,6 +51,11 @@ export class BodiesView {
         tex = 'glow';
         cfg = { lifespan: 520, speed: { min: 5, max: 30 }, scale: { start: 0.5, end: 0 }, alpha: { start: 0.9, end: 0 }, blendMode: 'ADD', tint: [0x7fd8ff, 0x4f8cff, 0xff7ad9], frequency: 14 / q };
         break;
+      case 'fan':
+        tex = 'glow';
+        cfg = { lifespan: 275, speed: { min: 4, max: 22 }, scale: { start: 0.23, end: 0 },
+          alpha: { start: 0.62, end: 0 }, blendMode: 'ADD', tint: [0xa1f1cf, 0xffdb96], frequency: 18 / q };
+        break;
       case 'goblinfire':
         tex = 'glow';
         cfg = { lifespan: 480, speed: { min: 5, max: 40 }, scale: { start: 0.45, end: 0 }, alpha: { start: 0.9, end: 0 }, blendMode: 'ADD', tint: [0x6dff9e, 0x2ee6a6, 0xd0ffd0], frequency: 14 / q };
@@ -122,7 +127,7 @@ export class BodiesView {
       v.wake.setPosition(p.x,p.y).setRotation(heading).setVisible(!p.stuck && speed > 38)
         .setScale(size * Math.min(1.35, speed / 510), size * (look === 'arrow' ? 0.2 : 0.66 + 0.11*Math.sin(t*30)))
         .setAlpha(look === 'paper' ? 0.52 : 0.96);
-      if (look === 'arrow' || look === 'iron' || look === 'rocket' || look === 'drill') v.img.setRotation(Math.atan2(p.vy, p.vx));
+      if (look === 'arrow' || look === 'iron' || look === 'rocket' || look === 'drill' || look === 'fan') v.img.setRotation(heading);
       else if (look === 'paper') v.img.setRotation((p.seekTarget ?? -1)>=0 ? heading+Math.PI/2 : t * 12);
       else if (look === 'bomb' || look === 'megabomb' || look === 'ball' || look === 'poison') v.img.setRotation(t * 3);
       if ((p.seekTarget ?? -1)>=0) {

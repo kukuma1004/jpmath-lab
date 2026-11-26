@@ -24,6 +24,7 @@ export const PIVOT: Record<string, { x: number; y: number }> = {
   yeonhwa: { x: 6, y: -24 },
   dolbi: { x: 4, y: -25 },
   mukyeong: { x: 5, y: -25 },
+  cheongyeon: { x: 6, y: -24 },
 };
 
 type C = CanvasRenderingContext2D;
@@ -810,15 +811,30 @@ function shadowBlade(ctx: C): void {
   outline(ctx,1,'#f5e9ff'); ctx.stroke();
 }
 
+function cheongyeonFan(ctx: C): void {
+  ctx.beginPath();
+  ctx.moveTo(1, 0);
+  ctx.lineTo(28, -11);
+  ctx.bezierCurveTo(37, -7, 37, 7, 28, 11);
+  ctx.closePath();
+  fillStroke(ctx, vgrad(ctx, -11, 11, '#fff0be', '#65b4a3'), 1.4);
+  outline(ctx, 0.9, '#81694a');
+  for (const [x,y] of [[28,-9],[33,-5],[34,0],[33,5],[28,9]]) {
+    ctx.beginPath(); ctx.moveTo(2, 0); ctx.lineTo(x!, y!); ctx.stroke();
+  }
+  ctx.beginPath(); ctx.moveTo(11,0); ctx.quadraticCurveTo(0,14,-7,11);
+  outline(ctx, 1.7, '#a94c47'); ctx.stroke();
+}
+
 const BODY: Record<string, (c: C, m: Mood) => void> = { general, archer, dokkaebi, mudang, turtle, gumiho, hwacha, alchemist, driller,
-  haewol: general, seolmae: archer, yeonhwa: hwacha, dolbi: driller, mukyeong: mudang,
+  haewol: general, seolmae: archer, yeonhwa: hwacha, dolbi: driller, mukyeong: mudang, cheongyeon: mudang,
 };
 const WEAPON: Record<string, (c: C) => void> = {
   general: generalWeapon, archer: archerWeapon, dokkaebi: dokkaebiWeapon,
   mudang: mudangWeapon, turtle: turtleWeapon, gumiho: gumihoWeapon,
   hwacha: hwachaWeapon, alchemist: alchemistWeapon,
   driller: drillerWeapon,
-  haewol: tideCannon, seolmae: frostCrossbow, yeonhwa: signalLauncher, dolbi: stoneBreaker, mukyeong: shadowBlade,
+  haewol: tideCannon, seolmae: frostCrossbow, yeonhwa: signalLauncher, dolbi: stoneBreaker, mukyeong: shadowBlade, cheongyeon: cheongyeonFan,
 };
 
 export function drawBody(ctx: C, id: string, mood: Mood): void {

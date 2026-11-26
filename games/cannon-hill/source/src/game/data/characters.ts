@@ -65,9 +65,9 @@ export const CHARACTERS: CharacterDef[] = [
   },
   {
     id: 'mudang', name: '무당', role: '마법형',
-    blurb: '높이 날린 부적이 내려오며 적을 뒤쫓습니다. 다른 탄으로는 하늘의 벼락을 부릅니다.',
+    blurb: '날아가는 부적이 가까운 적을 찾아 뒤쫓습니다. 다른 탄으로는 하늘의 벼락을 부릅니다.',
     hp: 770, defense: 0.04, moveMul: 1.0, normal: 'bujeok', special: 'nakroe', ultimate: 'fiveThunders',
-    trait: { id: 'blessing', name: '신령의 가호', desc: `자기 차례가 시작될 때 자신과 가까이 선 같은 편의 체력을 ${TRAIT.blessHeal}씩 채웁니다. 1번 부적은 고각으로 쏘면 하강 중 멀리 있는 적을 추적합니다.` },
+    trait: { id: 'blessing', name: '신령의 가호', desc: `자기 차례가 시작될 때 자신과 가까이 선 같은 편의 체력을 ${TRAIT.blessHeal}씩 채웁니다.` },
     stats: { power: 4, range: 4, accuracy: 4, defense: 2, mobility: 3 },
     palette: { main: '#c8323c', sub: '#2f5d9c', accent: '#f7d354', skin: '#f0c7a0', dark: '#2a1420' },
   },
@@ -150,6 +150,14 @@ export const CHARACTERS: CharacterDef[] = [
     trait: { id: 'foxstep', name: '소리 없는 착지', desc: '이동이 빠르며 낙하 피해를 40% 덜 받습니다.' },
     stats: {power:4, range:2, accuracy:4, defense:2, mobility:5},
     palette: {main:'#332342', sub:'#57436e', accent:'#d5a2ff', skin:'#e2b59c', dark:'#1b1826'},
+  },
+  {
+    id: 'cheongyeon', name: '청연', role: '풍류·장단 견제',
+    blurb: '부채춤과 장단에 능한 예인. 부채로 바람을 날리고, 탄이 튕길 때마다 장단을 울려 주변을 몰아칩니다.',
+    hp: 765, defense: 0.05, moveMul: 1.12, normal: 'fanBreeze', special: 'offbeat', ultimate: 'fanFestival',
+    trait: { id: 'foxstep', name: '가벼운 발놀림', desc: '이동이 빠르며 낙하 피해를 40% 덜 받습니다.' },
+    stats: { power: 3, range: 4, accuracy: 3, defense: 2, mobility: 4 },
+    palette: { main: '#1e625c', sub: '#873d3b', accent: '#eed49c', skin: '#edb894', dark: '#1d3033' },
   },
 ];
 

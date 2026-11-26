@@ -15,6 +15,7 @@ import type {
 
 const DEG = Math.PI / 180;
 export const ULTIMATE_TURN = 3;
+export const ULTIMATE_RECHARGE_TURNS = 3;
 
 export interface DryResult {
   /** 장수별 피해(fighters 순서) */
@@ -115,7 +116,7 @@ export class Battle {
     return {
       idx, team, charId, x, y: Math.max(0, y), vx: 0, vy: 0, onGround: true,
       angle: team === 0 ? 50 : 130, power: 0, lastPower: 70, chargeDir: 1, slot: 0,
-      turnsTaken: 0, ultimateUsed: false,
+      turnsTaken: 0, nextUltimateTurn: ULTIMATE_TURN,
       hp: def.hp, maxHp: def.hp,
       moveLeft: MOVE_BUDGET * def.moveMul, moved: false,
       alive: true, deathCause: '', anim: 'idle', animT: 0, slope: 0, airPeakY: y, stats: newStats(),
@@ -169,7 +170,7 @@ export class Battle {
   }
 
   ultimateReady(f: Fighter): boolean {
-    return f.alive && !f.ultimateUsed && f.turnsTaken >= ULTIMATE_TURN;
+    return f.alive && f.turnsTaken >= f.nextUltimateTurn;
   }
 
   traitOf(f: Fighter): string {
@@ -489,7 +490,7 @@ export class Battle {
     const f = this.cur;
     const slot = f.slot === 2 && !this.ultimateReady(f) ? 0 : f.slot;
     const w = this.weaponOf(f, slot);
-    if (slot === 2) f.ultimateUsed = true;
+    if (slot === 2) f.nextUltimateTurn = f.turnsTaken + ULTIMATE_RECHARGE_TURNS;
     if (f.slot === 2) f.slot = 0;
     f.power = power;
     f.lastPower = power;
@@ -564,7 +565,7 @@ export class Battle {
     return {
       id: this.nextId++, owner, shot, weaponId, x, y, px: x, py: y, vx, vy, age: 0, bounces: 0, pierced: 0,
       carveAcc: 0, child, boost: 1, stuck: false, fuse: 0, split: false, dead: false,
-      lofted: -vy >= Math.abs(vx) * Math.tan(55 * DEG), seekTarget: -1, drilling: false,
+      seekTarget: -1, drilling: false,
     };
   }
 
@@ -616,8 +617,7 @@ export class Battle {
     if (!p.drilling) {
       p.vx += this.wind * WIND_ACC_PER_UNIT * dt;
       p.vy += GRAVITY * dt;
-      const tracking = p.lofted && (p.seekTarget ?? -1) >= 0;
-      if (w.seekRange && !p.child && p.age > 0.25 && (p.vy >= 0 || tracking)) this.seek(p, w, dt);
+      if (w.homing && !p.child && p.age > 0.25) this.seek(p, w.homing, dt);
     }
     const dist = Math.hypot(p.vx, p.vy) * dt;
     const n = Math.max(1, Math.ceil(dist / 1.5));
@@ -726,38 +726,31 @@ export class Battle {
   }
 
   /** 유도 부적: 가까운 상대 쪽으로 휘어 든다(같은 편은 노리지 않는다) */
-  private seek(p: Projectile, w: WeaponDef, dt: number): void {
+  private seek(p: Projectile, {range, turnRate}: NonNullable<WeaponDef['homing']>, dt: number): void {
     const owner = this.fighters[p.owner];
     if (!owner) return;
-    const lofted = p.lofted && !!w.loftSeekRange;
-    const radius = lofted ? w.loftSeekRange! : w.seekRange!;
     const distanceTo = (f: Fighter) => Math.hypot(f.x - p.x, f.y - CHAR_CENTER_Y - p.y);
-    const previous = lofted ? this.fighters[p.seekTarget ?? -1] : undefined;
-    let best = previous?.alive && previous.team !== owner.team && distanceTo(previous) < radius * 1.2 ? previous : null;
-    if (!best && p.vy >= 0) {
-      let distance = radius;
+    const previous = this.fighters[p.seekTarget ?? -1];
+    let best = previous?.alive && previous.team !== owner.team && distanceTo(previous) < range * 1.2 ? previous : null;
+    if (!best) {
+      let distance = range;
       for (const f of this.fighters) {
         if (!f.alive || f.team === owner.team) continue;
         const d = distanceTo(f);
         if (d < distance) { distance = d; best = f; }
       }
     }
-    if (lofted && best && best.idx !== p.seekTarget) this.emit({ type: 'seekLock', x: best.x, y: best.y });
+    if (best && best.idx !== p.seekTarget) this.emit({ type: 'seekLock', x: best.x, y: best.y });
     p.seekTarget = best?.idx ?? -1;
     if (!best) return;
     const dx = best.x - p.x, dy = best.y - CHAR_CENTER_Y - p.y;
-    const d = Math.max(1, Math.hypot(dx, dy));
-    if (lofted) {
-      // 각도 제한 유도: 순간이동하거나 장애물을 통과하지 않는다.
-      const heading = Math.atan2(p.vy,p.vx), desired = Math.atan2(dy,dx);
-      const delta = Math.atan2(Math.sin(desired-heading),Math.cos(desired-heading));
-      const angle = heading + clamp(delta,-w.seekTurnRate!*dt,w.seekTurnRate!*dt);
-      const speed = Math.max(220,Math.hypot(p.vx,p.vy));
-      p.vx = Math.cos(angle)*speed; p.vy = Math.sin(angle)*speed;
-      return;
-    }
-    p.vx += (dx / d) * w.seekAcc! * dt;
-    p.vy += (dy / d) * w.seekAcc! * dt;
+    const heading = Math.atan2(p.vy, p.vx);
+    const desired = Math.atan2(dy, dx);
+    const delta = Math.atan2(Math.sin(desired - heading), Math.cos(desired - heading));
+    const angle = heading + clamp(delta, -turnRate * dt, turnRate * dt);
+    const speed = Math.max(220, Math.hypot(p.vx, p.vy));
+    p.vx = Math.cos(angle) * speed;
+    p.vy = Math.sin(angle) * speed;
   }
 
   private bounce(p: Projectile, w: WeaponDef): void {
@@ -1676,7 +1669,7 @@ export class Battle {
 
   /** 상태 요약 해시(재현 시험용) */
   hash(): string {
-    const f = this.fighters.map((x) => `${x.x.toFixed(3)},${x.y.toFixed(3)},${x.hp},${x.alive ? 1 : 0},${x.slot},${x.turnsTaken},${x.ultimateUsed ? 1 : 0}`).join('|');
+    const f = this.fighters.map((x) => `${x.x.toFixed(3)},${x.y.toFixed(3)},${x.hp},${x.alive ? 1 : 0},${x.slot},${x.turnsTaken},${x.nextUltimateTurn}`).join('|');
     const gas = this.clouds.map((c) => `${c.id},${c.x.toFixed(2)},${c.y.toFixed(2)},${c.turns.join(',')}`).join('|');
     return `${this.terrain.checksum()}:${f}:${gas}:${this.wind}:${this.turnNo}:${this.phase}:${this.rng.state}`;
   }
@@ -1706,7 +1699,11 @@ export class Battle {
     const o = JSON.parse(json);
     const b = new Battle(o.cfg, true);
     b.terrain = Terrain.deserialize(o.terrain);
-    b.fighters = o.fighters.map((f: Fighter) => ({ ...f, turnsTaken: f.turnsTaken ?? 0, ultimateUsed: f.ultimateUsed ?? false }));
+    b.fighters = o.fighters.map(({ ultimateUsed, ...f }: Fighter & { ultimateUsed?: boolean }) => {
+      const turnsTaken = f.turnsTaken ?? 0;
+      const nextUltimateTurn = f.nextUltimateTurn ?? (ultimateUsed ? turnsTaken + ULTIMATE_RECHARGE_TURNS : ULTIMATE_TURN);
+      return { ...f, turnsTaken, nextUltimateTurn };
+    });
     b.projectiles = o.projectiles;
     b.boulders = o.boulders;
     b.chunks = o.chunks.map((c: Chunk & { cells: number[]; mats: number[]; bottom: number[] }) => ({ ...c, cells: Int32Array.from(c.cells), mats: Uint8Array.from(c.mats), bottom: Int32Array.from(c.bottom) }));

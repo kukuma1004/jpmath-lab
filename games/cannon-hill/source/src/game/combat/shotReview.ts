@@ -40,7 +40,7 @@ export class ShotReview {
 
     // 깊이 뚫거나 튀는 탄의 최종 폭발로 힘을 판단하면 잘못된 안내가 될 수 있다.
     const shell = weapon(shot.weaponId);
-    if (!damage && impact && impacts === 1 && shell.pattern === 'single' && !shell.seekRange &&
+    if (!damage && impact && impacts === 1 && shell.pattern === 'single' && !shell.homing &&
         (shell.behavior === 'shell' || shell.behavior === 'mega') && Math.abs(impact.y - target.y) < 100 &&
         (target.x - shot.x) * direction > 0) {
       const offset = (impact.x - target.x) * direction;

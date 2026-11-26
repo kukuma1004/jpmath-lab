@@ -202,12 +202,12 @@ test('굴착대장: 2번 철편을 선택하면 세 갈래가 나가 옆탄으�
   await expect.poll(async () => (await state(page)).hp[1]).toBe(character('archer').hp - 120);
 });
 
-test('무당: 고각 사격 후 하강 중 적을 추적하여 맞힌다',async({page})=>{
+test('무당: 낮게 발사해도 적을 추적하여 맞힌다',async({page})=>{
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
   await openBattle(page,'local',['mudang','driller'],'bridge');await waitAim(page);
-  await wr(page,`const b=__wr.battle;b.terrain.cells.fill(0);for(let y=450;y<600;y++)for(let x=0;x<1200;x++)b.terrain.set(x,y,4);b.terrain.pending=[];b.current=0;b.phase='AIM';b.timeLeft=30;b.wind=0;for(const [i,x] of [400,1700].entries()){const f=b.fighters[i];f.x=x;f.y=900;f.airPeakY=900;f.vx=f.vy=0;f.onGround=true;} __wr.fire(65,80,0);`);
+  await wr(page,`const b=__wr.battle;b.terrain.cells.fill(0);for(let y=450;y<600;y++)for(let x=0;x<1200;x++)b.terrain.set(x,y,4);b.terrain.pending=[];b.current=0;b.phase='AIM';b.timeLeft=30;b.wind=0;for(const [i,x] of [400,1700].entries()){const f=b.fighters[i];f.x=x;f.y=900;f.airPeakY=900;f.vx=f.vy=0;f.onGround=true;} __wr.fire(25,67,0);`);
   await page.waitForFunction(()=> (window as any).__wr.battle.projectiles.some((p:any)=>p.seekTarget===1),undefined,{polling:'raf'});
-  await page.screenshot({path:'test-results/loft-guidance.png'});
+  await page.screenshot({path:'test-results/low-angle-guidance.png'});
   await page.waitForFunction(()=> {
     const foe = (window as any).__wr.battle.fighters[1];
     return foe.hp < foe.maxHp;
@@ -236,20 +236,20 @@ test('첫 차례의 자유 탄 선택: 2번 발사 후 1번으로 돌아간다',
   expect(errors).toEqual([]);
 });
 
-test('새 장수 고르기: 14장 카드와 궁극기 설명이 보인다', async({page})=>{
+test('새 장수 고르기: 15장 카드와 궁극기 재충전 설명이 보인다', async({page})=>{
   await page.goto('./?qa=1');await expect(page.locator('[data-s=title]')).toHaveClass(/on/);
   await page.getByRole('button',{name:/둘이서 하기/}).click();
   const screen=page.locator('[data-s=chars]');
-  await expect(screen.locator('.card')).toHaveCount(14);
+  await expect(screen.locator('.card')).toHaveCount(15);
   const rounds = {
     hwacha: '구룡 화차', alchemist: '자욱한 독무', driller: '철편 삼연탄',
-    haewol: '되밀물탄', seolmae: '눈꽃탄', yeonhwa: '연등탄', dolbi: '쐐기 바위', mukyeong: '그림자 협격',
+    haewol: '되밀물탄', seolmae: '눈꽃탄', yeonhwa: '연등탄', dolbi: '쐐기 바위', mukyeong: '그림자 협격', cheongyeon: '엇장단탄',
   };
   for(const [id, round] of Object.entries(rounds)){
     await screen.locator(`.card[data-id=${id}]`).click();
     await expect(screen).toContainText(round);
     await expect(screen).toContainText('두 탄 모두 매 차례 자유롭게');
-    await expect(screen.locator('.ultimate-detail')).toContainText('자기 3번째 차례부터');
+    await expect(screen.locator('.ultimate-detail')).toContainText('자기 차례가 3번 돌아오면 다시');
   }
   await expect(screen).not.toContainText('가득 차면');
 });

@@ -484,6 +484,11 @@ export class BattleScene extends Phaser.Scene {
                 marks.fillStyle(0xf4dcff).fillTriangle(x - 6, -42, x + 6, -44, x - 1, -38);
               }
               break;
+            case 'fanFestival':
+              for (const radius of [28, 44, 60]) {
+                marks.beginPath().arc(0, 16, radius, Math.PI * 1.1, Math.PI * 1.9).strokePath();
+              }
+              break;
           }
           this.tweens.add({targets: marks, y: e.y - 14, scale: 1.18, alpha: 0, delay: 180, duration: 450, onComplete: () => marks.destroy()});
           const seal = this.add.circle(e.x, e.y + 26, 36, w.glow, 0.10).setStrokeStyle(2, w.glow, 0.95).setDepth(25);
@@ -507,7 +512,13 @@ export class BattleScene extends Phaser.Scene {
         case 'explode': {
           this.lastBlast = { x: e.x, y: e.y };
           const m = b.terrain.matAt(e.x, e.y + e.radius * 0.8) || Mat.Dirt;
-          this.effects.explosion(e.x, e.y, e.radius, weapon(e.weaponId).look, e.big, m);
+          const look = weapon(e.weaponId).look;
+          this.effects.explosion(e.x, e.y, e.radius, look, e.big, m);
+          if (look === 'fan') {
+            const ring = this.add.ellipse(e.x, e.y, e.radius, e.radius * 0.42, 0x8ee2c2, 0.1)
+              .setStrokeStyle(2, 0xffdf9a, 0.9).setDepth(28);
+            this.tweens.add({ targets: ring, scaleX: 2, scaleY: 2, alpha: 0, duration: 330, onComplete: () => ring.destroy() });
+          }
           audio.explode(e.radius);
           break;
         }
@@ -679,7 +690,7 @@ export class BattleScene extends Phaser.Scene {
       : b.isPlayerPhase() && b.cfg.mapId === 'quarry' && b.cur.charId === 'driller' ? '발판 윗면에 맞혀 밑면까지 절단 · 상대 발밑과 지지점 사이를 노리세요'
       : b.isPlayerPhase() && b.cfg.mapId === 'quarry' && b.turnNo <= 2 ? '중앙 쪽으로 한 단씩 착지 · 마지막 단 밖은 추락'
       : b.isPlayerPhase() && b.cur.slot === 2 ? `${b.weaponOf(b.cur).name} · 스페이스바를 떼면 궁극기를 발사합니다`
-      : b.isPlayerPhase() && b.cur.charId === 'mudang' && b.cur.slot === 0 ? '고각 55~125° · 하강 중 570px 안에서 표적 포착'
+      : b.isPlayerPhase() && b.cur.charId === 'mudang' && b.cur.slot === 0 ? '추적 부적탄 · 비행 중 가까운 적을 자동 추적'
       : b.isPlayerPhase() && b.cur.charId === 'driller' && b.cur.slot === 0 ? '엄폐 뒤 출구 폭발 · 벽을 관통해 뒤에 숨은 적을 노리세요'
       : b.isPlayerPhase() && b.steadyReady(b.cur) ? '자리 잡은 포격 — 움직이지 않고 쏘면 피해 +15%'
       : '');

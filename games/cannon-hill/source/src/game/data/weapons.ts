@@ -44,11 +44,8 @@ export interface WeaponDef {
   fragDamage?: number;
   fragRadius?: number;
   fragCarve?: number;
-  /** 날아가다 이 거리(px) 안에 상대가 들어오면 그쪽으로 휘어 든다 */
-  seekRange?: number;
-  seekAcc?: number;
-  loftSeekRange?: number;
-  seekTurnRate?: number;
+  /** 비행 중 이 거리(px) 안의 적을 포착하고 최대 turnRate(rad/s)만큼 조향한다 */
+  homing?: { range: number; turnRate: number };
   drillDepth?: number;
   drillRadius?: number;
   drillSpeed?: number;
@@ -60,7 +57,7 @@ export interface WeaponDef {
   use: string;
   renderScale?: number;
   // 화면용
-  look: 'ball' | 'arrow' | 'bomb' | 'paper' | 'iron' | 'fox' | 'goblinfire' | 'megabomb' | 'rocket' | 'poison' | 'drill';
+  look: 'ball' | 'arrow' | 'bomb' | 'paper' | 'iron' | 'fox' | 'goblinfire' | 'megabomb' | 'rocket' | 'poison' | 'drill' | 'fan';
   color: number;
   glow: number;
   size: number;
@@ -109,10 +106,10 @@ export const WEAPONS: Record<string, WeaponDef> = {
     look: 'goblinfire', color: 0x6dff9e, glow: 0x2ee6a6, size: 8,
   },
   bujeok: {
-    id: 'bujeok', name: '추적 부적탄', use: '고각 추적 고정', desc: '55~125°로 높이 쏘면 내려올 때 570px 안의 적을 포착해 빠르게 꺾입니다. 낮게 쏘면 160px 안에서만 살짝 휘고, 땅과 장애물에 닿으면 막힙니다.',
+    id: 'bujeok', name: '추적 부적탄', use: '적 자동 추적', desc: '각도와 무관하게 비행 중 가까운 적을 잡아 따라갑니다. 한 발의 피해는 낮으며, 땅이나 장애물에 먼저 닿으면 터집니다.',
     behavior: 'shell', pattern: 'single',
     radius: 52, carve: 48, rockMul: 0.7, damage: 126, directBonus: 1.15, knockback: 230,
-    seekRange: 160, seekAcc: 1250, loftSeekRange: 570, seekTurnRate: 6.2,
+    homing: { range: 530, turnRate: 6.2 },
     look: 'paper', color: 0xf7d354, glow: 0xff5a5a, size: 7,
   },
   nakroe: {
@@ -201,6 +198,31 @@ export const WEAPONS: Record<string, WeaponDef> = {
     drillDepth: 110, drillRadius: 27, drillSpeed: 350,
     shelfCut: { maxThickness: 96, radius: 118 },
     look: 'drill', color: 0xe2b56d, glow: 0xffa654, size: 9, renderScale: 1.25,
+  },
+  fanBreeze: {
+    id: 'fanBreeze', name: '부채바람', use: '넓은 한 발',
+    desc: '부채에서 부른 바람 한 발이 넓게 터집니다. 지형은 얕게 깎습니다.',
+    behavior: 'shell', pattern: 'single',
+    damage: 155, directBonus: 1.13, radius: 68, carve: 30, rockMul: 0.48, knockback: 185,
+    look: 'fan', color: 0x56bca7, glow: 0x99f0ca, size: 8,
+  },
+  offbeat: {
+    id: 'offbeat', name: '엇장단탄', use: '두 번 튀며 타격',
+    desc: '낮게 두 번 튀고, 튈 때마다 짧은 장단을 울려 주변에 피해를 줍니다.',
+    behavior: 'bounceBurst', pattern: 'single',
+    damage: 136, directBonus: 1.12, radius: 65, carve: 33, rockMul: 0.55, knockback: 130,
+    bounces: 2, restitution: 0.32, fuse: 4.5,
+    burstDamage: 58, burstRadius: 63, burstCarve: 17,
+    look: 'fan', color: 0x79b7a2, glow: 0xd0eaa4, size: 8,
+  },
+  fanFestival: {
+    id: 'fanFestival', name: '풍류 한마당', use: '세 번 울리는 큰 장단',
+    desc: '세 번의 장단이 이어지며 착탄점 주변으로 넓게 퍼집니다. 가까이 모인 상대를 노리세요.',
+    behavior: 'bounceBurst', pattern: 'single',
+    damage: 164, directBonus: 1.14, radius: 87, carve: 41, rockMul: 0.58, knockback: 195,
+    bounces: 3, restitution: 0.26, fuse: 5,
+    burstDamage: 69, burstRadius: 76, burstCarve: 22,
+    look: 'fan', color: 0xc7af60, glow: 0xffe3a3, size: 9, renderScale: 1.15,
   },
 };
 

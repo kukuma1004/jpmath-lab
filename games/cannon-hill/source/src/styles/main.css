@@ -623,6 +623,7 @@ html, body {
 }
 
 .roster .card[data-id=haewol] { --paint: #354c79; }
+.roster .card[data-id=cheongyeon] { --paint: #285c50; }
 .roster .card[data-id=seolmae] { --paint: #526a83; }
 .roster .card[data-id=yeonhwa] { --paint: #874238; }
 .roster .card[data-id=dolbi] { --paint: #536449; }
