@@ -338,7 +338,7 @@ export class UI {
     const chips = (attr: string, vals: number[], cur: number, unit: string) => `<div class="chips">${vals.map((v) => `<button data-${attr}="${v}" class="${v === cur ? 'on' : ''}">${v === 0 ? '끝장전' : `${v}${unit}`}</button>`).join('')}</div>`;
     el.querySelector('.detail')!.innerHTML = `
       ${d ? `<img alt="" src="${this.mapThumbs[d.id] ?? ''}" style="width:100%;border-radius:14px;aspect-ratio:2/1;object-fit:cover">` : ''}
-      <div><h3>${d ? d.name : '아무 전장이나'}</h3><p>${d ? esc(d.desc) : `${MAPS.length}개 전장 가운데 하나를 무작위로 고릅니다.`}</p>${d ? `<p style="margin-top:6px;color:var(--gold-2)">${d.features}</p>` : ''}</div>
+      <div><h3>${d ? d.name : '아무 전장이나'}</h3><p>${d ? esc(d.desc) : `${MAPS.length}개 전장 가운데 하나를 골라 싸움 시작 때 이름을 보여줍니다.`}</p>${d ? `<p style="margin-top:6px;color:var(--gold-2)">${d.features}</p>` : ''}</div>
       <div class="stats" style="grid-template-columns:auto 1fr;align-content:start">
         <span>턴 시간</span>${chips('tt', [20, 30, 45], this.settings.turnTime, '초')}
         <span>승부 방식</span>${chips('tl', [0, 20, 30, 40], this.settings.turnLimit, '턴')}
@@ -374,7 +374,7 @@ export class UI {
             <div class="keyhint power-hint" aria-live="polite">누르고 떼면 발사</div>
           </div>
         </div>
-        <div class="banner"><b></b><span></span></div>
+        <div class="banner" role="status"><b></b><span></span></div>
         <div class="toast"></div>
         <div class="rotate-hint">가로로 돌리면 더 넓게 보여요</div>
       </section>`));

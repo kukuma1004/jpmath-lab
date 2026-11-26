@@ -12,17 +12,20 @@ function gapWidth(terrain: Terrain): number {
 }
 
 describe('바람칼 협곡의 장거리 포격', () => {
-  it.each([1, 27, 71])('채석장보다 열린 간격이 넓고 발판이 얇다 (지형 %s)', seed => {
+  it.each([1, 27, 71])('양쪽에 얇은 네 단과 채석장보다 넓은 협곡이 있다 (지형 %s)', seed => {
     const rift = generateTerrain(mapDef('windrift'), seed);
     const quarry = generateTerrain(mapDef('quarry'), seed);
     expect(gapWidth(rift)).toBe(1120);
     expect(gapWidth(rift)).toBeGreaterThan(gapWidth(quarry) * 4);
-    for (const x of [350, 560, WORLD_W - 350, WORLD_W - 560]) {
-      const top = rift.topSurface(x);
-      const shelf = rift.shelfTopAndBottom(x, top, 42);
-      expect(shelf, `발판 x=${x}`).not.toBeNull();
-      expect(shelf!.bottom - shelf!.top).toBeLessThanOrEqual(40);
-      expect(shelf!.bottom - shelf!.top).toBeLessThan(quarry.shelfTopAndBottom(x, quarry.topSurface(x), 96)!.bottom - quarry.topSurface(x));
+    for (const [x, top] of [[350, 432], [450, 544], [572, 656], [615, 768]] as const) {
+      for (const position of [x, WORLD_W - x]) {
+        expect(rift.topSurface(position)).toBe(top);
+        const shelf = rift.shelfTopAndBottom(position, top, 42);
+        const quarryTop = quarry.topSurface(position);
+        expect(shelf, `발판 x=${position}`).not.toBeNull();
+        expect(shelf!.bottom - top).toBeLessThanOrEqual(40);
+        expect(shelf!.bottom - top).toBeLessThan(quarry.shelfTopAndBottom(position, quarryTop, 96)!.bottom - quarryTop);
+      }
     }
   });
 
@@ -31,6 +34,8 @@ describe('바람칼 협곡의 장거리 포격', () => {
     { from: 2099, to: 301, wind: 10 },
     { from: 533, to: 2099, wind: -10 },
     { from: 1867, to: 301, wind: 10 },
+    { from: 615, to: 2099, wind: -10 },
+    { from: 1785, to: 301, wind: 10 },
   ])('강한 맞바람에도 최대 힘으로 맞힌다 ($from → $to)', ({from, to, wind}) => {
     const b = new Battle(defaultConfig({ mapId: 'windrift', chars: ['general', 'archer'], seed: 27, starterMatch: true }));
     [from, to].forEach((x, i) => {
@@ -48,6 +53,29 @@ describe('바람칼 협곡의 장거리 포격', () => {
     b.fireNow(100);
     for (let i = 0; i < 300 && b.fighters[1]!.hp === b.fighters[1]!.maxHp; i++) b.step();
     expect(b.fighters[1]!.maxHp - b.fighters[1]!.hp).toBeGreaterThan(75);
+  });
+
+  it.each([false, true])('가장자리에서 아래 단으로 차례로 내려간다 (거울 %s)', mirror => {
+    const b = new Battle(defaultConfig({ mapId: 'windrift', seed: 27, starterMatch: true }));
+    const point = (x: number) => mirror ? WORLD_W - x : x;
+    const fighter = b.cur;
+    b.phase = 'AIM';
+    b.timeLeft = 30;
+    for (const [edge, lower] of [[430, 544], [552, 656], [594, 768]] as const) {
+      fighter.x = point(edge - 12);
+      fighter.y = fighter.airPeakY = b.terrain.topSurface(fighter.x);
+      fighter.onGround = true;
+      let airborne = false;
+      for (let frame = 0; frame < 100; frame++) {
+        b.setMove(airborne ? 0 : mirror ? -1 : 1);
+        b.step();
+        airborne ||= !fighter.onGround;
+        if (airborne && fighter.onGround) break;
+      }
+      expect(airborne).toBe(true);
+      expect(fighter.onGround).toBe(true);
+      expect(fighter.y).toBe(lower);
+    }
   });
 
   it('아래가 비어 있어 발판을 끊으면 체력이 가득 찬 상대도 떨어진다', () => {

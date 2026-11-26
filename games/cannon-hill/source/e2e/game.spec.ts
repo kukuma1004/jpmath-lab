@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { MAX_LAUNCH_SPEED } from '../src/game/config/constants';
 import { character } from '../src/game/data/characters';
+import { mapDef } from '../src/game/data/maps';
 
 type State = {
   phase: string; current: number; turnNo: number; winner: number | null; hp: number[]; shots: number[];
@@ -157,6 +158,15 @@ for(const teamSize of [1,2])test(`무작위 ${teamSize}:${teamSize} 배치는 �
   const points=await page.evaluate(()=>(window as any).__wr.battle.fighters.map((f:any)=>({x:f.x,y:f.y,onGround:f.onGround})));
   for(let i=0;i<points.length;i+=2){expect(points[i].x+points[i+1].x).toBe(2400);expect(points[i].y).toBe(points[i+1].y);expect(points[i].onGround&&points[i+1].onGround).toBe(true);}
   if(teamSize===2)expect(Math.abs(points[0].x-points[2].x)).toBe(Math.abs(points[1].x-points[3].x));
+});
+
+test('랜덤 전장은 싸움이 시작될 때 뽑힌 전장과 먼저 쏘는 사람을 띄운다', async ({page}) => {
+  await openBattle(page, 'local', ['general', 'archer'], 'random');
+  const mapId = await wr(page, '__wr.battle.cfg.mapId') as string;
+  const first = (await state(page)).current;
+  const banner = page.locator('[data-s=hud] .map-banner');
+  await expect(banner.locator('b')).toHaveText(mapDef(mapId).name);
+  await expect(banner.locator('span')).toHaveText(`${first + 1}P 먼저 쏩니다`);
 });
 
 test('굴착대장: 전용 몸·회전 드릴을 불러오고 실제 땅속 굴착이 보인다',async({page})=>{

@@ -437,7 +437,7 @@ export class BattleScene extends Phaser.Scene {
       this.shotReview.record(b, e);
       switch (e.type) {
         case 'battleStart':
-          ui.banner('싸움 시작!', `${this.names[e.first]} 먼저 쏩니다`);
+          ui.banner(mapDef(b.cfg.mapId).name, `${this.names[e.first]} 먼저 쏩니다`, 'map-banner');
           this.time.delayedCall(2200, () => ui.toast('화면을 끌면 둘러볼 수 있어요 · 「보기」로 전체 보기'));
           break;
         case 'turn': {
