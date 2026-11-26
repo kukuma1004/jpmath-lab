@@ -18,23 +18,60 @@ const ForgeDuel = (() => {
     const pauseButton = $('duel-pause');
     const controls = modal.querySelector('.duel-controls');
     const buttons = [...controls.querySelectorAll('button')];
+    const dodgeButton = $('duel-dodge');
+    const attackButton = $('duel-attack');
+    const attackLabel = $('duel-attack-label');
+    const bossHpLabel = $('duel-hp');
+    const playerHpLabel = $('duel-hearts');
+    const phaseLabel = $('duel-phase');
+    const timerLabel = $('duel-time');
+    const warningLabel = $('duel-warning');
+    const clockLabel = $('duel-clock');
+    const hintLabel = $('duel-hint');
     const floor = $('duel-danger').getContext('2d');
     const fx = $('duel-effects').getContext('2d');
     const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+    const coarse = matchMedia('(pointer: coarse)');
+    const ember = makeEmber();
     let fight, pendingFrame, prev, run = 0, active = false, paused = false;
     let width = 0, height = 0, ratio = 1;
     let marks = [], seenId = null, lastAction = null, impact = null, lastStrike = null;
-    let attackShapeMemo = null, rejected = null;
+    let attackShapeMemo = null, rejected = null, lastFeedback = null;
+    let floorDirty = true, paintedAttack = null, paintedUrgent = false, paintedZones = [];
+    let fxPaintTime = -Infinity, hadEffects = false;
+    let lastBossHp, lastPlayerHp, lastPhase, lastRemaining;
+
+    function makeEmber() {
+      const sprite = document.createElement('canvas');
+      sprite.width = sprite.height = 48;
+      const ctx = sprite.getContext('2d');
+      if (!ctx) return sprite;
+      const glow = ctx.createRadialGradient(24, 24, 0, 24, 24, 24);
+      glow.addColorStop(0, '#fff7c1');
+      glow.addColorStop(.25, '#ffcb49');
+      glow.addColorStop(.45, '#ff641be8');
+      glow.addColorStop(1, '#fa350000');
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, 48, 48);
+      ctx.fillStyle = '#fff7c1';
+      ctx.beginPath();
+      ctx.ellipse(24, 24, 6, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      return sprite;
+    }
 
     function layout() {
       if (!modal.open) return;
       width = field.clientWidth; height = field.clientHeight;
-      ratio = Math.min(devicePixelRatio || 1, 2);
+      ratio = Math.min(devicePixelRatio || 1, coarse.matches ? 1.25 : 1.5);
       for (const ctx of [floor, fx]) {
         if (!ctx) continue;
         ctx.canvas.width = Math.max(1, Math.round(width * ratio));
         ctx.canvas.height = Math.max(1, Math.round(height * ratio));
       }
+      floorDirty = true;
+      fxPaintTime = -Infinity;
+      hadEffects = false;
       if (fight) draw();
     }
     new ResizeObserver(layout).observe(field);
@@ -81,24 +118,21 @@ const ForgeDuel = (() => {
       ctx.restore();
     }
 
-    function drawShape(shape, { urgency = 0, pool = false, released = false } = {}) {
+    function drawShape(ctx, shape, { urgent = false, pool = false, released = false } = {}) {
       const sweeping = shape.type === 'cone';
-      shapePath(floor, shape);
-      floor.fillStyle = pool ? '#8f1f24b0' : released ? '#fff2ac80' : sweeping ? '#db531e70' : '#ae202975';
-      floor.fill('evenodd');
+      shapePath(ctx, shape);
+      ctx.fillStyle = pool ? '#8f1f24b0' : released ? '#fff2ac80' : sweeping ? '#db531e70' : '#ae202975';
+      ctx.fill('evenodd');
       if (!released) {
-        hatch(floor, pool ? .53 : sweeping ? .22 : .44, pool ? '#ff5147' : '#ffaf70');
-        shapePath(floor, shape);
+        hatch(ctx, pool ? .53 : sweeping ? .22 : .44, pool ? '#ff5147' : '#ffaf70');
+        shapePath(ctx, shape);
       }
-      floor.lineWidth = 4;
-      floor.strokeStyle = '#3e1412d9';
-      floor.stroke();
-      floor.lineWidth = released ? 3 : 1.5 + urgency;
-      floor.strokeStyle = pool ? '#ff7954' : released ? '#fffad3' : urgency > .7 ? '#ffe387' : '#ff9753';
-      floor.shadowColor = '#ff5e2e';
-      floor.shadowBlur = released ? 12 : 6;
-      floor.stroke();
-      floor.shadowBlur = 0;
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = '#3e1412d9';
+      ctx.stroke();
+      ctx.lineWidth = released || urgent ? 2.5 : 1.5;
+      ctx.strokeStyle = pool ? '#ff7954' : released ? '#fffad3' : urgent ? '#ffe387' : '#ff9753';
+      ctx.stroke();
     }
 
     function drawSwordReach(f) {
@@ -106,17 +140,17 @@ const ForgeDuel = (() => {
       if (!f.swing && timeSinceStrike >= 220) return;
       const radius = ForgeDuelCombat.reach;
       const center = f.swing ? f.player : lastStrike.player;
-      shapePath(floor, { type: 'circle', x: center.x, y: center.y, r: radius });
-      floor.save();
-      floor.globalAlpha = f.swing ? .78 : .78 * (1 - timeSinceStrike / 220);
-      floor.setLineDash([4, 4]);
-      floor.lineWidth = 3.5;
-      floor.strokeStyle = '#092e36';
-      floor.stroke();
-      floor.lineWidth = 1.4;
-      floor.strokeStyle = '#ccfcff';
-      floor.stroke();
-      floor.restore();
+      shapePath(fx, { type: 'circle', x: center.x, y: center.y, r: radius });
+      fx.save();
+      fx.globalAlpha = f.swing ? .78 : .78 * (1 - timeSinceStrike / 220);
+      fx.setLineDash([4, 4]);
+      fx.lineWidth = 3.5;
+      fx.strokeStyle = '#092e36';
+      fx.stroke();
+      fx.lineWidth = 1.4;
+      fx.strokeStyle = '#ccfcff';
+      fx.stroke();
+      fx.restore();
     }
 
     function canvasStart(ctx) {
@@ -127,34 +161,24 @@ const ForgeDuel = (() => {
     }
 
     function drawFloor(f) {
+      const attack = f.attack;
+      const urgent = !!attack && attack.at - f.time <= 150;
+      if (!floorDirty && paintedAttack === attack && paintedUrgent === urgent &&
+        paintedZones.length === f.zones.length && f.zones.every((zone, index) => zone === paintedZones[index])) return;
       if (!canvasStart(floor)) return;
-      for (const zone of f.zones) drawShape(zone.shape, { pool: true });
-      if (impact && f.time - impact.time < 170) {
-        floor.globalAlpha = reduced.matches ? .6 : Math.max(0, 1 - (f.time - impact.time) / 170);
-        for (const shape of impact.shapes) drawShape(shape, { released: true });
-        floor.globalAlpha = 1;
-      }
-      if (f.attack) {
-        const urgency = Math.max(0, 1 - (f.attack.at - f.time) / 430);
-        for (const shape of f.attack.shapes) drawShape(shape, { urgency });
-      }
-      drawSwordReach(f);
+      floorDirty = false;
+      paintedAttack = attack;
+      paintedUrgent = urgent;
+      paintedZones = f.zones.slice();
+      for (const zone of paintedZones) drawShape(floor, zone.shape, { pool: true });
+      if (attack) for (const shape of attack.shapes) drawShape(floor, shape, { urgent });
     }
 
     function drawShots(f) {
       for (const shot of f.shots) {
         const x = worldX(shot.x), y = worldY(shot.y), radius = Math.max(4, worldX(shot.r));
-        const glow = fx.createRadialGradient(x, y, 0, x, y, radius * 2.5);
-        glow.addColorStop(0, '#fffcd4');
-        glow.addColorStop(.25, '#ffcb49');
-        glow.addColorStop(.45, '#ff641be8');
-        glow.addColorStop(1, '#fa350000');
-        fx.fillStyle = glow;
-        fx.fillRect(x - radius * 2.5, y - radius * 2.5, radius * 5, radius * 5);
-        fx.beginPath();
-        fx.ellipse(x, y, radius * .57, radius * .43, 0, 0, Math.PI * 2);
-        fx.fillStyle = '#fff7c1';
-        fx.fill();
+        const glow = radius * 2.5;
+        fx.drawImage(ember, x - glow, y - glow, glow * 2, glow * 2);
       }
     }
 
@@ -170,8 +194,6 @@ const ForgeDuel = (() => {
       fx.lineCap = 'round';
       fx.beginPath();
       fx.ellipse(x, y, length, length * .74, angle, -.86, 1.1);
-      fx.shadowColor = f.magic?.color || '#ffb849';
-      fx.shadowBlur = 14;
       fx.lineWidth = lastStrike.heavy ? 5 : 3;
       fx.strokeStyle = f.magic?.color || '#ffb849';
       fx.stroke();
@@ -193,7 +215,6 @@ const ForgeDuel = (() => {
         fx.lineTo(hitX - extent * .57, hitY + extent * .57);
         fx.stroke();
       }
-      fx.shadowBlur = 0;
       fx.globalAlpha = 1;
     }
 
@@ -251,7 +272,21 @@ const ForgeDuel = (() => {
     }
 
     function drawEffects(f) {
+      const flashing = impact && f.time - impact.time < 170;
+      const swinging = lastStrike && f.time - lastStrike.time < 300;
+      const visible = !!(flashing || swinging || f.swing || f.shots.length || marks.length);
+      if (!visible && !hadEffects) return;
+      if (visible && hadEffects && coarse.matches && f.time - fxPaintTime < 31) return;
       if (!canvasStart(fx)) return;
+      fxPaintTime = f.time;
+      hadEffects = visible;
+      if (!visible) return;
+      if (flashing) {
+        fx.globalAlpha = reduced.matches ? .6 : 1 - (f.time - impact.time) / 170;
+        for (const shape of impact.shapes) drawShape(fx, shape, { released: true });
+        fx.globalAlpha = 1;
+      }
+      drawSwordReach(f);
       drawShots(f);
       drawArc(f);
       for (const mark of marks) {
@@ -259,8 +294,7 @@ const ForgeDuel = (() => {
         const x = Math.min(width - 24, Math.max(24, worldX(mark.x)));
         const y = Math.max(12, worldY(mark.y) - 25 - (reduced.matches ? 0 : elapsed * .045));
         const hurt = mark.type === 'hurt';
-        const text = mark.value ? (hurt ? '−' : '') + number.format(Math.abs(mark.value)) : '패링';
-        if (!text) continue;
+        const text = mark.text;
         fx.globalAlpha = Math.min(1, (850 - elapsed) / 240);
         fx.font = '900 ' + (hurt ? 17 : 21) + 'px Georgia, serif';
         fx.textAlign = 'center'; fx.textBaseline = 'middle';
@@ -273,23 +307,45 @@ const ForgeDuel = (() => {
     }
 
     function actor(node, unit, front) {
-      node.style.left = unit.x + '%';
-      node.style.top = unit.y + '%';
-      node.style.zIndex = front ? '3' : '2';
-      node.style.setProperty('--depth-scale', (.70 + unit.y * .0045).toFixed(3));
+      const x = Math.round(worldX(unit.x) * 100) / 100;
+      const y = Math.round(worldY(unit.y) * 100) / 100;
+      const scale = Math.round(700 + unit.y * 4.5) / 1000;
+      const transform = 'translate(' + x + 'px, ' + y + 'px) scale(' + scale + ')';
+      if (node.style.transform !== transform) node.style.transform = transform;
+      const depth = front ? '3' : '2';
+      if (node.style.zIndex !== depth) node.style.zIndex = depth;
     }
 
     function stats(f) {
-      modal.style.setProperty('--boss-hp', f.boss.hp / f.boss.maxHp * 100 + '%');
-      modal.style.setProperty('--player-hp', f.player.hp / f.player.maxHp * 100 + '%');
-      setText($('duel-hp'), number.format(Math.ceil(f.boss.hp)) + ' / ' + number.format(f.boss.maxHp));
-      setText($('duel-hearts'), Math.ceil(f.player.hp) + ' / ' + f.player.maxHp);
-      setText($('duel-phase'), f.phase + '페이즈 · ' + ForgeDuelCombat.names[f.phase - 1]);
+      if (lastBossHp !== f.boss.hp) {
+        lastBossHp = f.boss.hp;
+        modal.style.setProperty('--boss-hp', f.boss.hp / f.boss.maxHp * 100 + '%');
+        bossHpLabel.textContent = number.format(Math.ceil(f.boss.hp)) + ' / ' + number.format(f.boss.maxHp);
+      }
+      if (lastPlayerHp !== f.player.hp) {
+        lastPlayerHp = f.player.hp;
+        modal.style.setProperty('--player-hp', f.player.hp / f.player.maxHp * 100 + '%');
+        playerHpLabel.textContent = Math.ceil(f.player.hp) + ' / ' + f.player.maxHp;
+      }
+      if (lastPhase !== f.phase) {
+        lastPhase = f.phase;
+        phaseLabel.textContent = f.phase + '페이즈 · ' + ForgeDuelCombat.names[f.phase - 1];
+      }
       const remaining = Math.ceil(Math.max(0, ForgeDuelCombat.limit - f.time) / 1000);
-      setText($('duel-time'), Math.floor(remaining / 60) + ':' + String(remaining % 60).padStart(2, '0'));
+      if (lastRemaining !== remaining) {
+        lastRemaining = remaining;
+        timerLabel.textContent = Math.floor(remaining / 60) + ':' + String(remaining % 60).padStart(2, '0');
+      }
     }
 
     function setText(node, text) { if (node.textContent !== text) node.textContent = text; }
+    function setData(node, key, value) {
+      const text = String(value);
+      if (node.dataset[key] !== text) node.dataset[key] = text;
+    }
+    function setStyle(node, key, value) {
+      if (node.style.getPropertyValue(key) !== value) node.style.setProperty(key, value);
+    }
 
     function act(kind) {
       if (!active) return;
@@ -311,13 +367,15 @@ const ForgeDuel = (() => {
         }
         attackShapeMemo = null;
       }
-      if (attack) attackShapeMemo = { shapes: attack.shapes, at: attack.at };
+      if (attack && attack.at !== attackShapeMemo?.at) attackShapeMemo = { shapes: attack.shapes, at: attack.at };
       const events = f.events;
-      const recent = events.findIndex(event => event.id === seenId);
       if (events.length && events.at(-1).id !== seenId) {
-        for (const event of events.slice(recent + 1)) {
+        for (const event of events) {
+          if (event.id <= seenId) continue;
+          if (event.label && feedbackEvents.has(event.type)) lastFeedback = event;
           if (Number.isFinite(event.x) && Number.isFinite(event.y) && (event.value || event.type === 'evade')) {
-            marks.push({ ...event, time: f.time });
+            const text = event.value ? (event.type === 'hurt' ? '−' : '') + number.format(Math.abs(event.value)) : '회피';
+            marks.push({ ...event, text, time: f.time });
           }
           if (event.type === 'miss' || event.type === 'hit' || event.type === 'heavy') {
             lastStrike = {
@@ -328,41 +386,41 @@ const ForgeDuel = (() => {
         }
         seenId = events.at(-1).id;
       }
-      marks = marks.filter(mark => f.time - mark.time < 850).slice(-12);
+      while (marks.length && (f.time - marks[0].time >= 850 || marks.length > 12)) marks.shift();
       const remaining = attack ? Math.max(0, attack.at - f.time) : 0;
       const recovery = !attack && f.time < f.recoverUntil;
       const windup = f.swing || (lastAction && f.time - lastAction.time < 210);
       const exposed = f.time < f.exposedUntil;
       const inReach = Math.hypot(f.boss.x - f.player.x, f.boss.y - f.player.y) <= ForgeDuelCombat.reach;
-      modal.dataset.phase = f.status === 'active' ? attack ? 'warning' : recovery ? 'recovery' : 'chase' : f.status;
-      modal.dataset.pattern = attack?.id || '';
-      modal.dataset.stage = f.phase;
+      setData(modal, 'phase', f.status === 'active' ? attack ? 'warning' : recovery ? 'recovery' : 'chase' : f.status);
+      setData(modal, 'pattern', attack?.id || '');
+      setData(modal, 'stage', f.phase);
       const dodgeNow = ForgeDuelCombat.dodgeCue(f);
       const dodgeReady = ForgeDuelCombat.ready(f, 'dodge');
-      modal.dataset.flash = String(dodgeNow);
-      modal.dataset.inReach = String(inReach);
-      modal.dataset.invulnerable = String(f.time < f.immunityUntil);
-      modal.dataset.action = windup ? lastAction?.kind || '' : '';
-      modal.dataset.chilled = String(f.time < f.chillUntil);
+      setData(modal, 'flash', dodgeNow);
+      setData(modal, 'inReach', inReach);
+      setData(modal, 'invulnerable', f.time < f.immunityUntil);
+      setData(modal, 'action', windup ? lastAction?.kind || '' : '');
+      setData(modal, 'chilled', f.time < f.chillUntil);
       stats(f);
       actor(guardian, f.boss, f.boss.y > f.player.y);
       actor(blade, f.player, f.player.y >= f.boss.y);
-      guardian.style.setProperty('--actor-face', f.player.x + 5 < f.boss.x ? -1 : 1);
-      blade.style.setProperty('--actor-face', f.player.fx < -.16 ? -1 : 1);
+      setStyle(guardian, '--actor-face', f.player.x + 5 < f.boss.x ? '-1' : '1');
+      setStyle(blade, '--actor-face', f.player.fx < -.16 ? '-1' : '1');
       const warning = attack ? attack.name : exposed ? '반격 기회' : recovery ? '파수꾼의 빈틈' : '파수꾼이 접근 중';
-      setText($('duel-warning'), warning);
-      setText($('duel-clock'), attack ? (remaining / 1000).toFixed(1) : recovery ? '✦' : '◇');
-      const event = events.findLast(entry => f.time - entry.time < 625 && entry.label && feedbackEvents.has(entry.type));
-      const feedback = rejected?.until > f.time ? rejected.message : event?.label;
+      setText(warningLabel, warning);
+      setText(clockLabel, attack ? (remaining / 1000).toFixed(1) : recovery ? '✦' : '◇');
+      const feedback = rejected?.until > f.time ? rejected.message :
+        lastFeedback && f.time - lastFeedback.time < 625 ? lastFeedback.label : '';
       const cue = attack?.cue || (exposed ? '빈틈이에요 · 공격을 눌러 반격' :
         recovery ? '공격을 눌러 보스의 빈틈을 노리세요' : '공격을 누르면 내 검이 다가가 베어요.');
-      setText($('duel-hint'), dodgeNow && dodgeReady ? '지금 회피!' : feedback || cue);
+      setText(hintLabel, dodgeNow && dodgeReady ? '지금 회피!' : feedback || cue);
       for (const button of buttons) {
-        button.dataset.unavailable = String(!ForgeDuelCombat.ready(f, button.id.slice(5)));
+        setData(button, 'unavailable', !ForgeDuelCombat.ready(f, button.id.slice(5)));
       }
-      $('duel-dodge').dataset.ready = String(dodgeNow && dodgeReady);
-      $('duel-attack').dataset.counter = String(exposed && ForgeDuelCombat.ready(f, 'attack'));
-      setText($('duel-attack-label'), exposed ? '반격' : '공격');
+      setData(dodgeButton, 'ready', dodgeNow && dodgeReady);
+      setData(attackButton, 'counter', exposed && ForgeDuelCombat.ready(f, 'attack'));
+      setText(attackLabel, exposed ? '반격' : '공격');
       drawFloor(f);
       drawEffects(f);
     }
@@ -371,7 +429,9 @@ const ForgeDuel = (() => {
       const state = getState(), app = Forge.appearanceAt(state.appearance, state.level);
       fight = ForgeDuelCombat.create(state);
       marks = [];
-      seenId = lastAction = impact = lastStrike = attackShapeMemo = rejected = null;
+      seenId = lastAction = impact = lastStrike = attackShapeMemo = rejected = lastFeedback = null;
+      fxPaintTime = -Infinity;
+      floorDirty = true;
       $('duel-sword').src = asset('sword-' + app.level);
       const bound = fight.magic;
       $('duel-magic-art').hidden = !bound;

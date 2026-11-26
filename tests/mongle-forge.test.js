@@ -828,8 +828,23 @@ test('guardian exchanges spend one token atomically for eligible protection with
     const reloaded = Forge.restore(JSON.parse(Forge.serialize(s)), now + 1000);
     assert(reloaded.history[0].tokenUsed);
     assert.equal(Forge.act(reloaded, now + 1000, () => .9999).kind, 'protected');
-    assert.equal(reloaded.level, BigInt(level - 1));
+    assert.equal(reloaded.level, BigInt(level));
+    assert.equal(reloaded.history[0].guardianUsed, true);
+    assert.equal(reloaded.guardianProtections[offer.target.toString()], undefined);
     assert.equal(reloaded.protectionUses, 1n);
     assert.equal(Forge.duelRewards(reloaded).tokens, 0);
   }
+});
+
+test('a legacy unused token ticket keeps the level while a more recent paid ticket drops it', () => {
+  const now = 100000;
+  const tokenPurchase = { kind:'protection', from:'100', target:'101', at:1000, amount:'0', tokenUsed:true };
+  const paidPurchase = { kind:'protection', from:'100', target:'101', at:3000, amount:'25457892' };
+  const seed = history => Forge.restore({ version:2, level:100, shards:'9000000000', protections:{101:true}, history }, now);
+  const guardian = seed([tokenPurchase]);
+  assert.equal(Forge.protectionOffer(guardian, now).guardian, true);
+  assert.equal(Forge.act(guardian, now, () => .9999).to, '100');
+  const paid = seed([paidPurchase, tokenPurchase]);
+  assert.equal(Forge.protectionOffer(paid, now).guardian, false);
+  assert.equal(Forge.act(paid, now, () => .9999).to, '99');
 });

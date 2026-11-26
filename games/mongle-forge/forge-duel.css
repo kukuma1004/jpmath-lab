@@ -130,8 +130,11 @@
 #duel-danger { z-index: 1; }
 #duel-effects { z-index: 4; }
 .duel-actor {
-  position: absolute; width: 0; height: 0; transform: scale(var(--depth-scale, 1));
+  position: absolute; top: 0; left: 0; width: 0; height: 0; will-change: transform;
 }
+body.duel-open .shell *,
+body.duel-open .shell *::before,
+body.duel-open .shell *::after { animation-play-state: paused !important; }
 .duel-enemy { --guardian-width: min(clamp(116px, 28.8dvh, 302px), 58vw); }
 .duel-enemy img {
   position: absolute; width: var(--guardian-width);
