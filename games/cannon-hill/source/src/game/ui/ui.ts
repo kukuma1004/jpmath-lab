@@ -31,6 +31,7 @@ export interface UIHooks {
 }
 
 const DIFF_LABEL: Record<Difficulty, string> = { easy: '쉬움', normal: '보통', hard: '어려움' };
+const RANDOM_CHARACTER = 'random';
 
 function josa(word: string, a: string, b: string): string {
   const ch = word.charCodeAt(word.length - 1);
@@ -159,7 +160,7 @@ export class UI {
           <span class="chip-label ai-only">AI 실력</span>
           <div class="chips ai-only diff">${(['easy', 'normal', 'hard'] as Difficulty[]).map((d) => `<button data-d="${d}">${DIFF_LABEL[d]}</button>`).join('')}</div>
           <span class="grow"></span>
-          <button class="btn ghost" data-act="random">아무나</button>
+          <button class="btn ghost" data-act="random" aria-pressed="false">아무나</button>
           <button class="btn primary" data-act="next">이 장수로 →</button>
         </div>
       </section>`));
@@ -192,9 +193,7 @@ export class UI {
         if (this.step > 0) { this.step--; this.renderChars(); }
         else this.showTitle();
       } else if (act === 'random') {
-        const taken = new Set(Array.from({ length: this.step }, (_, k) => this.picks[this.slotOf(k)]));
-        const pool = CHARACTERS.filter((c) => !taken.has(c.id));
-        this.picks[this.slotOf(this.step)] = pool[Math.floor(Math.random() * pool.length)]!.id;
+        this.picks[this.slotOf(this.step)] = RANDOM_CHARACTER;
         audio.select();
         this.renderChars();
       } else if (act === 'next') {
@@ -256,6 +255,10 @@ export class UI {
     el.querySelectorAll<HTMLElement>('.size button').forEach((b) => b.classList.toggle('on', Number(b.dataset.size) === this.settings.teamSize));
     const grid = el.querySelector('.grid')!;
     const slot = this.slotOf(step);
+    const random = this.picks[slot] === RANDOM_CHARACTER;
+    el.querySelector('[data-act=random]')!.setAttribute('aria-pressed', String(random));
+    const next = el.querySelector<HTMLButtonElement>('[data-act=next]')!;
+    next.textContent = step === this.steps - 1 ? '전장 고르기 →' : random ? '랜덤 장수로 →' : '이 장수로 →';
     grid.innerHTML = CHARACTERS.map((c) => {
       const on = this.picks[slot] === c.id;
       // 앞에서 고른 장수 표시
@@ -265,10 +268,15 @@ export class UI {
         .slice(0, 1).join('');
       return `<button class="card${on ? ' on' : ''}" data-id="${c.id}" role="option" aria-selected="${on}">${tags}<img alt="" src="${this.portraits[c.id]?.[lab.team === 1 ? 'flip' : 'normal'] ?? ''}"><b>${c.name}</b><em>${c.role}</em></button>`;
     }).join('');
+    const detail = el.querySelector('.detail')!;
+    if (random) {
+      detail.innerHTML = '<div class="detail-top random-detail"><strong aria-hidden="true">?</strong><div><h3>랜덤 장수</h3><p>싸움이 시작될 때 뽑힌 장수를 알려줍니다.</p></div></div>';
+      return;
+    }
     const c = character(this.picks[slot]!);
     const nw = weapon(c.normal), sw = weapon(c.special), ult = weapon(c.ultimate);
     const pip = (n: number) => `<span class="pips">${[1, 2, 3, 4, 5].map((k) => `<i class="${k <= n ? 'on' : ''}"></i>`).join('')}</span>`;
-    el.querySelector('.detail')!.innerHTML = `
+    detail.innerHTML = `
       <div class="detail-top"><img alt="" src="${this.portraits[c.id]?.happy ?? ''}"><div><h3>${c.name}</h3><span class="role">${c.role}</span><p>${esc(c.blurb)}</p></div></div>
       <div class="stats">
         <span>체력</span><strong>${c.hp}</strong><span>화력</span>${pip(c.stats.power)}<span>폭발 범위</span>${pip(c.stats.range)}<span>정확도</span>${pip(c.stats.accuracy)}<span>방어</span>${pip(c.stats.defense)}<span>기동</span>${pip(c.stats.mobility)}
@@ -279,8 +287,6 @@ export class UI {
         <div><b><span class="sp">2번 · ${esc(sw.use)}</span>${sw.name}</b><p>${esc(sw.desc)} 두 탄 모두 매 차례 자유롭게 고릅니다.</p></div>
         <div class="ultimate-detail"><b><span>궁극기</span>${ult.name}</b><p>${esc(ult.desc)} 자기 ${ULTIMATE_TURN}번째 차례에 열리고, 발사 후 자기 차례가 ${ULTIMATE_RECHARGE_TURNS}번 돌아오면 다시 쓸 수 있습니다.</p></div>
       </div>`;
-    const next = el.querySelector<HTMLButtonElement>('[data-act=next]')!;
-    next.textContent = step < this.steps - 1 ? '이 장수로 →' : '전장 고르기 →';
   }
 
   // 전장 고르기
@@ -321,7 +327,14 @@ export class UI {
   private go(): void {
     let mapId = this.mapPick;
     if (mapId === 'random') mapId = MAPS[Math.floor(Math.random() * MAPS.length)]!.id;
-    this.hooks.startBattle(this.mode, this.picks.slice(0, this.steps), mapId);
+    const picks = this.picks.slice(0, this.steps);
+    const pool = CHARACTERS.filter(c => !picks.includes(c.id));
+    const chars = picks.map(id => {
+      if (id !== RANDOM_CHARACTER) return id;
+      const [draw] = pool.splice(Math.floor(Math.random() * pool.length), 1);
+      return draw!.id;
+    });
+    this.hooks.startBattle(this.mode, chars, mapId);
   }
 
   openMaps(): void {
@@ -374,7 +387,7 @@ export class UI {
             <div class="keyhint power-hint" aria-live="polite">누르고 떼면 발사</div>
           </div>
         </div>
-        <div class="banner" role="status"><b></b><span></span></div>
+        <div class="banner" role="status"><b></b><div class="map-matchup" hidden></div><span></span></div>
         <div class="toast"></div>
         <div class="rotate-hint">가로로 돌리면 더 넓게 보여요</div>
       </section>`));
@@ -572,15 +585,30 @@ export class UI {
     this.set('freecam', `${on}`, () => this.screens.get('hud')!.classList.toggle('freecam', on));
   }
 
+  battleIntro(b: Battle, names: string[], first: number): void {
+    const matchup = this.screens.get('hud')!.querySelector('.map-matchup')!;
+    matchup.innerHTML = [0, 1].map(team => {
+      const fighters = b.fighters.filter(f => f.team === team);
+      const roster = fighters.map(f => {
+        const portrait = this.portraits[f.charId]?.[team === 1 ? 'bustFlip' : 'bust'] ?? '';
+        return `<li><img alt="" src="${portrait}">${esc(character(f.charId).name)}</li>`;
+      }).join('');
+      return `<div class="map-team" data-team="${team + 1}"><strong>${esc(names[fighters[0]!.idx]!)}</strong><ul>${roster}</ul></div>`;
+    }).join('');
+    this.banner(mapDef(b.cfg.mapId).name, `${names[first]} 먼저 쏩니다`, 'map-banner');
+  }
+
   banner(text: string, sub = '', cls = ''): void {
     const el = this.screens.get('hud')!.querySelector<HTMLElement>('.banner')!;
+    const intro = cls === 'map-banner';
     el.className = `banner ${cls}`;
     el.querySelector('b')!.textContent = text;
     el.querySelector('span')!.textContent = sub;
+    el.querySelector<HTMLElement>('.map-matchup')!.hidden = !intro;
     void el.offsetWidth;
     el.classList.add('show');
     window.clearTimeout(this.bannerT);
-    this.bannerT = window.setTimeout(() => el.classList.remove('show'), 1700);
+    this.bannerT = window.setTimeout(() => el.classList.remove('show'), intro ? 2600 : 1700);
   }
 
   toast(text: string): void {

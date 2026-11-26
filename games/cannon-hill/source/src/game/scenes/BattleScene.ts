@@ -123,7 +123,6 @@ export class BattleScene extends Phaser.Scene {
     this.guide = this.add.graphics().setDepth(25);
     this.world.add(this.guide);
     for (const f of b.fighters) this.fighters.push(new FighterView(this, this.world, f, this.names[f.idx]!));
-    if (b.fighters.length > 2) this.app.ui.toast(this.mode === 'ai' ? '2:2 — 내 편 장수 둘을 번갈아 조종해요' : '2:2 — 편마다 장수 둘이 번갈아 쏩니다');
 
     // 처음 카메라: 둘 다 보이게
     const ov = this.overview();
@@ -437,8 +436,11 @@ export class BattleScene extends Phaser.Scene {
       this.shotReview.record(b, e);
       switch (e.type) {
         case 'battleStart':
-          ui.banner(mapDef(b.cfg.mapId).name, `${this.names[e.first]} 먼저 쏩니다`, 'map-banner');
-          this.time.delayedCall(2200, () => ui.toast('화면을 끌면 둘러볼 수 있어요 · 「보기」로 전체 보기'));
+          ui.battleIntro(b, this.names, e.first);
+          if (b.fighters.length > 2) {
+            this.time.delayedCall(2700, () => ui.toast(this.mode === 'ai' ? '2:2 — 내 편 장수 둘을 번갈아 조종해요' : '2:2 — 편마다 장수 둘이 번갈아 쏩니다'));
+          }
+          this.time.delayedCall(b.fighters.length > 2 ? 4400 : 2700, () => ui.toast('화면을 끌면 둘러볼 수 있어요 · 「보기」로 전체 보기'));
           break;
         case 'turn': {
           input.newTurn();

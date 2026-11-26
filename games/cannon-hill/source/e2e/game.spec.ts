@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { ART } from '../src/game/art/artData';
 import { MAX_LAUNCH_SPEED } from '../src/game/config/constants';
 import { character } from '../src/game/data/characters';
 import { mapDef } from '../src/game/data/maps';
@@ -11,32 +12,49 @@ type State = {
 const state = (page: Page) => page.evaluate(() => (window as unknown as { __wr: { state(): State } }).__wr.state());
 const wr = (page: Page, code: string) => page.evaluate(code);
 
+async function pickCharacter(page: Page, id: string, last: boolean) {
+  const screen = page.locator('[data-s=chars]');
+  if (id === 'random') {
+    const random = screen.getByRole('button', { name: '아무나' });
+    await random.click();
+    await expect(random).toHaveAttribute('aria-pressed', 'true');
+    await expect(screen.getByRole('heading', { name: '랜덤 장수' })).toBeVisible();
+    await expect(screen.getByRole('option', { selected: true })).toHaveCount(0);
+  } else {
+    await screen.locator(`.card[data-id=${id}]`).click();
+  }
+  await screen.getByRole('button', { name: last ? /전장 고르기/ : /장수로/ }).click();
+}
+
 async function openBattle(page: Page, mode: 'ai' | 'local', chars?: [string, string], map?: string) {
   await page.goto('./?qa=1');
   await expect(page.locator('[data-s=title]')).toHaveClass(/on/, { timeout: 20_000 });
   await page.getByRole('button', { name: mode === 'ai' ? /AI와 겨루기/ : /둘이서 하기/ }).click();
   const chars$ = page.locator('[data-s=chars]');
   await expect(chars$).toHaveClass(/on/);
-  if (chars) await chars$.locator(`.card[data-id=${chars[0]}]`).click();
-  await chars$.getByRole('button', { name: /이 장수로/ }).click();
-  if (chars) await chars$.locator(`.card[data-id=${chars[1]}]`).click();
-  await chars$.getByRole('button', { name: /전장 고르기/ }).click();
+  if (chars) {
+    await pickCharacter(page, chars[0], false);
+    await pickCharacter(page, chars[1], true);
+  } else {
+    await chars$.getByRole('button', { name: /장수로/ }).click();
+    await chars$.getByRole('button', { name: /전장 고르기/ }).click();
+  }
   const maps$ = page.locator('[data-s=maps]');
   await expect(maps$).toHaveClass(/on/);
   if (map) await maps$.locator(`.card[data-id=${map}]`).click();
   await maps$.getByRole('button', { name: /싸움 시작/ }).click();
   await expect(page.locator('[data-s=hud]')).toHaveClass(/on/);
   await page.waitForFunction(() => !!(window as unknown as { __wr?: unknown }).__wr);
-  // 그려 받은 그림(장수 몸·무기·전장 배경)을 실제로 불러왔는지. 못 불러오면 코드 그림으로 조용히 바뀌므로 여기서 잡는다
-  const art = await page.evaluate(() => {
+  // 별도 무기 그림을 제공하는 장수는 그 그림이, 나머지는 장수별 캔버스 무기가 있어야 한다.
+  const art = await page.evaluate((paintedWeapons) => {
     const w = (window as unknown as { __wr: { scene: { textures: { exists(k: string): boolean } }; battle: { cfg: { mapId: string }; fighters: { charId: string }[] } } }).__wr;
     const t = w.scene.textures, b = w.battle;
     return {
       body: b.fighters.every((f) => t.exists(`art_char_${f.charId}`)),
-      weapon: b.fighters.every((f) => t.exists(`art_wpn_${f.charId}`) || (['hwacha','alchemist','driller'].includes(f.charId) && t.exists(`wpn_${f.charId}`))),
+      weapon: b.fighters.every((f) => t.exists(paintedWeapons.includes(f.charId) ? `art_wpn_${f.charId}` : `wpn_${f.charId}`)),
       bg: t.exists(`art_bg_${b.cfg.mapId}`),
     };
-  });
+  }, Object.keys(ART.weapons));
   expect(art).toEqual({ body: true, weapon: true, bg: true });
 }
 
@@ -160,14 +178,26 @@ for(const teamSize of [1,2])test(`무작위 ${teamSize}:${teamSize} 배치는 �
   if(teamSize===2)expect(Math.abs(points[0].x-points[2].x)).toBe(Math.abs(points[1].x-points[3].x));
 });
 
-test('랜덤 전장은 싸움이 시작될 때 뽑힌 전장과 먼저 쏘는 사람을 띄운다', async ({page}) => {
-  await openBattle(page, 'local', ['general', 'archer'], 'random');
-  const mapId = await wr(page, '__wr.battle.cfg.mapId') as string;
-  const first = (await state(page)).current;
-  const banner = page.locator('[data-s=hud] .map-banner');
-  await expect(banner.locator('b')).toHaveText(mapDef(mapId).name);
-  await expect(banner.locator('span')).toHaveText(`${first + 1}P 먼저 쏩니다`);
-});
+for (const teamSize of [1, 2]) {
+  test(`랜덤 전장과 장수 공개 (${teamSize}:${teamSize})`, async ({page}) => {
+    if (teamSize === 1) await openBattle(page, 'local', ['random', 'archer'], 'random');
+    else await openTeamBattle(page, ['random', 'random', 'archer', 'random'], 'random');
+    const { mapId, chars } = await wr(page, '__wr.battle.cfg') as { mapId: string; chars: string[] };
+    const first = (await state(page)).current;
+    expect(chars).toHaveLength(teamSize * 2);
+    expect(chars[1]).toBe('archer');
+    expect(chars).not.toContain('random');
+    expect(new Set(chars).size).toBe(chars.length);
+    const banner = page.locator('[data-s=hud] .map-banner');
+    await expect(banner.locator('b')).toHaveText(mapDef(mapId).name);
+    await expect(banner.locator('span')).toHaveText(`${first % 2 + 1}P 먼저 쏩니다`);
+    for (const team of [0, 1]) {
+      const side = banner.locator(`[data-team="${team + 1}"]`);
+      await expect(side.locator('strong')).toHaveText(`${team + 1}P`);
+      await expect(side.locator('li')).toHaveText(chars.filter((_, i) => i % 2 === team).map(id => character(id).name));
+    }
+  });
+}
 
 test('굴착대장: 전용 몸·회전 드릴을 불러오고 실제 땅속 굴착이 보인다',async({page})=>{
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
@@ -472,8 +502,7 @@ async function openTeamBattle(page: Page, chars: string[], map: string) {
   await expect(chars$).toHaveClass(/on/);
   await chars$.locator('[data-size="2"]').click();
   for (let k = 0; k < 4; k++) {
-    await chars$.locator(`.card[data-id=${chars[k]}]`).click();
-    await chars$.getByRole('button', { name: k < 3 ? /이 장수로/ : /전장 고르기/ }).click();
+    await pickCharacter(page, chars[k]!, k === 3);
   }
   const maps$ = page.locator('[data-s=maps]');
   await expect(maps$).toHaveClass(/on/);
