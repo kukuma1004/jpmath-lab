@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 
 const colors = {
   mint: 0x26f0bf, mintDark: 0x085a60, amber: 0xffb958, amberDark: 0xa94e2e,
@@ -60,16 +61,20 @@ function card(type) {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
       const accent = isRecruit ? '#66f9d5' : '#ffd18b'
       ctx.beginPath()
-      ctx.roundRect(13, 12, 358, 199, 27)
-      ctx.fillStyle = isRecruit ? '#143e36' : '#553219'
+      ctx.roundRect(34, 15, 316, 194, isRecruit ? [62,62,16,16] : 12)
+      const face = ctx.createLinearGradient(0, 15, 0, 209)
+      face.addColorStop(0, isRecruit ? '#254d45' : '#634326')
+      face.addColorStop(0.62, isRecruit ? '#10372f' : '#402917')
+      face.addColorStop(1, isRecruit ? '#166652' : '#795024')
+      ctx.fillStyle = face
       ctx.fill()
       ctx.strokeStyle = accent
       ctx.lineWidth = 7
       ctx.stroke()
-      ctx.fillStyle = '#ffffff'
+      ctx.fillStyle = isRecruit ? '#b4ffec' : '#fff0c6'
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
-      ctx.font = '900 109px system-ui, sans-serif'
+      ctx.font = '900 98px system-ui, sans-serif'
       ctx.fillText(label, 192, 91)
       ctx.fillStyle = accent
       ctx.font = '800 31px system-ui, Malgun Gothic, sans-serif'
@@ -79,11 +84,10 @@ function card(type) {
   }
 }
 
-function createPickup(kind) {
-  const root = new THREE.Group()
+const pickupModels = new Map()
+function buildPickupModel(kind) {
   const model = new THREE.Group()
-  const sign = card(kind)
-  root.add(model, sign.sprite)
+
 
   if (kind === 'recruit') {
     box(model, tealGround, 0, 0.044, 0, 3.3, 0.042, 1.6)
@@ -97,8 +101,18 @@ function createPickup(kind) {
       box(model, mint, x, 1.36, 0.33, 0.07, 0.76, 0.031)
       box(model, cream, x, 2.02, 0, 0.39, 0.16, 0.44)
     }
-    box(model, alloy, 0, 2.11, 0, 3.38, 0.19, 0.34)
-    sign.sprite.position.set(0, 2.48, 0.5)
+    for (let i = 0; i < 9; i++) {
+      const angle = (i + 0.5) * Math.PI / 9
+      const slab = box(model, i === 4 ? cream : silver, 1.48 * Math.cos(angle),
+        1.98 + 0.89 * Math.sin(angle), 0, 0.53, 0.34, 0.47)
+      slab.rotation.z = Math.atan2(0.89 * Math.cos(angle), -1.48 * Math.sin(angle))
+    }
+    for (const z of [1.02, 1.68]) {
+      for (const side of [-1, 1]) {
+        const arm = box(model, mint, side * 0.19, 0.063, z, 0.46, 0.023, 0.075)
+        arm.rotation.y = -side * 0.44
+      }
+    }
   } else {
     box(model, amberGround, 0, 0.044, 0, 2.52, 0.039, 1.54)
     box(model, alloy, 0, 0.16, 0, 2.48, 0.27, 1.29)
@@ -108,10 +122,43 @@ function createPickup(kind) {
       box(model, silver, side * 0.93, 0.67, 0, 0.17, 0.99, 1.13)
       box(model, amber, side * 0.93, 0.85, 0.57, 0.075, 0.09, 0.03)
     }
+    for (const y of [0.34, 0.96]) {
+      box(model, alloy, 0, y, 0.549, 2.18, 0.095, 0.08)
+      for (const x of [-0.94, -0.71, 0.71, 0.94]) {
+        box(model, amber, x, y, 0.602, 0.065, 0.065, 0.032)
+      }
+    }
+    for (const x of [-0.98, 0.98]) {
+      box(model, silver, x, 1.1, 0, 0.17, 0.12, 1.19)
+    }
+    for (const x of [-0.55, 0, 0.55]) {
+      box(model, alloy, x, 0.66, 0.54, 0.023, 0.5, 0.032)
+    }
     box(model, amber, 0, 0.72, 0.568, 0.25, 0.3, 0.09)
     box(model, alloy, 0, 0.71, 0.62, 0.068, 0.11, 0.02)
-    sign.sprite.position.set(0, 1.88, 0.34)
   }
+  const batches = new Map()
+  for (const part of model.children) {
+    part.updateMatrix()
+    const geometry = part.geometry.clone().applyMatrix4(part.matrix)
+    if (!batches.has(part.material)) batches.set(part.material, [])
+    batches.get(part.material).push(geometry)
+  }
+  model.clear()
+  for (const [finish, parts] of batches) {
+    model.add(new THREE.Mesh(mergeGeometries(parts), finish))
+    for (const part of parts) part.dispose()
+  }
+  return model
+}
+
+function createPickup(kind) {
+  const root = new THREE.Group()
+  if (!pickupModels.has(kind)) pickupModels.set(kind, buildPickupModel(kind))
+  const model = pickupModels.get(kind).clone()
+  const sign = card(kind)
+  sign.sprite.position.set(0, kind === 'recruit' ? 1.83 : 1.88, kind === 'recruit' ? 0.51 : 0.34)
+  root.add(model, sign.sprite)
   return {
     root,
     update(pickup, time) {
@@ -154,9 +201,18 @@ export function createHazard() {
   for (const side of [-1, 1]) {
     box(root, roseEdge, 0.485 * side, 0.083, -5.4, 0.022, 0.014, 12.2)
   }
+  const points = []
   for (let i = 0; i < 8; i += 1) {
-    box(root, roseEdge, 0, 0.075, -i * 1.4, 0.92, 0.016, 0.038)
+    const z = -i * 1.4
+    for (const side of [-1, 1]) {
+      const x = side * .16
+      points.push(0,.082,z-.14, x,.082,z+.06, x,.082,z+.16,
+                  0,.082,z-.14, x,.082,z+.16, 0,.082,z-.04)
+    }
   }
+  const chevrons = new THREE.BufferGeometry()
+  chevrons.setAttribute('position', new THREE.Float32BufferAttribute(points, 3))
+  root.add(new THREE.Mesh(chevrons, material(0xffab56, { side: THREE.DoubleSide })))
   return {
     root,
     update(alarm, time) {
@@ -222,7 +278,7 @@ export function createEffects(scene) {
         const muzzleOffset = 0.21 * Math.max(0, 1 - (shot.startZ - shot.z) / 2.1)
         temp.position.set(shot.x - muzzleOffset, 0.78, shot.z)
         temp.rotation.set(0, -Math.atan(shot.dx), 0)
-        temp.scale.set(shot.level === 2 ? 0.097 : 0.074, 0.06, 0.94)
+        temp.scale.set(shot.level === 2 ? 0.053 : 0.039, 0.036, 0.83)
         temp.updateMatrix()
         shots.setMatrixAt(i, temp.matrix)
         shots.setColorAt(i, tint.setHex(shotPalette[shot.level]))

@@ -1,8 +1,9 @@
+import { STAGES } from './campaign.js'
+
 const HALF_ROAD = 3.52
 const MAX_SQUAD = 36
 const MARCH_SPEED = 4.3
 const ARROW_SPEED = 34
-export const BOSS_TIME = 38
 export const LANES = { recruit: -2.13, upgrade: 2.13 }
 export const WEAPONS = ['석궁', '삼연발', '관통 화살', '폭발 화살']
 
@@ -24,12 +25,17 @@ const schedule = [
   { at: 30.5, z: -19, kind: 'recruit', amount: 8 },
 ]
 
-const flankWaves = [
-  { time: 15.8, side: -1 },
-  { time: 22.4, side: 1 },
-  { time: 30.7, side: -1 },
-  { time: 34.5, side: 1 },
+const reserveSupplies = [
+  { at: 28.45, z: -24, kind: 'upgrade', hp: 34 },
+  { at: 37.2, z: -22, kind: 'recruit', amount: 8 },
 ]
+
+const strikeZones = {
+  center: [{ x: 0, width: 3.6 }],
+  outer: [{ x: -2.55, width: 2.6 }, { x: 2.55, width: 2.6 }],
+  left: [{ x: -1.85, width: 3.15 }],
+  right: [{ x: 1.85, width: 3.15 }],
+}
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value))
 
@@ -53,35 +59,53 @@ export function formation(count, x) {
 function spawnEnemy(run, kind, lane, z, phase) {
   const enemy = { ...units[kind], kind, lane, x: lane, z, phase, id: ++run.serial, flash: 0 }
   enemy.maxHp = enemy.hp
+  if (kind !== 'boss') enemy.speed *= run.pace
   run.enemies.push(enemy)
   return enemy
 }
 
 function marchRank(run, index, z, wave) {
-  const size = wave === 1 ? 6 : wave === 2 ? 8 : 9
+  const rush = run.chapter.formation === 'surge' && wave >= 2 && index % 4 < 2
+  const size = wave === 1 ? 6 : wave === 2 ? 8 + Number(rush) : 9 + Number(rush)
   const span = wave === 1 ? 2.54 : wave === 2 ? 5.2 : 6.36
   const center = [0.24, -0.35, 0.46, -0.54, 0.05, 0.7][index % 6]
   for (let i = 0; i < size; i += 1) {
     const phase = index * 2.89 + i * 1.73
     const lane = clamp(center + span * (i / (size - 1) - 0.5) + Math.sin(phase) * 0.13, -3.75, 3.75)
-    const kind = wave >= 2 && i === 3 && index % 3 === 0 ? 'armor'
-      : wave >= 2 && (i + index) % 8 === 4 ? 'runner' : 'grunt'
-    spawnEnemy(run, kind, lane, z - (i % 3) * 0.46, phase)
+    const armor = wave >= 2 && (run.chapter.formation === 'armor' ? (i + index) % 5 === 2 : i === 3 && index % 3 === 0)
+    const scouts = run.chapter.formation === 'scouts'
+    const scoutOffset = scouts ? 2 : 4
+    const scoutEvery = scouts || rush ? 4 : 8
+    const scout = wave >= 2 && (i + index) % scoutEvery === scoutOffset
+    const kind = armor ? 'armor' : scout ? 'runner' : 'grunt'
+    const enemy = spawnEnemy(run, kind, lane, z - (i % 3) * 0.46, phase)
+    if (kind === 'runner' && scouts) enemy.speed *= 1.15
   }
 }
 
 function sendFlank(run, wave, emit) {
   const lanes = [2.42, 3.14, 3.64, 2.8]
+  const scouts = run.chapter.formation === 'scouts'
   for (let i = 0; i < lanes.length; i += 1) {
     const armored = i % 2 === 0
-    spawnEnemy(run, armored ? 'armor' : 'runner', wave.side * lanes[i],
+    const kind = armored && !scouts ? 'armor' : 'runner'
+    const enemy = spawnEnemy(run, kind, wave.side * lanes[i],
       armored ? -20 - i * 0.95 : -24 - i * 0.95, wave.time + i)
+    if (scouts) {
+      enemy.cutIn = wave.side * 0.95
+      enemy.speed *= 1.12
+    }
   }
   emit('flank', wave)
 }
 
-export function newCombat() {
+export function newCombat(stage = 0) {
+  const chapter = STAGES[stage]
+  const supplySchedule = stage < 3 ? schedule : [
+    ...schedule.slice(0, 7), reserveSupplies[0], schedule[7], reserveSupplies[1],
+  ]
   const run = {
+    stage, chapter, supplySchedule, pace: chapter.pace ?? 1, bossTime: chapter.time, strikeCount: 0,
     x: 0, time: 0, distance: 0, count: 1, weapon: 0, kills: 0, recruited: 0,
     wave: 1, state: 'playing', traveled: 0, volley: 0.07, volleyIndex: 0,
     protection: 0, nextRank: 0.65, rank: 0, nextPickup: 0, nextFlank: 0, serial: 0,
@@ -100,13 +124,19 @@ function takeLoss(run, incoming, x, emit, boss = false) {
   if (!run.count) run.state = 'lost'
 }
 
+function supplyLane(run, entry) {
+  return entry.at >= (run.chapter.flipAt ?? Infinity) ? -LANES[entry.kind] : LANES[entry.kind]
+}
+
 function approachPickups(run, dt, emit) {
-  while (schedule[run.nextPickup]?.at <= run.time) {
-    const entry = schedule[run.nextPickup++]
-    run.pickups.push({ ...entry, id: ++run.serial, x: LANES[entry.kind], flash: 0 })
+  while (run.supplySchedule[run.nextPickup]?.at <= run.time) {
+    const entry = run.supplySchedule[run.nextPickup++]
+    if (entry.kind === 'upgrade' && run.weapon === WEAPONS.length - 1) continue
+    const amount = entry.at === 0 ? run.chapter.openingAid ?? entry.amount : entry.amount
+    run.pickups.push({ ...entry, amount, maxHp: entry.hp, id: ++run.serial, x: supplyLane(run, entry), flash: 0 })
   }
   for (const pickup of run.pickups) {
-    pickup.z += dt * MARCH_SPEED
+    pickup.z += dt * MARCH_SPEED * run.pace
     pickup.flash = Math.max(0, pickup.flash - dt)
     if (pickup.z < 0) continue
     pickup.used = true
@@ -180,8 +210,10 @@ function advanceShots(run, dt, emit) {
       emit('target', rack)
       if (rack.hp <= 0) {
         rack.used = true
-        run.weapon = Math.min(WEAPONS.length - 1, run.weapon + 1)
-        emit('upgrade', { x: rack.x, z: rack.z, level: run.weapon })
+        if (run.weapon < WEAPONS.length - 1) {
+          run.weapon += 1
+          emit('upgrade', { x: rack.x, z: rack.z, level: run.weapon })
+        }
       }
     } else if (target) {
       damageEnemy(run, target, shot.damage, emit)
@@ -206,11 +238,17 @@ function advanceShots(run, dt, emit) {
 
 function advanceBoss(run, enemy, dt, emit) {
   enemy.z = Math.min(-10.7, enemy.z + dt * enemy.speed)
-  enemy.x = Math.sin((run.time - BOSS_TIME) * 0.81) * 1.38
+  const scout = run.chapter.formation === 'scouts'
+  enemy.x = Math.sin((run.time - run.bossTime) * (scout ? 1.05 : 0.81)) * (scout ? 1.74 : 1.38)
   if (enemy.z < -14) return
   const angry = enemy.hp < enemy.maxHp / 2
   if (!run.alarm && run.time >= enemy.nextAttack) {
-    run.alarm = { x: clamp(run.x, -2.9, 2.9), width: angry ? 3.3 : 2.4, ttl: angry ? 1.0 : 1.12 }
+    const targeted = { x: clamp(run.x, -2.9, 2.9), width: angry ? 3.3 : 2.4 }
+    const pattern = run.chapter.attacks
+    const attack = pattern?.[run.strikeCount % pattern.length] ?? 'aim'
+    const zones = strikeZones[attack] ?? [targeted]
+    run.alarm = { zones, attack, ttl: attack !== 'aim' ? 1.24 : angry ? 1.0 : 1.12 }
+    run.strikeCount += 1
     emit('alarm', run.alarm)
   }
   if (!run.alarm) return
@@ -219,8 +257,10 @@ function advanceBoss(run, enemy, dt, emit) {
   const strike = run.alarm
   run.alarm = null
   enemy.nextAttack = run.time + (angry ? 1.0 : 1.55)
-  emit('strike', strike)
-  if (Math.abs(run.x - strike.x) < strike.width / 2) takeLoss(run, enemy.loss, strike.x, emit, true)
+  for (const zone of strike.zones) emit('strike', zone)
+  if (strike.zones.some(zone => Math.abs(run.x - zone.x) < zone.width / 2)) {
+    takeLoss(run, enemy.loss, run.x, emit, true)
+  }
 }
 
 export function tickCombat(run, dt, target, direction, emit) {
@@ -230,22 +270,26 @@ export function tickCombat(run, dt, target, direction, emit) {
   run.x += (clamp(next, -HALF_ROAD, HALF_ROAD) - run.x) * (1 - Math.exp(-dt * (direction ? 96 : 22)))
   run.traveled += Math.abs(run.x - previous)
   run.time += dt
-  run.distance += dt * (run.boss ? 2.05 : MARCH_SPEED)
-  run.wave = run.time < 12 ? 1 : run.time < 25 ? 2 : 3
+  run.distance += dt * (run.boss ? 2.05 : MARCH_SPEED * run.pace)
+  run.wave = run.time < 12 ? 1 : run.time < 25 + Math.min(2, run.stage) ? 2 : 3
   run.protection = Math.max(0, run.protection - dt)
   approachPickups(run, dt, emit)
 
-  if (run.time >= run.nextRank && run.time < BOSS_TIME - 2) {
+  if (run.time >= run.nextRank && run.time < run.bossTime - 2) {
     marchRank(run, run.rank++, -55, run.wave)
-    run.nextRank += run.wave === 1 ? 0.86 : run.wave === 2 ? 0.8 : 0.70
+    const gap = run.wave === 1 ? 0.86 : run.wave === 2 ? 0.8 : 0.70
+    const surge = run.chapter.formation === 'surge' && run.wave >= 2
+    run.nextRank += gap * (surge ? run.rank % 4 < 2 ? 0.70 : 1.28 : 1) / run.pace
   }
-  const flank = flankWaves[run.nextFlank]
+  const flank = run.chapter.flanks[run.nextFlank]
   if (flank && run.time >= flank.time) {
     sendFlank(run, flank, emit)
     run.nextFlank += 1
   }
-  if (!run.boss && run.time >= BOSS_TIME) {
+  if (!run.boss && run.time >= run.bossTime) {
     run.boss = spawnEnemy(run, 'boss', 0, -29, 0)
+    run.boss.hp = run.boss.maxHp = run.chapter.hp
+    run.boss.loss += Math.min(4, run.stage)
     run.boss.nextAttack = run.time + 3.55
     emit('boss', run.boss)
   }
@@ -257,7 +301,8 @@ export function tickCombat(run, dt, target, direction, emit) {
       continue
     }
     enemy.z += enemy.speed * dt
-    enemy.x = enemy.lane + Math.sin(run.time * 2.1 + enemy.phase) * 0.12
+    const drift = (enemy.cutIn || 0) * clamp((enemy.z + 17) / 14, 0, 1)
+    enemy.x = enemy.lane - drift + Math.sin(run.time * 2.1 + enemy.phase) * 0.12
     if (enemy.z < 0.16) continue
     enemy.passed = true
     const width = Math.min(1.48, 0.2 + Math.sqrt(run.count) * 0.21)
@@ -275,15 +320,15 @@ export function tickCombat(run, dt, target, direction, emit) {
   run.pickups = run.pickups.filter(pickup => !pickup.used)
 }
 
-export function makePreview() {
-  const run = newCombat()
+export function makePreview(stage = 0) {
+  const run = newCombat(stage)
   run.count = 9
   run.x = -1.1
   const recruits = schedule[0]
   const rack = schedule[1]
   run.pickups = [
-    { ...recruits, id: ++run.serial, x: LANES.recruit, z: -10.8, flash: 0 },
-    { ...rack, id: ++run.serial, x: LANES.upgrade, z: -16, flash: 0 },
+    { ...recruits, amount: run.chapter.openingAid ?? recruits.amount, id: ++run.serial, x: LANES.recruit, z: -10.8, flash: 0 },
+    { ...rack, maxHp: rack.hp, id: ++run.serial, x: LANES.upgrade, z: -16, flash: 0 },
   ]
   return run
 }

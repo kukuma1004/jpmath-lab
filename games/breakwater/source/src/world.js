@@ -1,10 +1,16 @@
+import { installShapes, ranger, knight } from './characters.js';
+import steelUrl from './art/forged-steel.webp?inline';
+import { chapterLand } from './chapter-land.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 import slateUrl from './art/weathered-slate.jpg?inline';
 import duskUrl from './art/mountain-sunset.jpg?inline';
+const stormArt = import.meta.glob('./art/storm-sky.webp', { eager: true, query: '?inline', import: 'default' });
 
 const loader = new THREE.TextureLoader();
+const steelGrain = loader.load(steelUrl);
+steelGrain.wrapS = steelGrain.wrapT = THREE.RepeatWrapping;
 const rockSurface = loader.load(slateUrl);
 rockSurface.wrapS = rockSurface.wrapT = THREE.RepeatWrapping;
 rockSurface.anisotropy = 4;
@@ -78,23 +84,38 @@ shape.shield = plaque([[-0.42, 0.48], [0.42, 0.48], [0.47, 0.15], [0.32, -0.27],
 shape.pennant = plaque([[-0.5, 0.52], [0.5, 0.52], [0.44, -0.37], [0, -0.51], [-0.44, -0.37]], 0.017);
 shape.spade = plaque([[-0.34, -0.46], [0.34, -0.46], [0.5, 0.06], [0.2, 0.25], [0, 0.52], [-0.2, 0.25], [-0.5, 0.06]], 0.06);
 
+installShapes(shape, plaque);
 const marchTime = { value: 0 };
 const marchStrength = { value: 1 };
 const figurePaint = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.48, metalness: 0.19 });
 figurePaint.onBeforeCompile = shader => {
+  shader.uniforms.steelGrain = { value: steelGrain };
   shader.uniforms.marchTime = marchTime;
+  shader.fragmentShader = 'uniform sampler2D steelGrain; varying vec3 armourPoint; varying float isSteel;\n' + shader.fragmentShader;
+  shader.fragmentShader = shader.fragmentShader.replace('#include <roughnessmap_fragment>', `
+    #include <roughnessmap_fragment>
+    float grain = texture2D(steelGrain, armourPoint.xy * 0.64 + armourPoint.z * vec2(0.19,0.28)).r;
+    roughnessFactor = mix(.82, .27 + grain * .26, isSteel);
+    diffuseColor.rgb *= mix(1., .86 + grain * .33, isSteel);
+  `).replace('#include <metalnessmap_fragment>', '#include <metalnessmap_fragment>\nmetalnessFactor = mix(.015,.39,isSteel);');
   shader.uniforms.marchStrength = marchStrength;
   shader.vertexShader = shader.vertexShader
-    .replace('#include <common>', '#include <common>\nattribute float stepSide;\nuniform float marchTime;\nuniform float marchStrength;')
+    .replace('#include <common>', '#include <common>\nvarying vec3 armourPoint; varying float isSteel; attribute float stepSide;\nuniform float marchTime;\nuniform float marchStrength;')
     .replace('#include <begin_vertex>', [
       '#include <begin_vertex>',
+      'armourPoint=position; isSteel=1.-smoothstep(.018,.058,max(color.r,max(color.g,color.b))-min(color.r,min(color.g,color.b)));',
       'vec3 origin = instanceMatrix[3].xyz;',
-      'float foot = sin(marchTime * 11.3 + origin.x * 2.9 + origin.z * 0.66) * stepSide * marchStrength;',
+      'float phase = marchTime * 11.3 + origin.x * 2.9 + origin.z * 0.66;',
+      'float foot = sin(phase) * stepSide * marchStrength;',
+      'float shoulders = smoothstep(.39, .82, position.y) * (1. - abs(stepSide));',
+      'float twist = .026 * sin(phase) * shoulders * marchStrength;',
+      'transformed.x += twist * position.z;',
+      'transformed.z -= twist * position.x;',
       'transformed.z += foot * 0.105;',
       'transformed.y += max(0.0, foot) * 0.083;',
     ].join('\n'));
 };
-figurePaint.customProgramCacheKey = () => 'gatefront-instanced-march';
+figurePaint.customProgramCacheKey = () => 'gatefront-armoured-march';
 
 class Assembly {
   constructor(figure = false) {
@@ -138,17 +159,6 @@ class Assembly {
   }
 }
 
-function bow(builder) {
-  builder.add('block', attire.leather, [0.18, 0.69, 0.27], [0.09, 0.08, 0.53], [-0.06, 0, 0])
-    .add('block', attire.oldGold, [0.18, 0.731, 0.39], [0.06, 0.022, 0.24])
-    .add('block', attire.iron, [0.18, 0.69, 0.15], [0.064, 0.12, 0.08]);
-  for (const sign of [-1, 1]) {
-    builder.add('block', attire.leather, [0.18 + sign * 0.12, 0.71, 0.39], [0.26, 0.048, 0.052], [0, -sign * 0.18, 0])
-      .add('block', attire.oldGold, [0.18 + sign * 0.27, 0.71, 0.32], [0.13, 0.043, 0.052], [0, sign * 0.68, 0])
-      .add('block', 0xcdbe9e, [0.18 + sign * 0.15, 0.716, 0.21], [0.31, 0.015, 0.014], [0, -sign * 0.30, 0]);
-  }
-}
-
 function spear(builder, kind) {
   if (kind === 'armor') {
     builder.add('shield', attire.oldGold, [-0.25, 0.60, 0.27], [0.41, 0.58, 0.44], [0.10, 0.10, 0.02])
@@ -161,12 +171,11 @@ function spear(builder, kind) {
 }
 
 function soldier(kind) {
-  const friend = kind === 'leader' || kind === 'ally';
-  const leader = kind === 'leader';
+  if(kind === 'leader' || kind === 'ally') return ranger(new Assembly(true),kind === 'leader');
   const heavy = kind === 'armor';
   const scout = kind === 'runner';
-  const cloth = friend ? attire.jade : scout ? attire.scarlet : attire.burgundy;
-  const plate = friend ? 0xc6c6bd : heavy ? attire.oldGold : 0xaa8d79;
+  const cloth = scout ? attire.scarlet : attire.burgundy;
+  const plate = heavy ? attire.oldGold : 0xaa8d79;
   const build = new Assembly(true);
 
   for (const sign of [-1, 1]) {
@@ -188,83 +197,35 @@ function soldier(kind) {
     .add('taper', plate, [0, 1.012, 0.015], [0.293, 0.145, 0.28])
     .add('block', plate, [0, 0.917, 0.132], [0.077, 0.109, 0.083])
     .add('block', attire.iron, [0, 0.936, 0.150], [0.203, 0.035, 0.021]);
-  const pennant = friend ? (leader ? attire.brightJade : attire.jade) : attire.wine;
+  const pennant = attire.wine;
   build.add('pennant', pennant, [0, 0.60, -0.169], [0.43, 0.54, 0.55], [0.10, 0, 0]);
   // A fluted travelling cloak flares around the legs and folds up at the shoulders.
   for (let fold=-2;fold<=2;fold++) {
     const edge=Math.abs(fold);
-    build.add('pennant',edge===1 ? (friend ? 0x428f78 : 0x984556) : pennant,
+    build.add('pennant',edge===1 ? 0x984556 : pennant,
       [fold*.081,.51+edge*.025,-.197+edge*.021],[.138,.68-edge*.043,.72],[.23,fold*.16,fold*.11]);
   }
   build.add('cone',plate,[0,1.075,.012],[.31,.22,.29])
     .add('octagon',attire.oldGold,[0,.981,.015],[.317,.028,.32]);
-  if (friend) {
-    // Back-facing collars, embroidered mantle and pauldrons read from the chase camera.
-    for (const side of [-1, 1]) {
-      build.add('dome', plate, [side*.22,.755,-.018], [.215,.19,.28], [0,0,side*.25])
-        .add('pennant', attire.brightJade, [side*.092,.72,-.202], [.238,.246,.65], [.26,side*.16,side*.27])
-        .add('block', 0xdab26e, [side*.095,.52,-.233], [.018,.286,.018], [.18,0,side*.19]);
-    }
-    build.add('spade',0xe7bd75,[0,.56,-.246],[.092,.146,.15],[.19,0,0]);
+  if (!heavy && !scout) {
+    build.add('shield', attire.oldGold, [-.22,.53,.208], [.34,.53,.39], [.08,.18,-.08])
+      .add('shield', attire.wine, [-.22,.54,.243], [.28,.45,.33], [.08,.18,-.08])
+      .add('spade', 0xdab279, [-.22,.54,.268], [.065,.23,.21]);
   }
-  if (leader) {
-    build.add('hex',attire.leather,[-.27,1.03,-.08],[.035,1.85,.035],[0,0,-.04])
-      .add('pennant',attire.jade,[-.48,1.75,-.08],[.43,.36,.52],[0,.18,-.14])
-      .add('spade',attire.oldGold,[-.46,1.76,-.105],[.10,.20,.16]);
-  }
-  if (friend) {
-    bow(build);
-    build.add('hex', attire.leather, [-0.16, 0.72, -0.195], [0.12, 0.38, 0.12], [0.25, -0.06, -0.29])
-      .add('block', attire.pale, [-0.14, 0.929, -0.222], [0.10, 0.10, 0.073], [0.25, 0, -0.29]);
-  } else {
-    spear(build, kind);
-  }
-  if (leader || heavy) {
+  spear(build, kind);
+  if (heavy) {
     for (const sign of [-1, 1]) {
       build.add('taper', plate, [sign * 0.23, 0.75, 0], [0.22, 0.17, 0.24], [0, 0, sign * 0.38]);
     }
   }
-  if (leader || scout) {
-    build.add('spade', leader ? attire.brightJade : attire.scarlet, [0, 1.107, -0.016], [0.05, leader ? 0.27 : 0.16, 0.20], [0.2, PI / 2, 0]);
+  if (scout) {
+    build.add('spade', attire.scarlet, [0, 1.107, -0.016], [0.05, 0.16, 0.20], [0.2, PI / 2, 0]);
   }
   return build.geometry;
 }
 
-function guardian() {
-  const forge = new Assembly(true);
-  const trim = 0xb27a53;
-  const enamel = 0x774154;
-  const shell = 0x5c5267;
-  for (const sign of [-1, 1]) {
-    forge.add('block', attire.iron, [sign * 0.36, 0.22, 0.13], [0.49, 0.44, 0.68], [0, 0, 0], sign)
-      .add('hex', shell, [sign * 0.36, 0.64, 0.02], [0.52, 0.65, 0.54], [0.07, 0, sign * 0.12], sign)
-      .add('spade', trim, [sign * 0.39, 0.68, 0.28], [0.37, 0.39, 0.35], [0, 0, 0], sign)
-      .add('taper', shell, [sign * 0.79, 1.67, 0], [0.69, 0.47, 0.72], [0, 0, sign * 0.32])
-      .add('taper', trim, [sign * 0.80, 1.78, 0], [0.75, 0.19, 0.77], [0, 0, sign * 0.32])
-      .add('hex', shell, [sign * 0.87, 1.22, 0.15], [0.48, 0.52, 0.48], [-0.45, 0, sign * 0.06], -sign * 0.30)
-      .add('cone', trim, [sign * 0.29, 2.56, 0.015], [0.19, 0.49, 0.17], [0.12, 0, -sign * 0.52]);
-  }
-
-  forge.add('taper', attire.iron, [0, 1.11, 0], [1.30, 0.56, 0.74])
-    .add('taper', shell, [0, 1.53, 0], [1.54, 0.63, 0.76])
-    .add('shield', trim, [0, 1.55, 0.42], [0.80, 0.65, 0.53])
-    .add('shield', enamel, [0, 1.56, 0.48], [0.70, 0.54, 0.46])
-    .add('hex', trim, [0, 1.61, 0.54], [0.30, 0.09, 0.30], [PI / 2, 0, 0])
-    .add('hex', 0x503540, [0, 1.62, 0.60], [0.20, 0.06, 0.20], [PI / 2, 0, 0])
-    .add('pennant', enamel, [0, 0.99, -0.40], [1.34, 1.43, 1.0], [0.14, 0, 0])
-    .add('octagon', attire.iron, [0, 2.00, 0.01], [0.72, 0.37, 0.65])
-    .add('taper', shell, [0, 2.23, 0.005], [0.79, 0.40, 0.68])
-    .add('spade', trim, [0, 2.17, 0.379], [0.50, 0.52, 0.41])
-    .add('block', attire.iron, [0, 2.20, 0.416], [0.51, 0.131, 0.034])
-    .add('block', 0xeabd6d, [-0.127, 2.209, 0.442], [0.15, 0.048, 0.018])
-    .add('block', 0xeabd6d, [0.127, 2.209, 0.442], [0.15, 0.048, 0.018])
-    .add('hex', attire.leather, [1.17, 0.96, 0.25], [0.17, 1.44, 0.17], [0.31, 0, -0.41])
-    .add('hex', shell, [1.42, 1.52, 0.38], [0.55, 0.85, 0.56], [0, 0, PI / 2 - 0.36])
-    .add('hex', trim, [1.80, 1.66, 0.40], [0.56, 0.13, 0.55], [0, 0, PI / 2 - 0.36])
-    .add('shield', trim, [-0.94, 1.08, 0.48], [1.12, 1.47, 0.58], [0.08, -0.18, -0.04])
-    .add('shield', enamel, [-0.94, 1.09, 0.57], [0.98, 1.35, 0.50], [0.08, -0.18, -0.04])
-    .add('spade', trim, [-0.94, 1.16, 0.62], [0.40, 0.66, 0.39], [0.08, -0.18, 0]);
-  return forge.geometry;
+function guardian(stage = 0) {
+  return knight(new Assembly(true),stage);
 }
 
 function contactMap() {
@@ -316,15 +277,38 @@ export function createCrowd(scene) {
   shade.frustumCulled = false;
   crowd.add(shade);
 
+  const foundryArmor = figurePaint.clone();
+  foundryArmor.roughness = .38;
+  foundryArmor.onBeforeCompile = shader => {
+    figurePaint.onBeforeCompile(shader);
+    shader.fragmentShader = shader.fragmentShader.replace('#include <emissivemap_fragment>', `
+      #include <emissivemap_fragment>
+      float heat=smoothstep(.52,.90,vColor.r)* (1.-smoothstep(.20,.46,vColor.g));
+      float rim=pow(1.-max(dot(normal,normalize(vViewPosition)),0.),3.);
+      totalEmissiveRadiance+=heat*vec3(1.75,.44,.04)+rim*vec3(.16,.045,.014);
+    `);
+  };
+  foundryArmor.customProgramCacheKey = () => 'foundry-forged-armor';
+  const guardians = [batches.boss.geometry];
+  let stage = 0;
+  let windup = 0;
+  let followThrough = 0;
+  function setStage(index) {
+    stage = index;
+    guardians[index] ??= guardian(index);
+    batches.boss.geometry = guardians[index];
+    batches.boss.material = index === 2 ? foundryArmor : figurePaint;
+  }
+
   function place(kind, unit, turn, time) {
     const batch = batches[kind];
     if (batch.count >= bodyLimit[kind]) return;
     const boss = kind === 'boss';
-    const size = boss ? 1.12 : kind === 'leader' ? 1.10 : kind === 'armor' ? 1.13 : kind === 'runner' ? 0.87 : 0.97;
+    const size = boss ? (stage === 2 ? 1.88 : stage === 6 ? 1.83 : 1.78) : kind === 'leader' ? 1.10 : kind === 'armor' ? 1.13 : kind === 'runner' ? 0.87 : 0.97;
     const beat = unit.x * 2.9 + unit.z * 0.66 + time * 11.3;
     const gait = Math.abs(Math.sin(beat)) * 0.039 * marchStrength.value;
     body.position.set(unit.x, gait, unit.z);
-    body.rotation.set(0, turn, Math.sin(beat) * 0.042 * marchStrength.value);
+    body.rotation.set(boss ? -.09 * windup + .15 * followThrough : 0, turn + (boss ? -.17 * windup + .22 * followThrough : 0), Math.sin(beat) * (boss ? .012 : .026) * marchStrength.value);
     body.scale.setScalar(size);
     body.updateMatrix();
     batch.setMatrixAt(batch.count, body.matrix);
@@ -342,7 +326,12 @@ export function createCrowd(scene) {
   }
 
   return {
-    update({ allies, enemies, time, moving }) {
+    setStage,
+    update({ allies, enemies, time, moving, bossAlarm }) {
+      const charge = bossAlarm ? 1 - THREE.MathUtils.clamp(bossAlarm.ttl / 1.24, 0, 1) : 0;
+      if (!bossAlarm && windup > .5) followThrough = 1;
+      else followThrough *= Math.exp(-Math.max(0, time - marchTime.value) * 9);
+      windup = charge;
       marchTime.value = time;
       marchStrength.value = moving ? 1 : 0.22;
       shade.count = 0;
@@ -428,6 +417,60 @@ function riverMaterial(clock) {
       '}',
     ].join('\n'),
   });
+}
+
+function stormSea(clock) {
+  const water = riverMaterial(clock);
+  water.uniforms.blue.value.setHex(0x315965);
+  water.uniforms.deep.value.setHex(0x143c46);
+  water.uniforms.glint.value.setHex(0x738c94);
+  water.vertexShader = water.vertexShader.replace('gl_Position =', `
+    vWorld.y += .31*sin(vWorld.x*.90+vWorld.z*.66-clock*2.)+.21*cos(vWorld.z*1.23-clock*1.63);
+    gl_Position =`);
+  water.vertexShader='uniform float clock;\n'+water.vertexShader;
+  water.uniforms.breakers = { value: rockSurface };
+  water.fragmentShader='uniform sampler2D breakers;\n'+water.fragmentShader;
+  water.fragmentShader=water.fragmentShader.replace('vec2 p = vWorld.xz;', `
+    vec2 p = vWorld.xz;
+    vec2 drift = vec2(clock * .024, -clock * .038);
+    float chop = texture2D(breakers, p * .19 + drift).r;
+    float ripple = texture2D(breakers, p.yx * .63 - drift).r;
+    p += vec2(chop, ripple) * .72;
+  `).replace('water = mix(water, mist,', `
+    float fold=sin(p.x*.90+p.y*.66-clock*2.+.31*sin(p.y*2.12));
+    float lace=sin(p.y*7.4+p.x*2.+clock*2.)*.12+cos(p.x*5.+p.y*1.3)*.12;
+    float spray=smoothstep(.71,1.,fold+lace)*(.55+.45*sin(p.y*3.9+p.x*1.4));
+    float crest=smoothstep(.71,1.,fold+lace+.29*(chop-.4));
+    float broken=smoothstep(.17,.72,.63*chop+.41*ripple);
+    water*=.78+.37*chop;
+    water=mix(water,vec3(.57,.70,.71),spray*.36+crest*broken*.56);
+    water = mix(water, mist,`);
+  const mesh=new THREE.Mesh(new THREE.PlaneGeometry(140,180,76,94),water);
+  mesh.rotation.x=-PI/2;
+  mesh.position.set(0,-1.65,-62);
+  return mesh;
+}
+
+function stormRain(clock) {
+  const random=randomFrom(6742);
+  const p=[], ends=[];
+  for(let i=0;i<210;i++){
+    const x=(random()-.5)*35, y=random()*19, z=9-random()*62;
+    p.push(x,y,z,x+.091,y,z-.024); ends.push(0,.43);
+  }
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));
+  g.setAttribute('tip',new THREE.Float32BufferAttribute(ends,1));
+  return new THREE.LineSegments(g,new THREE.ShaderMaterial({
+    transparent:true,depthWrite:false,uniforms:{clock},
+    vertexShader:`attribute float tip; uniform float clock; void main(){
+      vec3 v=position; float shift=mod(clock*8.4,19.);
+      float height=mod(v.y-shift+19.,19.);
+      v.x+=(height-v.y)*.19; v.y=height+tip;
+      gl_Position=projectionMatrix*modelViewMatrix*vec4(v,1.);
+    }`,
+    fragmentShader:'void main(){gl_FragColor=vec4(.69,.81,.86,.18);}'
+  }));
 }
 
 function fireGlow() {
@@ -602,44 +645,287 @@ function canyonSky() {
   return texture;
 }
 
+function mountainPass(frozen) {
+  const cliffs = new Assembly();
+  const lights = new Assembly();
+  const random = randomFrom(frozen ? 613 : 791);
+  const rocks = frozen ? [0x627a91,0x8399aa,0xa9bdc9] : [0x303340,0x41404a,0x594547];
+  for (const side of [-1,1]) {
+    for (let i=0;i<26;i++) {
+      const z=12-i*4.7, x=side*(11+random()*2.6);
+      const top=-1.1+random()*3.1, width=4.6+random()*2.2;
+      cliffs.add('hex',rocks[i%3],[x,top-4,z],[width,8,width*1.24],[0,i*.61,0])
+        .add('hex',rocks[(i+1)%3],[x+side*4,top-1,z-1],[width*1.35,9,width*1.36],[0,i*.53,0]);
+      if(frozen) {
+        cliffs.add('hex',0xe0e9e8,[x,top+.05,z],[width*1.02,.32,width*1.24],[0,i*.61,0]);
+        for(let j=0;j<3;j++) {
+          const h=1.3+random()*4;
+          cliffs.add('shard',j%2 ? 0x91cddd : 0xc4edf0,[x+side*j*.67,top+h*.31,z+j*.26],[.7+random(),h,1.2],[.1,j,-side*(j-.6)*.26]);
+        }
+      } else {
+        // Broken basalt shelves step down from the back pillars toward the lava.
+        for(let ledge=0;ledge<3;ledge++) {
+          const shelfX=x-side*(width*.34+ledge*.58), shelfY=top-1.2-ledge*1.24;
+          cliffs.add('rock',rocks[(i+ledge)%3],[shelfX,shelfY,z+ledge*.64],
+            [2.43-ledge*.34,2.6-ledge*.21,3.53],[.15,1.47*i+ledge,side*.27]);
+        }
+      }
+      if(!frozen && i%3===0) {
+        const fallX=x-side*width*.50;
+        for(let j=0;j<4;j++) {
+          const lipX=x-side*width*(.13+j*.105);
+          lights.add('block',j===2 ? 0xffba39 : 0xff6714,[lipX,top+.11,z+.23+j*.06],[width*.13,.09,.34+j*.08],[0,side*.17,0]);
+          cliffs.add('rock',rocks[j%3],[fallX+side*.3,top-1.8-j*.8,z-.62-j*.24],[1.38,2.0,1.75],[.11,j,.21]);
+        }
+        for(let j=0;j<4;j++) {
+          lights.add('block',j%2 ? 0xff9c24 : 0xe34411,[fallX-side*.12,top-3.45,z+j*.18],[.32,7.1,.2],[0,0,-side*.053]);
+        }
+        lights.add('hex',0xff7917,[fallX,top+.09,z+.3],[1.9,.17,1.3]);
+      }
+    }
+  }
+  const group=new THREE.Group(), rock=cliffs.mesh();
+  rock.material=cliffFinish;
+  group.add(rock);
+  if(!frozen) group.add(new THREE.Mesh(lights.geometry,new THREE.MeshBasicMaterial({vertexColors:true})));
+  return group;
+}
+
+function stageCitadel(frozen) {
+  const body=new Assembly(), glow=new Assembly();
+  const z=-64, wall=frozen ? 0x526b83 : 0x393740, edge=frozen ? 0xa6bcc6 : 0x80614d;
+  const light=frozen ? 0x99fbff : 0xffa222;
+  body.add('block',wall,[0,-2,z-1],[24,4,10])
+    .add('block',wall,[0,3.95,z-1],[11,8,3]);
+  // A stepped portal follows the pitched arch and embeds the luminous grate.
+  for(let j=-5;j<=5;j++) {
+    const height=6.8-Math.max(0,Math.abs(j)-1)*.59;
+    glow.add('block',j%2 ? light : (frozen ? 0x60ccf2 : 0xff7014),[j*.49,height*.5,z+.7],[.40,height,.24]);
+    body.add('block',edge,[j*.49,height+.13,z+.89],[.53,.42,.48]);
+  }
+  for(const side of [-1,1]) {
+    body.add('block',wall,[side*5.4,3.05,z],[3.8,6.1,4.6])
+      .add('block',edge,[side*5.4,6.13,z],[4.05,.33,4.92])
+      .add('pennant',frozen ? 0x226577 : 0x8a342d,[side*5.4,3.9,z+2.39],[1.7,3.48,1])
+      .add('spade',frozen ? 0xc8f4ed : 0xe2a85c,[side*5.4,3.99,z+2.46],[.70,1.0,.56])
+      .add('block',edge,[side*3.13,2.36,z+1.36],[.71,4.72,.97])
+      .add('block',edge,[side*2.24,5.74,z+1.36],[.72,3.03,.98],[0,0,side*.67]);
+    if(frozen) {
+      for(let i=0;i<4;i++) {
+        const x=side*(4+i*1.15), h=4.9+i*.96;
+        body.add('hex',wall,[x,h*.5,z-2.1],[1.6,h,2.5])
+          .add('shard',i%2 ? 0xc2e5ea : 0x84c2d6,[x,h+1.1,z-2.1],[1.98,4.7,2.32],[0,0,-side*.16]);
+      }
+    } else {
+      for(let i=0;i<4;i++) {
+        const x=side*(4+i*2.9), h=10.2-i*.78, pz=z-3.4-i*1.6;
+        body.add('taper',wall,[x,h*.48,pz],[1.52,h,1.52])
+          .add('octagon',edge,[x,h*.91,pz],[1.72,.26,1.72]);
+        glow.add('octagon',0xff6825,[x,h*.94,pz],[1.30,.29,1.3]);
+        body.add('octagon',wall,[x,h*.99,pz],[1.63,.42,1.63]);
+        for(let j=0;j<4;j++) {
+          body.add('rock',j%2 ? 0x414955 : 0x505866,[x+j*.51,h+.73+j*.9,pz-j*.5],[1.15+j*.39,1.64+j*.28,1.28+j*.42],[.4,i+j,.21]);
+        }
+      }
+      for(let i=0;i<3;i++) {
+        const x=side*(2.82+i*.46), y=6.0+i*.45;
+        body.add('block',0x505463,[x,y,z+1.12],[.43,2.12,.61],[0,0,side*.70]);
+        glow.add('block',0xff9230,[x,y+.24,z+1.46],[.15,.36,.08],[0,0,side*.70]);
+      }
+      for(let i=0;i<6;i++) {
+        const x=side*(8+i*1.55);
+        body.add('block',wall,[x,3.4,z-4],[.20,6.8,.28])
+          .add('block',edge,[x+.72*side,4.55,z-4],[2.24,.17,.24],[0,0,side*.72]);
+      }
+      body.add('block',wall,[side*12,5.4,z-4],[9,.23,.66]);
+      // Lower ore hoists frame the gate from a nearer terrace.
+      const hoistX=side*8.5, hoistZ=z+15;
+      for(const rail of [-.56,.56]) {
+        body.add('block',wall,[hoistX+rail,1.6,hoistZ],[.20,5.1,.34]);
+      }
+      for(let j=0;j<4;j++) body.add('block',edge,[hoistX,.05+j*1.04,hoistZ],[1.48,.13,.24],[0,0,(j%2?1:-1)*.73]);
+      body.add('block',edge,[hoistX-side*1.18,4.01,hoistZ],[3.72,.24,.44],[0,0,-side*.19])
+        .add('block',wall,[hoistX-side*.93,3.53,hoistZ],[3.36,.18,.26],[0,0,-side*.48])
+        .add('block',wall,[hoistX-side*2.78,3.08,hoistZ],[.073,2.44,.08])
+        .add('taper',wall,[hoistX-side*2.78,1.82,hoistZ],[1.01,.54,1.01]);
+      glow.add('octagon',0xff9435,[hoistX-side*2.78,2.08,hoistZ],[.91,.09,.92]);
+      const x=side*10;
+      body.add('block',wall,[x,3.75,z+2],[.39,7.5,.48])
+        .add('block',edge,[x-side*1.85,7.43,z+2],[4.25,.32,.52],[0,0,side*.16])
+        .add('block',wall,[x-side*3.75,6.03,z+2],[.09,2.12,.1])
+        .add('hex',wall,[x-side*3.75,4.91,z+2],[1.32,.69,1.28]);
+      glow.add('cone',light,[x-side*3.75,5.43,z+2],[1.04,.92,.96]);
+      for(let j=0;j<4;j++) body.add('block',edge,[x,1+j*1.5,z+2],[1.3,.17,.22],[0,0,(j%2?1:-1)*.93]);
+    }
+  }
+  const group=new THREE.Group(), shell=body.mesh();
+  shell.material=masonryFinish;
+  group.add(shell,new THREE.Mesh(glow.geometry,new THREE.MeshBasicMaterial({vertexColors:true})));
+  return group;
+}
+
+function stageSurface(stage, time) {
+  const frozen=stage===1;
+  return new THREE.ShaderMaterial({
+    uniforms:{ clock:time },
+    vertexShader:'varying vec2 p; void main(){vec4 world=modelMatrix*vec4(position,1.);p=world.xz;gl_Position=projectionMatrix*viewMatrix*world;}',
+    fragmentShader:`
+      varying vec2 p; uniform float clock;
+      void main(){
+        vec2 q=p*.63;
+        q+=.47*sin(q.yx*1.53+clock*.13)+.18*sin(q.yx*3.89);
+        float a=sin(q.x+sin(q.y)), b=sin(q.y*.87+q.x*.34);
+        float seam=1.-smoothstep(.015,.18,min(abs(a),abs(b)));
+        vec3 color=${frozen ? 'mix(vec3(.14,.35,.51),vec3(.61,.89,.96),.30+.67*seam)' :
+          'mix(mix(vec3(.32,.025,.008),vec3(.91,.16,.008),.5+.5*a*b),vec3(1.,.59,.065),seam)'};
+        ${frozen ? '' : `
+          float fleck=sin(q.x*4.2+sin(q.y*3.7))*cos(q.y*4.5+q.x);
+          float crust=smoothstep(.12,.64,a*b+.19*fleck);
+          color=mix(color,vec3(.093,.027,.023)*(1.+.39*fleck),crust*.88);
+          color+=vec3(.48,.095,.005)*seam*seam;
+        `}
+        gl_FragColor=vec4(color,1.);
+        #include <colorspace_fragment>
+      }`,
+  });
+}
+
 export function createWorld(scene) {
   const set = new THREE.Group();
-  set.name = 'Amber Gate canyon crossing';
   scene.add(set);
-  scene.background = canyonSky();
+  const originalSky = canyonSky();
+  const harborSky = stormArt['./art/storm-sky.webp'] ? loader.load(stormArt['./art/storm-sky.webp']) : originalSky;
+  harborSky.colorSpace = THREE.SRGBColorSpace;
+  scene.background = originalSky;
   scene.fog = new THREE.Fog(0x91a3b6, 46, 175);
-
   const skyLight = new THREE.HemisphereLight(0xe0edff, 0xb08f80, 1.70);
   const sun = new THREE.DirectionalLight(0xffc68d, 2.4);
   sun.position.set(16, 10, -12);
   const fill = new THREE.DirectionalLight(0xffe2bd, 1.26);
   fill.position.set(-4, 7, 12);
   set.add(skyLight, sun, fill);
+  const waterTime={value:0}, flooring=deckPattern();
+  const floor=new THREE.MeshStandardMaterial({map:flooring,bumpMap:flooring,bumpScale:.12,color:0xd7dbe1,roughness:.46,metalness:.07});
+  const foundryFloor=floor.clone();
+  foundryFloor.color.setHex(0xb8bfd0);
+  foundryFloor.roughness=.70;
+  foundryFloor.onBeforeCompile=shader=>{
+    shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>', `
+      #include <emissivemap_fragment>
+      vec2 p=vMapUv*vec2(9.05,9.92);
+      float grit=texture2D(map,vMapUv).r;
+      p+=.052*sin(p.yx*5.1)+.023*sin(p.yx*14.3);
+      float fault=abs(sin(p.x*1.28+p.y*.59+1.48*sin(p.y*1.12)+.40*sin(p.x*2.95)));
+      float hot=(1.-smoothstep(.006,.024,fault))*smoothstep(.05,.80,sin(p.y*1.51-p.x*.96)+.38*sin(p.x*3.71));
+      totalEmissiveRadiance+=vec3(.97,.115,.012)*hot*(.6+grit);
+      float edgeHeat=smoothstep(.30,.49,abs(fract(vMapUv.x)-.5));
+      totalEmissiveRadiance+=vec3(.10,.019,.006)*edgeHeat*(.15+.85*grit);
 
-  const waterTime = { value: 0 };
-  const flooring = deckPattern();
-  set.add(
-    xzPlane(180, 290, -6.20, -78, riverMaterial(waterTime)),
-    xzPlane(deckWidth, 132, 0, -47, new THREE.MeshStandardMaterial({ map: flooring, bumpMap: flooring, bumpScale: 0.12, color: 0xd7dbe1, roughness: 0.46, metalness: 0.07 })),
-    new Assembly().add('block', stone.pier, [0, -0.48, -47], [9.10, 0.92, 132]).mesh(),
-    terrain(),
-    fortress(),
-  );
-
-  const modules = [0, 1, 2, 3].map(bridgeSegment);
-  const spans = Array.from({ length: 14 }, (_, index) => modules[index % modules.length].clone());
+    `);
+  };
+  const deck=xzPlane(deckWidth,132,0,-47,floor);
+  set.add(deck,new Assembly().add('block',stone.pier,[0,-.48,-47],[9.1,.92,132]).mesh());
+  const modules=[0,1,2,3].map(bridgeSegment);
+  const spans=Array.from({length:14},(_,i)=>modules[i%4].clone());
   set.add(...spans);
+  const stageGroups=[];
+  const rails=masonryFinish.clone();
+  rails.onBeforeCompile=masonryFinish.onBeforeCompile;
+  rails.customProgramCacheKey=masonryFinish.customProgramCacheKey;
+  for(const span of spans) span.children[0].material=rails;
 
-  function update(time, distance) {
-    waterTime.value = time;
-    flooring.offset.y = (distance * 0.106) % 1;
-    const length = spans.length * 8;
-    const cycle = ((distance % length) + length) % length;
-    for (let i = 0; i < spans.length; i++) {
-      spans[i].position.z = 16 - ((i * 8 + length - cycle) % length);
+  const wetFloor=floor.clone();
+  wetFloor.roughness=.29;
+  wetFloor.color.setHex(0x93999e);
+  const roadTravel = { value: 0 };
+  wetFloor.onBeforeCompile=shader=>{
+    shader.uniforms.roadTravel = roadTravel;
+    shader.fragmentShader = 'uniform float roadTravel;\n' + shader.fragmentShader;
+    shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>',`
+      #include <roughnessmap_fragment>
+      float grain=texture2D(map,vMapUv).r;
+      roughnessFactor=clamp(.12+grain*.86,.13,.66);
+    `).replace('#include <emissivemap_fragment>',`
+      #include <emissivemap_fragment>
+      vec2 p=vec2(vMapUv.x, vMapUv.y + roadTravel);
+      float grain2=texture2D(map,p).r;
+      float rim=smoothstep(.23,.49,abs(p.x-.5));
+      // Break the reflected sky and lanterns at the photographed paver joints.
+      float detail=texture2D(map,p*vec2(1.71,2.24)).r;
+      float stoneMask=smoothstep(.008,.068,grain2);
+      float waterFilm=stoneMask*smoothstep(.013,.16,grain2+.32*detail);
+      float ridges=.52+.48*sin(p.y*150.+detail*26.+p.x*11.);
+      float reflectionPatch=smoothstep(.18,.84,.52+.30*sin(p.y*3.4+p.x*18.)+.23*sin(p.y*8.6-p.x*29.));
+      totalEmissiveRadiance+=vec3(.059,.088,.108)*waterFilm*(.27+.73*reflectionPatch)*(.6+.4*ridges);
+      float reflectionX=mix(.087,.913,step(.5,p.x));
+      float stripe=exp(-abs(p.x-reflectionX+(.064*detail-.006))*19.);
+      float pool=pow(.5+.5*cos(p.y*3.89+step(.5,p.x)*3.14),3.);
+      totalEmissiveRadiance+=vec3(.99,.40,.076)*stripe*pool*waterFilm*(.12+.88*ridges);
+      // Worn brass inlays and paired approach chevrons embedded in the road.
+      float lane=abs(abs(p.x-.5)-.174);
+      float brass=(1.-smoothstep(.001,.004,lane))*.44;
+      float cx=abs(abs(p.x-.5)-.28);
+      float arrow=abs(fract(p.y*2.2)-.51-cx*2.6);
+      brass+= (1.-smoothstep(.012,.034,arrow))*(1.-smoothstep(.046,.061,cx))*.43;
+      totalEmissiveRadiance+=vec3(.66,.40,.13)*brass*stoneMask;
+
+    `);
+  };
+  const chapterColors = [
+    [0xd7dbe1,0xffffff,0x91a3b6,0xffe2bd,0xb08f80,0xffc68d,0xe0edff],
+    [0xb7d7e8,0xd0f0ff,0xb6d7e7,0xdbf6ff,0x87aeca,0xffc68d,0xe0edff],
+    [0xada5a4,0x74656a,0x475975,0xdfe9ff,0x8c6559,0xffcaa1,0xb5d1ff],
+    [0xb3bbb0,0xa6b4a2,0x94a79b,0xdceae5,0x8a8571,0xffdeb0,0xc9dcd6],
+    [0xacb8bd,0xa6b1b9,0x758592,0xc5d9e8,0x677780,0xffcd9e,0xc5d9e8],
+    [0xd3bca9,0xd4b397,0xc29085,0xffe5bf,0x988085,0xffbd83,0xd5c4d2],
+    [0xc19d8c,0xb68d77,0xb89687,0xffe1c6,0x996e62,0xffcf9d,0xd8c3bc],
+    [0xa3a3b3,0x9b90a2,0x645f76,0xd5d1e5,0x856d77,0xf5c1a8,0xbec8e0],
+  ];
+  function setStage(index) {
+    if(!stageGroups[index]) {
+      const group=new THREE.Group();
+      if(index<3){
+        group.add(xzPlane(180,290,index===0 ? -6.2 : -4.2,-78,index===0 ? riverMaterial(waterTime) : stageSurface(index,waterTime)),
+          index===0 ? terrain() : mountainPass(index===1),index===0 ? fortress() : stageCitadel(index===1));
+      }else{
+        group.add(chapterLand(index,{Assembly,randomFrom,cliffFinish,masonryFinish,torchGlow}));
+        if(index===4) group.add(stormSea(waterTime),stormRain(waterTime));
+        else{
+          const water=riverMaterial(waterTime);
+          const color=index===5 ? 0x925f65 : index===6 ? 0x78493e : index===7 ? 0x38384e : 0x435d52;
+          water.uniforms.blue.value.setHex(color);
+          water.uniforms.deep.value.setHex(color).multiplyScalar(.53);
+          group.add(xzPlane(180,290,-3.6,-78,water));
+        }
+      }
+      stageGroups[index]=group;
+      set.add(group);
     }
+    stageGroups.forEach((group,i)=>{group.visible=i===index;});
+    const [deckTint,railTint,fog,fillTint,ground,sunTint,sky]=chapterColors[index];
+    deck.material=index===2 ? foundryFloor : index===4 ? wetFloor : floor;
+    floor.color.setHex(deckTint);
+    rails.color.setHex(railTint);
+    scene.fog.color.setHex(fog);
+    scene.fog.near=index===2 ? 58 : index===4 ? 32 : 46;
+    scene.fog.far=index===4 ? 114 : 175;
+    fill.color.setHex(fillTint);
+    sun.color.setHex(sunTint);
+    sun.intensity=index===4 ? 2.0 : 2.4;
+    skyLight.color.setHex(sky);
+    skyLight.groundColor.setHex(ground);
+    scene.background=index===4 ? harborSky : originalSky;
+    scene.backgroundIntensity=index===4 && harborSky===originalSky ? .53 : index===7 ? .62 : 1;
   }
-
-  update(0, 0);
-  return { update };
+  function update(time,distance) {
+    waterTime.value=time;
+    const travel = distance * .106;
+    flooring.offset.y = travel % 1;
+    roadTravel.value = travel - flooring.offset.y;
+    const length=spans.length*8, cycle=((distance%length)+length)%length;
+    for(let i=0;i<spans.length;i++) spans[i].position.z=16-((i*8+length-cycle)%length);
+  }
+  setStage(0);
+  update(0,0);
+  return {setStage,update};
 }

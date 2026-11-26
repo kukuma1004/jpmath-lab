@@ -27,19 +27,19 @@ THE SOFTWARE.
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#242520">
-    <meta name="description" content="돌다리에서 병력을 모으고 석궁을 강화해 철문 수문장을 쓰러뜨리는 3D 전투 게임">
-    <title>해협 돌파 · 성문 전선</title>
+    <meta name="description" content="병력을 모으고 석궁을 강화하며 여덟 전선을 돌파하는 3D 전투 캠페인">
+    <title>해협 돌파 · 여덟 전선</title>
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="./src/style.css">
   </head>
   <body>
     <main id="viewport" data-state="ready" aria-label="해협 돌파 게임">
-      <canvas id="canvas" aria-label="3D 성문 전투 화면"></canvas>
+      <canvas id="canvas" aria-label="3D 전투 화면"></canvas>
 
       <header class="topbar" aria-label="전투 진행">
         <div class="mission">
           <div class="mission-line">
-            <span>돌파 진행</span>
+            <span id="stage-label">1/8 성문 전선</span>
             <strong id="wave">준비</strong>
           </div>
           <div class="progress-track" aria-hidden="true"><div id="progress"></div></div>
@@ -59,11 +59,13 @@ THE SOFTWARE.
           <span class="status-icon squad-icon" aria-hidden="true"></span>
           <span class="status-label">병력</span>
           <strong id="squad">1</strong>
+          <span id="reward-recruit" class="reward-chip" role="status" hidden></span>
         </div>
         <div class="status status-weapon">
           <span class="status-icon weapon-icon" aria-hidden="true"></span>
           <span class="status-label">무기</span>
           <strong id="weapon">석궁</strong>
+          <span id="reward-weapon" class="reward-chip" role="status" hidden></span>
         </div>
       </div>
 
@@ -86,9 +88,20 @@ THE SOFTWARE.
           <p id="overlay-kicker" class="overlay-kicker">성문 전선</p>
           <h1 id="overlay-title">해협 돌파</h1>
           <p id="overlay-copy">좌우로 움직여 병사를 모으고 무기 상자를 쏘세요.</p>
+          <div id="stage-picker" class="stage-picker" role="group" aria-label="전장 선택">
+            <button type="button" class="stage-option" data-stage="0" aria-pressed="true"><span>1</span><strong>성문 전선</strong><small>진입 가능</small></button>
+            <button type="button" class="stage-option" data-stage="1" aria-pressed="false" disabled><span>2</span><strong>빙벽 협곡</strong><small>잠김</small></button>
+            <button type="button" class="stage-option" data-stage="2" aria-pressed="false" disabled><span>3</span><strong>잿불 제련소</strong><small>잠김</small></button>
+            <button type="button" class="stage-option" data-stage="3" aria-pressed="false" disabled><span>4</span><strong>침엽수 고개</strong><small>잠김</small></button>
+            <button type="button" class="stage-option" data-stage="4" aria-pressed="false" disabled><span>5</span><strong>폭풍 방파제</strong><small>잠김</small></button>
+            <button type="button" class="stage-option" data-stage="5" aria-pressed="false" disabled><span>6</span><strong>황혼 수로</strong><small>잠김</small></button>
+            <button type="button" class="stage-option" data-stage="6" aria-pressed="false" disabled><span>7</span><strong>붉은 채석장</strong><small>잠김</small></button>
+            <button type="button" class="stage-option" data-stage="7" aria-pressed="false" disabled><span>8</span><strong>검은 성채</strong><small>잠김</small></button>
+          </div>
           <div class="overlay-actions">
             <button id="action" class="action" type="button">전투 시작</button>
             <button id="restart" class="restart" type="button" hidden>처음부터</button>
+            <button id="stage-menu" class="restart" type="button" hidden>전장 선택</button>
           </div>
         </div>
       </section>
