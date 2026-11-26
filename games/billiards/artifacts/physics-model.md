@@ -20,7 +20,7 @@ The rail is a fixed planar point-contact surface through the ball equator. Norma
 
 ### Cue
 
-Angle zero points along +X. The tip panel uses positive Y for top/follow and positive X for the shooter's right (d × up). User power p requests a forward cue impulse J = m (smax p) d, with smax = 4.5 m/s for carom and 7.5 m/s for pool (shared shotSpeedLimit(table) for human, AI and prediction). Angular impulse is rtip × J / I. At angle zero, top produces negative ωz and panel right produces positive ωy. The accepted radial tip offset is at most 0.75 ball radii; invalid input and mid-motion strokes are rejected. Tip input is an impulse model, not a finite-mass elastic cue-stick simulation. Squirt, swerve, jump, cue elevation, tip deformation and miscue are not implemented.
+Angle zero points along +X. The tip panel uses positive Y for top/follow and positive X for the shooter's right (d × up). User power p requests a forward cue impulse J = m (smax p) d, with smax = 6.5 m/s for carom and 9.5 m/s for pool (shared shotSpeedLimit(table) for human, AI and prediction). Angular impulse is rtip × J / I. At angle zero, top produces negative ωz and panel right produces positive ωy. The accepted radial tip offset is at most 0.75 ball radii; invalid input and mid-motion strokes are rejected. Tip input is an impulse model, not a finite-mass elastic cue-stick simulation. Squirt, swerve, jump, cue elevation, tip deformation and miscue are not implemented.
 
 ### Continuous detection and ordered history
 

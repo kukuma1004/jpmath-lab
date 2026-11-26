@@ -122,9 +122,9 @@ describe('cloth, strike and spin',()=>{
   it('cue torque sign and magnitude follow r×J/I for top, draw and side offsets',()=>{
     const engine=new PhysicsEngine([makeBall('a','white',0,0)]);
     expect(engine.strike({ballId:'a',angle:0,power:.5,tip:{x:.3,y:.4}})).toBe(true);
-    expect(engine.balls[0].velocity.x).toBeCloseTo(2.25,12);
-    expect(engine.balls[0].angularVelocity.z).toBeCloseTo(-2.5*2.25*.4/TABLE.ballRadius,10);
-    expect(engine.balls[0].angularVelocity.y).toBeCloseTo(2.5*2.25*.3/TABLE.ballRadius,10);
+    expect(engine.balls[0].velocity.x).toBeCloseTo(3.25,12);
+    expect(engine.balls[0].angularVelocity.z).toBeCloseTo(-2.5*3.25*.4/TABLE.ballRadius,10);
+    expect(engine.balls[0].angularVelocity.y).toBeCloseTo(2.5*3.25*.3/TABLE.ballRadius,10);
   });
 
   it('draw reverses and follow continues after a nearby head-on object-ball impact',()=>{

@@ -1,0 +1,1352 @@
+{
+  "url": "http://127.0.0.1:5196/games/billiards/?qa=1",
+  "checks": [
+    "Menu applies local mode and custom target",
+    "Advanced controls start folded",
+    "First press starts gauge without hitting",
+    "Pause freezes gauge",
+    "Cancel gauge never fires",
+    "Second Space strikes and double input locks",
+    "Shot in motion cannot repeat",
+    "Shot settles before next input",
+    "Shot report includes rule outcome",
+    "four-ball physically ends with expected winner",
+    "four-ball replay preserves score and final balls",
+    "three-cushion physically ends with expected winner",
+    "three-cushion replay preserves score and final balls",
+    "Missing 8-ball call cannot accidentally start a shot",
+    "8-ball call controls select ball and pocket",
+    "eight-ball physically ends with expected winner",
+    "eight-ball replay preserves score and final balls",
+    "AI thinking does not freeze rendering",
+    "Human shot disabled during AI turn",
+    "AI executes a real second shot",
+    "Expanded panel adjusts backspin",
+    "Tip reset returns to center",
+    "Practice editor can open",
+    "V camera switch",
+    "Settings persist after reload",
+    "Completed matches are stored",
+    "Pool has sixteen correctly configured balls and six pockets",
+    "Ball in hand starts before break",
+    "Valid initial pool placement accepted",
+    "Touch starts swinging gauge without accidental shot",
+    "Second touch actually shoots",
+    "WPA break choice is actionable",
+    "360x740 primary shot fits",
+    "390x844 primary shot fits",
+    "768x1024 primary shot fits",
+    "844x390 primary shot fits",
+    "1366x768 primary shot fits",
+    "Mobile record dialog reachable",
+    "Normal entry exposes no QA hooks",
+    "No page, console, HTTP errors",
+    "No server/account writes"
+  ],
+  "errors": [],
+  "requests": [],
+  "observations": [
+    {
+      "discipline": "four-ball",
+      "renderer": {
+        "renderer": "ANGLE (AMD, AMD Radeon 780M Graphics (0x00001900) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "calls": 60,
+        "triangles": 20952,
+        "points": 0,
+        "lines": 0,
+        "geometries": 77,
+        "textures": 12,
+        "programs": 10,
+        "dpr": 1,
+        "shadowCastingLights": 1,
+        "shadowMapSize": 1024,
+        "postPasses": 0,
+        "cameraMode": "top",
+        "quality": "high",
+        "frameTimeMs": 8.56,
+        "fps": 117,
+        "ballMeshes": 4,
+        "width": 1162,
+        "height": 638,
+        "frames": 1566,
+        "tableKind": "carom",
+        "visibleBalls": 4,
+        "pockets": 0,
+        "pocketFalls": 0,
+        "calledPocket": null,
+        "placementVisible": false,
+        "zoom": 1
+      },
+      "calls": 60,
+      "triangles": 20952,
+      "points": 0,
+      "lines": 0,
+      "geometries": 77,
+      "textures": 12,
+      "programs": 10,
+      "dpr": 1,
+      "shadowCastingLights": 1,
+      "shadowMapSize": 1024,
+      "postPasses": 0,
+      "cameraMode": "top",
+      "quality": "high",
+      "frameTimeMs": 8.56,
+      "fps": 117,
+      "ballMeshes": 4,
+      "width": 1162,
+      "height": 638,
+      "frames": 1566,
+      "tableKind": "carom",
+      "visibleBalls": 4,
+      "pockets": 0,
+      "pocketFalls": 0,
+      "calledPocket": null,
+      "placementVisible": false,
+      "zoom": 1,
+      "gameState": "finished",
+      "frameCount": 1566,
+      "frameMs": 8.473333333333327,
+      "physics": {
+        "engine": "dedicated-billiards",
+        "timestep": 0.004166666666666667,
+        "balls": 4,
+        "settled": true,
+        "energy": 0,
+        "time": 4.916666666666708,
+        "safetyStops": 0
+      },
+      "simulationState": {
+        "balls": [
+          {
+            "id": "white",
+            "color": "white",
+            "position": {
+              "x": 0.24185775397314507,
+              "z": 0.28382723422743517
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": -0.6592571831233568,
+              "y": -0.2543093116804954,
+              "z": -0.5146267836395853,
+              "w": 0.4856603896280041
+            }
+          },
+          {
+            "id": "yellow",
+            "color": "yellow",
+            "position": {
+              "x": 0.7963731049595894,
+              "z": -0.3030116350585975
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0.018363627895735677,
+              "y": 0.12771723678250407,
+              "z": 0.9757994184946582,
+              "w": 0.17654058871725656
+            }
+          },
+          {
+            "id": "red",
+            "color": "red",
+            "position": {
+              "x": 0.7176475401734665,
+              "z": 0.03576858155563495
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0.5297912608732592,
+              "y": -0.002349025866350478,
+              "z": -0.11480764434704284,
+              "w": 0.8403183365720902
+            }
+          },
+          {
+            "id": "red2",
+            "color": "red2",
+            "position": {
+              "x": 0.6107354708899289,
+              "z": -0.3044666681134805
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": -0.5983062201378447,
+              "y": 0.5089328832371794,
+              "z": 0.5110973867838128,
+              "w": 0.3489934792041451
+            }
+          }
+        ],
+        "time": 4.916666666666708
+      },
+      "match": {
+        "players": [
+          {
+            "name": "플레이어 1",
+            "score": 0,
+            "innings": 1,
+            "shots": 1,
+            "highRun": 0,
+            "run": 0,
+            "fouls": 0,
+            "group": null
+          },
+          {
+            "name": "플레이어 2",
+            "score": 1,
+            "innings": 1,
+            "shots": 1,
+            "highRun": 1,
+            "run": 1,
+            "fouls": 0,
+            "group": null
+          }
+        ],
+        "currentPlayer": 1,
+        "inning": 1,
+        "shotNumber": 2,
+        "status": "finished",
+        "winner": 1,
+        "breakShot": false,
+        "openTable": false,
+        "ballInHand": false,
+        "ballInHandZone": "anywhere",
+        "headStringRestriction": false,
+        "openingRequired": false,
+        "equalizing": false,
+        "pendingChoice": null,
+        "message": "플레이어 2 1점 도달 · 승리!"
+      },
+      "config": {
+        "discipline": "four-ball",
+        "mode": "local",
+        "target": 1,
+        "difficulty": "expert",
+        "profile": "domestic",
+        "fourBallFoul": "turn",
+        "equalInnings": false,
+        "callShots": true,
+        "playerNames": [
+          "플레이어 1",
+          "플레이어 2"
+        ]
+      },
+      "shotCount": 1,
+      "contacts": [
+        {
+          "type": "shot",
+          "time": 0,
+          "sequence": 0,
+          "ballId": "yellow",
+          "speed": 2.2183983138724486
+        },
+        {
+          "type": "ball-ball",
+          "time": 1.030336168550884,
+          "sequence": 1,
+          "ballA": "yellow",
+          "ballB": "red",
+          "speed": 0.13002956295640963,
+          "positionA": {
+            "x": 0.6992298313998531,
+            "z": -0.060549595112803264
+          },
+          "positionB": {
+            "x": 0.71,
+            "z": 0
+          }
+        },
+        {
+          "type": "cushion",
+          "time": 1.7818123530557566,
+          "sequence": 2,
+          "ballId": "yellow",
+          "rail": "right",
+          "speed": 0.874590092727333,
+          "position": {
+            "x": 1.3892499999999999,
+            "z": -0.15525594672909607
+          }
+        },
+        {
+          "type": "ball-ball",
+          "time": 3.3163515854261223,
+          "sequence": 3,
+          "ballA": "yellow",
+          "ballB": "red2",
+          "speed": 0.27378329815924185,
+          "positionA": {
+            "x": 0.8242421994751868,
+            "z": -0.284840402001488
+          },
+          "positionB": {
+            "x": 0.7629855676533592,
+            "z": -0.2903062100702971
+          }
+        },
+        {
+          "type": "rest",
+          "time": 4.916666666666708,
+          "sequence": 4
+        }
+      ],
+      "lastOutcome": {
+        "scored": true,
+        "points": 1,
+        "foul": null,
+        "retainTurn": true,
+        "respots": [],
+        "message": "플레이어 2 1점 도달 · 승리!",
+        "winner": 1
+      },
+      "paused": true,
+      "angle": -0.042940033251044035,
+      "power": 0.341292048288069,
+      "tip": {
+        "x": 0,
+        "y": 0
+      },
+      "predictionWorker": true,
+      "aiWorker": true,
+      "aiPending": false,
+      "lastAI": null
+    },
+    {
+      "discipline": "three-cushion",
+      "renderer": {
+        "renderer": "ANGLE (AMD, AMD Radeon 780M Graphics (0x00001900) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "calls": 58,
+        "triangles": 18790,
+        "points": 0,
+        "lines": 0,
+        "geometries": 77,
+        "textures": 12,
+        "programs": 10,
+        "dpr": 1,
+        "shadowCastingLights": 1,
+        "shadowMapSize": 1024,
+        "postPasses": 0,
+        "cameraMode": "top",
+        "quality": "high",
+        "frameTimeMs": 8.34,
+        "fps": 120,
+        "ballMeshes": 3,
+        "width": 1162,
+        "height": 638,
+        "frames": 3198,
+        "tableKind": "carom",
+        "visibleBalls": 3,
+        "pockets": 0,
+        "pocketFalls": 0,
+        "calledPocket": null,
+        "placementVisible": false,
+        "zoom": 1
+      },
+      "calls": 58,
+      "triangles": 18790,
+      "points": 0,
+      "lines": 0,
+      "geometries": 77,
+      "textures": 12,
+      "programs": 10,
+      "dpr": 1,
+      "shadowCastingLights": 1,
+      "shadowMapSize": 1024,
+      "postPasses": 0,
+      "cameraMode": "top",
+      "quality": "high",
+      "frameTimeMs": 8.34,
+      "fps": 120,
+      "ballMeshes": 3,
+      "width": 1162,
+      "height": 638,
+      "frames": 3198,
+      "tableKind": "carom",
+      "visibleBalls": 3,
+      "pockets": 0,
+      "pocketFalls": 0,
+      "calledPocket": null,
+      "placementVisible": false,
+      "zoom": 1,
+      "gameState": "finished",
+      "frameCount": 3198,
+      "frameMs": 8.333333333333334,
+      "physics": {
+        "engine": "dedicated-billiards",
+        "timestep": 0.004166666666666667,
+        "balls": 3,
+        "settled": true,
+        "energy": 0,
+        "time": 7.058333333333253,
+        "safetyStops": 0
+      },
+      "simulationState": {
+        "balls": [
+          {
+            "id": "white",
+            "color": "white",
+            "position": {
+              "x": -1.0177035531812062,
+              "z": -0.04794588348392272
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": -0.36732244132681374,
+              "y": -0.7099486406639005,
+              "z": -0.5869012300603154,
+              "w": 0.12881808052784469
+            }
+          },
+          {
+            "id": "yellow",
+            "color": "yellow",
+            "position": {
+              "x": -1.0731315892479791,
+              "z": -0.019328439555088908
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0.8872720902982423,
+              "y": -0.34295678445948613,
+              "z": -0.18436535444410274,
+              "w": 0.24726159801250527
+            }
+          },
+          {
+            "id": "red",
+            "color": "red",
+            "position": {
+              "x": -0.7922283585891334,
+              "z": 0.6006099692558905
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0.5218237020033473,
+              "y": -0.030023941117964102,
+              "z": 0.05906472051849072,
+              "w": -0.8504763052415625
+            }
+          }
+        ],
+        "time": 7.058333333333253
+      },
+      "match": {
+        "players": [
+          {
+            "name": "플레이어 1",
+            "score": 0,
+            "innings": 1,
+            "shots": 1,
+            "highRun": 0,
+            "run": 0,
+            "fouls": 0,
+            "group": null
+          },
+          {
+            "name": "플레이어 2",
+            "score": 1,
+            "innings": 1,
+            "shots": 1,
+            "highRun": 1,
+            "run": 1,
+            "fouls": 0,
+            "group": null
+          }
+        ],
+        "currentPlayer": 1,
+        "inning": 1,
+        "shotNumber": 2,
+        "status": "finished",
+        "winner": 1,
+        "breakShot": false,
+        "openTable": false,
+        "ballInHand": false,
+        "ballInHandZone": "anywhere",
+        "headStringRestriction": false,
+        "openingRequired": false,
+        "equalizing": false,
+        "pendingChoice": null,
+        "message": "플레이어 2 1점 도달 · 승리!"
+      },
+      "config": {
+        "discipline": "three-cushion",
+        "mode": "local",
+        "target": 1,
+        "difficulty": "expert",
+        "profile": "domestic",
+        "fourBallFoul": "turn",
+        "equalInnings": false,
+        "callShots": true,
+        "playerNames": [
+          "플레이어 1",
+          "플레이어 2"
+        ]
+      },
+      "shotCount": 1,
+      "contacts": [
+        {
+          "type": "shot",
+          "time": 0,
+          "sequence": 0,
+          "ballId": "yellow",
+          "speed": 5.117781170025216
+        },
+        {
+          "type": "ball-ball",
+          "time": 0.07937090536629211,
+          "sequence": 1,
+          "ballA": "yellow",
+          "ballB": "red",
+          "speed": 3.1618736868500883,
+          "positionA": {
+            "x": -0.8306190286883773,
+            "z": 0.017362753239588247
+          },
+          "positionB": {
+            "x": -0.7692441237394365,
+            "z": 0.02128334535156262
+          }
+        },
+        {
+          "type": "cushion",
+          "time": 0.2668593148935408,
+          "sequence": 2,
+          "ballId": "yellow",
+          "rail": "bottom",
+          "speed": 3.343737613359068,
+          "position": {
+            "x": -0.8565584576274402,
+            "z": 0.6792499999999999
+          }
+        },
+        {
+          "type": "cushion",
+          "time": 0.9006258162794358,
+          "sequence": 3,
+          "ballId": "yellow",
+          "rail": "top",
+          "speed": 1.8822292007778585,
+          "position": {
+            "x": -0.9146863510939807,
+            "z": -0.6792499999999999
+          }
+        },
+        {
+          "type": "cushion",
+          "time": 0.9799696506415678,
+          "sequence": 4,
+          "ballId": "red",
+          "rail": "right",
+          "speed": 2.133131774584597,
+          "position": {
+            "x": 1.3892499999999999,
+            "z": 0.23503060693882433
+          }
+        },
+        {
+          "type": "cushion",
+          "time": 2.36156637649811,
+          "sequence": 5,
+          "ballId": "yellow",
+          "rail": "bottom",
+          "speed": 0.7883045073051814,
+          "position": {
+            "x": -0.9944183365474156,
+            "z": 0.6792499999999999
+          }
+        },
+        {
+          "type": "cushion",
+          "time": 3.794787420541822,
+          "sequence": 6,
+          "ballId": "red",
+          "rail": "bottom",
+          "speed": 0.13086585387106497,
+          "position": {
+            "x": -1.3140161141775957,
+            "z": 0.6792499999999999
+          }
+        },
+        {
+          "type": "cushion",
+          "time": 3.8979588129043323,
+          "sequence": 7,
+          "ballId": "red",
+          "rail": "left",
+          "speed": 0.7251898099685361,
+          "position": {
+            "x": -1.3892499999999999,
+            "z": 0.673857152846344
+          }
+        },
+        {
+          "type": "ball-ball",
+          "time": 5.302909515230965,
+          "sequence": 8,
+          "ballA": "white",
+          "ballB": "yellow",
+          "speed": 0.029596087649657998,
+          "positionA": {
+            "x": -1.0191175160934114,
+            "z": -0.04681726578426744
+          },
+          "positionB": {
+            "x": -1.0682193823091872,
+            "z": -0.00978678193476773
+          }
+        },
+        {
+          "type": "rest",
+          "time": 7.058333333333253,
+          "sequence": 9
+        }
+      ],
+      "lastOutcome": {
+        "scored": true,
+        "points": 1,
+        "foul": null,
+        "retainTurn": true,
+        "respots": [],
+        "message": "플레이어 2 1점 도달 · 승리!",
+        "winner": 1
+      },
+      "paused": true,
+      "angle": 0.9431008235620115,
+      "power": 0.7873509492346487,
+      "tip": {
+        "x": 0,
+        "y": 0
+      },
+      "predictionWorker": true,
+      "aiWorker": true,
+      "aiPending": false,
+      "lastAI": null
+    },
+    {
+      "discipline": "eight-ball",
+      "renderer": {
+        "renderer": "ANGLE (AMD, AMD Radeon 780M Graphics (0x00001900) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "calls": 85,
+        "triangles": 27484,
+        "points": 0,
+        "lines": 0,
+        "geometries": 108,
+        "textures": 27,
+        "programs": 13,
+        "dpr": 1,
+        "shadowCastingLights": 1,
+        "shadowMapSize": 1024,
+        "postPasses": 0,
+        "cameraMode": "top",
+        "quality": "high",
+        "frameTimeMs": 8.33,
+        "fps": 120,
+        "ballMeshes": 16,
+        "width": 1162,
+        "height": 638,
+        "frames": 4850,
+        "tableKind": "pool",
+        "visibleBalls": 3,
+        "pockets": 6,
+        "pocketFalls": 0,
+        "calledPocket": null,
+        "placementVisible": false,
+        "zoom": 1
+      },
+      "calls": 85,
+      "triangles": 27484,
+      "points": 0,
+      "lines": 0,
+      "geometries": 108,
+      "textures": 27,
+      "programs": 13,
+      "dpr": 1,
+      "shadowCastingLights": 1,
+      "shadowMapSize": 1024,
+      "postPasses": 0,
+      "cameraMode": "top",
+      "quality": "high",
+      "frameTimeMs": 8.33,
+      "fps": 120,
+      "ballMeshes": 16,
+      "width": 1162,
+      "height": 638,
+      "frames": 4850,
+      "tableKind": "pool",
+      "visibleBalls": 3,
+      "pockets": 6,
+      "pocketFalls": 0,
+      "calledPocket": null,
+      "placementVisible": false,
+      "zoom": 1,
+      "gameState": "finished",
+      "frameCount": 4850,
+      "frameMs": 8.333333333333334,
+      "physics": {
+        "engine": "dedicated-billiards",
+        "timestep": 0.004166666666666667,
+        "balls": 16,
+        "settled": true,
+        "energy": 0,
+        "time": 4.770833333333383,
+        "safetyStops": 0
+      },
+      "simulationState": {
+        "balls": [
+          {
+            "id": "white",
+            "color": "white",
+            "position": {
+              "x": 0.4448627065502779,
+              "z": -0.5571483702992358
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": -0.23889266085190966,
+              "y": 0.18231293144927188,
+              "z": -0.05567246598399817,
+              "w": -0.9521517043773687
+            }
+          },
+          {
+            "id": "ball-1",
+            "color": "pool",
+            "position": {
+              "x": -0.019155449761456153,
+              "z": -0.6765
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": -0.6112408386492179,
+              "y": 0.1109743829018885,
+              "z": 0.7495115172806951,
+              "w": -0.2286958875243193
+            },
+            "number": 1,
+            "pocketed": true,
+            "pocketId": "tm",
+            "pocketTime": 8.004609257329616
+          },
+          {
+            "id": "ball-9",
+            "color": "pool",
+            "position": {
+              "x": -1.278314625974378,
+              "z": 0.6519195558994597
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": -0.1072673783487452,
+              "y": -0.9772791529004339,
+              "z": 0.01660651235723489,
+              "w": -0.18205326307354716
+            },
+            "number": 9,
+            "pocketed": true,
+            "pocketId": "bl",
+            "pocketTime": 30.529974694812072
+          },
+          {
+            "id": "ball-2",
+            "color": "pool",
+            "position": {
+              "x": 1.2676968271735938,
+              "z": 0.6625373547002439
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0.008637718998495672,
+              "y": -0.30002868171969405,
+              "z": 0.9330120629699523,
+              "w": 0.19848594486411253
+            },
+            "number": 2,
+            "pocketed": true,
+            "pocketId": "br",
+            "pocketTime": 13.870440479925069
+          },
+          {
+            "id": "ball-10",
+            "color": "pool",
+            "position": {
+              "x": -1.2773595386225478,
+              "z": -0.6528746432512899
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0.3386978354345833,
+              "y": -0.2223225037611143,
+              "z": -0.1056484344747316,
+              "w": -0.9081271325570861
+            },
+            "number": 10,
+            "pocketed": true,
+            "pocketId": "tl",
+            "pocketTime": 24.038997509268388
+          },
+          {
+            "id": "ball-8",
+            "color": "pool",
+            "position": {
+              "x": -1.2714927714021202,
+              "z": 0.6587414104717174
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0.5369966643829068,
+              "y": 0.7645683298829209,
+              "z": -0.24371910722609963,
+              "w": -0.2601362107715601
+            },
+            "number": 8,
+            "pocketed": true,
+            "pocketId": "bl",
+            "pocketTime": 3.3782766643483093
+          },
+          {
+            "id": "ball-3",
+            "color": "pool",
+            "position": {
+              "x": 1.2763798615955309,
+              "z": -0.6538543202783067
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0.20138676487774457,
+              "y": 0.16390493680193038,
+              "z": 0.9070330588334339,
+              "w": -0.3314657943246866
+            },
+            "number": 3,
+            "pocketed": true,
+            "pocketId": "tr",
+            "pocketTime": 45.120869422407175
+          },
+          {
+            "id": "ball-11",
+            "color": "pool",
+            "position": {
+              "x": 1.28828345692767,
+              "z": -0.6419507249461676
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": -0.2910001764732726,
+              "y": 0.03272140319876345,
+              "z": -0.10282142408718543,
+              "w": 0.9506187257854284
+            },
+            "number": 11,
+            "pocketed": true,
+            "pocketId": "tr",
+            "pocketTime": 25.52126756762558
+          },
+          {
+            "id": "ball-4",
+            "color": "pool",
+            "position": {
+              "x": 0.1222419754566874,
+              "z": 0.4045366445841313
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": -0.8692821521826356,
+              "y": 0.476552459906166,
+              "z": 0.09537532352182274,
+              "w": 0.0902764671285654
+            },
+            "number": 4
+          },
+          {
+            "id": "ball-12",
+            "color": "pool",
+            "position": {
+              "x": -1.2836589781731116,
+              "z": -0.6465752037007261
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": -0.9088512681481118,
+              "y": 0.2867414050534516,
+              "z": 0.2530527134263596,
+              "w": -0.16653246902961022
+            },
+            "number": 12,
+            "pocketed": true,
+            "pocketId": "tl",
+            "pocketTime": 50.23241436131365
+          },
+          {
+            "id": "ball-5",
+            "color": "pool",
+            "position": {
+              "x": -1.2698770599133729,
+              "z": 0.6603571219604649
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0.6989619484655865,
+              "y": -0.6619969050376634,
+              "z": -0.11058374008582034,
+              "w": 0.24694843337502204
+            },
+            "number": 5,
+            "pocketed": true,
+            "pocketId": "bl",
+            "pocketTime": 40.30523139079129
+          },
+          {
+            "id": "ball-6",
+            "color": "pool",
+            "position": {
+              "x": -1.293569632170078,
+              "z": -0.6366645497037595
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0.1825121356571719,
+              "y": -0.2601382603017596,
+              "z": -0.6973692532924418,
+              "w": -0.6424122744993079
+            },
+            "number": 6,
+            "pocketed": true,
+            "pocketId": "tl",
+            "pocketTime": 12.0879472513063
+          },
+          {
+            "id": "ball-13",
+            "color": "pool",
+            "position": {
+              "x": -1.278448629816022,
+              "z": -0.6517855520578156
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": -0.13393091166064294,
+              "y": 0.2215578687797632,
+              "z": -0.9535001532953427,
+              "w": -0.15431163063514217
+            },
+            "number": 13,
+            "pocketed": true,
+            "pocketId": "tl",
+            "pocketTime": 56.24834056756453
+          },
+          {
+            "id": "ball-7",
+            "color": "pool",
+            "position": {
+              "x": 1.1233918863807213,
+              "z": 0.33920457937794934
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": 0.09846995069303359,
+              "y": -0.09338335536662672,
+              "z": 0.726322904413258,
+              "w": -0.6738236091705834
+            },
+            "number": 7
+          },
+          {
+            "id": "ball-14",
+            "color": "pool",
+            "position": {
+              "x": 0.028583560176762036,
+              "z": -0.6765
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": -0.09402233769513753,
+              "y": 0.4784060650571699,
+              "z": -0.8730706534227638,
+              "w": -0.005922082640815468
+            },
+            "number": 14,
+            "pocketed": true,
+            "pocketId": "tm",
+            "pocketTime": 58.2746629592435
+          },
+          {
+            "id": "ball-15",
+            "color": "pool",
+            "position": {
+              "x": 1.2984186489821763,
+              "z": -0.6318155328916615
+            },
+            "velocity": {
+              "x": 0,
+              "z": 0
+            },
+            "angularVelocity": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "orientation": {
+              "x": -0.02497382379241877,
+              "y": 0.7602687955979677,
+              "z": 0.4621394996500753,
+              "w": 0.4558450936758879
+            },
+            "number": 15,
+            "pocketed": true,
+            "pocketId": "tr",
+            "pocketTime": 61.942787445551545
+          }
+        ],
+        "time": 4.770833333333383
+      },
+      "match": {
+        "players": [
+          {
+            "name": "플레이어 1",
+            "score": 7,
+            "innings": 4,
+            "shots": 10,
+            "highRun": 5,
+            "run": 5,
+            "fouls": 0,
+            "group": "stripe"
+          },
+          {
+            "name": "플레이어 2",
+            "score": 5,
+            "innings": 2,
+            "shots": 6,
+            "highRun": 3,
+            "run": 0,
+            "fouls": 0,
+            "group": "solid"
+          }
+        ],
+        "currentPlayer": 0,
+        "inning": 3,
+        "shotNumber": 16,
+        "status": "finished",
+        "winner": 0,
+        "breakShot": false,
+        "openTable": false,
+        "ballInHand": false,
+        "ballInHandZone": "anywhere",
+        "headStringRestriction": false,
+        "openingRequired": false,
+        "equalizing": false,
+        "pendingChoice": null,
+        "message": "지정 포켓에 8번 공 성공 · 플레이어 1 승리!"
+      },
+      "config": {
+        "discipline": "eight-ball",
+        "mode": "local",
+        "target": 1,
+        "difficulty": "expert",
+        "profile": "wpa",
+        "fourBallFoul": "turn",
+        "equalInnings": false,
+        "callShots": true,
+        "playerNames": [
+          "플레이어 1",
+          "플레이어 2"
+        ]
+      },
+      "shotCount": 1,
+      "contacts": [
+        {
+          "type": "shot",
+          "time": 0,
+          "sequence": 0,
+          "ballId": "white",
+          "speed": 2.358693710698881
+        },
+        {
+          "type": "ball-ball",
+          "time": 0.40371496581508376,
+          "sequence": 1,
+          "ballA": "white",
+          "ballB": "ball-8",
+          "speed": 1.2736055129424135,
+          "positionA": {
+            "x": 0.6766623988998324,
+            "z": 0.20380027246371063
+          },
+          "positionB": {
+            "x": 0.6209439170626444,
+            "z": 0.21651142039609458
+          }
+        },
+        {
+          "type": "cushion",
+          "time": 0.7680595569381554,
+          "sequence": 2,
+          "ballId": "white",
+          "rail": "bottom",
+          "speed": 1.1059318955792876,
+          "position": {
+            "x": 0.6623108757814259,
+            "z": 0.606425
+          }
+        },
+        {
+          "type": "cushion",
+          "time": 2.4882655100174746,
+          "sequence": 3,
+          "ballId": "ball-8",
+          "rail": "bottom",
+          "speed": 0.15354829493922875,
+          "position": {
+            "x": -0.9512850074518014,
+            "z": 0.606425
+          }
+        },
+        {
+          "type": "cushion",
+          "time": 3.041031263362587,
+          "sequence": 4,
+          "ballId": "ball-8",
+          "rail": "left",
+          "speed": 0.445399901541665,
+          "position": {
+            "x": -1.261141259145222,
+            "z": 0.5765710150615576
+          }
+        },
+        {
+          "type": "cushion",
+          "time": 3.292546340622907,
+          "sequence": 5,
+          "ballId": "ball-8",
+          "rail": "bottom",
+          "speed": 0.2460243069838494,
+          "position": {
+            "x": -1.2542498779328617,
+            "z": 0.6598056982088895
+          }
+        },
+        {
+          "type": "pocket",
+          "time": 3.3782766643483093,
+          "sequence": 6,
+          "ballId": "ball-8",
+          "pocketId": "bl",
+          "speed": 0.1860876491488857
+        },
+        {
+          "type": "cushion",
+          "time": 3.8489347572599577,
+          "sequence": 7,
+          "ballId": "white",
+          "rail": "top",
+          "speed": 0.20590740696058063,
+          "position": {
+            "x": 0.4593232192220773,
+            "z": -0.606425
+          }
+        },
+        {
+          "type": "rest",
+          "time": 4.770833333333383,
+          "sequence": 8
+        }
+      ],
+      "lastOutcome": {
+        "scored": true,
+        "points": 1,
+        "foul": null,
+        "retainTurn": false,
+        "respots": [],
+        "message": "지정 포켓에 8번 공 성공 · 플레이어 1 승리!",
+        "winner": 0
+      },
+      "paused": true,
+      "angle": 2.2083637166621393,
+      "power": 0.24828354849461903,
+      "tip": {
+        "x": 0,
+        "y": 0
+      },
+      "predictionWorker": true,
+      "aiWorker": true,
+      "aiPending": false,
+      "lastAI": null
+    }
+  ],
+  "limits": "Desktop browser and touch-emulated phone; this run does not establish physical-phone performance. Result fixtures come from complete physical initial-layout bot matches."
+}

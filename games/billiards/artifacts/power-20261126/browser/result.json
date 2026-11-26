@@ -1,0 +1,37 @@
+{
+  "url": "http://127.0.0.1:5196/games/billiards/?qa=1",
+  "checks": [
+    "four-ball first press only starts power meter",
+    "four-ball high meter produces a stronger real stroke",
+    "four-ball prediction Worker uses the same stronger physics",
+    "three-cushion first press only starts power meter",
+    "three-cushion high meter produces a stronger real stroke",
+    "three-cushion prediction Worker uses the same stronger physics",
+    "eight-ball first press only starts power meter",
+    "eight-ball high meter produces a stronger real stroke",
+    "eight-ball prediction Worker uses the same stronger physics",
+    "No browser errors"
+  ],
+  "observations": [
+    {
+      "discipline": "four-ball",
+      "power": 0.9600000000000001,
+      "speed": 6.24,
+      "maximum": 6.5
+    },
+    {
+      "discipline": "three-cushion",
+      "power": 0.9533600000000005,
+      "speed": 6.1968400000000035,
+      "maximum": 6.5
+    },
+    {
+      "discipline": "eight-ball",
+      "power": 0.9867999999999999,
+      "speed": 9.3746,
+      "maximum": 9.5
+    }
+  ],
+  "errors": [],
+  "limits": "Actual browser clicks/taps and shot events; phone is touch emulation. Stronger speed is game tuning, not calibration against a real table."
+}
