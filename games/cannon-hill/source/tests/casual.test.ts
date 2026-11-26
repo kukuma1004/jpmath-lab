@@ -81,7 +81,9 @@ describe('무작위 대칭 배치와 낙사 다리',()=>{
       expect(points[0]!.x+points[1]!.x).toBe(2400);expect(points[0]!.y).toBe(points[1]!.y);
       central+=points.some(p=>p.x>650&&p.x<1750)?1:0;reverse+=points[0]!.x>points[1]!.x?1:0;
     }
-    expect(layouts.size).toBeGreaterThan(16);expect(heights.size).toBeGreaterThan(1);expect(central).toBeGreaterThan(24);
+    expect(layouts.size).toBeGreaterThan(16);expect(heights.size).toBeGreaterThan(1);
+    if (id === 'windrift') expect(central).toBe(0);
+    else expect(central).toBeGreaterThan(24);
     expect(reverse).toBeGreaterThan(16);expect(reverse).toBeLessThan(48);
   });
   it('다리 발밑을 끊으면 체력이 가득 찬 상대도 추락선 아래에서 탈락한다',()=>{

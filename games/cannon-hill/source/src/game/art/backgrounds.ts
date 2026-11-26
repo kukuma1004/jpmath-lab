@@ -3,6 +3,7 @@
  * 논리 크기 LAYER_W×LAYER_H를 RES 배율로 그려 두고 화면에서 늘려 쓴다(먼 배경은 조금 흐려도 된다).
  */
 import { noise1, hash2 } from '../utils/rng';
+import { VIEW_H } from '../config/constants';
 
 export const LAYER_W = 2400;
 export const LAYER_H = 900;
@@ -342,7 +343,22 @@ function underworld(): BgLayers {
   return { sky, far, mid, near, ambient: 'souls' };
 }
 
-const BUILDERS: Record<string, () => BgLayers> = { baekdu, sanseong, forest, cloud: cloudPalace, underworld, bridge: sanseong, quarry: sanseong };
+function windRift(): BgLayers {
+  const [sky, s] = canvas(LAYER_W, VIEW_H, 0.5);
+  s.fillStyle = vg(s, 0, VIEW_H, [[0, '#4d577c'], [0.42, '#b095ad'], [0.73, '#e3ba9c'], [1, '#77829b']]);
+  s.fillRect(0, 0, LAYER_W, VIEW_H);
+  const [far, f] = canvas(LAYER_W, LAYER_H, 0.5);
+  ridge(f, 490, 160, 220, 227, '#8d849b');
+  const [mid, m] = canvas(LAYER_W, LAYER_H, 0.5);
+  ridge(m, 610, 125, 290, 228, '#6b7591');
+  const [near, n] = canvas(LAYER_W, LAYER_H, 0.5);
+  mist(n, 650, 180, 'rgba(196,189,208,0.32)');
+  return { sky, far, mid, near, ambient: 'clouds' };
+}
+
+const BUILDERS: Record<string, () => BgLayers> = {
+  baekdu, sanseong, forest, cloud: cloudPalace, underworld, bridge: sanseong, quarry: sanseong, windrift: windRift,
+};
 
 const cache = new Map<string, BgLayers>();
 

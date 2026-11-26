@@ -13,7 +13,10 @@ const ART: ArtData = { ...BASE_ART, chars: { ...BASE_ART.chars,
   mukyeong: { w: 292, h: 360, footX: 0.74, cx: 0.77 },
   dolbi: { w: 276, h: 360, footX: 0.56, cx: 0.59 },
   cheongyeon: { w: 237, h: 360, footX: 0.56, cx: 0.67 },
-}, bgs: { ...BASE_ART.bgs, bridge: { w: 1536, h: 1024 }, quarry: { w: 1536, h: 1024 } } };
+}, bgs: {
+  ...BASE_ART.bgs,
+  bridge: { w: 1536, h: 1024 }, quarry: { w: 1536, h: 1024 }, windrift: { w: 1536, h: 1024 },
+} };
 
 /**
  * 그려 받은 그림(public/art)을 게임에 붙이는 자리 정보.

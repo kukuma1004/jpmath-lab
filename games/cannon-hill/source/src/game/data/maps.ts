@@ -405,7 +405,35 @@ const quarry: MapDef = {
   },
 };
 
-export const MAPS: MapDef[] = [quarry, bridge, sanseong, baekdu, forest, cloud, underworld];
+const windrift: MapDef = {
+  id: 'windrift', name: '바람칼 협곡',
+  desc: '넓은 협곡 양쪽에 위아래로 얇은 돌 발판이 놓여 있습니다. 협곡 너머로 포탄을 쏘고, 상대 발밑을 끊어 추락을 노리세요.',
+  features: '장거리 포격 · 얇은 발판 · 추락 시 탈락',
+  voidBottom: true, ringOutY: 1010, spawn: [301, 590],
+  spawnTiers: [[301, 349], [533, 589]], windBias: 0.28,
+  sky: ['#5b6486', '#b59cae', '#e4be9e'],
+  colors: {
+    [Mat.Dirt]: { base: '#b57b62', dark: '#62424c', crust: '#f1c18e' },
+    [Mat.Rock]: { base: '#797a94', dark: '#3c405b', crust: '#d4ab89' },
+    [Mat.Core]: { base: '#56536b', dark: '#303146' },
+  },
+  generate(t, _rng, seed) {
+    const ledges = [
+      { start: 236, end: 430, top: 432, thickness: 36 },
+      { start: 476, end: 640, top: 600, thickness: 28 },
+    ];
+    for (const { start, end, top, thickness } of ledges) {
+      const underside = (x: number) => {
+        const bevel = Math.max(0, 8 - Math.min(x - start, end - x) * 0.42);
+        return top + thickness - bevel + (noise1(x / 29, seed + top) - 0.5) * 5;
+      };
+      fillColumns(t, () => top, (_x, _y, depth) => depth < 6 ? Mat.Dirt : Mat.Rock, start, end - CELL, underside);
+      rect(t, start + 12, top + 10, start + 26, top + 16, Mat.Core);
+    }
+  },
+};
+
+export const MAPS: MapDef[] = [quarry, windrift, bridge, sanseong, baekdu, forest, cloud, underworld];
 
 export function mapDef(id: string): MapDef {
   const m = MAPS.find((x) => x.id === id);

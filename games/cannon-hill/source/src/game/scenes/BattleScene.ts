@@ -185,6 +185,13 @@ export class BattleScene extends Phaser.Scene {
       gorge.fillGradientStyle(0x182c40, 0x182c40, 0x182c40, 0x182c40, 0, 0, 0.92, 0.92);
       gorge.fillRect(0, 850, WORLD_W, 375);
       this.world.add(gorge);
+    } else if (mapId === 'windrift') {
+      const gorge = this.add.graphics().setDepth(7);
+      const color = 0x29253d;
+      gorge.fillGradientStyle(color, color, color, color, 0, 0, 0.7, 0.7);
+      gorge.fillRect(-400, 705, WORLD_W + 800, WORLD_H - 705);
+      gorge.fillStyle(color, 0.7).fillRect(-400, WORLD_H, WORLD_W + 800, 600);
+      this.world.add(gorge);
     }
   }
 
@@ -223,6 +230,9 @@ export class BattleScene extends Phaser.Scene {
 
   /** 살아 있는 장수가 모두 보이게 */
   private overview(): { x: number; y: number; z: number } {
+    if (this.battle.cfg.mapId === 'windrift') {
+      return { x: WORLD_W / 2, y: 510, z: this.scale.width / (WORLD_W + 72) };
+    }
     if (this.battle.cfg.mapId === 'quarry' && !this.battle.cfg.starterMatch) {
       return { x: WORLD_W / 2, y: 680, z: this.scale.width / (WORLD_W + 72) };
     }
@@ -259,7 +269,7 @@ export class BattleScene extends Phaser.Scene {
     const zBase = narrow ? 1.25 : mobile ? 1.0 : 1.12;
     if (this.camMode === 'all') return { ...this.overview(), k: 4 };
     if (this.camMode === 'enemy' && b.isPlayerPhase()) return { x: b.enemy.x, y: b.enemy.y - 90, z: zBase, k: 4 };
-    if (b.cfg.starterMatch && this.camMode === 'auto' && this.humanTurn() &&
+    if ((b.cfg.starterMatch || b.cfg.mapId === 'windrift') && this.camMode === 'auto' && this.humanTurn() &&
         (b.phase === 'TURN_START' || b.isPlayerPhase())) return { ...this.overview(), k: 5 };
     switch (b.phase) {
       case 'BATTLE_START':
@@ -686,6 +696,7 @@ export class BattleScene extends Phaser.Scene {
       : b.clouds.some((c) => (c.turns[b.current] ?? 0) > 0 && b.inCloud(b.cur, c)) ? '독무 속! 다음 자기 차례가 오기 전에 구름 밖으로 움직이세요'
       : previousShot || (showFirstShotTip ? '추천 각도와 금빛 힘 구간을 참고하세요' : '') || (
         b.isPlayerPhase() && b.cur.charId === 'driller' && b.cur.slot === 1 ? '철편 세 발로 조준선과 양옆을 함께 맞힙니다 · 드러난 상대를 노리세요'
+      : b.isPlayerPhase() && b.cfg.mapId === 'windrift' ? '협곡 너머로 장거리 포격 · 맞은편 발판을 끊으면 낙사'
       : b.isPlayerPhase() && b.cfg.mapId === 'bridge' ? '다리를 끊어 떨어뜨리세요 · 추락선을 넘으면 체력과 무관하게 탈락'
       : b.isPlayerPhase() && b.cfg.mapId === 'quarry' && b.cur.charId === 'driller' ? '발판 윗면에 맞혀 밑면까지 절단 · 상대 발밑과 지지점 사이를 노리세요'
       : b.isPlayerPhase() && b.cfg.mapId === 'quarry' && b.turnNo <= 2 ? '중앙 쪽으로 한 단씩 착지 · 마지막 단 밖은 추락'
