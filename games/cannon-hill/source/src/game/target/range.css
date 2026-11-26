@@ -160,7 +160,7 @@
   border-radius: 8px;
 }
 .target-adjust label { grid-column: 1 / -1; display: flex; justify-content: space-between; color: var(--range-muted); font-size: 13px; }
-.target-adjust output { color: #ffe0a3; font-variant-numeric: tabular-nums; font-weight: bold; }
+.target-adjust output, .target-charge [data-power] { color: #ffe0a3; font-variant-numeric: tabular-nums; font-weight: bold; }
 .target-adjust input { width: 100%; min-width: 0; margin: 0; accent-color: #eac778; cursor: pointer; }
 .target-mode .target-adjust .btn { min-width: 35px; min-height: 34px; padding: 2px 7px; }
 .target-control .target-fire { grid-column: 2; grid-row: 2; }
@@ -199,6 +199,21 @@
 .target-aim-controls { display:contents; }
 .target-adjust { padding:7px 10px; grid-row:1; grid-column:1; }
 .target-adjust:last-child { grid-column:3; }
+.target-charge { align-self:stretch; grid-template-columns:minmax(0,1fr); grid-template-rows:auto 1fr; }
+.target-charge progress {
+  appearance:none;
+  width:100%;
+  height:14px;
+  border:1px solid #bba377;
+  border-radius:8px;
+  overflow:hidden;
+  background:#202832;
+  color:#ffd77e;
+}
+.target-charge progress::-webkit-progress-bar { background:#202832; }
+.target-charge progress::-webkit-progress-value { background:linear-gradient(90deg,#c57939,#ffdd8b); }
+.target-charge progress::-moz-progress-bar { background:linear-gradient(90deg,#c57939,#ffdd8b); }
+.target-charging .target-charge, .target-charging .target-fire { border-color:#ffdc92; }
 .target-control>.target-shots { grid-column:2; grid-row:1; gap:3px; padding:6px; margin-bottom:3px; }
 .target-shots li { min-height:30px; font-size:clamp(9px,1vw,15px); }
 .target-control .target-fire { grid-column:4; grid-row:1; aspect-ratio:1; border-radius:50%; border:2px solid #fdac80; min-height:0; background:radial-gradient(circle at 40% 24%,#ff7950,#cd4034 59%,#95302b 84%); box-shadow:inset 0 0 0 3px #832e28,0 4px 0 #542b2b,0 4px 12px #182230; }

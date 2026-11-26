@@ -1,4 +1,5 @@
 import {audio} from '../audio/audio';
+import {PLAYER_CHARGE_TIME} from '../config/constants';
 import {BANDS, FLOOR_HEIGHT, MAX_POWER, MAX_SCORE, MAX_SHOT_SCORE, MAX_SLOPE, MIN_SLOPE, ROUNDS, SLOPE_SCALE, WALL_SPAN, angleDegrees, formatTenths, heightAt, isCenter, scoreShot, summarize, type TargetAim, type TargetResult, type TargetShot} from './course';
 import {deleteScore, loadBoard, publishScore, type RecordRow} from './ranking';
 import {drawCliff, drawBarricade} from './rangeArt';
@@ -11,12 +12,11 @@ const LINE_Y = 380;
 const NEAR_TARGET_X = 840;
 const FAR_TARGET_X = 1010;
 const SCALE_Y = 0.38;
+const CHARGE_MS = PLAYER_CHARGE_TIME * 1000;
+const CHARGE_HINT = '발사를 누르고 있다가 원하는 힘에서 떼세요.';
 const BEST_KEY = 'jpml.warureu.target.best.v2';
 const NICKNAME_KEY = 'jpml.warureu.target.nickname.v1';
 const OWNER_KEY = 'jpml.warureu.target.owner.v2';
-const NUDGES: Record<string, readonly [keyof TargetAim, number]> = {
-  ArrowUp: ['slope', 1], ArrowDown: ['slope', -1], KeyQ: ['power', -1], KeyE: ['power', 1],
-};
 
 function readLocal(key: string): string {
   try { return localStorage.getItem(key) ?? ''; } catch { return ''; }
@@ -76,7 +76,8 @@ export class TargetRange {
   private phase: Phase = 'ready';
   private aims: TargetAim[] = [];
   private recent: TargetShot[] = [];
-  private aim: TargetAim = {power:500, slope:100};
+  private aim: TargetAim = {power:0, slope:100};
+  private hold: {input: string | number; start: number; previousPower: number} | null = null;
   private trajectory: RenderShot | null = null;
   private result: TargetResult | null = null;
   private onlineOwner = readLocal(OWNER_KEY);
@@ -113,20 +114,18 @@ export class TargetRange {
           <div class="target-aim-controls">
             <div class="target-adjust">
               <label for="target-slope">각도 <output data-slope></output></label>
-              <button class="btn ghost" type="button" data-nudge="slope:-1" aria-label="각도 낮추기">−</button>
+              <button class="btn ghost" type="button" data-nudge="-1" aria-label="각도 낮추기">−</button>
               <input id="target-slope" type="range" min="${MIN_SLOPE}" max="${MAX_SLOPE}" step="1" aria-label="발사 각도">
-              <button class="btn ghost" type="button" data-nudge="slope:1" aria-label="각도 높이기">+</button>
+              <button class="btn ghost" type="button" data-nudge="1" aria-label="각도 높이기">+</button>
             </div>
-            <div class="target-adjust">
-              <label for="target-power">힘 <output data-power></output></label>
-              <button class="btn ghost" type="button" data-nudge="power:-1" aria-label="발사 힘 0.1 줄이기">−</button>
-              <input id="target-power" type="range" min="0" max="${MAX_POWER}" step="1" aria-label="발사 힘">
-              <button class="btn ghost" type="button" data-nudge="power:1" aria-label="발사 힘 0.1 높이기">+</button>
+            <div class="target-adjust target-charge">
+              <label for="target-power">힘 <span data-power aria-hidden="true"></span></label>
+              <progress id="target-power" max="${MAX_POWER}" value="0"></progress>
             </div>
           </div>
-          <button class="fire target-fire" data-action="fire" type="button">발사<small>Space</small></button>
+          <button class="fire target-fire" type="button">발사<small>길게 누르기</small></button>
         </div>
-        <p class="target-tip">방향키 ↑↓ 각도 · Q/E 힘 0.1 · Space 발사 <span>엄폐물을 넘겨 표적 중심을 맞히세요.</span></p>
+        <p class="target-tip">↑↓ 각도 · 스페이스바를 눌러 힘을 모으고 떼면 발사 <span>엄폐물을 넘겨 표적 중심을 맞히세요.</span></p>
       </div>
       <dialog class="target-dialog" aria-labelledby="target-rank-title">
         <header><div><h2 id="target-rank-title">누적 순위</h2><p>같은 코스 · 브라우저별 최고 기록</p></div><button class="btn ghost" type="button" data-action="dismiss">닫기</button></header>
@@ -160,30 +159,57 @@ export class TargetRange {
     }, {signal});
     this.rockTexture.src = new URL('art/bg_quarry.png', document.baseURI).href;
     if (portrait) this.portrait.src = portrait;
-    for (const field of ['slope', 'power'] as const) {
-      this.select<HTMLInputElement>(`#target-${field}`).addEventListener('input', event => {
-        this.adjust(field, (event.currentTarget as HTMLInputElement).valueAsNumber);
+    const angle = this.select<HTMLInputElement>('#target-slope');
+    const fire = this.select<HTMLButtonElement>('.target-fire');
+    angle.addEventListener('input', () => this.adjustAngle(angle.valueAsNumber), {signal});
+    window.addEventListener('keydown', event => {
+      if (this.board.open) return;
+      const focusedButton = event.target instanceof Element ? event.target.closest('button') : null;
+      const chargeKey = event.code === 'Space' || (event.code === 'Enter' && focusedButton === fire);
+      if (chargeKey) {
+        if (focusedButton && focusedButton !== fire) return;
+        event.preventDefault();
+        if (!event.repeat) this.beginCharge(event.code);
+      } else if (event.target !== angle && (event.code === 'ArrowUp' || event.code === 'ArrowDown')) {
+        event.preventDefault();
+        const step = (event.code === 'ArrowUp' ? 1 : -1) * (event.shiftKey ? 10 : 1);
+        this.adjustAngle(this.aim.slope + step);
+      }
+    }, {signal});
+    window.addEventListener('keyup', event => {
+      if (this.hold?.input !== event.code) return;
+      event.preventDefault();
+      this.endCharge(true);
+    }, {signal});
+    window.addEventListener('blur', () => this.endCharge(false), {signal});
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) this.endCharge(false);
+    }, {signal});
+    fire.addEventListener('pointerdown', event => {
+      if (event.button !== 0 || !this.beginCharge(event.pointerId)) return;
+      event.preventDefault();
+      fire.setPointerCapture(event.pointerId);
+    }, {signal});
+    fire.addEventListener('pointerup', event => {
+      if (this.hold?.input === event.pointerId) this.endCharge(true);
+    }, {signal});
+    for (const type of ['pointercancel', 'lostpointercapture']) {
+      fire.addEventListener(type, event => {
+        if (this.hold?.input === (event as PointerEvent).pointerId) this.endCharge(false);
       }, {signal});
     }
-    window.addEventListener('keydown', event => {
-      if (this.board.open || this.phase !== 'ready' ||
-          (event.target instanceof HTMLElement && event.target.closest('button:not(.target-fire)') && event.code === 'Space') ||
-          (event.target instanceof HTMLInputElement && event.code.startsWith('Arrow'))) return;
-      const nudge = NUDGES[event.code];
-      if (!nudge && event.code !== 'Space') return;
-      event.preventDefault();
-      if (nudge) this.adjust(nudge[0], this.aim[nudge[0]] + nudge[1] * (event.shiftKey ? 10 : 1));
-      else if (!event.repeat) this.fire();
-    }, {signal});
     this.root.addEventListener('click', event => {
       const button = (event.target as HTMLElement).closest<HTMLButtonElement>('button');
       const action = button?.dataset.action;
-      const nudge = button?.dataset.nudge?.split(':');
+      const nudge = button?.dataset.nudge;
       if (nudge) {
-        const field = nudge[0] as keyof TargetAim;
-        this.adjust(field, this.aim[field] + Number(nudge[1]));
+        this.adjustAngle(this.aim.slope + Number(nudge));
+        if (event.detail > 0) fire.focus({preventScroll:true});
       }
-      if (action === 'fire') this.fire();
+      if (button === fire && event.detail === 0) {
+        if (this.hold?.input === 'activation') this.endCharge(true);
+        else this.beginCharge('activation');
+      }
       if (action === 'close') close();
       if (action === 'retry') this.reset();
       if (action === 'board' || action === 'submit') this.openBoard(action === 'submit');
@@ -198,6 +224,7 @@ export class TargetRange {
 
   destroy(): void {
     this.destroyed = true;
+    this.endCharge(false);
     this.controls.abort();
     this.canvasSize.disconnect();
     cancelAnimationFrame(this.animation);
@@ -213,14 +240,14 @@ export class TargetRange {
 
   private reset(): void {
     this.phase = 'ready';
-    this.aim = {power:500, slope:100};
+    this.aim = {power:0, slope:100};
     this.aims = [];
     this.recent = [];
     this.result = null;
     this.trajectory = null;
     this.needsPaint = true;
     this.select('.target-finish').hidden = true;
-    this.select('[data-feedback]').textContent = '포신을 움직이고 힘을 맞춘 뒤 발사하세요.';
+    this.select('[data-feedback]').textContent = CHARGE_HINT;
     this.refreshHud();
     this.select<HTMLButtonElement>('.target-fire').focus({preventScroll:true});
   }
@@ -233,7 +260,8 @@ export class TargetRange {
     this.select('[data-score]').textContent = `${formatTenths(this.score)}점`;
     this.root.querySelectorAll<HTMLButtonElement | HTMLInputElement>('.target-fire, .target-adjust button, .target-adjust input')
       .forEach(control => { control.disabled = this.phase !== 'ready'; });
-    this.paintAim();
+    this.paintAngle();
+    this.paintPower();
     this.select('[data-shots]').replaceChildren(...Array.from({length:ROUNDS.length}, (_, index) => {
       const el = document.createElement('li');
       const shot = this.recent[index];
@@ -247,22 +275,55 @@ export class TargetRange {
     }));
   }
 
-  private adjust(field: keyof TargetAim, value: number): void {
+  private adjustAngle(value: number): void {
     if (this.phase !== 'ready' || !Number.isFinite(value)) return;
-    this.aim[field] = Math.round(field === 'power' ? Math.max(0, Math.min(MAX_POWER, value)) : Math.max(MIN_SLOPE, Math.min(MAX_SLOPE, value)));
-    this.paintAim();
+    this.aim.slope = Math.round(Math.max(MIN_SLOPE, Math.min(MAX_SLOPE, value)));
+    this.paintAngle();
     this.needsPaint = true;
   }
 
-  private paintAim(): void {
+  private paintAngle(): void {
     const angle = `${angleDegrees(this.aim.slope).toFixed(1)}°`;
+    this.select('[data-slope]').textContent = angle;
+    const slider = this.select<HTMLInputElement>('#target-slope');
+    slider.valueAsNumber = this.aim.slope;
+    slider.setAttribute('aria-valuetext', angle);
+  }
+
+  private paintPower(): void {
     const power = formatTenths(this.aim.power);
-    for (const [field, label] of [['slope', angle], ['power', power]] as const) {
-      this.select(`[data-${field}]`).textContent = label;
-      const slider = this.select<HTMLInputElement>(`#target-${field}`);
-      slider.valueAsNumber = this.aim[field];
-      slider.setAttribute('aria-valuetext', label);
-    }
+    this.select('[data-power]').textContent = power;
+    this.select<HTMLProgressElement>('#target-power').value = this.aim.power;
+  }
+
+  private beginCharge(input: string | number): boolean {
+    if (this.hold || this.phase !== 'ready' || this.board.open) return false;
+    this.hold = {input, start: performance.now(), previousPower: this.aim.power};
+    this.aim.power = 0;
+    this.paintPower();
+    this.root.classList.add('target-charging');
+    this.select('[data-feedback]').textContent = '힘 모으는 중';
+    audio.charge(0);
+    return true;
+  }
+
+  private chargePower(now: number, start: number): number {
+    const cycle = (Math.max(0, now - start) / CHARGE_MS) % 2;
+    return Math.round((1 - Math.abs(1 - cycle)) * MAX_POWER);
+  }
+
+  private endCharge(release: boolean): void {
+    const hold = this.hold;
+    if (!hold) return;
+    this.hold = null;
+    this.aim.power = release ? this.chargePower(performance.now(), hold.start) : hold.previousPower;
+    this.paintPower();
+    this.root.classList.remove('target-charging');
+    audio.charge(null);
+    const fire = this.select<HTMLButtonElement>('.target-fire');
+    if (typeof hold.input === 'number' && fire.hasPointerCapture(hold.input)) fire.releasePointerCapture(hold.input);
+    if (release) this.fire();
+    else this.select('[data-feedback]').textContent = CHARGE_HINT;
   }
 
   private fire(): void {
@@ -295,6 +356,11 @@ export class TargetRange {
 
   private update = (now: number): void => {
     if (this.destroyed) return;
+    if (this.hold) {
+      this.aim.power = this.chargePower(now, this.hold.start);
+      this.paintPower();
+      audio.charge(this.aim.power / 10);
+    }
     const throwInfo = this.trajectory;
     if (throwInfo && this.phase === 'flight' && now >= throwInfo.start + throwInfo.flightMs) {
       this.phase = 'feedback';
@@ -478,6 +544,7 @@ export class TargetRange {
   }
 
   private openBoard(submit: boolean): void {
+    this.endCharge(false);
     this.select('.target-submit').hidden = !submit || !this.result;
     this.select<HTMLInputElement>('#target-nickname').value = readLocal(NICKNAME_KEY);
     if (!this.board.open) this.board.showModal();

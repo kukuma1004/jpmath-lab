@@ -1,5 +1,5 @@
 import {
-  ANGLE_SPEED, CELL, CHARGE_TIME, CHAR_CENTER_Y, CHAR_RADIUS, COLS, DT, FALL_DAMAGE_MAX, FALL_DAMAGE_PER_SPEED,
+  ANGLE_SPEED, CELL, CHARGE_TIME, CHAR_CENTER_Y, CHAR_RADIUS, COLS, DT, FALL_DAMAGE_MAX, FALL_DAMAGE_PER_SPEED, PLAYER_CHARGE_TIME,
   FLIGHT_LIMIT, GRAVITY,
   MAX_BOULDERS, MAX_CHUNKS, MAX_LAUNCH_SPEED, MAX_LAUNCH_TILT, MIN_SETTLE_HOLD, MOVE_BUDGET, ROWS, SAFE_FALL_SPEED, SETTLE_LIMIT,
   STEP_DOWN, STEP_UP, TURN_LIMIT_DEFAULT, WALK_SPEED, WIND_ACC_PER_UNIT, WORLD_H, WORLD_W,
@@ -373,7 +373,7 @@ export class Battle {
     }
     this.timeLeft -= dt;
     if (this.phase === 'CHARGE') {
-      const chargeTime = this.cfg.controllers[f.idx] === 'human' ? (this.cfg.starterMatch ? 2.8 : 2.4) : CHARGE_TIME;
+      const chargeTime = this.cfg.controllers[f.idx] === 'human' ? (this.cfg.starterMatch ? 2.8 : PLAYER_CHARGE_TIME) : CHARGE_TIME;
       f.power += (f.chargeDir * 100 * dt) / chargeTime;
       if (f.power >= 100) { f.power = 100; f.chargeDir = -1; }
       if (f.power <= 0) { f.power = 0; f.chargeDir = 1; }

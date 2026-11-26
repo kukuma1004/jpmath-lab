@@ -34,6 +34,7 @@ export const FALL_DAMAGE_MAX = 420;
 
 export const ANGLE_SPEED = 42; // 도/초
 export const CHARGE_TIME = 1.6; // 0→100까지 걸리는 시간
+export const PLAYER_CHARGE_TIME = 2.4;
 export const TURN_TIME_DEFAULT = 30;
 export const TURN_LIMIT_DEFAULT = 0;
 export const BASE_HP = 800;
