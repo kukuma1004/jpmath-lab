@@ -613,12 +613,14 @@ export class Battle {
         if (!p.drilling) {
           p.drilling = true;
           const speed = Math.hypot(p.vx, p.vy) || 1;
-          if (w.drillExit) p.drillExitAt = this.findDrillExit(p.x, p.y, p.vx / speed, p.vy / speed, w.drillDepth ?? 280, w.drillExit.gap);
-          p.vx = p.vx / speed * (w.drillSpeed ?? 420);
-          p.vy = p.vy / speed * (w.drillSpeed ?? 420);
-          if (w.shelfCut && p.vy > 0) this.cutShelf(p, w.shelfCut);
-          if (w.burstRadius && w.burstCarve && w.burstDamage) {
-            this.explode(p.x, p.y, w.burstRadius, w.burstCarve, w.rockMul, w.burstDamage, 1, 0, p, -1, w.id, false);
+          const cut = w.shelfCut && p.vy > 0 && this.cutShelf(p, w.shelfCut);
+          const drill = cut && w.shelfCut?.followThrough ? weapon(w.shelfCut.followThrough) : w;
+          p.weaponId = drill.id;
+          if (drill.drillExit) p.drillExitAt = this.findDrillExit(p.x, p.y, p.vx / speed, p.vy / speed, drill.drillDepth ?? 280, drill.drillExit.gap);
+          p.vx = p.vx / speed * (drill.drillSpeed ?? 420);
+          p.vy = p.vy / speed * (drill.drillSpeed ?? 420);
+          if (drill.burstRadius && drill.burstCarve && drill.burstDamage) {
+            this.explode(p.x, p.y, drill.burstRadius, drill.burstCarve, drill.rockMul, drill.burstDamage, 1, 0, p, -1, drill.id, false);
           }
           this.emit({ type: 'debris', x: p.x, y: p.y, count: 14, mat: m });
           // 다음 걸음부터 굴착 속도를 써서 진입 순간의 고속 이동을 막는다.
@@ -967,9 +969,9 @@ export class Battle {
     if (removed > 0) this.emit({ type: 'debris', x: kx, y: ky, count: Math.min(40, 6 + (removed >> 5)), mat: Mat.Dirt });
   }
 
-  private cutShelf(p: Projectile, cut: NonNullable<WeaponDef['shelfCut']>): void {
+  private cutShelf(p: Projectile, cut: NonNullable<WeaponDef['shelfCut']>): boolean {
     const shelf = this.terrain.shelfTopAndBottom(p.x, p.y, cut.maxThickness);
-    if (!shelf) return;
+    if (!shelf) return false;
     const y = (shelf.top + shelf.bottom) / 2;
     if (this.dry) {
       for (const enemy of this.enemiesOf(this.fighters[p.owner]!)) {
@@ -979,13 +981,13 @@ export class Battle {
           this.dry.enemyGroundHit = Math.max(this.dry.enemyGroundHit, 1 - distance / (cut.radius * 1.4));
         }
       }
-      return;
+      return true;
     }
     const material = this.terrain.matAt(p.x, p.y);
-    if (this.carve(p.x, y, cut.radius, 1, p.owner) > 0) {
-      this.emit({ type: 'debris', x: p.x, y: shelf.bottom - CELL, count: 24, mat: material });
-      this.emit({ type: 'drillBreak', kind: 'shelf', x: p.x, y: shelf.top });
-    }
+    if (this.carve(p.x, y, cut.radius, 1, p.owner) === 0) return false;
+    this.emit({ type: 'debris', x: p.x, y: shelf.bottom - CELL, count: 24, mat: material });
+    this.emit({ type: 'drillBreak', kind: 'shelf', x: p.x, y: shelf.top });
+    return true;
   }
 
   private carve(x: number, y: number, r: number, rockMul: number, owner: number): number {

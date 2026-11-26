@@ -53,7 +53,7 @@ export interface WeaponDef {
   drillRadius?: number;
   drillSpeed?: number;
   drillExit?: { gap: number; damage: number; radius: number };
-  shelfCut?: { maxThickness: number; radius: number };
+  shelfCut?: { maxThickness: number; radius: number; followThrough?: string };
   cloudRadius?: number;
   cloudDamage?: number;
   cloudTurns?: number;
@@ -176,14 +176,23 @@ export const WEAPONS: Record<string, WeaponDef> = {
     look: 'poison', color: 0xd2fa79, glow: 0x9bdf64, size: 9,
   },
   drillBore: {
-    id: 'drillBore', name: '관통 나선탄', use: '엄폐 뒤 출구 폭발', desc: '바위를 최대 280px 직진으로 뚫습니다. 벽 반대편에 나오면 출구에서 더 넓고 강하게 터져 뒤에 숨은 적을 노릴 수 있습니다. 기반암과 구조물 핵은 뚫지 못합니다.',
+    id: 'drillBore', name: '관통 나선탄', use: '벽 관통·발판 절단', desc: '바위를 최대 280px 뚫어 벽 반대편에서 크게 터집니다. 아래가 빈 얇은 발판의 윗면에 맞으면 밑면까지 잘라냅니다. 기반암과 구조물 핵은 남습니다.',
     behavior: 'drill', pattern: 'single',
     radius: 64, carve: 50, rockMul: 1, damage: 178, directBonus: 1.2, knockback: 135,
     burstDamage: 80, burstRadius: 65, burstCarve: 44,
     drillDepth: 280, drillRadius: 14, drillSpeed: 420,
     drillExit: { gap: 18, damage: 235, radius: 102 },
+    shelfCut: { maxThickness: 96, radius: 118, followThrough: 'faultBreaker' },
     look: 'drill', color: 0xd3e3e7, glow: 0xffc66d, size: 7,
   },
+  ironScatter: {
+    id: 'ironScatter', name: '철편 삼연탄', use: '세 갈래 명중', desc: '조준선과 그 양옆으로 철편 세 발을 동시에 쏩니다. 조준이 조금 빗나가도 옆탄이 닿고, 여러 발이 겹치면 피해가 더 큽니다. 지형을 조금만 깎습니다.',
+    behavior: 'shell', pattern: 'triple',
+    radius: 65, carve: 16, rockMul: 0.45, damage: 96, directBonus: 1.25, knockback: 42,
+    count: 3, spreadDeg: 3.8,
+    look: 'iron', color: 0x788f9e, glow: 0x6ee1ff, size: 6, renderScale: 0.86,
+  },
+  // 관통탄이 얇은 발판을 가른 직후 이어지는 넓은 굴착.
   faultBreaker: {
     id: 'faultBreaker', name: '지반 붕괴탄', use: '떠 있는 발판 절단', desc: '채석장처럼 아래가 빈 발판을 위에서 맞히면 밑면까지 가르고, 떨어져 나간 조각은 무너집니다. 두꺼운 지반에서는 원래대로 110px 파고듭니다. 기반암과 구조물 핵은 남습니다.',
     behavior: 'drill', pattern: 'single',

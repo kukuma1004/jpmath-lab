@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Battle, defaultConfig } from '../src/game/combat/battle';
-import { DT } from '../src/game/config/constants';
+import { DT, MAX_LAUNCH_SPEED } from '../src/game/config/constants';
 import { Mat } from '../src/game/terrain/terrain';
 
 function flat(char='mudang') {
@@ -96,13 +96,14 @@ describe('굴착대장의 실제 굴착',()=>{
     expect(b.projectiles).toHaveLength(0);
     expect(800 - b.fighters[1]!.hp).toBeCloseTo(dry.damage[1]!, 0);
   });
-  it('2번은 1번보다 짧고 넓게 파며 파괴하는 지반이 더 많다',()=>{
-    const a=drill(),b=drill('faultBreaker');
-    for(const {b:sim,p} of [a,b])for(let n=0;n<120&&!p.dead;n++)sim.stepProjectile(p,DT);
-    expect(b.p.x).toBeLessThan(a.p.x-140);
-    expect(b.b.terrain.solidAt(1080,822)).toBe(false);
-    expect(a.b.terrain.solidAt(1080,822)).toBe(true);
-    expect(b.b.fighters[0]!.stats.cellsDestroyed).toBeGreaterThan(a.b.fighters[0]!.stats.cellsDestroyed);
+  it('저장에 남은 지반 붕괴탄은 복원 뒤에도 기존 굴착을 끝낸다',()=>{
+    const {b}=drill('faultBreaker');
+    const restored=Battle.deserialize(b.serialize());
+    const p=restored.projectiles[0]!;
+    for(let n=0;n<120&&!p.dead;n++)restored.stepProjectile(p,DT);
+    expect(p.dead).toBe(true);
+    expect(p.pierced).toBeGreaterThanOrEqual(110);
+    expect(restored.terrain.solidAt(1080,822)).toBe(false);
   });
   it.each([Mat.Bedrock,Mat.Core])('기반암/핵 %s는 관통하지 못한다',(mat)=>{
     const {b,p}=drill();for(let y=300;y<450;y++)for(let x=540;x<550;x++)b.terrain.set(x,y,mat);
@@ -116,5 +117,36 @@ describe('굴착대장의 실제 굴착',()=>{
     for(const s of [b,clone,restored])for(let n=0;n<120&&!s.projectiles[0]!.dead;n++)s.stepProjectile(s.projectiles[0]!,DT);
     expect(clone.projectiles).toEqual(b.projectiles);expect(restored.projectiles).toEqual(b.projectiles);
     expect(clone.terrain.checksum()).toBe(b.terrain.checksum());expect(restored.terrain.checksum()).toBe(b.terrain.checksum());
+  });
+});
+
+describe('굴착대장의 명중용 철편', () => {
+  it.each([false, true])('같은 발사 속도의 세 발 중 옆탄이 조준 오차를 받아준다 (좌우 반전 %s)', (mirror) => {
+    const b = flat('driller');
+    b.fighters[0]!.x = mirror ? 1990 : 410;
+    b.fighters[1]!.x = mirror ? 900 : 1500;
+    const angle = mirror ? 156 : 24;
+    const power = 86;
+    expect(b.dryShot(0, 0, angle, power).damage[1]).toBe(0);
+    expect(b.dryShot(0, 1, angle, power).damage[1]).toBe(120);
+
+    b.setAngle(angle);
+    b.selectWeapon(1);
+    b.fireNow(power);
+    expect(b.projectiles).toHaveLength(3);
+    for (const p of b.projectiles) {
+      expect(Math.hypot(p.vx, p.vy)).toBeCloseTo(MAX_LAUNCH_SPEED * power / 100, 5);
+    }
+    for (let n = 0; n < 360 && b.projectiles.length; n++) b.step();
+    expect(b.fighters[1]!.hp).toBe(680);
+  });
+
+  it('철편은 벽 앞에서 터지고 땅속으로 들어가지 않는다', () => {
+    const {b, p} = drill('ironScatter');
+    for (let n = 0; n < 120 && !p.dead; n++) b.stepProjectile(p, DT);
+    expect(p.dead).toBe(true);
+    expect(p.pierced).toBe(0);
+    expect(p.x).toBeLessThan(1002);
+    expect(b.terrain.solidAt(1080, 802)).toBe(true);
   });
 });

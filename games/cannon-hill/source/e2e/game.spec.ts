@@ -162,6 +162,43 @@ test('굴착대장: 전용 몸·회전 드릴을 불러오고 실제 땅속 굴�
   await waitAim(page,1,20_000);expect(errors).toEqual([]);
 });
 
+test('굴착대장: 2번 철편을 선택하면 세 갈래가 나가 옆탄으로 명중한다', async ({page}) => {
+  await openBattle(page, 'local', ['driller', 'archer'], 'forest');
+  await waitAim(page);
+  await wr(page, `(() => {
+    const {scene, battle} = __wr;
+    scene.scene.restart({cfg:{...battle.cfg, seed:27, starterMatch:true}, mode:'local'});
+  })()`);
+  await page.waitForFunction(() => (window as any).__wr?.battle.cfg.seed === 27);
+  await waitAim(page, 0);
+  await wr(page, `(() => {
+    const b = __wr.battle;
+    b.wind = 2;
+    for (const [i, x] of [300, 1950].entries()) {
+      const f = b.fighters[i];
+      f.x = x;
+      f.y = f.airPeakY = b.terrain.topSurface(x);
+      f.vx = f.vy = 0;
+      f.onGround = true;
+    }
+    b.setAngle(36);
+  })()`);
+  const hud = page.locator('[data-s=hud]');
+  const slot = hud.getByRole('button', {name: /철편 삼연탄/});
+  await slot.click();
+  await expect(slot).toHaveClass(/on/);
+  const power = hud.getByRole('slider', {name: '발사 힘 직접 설정'});
+  await power.evaluate((input: HTMLInputElement) => {
+    input.value = '84';
+    input.dispatchEvent(new Event('input', {bubbles:true}));
+  });
+  await hud.getByRole('button', {name: '설정한 힘으로 발사'}).click();
+  await expect.poll(async () => (await state(page)).projectiles).toBe(3);
+  await page.waitForFunction(() => (window as any).__wr.battle.projectiles.every((p: {x: number}) => p.x > 780));
+  await page.screenshot({path:'test-results/driller-scatter.png'});
+  await expect.poll(async () => (await state(page)).hp[1]).toBe(680);
+});
+
 test('무당: 고각 사격 후 하강 중 적을 추적하여 맞힌다',async({page})=>{
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
   await openBattle(page,'local',['mudang','driller'],'bridge');await waitAim(page);

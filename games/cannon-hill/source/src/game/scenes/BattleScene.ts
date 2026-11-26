@@ -640,11 +640,12 @@ export class BattleScene extends Phaser.Scene {
       : !b.isPlayerPhase() && (b.shotDamage.get(b.shotNo) ?? 0) > 0 ? `이번 포격: 상대에게 합계 ${b.shotDamage.get(b.shotNo)} 피해`
       : b.clouds.some((c) => (c.turns[b.current] ?? 0) > 0 && b.inCloud(b.cur, c)) ? '독무 속! 다음 자기 차례가 오기 전에 구름 밖으로 움직이세요'
       : previousShot || (showFirstShotTip ? '추천 각도와 금빛 힘 구간을 참고하세요' : '') || (
-        b.isPlayerPhase() && b.cfg.mapId === 'bridge' ? '다리를 끊어 떨어뜨리세요 · 추락선을 넘으면 체력과 무관하게 탈락'
-      : b.isPlayerPhase() && b.cfg.mapId === 'quarry' && b.cur.charId === 'driller' && b.cur.slot === 1 ? '발판 윗면에 맞혀 밑면까지 절단 · 상대 발밑과 지지점 사이를 노리세요'
+        b.isPlayerPhase() && b.cur.charId === 'driller' && b.cur.slot === 1 ? '철편 세 발로 조준선과 양옆을 함께 맞힙니다 · 드러난 상대를 노리세요'
+      : b.isPlayerPhase() && b.cfg.mapId === 'bridge' ? '다리를 끊어 떨어뜨리세요 · 추락선을 넘으면 체력과 무관하게 탈락'
+      : b.isPlayerPhase() && b.cfg.mapId === 'quarry' && b.cur.charId === 'driller' ? '발판 윗면에 맞혀 밑면까지 절단 · 상대 발밑과 지지점 사이를 노리세요'
       : b.isPlayerPhase() && b.cfg.mapId === 'quarry' && b.turnNo <= 2 ? '중앙 쪽으로 한 단씩 착지 · 마지막 단 밖은 추락'
       : b.isPlayerPhase() && b.cur.charId === 'mudang' && b.cur.slot === 0 ? '고각 55~125° · 하강 중 500px 안에서 표적 포착'
-      : b.isPlayerPhase() && b.cur.charId === 'driller' ? b.cur.slot === 0 ? '엄폐 뒤 출구 폭발 · 벽을 관통해 뒤에 숨은 적을 노리세요' : '넓은 지반 붕괴 · 높은 발판을 무너뜨리세요'
+      : b.isPlayerPhase() && b.cur.charId === 'driller' ? '엄폐 뒤 출구 폭발 · 벽을 관통해 뒤에 숨은 적을 노리세요'
       : b.isPlayerPhase() && b.steadyReady(b.cur) ? '자리 잡은 포격 — 움직이지 않고 쏘면 피해 +15%'
       : '');
     const aimHint=this.advisor.update(b,this.app.settings.aimHints&&this.humanTurn());

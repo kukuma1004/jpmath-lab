@@ -99,7 +99,7 @@ describe('층층 채석장의 네 단 절벽', () => {
     }
   });
 
-  it('굴착대장 2번은 몸에 맞히지 않아도 세 번째 단을 끊어 탈락시킨다', () => {
+  it('굴착대장 1번은 몸에 맞히지 않아도 세 번째 단을 끊어 탈락시킨다', () => {
     function fireAtShelf(slot: 0 | 1) {
       const battle = quarryBattle(27, ['driller', 'archer']);
       const [shooter, target] = battle.fighters;
@@ -120,12 +120,12 @@ describe('층층 채석장의 네 단 절벽', () => {
       return { battle, target: target!, groundHit: prediction.enemyGroundHit };
     }
 
-    const narrow = fireAtShelf(0);
-    expect(narrow.target.alive).toBe(true);
-    const wide = fireAtShelf(1);
-    expect(wide.groundHit).toBeGreaterThan(narrow.groundHit);
-    expect(wide.target.deathCause).toBe('fall');
-    expect(wide.battle.terrain.matAt(714, 722)).toBe(Mat.Core);
+    const drill = fireAtShelf(0);
+    const scatter = fireAtShelf(1);
+    expect(scatter.target.alive).toBe(true);
+    expect(drill.groundHit).toBeGreaterThan(scatter.groundHit);
+    expect(drill.target.deathCause).toBe('fall');
+    expect(drill.battle.terrain.matAt(714, 722)).toBe(Mat.Core);
   });
 
   it('밑면의 빈 공간을 확인하며 매립된 구조물 핵과 두꺼운 땅을 절단하지 않는다', () => {
