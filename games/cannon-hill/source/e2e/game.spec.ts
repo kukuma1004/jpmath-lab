@@ -236,15 +236,20 @@ test('첫 차례의 자유 탄 선택: 2번 발사 후 1번으로 돌아간다',
   expect(errors).toEqual([]);
 });
 
-test('새 장수 고르기: 9장 카드, 전용 그림과 두 탄 용도가 보인다', async({page})=>{
+test('새 장수 고르기: 14장 카드와 궁극기 설명이 보인다', async({page})=>{
   await page.goto('./?qa=1');await expect(page.locator('[data-s=title]')).toHaveClass(/on/);
   await page.getByRole('button',{name:/둘이서 하기/}).click();
   const screen=page.locator('[data-s=chars]');
-  await expect(screen.locator('.card')).toHaveCount(9);
-  for(const id of ['hwacha','alchemist','driller']){
+  await expect(screen.locator('.card')).toHaveCount(14);
+  const rounds = {
+    hwacha: '구룡 화차', alchemist: '자욱한 독무', driller: '철편 삼연탄',
+    haewol: '되밀물탄', seolmae: '눈꽃탄', yeonhwa: '연등탄', dolbi: '쐐기 바위', mukyeong: '그림자 협격',
+  };
+  for(const [id, round] of Object.entries(rounds)){
     await screen.locator(`.card[data-id=${id}]`).click();
-    await expect(screen).toContainText(id==='hwacha'?'구룡 화차':id==='alchemist'?'자욱한 독무':'지반 붕괴탄');
+    await expect(screen).toContainText(round);
     await expect(screen).toContainText('두 탄 모두 매 차례 자유롭게');
+    await expect(screen.locator('.ultimate-detail')).toContainText('자기 3번째 차례부터');
   }
   await expect(screen).not.toContainText('가득 차면');
 });
