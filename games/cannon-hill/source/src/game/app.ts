@@ -41,8 +41,6 @@ export class App {
       restart: () => this.rematch(),
       pause: () => this.pause(),
       weapon: (slot) => this.battleScene()?.selectWeapon(slot),
-      power: (delta, absolute) => this.battleScene()?.adjustPower(delta, absolute),
-      firePrepared: () => this.battleScene()?.firePrepared() ?? false,
       flip: () => this.battleScene()?.flip(),
       camera: () => this.battleScene()?.cycleCamera(),
       recenter: () => this.battleScene()?.recenter(),

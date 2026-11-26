@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { MAX_LAUNCH_SPEED } from '../src/game/config/constants';
+import { character } from '../src/game/data/characters';
 
 type State = {
   phase: string; current: number; turnNo: number; winner: number | null; hp: number[]; shots: number[];
@@ -76,18 +77,25 @@ test('낮은 둔턱은 이동 키로 넘고 경사에서 실제 발사각을 보
   expect(vx).toBeCloseTo(MAX_LAUNCH_SPEED * power / 100 * Math.cos(launchAngle * Math.PI / 180), 5);
 });
 
-test('힘 막대와 미세 조정 단추로 고른 소수점 힘 그대로 발사한다', async ({page}) => {
+test('스페이스바를 누르는 동안 힘이 차고 떼는 순간 한 발만 나간다', async ({page}) => {
   await openBattle(page, 'local', ['general', 'archer'], 'quarry');
   await waitAim(page);
   const hud = page.locator('[data-s=hud]');
-  const power = hud.getByRole('slider', { name: '발사 힘 직접 설정' });
-  await power.focus();
-  await power.press('ArrowRight');
-  await hud.getByRole('button', { name: '힘 0.1 높이기' }).click();
-  await expect(hud.locator('.power span')).toHaveText('힘 70.2');
-  await hud.getByRole('button', { name: '설정한 힘으로 발사' }).click();
-  expect(await wr(page, '__wr.battle.cur.lastPower')).toBeCloseTo(70.2, 8);
-  expect(await wr(page, '__wr.battle.cur.stats.shots')).toBe(1);
+  await expect(hud.locator('.power input')).toHaveCount(0);
+  const who = (await state(page)).current;
+  await page.keyboard.press('e');
+  await page.keyboard.down('Space');
+  await page.waitForFunction(() => (window as any).__wr.battle.cur.power > 10);
+  await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+  await page.keyboard.up('Space');
+  await waitAim(page, who);
+  expect((await state(page)).shots[who]).toBe(0);
+  await page.keyboard.down('Space');
+  await page.waitForFunction(() => (window as any).__wr.battle.cur.power >= 55);
+  expect((await state(page)).shots[who]).toBe(0);
+  await page.keyboard.up('Space');
+  await expect.poll(async () => (await state(page)).shots[who]).toBe(1);
+  expect(await wr(page, `__wr.battle.fighters[${who}].lastPower`)).toBeGreaterThanOrEqual(55);
 });
 
 test('바로 한 판: 선공으로 직접 쏘고 지난 포격을 본 뒤 같은 방식으로 재대전한다', async ({page}) => {
@@ -187,16 +195,11 @@ test('굴착대장: 2번 철편을 선택하면 세 갈래가 나가 옆탄으�
   const slot = hud.getByRole('button', {name: /철편 삼연탄/});
   await slot.click();
   await expect(slot).toHaveClass(/on/);
-  const power = hud.getByRole('slider', {name: '발사 힘 직접 설정'});
-  await power.evaluate((input: HTMLInputElement) => {
-    input.value = '84';
-    input.dispatchEvent(new Event('input', {bubbles:true}));
-  });
-  await hud.getByRole('button', {name: '설정한 힘으로 발사'}).click();
+  await wr(page, '__wr.battle.fireNow(84)');
   await expect.poll(async () => (await state(page)).projectiles).toBe(3);
   await page.waitForFunction(() => (window as any).__wr.battle.projectiles.every((p: {x: number}) => p.x > 780));
   await page.screenshot({path:'test-results/driller-scatter.png'});
-  await expect.poll(async () => (await state(page)).hp[1]).toBe(680);
+  await expect.poll(async () => (await state(page)).hp[1]).toBe(character('archer').hp - 120);
 });
 
 test('무당: 고각 사격 후 하강 중 적을 추적하여 맞힌다',async({page})=>{
@@ -205,7 +208,10 @@ test('무당: 고각 사격 후 하강 중 적을 추적하여 맞힌다',async(
   await wr(page,`const b=__wr.battle;b.terrain.cells.fill(0);for(let y=450;y<600;y++)for(let x=0;x<1200;x++)b.terrain.set(x,y,4);b.terrain.pending=[];b.current=0;b.phase='AIM';b.timeLeft=30;b.wind=0;for(const [i,x] of [400,1700].entries()){const f=b.fighters[i];f.x=x;f.y=900;f.airPeakY=900;f.vx=f.vy=0;f.onGround=true;} __wr.fire(65,80,0);`);
   await page.waitForFunction(()=> (window as any).__wr.battle.projectiles.some((p:any)=>p.seekTarget===1),undefined,{polling:'raf'});
   await page.screenshot({path:'test-results/loft-guidance.png'});
-  await page.waitForFunction(()=> (window as any).__wr.battle.fighters[1].hp<800,undefined,{polling:'raf'});
+  await page.waitForFunction(()=> {
+    const foe = (window as any).__wr.battle.fighters[1];
+    return foe.hp < foe.maxHp;
+  }, undefined, {polling:'raf'});
   expect(errors).toEqual([]);
 });
 
@@ -243,9 +249,9 @@ test('새 장수 고르기: 9장 카드, 전용 그림과 두 탄 용도가 보�
   await expect(screen).not.toContainText('가득 차면');
 });
 
-test('기본 체력 800 끝장전: 40턴 뒤에도 계속하고 쓰러뜨려야 끝난다',async({page})=>{
+test('장수별 체력 끝장전: 40턴 뒤에도 계속하고 쓰러뜨려야 끝난다',async({page})=>{
   await openBattle(page,'local',['general','archer'],'sanseong');await waitAim(page);
-  expect((await state(page)).hp).toEqual([800,800]);
+  expect((await state(page)).hp).toEqual([character('general').hp,character('archer').hp]);
   expect(await wr(page,'__wr.battle.cfg.turnLimit')).toBe(0);
   await expect(page.locator('[data-s=hud] .tno')).toContainText('끝장전');
   await wr(page,'__wr.battle.turnNo=40; __wr.skip();');await waitAim(page);
@@ -255,7 +261,7 @@ test('기본 체력 800 끝장전: 40턴 뒤에도 계속하고 쓰러뜨려야 
   expect(await wr(page,'__wr.battle.endReason')).toBe('hp');
 });
 
-test('벼랑 외나무다리: 새 배경을 읽고 다리를 끊어 체력 800 상대를 낙사시킨다',async({page})=>{
+test('벼랑 외나무다리: 새 배경을 읽고 다리를 끊어 상대를 낙사시킨다',async({page})=>{
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
   await openBattle(page,'local',['general','turtle'],'bridge');await waitAim(page);
   await wr(page,`(()=>{const b=__wr.battle,a=b.fighters[0],f=b.fighters[1];a.x=280;a.y=b.terrain.topSurface(280);a.airPeakY=a.y;f.x=1200;f.y=b.terrain.topSurface(1200);f.airPeakY=f.y;b.current=0;b.terrain.carveCircle(f.x,f.y,70,1);b.setPhase('TERRAIN_COLLAPSE');})()`);
@@ -317,6 +323,7 @@ test('게임 끝 → 결과 화면 → 재대전', async ({ page }) => {
   await openBattle(page, 'local', ['archer', 'gumiho'], 'cloud');
   await waitAim(page);
   const s = await state(page);
+  const initialHealth = s.hp;
   const other = 1 - s.current;
   await wr(page, `__wr.kill(${other}); __wr.skip();`);
   const result = page.locator('[data-s=result]');
@@ -327,7 +334,7 @@ test('게임 끝 → 결과 화면 → 재대전', async ({ page }) => {
   await expect(result).not.toHaveClass(/on/);
   await expect.poll(async () => {
     const n = await state(page);
-    return n.winner === null && n.hp[0] === 800 && n.hp[1] === 800 && n.turnNo <= 1 && n.shots[0] === 0;
+    return n.winner === null && n.hp[0] === initialHealth[0] && n.hp[1] === initialHealth[1] && n.turnNo <= 1 && n.shots[0] === 0;
   }).toBe(true);
   await waitAim(page);
 });
@@ -340,7 +347,7 @@ for (const vp of [{ name: '가로', width: 844, height: 390 }, { name: '세로',
     await waitAim(page);
     await expect(page.locator('[data-s=hud] .angle-hint')).toBeVisible();
     await expect(page.locator('[data-s=hud] .power-hint')).toBeVisible();
-    const ids = ['[data-hold=left]', '[data-hold=right]', '[data-hold=aimUp]', '[data-hold=aimDown]', '[data-act=flip]', '[data-hold=charge]', '[data-w="0"]', '[data-w="1"]', '.pausebtn'];
+    const ids = ['[data-hold=left]', '[data-hold=right]', '[data-hold=aimUp]', '[data-hold=aimDown]', '[data-act=flip]', '[data-hold=charge]', '[data-w="0"]', '[data-w="1"]', '[data-w="2"]', '.pausebtn'];
     const boxes = [];
     for (const sel of ids) {
       const b = await page.locator(`[data-s=hud] ${sel}`).boundingBox();

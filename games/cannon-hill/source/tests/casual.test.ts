@@ -59,12 +59,13 @@ describe('빠른 턴 전환과 큰 추락 피해',()=>{
     expect(f.onGround).toBe(true);expect(f.maxHp-f.hp).toBeGreaterThanOrEqual(230);
     expect(f.maxHp-f.hp).toBeLessThanOrEqual(420);
   });
-  it('집중 진천뢰는 직격 580 이상, 60px 빗나가면 피해가 없다',()=>{
+  it('집중 진천뢰는 직격에서 500대 초반에 그치고, 60px 빗나가면 피해가 없다',()=>{
     const b=flat();b.selectWeapon(1);b.setAngle(5);b.fireNow(90);
     const damage=[];for(let i=0;i<90;i++){b.step();for(const e of b.drainEvents())if(e.type==='damage'&&e.target===1&&e.cause==='blast')damage.push(e.amount);}
-    expect(damage[0]).toBeGreaterThanOrEqual(580);
+    expect(damage[0]).toBeGreaterThanOrEqual(500);
+    expect(damage[0]).toBeLessThanOrEqual(520);
     const miss=flat();miss.projectiles.push(miss.newProjectile(0,1,'jincheonroe',660,880,0,0));
-    for(let i=0;i<90;i++)miss.step();expect(miss.fighters[1]!.hp).toBe(800);
+    for(let i=0;i<90;i++)miss.step();expect(miss.fighters[1]!.hp).toBe(miss.fighters[1]!.maxHp);
   });
 });
 
@@ -83,7 +84,7 @@ describe('무작위 대칭 배치와 낙사 다리',()=>{
     expect(layouts.size).toBeGreaterThan(16);expect(heights.size).toBeGreaterThan(1);expect(central).toBeGreaterThan(24);
     expect(reverse).toBeGreaterThan(16);expect(reverse).toBeLessThan(48);
   });
-  it('다리 발밑을 끊으면 체력 800인 상대도 추락선 아래에서 탈락한다',()=>{
+  it('다리 발밑을 끊으면 체력이 가득 찬 상대도 추락선 아래에서 탈락한다',()=>{
     const b=new Battle(defaultConfig({mapId:'bridge',seed:42}));
     const [a,f]=b.fighters;a.x=280;a.y=b.terrain.topSurface(a.x);a.airPeakY=a.y;
     f.x=1200;f.y=b.terrain.topSurface(f.x);f.airPeakY=f.y;

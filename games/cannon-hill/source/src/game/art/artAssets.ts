@@ -7,6 +7,11 @@ const ART: ArtData = { ...BASE_ART, chars: { ...BASE_ART.chars,
   hwacha: { w: 177, h: 240, footX: 0.525, cx: 0.59 },
   alchemist: { w: 207, h: 240, footX: 0.5, cx: 0.58 },
   driller: { w: 1199, h: 1312, footX: 0.5, cx: 0.58 },
+  haewol: { w: 276, h: 360, footX: 0.65, cx: 0.69 },
+  seolmae: { w: 325, h: 360, footX: 0.7, cx: 0.71 },
+  yeonhwa: { w: 257, h: 360, footX: 0.62, cx: 0.68 },
+  mukyeong: { w: 292, h: 360, footX: 0.74, cx: 0.77 },
+  dolbi: { w: 276, h: 360, footX: 0.56, cx: 0.59 },
 }, bgs: { ...BASE_ART.bgs, bridge: { w: 1536, h: 1024 }, quarry: { w: 1536, h: 1024 } } };
 
 /**
@@ -36,6 +41,11 @@ export const CHAR_RIG: Record<string, CharRig> = {
   hwacha: { height: 64, hand: [0.946, 0.457] },
   alchemist: { height: 62, hand: [0.94, 0.55] },
   driller: { height: 64, hand: [0.9, 0.43] },
+  haewol: { height: 64, hand: [0.51, 0.65] },
+  seolmae: { height: 64, hand: [0.59, 0.62] },
+  yeonhwa: { height: 64, hand: [0.49, 0.62] },
+  mukyeong: { height: 64, hand: [0.69, 0.52] },
+  dolbi: { height: 64, hand: [0.31, 0.59] },
 };
 
 export const WEAPON_RIG: Record<string, WeaponRig> = {
@@ -48,6 +58,11 @@ export const WEAPON_RIG: Record<string, WeaponRig> = {
   hwacha: { width: 38, grip: [WEAPON_BOX.pivotX / WEAPON_BOX.w, WEAPON_BOX.pivotY / WEAPON_BOX.h] },
   alchemist: { width: 34, grip: [WEAPON_BOX.pivotX / WEAPON_BOX.w, WEAPON_BOX.pivotY / WEAPON_BOX.h] },
   driller: { width: 42, grip: [WEAPON_BOX.pivotX / WEAPON_BOX.w, WEAPON_BOX.pivotY / WEAPON_BOX.h] },
+  haewol: { width: 42, grip: [WEAPON_BOX.pivotX / WEAPON_BOX.w, WEAPON_BOX.pivotY / WEAPON_BOX.h] },
+  seolmae: { width: 43, grip: [WEAPON_BOX.pivotX / WEAPON_BOX.w, WEAPON_BOX.pivotY / WEAPON_BOX.h] },
+  yeonhwa: { width: 39, grip: [WEAPON_BOX.pivotX / WEAPON_BOX.w, WEAPON_BOX.pivotY / WEAPON_BOX.h] },
+  mukyeong: { width: 42, grip: [WEAPON_BOX.pivotX / WEAPON_BOX.w, WEAPON_BOX.pivotY / WEAPON_BOX.h] },
+  dolbi: { width: 45, grip: [WEAPON_BOX.pivotX / WEAPON_BOX.w, WEAPON_BOX.pivotY / WEAPON_BOX.h] },
 };
 
 export const artKey = {

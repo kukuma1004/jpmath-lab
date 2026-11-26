@@ -10,10 +10,11 @@ import { WEAPONS, weapon, type WeaponDef } from '../data/weapons';
 import { Mat, Terrain, type Component } from '../terrain/terrain';
 import { Rng, clamp } from '../utils/rng';
 import type {
-  BattleConfig, Boulder, Chunk, DamageCause, Fighter, Phase, PoisonCloud, Projectile, Scheduled, SimEvent, Team,
+  BattleConfig, Boulder, Chunk, DamageCause, Fighter, Phase, PoisonCloud, Projectile, Scheduled, SimEvent, Team, WeaponSlot,
 } from './types';
 
 const DEG = Math.PI / 180;
+export const ULTIMATE_TURN = 3;
 
 export interface DryResult {
   /** 장수별 피해(fighters 순서) */
@@ -114,6 +115,7 @@ export class Battle {
     return {
       idx, team, charId, x, y: Math.max(0, y), vx: 0, vy: 0, onGround: true,
       angle: team === 0 ? 50 : 130, power: 0, lastPower: 70, chargeDir: 1, slot: 0,
+      turnsTaken: 0, ultimateUsed: false,
       hp: def.hp, maxHp: def.hp,
       moveLeft: MOVE_BUDGET * def.moveMul, moved: false,
       alive: true, deathCause: '', anim: 'idle', animT: 0, slope: 0, airPeakY: y, stats: newStats(),
@@ -161,9 +163,13 @@ export class Battle {
     return this.fighters.length / 2;
   }
 
-  weaponOf(f: Fighter, slot: 0 | 1 = f.slot): WeaponDef {
+  weaponOf(f: Fighter, slot: WeaponSlot = f.slot): WeaponDef {
     const d = character(f.charId);
-    return weapon(slot === 1 ? d.special : d.normal);
+    return weapon(slot === 2 ? d.ultimate : slot === 1 ? d.special : d.normal);
+  }
+
+  ultimateReady(f: Fighter): boolean {
+    return f.alive && !f.ultimateUsed && f.turnsTaken >= ULTIMATE_TURN;
   }
 
   traitOf(f: Fighter): string {
@@ -217,10 +223,20 @@ export class Battle {
     }
   }
 
-  selectWeapon(slot: 0 | 1): void {
+  selectWeapon(slot: WeaponSlot): void {
     if (!this.isPlayerPhase() || this.phase === 'CHARGE') return;
+    if (slot === 2 && !this.ultimateReady(this.cur)) return;
     this.rec('slot', [slot]);
     this.cur.slot = slot;
+  }
+
+  cancelCharge(): void {
+    if (this.phase !== 'CHARGE') return;
+    this.rec('cancelCharge', []);
+    this.input.charge = false;
+    this.cur.power = 0;
+    this.setAnim(this.cur, 'idle');
+    this.setPhase('AIM');
   }
 
   setAngle(abs: number): void {
@@ -253,7 +269,8 @@ export class Battle {
       case 'move': this.setMove(a[0] as -1 | 0 | 1); break;
       case 'aim': this.setAim(a[0] as -1 | 0 | 1); break;
       case 'charge': this.setCharge(a[0] === 1); break;
-      case 'slot': this.selectWeapon(a[0] as 0 | 1); break;
+      case 'slot': this.selectWeapon(a[0] as WeaponSlot); break;
+      case 'cancelCharge': this.cancelCharge(); break;
       case 'angle': this.setAngle(a[0]!); break;
       case 'fire': this.fireNow(a[0]!); break;
       case 'skip': this.skipTurn(); break;
@@ -352,6 +369,7 @@ export class Battle {
     }
     this.tickClouds(f);
     if (!f.alive) { this.toTurnEnd(); return; }
+    f.turnsTaken++;
     f.power = 0;
     this.timeLeft = this.cfg.turnTime;
     const prevWind = this.wind;
@@ -469,8 +487,10 @@ export class Battle {
 
   private fire(power: number): void {
     const f = this.cur;
-    const slot = f.slot;
+    const slot = f.slot === 2 && !this.ultimateReady(f) ? 0 : f.slot;
     const w = this.weaponOf(f, slot);
+    if (slot === 2) f.ultimateUsed = true;
+    if (f.slot === 2) f.slot = 0;
     f.power = power;
     f.lastPower = power;
     this.input = { move: 0, aim: 0, charge: false };
@@ -479,6 +499,7 @@ export class Battle {
     this.shotDamage.set(shot, 0);
     const angle = this.launchAngle(f);
     const [mx, my] = this.muzzle(f, angle);
+    if (slot === 2) this.emit({ type: 'ultimate', owner: f.idx, weaponId: w.id, x: f.x, y: f.y - 56 });
     this.emit({ type: 'fire', owner: f.idx, weaponId: w.id, x: mx, y: my, angle, power, shot, wind: this.wind });
     if (this.steadyReady(f)) this.emit({ type: 'trait', who: f.idx, kind: 'steady', x: f.x, y: f.y - 70 });
     this.setAnim(f, 'fire');
@@ -487,6 +508,13 @@ export class Battle {
       for (let i = 0; i < n; i++) this.spawnShot(f, w, angle + (i - (n - 1) / 2) * (w.spreadDeg ?? 3), power, shot);
     } else {
       this.spawnShot(f, w, angle, power, shot);
+      if (w.pattern === 'echo') {
+        const facing = angle <= 90 ? 1 : -1;
+        for (const [x, y] of this.echoOrigins(mx, my, facing, w.count ?? 2)) {
+          this.emit({ type: 'shadow', owner: f.idx, x, y, facing });
+          this.spawnShot(f, w, angle, power, shot, [x, y]);
+        }
+      }
       if (w.pattern === 'salvo') {
         const n = w.count ?? 3;
         for (let i = 1; i < n; i++) {
@@ -509,8 +537,21 @@ export class Battle {
     return [f.x + Math.cos(a) * 26, f.y - CHAR_CENTER_Y - 4 - Math.sin(a) * 26];
   }
 
-  private spawnShot(f: Fighter, w: WeaponDef, angle: number, power: number, shot: number): void {
-    const [mx, my] = this.muzzle(f, angle);
+  private echoOrigins(x: number, y: number, facing: 1 | -1, count: number): [number, number][] {
+    const origins: [number, number][] = [[x - 102 * facing, y - 42]];
+    if (count > 2) origins.push([x + 116 * facing, y - 60]);
+    return origins.filter(([ox, oy]) => {
+      if (ox < CELL || ox > WORLD_W - CELL || oy < 0) return false;
+      const steps = Math.ceil(Math.hypot(ox - x, oy - y) / CELL);
+      for (let i = 1; i <= steps; i++) {
+        if (this.terrain.solidAt(x + (ox - x) * i / steps, y + (oy - y) * i / steps)) return false;
+      }
+      return true;
+    });
+  }
+
+  private spawnShot(f: Fighter, w: WeaponDef, angle: number, power: number, shot: number, origin = this.muzzle(f, angle)): void {
+    const [mx, my] = origin;
     const sp = (power / 100) * MAX_LAUNCH_SPEED;
     const a = angle * DEG;
     const p = this.newProjectile(f.idx, shot, w.id, mx, my, Math.cos(a) * sp, -Math.sin(a) * sp);
@@ -1527,7 +1568,7 @@ export class Battle {
   // ───────── 예상 궤적·AI용 ─────────
 
   /** 지형을 바꾸지 않고 한 발을 끝까지 따라가 본다 */
-  dryShot(fIdx: number, slot: 0 | 1, angle: number, power: number, from?: { x: number; y: number }): DryResult {
+  dryShot(fIdx: number, slot: WeaponSlot, angle: number, power: number, from?: { x: number; y: number }): DryResult {
     const f = this.fighters[fIdx]!;
     const saved = { x: f.x, y: f.y, angle: f.angle, proj: this.projectiles, sched: this.scheduled, quiet: this.quiet, rng: this.rng.state, nextId: this.nextId };
     if (from) { f.x = from.x; f.y = from.y; }
@@ -1547,9 +1588,15 @@ export class Battle {
       for (const pw of powers) {
         const [mx, my] = this.muzzle(f, a);
         const s = pw === power ? sp : (pw / 100) * MAX_LAUNCH_SPEED;
-        const q = this.newProjectile(fIdx, 0, w.id, mx, my, Math.cos(a * DEG) * s, -Math.sin(a * DEG) * s);
+        const vx = Math.cos(a * DEG) * s, vy = -Math.sin(a * DEG) * s;
+        const q = this.newProjectile(fIdx, 0, w.id, mx, my, vx, vy);
         if (steady) q.boost = TRAIT.steadyDamage;
         this.projectiles.push(q);
+        if (w.pattern === 'echo') {
+          for (const [x, y] of this.echoOrigins(mx, my, a <= 90 ? 1 : -1, w.count ?? 2)) {
+            this.projectiles.push(this.newProjectile(fIdx, 0, w.id, x, y, vx, vy));
+          }
+        }
       }
     }
     let steps = 0;
@@ -1629,7 +1676,7 @@ export class Battle {
 
   /** 상태 요약 해시(재현 시험용) */
   hash(): string {
-    const f = this.fighters.map((x) => `${x.x.toFixed(3)},${x.y.toFixed(3)},${x.hp},${x.alive ? 1 : 0},${x.slot}`).join('|');
+    const f = this.fighters.map((x) => `${x.x.toFixed(3)},${x.y.toFixed(3)},${x.hp},${x.alive ? 1 : 0},${x.slot},${x.turnsTaken},${x.ultimateUsed ? 1 : 0}`).join('|');
     const gas = this.clouds.map((c) => `${c.id},${c.x.toFixed(2)},${c.y.toFixed(2)},${c.turns.join(',')}`).join('|');
     return `${this.terrain.checksum()}:${f}:${gas}:${this.wind}:${this.turnNo}:${this.phase}:${this.rng.state}`;
   }
@@ -1659,7 +1706,7 @@ export class Battle {
     const o = JSON.parse(json);
     const b = new Battle(o.cfg, true);
     b.terrain = Terrain.deserialize(o.terrain);
-    b.fighters = o.fighters;
+    b.fighters = o.fighters.map((f: Fighter) => ({ ...f, turnsTaken: f.turnsTaken ?? 0, ultimateUsed: f.ultimateUsed ?? false }));
     b.projectiles = o.projectiles;
     b.boulders = o.boulders;
     b.chunks = o.chunks.map((c: Chunk & { cells: number[]; mats: number[]; bottom: number[] }) => ({ ...c, cells: Int32Array.from(c.cells), mats: Uint8Array.from(c.mats), bottom: Int32Array.from(c.bottom) }));

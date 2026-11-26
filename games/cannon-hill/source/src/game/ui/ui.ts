@@ -3,8 +3,9 @@ import { CHARACTERS, character } from '../data/characters';
 import { MAPS, mapDef } from '../data/maps';
 import { weapon } from '../data/weapons';
 import type { Battle } from '../combat/battle';
+import { ULTIMATE_TURN } from '../combat/battle';
 import type { AimHint } from '../combat/aimAdvisor';
-import type { Difficulty } from '../combat/types';
+import type { Difficulty, WeaponSlot } from '../combat/types';
 import { input, type Hold } from '../input/input';
 import type { Settings } from '../settings';
 import { audio } from '../audio/audio';
@@ -22,9 +23,7 @@ export interface UIHooks {
   resume(): void;
   restart(): void;
   pause(): void;
-  weapon(slot: 0 | 1): void;
-  power(delta: number | null, absolute?: boolean): void;
-  firePrepared(): boolean;
+  weapon(slot: WeaponSlot): void;
   flip(): void;
   camera(): void;
   recenter(): void;
@@ -267,17 +266,18 @@ export class UI {
       return `<button class="card${on ? ' on' : ''}" data-id="${c.id}" role="option" aria-selected="${on}">${tags}<img alt="" src="${this.portraits[c.id]?.[lab.team === 1 ? 'flip' : 'normal'] ?? ''}"><b>${c.name}</b><em>${c.role}</em></button>`;
     }).join('');
     const c = character(this.picks[slot]!);
-    const nw = weapon(c.normal), sw = weapon(c.special);
+    const nw = weapon(c.normal), sw = weapon(c.special), ult = weapon(c.ultimate);
     const pip = (n: number) => `<span class="pips">${[1, 2, 3, 4, 5].map((k) => `<i class="${k <= n ? 'on' : ''}"></i>`).join('')}</span>`;
     el.querySelector('.detail')!.innerHTML = `
       <div class="detail-top"><img alt="" src="${this.portraits[c.id]?.happy ?? ''}"><div><h3>${c.name}</h3><span class="role">${c.role}</span><p>${esc(c.blurb)}</p></div></div>
       <div class="stats">
-        <span>화력</span>${pip(c.stats.power)}<span>폭발 범위</span>${pip(c.stats.range)}<span>정확도</span>${pip(c.stats.accuracy)}<span>방어</span>${pip(c.stats.defense)}<span>기동</span>${pip(c.stats.mobility)}
+        <span>체력</span><strong>${c.hp}</strong><span>화력</span>${pip(c.stats.power)}<span>폭발 범위</span>${pip(c.stats.range)}<span>정확도</span>${pip(c.stats.accuracy)}<span>방어</span>${pip(c.stats.defense)}<span>기동</span>${pip(c.stats.mobility)}
       </div>
       <div class="weap">
         <div class="trait"><b><span class="tr">특기</span>${c.trait.name}</b><p>${esc(c.trait.desc)}</p></div>
         <div><b><span>1번 · ${esc(nw.use)}</span>${nw.name}</b><p>${esc(nw.desc)}</p></div>
         <div><b><span class="sp">2번 · ${esc(sw.use)}</span>${sw.name}</b><p>${esc(sw.desc)} 두 탄 모두 매 차례 자유롭게 고릅니다.</p></div>
+        <div class="ultimate-detail"><b><span>궁극기</span>${ult.name}</b><p>${esc(ult.desc)} 자기 ${ULTIMATE_TURN}번째 차례부터 한 판에 한 번 사용합니다.</p></div>
       </div>`;
     const next = el.querySelector<HTMLButtonElement>('[data-act=next]')!;
     next.textContent = step < this.steps - 1 ? '이 장수로 →' : '전장 고르기 →';
@@ -342,7 +342,7 @@ export class UI {
       <div class="stats" style="grid-template-columns:auto 1fr;align-content:start">
         <span>턴 시간</span>${chips('tt', [20, 30, 45], this.settings.turnTime, '초')}
         <span>승부 방식</span>${chips('tl', [0, 20, 30, 40], this.settings.turnLimit, '턴')}
-      </div><p>기본 체력 800 · 끝장전은 턴 제한 없이 상대 편이 모두 쓰러질 때까지 계속합니다.</p>`;
+      </div><p>장수별 체력과 특기가 다릅니다. 끝장전은 상대 편이 모두 쓰러질 때까지 계속합니다.</p>`;
   }
 
   // ───────── 전투 화면 ─────────
@@ -367,12 +367,11 @@ export class UI {
         <div class="bottom">
           <div class="pad move"><div class="row"><button class="kbtn" data-hold="left" aria-label="왼쪽으로 이동">◀<small>A</small></button><button class="kbtn" data-hold="right" aria-label="오른쪽으로 이동">▶<small>D</small></button></div><div class="movebar"><i></i></div><div class="lbl">이동</div></div>
           <div class="pad aim"><div class="row"><button class="kbtn" data-hold="aimDown" aria-label="포신 내리기">▼<small>↓</small></button><div class="angle-read"><span class="ang">45°</span><small>각도</small></div><button class="kbtn" data-hold="aimUp" aria-label="포신 올리기">▲<small>↑</small></button><button class="kbtn" data-act="flip" aria-label="방향 바꾸기">⇄<small>←→</small></button></div><div class="lbl angle-hint">각도</div></div>
-          <div class="weapons" aria-label="매 차례 자유롭게 고르는 두 종류 탄"><button class="wbtn" data-w="0"><kbd>1</kbd><b class="wn0"></b><small class="wu0"></small></button><button class="wbtn" data-w="1"><kbd>2</kbd><b class="wn1"></b><small class="wu1"></small></button></div>
+          <div class="weapons" aria-label="포탄과 궁극기"><button class="wbtn" data-w="0"><kbd>1</kbd><b class="wn0"></b><small class="wu0"></small></button><button class="wbtn" data-w="1"><kbd>2</kbd><b class="wn1"></b><small class="wu1"></small></button><button class="wbtn ult-btn" data-w="2"><kbd>R</kbd><b class="wn2"></b><small class="wu2"></small></button></div>
           <div class="firewrap">
-            <div class="power"><div class="ticks"></div><i></i><div class="last"></div><em class="suggested" hidden></em><span>힘 0</span><input class="power-picker" type="range" min="0" max="100" step="0.1" aria-label="발사 힘 직접 설정"></div>
+            <div class="power"><div class="ticks"></div><i></i><div class="last"></div><em class="suggested" hidden></em><span>힘 0</span></div>
             <button class="fire" data-hold="charge" aria-label="힘 모아 발사">발사<small>Space 꾹</small></button>
-            <div class="power-fine"><button type="button" data-act="power-down" aria-label="힘 0.1 줄이기">−</button><button type="button" data-act="power-hold" aria-label="꾹 눌러 발사 모드로 전환" hidden>꾹</button><button type="button" data-act="power-up" aria-label="힘 0.1 높이기">+</button></div>
-            <div class="keyhint power-hint" aria-live="polite">힘 막대 · Q/E 미세 조정</div>
+            <div class="keyhint power-hint" aria-live="polite">누르고 떼면 발사</div>
           </div>
         </div>
         <div class="banner"><b></b><span></span></div>
@@ -385,37 +384,31 @@ export class UI {
       const on = (e: PointerEvent) => {
         e.preventDefault();
         audio.unlock();
-        if (hold === 'charge' && this.hooks.firePrepared()) return;
+        if (b.closest('.bottom.off') || (e.pointerType === 'mouse' && e.button !== 0)) return;
         try { b.setPointerCapture(e.pointerId); } catch { /* 일부 브라우저 */ }
         b.classList.add('held');
         input.set(hold, true);
       };
-      const off = () => {
+      const off = (e: PointerEvent) => {
         if (!b.classList.contains('held')) return;
         b.classList.remove('held');
-        input.set(hold, false);
+        if (hold === 'charge' && e.type !== 'pointerup') input.cancelCharge();
+        else input.set(hold, false);
       };
       b.addEventListener('pointerdown', on);
       b.addEventListener('pointerup', off);
       b.addEventListener('pointercancel', off);
       b.addEventListener('lostpointercapture', off);
     });
-    el.querySelector<HTMLInputElement>('.power-picker')!.addEventListener('input', (event) => {
-      this.hooks.power((event.currentTarget as HTMLInputElement).valueAsNumber, true);
-    });
     el.addEventListener('click', (e) => {
       const t = e.target as HTMLElement;
-      if (e.detail === 0 && t.closest('[data-hold=charge]') && this.hooks.firePrepared()) return;
       const w = t.closest<HTMLElement>('[data-w]')?.dataset.w;
-      if (w !== undefined) { this.hooks.weapon(Number(w) as 0 | 1); return; }
+      if (w !== undefined) { this.hooks.weapon(Number(w) as WeaponSlot); return; }
       const act = t.closest<HTMLElement>('[data-act]')?.dataset.act;
       if (act === 'pause') this.hooks.pause();
       else if (act === 'flip') this.hooks.flip();
       else if (act === 'camera') this.hooks.camera();
       else if (act === 'recenter') this.hooks.recenter();
-      else if (act === 'power-down') this.hooks.power(-0.1);
-      else if (act === 'power-up') this.hooks.power(0.1);
-      else if (act === 'power-hold') this.hooks.power(null);
     });
   }
 
@@ -445,7 +438,7 @@ export class UI {
     fn();
   }
 
-  updateHud(b: Battle, opts: { names: string[]; humanTurn: boolean; status: string; aimHint: AimHint|null; preparedPower: number|null }): void {
+  updateHud(b: Battle, opts: { names: string[]; humanTurn: boolean; status: string; aimHint: AimHint|null }): void {
     const el = this.screens.get('hud')!;
     for (const f of b.fighters) {
       const i = f.idx;
@@ -505,17 +498,24 @@ export class UI {
     this.set('wn', c.id, () => {
       el.querySelector('.wn0')!.textContent = weapon(c.normal).name;
       el.querySelector('.wn1')!.textContent = weapon(c.special).name;
+      el.querySelector('.wn2')!.textContent = weapon(c.ultimate).name;
       el.querySelector('.wu0')!.textContent = weapon(c.normal).use;
       el.querySelector('.wu1')!.textContent = weapon(c.special).use;
-      for (const slot of [0, 1] as const) {
+      for (const slot of [0, 1, 2] as const) {
         const w = b.weaponOf(f, slot);
         el.querySelector<HTMLButtonElement>(`[data-w="${slot}"]`)!.title = `${w.use} · ${w.desc}`;
       }
     });
-    this.set('slot', `${f.slot}|${canAct}|${b.phase}`, () => {
-      el.querySelector('[data-w="0"]')!.classList.toggle('on', f.slot === 0);
-      el.querySelector('[data-w="1"]')!.classList.toggle('on', f.slot === 1);
-      for (const slot of [0, 1]) el.querySelector<HTMLButtonElement>(`[data-w="${slot}"]`)!.disabled = !canAct || b.phase === 'CHARGE';
+    const ready = b.ultimateReady(f);
+    this.set('slot', `${b.current}|${f.slot}|${canAct}|${b.phase}|${f.turnsTaken}|${f.ultimateUsed}`, () => {
+      for (const slot of [0, 1, 2]) {
+        const button = el.querySelector<HTMLButtonElement>(`[data-w="${slot}"]`)!;
+        button.classList.toggle('on', f.slot === slot);
+        button.disabled = !canAct || b.phase === 'CHARGE' || (slot === 2 && !ready);
+        button.setAttribute('aria-pressed', String(f.slot === slot));
+        if (slot === 2) button.classList.toggle('ready', ready);
+      }
+      el.querySelector('.wu2')!.textContent = f.ultimateUsed ? '사용 완료' : ready ? '궁극기 준비' : `궁극기 · ${Math.max(1, ULTIMATE_TURN - f.turnsTaken)}턴 후`;
     });
     const rel = Math.min(f.angle, 180 - f.angle);
     const launch = b.launchAngle(f);
@@ -527,36 +527,25 @@ export class UI {
     });
     const mv = Math.max(0, (f.moveLeft / (MOVE_BUDGET * c.moveMul)) * 100);
     this.set('mv', `${Math.round(mv)}`, () => { el.querySelector<HTMLElement>('.movebar i')!.style.width = `${mv}%`; });
-    const manual = opts.preparedPower !== null;
-    const pw = b.phase === 'CHARGE' ? f.power : opts.preparedPower ?? 0;
-    const editPower = canAct && b.phase !== 'CHARGE';
-    this.set('pw', `${pw.toFixed(1)}|${f.lastPower.toFixed(1)}|${manual}|${editPower}|${b.phase}|${f.stats.shots}`, () => {
+    const pw = b.phase === 'CHARGE' ? f.power : 0;
+    this.set('pw', `${pw.toFixed(1)}|${f.lastPower.toFixed(1)}|${b.phase}|${f.stats.shots}`, () => {
       const p = el.querySelector<HTMLElement>('.power')!;
       p.querySelector<HTMLElement>('i')!.style.width = `${pw}%`;
       p.querySelector<HTMLElement>('.last')!.style.left = `${f.lastPower}%`;
       const label = f.stats.shots > 0 ? '지난 힘' : '기준 힘';
-      p.querySelector('span')!.textContent = b.phase === 'CHARGE' || manual ? `힘 ${pw.toFixed(1)}` : `${label} ${f.lastPower.toFixed(1)}`;
-      const picker = p.querySelector<HTMLInputElement>('.power-picker')!;
-      picker.value = String(opts.preparedPower ?? f.lastPower);
-      picker.disabled = !editPower;
-      picker.setAttribute('aria-valuetext', Number(picker.value).toFixed(1));
-      el.querySelectorAll<HTMLButtonElement>('.power-fine button').forEach(button => { button.disabled = !editPower; });
-      el.querySelector<HTMLButtonElement>('[data-act=power-hold]')!.hidden = !manual;
-      const fire = el.querySelector<HTMLButtonElement>('.fire')!;
-      fire.querySelector('small')!.textContent = manual ? 'Space' : 'Space 꾹';
-      fire.setAttribute('aria-label', manual ? '설정한 힘으로 발사' : '힘 모아 발사');
+      p.querySelector('span')!.textContent = b.phase === 'CHARGE' ? `힘 ${pw.toFixed(1)}` : `${label} ${f.lastPower.toFixed(1)}`;
     });
-    this.updateAimHint(el,b,opts.aimHint,opts.preparedPower);
+    this.updateAimHint(el,b,opts.aimHint);
   }
 
-  private updateAimHint(el:HTMLElement,b:Battle,hint:AimHint|null,preparedPower:number|null):void {
+  private updateAimHint(el:HTMLElement,b:Battle,hint:AimHint|null):void {
     this.set('aimhint',`${JSON.stringify(hint)}:${b.current}:${b.cur.slot}`,()=>{
       const angle=el.querySelector<HTMLElement>('.angle-hint')!;
       const power=el.querySelector<HTMLElement>('.power-hint')!;
       const band=el.querySelector<HTMLElement>('.power .suggested')!;
       band.hidden=true;band.dataset.slot=String(b.cur.slot);
       angle.textContent=hint?.kind==='thinking'?'추천 범위 계산 중…':hint?.kind==='moving'?'멈추면 추천 범위를 보여드려요':'각도';
-      power.textContent=hint?.kind==='thinking'?'현재 바람과 탄을 살펴보는 중':hint?.kind==='moving'?'이동 후 다시 추천해요':'힘 막대 · Q/E 미세 조정';
+      power.textContent=hint?.kind==='thinking'?'현재 바람과 탄을 살펴보는 중':hint?.kind==='moving'?'이동 후 다시 추천해요':'누르고 떼면 발사';
       if(hint?.kind==='blocked'){
         angle.textContent=`${hint.direction>0?'→':'←'} 앞 지형이 막고 있어요`;power.textContent='조금 이동하면 다시 추천해요';
       }else if(hint?.kind==='range'){
@@ -568,7 +557,7 @@ export class UI {
     });
     const f=b.cur,relative=f.angle<=90?f.angle:180-f.angle;
     const angleOK=hint?.kind==='range'&&(f.angle<=90?1:-1)===hint.direction&&relative>=hint.angle[0]&&relative<=hint.angle[1];
-    const chosenPower = b.phase === 'CHARGE' ? f.power : preparedPower;
+    const chosenPower = b.phase === 'CHARGE' ? f.power : null;
     const powerOK=hint?.kind==='range'&&chosenPower!==null&&chosenPower>=hint.power[0]&&chosenPower<=hint.power[1];
     this.set('aimhint-match',`${angleOK}:${powerOK}`,()=>{
       el.querySelector('.angle-read')!.classList.toggle('in-hint',angleOK);
@@ -753,7 +742,7 @@ export class UI {
           <li><kbd>A</kbd> <kbd>D</kbd> 이동(한 턴에 갈 수 있는 거리가 정해져 있어요)</li>
           <li><kbd>←</kbd> <kbd>→</kbd> 포신을 왼쪽·오른쪽으로 돌리기, <kbd>↑</kbd> <kbd>↓</kbd> 포신 올리기·내리기</li>
           <li><kbd>Space</kbd> 꾹 눌러 힘 모으기 → 떼면 발사(힘은 끝까지 차면 다시 줄어듭니다)</li>
-          <li><kbd>1</kbd> <kbd>2</kbd> 무기 바꾸기 · <kbd>Esc</kbd> 일시정지</li>
+          <li><kbd>1</kbd> <kbd>2</kbd> 무기 바꾸기 · <kbd>R</kbd> 궁극기 선택 · <kbd>Esc</kbd> 일시정지</li>
           <li>화면 둘러보기: 마우스로 끌기 또는 <kbd>I</kbd> <kbd>J</kbd> <kbd>K</kbd> <kbd>L</kbd>, 휠로 확대 · <kbd>Tab</kbd> 따라가기/상대/전체 보기 · <kbd>C</kbd> 내 장수로 돌아오기</li>
         </ul>
         <h3>휴대폰·태블릿</h3>
@@ -762,6 +751,7 @@ export class UI {
         <h3>규칙</h3>
         <ul>
           <li>한 턴에 한 번만 쏩니다. 착탄과 추락 판정이 정리되면 빠르게 다음 차례로 넘어갑니다.</li>
+          <li>장수마다 자기 ${ULTIMATE_TURN}번째 차례부터 궁극기를 한 판에 한 번 쓸 수 있어요. 궁극기를 고른 다음 평소처럼 힘을 모아 발사하세요.</li>
           <li>시작 위치는 고지·저지·다리·발판 중 무작위로 고르며, 양 팀은 같은 높이·발판의 좌우 대칭 위치에서 시작합니다. 2:2도 서로 대응하는 두 자리를 대칭으로 놓습니다. 높은 곳에서 떨어지면 큰 피해를 받고, 벼랑 외나무다리의 추락선을 넘으면 체력과 무관하게 탈락합니다.</li>
           <li>바람은 턴마다 바뀝니다. 화면 위 화살표가 방향과 세기(0~10)입니다. 모든 탄의 기본 발사속도·중력·바람 영향은 같습니다.</li>
           <li><b>무당의 추적 부적탄</b>은 55~125°로 높이 쏘면 내려올 때 가까운 적을 따라갑니다. 표적에 금빛 조준 표시가 뜨며, 장애물에 먼저 닿으면 막힙니다.</li>
@@ -772,7 +762,7 @@ export class UI {
           <li><b>추천 각도·힘</b>는 넓은 시작 범위입니다. 화살표 쪽으로 포신을 돌리고, 추천 범위 안에서 조금씩 조절해 보세요. 힘 게이지의 금빛 띠가 추천 구간입니다. 위치·바람·탄이 바뀌면 다시 안내하며, 설정의 「조준 도움」에서 끌 수 있습니다.</li>
           <li>낮은 둔턱은 걸어서 넘을 수 있습니다. 경사에 서면 몸과 포신이 함께 기울어집니다. 조작부의 큰 숫자는 몸 기준 조준각이고, 그 아래에 경사를 반영한 발사 방향과 각도가 표시됩니다.</li>
           <li><b>독구름</b> 안에서 자기 차례를 맞으면 피해를 입습니다. 구름 밖으로 움직여 피할 수 있으며, 같은 편도 피해를 입습니다.</li>
-          <li>기본은 <b>체력 800의 끝장전</b>입니다. 상대 편이 모두 쓰러져야 끝납니다. 20·30·40턴 판정전을 따로 고르면 제한 턴 뒤 체력 비율로 판정합니다. 함께 쓰러지면 무승부입니다.</li>
+          <li>장수마다 최대 체력이 다릅니다. 기본은 상대 편이 모두 쓰러져야 끝나는 끝장전입니다. 20·30·40턴 판정전은 제한 턴 뒤 체력 비율로 판정합니다. 함께 쓰러지면 무승부입니다.</li>
           <li><b>2:2</b>는 편마다 장수 둘이 번갈아 쏩니다(편 → 상대 편 → 편의 다른 장수 …). 같은 편도 폭발에 다치니 조심하세요. 한 편이 모두 쓰러지면 끝납니다.</li>
         </ul>
         <h3>포탄 속의 수학</h3>

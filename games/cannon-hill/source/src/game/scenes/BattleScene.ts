@@ -1,9 +1,10 @@
 import Phaser from 'phaser';
-import { DT, VIEW_H, WORLD_H, WORLD_W } from '../config/constants';
+import { CHAR_CENTER_Y, DT, VIEW_H, WORLD_H, WORLD_W } from '../config/constants';
 import { Battle } from '../combat/battle';
 import { AimAdvisor } from '../combat/aimAdvisor';
 import { ShotReview } from '../combat/shotReview';
-import type { BattleConfig, SimEvent } from '../combat/types';
+import type { BattleConfig, SimEvent, WeaponSlot } from '../combat/types';
+import { bodyArt } from '../art/artAssets';
 import { AIActor, AIPlanner } from '../ai/ai';
 import { mapDef } from '../data/maps';
 import { weapon } from '../data/weapons';
@@ -56,7 +57,6 @@ export class BattleScene extends Phaser.Scene {
   private camZ = 0.6;
   private free = false;
   private camMode: 'auto' | 'self' | 'enemy' | 'all' = 'auto';
-  private preparedPower: number | null = null;
   private userZoom = 1;
   private lastPhase = '';
   private lastBlast = { x: WORLD_W / 2, y: 800 };
@@ -82,7 +82,6 @@ export class BattleScene extends Phaser.Scene {
     this.t = 0;
     this.free = false;
     this.camMode = 'auto';
-    this.preparedPower = null;
     this.userZoom = 1;
     this.fighters = [];
     this.bottomFx = [];
@@ -138,8 +137,6 @@ export class BattleScene extends Phaser.Scene {
     input.reset();
     input.listeners = {
       weapon: (slot) => this.selectWeapon(slot),
-      power: (delta) => this.adjustPower(delta),
-      firePrepared: () => this.firePrepared(),
       pause: () => this.app.pause(),
       camera: () => this.cycleCamera(),
       recenter: () => this.recenter(),
@@ -387,28 +384,10 @@ export class BattleScene extends Phaser.Scene {
 
   // ───────── 입력 ─────────
 
-  selectWeapon(slot: 0 | 1): void {
+  selectWeapon(slot: WeaponSlot): void {
     const b = this.battle;
-    if (this.actors[b.current] || !b.isPlayerPhase()) return;
+    if (this.paused || this.actors[b.current] || !b.isPlayerPhase()) return;
     b.selectWeapon(slot);
-  }
-
-  adjustPower(delta: number | null, absolute = false): void {
-    const b = this.battle;
-    if (this.paused || !this.humanTurn() || !b.isPlayerPhase() || b.phase === 'CHARGE') return;
-    if (delta === null) {
-      this.preparedPower = null;
-      return;
-    }
-    const power = absolute ? delta : (this.preparedPower ?? b.cur.lastPower) + delta;
-    this.preparedPower = Phaser.Math.Clamp(Math.round(power * 10) / 10, 0, 100);
-  }
-
-  firePrepared(): boolean {
-    const b = this.battle;
-    if (this.preparedPower === null || this.paused || !this.humanTurn() || !b.isPlayerPhase() || b.phase === 'CHARGE') return false;
-    b.fireNow(this.preparedPower);
-    return true;
   }
 
   flip(): void {
@@ -433,6 +412,7 @@ export class BattleScene extends Phaser.Scene {
     }
     if (!b.isPlayerPhase()) return;
     const f = b.cur;
+    if (input.takeChargeCancellation()) b.cancelCharge();
     b.setMove(input.move);
     b.setAim(input.aimDir(f.angle <= 90 ? 1 : -1));
     b.setCharge(input.charge);
@@ -451,7 +431,6 @@ export class BattleScene extends Phaser.Scene {
           this.time.delayedCall(2200, () => ui.toast('화면을 끌면 둘러볼 수 있어요 · 「보기」로 전체 보기'));
           break;
         case 'turn': {
-          this.preparedPower = null;
           input.newTurn();
           const w = e.wind === 0 ? '바람 잔잔' : `바람 ${e.wind > 0 ? '→' : '←'} ${Math.abs(e.wind)}`;
           const pf = b.fighters[e.player]!;
@@ -465,6 +444,61 @@ export class BattleScene extends Phaser.Scene {
           const look = weapon(e.weaponId).look;
           this.effects.muzzle(e.x, e.y, e.angle, look);
           audio.fire(look);
+          break;
+        }
+        case 'ultimate': {
+          const w = weapon(e.weaponId);
+          ui.banner(w.name, `${character(b.fighters[e.owner]!.charId).name}의 궁극기`, 'ultimate-banner');
+          // Silhouettes stay distinct against both bright snow and dark forest arenas.
+          const marks = this.add.graphics().setPosition(e.x, e.y).setDepth(26);
+          marks.lineStyle(4, w.glow, 0.95);
+          switch (e.weaponId) {
+            case 'fullTide':
+              for (const side of [-1, 1]) {
+                for (const offset of [0, 15]) {
+                  marks.beginPath().arc(side * (38 + offset), 8, 23, Math.PI, Math.PI * 1.95).strokePath();
+                }
+              }
+              break;
+            case 'whiteSky':
+              for (const x of [-46, -23, 0, 23, 46]) {
+                const y = -53 - (46 - Math.abs(x)) / 2;
+                marks.fillStyle(w.glow, 0.9).fillTriangle(x - 4, y, x + 5, y, x - 2, y + 24);
+              }
+              break;
+            case 'beaconRain':
+              for (const lean of [-2, -1, 0, 1, 2]) {
+                marks.lineBetween(lean * 10, -28, lean * 24, -65 + Math.abs(lean) * 5);
+                marks.fillStyle(0xffe8a0).fillCircle(lean * 24, -65 + Math.abs(lean) * 5, 4);
+              }
+              break;
+            case 'cliffBreak':
+              for (const side of [-1, 1]) {
+                marks.beginPath().moveTo(side * 12, 12).lineTo(side * 32, 1)
+                  .lineTo(side * 40, 12).lineTo(side * 65, -3).strokePath();
+              }
+              break;
+            case 'inkAmbush':
+              for (const x of [-43, 0, 43]) {
+                marks.fillStyle(0x24172f).fillCircle(x, -40, 10).strokeCircle(x, -40, 10);
+                marks.fillStyle(0xf4dcff).fillTriangle(x - 6, -42, x + 6, -44, x - 1, -38);
+              }
+              break;
+          }
+          this.tweens.add({targets: marks, y: e.y - 14, scale: 1.18, alpha: 0, delay: 180, duration: 450, onComplete: () => marks.destroy()});
+          const seal = this.add.circle(e.x, e.y + 26, 36, w.glow, 0.10).setStrokeStyle(2, w.glow, 0.95).setDepth(25);
+          this.tweens.add({targets: seal, scaleX: 2.6, scaleY: 2.6, alpha: 0, duration: 390, onComplete: () => seal.destroy()});
+          audio.split();
+          break;
+        }
+        case 'shadow': {
+          const f = b.fighters[e.owner]!;
+          const art = bodyArt(this.textures, f.charId);
+          if (!art) break;
+          const echo = this.add.image(e.x, e.y + CHAR_CENTER_Y, art.key)
+            .setOrigin(art.originX, 1).setScale(art.scale * 1.05).setFlipX(e.facing < 0)
+            .setTintFill(0x8e5acd).setAlpha(.65).setDepth(21);
+          this.tweens.add({targets: echo, alpha: 0, y: echo.y - 14, duration: 420, onComplete: () => echo.destroy()});
           break;
         }
         case 'launch':
@@ -581,7 +615,7 @@ export class BattleScene extends Phaser.Scene {
     g.fillCircle(mx + Math.cos(a) * 38, my - Math.sin(a) * 38, 3.5);
     // 예상 궤적(실제 물리와 같은 계산, 처음 1.1초)
     if (this.app.settings.trajectory && this.humanTurn()) {
-      const power = b.phase === 'CHARGE' ? f.power : this.preparedPower ?? f.lastPower;
+      const power = b.phase === 'CHARGE' ? f.power : f.lastPower;
       const pts = b.previewPath(b.traitOf(f) === 'eagle' ? TRAIT.eaglePreview : 1.1, power);
       for (let i = 2; i < pts.length; i += 3) {
         const p = pts[i]!;
@@ -644,12 +678,13 @@ export class BattleScene extends Phaser.Scene {
       : b.isPlayerPhase() && b.cfg.mapId === 'bridge' ? '다리를 끊어 떨어뜨리세요 · 추락선을 넘으면 체력과 무관하게 탈락'
       : b.isPlayerPhase() && b.cfg.mapId === 'quarry' && b.cur.charId === 'driller' ? '발판 윗면에 맞혀 밑면까지 절단 · 상대 발밑과 지지점 사이를 노리세요'
       : b.isPlayerPhase() && b.cfg.mapId === 'quarry' && b.turnNo <= 2 ? '중앙 쪽으로 한 단씩 착지 · 마지막 단 밖은 추락'
-      : b.isPlayerPhase() && b.cur.charId === 'mudang' && b.cur.slot === 0 ? '고각 55~125° · 하강 중 500px 안에서 표적 포착'
-      : b.isPlayerPhase() && b.cur.charId === 'driller' ? '엄폐 뒤 출구 폭발 · 벽을 관통해 뒤에 숨은 적을 노리세요'
+      : b.isPlayerPhase() && b.cur.slot === 2 ? `${b.weaponOf(b.cur).name} · 스페이스바를 떼면 궁극기를 발사합니다`
+      : b.isPlayerPhase() && b.cur.charId === 'mudang' && b.cur.slot === 0 ? '고각 55~125° · 하강 중 570px 안에서 표적 포착'
+      : b.isPlayerPhase() && b.cur.charId === 'driller' && b.cur.slot === 0 ? '엄폐 뒤 출구 폭발 · 벽을 관통해 뒤에 숨은 적을 노리세요'
       : b.isPlayerPhase() && b.steadyReady(b.cur) ? '자리 잡은 포격 — 움직이지 않고 쏘면 피해 +15%'
       : '');
     const aimHint=this.advisor.update(b,this.app.settings.aimHints&&this.humanTurn());
-    this.app.ui.updateHud(b, { names: this.names, humanTurn: this.humanTurn(), status, aimHint, preparedPower: this.preparedPower });
+    this.app.ui.updateHud(b, { names: this.names, humanTurn: this.humanTurn(), status, aimHint });
   }
 
   // ───────── 시험용 손잡이(?qa=1) ─────────
@@ -677,7 +712,7 @@ export class BattleScene extends Phaser.Scene {
         for (let i = 0; i < n; i++) { t += 1000 / 60; g.step(t, 1000 / 60); }
       },
       step(n: number) { for (let i = 0; i < n; i++) scene.battle.step(); },
-      fire(angle: number, power: number, slot: 0 | 1 = 0) {
+      fire(angle: number, power: number, slot: WeaponSlot = 0) {
         const b = scene.battle;
         if (!b.isPlayerPhase()) return false;
         b.selectWeapon(slot);
@@ -685,7 +720,7 @@ export class BattleScene extends Phaser.Scene {
         b.fireNow(power);
         return true;
       },
-      aimFire(slot?: 0 | 1) {
+      aimFire(slot?: WeaponSlot) {
         const b = scene.battle;
         if (!b.isPlayerPhase()) return false;
         // 제자리에서 쏘는 계획만(보통 난이도는 움직이지 않는다), 오차 없이

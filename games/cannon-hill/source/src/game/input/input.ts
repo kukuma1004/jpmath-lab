@@ -1,3 +1,5 @@
+import type { WeaponSlot } from '../combat/types';
+
 /**
  * 키보드와 화면 단추가 같은 상태를 누른다. 전투 장면이 고정 걸음마다 읽어 간다.
  * A/D 이동, ←/→ 각도(왼쪽으로/오른쪽으로 돌리기), ↑/↓ 포신 올리기/내리기, Space 힘 모으기·발사,
@@ -9,9 +11,10 @@ export class InputState {
   held: Record<Hold, boolean> = { left: false, right: false, aimL: false, aimR: false, aimUp: false, aimDown: false, charge: false, camU: false, camD: false, camL: false, camR: false };
   /** 다음 턴에 Space를 누른 채로 넘어가면, 한 번 뗄 때까지 무시한다 */
   chargeLatch = false;
+  chargeCancelled = false;
   active = false;
   private onKey: ((e: KeyboardEvent) => void) | null = null;
-  listeners: { weapon?: (slot: 0 | 1) => void; power?: (delta: number | null) => void; firePrepared?: () => boolean; pause?: () => void; camera?: () => void; recenter?: () => void; zoom?: (d: number) => void } = {};
+  listeners: { weapon?: (slot: WeaponSlot) => void; pause?: () => void; camera?: () => void; recenter?: () => void; zoom?: (d: number) => void } = {};
 
   attach(): void {
     if (this.onKey) return;
@@ -23,22 +26,20 @@ export class InputState {
     this.onKey = (e: KeyboardEvent) => {
       if (!this.active) return;
       const tgt = e.target as HTMLElement | null;
-      if (tgt instanceof HTMLInputElement && (tgt.type !== 'range' || !['Space', 'KeyQ', 'KeyE', 'KeyR'].includes(e.code))) return;
+      if (tgt instanceof HTMLInputElement) return;
       if (tgt instanceof HTMLSelectElement) return;
       const down = e.type === 'keydown';
       const h = map[e.code];
       if (h) {
         e.preventDefault();
         if (e.repeat && down) return;
-        if (h === 'charge' && down && this.listeners.firePrepared?.()) return;
         this.set(h, down);
         return;
       }
       if (!down) return;
       if (e.code === 'Digit1' || e.code === 'Numpad1') { e.preventDefault(); this.listeners.weapon?.(0); }
       else if (e.code === 'Digit2' || e.code === 'Numpad2') { e.preventDefault(); this.listeners.weapon?.(1); }
-      else if (e.code === 'KeyQ' || e.code === 'KeyE') { e.preventDefault(); this.listeners.power?.((e.code === 'KeyQ' ? -1 : 1) * (e.shiftKey ? 1 : 0.1)); }
-      else if (e.code === 'KeyR') this.listeners.power?.(null);
+      else if (e.code === 'KeyR' || e.code === 'Digit3' || e.code === 'Numpad3') { e.preventDefault(); this.listeners.weapon?.(2); }
       else if (e.code === 'Escape' || e.code === 'KeyP') { e.preventDefault(); this.listeners.pause?.(); }
       else if (e.code === 'Tab') { e.preventDefault(); this.listeners.camera?.(); }
       else if (e.code === 'KeyC' || e.code === 'Home') { e.preventDefault(); this.listeners.recenter?.(); }
@@ -57,14 +58,27 @@ export class InputState {
   }
 
   reset(): void {
+    this.cancelCharge();
     for (const k of Object.keys(this.held) as Hold[]) this.held[k] = false;
     this.chargeLatch = false;
   }
 
   /** 턴이 바뀔 때: 누르고 있던 Space는 떼기 전까지 무시 */
   newTurn(): void {
+    this.chargeCancelled = false;
     this.chargeLatch = this.held.charge;
     this.held.left = this.held.right = false;
+  }
+
+  cancelCharge(): void {
+    if (this.held.charge) this.chargeCancelled = true;
+    this.set('charge', false);
+  }
+
+  takeChargeCancellation(): boolean {
+    const cancelled = this.chargeCancelled;
+    this.chargeCancelled = false;
+    return cancelled;
   }
 
   /** 화면 이동 방향(키보드 I/J/K/L) */

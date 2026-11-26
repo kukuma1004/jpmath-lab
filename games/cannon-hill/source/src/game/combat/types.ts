@@ -40,6 +40,7 @@ export interface FighterStats {
 }
 
 export type Team = 0 | 1;
+export type WeaponSlot = 0 | 1 | 2;
 
 export interface Fighter {
   idx: number;
@@ -54,7 +55,9 @@ export interface Fighter {
   power: number;
   lastPower: number;
   chargeDir: 1 | -1;
-  slot: 0 | 1;
+  slot: WeaponSlot;
+  turnsTaken: number;
+  ultimateUsed: boolean;
   hp: number;
   maxHp: number;
   moveLeft: number;
@@ -157,6 +160,8 @@ export type SimEvent =
   | { type: 'battleStart'; first: number }
   | { type: 'turn'; player: number; turnNo: number; wind: number; prevWind: number }
   | { type: 'fire'; owner: number; weaponId: string; x: number; y: number; angle: number; power: number; shot: number; wind: number }
+  | { type: 'ultimate'; owner: number; weaponId: string; x: number; y: number }
+  | { type: 'shadow'; owner: number; x: number; y: number; facing: 1 | -1 }
   | { type: 'launch'; id: number; weaponId: string }
   | { type: 'explode'; x: number; y: number; radius: number; weaponId: string; big: boolean }
   | { type: 'drillBreak'; x: number; y: number; kind: 'exit' | 'shelf' }

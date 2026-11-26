@@ -93,7 +93,7 @@ describe('층층 채석장의 네 단 절벽', () => {
     if (survives) {
       expect(foe!.onGround).toBe(true);
       expect(foe!.y).toBe(568);
-      expect(foe!.hp).toBeLessThan(800);
+      expect(foe!.hp).toBeLessThan(foe!.maxHp);
     } else {
       expect(foe!.deathCause).toBe('fall');
     }

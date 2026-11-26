@@ -89,7 +89,7 @@ export class BodiesView {
       }
       let label = this.cloudLabels.get(c.id);
       if (!label) {
-        label=this.scene.add.text(c.x,c.y-r*0.63,'독무 · 48/차례',{fontFamily:'sans-serif',fontSize:'13px',fontStyle:'bold',color:'#d8f5b1',stroke:'#25321d',strokeThickness:4}).setOrigin(0.5).setDepth(28);
+        label=this.scene.add.text(c.x,c.y-r*0.63,`독무 · ${c.damage}/차례`,{fontFamily:'sans-serif',fontSize:'13px',fontStyle:'bold',color:'#d8f5b1',stroke:'#25321d',strokeThickness:4}).setOrigin(0.5).setDepth(28);
         this.layer.add(label);this.cloudLabels.set(c.id,label);
       }
     }

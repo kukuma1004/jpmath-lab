@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { BASE_HP } from '../src/game/config/constants';
 import { Battle, defaultConfig } from '../src/game/combat/battle';
+import { character } from '../src/game/data/characters';
 import { Mat } from '../src/game/terrain/terrain';
 import { loadSettings, saveSettings } from '../src/game/settings';
 
@@ -15,19 +15,20 @@ function battle(team = false) {
 function until(b:Battle,ok:()=>boolean){for(let n=0;n<600&&!ok();n++)b.step();expect(ok()).toBe(true);}
 afterEach(()=>vi.unstubAllGlobals());
 
-describe('기본은 체력 800의 끝장전',()=>{
+describe('기본은 장수별 체력으로 싸우는 끝장전',()=>{
   it('40턴을 넘겨도 모두 살아 있으면 판정으로 끝내지 않는다',()=>{
     const b=battle();expect(b.cfg.turnLimit).toBe(0);
-    expect(b.fighters.every(f=>f.hp===BASE_HP&&f.maxHp===800)).toBe(true);
+    expect(b.fighters.map(f=>f.hp)).toEqual(b.fighters.map(f=>character(f.charId).hp));
+    expect(b.fighters[0]!.maxHp).not.toBe(b.fighters[1]!.maxHp);
     for(let n=0;n<45;n++){b.skipTurn();until(b,()=>b.phase==='AIM');}
     expect(b.turnNo).toBe(46);expect(b.winner).toBeNull();expect(b.endReason).toBe('');
   });
   it('2:2는 상대 한 명이 쓰러져도 계속하고 상대 전원이 쓰러지면 끝난다',()=>{
     const b=battle(true);
-    b.applyDamage(b.fighters[1]!,800,0,0,false,'blast',0);
+    b.applyDamage(b.fighters[1]!,b.fighters[1]!.maxHp,0,0,false,'blast',0);
     b.skipTurn();until(b,()=>b.phase==='AIM');
     expect(b.winner).toBeNull();expect(b.current).toBe(3);
-    b.applyDamage(b.fighters[3]!,800,0,0,false,'blast',0);
+    b.applyDamage(b.fighters[3]!,b.fighters[3]!.maxHp,0,0,false,'blast',0);
     b.skipTurn();until(b,()=>b.phase==='GAME_OVER');
     expect(b.winner).toBe(0);expect(b.endReason).toBe('hp');
   });

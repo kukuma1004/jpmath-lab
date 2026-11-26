@@ -3,7 +3,7 @@
  * radius: 피해 반경, carve: 흙을 파는 반경, rockMul: 암석·성벽을 파는 비율(1이면 흙과 같음)
  */
 export type ImpactBehavior = 'shell' | 'pierce' | 'drill' | 'bounce' | 'bounceBurst' | 'lightning' | 'split' | 'mega';
-export type FirePattern = 'single' | 'triple' | 'salvo';
+export type FirePattern = 'single' | 'triple' | 'salvo' | 'echo';
 
 export interface WeaponDef {
   id: string;
@@ -76,7 +76,7 @@ export const WEAPONS: Record<string, WeaponDef> = {
   jincheonroe: {
     id: 'jincheonroe', name: '집중 진천뢰', use: '초고위력 직격', desc: '작고 좁은 탄에 화력을 몰았습니다. 몸에 직접 맞히면 막대한 피해를 주고, 조금 빗나가면 피해가 빠르게 줄어듭니다.',
     behavior: 'mega', pattern: 'single',
-    radius: 28, carve: 22, rockMul: 0.8, damage: 310, directBonus: 1.65, knockback: 290,
+    radius: 28, carve: 22, rockMul: 0.8, damage: 278, directBonus: 1.59, knockback: 290,
     fuse: 0.22,
     look: 'megabomb', color: 0xb83335, glow: 0xffa17b, size: 6, renderScale: 0.65,
   },
@@ -109,10 +109,10 @@ export const WEAPONS: Record<string, WeaponDef> = {
     look: 'goblinfire', color: 0x6dff9e, glow: 0x2ee6a6, size: 8,
   },
   bujeok: {
-    id: 'bujeok', name: '추적 부적탄', use: '고각 추적 고정', desc: '55~125°로 높이 쏘면 내려올 때 500px 안의 적을 포착해 계속 추적합니다. 낮게 쏘면 130px 안에서만 살짝 휘고, 땅과 장애물에 닿으면 막힙니다.',
+    id: 'bujeok', name: '추적 부적탄', use: '고각 추적 고정', desc: '55~125°로 높이 쏘면 내려올 때 570px 안의 적을 포착해 빠르게 꺾입니다. 낮게 쏘면 160px 안에서만 살짝 휘고, 땅과 장애물에 닿으면 막힙니다.',
     behavior: 'shell', pattern: 'single',
     radius: 52, carve: 48, rockMul: 0.7, damage: 126, directBonus: 1.15, knockback: 230,
-    seekRange: 130, seekAcc: 1100, loftSeekRange: 500, seekTurnRate: 5.0,
+    seekRange: 160, seekAcc: 1250, loftSeekRange: 570, seekTurnRate: 6.2,
     look: 'paper', color: 0xf7d354, glow: 0xff5a5a, size: 7,
   },
   nakroe: {
@@ -125,14 +125,14 @@ export const WEAPONS: Record<string, WeaponDef> = {
   iron: {
     id: 'iron', name: '철갑 포탄', use: '암석 파괴', desc: '다른 탄과 같은 기본 궤도로 날아가며, 단단한 바위와 성벽도 강하게 부숩니다.',
     behavior: 'shell', pattern: 'single',
-    radius: 56, carve: 46, rockMul: 1.0, damage: 164, directBonus: 1.2, knockback: 300,
+    radius: 59, carve: 48, rockMul: 1.0, damage: 181, directBonus: 1.24, knockback: 300,
     look: 'iron', color: 0x59606b, glow: 0xffc36b, size: 7,
   },
   salvo: {
     id: 'salvo', name: '집중 연속 화포', use: '세 발 연속', desc: '힘을 조금씩 바꿔 세 발을 빠르게 쏩니다. 밀어내는 힘을 줄여 후속탄도 맞히기 쉽습니다.',
     behavior: 'shell', pattern: 'salvo',
-    radius: 51, carve: 30, rockMul: 0.75, damage: 84, directBonus: 1.15, knockback: 65,
-    count: 3, salvoGap: 0.16, salvoPowerStep: 0.65,
+    radius: 55, carve: 30, rockMul: 0.75, damage: 96, directBonus: 1.16, knockback: 44,
+    count: 3, salvoGap: 0.14, salvoPowerStep: 0.5,
     look: 'iron', color: 0x6b7380, glow: 0xff8b3d, size: 7,
   },
   foxfire: {
@@ -203,6 +203,58 @@ export const WEAPONS: Record<string, WeaponDef> = {
     look: 'drill', color: 0xe2b56d, glow: 0xffa654, size: 9, renderScale: 1.25,
   },
 };
+
+WEAPONS.waveShell = { ...WEAPONS.iron!, id: 'waveShell', name: '파도 포탄', use: '강한 밀어내기',
+    desc: '물결 폭발로 상대를 크게 밀어냅니다.', damage: 161, radius: 72, carve: 51, rockMul: 0.66, knockback: 325, glow: 0x61ddff };
+WEAPONS.skipWave = { ...WEAPONS.dokkaebiBomb!, id: 'skipWave', name: '되밀물탄', use: '낮게 두 번 튀기',
+    desc: '지면을 낮게 두 번 튀고 터집니다. 언덕의 비탈과 발판 끝을 노리세요.', damage: 159, radius: 67, carve: 53, restitution: 0.25, knockback: 320, look: "iron", glow: 7129599 };
+WEAPONS.frostBolt = { ...WEAPONS.arrow!, id: 'frostBolt', name: '서리 쇠화살', use: '정밀 직격',
+    desc: '가느다란 쇠화살이 흙을 얕게 파고들며 직접 맞힐 때 강합니다.', damage: 138, carve: 24, radius: 37, pierceDepth: 36, glow: 9039871 };
+WEAPONS.frostSplit = { ...WEAPONS.foxSplit!, id: 'frostSplit', name: '눈꽃탄', use: '세 갈래 낙하',
+    desc: '포탄이 정점에서 세 갈래로 갈라져 높은 곳과 낮은 곳을 함께 노립니다.', look: "arrow", glow: 8840957, childCount: 3, childSpread: 34, childDamage: 75, childRadius: 41, childCarve: 19 };
+WEAPONS.signalFlare = { ...WEAPONS.iron!, id: 'signalFlare', name: '봉화 화살', use: '가벼운 한 발',
+    desc: '폭발 반경이 적당한 불꽃 화살 한 발을 날립니다.', look: "rocket", radius: 56, damage: 165, carve: 40, knockback: 140, rockMul: 0.74, glow: 16745020 };
+WEAPONS.lanternSalvo = { ...WEAPONS.singijeon!, id: 'lanternSalvo', name: '연등탄', use: '세 발 연속',
+    desc: '힘을 조금씩 달리한 불꽃탄 세 발이 짧은 간격으로 날아갑니다.', damage: 80, salvoPowerStep: 1.4, salvoGap: 0.13, glow: 16759654 };
+WEAPONS.stoneChip = { ...WEAPONS.arrow!, id: 'stoneChip', name: '암편 포탄', use: '바위 관통',
+    desc: '단단한 암편이 흙과 바위를 파고들어 터집니다.', look: 'iron', pierceDepth: 60, radius: 50, carve: 45, rockMul: 1, damage: 174, knockback: 200, glow: 0xc5dc97 };
+WEAPONS.ledgeWedge = { ...WEAPONS.hwapo!, id: 'ledgeWedge', name: '쐐기 바위', use: '넓게 지형 깎기',
+    desc: '폭발로 발밑과 엄폐물을 크게 깎습니다.', radius: 66, carve: 91, rockMul: 1, damage: 123, knockback: 120, glow: 15907702 };
+WEAPONS.inkDart = { ...WEAPONS.arrow!, id: 'inkDart', name: '먹빛 침', use: '빠른 직격',
+    desc: '작은 먹빛 침이 얕은 지형을 뚫고, 직접 꽂히면 강합니다.', glow: 12751854, pierceDepth: 34, radius: 34, carve: 18, damage: 161, directBonus: 1.36 };
+WEAPONS.shadowPair = { ...WEAPONS.iron!, id: 'shadowPair', name: '그림자 협격', use: '본체와 그림자',
+    desc: '본체와 뒤쪽 그림자가 함께 쏴 두 경로를 만듭니다. 그림자와 포탄은 지형에 막힙니다.',
+    pattern: 'echo', look: 'arrow', count: 2, glow: 0xbc82f5, radius: 52, carve: 18, rockMul: 0.6, damage: 110, knockback: 45 };
+WEAPONS.royalBarrage = { ...WEAPONS.hwapo!, id: 'royalBarrage', name: '천지 대포', use: '대형 폭발',
+    desc: '거대한 포탄 한 발로 크게 폭발시켜 전장에 깊은 구덩이를 냅니다.', radius: 89, carve: 107, damage: 259, rockMul: 0.86, directBonus: 1.15, knockback: 290, look: "megabomb", glow: 16765298 };
+WEAPONS.skyArrows = { ...WEAPONS.samyeonsi!, id: 'skyArrows', name: '달가름 삼시', use: '세 발 정밀 관통',
+    desc: '촘촘하게 모인 세 화살이 한 자리를 꿰뚫습니다.', radius: 44, damage: 97, directBonus: 1.26, spreadDeg: 0.9, glow: 16772514 };
+WEAPONS.goblinCarnival = { ...WEAPONS.dokkaebiFire!, id: 'goblinCarnival', name: '도깨비 난장', use: '연쇄 폭발',
+    desc: '불덩이가 낮게 뛰면서 여러 번 터지고 끝에 크게 폭발합니다.', bounces: 3, restitution: 0.32, radius: 76, damage: 174, burstDamage: 88, burstRadius: 69, knockback: 220 };
+WEAPONS.fiveThunders = { ...WEAPONS.nakroe!, id: 'fiveThunders', name: '오방 천둥', use: '집중 벼락 다섯 줄',
+    desc: '착탄점에 벼락 다섯 줄을 차례로 집중시킵니다.', strikes: 5, strikeSpacing: 24, strikeDamage: 66, strikeRadius: 60, strikeGap: 0.13, strikeCarve: 32, damage: 70, glow: 12893439 };
+WEAPONS.ironBroadside = { ...WEAPONS.salvo!, id: 'ironBroadside', name: '용두 제압', use: '중함포 네 발',
+    desc: '흔들림을 줄인 중함포 네 발을 연이어 쏩니다.', count: 4, radius: 58, damage: 100, carve: 37, salvoGap: 0.13, salvoPowerStep: 0.6 };
+WEAPONS.foxComet = { ...WEAPONS.foxSplit!, id: 'foxComet', name: '칠성 여우불', use: '일곱 갈래 낙하',
+    desc: '하늘에서 여우불 일곱 갈래가 나뉘어 떨어집니다.', childCount: 7, childSpread: 46, childDamage: 75, childRadius: 48, glow: 15382527 };
+WEAPONS.rocketTempest = { ...WEAPONS.hwachaStorm!, id: 'rocketTempest', name: '신기전 폭풍', use: '집중 부채꼴',
+    desc: '신기전 열한 발이 부채꼴로 날아가 비탈을 훑습니다.', count: 11, spreadDeg: 1.67, radius: 38, damage: 40, glow: 16760174 };
+WEAPONS.greenDeluge = { ...WEAPONS.poisonCloud!, id: 'greenDeluge', name: '청록 대독무', use: '넓은 독구름',
+    desc: '넓은 독구름 안에서 자기 차례를 맞으면 62 피해를 받습니다. 독무는 네 차례까지 남습니다.', damage: 106, cloudTurns: 4, cloudRadius: 178, cloudDamage: 62 };
+WEAPONS.deepFault = { ...WEAPONS.drillBore!, id: 'deepFault', name: '대지 단층파', use: '긴 굴착·발판 붕괴',
+    desc: '두꺼운 벽을 뚫고 출구에서 폭발합니다. 얇은 발판에는 넓은 붕괴가 이어집니다.',
+    drillDepth: 350, drillRadius: 21, radius: 81, carve: 70, damage: 234,
+    drillExit: { gap: 18, damage: 290, radius: 116 }, shelfCut: { maxThickness: 96, radius: 142, followThrough: 'faultBreaker' } };
+WEAPONS.fullTide = { ...WEAPONS.waveShell!, id: 'fullTide', name: '만조 파도', use: '넓은 밀어내기',
+    desc: '넓은 파도가 폭발해 가장자리의 상대를 멀리 밀어냅니다.', radius: 98, damage: 218, carve: 65, knockback: 455, glow: 6351871 };
+WEAPONS.whiteSky = { ...WEAPONS.frostSplit!, id: 'whiteSky', name: '백야 빙우', use: '다섯 빙편 직하',
+    desc: '하늘에서 다섯 빙편이 갈라져 가까운 범위에 꽂힙니다.', childCount: 5, childSpread: 33, childDamage: 82, childRadius: 44, glow: 12712191 };
+WEAPONS.beaconRain = { ...WEAPONS.lanternSalvo!, id: 'beaconRain', name: '봉화 폭우', use: '다섯 발 연속',
+    desc: '불꽃탄 다섯 발이 거리를 조금씩 달리해 연달아 떨어집니다.', count: 5, damage: 87, radius: 55, salvoPowerStep: 1.1, salvoGap: 0.11, glow: 16750676 };
+WEAPONS.cliffBreak = { ...WEAPONS.ledgeWedge!, id: 'cliffBreak', name: '산허리 붕괴', use: '대형 분화구',
+    desc: '대형 암석탄으로 맞은 지점의 지반을 넓게 무너뜨립니다.', radius: 86, carve: 124, damage: 216, knockback: 200, look: "megabomb", glow: 16766105 };
+WEAPONS.inkAmbush = { ...WEAPONS.shadowPair!, id: 'inkAmbush', name: '삼영 매복', use: '세 위치 협공',
+    desc: '본체와 양쪽의 그림자 둘이 동시에 침을 던져 여러 궤도를 만듭니다.', count: 3, damage: 143, radius: 65, glow: 0xd5a2ff };
 
 export function weapon(id: string): WeaponDef {
   const w = WEAPONS[id];

@@ -1,5 +1,3 @@
-import { BASE_HP } from '../config/constants';
-
 /**
  * 장수마다 하나씩 있는 특기. 숫자는 TRAIT 표에서만 고친다.
  * steady: 움직이지 않고 쏘면 세게 / eagle: 긴 예상 궤적·직격 강화 / shove: 멀리 날려 보냄
@@ -34,6 +32,7 @@ export interface CharacterDef {
   moveMul: number; // 한 턴 이동 거리 배수
   normal: string;
   special: string;
+  ultimate: string;
   trait: { id: TraitId; name: string; desc: string };
   stats: { power: number; range: number; accuracy: number; defense: number; mobility: number };
   palette: { main: string; sub: string; accent: string; skin: string; dark: string };
@@ -43,7 +42,7 @@ export const CHARACTERS: CharacterDef[] = [
   {
     id: 'general', name: '화포장군', role: '폭발형',
     blurb: '두정갑을 입은 늙은 장군. 어깨에 멘 총통 한 방이면 언덕 하나가 사라진다.',
-    hp: BASE_HP, defense: 0.06, moveMul: 0.9, normal: 'hwapo', special: 'jincheonroe',
+    hp: 835, defense: 0.06, moveMul: 0.9, normal: 'hwapo', special: 'jincheonroe', ultimate: 'royalBarrage',
     trait: { id: 'steady', name: '자리 잡은 포격', desc: '이번 차례에 움직이지 않고 쏘면 피해가 15% 커지고 구덩이도 조금 더 크게 팝니다. 자리를 잡으면 장군 둘레가 금빛으로 빛납니다.' },
     stats: { power: 5, range: 5, accuracy: 2, defense: 3, mobility: 2 },
     palette: { main: '#b8322a', sub: '#2b3a67', accent: '#e8b64a', skin: '#e9b98f', dark: '#3a1712' },
@@ -51,7 +50,7 @@ export const CHARACTERS: CharacterDef[] = [
   {
     id: 'archer', name: '신궁', role: '정밀 저격형',
     blurb: '갓끈을 질끈 맨 활잡이. 깊이 파고드는 관통 화살로 엄폐 뒤를 꿰뚫는다.',
-    hp: BASE_HP, defense: 0, moveMul: 1.2, normal: 'arrow', special: 'samyeonsi',
+    hp: 750, defense: 0, moveMul: 1.2, normal: 'arrow', special: 'samyeonsi', ultimate: 'skyArrows',
     trait: { id: 'eagle', name: '명궁의 눈', desc: '예상 궤적이 두 배 넘게 길게 보이고, 몸에 직접 꽂히면 피해가 25% 더 붙습니다.' },
     stats: { power: 3, range: 2, accuracy: 5, defense: 1, mobility: 5 },
     palette: { main: '#f2efe6', sub: '#3f7cac', accent: '#1d1d22', skin: '#efc49c', dark: '#20262e' },
@@ -59,7 +58,7 @@ export const CHARACTERS: CharacterDef[] = [
   {
     id: 'dokkaebi', name: '도깨비', role: '변칙 공격형',
     blurb: '방망이를 휘두르는 장난꾸러기. 통통 튀는 폭탄으로 언덕 너머를 노린다.',
-    hp: BASE_HP, defense: 0.08, moveMul: 1.0, normal: 'dokkaebiBomb', special: 'dokkaebiFire',
+    hp: 820, defense: 0.08, moveMul: 1.0, normal: 'dokkaebiBomb', special: 'dokkaebiFire', ultimate: 'goblinCarnival',
     trait: { id: 'shove', name: '도깨비 힘', desc: '밀어내는 힘이 약 1.8배입니다. 발판 끝에 선 상대를 아래 단으로 밀어낼 때 강합니다.' },
     stats: { power: 4, range: 3, accuracy: 3, defense: 3, mobility: 3 },
     palette: { main: '#4a6b3a', sub: '#c46a2b', accent: '#f4d35e', skin: '#6fa3c9', dark: '#1f2d3d' },
@@ -67,7 +66,7 @@ export const CHARACTERS: CharacterDef[] = [
   {
     id: 'mudang', name: '무당', role: '마법형',
     blurb: '높이 날린 부적이 내려오며 적을 뒤쫓습니다. 다른 탄으로는 하늘의 벼락을 부릅니다.',
-    hp: BASE_HP, defense: 0.04, moveMul: 1.0, normal: 'bujeok', special: 'nakroe',
+    hp: 770, defense: 0.04, moveMul: 1.0, normal: 'bujeok', special: 'nakroe', ultimate: 'fiveThunders',
     trait: { id: 'blessing', name: '신령의 가호', desc: `자기 차례가 시작될 때 자신과 가까이 선 같은 편의 체력을 ${TRAIT.blessHeal}씩 채웁니다. 1번 부적은 고각으로 쏘면 하강 중 멀리 있는 적을 추적합니다.` },
     stats: { power: 4, range: 4, accuracy: 4, defense: 2, mobility: 3 },
     palette: { main: '#c8323c', sub: '#2f5d9c', accent: '#f7d354', skin: '#f0c7a0', dark: '#2a1420' },
@@ -75,15 +74,15 @@ export const CHARACTERS: CharacterDef[] = [
   {
     id: 'turtle', name: '거북선 장수', role: '방어형',
     blurb: '작은 거북선을 끌고 다니는 수군 장수. 느리지만 쇠지붕이 웬만한 포탄을 받아낸다.',
-    hp: BASE_HP, defense: 0.20, moveMul: 0.72, normal: 'iron', special: 'salvo',
+    hp: 920, defense: 0.20, moveMul: 0.82, normal: 'iron', special: 'salvo', ultimate: 'ironBroadside',
     trait: { id: 'ironclad', name: '철갑 선체', desc: '폭발에 덜 밀려나고, 떨어지거나 깔리거나 낙석에 맞는 피해가 절반입니다.' },
-    stats: { power: 3, range: 3, accuracy: 4, defense: 5, mobility: 1 },
+    stats: { power: 4, range: 3, accuracy: 4, defense: 5, mobility: 2 },
     palette: { main: '#7a4a2a', sub: '#2c4f6e', accent: '#d9a441', skin: '#e3b48c', dark: '#2b1d14' },
   },
   {
     id: 'gumiho', name: '구미호', role: '교란형',
     blurb: '아홉 꼬리를 펼친 여우. 바람을 타는 여우불이 하늘에서 갈라져 쏟아진다.',
-    hp: BASE_HP, defense: 0, moveMul: 1.25, normal: 'foxfire', special: 'foxSplit',
+    hp: 735, defense: 0, moveMul: 1.25, normal: 'foxfire', special: 'foxSplit', ultimate: 'foxComet',
     trait: { id: 'foxstep', name: '사뿐한 여우걸음', desc: '빠르게 자리를 옮기고 낙하 피해를 40% 덜 받습니다. 두 종류 여우불은 매 차례 자유롭게 고릅니다.' },
     stats: { power: 4, range: 4, accuracy: 3, defense: 1, mobility: 5 },
     palette: { main: '#f6eee8', sub: '#e48aa8', accent: '#7fd8ff', skin: '#f7d6c2', dark: '#3b2436' },
@@ -91,7 +90,7 @@ export const CHARACTERS: CharacterDef[] = [
   {
     id: 'hwacha', name: '화차장인', role: '다연발 포격형',
     blurb: '등에 신기전을 멘 발명가. 세 발을 모아 쏘거나 아홉 발로 비탈을 훑습니다.',
-    hp: BASE_HP, defense: 0.02, moveMul: 0.95, normal: 'singijeon', special: 'hwachaStorm',
+    hp: 790, defense: 0.02, moveMul: 0.95, normal: 'singijeon', special: 'hwachaStorm', ultimate: 'rocketTempest',
     trait: { id: 'engineer', name: '화약 배합', desc: '신기전은 암석과 성벽을 25% 더 잘 팝니다. 1번은 세 발 집중, 2번은 아홉 발 넓은 포격입니다.' },
     stats: { power: 5, range: 4, accuracy: 3, defense: 2, mobility: 3 },
     palette: { main: '#cb7635', sub: '#3d426d', accent: '#e9c268', skin: '#efc097', dark: '#3a2424' },
@@ -99,7 +98,7 @@ export const CHARACTERS: CharacterDef[] = [
   {
     id: 'alchemist', name: '독술사', role: '독구름 견제형',
     blurb: '독과 약을 함께 다루는 산속 도사. 항아리로 한 방, 독구름으로 자리를 빼앗습니다.',
-    hp: BASE_HP, defense: 0.08, moveMul: 0.88, normal: 'venomJar', special: 'poisonCloud',
+    hp: 805, defense: 0.08, moveMul: 0.88, normal: 'venomJar', special: 'poisonCloud', ultimate: 'greenDeluge',
     trait: { id: 'antidote', name: '백독불침', desc: '독구름 피해를 60% 덜 받습니다. 독구름은 장수의 차례가 시작될 때 작용하며, 바깥으로 걸어 나오면 피할 수 있습니다.' },
     stats: { power: 3, range: 5, accuracy: 3, defense: 3, mobility: 2 },
     palette: { main: '#275f58', sub: '#6d3b79', accent: '#b4df52', skin: '#e6b18b', dark: '#1b3030' },
@@ -107,10 +106,50 @@ export const CHARACTERS: CharacterDef[] = [
   {
     id: 'driller', name: '굴착대장', role: '굴착 붕괴형',
     blurb: '엄폐물과 발판은 드릴로 뚫고, 드러난 상대는 세 갈래 철편으로 맞히는 광산 대장입니다.',
-    hp: BASE_HP, defense: 0.12, moveMul: 0.94, normal: 'drillBore', special: 'ironScatter',
+    hp: 850, defense: 0.12, moveMul: 0.94, normal: 'drillBore', special: 'ironScatter', ultimate: 'deepFault',
     trait: { id: 'hardhat', name: '튼튼한 안전모', desc: '낙하·깔림·낙석 피해를 25% 덜 받습니다. 채석장에서는 1번 탄으로 발판을 끊어 상대를 떨어뜨릴 수 있습니다.' },
     stats: { power: 3, range: 5, accuracy: 4, defense: 4, mobility: 3 },
     palette: { main: '#344c68', sub: '#79523a', accent: '#e3ba6a', skin: '#e2ad85', dark: '#202a35' },
+  },
+  {
+    id: 'haewol', name: '해월', role: '파도·밀쳐내기',
+    blurb: '파도총을 든 수군 지휘관. 갑판 끝에 몰린 상대를 물결로 밀어냅니다.',
+    hp: 845, defense: 0.10, moveMul: 0.96, normal: 'waveShell', special: 'skipWave', ultimate: 'fullTide',
+    trait: { id: 'ironclad', name: '갑판 버티기', desc: '폭발에 덜 밀려나며 낙하·깔림·낙석 피해가 절반입니다.' },
+    stats: {power:3, range:4, accuracy:3, defense:4, mobility:3},
+    palette: {main:'#174968', sub:'#3b737d', accent:'#e2c285', skin:'#e6b28d', dark:'#142a39'},
+  },
+  {
+    id: 'seolmae', name: '설매', role: '서리 정밀 사격',
+    blurb: '눈 덮인 산길을 지키는 사수. 정밀한 석궁과 하늘에서 갈라지는 서릿발을 씁니다.',
+    hp: 745, defense: 0.02, moveMul: 1.15, normal: 'frostBolt', special: 'frostSplit', ultimate: 'whiteSky',
+    trait: { id: 'eagle', name: '눈밭의 눈', desc: '예상 궤적이 두 배 넘게 길게 보이고 직접 맞히면 피해가 25% 더 붙습니다.' },
+    stats: {power:3, range:3, accuracy:5, defense:2, mobility:4},
+    palette: {main:'#dcecec', sub:'#507b9e', accent:'#adf0ff', skin:'#edc1aa', dark:'#273347'},
+  },
+  {
+    id: 'yeonhwa', name: '연화', role: '불꽃 연속 포격',
+    blurb: '봉화대의 신호 장수. 연달아 날리는 불꽃 신호탄으로 좁은 자리를 몰아칩니다.',
+    hp: 775, defense: 0.04, moveMul: 1.05, normal: 'signalFlare', special: 'lanternSalvo', ultimate: 'beaconRain',
+    trait: { id: 'engineer', name: '봉화 화약', desc: '암석과 성벽을 25% 더 잘 깎는 화약을 씁니다.' },
+    stats: {power:4, range:3, accuracy:4, defense:2, mobility:4},
+    palette: {main:'#b53035', sub:'#67382d', accent:'#ffca6b', skin:'#e1a889', dark:'#391c26'},
+  },
+  {
+    id: 'dolbi', name: '돌비', role: '바위·지형 파괴',
+    blurb: '벼랑의 성벽을 쌓아 온 석공 대장. 튼튼한 갑옷을 입고 무거운 암편탄으로 엄폐물을 깨뜨립니다.',
+    hp: 890, defense: 0.14, moveMul: 0.84, normal: 'stoneChip', special: 'ledgeWedge', ultimate: 'cliffBreak',
+    trait: { id: 'hardhat', name: '석공 갑옷', desc: '낙하·깔림·낙석 피해를 25% 덜 받습니다.' },
+    stats: {power:4, range:5, accuracy:2, defense:4, mobility:2},
+    palette: {main:'#414f4a', sub:'#697c62', accent:'#cc9565', skin:'#cb9676', dark:'#242b2b'},
+  },
+  {
+    id: 'mukyeong', name: '묵영', role: '그림자 암살',
+    blurb: '먹빛 안개 속에서 나타나는 척후. 그림자와 함께 다른 위치에서 침을 던집니다.',
+    hp: 730, defense: 0.02, moveMul: 1.23, normal: 'inkDart', special: 'shadowPair', ultimate: 'inkAmbush',
+    trait: { id: 'foxstep', name: '소리 없는 착지', desc: '이동이 빠르며 낙하 피해를 40% 덜 받습니다.' },
+    stats: {power:4, range:2, accuracy:4, defense:2, mobility:5},
+    palette: {main:'#332342', sub:'#57436e', accent:'#d5a2ff', skin:'#e2b59c', dark:'#1b1826'},
   },
 ];
 

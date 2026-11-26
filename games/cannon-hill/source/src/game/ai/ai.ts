@@ -1,6 +1,6 @@
 import { DT, WALK_SPEED } from '../config/constants';
 import { Battle, type DryResult } from '../combat/battle';
-import type { Difficulty, Fighter, Phase } from '../combat/types';
+import type { Difficulty, Fighter, Phase, WeaponSlot } from '../combat/types';
 import { Rng, clamp, hashString } from '../utils/rng';
 
 /**
@@ -31,7 +31,7 @@ const LEVELS: Record<Difficulty, Level> = {
 };
 
 export interface AIPlan {
-  slot: 0 | 1;
+  slot: WeaponSlot;
   angle: number;
   power: number;
   walkDir: -1 | 0 | 1;
@@ -42,7 +42,7 @@ export interface AIPlan {
 
 interface Cand {
   pos: number;
-  slot: 0 | 1;
+  slot: WeaponSlot;
   angle: number;
   power: number;
   score: number;
@@ -95,7 +95,7 @@ export class AIPlanner {
   sims = 0;
   private it: Generator<void, AIPlan, void>;
 
-  constructor(private b: Battle, private idx: number, private diff: Difficulty, private forceSlots?: (0 | 1)[]) {
+  constructor(private b: Battle, private idx: number, private diff: Difficulty, private forceSlots?: WeaponSlot[]) {
     this.it = this.search();
   }
 
@@ -152,7 +152,7 @@ export class AIPlanner {
         if (p) positions.push(p);
       }
     }
-    const slots: (0 | 1)[] = [0, 1];
+    const slots: WeaponSlot[] = b.ultimateReady(me) ? [0, 1, 2] : [0, 1];
     if (this.forceSlots) slots.splice(0, slots.length, ...this.forceSlots);
     const gasPenalty = positions.map((p) => b.clouds.reduce((sum, c) =>
       sum + ((c.turns[me.idx] ?? 0) > 0 && b.inCloud({ ...me, x: p.x, y: p.y }, c) ? c.damage * 1.4 : 0), 0));
@@ -172,6 +172,7 @@ export class AIPlanner {
       const r = b.dryShot(this.idx, c.slot, c.angle, c.power, { x: pos.x, y: pos.y });
       this.sims++;
       c.score = scoreDry(r, allies, foes) - gasPenalty[c.pos]!;
+      if (c.slot === 2) c.score -= 32;
       if (pos.dir !== 0) c.score -= 6; // 같은 값이면 덜 움직인다
       return c;
     };

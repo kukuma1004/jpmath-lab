@@ -27,7 +27,7 @@ describe('무당의 고각 하강 유도',()=>{
       for(const p of b.projectiles)if((p.seekTarget??-1)>=0){acquired=true;expect(p.lofted).toBe(true);turned ||= Math.abs(p.vx)>400;}
     }
     expect(acquired).toBe(true);expect(turned).toBe(true);
-    expect(800-b.fighters[1]!.hp).toBeCloseTo(predicted.damage[1]!,0);
+    expect(b.fighters[1]!.maxHp-b.fighters[1]!.hp).toBeCloseTo(predicted.damage[1]!,0);
   });
   it('상승 중에는 유도하지 않고 같은 편을 표적으로 삼지 않는다',()=>{
     const b=flat();const p=b.newProjectile(0,1,'bujeok',1450,650,240,-600);
@@ -56,7 +56,7 @@ describe('무당의 고각 하강 유도',()=>{
     for(let y=200;y<450;y++)for(let x=740;x<760;x++)b.terrain.set(x,y,Mat.Core);
     const p=b.newProjectile(0,1,'bujeok',1470,700,200,-500);p.vy=200;
     for(let n=0;n<300&&!p.dead;n++)b.stepProjectile(p,DT);
-    expect(p.dead).toBe(true);expect(p.x).toBeLessThan(1525);expect(b.fighters[1]!.hp).toBe(800);
+    expect(p.dead).toBe(true);expect(p.x).toBeLessThan(1525);expect(b.fighters[1]!.hp).toBe(b.fighters[1]!.maxHp);
   });
 });
 
@@ -94,7 +94,7 @@ describe('굴착대장의 실제 굴착',()=>{
     b.fireNow(80);
     for (let i = 0; i < 360 && b.projectiles.length; i++) b.step();
     expect(b.projectiles).toHaveLength(0);
-    expect(800 - b.fighters[1]!.hp).toBeCloseTo(dry.damage[1]!, 0);
+    expect(b.fighters[1]!.maxHp - b.fighters[1]!.hp).toBeCloseTo(dry.damage[1]!, 0);
   });
   it('저장에 남은 지반 붕괴탄은 복원 뒤에도 기존 굴착을 끝낸다',()=>{
     const {b}=drill('faultBreaker');
@@ -138,7 +138,7 @@ describe('굴착대장의 명중용 철편', () => {
       expect(Math.hypot(p.vx, p.vy)).toBeCloseTo(MAX_LAUNCH_SPEED * power / 100, 5);
     }
     for (let n = 0; n < 360 && b.projectiles.length; n++) b.step();
-    expect(b.fighters[1]!.hp).toBe(680);
+    expect(b.fighters[1]!.maxHp - b.fighters[1]!.hp).toBe(120);
   });
 
   it('철편은 벽 앞에서 터지고 땅속으로 들어가지 않는다', () => {

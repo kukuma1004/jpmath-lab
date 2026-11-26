@@ -19,6 +19,11 @@ export const PIVOT: Record<string, { x: number; y: number }> = {
   hwacha: { x: 7, y: -27 },
   alchemist: { x: 6, y: -24 },
   driller: { x: 9, y: -25 },
+  haewol: { x: 5, y: -24 },
+  seolmae: { x: 5, y: -25 },
+  yeonhwa: { x: 6, y: -24 },
+  dolbi: { x: 4, y: -25 },
+  mukyeong: { x: 5, y: -25 },
 };
 
 type C = CanvasRenderingContext2D;
@@ -751,12 +756,69 @@ function drillerWeapon(ctx:C):void {
   rr(ctx,0,6,9,9,2);fillStroke(ctx,'#69482f');
 }
 
-const BODY: Record<string, (c: C, m: Mood) => void> = { general, archer, dokkaebi, mudang, turtle, gumiho, hwacha, alchemist, driller };
+function tideCannon(ctx: C): void {
+  rr(ctx, -8, -5, 41, 11, 4); fillStroke(ctx, vgrad(ctx, -6, 6, '#68acb5', '#193a5b'));
+  for (const x of [-4, 16, 30]) {
+    rr(ctx, x, -7, 4, 15, 1); fillStroke(ctx, '#e1b563', 1);
+  }
+  ellipse(ctx, 34, 0, 4, 8); fillStroke(ctx, '#daba70');
+  ellipse(ctx, 35, 0, 1.8, 5); fillStroke(ctx, '#173544', .8);
+}
+
+function frostCrossbow(ctx: C): void {
+  rr(ctx, -8, -2, 39, 6, 2); fillStroke(ctx, '#81583e');
+  ctx.beginPath(); ctx.moveTo(9,-11); ctx.lineTo(27,0); ctx.lineTo(10,12);
+  ctx.lineTo(18,1); ctx.closePath(); fillStroke(ctx, '#a0d4e3');
+  ctx.beginPath(); ctx.moveTo(9,-11); ctx.lineTo(-2,0); ctx.lineTo(10,12);
+  outline(ctx, .9, '#d4eff9'); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(-2,-1); ctx.lineTo(33,-1); outline(ctx, 1.7); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(30,-4); ctx.lineTo(40,-1); ctx.lineTo(30,2);
+  ctx.closePath(); fillStroke(ctx, '#dbf6ff', .8);
+}
+
+function signalLauncher(ctx: C): void {
+  rr(ctx,-6,0,26,7,3); fillStroke(ctx,'#713c2b');
+  for (const [x,y] of [[-4,-8],[2,-3],[7,2]]) {
+    rr(ctx,x,y,26,6,2); fillStroke(ctx,'#ad3933');
+    rr(ctx,x+19,y-1,5,8,1); fillStroke(ctx,'#e7ae5b',1);
+  }
+  ctx.beginPath(); ctx.moveTo(-4,-5); ctx.quadraticCurveTo(-9,-10,-5,-12);
+  outline(ctx,1.6,'#ffca61'); ctx.stroke();
+}
+
+function stoneBreaker(ctx: C): void {
+  rr(ctx,-7,-3,36,7,2); fillStroke(ctx,'#a66e48');
+  rr(ctx,12,-8,15,16,2); fillStroke(ctx,vgrad(ctx,-8,8,'#9eaa98','#47584f'));
+  ctx.beginPath(); ctx.moveTo(24,-11); ctx.lineTo(33,-8); ctx.lineTo(41,0);
+  ctx.lineTo(32,8); ctx.lineTo(24,11); ctx.closePath(); fillStroke(ctx,'#86918b');
+  ctx.beginPath(); ctx.moveTo(25,-7); ctx.lineTo(39,0); ctx.lineTo(26,2);
+  ctx.closePath(); fillStroke(ctx,'#c4c9b9',.8);
+  rr(ctx,14,-9,4,18,1); fillStroke(ctx,'#cc9861',1);
+}
+
+function shadowBlade(ctx: C): void {
+  rr(ctx,-6,-2.5,20,5,2); fillStroke(ctx,'#633f74',1);
+  for (const x of [-2,3,8]) {
+    ctx.fillStyle='#e8bb87'; ctx.fillRect(x,-2,1.5,4);
+  }
+  ctx.beginPath(); ctx.moveTo(11,-8); ctx.lineTo(17,-5); ctx.lineTo(16,5);
+  ctx.lineTo(11,8); ctx.lineTo(13,0); ctx.closePath(); fillStroke(ctx,'#d5aa73',1);
+  ctx.beginPath(); ctx.moveTo(15,-4); ctx.quadraticCurveTo(29,-2,42,-12);
+  ctx.quadraticCurveTo(33,4,16,5); ctx.closePath();
+  fillStroke(ctx,vgrad(ctx,-11,5,'#f0e6fb','#877496'),1.3);
+  ctx.beginPath(); ctx.moveTo(17,2); ctx.quadraticCurveTo(30,0,37,-6);
+  outline(ctx,1,'#f5e9ff'); ctx.stroke();
+}
+
+const BODY: Record<string, (c: C, m: Mood) => void> = { general, archer, dokkaebi, mudang, turtle, gumiho, hwacha, alchemist, driller,
+  haewol: general, seolmae: archer, yeonhwa: hwacha, dolbi: driller, mukyeong: mudang,
+};
 const WEAPON: Record<string, (c: C) => void> = {
   general: generalWeapon, archer: archerWeapon, dokkaebi: dokkaebiWeapon,
   mudang: mudangWeapon, turtle: turtleWeapon, gumiho: gumihoWeapon,
   hwacha: hwachaWeapon, alchemist: alchemistWeapon,
   driller: drillerWeapon,
+  haewol: tideCannon, seolmae: frostCrossbow, yeonhwa: signalLauncher, dolbi: stoneBreaker, mukyeong: shadowBlade,
 };
 
 export function drawBody(ctx: C, id: string, mood: Mood): void {
