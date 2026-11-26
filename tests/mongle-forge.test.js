@@ -4,6 +4,29 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const Forge = require('../games/mongle-forge/forge-engine.js');
 
+test('higher enhancement odds start at +101 and match the actual roll and saved pity', () => {
+  const now = Date.UTC(2026, 10, 26, 1);
+  const seed = (level, extra) => Forge.restore({ version: 2, level, shards: '9000000000',
+    enchantments: ['lunar'], magic: { id: 'fire', peak: 100 }, ...extra }, now);
+  for (const [level, chance] of [[99, 800], [100, 1500], [104, 1300], [109, 1050], [110, 1000], [10000n, 1000]]) {
+    const quote = Forge.preview(seed(level), now);
+    assert.equal(quote.success, chance);
+    assert.equal(quote.success + quote.reset + quote.shatter, 10000);
+  }
+  const saved = seed(100, { pity: { 101: 800 } });
+  assert.equal(Forge.preview(Forge.restore(JSON.parse(Forge.serialize(saved)), now), now).success, 2300);
+  assert.equal(Forge.preview(seed(100, { pity: { 101: 9000 } }), now).success, 9500);
+  const successful = seed(100, { protections: { 101: true } });
+  assert.equal(Forge.act(successful, now, () => .14995).kind, 'success');
+  assert.equal(successful.level, 101n);
+  assert.equal(successful.protections[101], true);
+  const failed = seed(100, { protections: { 101: true } });
+  assert.equal(Forge.act(failed, now, () => .15).kind, 'protected');
+  assert.equal(failed.level, 99n);
+  assert.equal(failed.pity[101], 800);
+  assert.equal(failed.protections[101], undefined);
+});
+
 test('a rare bound magic can awaken only on a successful +100-or-higher normal enhancement', () => {
   const now=Date.UTC(2026,10,24,0),funds=(10n**80n).toString();
   const below=Forge.restore({level:98,shards:funds},now);let draws=0;

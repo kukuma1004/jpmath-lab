@@ -1,7 +1,7 @@
 'use strict';
 
 const Forge = (() => {
-  const clientRevision = 2026112601;
+  const clientRevision = 2026112602;
   const rankingProtocol = 'forge-current-1';
   const legacySaveKey = 'jp-math-lab:mongle-forge:v1';
   const backupKey = legacySaveKey + ':before-infinite';
@@ -634,13 +634,20 @@ const Forge = (() => {
     return credited;
   }
 
+  function enhancementBaseChance(target) {
+    if (target <= 32n) return chances[Number(target - 1n)];
+    if (target >= 111n) return 1000;
+    if (target >= 101n) return 1500 - Number(target - 101n) * 50;
+    return Math.max(800, 2000 - Number(target - 32n) * 25);
+  }
+
   function preview(state, now = Date.now()) {
     if (state.broken) {
       const quote = priceQuote(reforgeCost(state), now);
       return { ...quote, token: state.generation + ':reforge:' + quote.cost, target: 0n, success: 0, reset: 0, shatter: 0, bonus: 0 };
     }
     const target = state.level + 1n;
-    const base = target <= 32n ? chances[Number(target - 1n)] : Math.max(800, 2000 - Number(target - 32n > 48n ? 48n : target - 32n) * 25);
+    const base = enhancementBaseChance(target);
     const bonus = state.pity[target.toString()] ?? 0;
     const success = base === 10000 ? base : Math.min(9500, base + bonus);
     const failure = 10000 - success;
