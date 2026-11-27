@@ -20,12 +20,14 @@ import { audio } from '../audio/audio';
 import { particleScale } from '../settings';
 import type { App } from '../app';
 import { playerLabel, type Mode } from '../ui/ui';
+import type { OnlineClient } from '../online/client';
 
 const DEG = Math.PI / 180;
 
 export interface BattleData {
   cfg: BattleConfig;
   mode: Mode;
+  online?: OnlineClient;
 }
 
 export class BattleScene extends Phaser.Scene {
@@ -36,6 +38,7 @@ export class BattleScene extends Phaser.Scene {
   names: string[] = ['1P', '2P'];
   paused = false;
   private firePresses = 0;
+  private online: OnlineClient | null = null;
   timeScale = 1;
   private acc = 0;
   private bgCam!: Phaser.Cameras.Scene2D.Camera;
@@ -79,7 +82,9 @@ export class BattleScene extends Phaser.Scene {
     this.app = this.registry.get('app') as App;
     this.mode = data.mode;
     this.battle = new Battle(data.cfg);
-    this.names = this.battle.fighters.map(f => playerLabel(data.mode, f.team, !!data.cfg.freeForAll));
+    this.online=data.online??null;
+    this.online?.prepare(this.battle);
+    this.names = this.online?.room?.names ?? this.battle.fighters.map(f => playerLabel(data.mode, f.team, !!data.cfg.freeForAll));
     this.paused = false;
     this.firePresses = 0;
     this.acc = 0;
@@ -463,27 +468,44 @@ export class BattleScene extends Phaser.Scene {
 
   pressFire(): void {
     if (this.paused || !this.humanTurn() || !this.battle.isPlayerPhase()) return;
+    if (this.online) {
+      this.online.send(this.battle.turnNo,{kind:'fire',step:this.battle.stepNo});
+      return;
+    }
     this.firePresses = Math.min(this.battle.phase === 'CHARGE' ? 1 : 2, this.firePresses + 1);
   }
 
   cancelFire(): void {
     this.firePresses = 0;
+    if (this.online) {
+      if (this.humanTurn()) {
+        this.online.input(this.battle.turnNo,0,0);
+        this.online.send(this.battle.turnNo,{kind:'cancel'});
+      }
+      return;
+    }
     if (this.humanTurn()) this.battle.cancelCharge();
   }
 
   selectWeapon(slot: WeaponSlot): void {
     const b = this.battle;
-    if (this.paused || this.actors[b.current] || !b.isPlayerPhase()) return;
+    if (this.paused || !this.humanTurn() || !b.isPlayerPhase()) return;
+    if (this.online) { this.online.send(b.turnNo,{kind:'slot',slot}); return; }
     b.selectWeapon(slot);
   }
 
   flip(): void {
     const b = this.battle;
-    if (this.actors[b.current] || !b.isPlayerPhase() || b.phase === 'CHARGE') return;
+    if (this.paused || !this.humanTurn() || !b.isPlayerPhase() || b.phase === 'CHARGE') return;
+    if (this.online) { this.online.send(b.turnNo,{kind:'flip'}); return; }
     b.setAngle(180 - b.cur.angle);
   }
 
   private humanTurn(): boolean {
+    if (this.online) {
+      const room=this.online.room;
+      return !!room?.opponentConnected && !this.online.error && this.battle.current===room.you;
+    }
     return !this.actors[this.battle.current];
   }
 
@@ -678,9 +700,10 @@ export class BattleScene extends Phaser.Scene {
         case 'gameOver': {
           const w = e.winner;
           for (const f of b.fighters) if (f.team === w && f.alive) this.effects.confetti(f.x, f.y - 40);
-          const iWon = this.mode === 'local' ? w !== -1 : w === 0;
+          const you = this.online?.room?.you;
+          const iWon = you !== undefined ? w===you : this.mode === 'local' ? w !== -1 : w === 0;
           this.time.delayedCall(220, () => (iWon ? audio.victory() : audio.defeat()));
-          this.resultTimer = this.time.delayedCall(900, () => this.app.ui.showResult(b, this.names));
+          this.resultTimer = this.time.delayedCall(900, () => this.app.ui.showResult(b, this.names, this.online?.room??undefined));
           break;
         }
         default:
@@ -736,7 +759,12 @@ export class BattleScene extends Phaser.Scene {
     const dt = Math.min(0.1, delta / 1000); // 탭에서 돌아와도 폭주하지 않게
     const b = this.battle;
     this.t += dt;
-    if (!this.paused) {
+    if (this.online) {
+      if (!this.paused && this.humanTurn() && b.isPlayerPhase())
+        this.online.input(b.turnNo,input.move,input.aimDir(b.cur.angle<=90?1:-1));
+      const backlog=(this.online.room?.step??0)-b.stepNo;
+      this.online.advance(b,backlog>120?20:backlog>8?3:1);
+    } else if (!this.paused) {
       const fastSettle = !b.projectiles.length && !b.scheduled.length &&
         (b.phase === 'EXPLOSION' || b.phase === 'TERRAIN_COLLAPSE' || b.phase === 'PHYSICS_SETTLING');
       const rate = this.timeScale * (fastSettle ? 2.4 : 1);
@@ -771,7 +799,11 @@ export class BattleScene extends Phaser.Scene {
 
     const actor = this.actors[b.current];
     const previousShot = !actor && b.isPlayerPhase() ? this.shotReview.summary(b) : '';
-    const status = actor && b.isPlayerPhase()
+    const onlineStatus = this.online && b.winner===null
+      ? this.online.error || (!this.online.room ? '대전 연결이 종료됐어요.' : !this.online.room.opponentConnected ? '상대의 재접속을 기다리는 중…' :
+        b.isPlayerPhase() && !this.humanTurn() ? '상대가 조준하는 중…' : '')
+      : '';
+    const status = onlineStatus || (actor && b.isPlayerPhase()
       ? actor.stage === 'think' ? `${character(b.cur.charId).name} AI가 궁리하는 중…` : actor.stage === 'walk' ? '자리를 옮기는 중…' : '조준하는 중…'
       : b.phase === 'TERRAIN_COLLAPSE' ? '땅이 무너지는 중…'
       : !b.isPlayerPhase() && (b.shotDamage.get(b.shotNo) ?? 0) > 0 ? `이번 포격: 상대에게 합계 ${b.shotDamage.get(b.shotNo)} 피해`
@@ -786,7 +818,7 @@ export class BattleScene extends Phaser.Scene {
       : b.isPlayerPhase() && b.cur.charId === 'mudang' && b.cur.slot === 0 ? '추적 부적탄 · 날아가는 방향 가까이의 적을 추적'
       : b.isPlayerPhase() && b.cur.charId === 'driller' && b.cur.slot === 0 ? '엄폐 뒤 출구 폭발 · 벽을 관통해 뒤에 숨은 적을 노리세요'
       : b.isPlayerPhase() && b.steadyReady(b.cur) ? '자리 잡은 포격 — 움직이지 않고 쏘면 피해 +15%'
-      : '');
+      : ''));
     const aimHint=this.advisor.update(b,this.app.settings.aimHints&&this.humanTurn());
     this.app.ui.updateHud(b, { names: this.names, humanTurn: this.humanTurn(), status, aimHint });
   }

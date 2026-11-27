@@ -1,4 +1,6 @@
 node_modules/
 dist/
+online-dist/
+.online-data/
 test-results/
 playwright-report/

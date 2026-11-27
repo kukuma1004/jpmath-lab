@@ -1,0 +1,181 @@
+import type { Battle } from '../combat/battle';
+import { type Control, type OnlineRoom, type OnlineState, type Profile, type ReplayCommand } from './protocol';
+
+const storageKey = 'jpml.warureu.online.v1';
+const base = import.meta.env.VITE_WARUREU_ONLINE_URL as string | undefined;
+export const onlineEnabled = !!base;
+
+class OnlineError extends Error {
+  constructor(public readonly status: number, message: string) { super(message); }
+}
+
+function loadToken(): string {
+  try { return localStorage.getItem(storageKey) ?? ''; } catch { return ''; }
+}
+
+export class OnlineClient {
+  private token = loadToken();
+  private running = false;
+  private timer = 0;
+  private epoch = 0;
+  private log: ReplayCommand[] = [];
+  private index = 0;
+  private lastInput = '';
+  private commands = Promise.resolve();
+  state: OnlineState | null = null;
+  error = '';
+
+  constructor(private readonly changed: () => void) {}
+
+  get authenticated(): boolean { return !!this.token; }
+  get room(): OnlineRoom | null { return this.state?.room ?? null; }
+
+  start(): void {
+    if (this.running) return;
+    this.running = true;
+    void this.poll(++this.epoch);
+  }
+
+  stop(): void {
+    this.running = false;
+    this.epoch++;
+    window.clearTimeout(this.timer);
+  }
+
+  private setToken(token: string): void {
+    this.token = token;
+    try {
+      if (token) localStorage.setItem(storageKey,token);
+      else localStorage.removeItem(storageKey);
+    } catch { /* The current browser session still works. */ }
+  }
+
+  private setState(state: OnlineState | null): void {
+    if (state?.room?.code !== this.room?.code) {
+      this.log = [];
+      this.index = 0;
+      this.lastInput = '';
+    }
+    this.state = state;
+    if (state?.room) {
+      for (const command of state.room.commands) this.log.push(command);
+    }
+  }
+
+  private async request<T>(action: string, body?: object): Promise<T> {
+    const headers = new Headers();
+    if (this.token) headers.set('Authorization','Bearer '+this.token);
+    if (body) headers.set('Content-Type','application/json');
+    let response: Response;
+    try {
+      response = await fetch(base!.replace(/\/$/,'')+'/'+action,{
+        method:body?'POST':'GET',headers,body:body?JSON.stringify(body):undefined,
+        cache:'no-store',credentials:'omit',signal:AbortSignal.timeout(6_000),
+      });
+    } catch { throw new Error('서버 연결이 끊겼어요. 다시 연결하는 중이에요.'); }
+    const data = await response.json().catch(() => null);
+    if (!response.ok || data === null) throw new OnlineError(response.status,data?.error ?? '온라인 서버에 접속하지 못했어요.');
+    return data as T;
+  }
+
+  private async poll(epoch: number): Promise<void> {
+    if (!this.running || epoch !== this.epoch) return;
+    if (this.token) {
+      try {
+        const room = this.room;
+        const params = new URLSearchParams(room ? {code:room.code,cursor:String(this.log.length)} : {});
+        const state = await this.request<OnlineState>('state?'+params);
+        if (epoch !== this.epoch) return;
+        this.error = '';
+        this.setState(state);
+      } catch (error) {
+        if (epoch !== this.epoch) return;
+        this.error = error instanceof Error ? error.message : '온라인 서버에 접속하지 못했어요.';
+        if (error instanceof OnlineError && error.status === 401) {
+          this.setToken('');
+          this.setState(null);
+        }
+      }
+    }
+    this.changed();
+    if (this.running && epoch === this.epoch) {
+      this.timer=window.setTimeout(() => void this.poll(epoch),this.room?.config&&!this.room.done?90:500);
+    }
+  }
+
+  private refresh(): void {
+    window.clearTimeout(this.timer);
+    if (this.running) void this.poll(++this.epoch);
+  }
+
+  async auth(register: boolean, body: {id:string;password:string;nickname:string}): Promise<void> {
+    const {token} = await this.request<{token:string}>(register?'register':'login',body);
+    this.setState(null);
+    this.error = '';
+    this.setToken(token);
+    this.refresh();
+  }
+
+  async logout(): Promise<void> {
+    await this.request('logout',{});
+    this.setToken('');
+    this.setState(null);
+    this.refresh();
+  }
+
+  async lobby(action: 'create'|'join'|'queue', body: object): Promise<void> {
+    await this.request(action,body);
+    this.refresh();
+  }
+
+  async leave(): Promise<void> {
+    if (this.room || this.state?.queued) await this.request('leave',{code:this.room?.code??null});
+    this.setState(this.state ? {...this.state,room:null,queued:false} : null);
+    this.refresh();
+  }
+
+  rankings(): Promise<Profile[]> { return this.request('ranking'); }
+
+  send(turn: number, control: Control): void {
+    const room = this.room;
+    if (!room || this.error || !room.opponentConnected) return;
+    this.commands = this.commands.then(async () => {
+      if (this.room?.code !== room.code) return;
+      try { await this.request('command',{code:room.code,turn,control}); }
+      catch (error) {
+        if (!(error instanceof OnlineError && error.status === 409)) this.refresh();
+      }
+    });
+  }
+
+  input(turn: number, move: -1|0|1, aim: -1|0|1): void {
+    const key = `${this.room?.opponentConnected}:${turn}:${move}:${aim}`;
+    if (key===this.lastInput) return;
+    this.lastInput=key;
+    this.send(turn,{kind:'input',move,aim});
+  }
+
+  prepare(b: Battle): void {
+    b.recording=false;
+    this.index = 0;
+    this.advance(b, (this.room?.step ?? 0) + 1);
+    if (b.stepNo > 120 && b.winner === null) b.drainEvents();
+    if (b.stepNo > 120 && b.winner !== null) {
+      const events=b.drainEvents();
+      b.events.push(...events.filter(e=>e.type==='gameOver'));
+    }
+  }
+
+  advance(b: Battle, maxSteps = 2): void {
+    const room=this.room;
+    if (!room) return;
+    for (let i=0; i<=maxSteps; i++) {
+      while (this.index<this.log.length && this.log[this.index]!.s<=b.stepNo) {
+        const {c,a}=this.log[this.index++]!;
+        b.applyCommand(c,a);
+      }
+      if (i===maxSteps || b.stepNo>=room.step || b.winner!==null) return;
+      b.step();
+    }
+  }
+}

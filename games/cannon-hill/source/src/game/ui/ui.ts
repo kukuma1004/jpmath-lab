@@ -9,6 +9,7 @@ import type { Difficulty, Team, WeaponSlot } from '../combat/types';
 import { input, type Hold } from '../input/input';
 import type { Settings } from '../settings';
 import { audio } from '../audio/audio';
+import type { OnlineRoom } from '../online/protocol';
 
 export type Mode = 'ai' | 'local';
 
@@ -23,6 +24,7 @@ export interface UIHooks {
   startBattle(mode: Mode, chars: string[], mapId: string, freeForAll: boolean): void;
   quickBattle(): void;
   targetRange(): void;
+  online?: () => void;
   toTitle(): void;
   rematch(): void;
   rechar(): void;
@@ -129,6 +131,7 @@ export class UI {
           <div class="menu">
             <button class="btn primary quick" data-act="quick">바로 한 판<small>쉬운 AI · 내가 먼저 발사</small></button>
             <button class="btn jade target-entry" data-act="target">표적 10발<small>각도와 힘으로 누적 순위 도전</small></button>
+            ${this.hooks.online ? '<button class="btn jade online-entry" data-act="online">온라인 1:1<small>방 코드 친선전 · 공개 랭킹전</small></button>' : ''}
             <button class="btn" data-act="ai">AI와 겨루기<small>장수·전장 고르기</small></button>
             <button class="btn jade" data-act="local">함께 하기<small>한 기기로 2~4명</small></button>
             <button class="btn" data-act="howto">게임 방법</button>
@@ -142,6 +145,7 @@ export class UI {
       if (act === 'ai' || act === 'local') this.openChars(act);
       else if (act === 'quick') this.hooks.quickBattle();
       else if (act === 'target') this.hooks.targetRange();
+      else if (act === 'online') this.hooks.online?.();
       else if (act === 'howto') this.show('howto');
       else if (act === 'settings') this.openSettings();
     });
@@ -674,7 +678,7 @@ export class UI {
     });
   }
 
-  showResult(b: Battle, names: string[]): void {
+  showResult(b: Battle, names: string[], online?: OnlineRoom): void {
     const el = this.screens.get('result')!.querySelector('.res')!;
     const w = b.winner;
     const four = b.fighters.length > 2;
@@ -682,14 +686,17 @@ export class UI {
     const shown = w !== null && w !== -1 ? b.fighters.filter((f) => f.team === w) : [];
     let title: string, cls = '';
     if (w === -1 || w === null) title = '무승부';
-    else if (this.mode === 'ai') {
+    else if (online) {
+      title = w === online.you ? '승리!' : '패배…';
+      if (w !== online.you) cls = 'lose';
+    } else if (this.mode === 'ai') {
       title = w === 0 ? '승리!' : freeForAll ? `${names[shown[0]!.idx]} 승리!` : '패배…';
       if (w !== 0) cls = 'lose';
     }
     else title = `${names[w]} 승리!`;
     const losers = w !== null && w !== -1 ? b.fighters.filter((f) => f.team !== w) : [];
     const ln = !four && losers[0] ? character(losers[0].charId).name : '';
-    const why = freeForAll
+    const why = b.endReason === 'forfeit' ? '기권으로 승부가 결정됐습니다.' : freeForAll
       ? (b.endReason === 'limit' ? '턴 제한에 도달해 남은 체력 비율로 승부를 가렸습니다.'
         : w !== -1 ? `${names[shown[0]!.idx]} ${character(shown[0]!.charId).name} 생존`
         : b.fighters.every(f => !f.alive) ? '장수가 모두 쓰러졌습니다.' : '가장 높은 남은 체력 비율이 같습니다.')
@@ -719,14 +726,17 @@ export class UI {
       const unique = vals.filter((v) => v === top).length === 1;
       return `<tr><td>${label}</td>${vals.map((v) => `<td class="${unique && v === top && v > 0 ? 'best' : ''}">${fmt(v)}</td>`).join('')}</tr>`;
     }).join('');
+    const rating = online?.rating;
+    const delta = rating ? rating.after-rating.before : 0;
     el.innerHTML = `
       <h2 class="${cls}">${title}</h2>
       <div class="why">${esc(why)}</div>
+      ${rating ? `<p class="online-rating">랭킹 점수 ${rating.before} → ${rating.after} (${delta>0?'+':''}${delta}) · 상대 ${rating.opponent}점</p>` : ''}
       <div class="who">${img}</div>
       <table class="table${four ? ' four' : ''}">${head}${body}</table>
       <div class="actions">
-        <button class="btn primary" data-act="rematch">다시 한 판</button>
-        <button class="btn" data-act="rechar">장수 다시 고르기</button>
+        <button class="btn primary" data-act="rematch">${online?'온라인 대기실':'다시 한 판'}</button>
+        ${online?'':'<button class="btn" data-act="rechar">장수 다시 고르기</button>'}
         <button class="btn ghost" data-act="home">처음 화면으로</button>
       </div>`;
     this.show('result');

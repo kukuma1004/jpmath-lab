@@ -10,7 +10,7 @@ import { WEAPONS, weapon, type WeaponDef } from '../data/weapons';
 import { Mat, Terrain, type Component } from '../terrain/terrain';
 import { Rng, clamp } from '../utils/rng';
 import type {
-  BattleConfig, Boulder, Chunk, DamageCause, Fighter, Phase, PoisonCloud, Projectile, Scheduled, SimEvent, Team, WeaponSlot,
+  BattleConfig, Boulder, Chunk, DamageCause, EndReason, Fighter, Phase, PoisonCloud, Projectile, Scheduled, SimEvent, Team, WeaponSlot,
 } from './types';
 
 const DEG = Math.PI / 180;
@@ -69,7 +69,7 @@ export class Battle {
   timeLeft = 0;
   /** 이긴 편, 무승부 -1, 아직 null */
   winner: Team | -1 | null = null;
-  endReason: 'hp' | 'fall' | 'limit' | 'draw' | '' = '';
+  endReason: EndReason | '' = '';
   /** 발사 뒤 흐른 시간과 마지막 폭발 시각 */
   shotT = 0;
   lastBlastT = -99;
@@ -275,6 +275,12 @@ export class Battle {
     this.toTurnEnd();
   }
 
+  forfeit(player: number): void {
+    if (this.phase === 'GAME_OVER' || this.fighters.length !== 2 || (player !== 0 && player !== 1)) return;
+    this.rec('forfeit', [player]);
+    this.endGame(player === 0 ? 1 : 0, 'forfeit');
+  }
+
   applyCommand(c: string, a: number[]): void {
     const rec = this.recording;
     this.recording = false;
@@ -287,6 +293,7 @@ export class Battle {
       case 'angle': this.setAngle(a[0]!); break;
       case 'fire': this.fireNow(a[0]!); break;
       case 'skip': this.skipTurn(); break;
+      case 'forfeit': this.forfeit(a[0]!); break;
     }
     this.recording = rec;
     if (rec) this.log.push({ s: this.stepNo, c, a });
@@ -1579,7 +1586,7 @@ export class Battle {
     this.startTurn(this.nextPlayer());
   }
 
-  private endGame(winner: Team | -1, reason: 'hp' | 'fall' | 'limit' | 'draw'): void {
+  private endGame(winner: Team | -1, reason: EndReason): void {
     this.winner = winner;
     this.endReason = winner === -1 ? 'draw' : reason;
     this.setPhase('GAME_OVER');
@@ -1587,7 +1594,7 @@ export class Battle {
       if (winner === f.team) { f.anim = 'victory'; f.animT = 0; }
       else if (f.alive && winner !== -1) { f.anim = 'defeat'; f.animT = 0; }
     }
-    this.emit({ type: 'gameOver', winner, reason: this.endReason as 'hp' | 'fall' | 'limit' | 'draw' });
+    this.emit({ type: 'gameOver', winner, reason: this.endReason });
   }
 
   // ───────── 예상 궤적·AI용 ─────────

@@ -13,6 +13,8 @@ import { TitleScene } from './scenes/TitleScene';
 import { BattleScene } from './scenes/BattleScene';
 import type { BattleConfig } from './combat/types';
 import { TargetRange } from './target/range';
+import { OnlineClient, onlineEnabled } from './online/client';
+import { OnlineLobby } from './online/lobby';
 
 function viewWidth(): number {
   const w = window.innerWidth || 1280, h = window.innerHeight || 720;
@@ -27,6 +29,10 @@ export class App {
   game!: Phaser.Game;
   mode: Mode = 'ai';
   private target: TargetRange | null = null;
+  private readonly online: OnlineClient | null = onlineEnabled ? new OnlineClient(() => this.onlineChanged()) : null;
+  private lobby: OnlineLobby | null = null;
+  private onlinePlaying = false;
+  private leavingOnline = false;
   private field = document.querySelector<HTMLElement>('#game')!;
   private resizeFrame = 0;
   last: { mode: Mode; chars: string[]; mapId: string; starterMatch: boolean; freeForAll: boolean } | null = null;
@@ -38,6 +44,7 @@ export class App {
       startBattle: (mode, chars, mapId, freeForAll) => this.startBattle(mode, chars, mapId, false, freeForAll),
       quickBattle: () => this.startBattle('ai', ['general', 'archer'], 'quarry', true),
       targetRange: () => this.openTargetRange(),
+      online: this.online ? () => this.openOnline() : undefined,
       toTitle: () => this.toTitle(),
       rematch: () => this.rematch(),
       rechar: () => { this.toTitle(); this.ui.openChars(this.last?.mode ?? 'ai'); },
@@ -54,6 +61,7 @@ export class App {
   }
 
   private rematch(): void {
+    if (this.onlinePlaying) { this.leaveOnline(true); return; }
     if (!this.last) return;
     const {mode, chars, mapId, starterMatch, freeForAll} = this.last;
     this.startBattle(mode, chars, mapId, starterMatch, freeForAll);
@@ -100,7 +108,7 @@ export class App {
     document.addEventListener('visibilitychange', () => {
       audio.suspend(document.hidden);
       // 탭을 가리면 멈추기만 한다(이미 멈춰 있으면 그대로 둔다)
-      if (document.hidden) this.pauseOnly();
+      if (document.hidden && !this.onlinePlaying) this.pauseOnly();
     });
   }
 
@@ -203,7 +211,58 @@ export class App {
     audio.playBgm('battle');
   }
 
+  private openOnline(): void {
+    if (!this.online || this.lobby) return;
+    this.ui.only();
+    this.lobby = new OnlineLobby(this.ui.root,this.online,() => this.showTitleScreen());
+    this.online.start();
+  }
+
+  private onlineChanged(): void {
+    const client=this.online;
+    this.lobby?.render();
+    const room=client?.room;
+    if (!client || !this.lobby || !room?.config || this.leavingOnline) return;
+    this.lobby.destroy();
+    this.lobby=null;
+    this.onlinePlaying=true;
+    document.body.classList.add('online-match');
+    this.ui.mode='local';
+    this.ui.hideResult();
+    const sm=this.game.scene;
+    sm.stop('title');
+    sm.start('battle',{cfg:room.config,mode:'local',online:client});
+    this.setBattleLayout(true);
+    audio.playBgm('battle');
+  }
+
+  private leaveOnline(lobby: boolean): void {
+    if (this.leavingOnline) return;
+    this.leavingOnline=true;
+    void this.online?.leave().catch(() => {
+      // When the connection is already lost, the server handles the reconnect window.
+    }).finally(() => {
+      this.leavingOnline=false;
+      this.showTitleScreen();
+      if (lobby) this.openOnline();
+    });
+  }
+
   toTitle(): void {
+    if (this.onlinePlaying) {
+      if (this.online?.room && !this.online.room.done && !window.confirm('온라인 대전에서 나가면 기권패로 처리돼요. 나갈까요?')) return;
+      this.leaveOnline(false);
+      return;
+    }
+    this.showTitleScreen();
+  }
+
+  private showTitleScreen(): void {
+    this.lobby?.destroy();
+    this.lobby=null;
+    this.online?.stop();
+    this.onlinePlaying=false;
+    document.body.classList.remove('online-match');
     this.target?.destroy();
     this.target = null;
     const sm = this.game.scene;

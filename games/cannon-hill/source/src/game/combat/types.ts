@@ -13,6 +13,7 @@ export type Phase =
 
 export type Controller = 'human' | 'ai';
 export type Difficulty = 'easy' | 'normal' | 'hard';
+export type EndReason = 'hp' | 'fall' | 'limit' | 'draw' | 'forfeit';
 
 /**
  * 팀전의 장수 순서는 [1팀, 2팀, 1팀, 2팀]. 개인전에서는 각 장수가 별도 편이다.
@@ -185,4 +186,4 @@ export type SimEvent =
   | { type: 'trait'; who: number; kind: 'steady' | 'eagle' | 'shove' | 'iron'; x: number; y: number }
   | { type: 'forced' }
   /** winner는 이긴 편, 무승부는 -1 */
-  | { type: 'gameOver'; winner: Team | -1; reason: 'hp' | 'fall' | 'limit' | 'draw' };
+  | { type: 'gameOver'; winner: Team | -1; reason: EndReason };
