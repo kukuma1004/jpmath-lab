@@ -1,9 +1,10 @@
 import {
   BASE_RANGE, WIND_RANGE, FLOOR_HEIGHT, WALL_SPAN, MIN_SLOPE, MAX_SLOPE, SLOPE_SCALE, MAX_POWER, MAX_SCORE,
   MAX_SHOT_SCORE, CENTER_SCORE, COURSE_LENGTH, MAX_COURSE_SEED, COURSE_ROLLS, COURSE_STRIDES, NEAR_DISTANCE,
+  MIN_DESCENT_SLOPE, TARGET_RANK_BRANCH,
 } from '../source/src/game/target/course.ts';
 
-export const BRANCH = 'warureuTargetV3';
+export const BRANCH = TARGET_RANK_BRANCH;
 const owner = "auth != null && auth.uid == $uid && auth.token.firebase.sign_in_provider == 'anonymous'";
 const rank = "newData.child('rank').val()";
 const board = "newData.parent().parent().child('board/' + $uid)";
@@ -41,7 +42,8 @@ function proofShot(index) {
   const arcAt = x => `(${x} * ${slope} - ${x} * ${x} * ${curvature})`;
   const targetHeight = arcAt(distance);
   const clearWall = ` && (${wallX} == 0 || (${arcAt(wallX)} > ${wallY} && ${arcAt(`(${wallX} + ${WALL_SPAN})`)} > ${wallY}))`;
-  const reachable = `(${power} > 0 && ${targetHeight} >= ${FLOOR_HEIGHT}${clearWall})`;
+  const arrivalSlope = `(${slope} - 2 * ${distance} * ${curvature})`;
+  const reachable = `(${power} > 0 && ${targetHeight} >= ${FLOOR_HEIGHT} && ${arrivalSlope} <= 0 - ${MIN_DESCENT_SLOPE}${clearWall})`;
   const value = "newData.val()";
   const factor = COURSE_LENGTH + 1;
   const center = `(${value} % ${factor})`;

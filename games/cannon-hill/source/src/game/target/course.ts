@@ -9,6 +9,8 @@ export const BASE_RANGE = 2160;
 export const WIND_RANGE = 27;
 export const FLOOR_HEIGHT = -92;
 export const WALL_SPAN = 52;
+export const MIN_DESCENT_SLOPE = 0.6;
+export const TARGET_RANK_BRANCH = 'warureuTargetV4';
 export const BANDS = [20, 50, 100] as const;
 export const CENTER_SCORE = MAX_SHOT_SCORE - BANDS[0] * 10;
 export const COURSE_LENGTH = 10;
@@ -50,7 +52,7 @@ export interface TargetShot extends TargetAim {
   distanceTenths: number;
   impactX: number;
   impactHeight: number;
-  stop: 'floor' | 'wall' | 'target';
+  stop: 'floor' | 'wall' | 'shallow' | 'target';
 }
 
 export interface TargetResult {
@@ -110,9 +112,14 @@ export function scoreShot(target: Target, aim: TargetAim): TargetShot {
     if (heightAt(front, aim, target.wind) <= target.wall.height) wallX = front;
     else if (heightAt(front + WALL_SPAN, aim, target.wind) <= target.wall.height) wallX = descendingX(target.wall.height);
   }
-  const stop = wallX < floorX ? 'wall' : aim.power === 0 || height < FLOOR_HEIGHT ? 'floor' : 'target';
   const offset = height - target.height;
   const distanceTenths = Math.round(Math.abs(offset) * 10);
+  // A shot near the target must be falling steeply enough at its plane to score.
+  const arrivalSlope = tangent - 2 * target.distance * arc;
+  let stop: TargetShot['stop'] = 'target';
+  if (wallX < floorX) stop = 'wall';
+  else if (aim.power === 0 || height < FLOOR_HEIGHT) stop = 'floor';
+  else if (distanceTenths < MAX_SHOT_SCORE && arrivalSlope > -MIN_DESCENT_SLOPE) stop = 'shallow';
   const points = stop === 'target' ? Math.max(0, MAX_SHOT_SCORE - distanceTenths) : 0;
   return {
     ...aim, points, offset, distanceTenths, stop,

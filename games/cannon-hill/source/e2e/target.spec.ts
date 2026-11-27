@@ -1,6 +1,10 @@
 import { expect, test, type Page } from '@playwright/test';
+import { MAX_COURSE_SEED } from '../src/game/target/course';
 
-async function openRange(page: Page) {
+async function openRange(page: Page, seed?: number) {
+  if (seed !== undefined) {
+    await page.addInitScript(value => { Math.random = () => value; }, (seed - 0.5) / MAX_COURSE_SEED);
+  }
   await page.goto('./');
   await page.getByRole('button', { name: /표적 10발/ }).click();
   await expect(page.locator('.target-fire')).toBeEnabled();
@@ -83,6 +87,32 @@ test('모바일 발사 버튼은 두 번째 터치에서 1발만 쏜다', async 
   }
 });
 
+test('낮은 직격은 0점이고 엄폐물을 넘겨 떨어진 탄은 득점한다', async ({ page }) => {
+  await openRange(page, 2);
+  const slope = page.locator('#target-slope');
+  const feedback = page.locator('[data-feedback]');
+  const shots = page.locator('[data-shots] [data-hit]');
+  await expect(feedback).toHaveText('표적 위로 띄워 떨어뜨리면 득점');
+  await expect(page.locator('[data-distance]')).toHaveText('800 · -19');
+
+  await slope.fill('28');
+  await page.keyboard.press('Space');
+  await page.clock.runFor(1877); // 78.2 matches the first target's center on a shallow path.
+  await page.keyboard.press('Space');
+  await page.clock.runFor(2600);
+  await expect(shots.nth(0)).toHaveText('0.0');
+  await expect(feedback).toContainText('궤적이 얕아요');
+
+  await expect(page.locator('[data-distance]')).toHaveText('871 · -13');
+  await slope.fill('85');
+  await page.keyboard.press('Space');
+  await page.clock.runFor(1512); // 63.0 clears the barricade and descends onto the target.
+  await page.keyboard.press('Space');
+  await page.clock.runFor(2600);
+  await expect(shots.nth(1)).toHaveAttribute('data-hit', 'center');
+  await expect(shots.nth(1)).toHaveText('99.4');
+});
+
 test('열 발을 마치고 다시 도전하면 새 코스가 열리고 순위 선택에 기존 코스가 있다', async ({ page }) => {
   await openRange(page);
   const target = page.locator('[data-distance]');
@@ -100,7 +130,7 @@ test('열 발을 마치고 다시 도전하면 새 코스가 열리고 순위 �
   await expect(page.locator('[data-round]')).toHaveText('1 / 10');
   await expect(target).not.toHaveText(first!);
   await page.getByRole('button', { name: '누적 순위' }).click();
-  await expect(page.getByLabel('순위 코스')).toHaveValue('random');
-  await page.getByLabel('순위 코스').selectOption('legacy');
-  await expect(page.getByLabel('순위 코스')).toHaveValue('legacy');
+  const boardCourse = page.getByLabel('순위 코스');
+  await expect(boardCourse).toHaveValue('arc');
+  await expect(boardCourse.locator('option')).toHaveText(['낙하 포격 코스', '이전 랜덤 코스', '이전 고정 코스']);
 });

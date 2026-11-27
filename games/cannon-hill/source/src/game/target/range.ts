@@ -2,7 +2,7 @@ import {audio} from '../audio/audio';
 import {PLAYER_CHARGE_TIME} from '../config/constants';
 import {WindStreaks, traceWind} from '../render/windStreaks';
 import {BANDS, COURSE_LENGTH, FAR_DISTANCE, FLOOR_HEIGHT, MAX_COURSE_SEED, MAX_POWER, MAX_SCORE, MAX_SHOT_SCORE, MAX_SLOPE, MIN_SLOPE, NEAR_DISTANCE, SLOPE_SCALE, WALL_SPAN, angleDegrees, courseFromSeed, formatTenths, heightAt, isCenter, scoreShot, summarize, validCourseSeed, type TargetAim, type TargetResult, type TargetShot} from './course';
-import {deleteScore, loadBoard, publishScore, type RecordRow} from './ranking';
+import {deleteScore, loadBoard, publishScore, type BoardCourse, type RecordRow} from './ranking';
 import {drawCliff, drawBarricade} from './rangeArt';
 import './range.css';
 
@@ -14,11 +14,14 @@ const NEAR_TARGET_X = 840;
 const FAR_TARGET_X = 1010;
 const SCALE_Y = 0.38;
 const CHARGE_MS = PLAYER_CHARGE_TIME * 1000;
-const CHARGE_HINT = '한 번 눌러 힘 시작 · 다시 눌러 발사';
-const BEST_KEY = 'jpml.warureu.target.best.v3';
+const ARC_HINT = '표적 위로 띄워 떨어뜨리면 득점';
+const BEST_KEY = 'jpml.warureu.target.best.v4';
 const NICKNAME_KEY = 'jpml.warureu.target.nickname.v1';
-const OWNER_KEY = 'jpml.warureu.target.owner.v3';
-const LEGACY_OWNER_KEY = 'jpml.warureu.target.owner.v2';
+const OWNER_KEYS: Record<BoardCourse, string> = {
+  arc: 'jpml.warureu.target.owner.v4',
+  random: 'jpml.warureu.target.owner.v3',
+  legacy: 'jpml.warureu.target.owner.v2',
+};
 
 function readLocal(key: string): string {
   try { return localStorage.getItem(key) ?? ''; } catch { return ''; }
@@ -39,6 +42,7 @@ function personalBest(): TargetResult | null {
 function shotFeedback(shot: TargetShot): string {
   if (shot.stop === 'wall') return '엄폐물에 막혔어요 · +0.0점';
   if (shot.stop === 'floor') return '표적에 닿기 전에 떨어졌어요 · +0.0점';
+  if (shot.stop === 'shallow') return '궤적이 얕아요 · 위에서 떨어뜨리세요 · +0.0점';
   const where = shot.distanceTenths === 0 ? '표적 중심' :
     `중심보다 ${formatTenths(shot.distanceTenths)} ${shot.offset < 0 ? '아래' : '위'}`;
   return `${where} · +${formatTenths(shot.points)}점`;
@@ -87,7 +91,7 @@ export class TargetRange {
   private hold: {start: number; previousPower: number} | null = null;
   private trajectory: RenderShot | null = null;
   private result: TargetResult | null = null;
-  private onlineOwner = readLocal(OWNER_KEY);
+  private onlineOwner = readLocal(OWNER_KEYS.arc);
 
   constructor(container: HTMLElement, portrait: string, close: () => void) {
     this.root.className = 'target-mode';
@@ -133,11 +137,11 @@ export class TargetRange {
           </div>
           <button class="fire target-fire" type="button"><span>힘 시작</span><small>Space</small></button>
         </div>
-        <p class="target-tip">↑↓ 각도 · 스페이스바 한 번으로 힘 시작, 다시 눌러 발사 <span>엄폐물을 넘겨 표적 중심을 맞히세요.</span></p>
+        <p class="target-tip">↑↓ 각도 · 스페이스바 한 번으로 힘 시작, 다시 눌러 발사</p>
       </div>
       <dialog class="target-dialog" aria-labelledby="target-rank-title">
         <header><div><h2 id="target-rank-title">누적 순위</h2><p>브라우저별 최고 기록</p></div><button class="btn ghost" type="button" data-action="dismiss">닫기</button></header>
-        <label class="target-board-choice">코스 <select aria-label="순위 코스"><option value="random">랜덤 코스</option><option value="legacy">이전 고정 코스</option></select></label>
+        <label class="target-board-choice">코스 <select aria-label="순위 코스"><option value="arc">낙하 포격 코스</option><option value="random">이전 랜덤 코스</option><option value="legacy">이전 고정 코스</option></select></label>
         <form class="target-submit" hidden>
           <label for="target-nickname">공개 별명</label>
           <input id="target-nickname" name="nickname" maxlength="12" required autocomplete="off" spellcheck="false" placeholder="별명 1~12자">
@@ -269,7 +273,7 @@ export class TargetRange {
     this.trajectory = null;
     this.needsPaint = true;
     this.select('.target-finish').hidden = true;
-    this.select('[data-feedback]').textContent = CHARGE_HINT;
+    this.select('[data-feedback]').textContent = ARC_HINT;
     this.refreshHud();
     this.select<HTMLButtonElement>('.target-fire').focus({preventScroll:true});
   }
@@ -348,7 +352,7 @@ export class TargetRange {
     audio.charge(null);
     this.select('.target-fire span').textContent = '힘 시작';
     if (release) this.fire();
-    else this.select('[data-feedback]').textContent = CHARGE_HINT;
+    else this.select('[data-feedback]').textContent = ARC_HINT;
   }
 
   private fire(): void {
@@ -625,7 +629,7 @@ export class TargetRange {
 
   private openBoard(submit: boolean): void {
     this.endCharge(false);
-    this.select<HTMLSelectElement>('.target-board-choice select').value = 'random';
+    this.select<HTMLSelectElement>('.target-board-choice select').value = 'arc';
     this.select('.target-submit').hidden = !submit || !this.result;
     this.select<HTMLInputElement>('#target-nickname').value = readLocal(NICKNAME_KEY);
     if (!this.board.open) this.board.showModal();
@@ -638,7 +642,7 @@ export class TargetRange {
     this.select('[data-action=remove]').hidden = true;
     this.select('[data-online]').textContent = message ?? '순위를 불러오는 중…';
     try {
-      const rows = await loadBoard(this.legacyBoard);
+      const rows = await loadBoard(this.boardCourse);
       if (this.destroyed || request !== this.boardRequest) return;
       this.renderBoard(rows);
       this.select('[data-online]').textContent = message ?? (rows.length ? '' : '아직 등록된 기록이 없어요. 첫 기록에 도전해 보세요!');
@@ -648,7 +652,8 @@ export class TargetRange {
   }
 
   private renderBoard(rows: RecordRow[]): void {
-    const onlineOwner = this.legacyBoard ? readLocal(LEGACY_OWNER_KEY) : this.onlineOwner;
+    const course = this.boardCourse;
+    const onlineOwner = course === 'arc' ? this.onlineOwner : readLocal(OWNER_KEYS[course]);
     let place = 0;
     const entries = rows.map((row, index) => {
       if (!index || row.rank !== rows[index-1]!.rank) place = index+1;
@@ -666,19 +671,19 @@ export class TargetRange {
     this.select('[data-action=remove]').hidden = !onlineOwner;
   }
 
-  private get legacyBoard(): boolean {
-    return this.select<HTMLSelectElement>('.target-board-choice select').value === 'legacy';
+  private get boardCourse(): BoardCourse {
+    return this.select<HTMLSelectElement>('.target-board-choice select').value as BoardCourse;
   }
 
   private async submitOnline(): Promise<void> {
-    if (this.busy || !this.result) return;
+    if (this.busy || !this.result || this.boardCourse !== 'arc') return;
     this.setBusy(true);
     const result = this.result;
     const nickname = this.select<HTMLInputElement>('#target-nickname').value.trim();
     this.select('[data-online]').textContent = '별명과 기록을 등록하는 중…';
     try {
       const response = await publishScore(result,nickname);
-      writeLocal(OWNER_KEY, response.uid);
+      writeLocal(OWNER_KEYS.arc, response.uid);
       writeLocal(NICKNAME_KEY,nickname);
       if (this.destroyed) return;
       this.onlineOwner = response.uid;
@@ -692,11 +697,11 @@ export class TargetRange {
     if (this.busy) return;
     this.setBusy(true);
     try {
-      const legacy = this.legacyBoard;
-      await deleteScore(legacy);
+      const course = this.boardCourse;
+      await deleteScore(course);
       if (this.destroyed) return;
-      writeLocal(legacy ? LEGACY_OWNER_KEY : OWNER_KEY, '');
-      if (!legacy) this.onlineOwner = '';
+      writeLocal(OWNER_KEYS[course], '');
+      if (course === 'arc') this.onlineOwner = '';
       await this.refreshBoard('등록한 기록을 삭제했어요.');
     } catch (err) { if (!this.destroyed) this.onlineError(err); }
     finally { if (!this.destroyed) this.setBusy(false); }

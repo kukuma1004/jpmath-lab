@@ -92,7 +92,6 @@
 .target-shots [data-hit="miss"] { color: #d6c9bc; }
 .target-control .target-fire { position: static; min-width: 0; width: 100%; height: auto; min-height: 68px; padding: 9px 4px; border-radius: 12px; font-size: clamp(18px, 3vw, 24px); touch-action: none; -webkit-user-select: none; user-select: none; }
 .target-tip { margin: 0; color: var(--range-muted); font-size: 13px; text-align: center; line-height: 1.45; }
-.target-tip span { color: #ffe0a3; white-space: nowrap; }
 .target-mode :focus-visible { outline: 2px solid #fff3be; outline-offset: 3px; }
 
 .target-dialog { width: min(520px, calc(100vw - 26px)); max-height: min(88dvh, 620px); overflow: auto; padding: 17px; border: 1px solid #70877c; border-radius: 13px; background: #172834; color: var(--range-cream); }
