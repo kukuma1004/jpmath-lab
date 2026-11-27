@@ -35,6 +35,7 @@ export class BattleScene extends Phaser.Scene {
   /** 장수마다 붙는 이름(편 이름): AI 대전은 나/AI, 둘이서는 1P/2P */
   names: string[] = ['1P', '2P'];
   paused = false;
+  private firePresses = 0;
   timeScale = 1;
   private acc = 0;
   private bgCam!: Phaser.Cameras.Scene2D.Camera;
@@ -80,6 +81,7 @@ export class BattleScene extends Phaser.Scene {
     this.battle = new Battle(data.cfg);
     this.names = this.battle.fighters.map(f => playerLabel(data.mode, f.team, !!data.cfg.freeForAll));
     this.paused = false;
+    this.firePresses = 0;
     this.acc = 0;
     this.t = 0;
     this.free = false;
@@ -138,9 +140,11 @@ export class BattleScene extends Phaser.Scene {
     this.applyCamera();
 
     this.app.ui.showHud(b, this.names);
-    input.active = true;
     input.reset();
+    input.active = true;
     input.listeners = {
+      fire: () => this.pressFire(),
+      cancelFire: () => this.cancelFire(),
       weapon: (slot) => this.selectWeapon(slot),
       pause: () => this.app.pause(),
       camera: () => this.cycleCamera(),
@@ -457,6 +461,16 @@ export class BattleScene extends Phaser.Scene {
 
   // ───────── 입력 ─────────
 
+  pressFire(): void {
+    if (this.paused || !this.humanTurn() || !this.battle.isPlayerPhase()) return;
+    this.firePresses = Math.min(this.battle.phase === 'CHARGE' ? 1 : 2, this.firePresses + 1);
+  }
+
+  cancelFire(): void {
+    this.firePresses = 0;
+    if (this.humanTurn()) this.battle.cancelCharge();
+  }
+
   selectWeapon(slot: WeaponSlot): void {
     const b = this.battle;
     if (this.paused || this.actors[b.current] || !b.isPlayerPhase()) return;
@@ -485,10 +499,12 @@ export class BattleScene extends Phaser.Scene {
     }
     if (!b.isPlayerPhase()) return;
     const f = b.cur;
-    if (input.takeChargeCancellation()) b.cancelCharge();
     b.setMove(input.move);
     b.setAim(input.aimDir(f.angle <= 90 ? 1 : -1));
-    b.setCharge(input.charge);
+    if (this.firePresses > 0) {
+      this.firePresses--;
+      b.setCharge(b.phase !== 'CHARGE');
+    }
   }
 
   // ───────── 사건 → 화면·소리 ─────────
@@ -508,6 +524,7 @@ export class BattleScene extends Phaser.Scene {
           break;
         case 'turn': {
           input.newTurn();
+          this.firePresses = 0;
           const w = e.wind === 0 ? '바람 잔잔' : `바람 ${e.wind > 0 ? '→' : '←'} ${Math.abs(e.wind)}`;
           const pf = b.fighters[e.player]!;
           const who = b.fighters.length > 2 ? `${this.names[e.player]} · ${character(pf.charId).name}` : this.names[e.player]!;
@@ -765,8 +782,8 @@ export class BattleScene extends Phaser.Scene {
       : b.isPlayerPhase() && b.cfg.mapId === 'bridge' ? '다리를 끊어 상대를 추락시키세요'
       : b.isPlayerPhase() && b.cfg.mapId === 'quarry' && b.cur.charId === 'driller' ? '발판 윗면에 맞혀 밑면까지 절단 · 상대 발밑과 지지점 사이를 노리세요'
       : b.isPlayerPhase() && b.cfg.mapId === 'quarry' && b.turnNo <= 2 ? '중앙 쪽으로 한 단씩 착지 · 마지막 단 밖은 추락'
-      : b.isPlayerPhase() && b.cur.slot === 2 ? `${b.weaponOf(b.cur).name} · 스페이스바를 떼면 궁극기를 발사합니다`
-      : b.isPlayerPhase() && b.cur.charId === 'mudang' && b.cur.slot === 0 ? '추적 부적탄 · 비행 중 가까운 적을 자동 추적'
+      : b.isPlayerPhase() && b.cur.slot === 2 ? `${b.weaponOf(b.cur).name} · 힘을 모으고 다시 눌러 발사`
+      : b.isPlayerPhase() && b.cur.charId === 'mudang' && b.cur.slot === 0 ? '추적 부적탄 · 날아가는 방향 가까이의 적을 추적'
       : b.isPlayerPhase() && b.cur.charId === 'driller' && b.cur.slot === 0 ? '엄폐 뒤 출구 폭발 · 벽을 관통해 뒤에 숨은 적을 노리세요'
       : b.isPlayerPhase() && b.steadyReady(b.cur) ? '자리 잡은 포격 — 움직이지 않고 쏘면 피해 +15%'
       : '');

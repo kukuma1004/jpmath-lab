@@ -12,9 +12,8 @@ function flat(char='mudang') {
   return b;
 }
 
-describe('무당의 각도와 무관한 자동 유도',()=>{
+describe('무당의 진행 방향 유도',()=>{
   it.each([
-    {relative:25,power:67,mirror:false}, {relative:25,power:67,mirror:true},
     {relative:65,power:80,mirror:false}, {relative:65,power:80,mirror:true},
   ])('$relative°에서 빗나갈 탄을 적에게 꺾어 맞힌다 (좌우 반전 $mirror)',({relative,power,mirror})=>{
     const b=flat(),normal=flat('general');
@@ -32,6 +31,11 @@ describe('무당의 각도와 무관한 자동 유도',()=>{
     expect(acquired).toBe(true);
     expect(b.fighters[1]!.maxHp-b.fighters[1]!.hp).toBeCloseTo(predicted.damage[1]!,0);
   });
+  it.each([false, true])('힘이 크게 모자란 탄은 적까지 끌려가지 않는다 (좌우 반전 %s)', mirror => {
+    const b = flat();
+    if (mirror) b.fighters.forEach(f => { f.x = 2400 - f.x; });
+    expect(b.dryShot(0, 0, mirror ? 155 : 25, 67).damage[1]).toBe(0);
+  });
   it('막 발사한 탄은 그대로 날리고, 유도가 시작돼도 같은 편을 표적으로 삼지 않는다',()=>{
     const b=flat();const p=b.newProjectile(0,1,'bujeok',1450,650,240,-600);
     b.stepProjectile(p,DT);expect(p.seekTarget).toBe(-1);expect(p.vx).toBe(240);
@@ -41,7 +45,7 @@ describe('무당의 각도와 무관한 자동 유도',()=>{
   it('상승 중에도 적을 포착하고 더 가까워진 다른 장수에게 갑자기 바꾸지 않는다', () => {
     const b = flat();
     const target = b.fighters[1]!;
-    const p = b.newProjectile(0, 1, 'bujeok', 1250, 760, 240, -400);
+    const p = b.newProjectile(0, 1, 'bujeok', 1400, 838, 600, -80);
     p.age = .4;
     b.stepProjectile(p, DT);
     expect(p.seekTarget).toBe(target.idx);
@@ -53,6 +57,16 @@ describe('무당의 각도와 무관한 자동 유도',()=>{
     target.alive = false;
     b.stepProjectile(p, DT);
     expect(p.seekTarget).toBe(other.idx);
+  });
+  it('포착 범위에 들어와도 등 뒤나 옆으로 크게 빗나간 적에게 급선회하지 않는다', () => {
+    const b = flat();
+    for (const [vx, vy] of [[-500, 0], [0, -500]] as const) {
+      const p = b.newProjectile(0, 1, 'bujeok', 1490, 800, vx, vy);
+      p.age = .5;
+      b.stepProjectile(p, DT);
+      expect(p.seekTarget).toBe(-1);
+      expect(p.vx).toBe(vx);
+    }
   });
   it('유도 중에도 성벽에 막힌다',()=>{
     const b=flat();

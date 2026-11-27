@@ -1,5 +1,4 @@
 import { expect, test, type Page } from '@playwright/test';
-import { formatTenths, ROUNDS, scoreShot } from '../src/game/target/course';
 
 async function openRange(page: Page) {
   await page.goto('./');
@@ -9,25 +8,26 @@ async function openRange(page: Page) {
   await page.clock.pauseAt(new Date(Date.now() + 250));
 }
 
-test('왕복하는 힘 게이지에서 스페이스바를 뗀 순간의 힘으로 1발만 쏜다', async ({ page }) => {
+test('스페이스바 두 번째 입력의 왕복 게이지 힘으로 1발만 쏜다', async ({ page }) => {
   await openRange(page);
   const power = page.locator('[data-power]');
   const feedback = page.locator('[data-feedback]');
   const shots = page.locator('[data-shots] [data-hit]');
   await page.keyboard.down('Space');
-  await expect(feedback).toHaveText('힘 모으는 중');
+  await expect(feedback).toHaveText('원하는 힘에서 다시 눌러 발사');
   await page.clock.runFor(2200);
   expect(Number(await power.textContent())).toBeGreaterThan(90);
   await page.keyboard.down('Space');
+  await page.keyboard.up('Space');
   await page.clock.runFor(1400);
   expect(Number(await power.textContent())).toBeCloseTo(50, -1);
   await expect(shots).toHaveCount(0);
 
-  await page.keyboard.up('Space');
+  await page.keyboard.press('Space');
   await expect(feedback).toHaveText('비행 중');
   await expect(power).toHaveText('50.0');
   await page.clock.runFor(2500);
-  await expect(shots).toHaveText([formatTenths(scoreShot(ROUNDS[0], { slope: 100, power: 500 }).points)]);
+  await expect(shots).toHaveCount(1);
 });
 
 test('창을 벗어나 취소된 스페이스바는 발사하지 않고 다음 입력을 받을 수 있다', async ({ page }) => {
@@ -42,30 +42,50 @@ test('창을 벗어나 취소된 스페이스바는 발사하지 않고 다음 �
   await expect(page.locator('[data-power]')).toHaveText('0.0');
   await expect(fire).toBeEnabled();
 
-  await page.keyboard.down('Space');
+  await page.keyboard.press('Space');
   await page.clock.runFor(1200);
-  await page.keyboard.up('Space');
+  await page.keyboard.press('Space');
   await expect(page.locator('[data-power]')).toHaveText('50.0');
   await expect(fire).toBeDisabled();
 });
 
-test('모바일 발사 버튼은 터치를 놓는 순간 1발만 쏜다', async ({ browser }) => {
+test('모바일 발사 버튼은 두 번째 터치에서 1발만 쏜다', async ({ browser }) => {
   const page = await browser.newPage({ viewport: { width: 360, height: 740 }, isMobile: true, hasTouch: true });
   try {
     await openRange(page);
-    const rect = (await page.locator('.target-fire').boundingBox())!;
-    const touchPoints = [{ x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 }];
-    const session = await page.context().newCDPSession(page);
-    await session.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints });
+    const fire = page.locator('.target-fire');
+    await fire.tap();
     await page.clock.runFor(1200);
-    await expect(page.locator('[data-feedback]')).toHaveText('힘 모으는 중');
+    await expect(page.locator('[data-feedback]')).toHaveText('원하는 힘에서 다시 눌러 발사');
     const shots = page.locator('[data-shots] [data-hit]');
     await expect(shots).toHaveCount(0);
-    await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await fire.tap();
     await expect(page.locator('[data-power]')).toHaveText('50.0');
     await page.clock.runFor(3000);
     await expect(shots).toHaveCount(1);
   } finally {
     await page.close();
   }
+});
+
+test('열 발을 마치고 다시 도전하면 새 코스가 열리고 순위 선택에 기존 코스가 있다', async ({ page }) => {
+  await openRange(page);
+  const target = page.locator('[data-distance]');
+  const first = await target.textContent();
+  for (let index = 0; index < 10; index++) {
+    await page.keyboard.press('Space');
+    await page.clock.runFor(1750);
+    await page.keyboard.press('Space');
+    await page.clock.runFor(2700);
+  }
+  await expect(page.locator('[data-hit]')).toHaveCount(10);
+  await expect(page.locator('[data-total]')).toHaveText(/\/ 1000.0점/);
+  await page.locator('[data-action=retry]').click();
+  await expect(page.locator('[data-hit]')).toHaveCount(0);
+  await expect(page.locator('[data-round]')).toHaveText('1 / 10');
+  await expect(target).not.toHaveText(first!);
+  await page.getByRole('button', { name: '누적 순위' }).click();
+  await expect(page.getByLabel('순위 코스')).toHaveValue('random');
+  await page.getByLabel('순위 코스').selectOption('legacy');
+  await expect(page.getByLabel('순위 코스')).toHaveValue('legacy');
 });

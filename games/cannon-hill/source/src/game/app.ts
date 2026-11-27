@@ -46,6 +46,7 @@ export class App {
       pause: () => this.pause(),
       weapon: (slot) => this.battleScene()?.selectWeapon(slot),
       flip: () => this.battleScene()?.flip(),
+      fire: () => this.battleScene()?.pressFire(),
       camera: () => this.battleScene()?.toggleOverview(),
       recenter: () => this.battleScene()?.recenter(),
       settingsChanged: (s) => this.applySettings(s),
@@ -234,6 +235,7 @@ export class App {
     const bs = this.battleScene();
     if (!bs || this.ui.isOn('result')) return;
     bs.paused = true;
+    bs.cancelFire();
     this.ui.show('pause');
   }
 

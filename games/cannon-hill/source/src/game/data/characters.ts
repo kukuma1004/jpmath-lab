@@ -65,7 +65,7 @@ export const CHARACTERS: CharacterDef[] = [
   },
   {
     id: 'mudang', name: '무당', role: '마법형',
-    blurb: '날아가는 부적이 가까운 적을 찾아 뒤쫓습니다. 다른 탄으로는 하늘의 벼락을 부릅니다.',
+    blurb: '부적이 비행 경로 가까이에 있는 적을 향해 휩니다. 다른 탄으로는 하늘의 벼락을 부릅니다.',
     hp: 770, defense: 0.04, moveMul: 1.0, normal: 'bujeok', special: 'nakroe', ultimate: 'fiveThunders',
     trait: { id: 'blessing', name: '신령의 가호', desc: `자기 차례가 시작될 때 자신과 가까이 선 같은 편의 체력을 ${TRAIT.blessHeal}씩 채웁니다.` },
     stats: { power: 4, range: 4, accuracy: 4, defense: 2, mobility: 3 },

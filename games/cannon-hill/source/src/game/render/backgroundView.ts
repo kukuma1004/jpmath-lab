@@ -46,9 +46,9 @@ export class BackgroundView {
         const depth = ctx.createLinearGradient(0, 0, 0, canvas.height);
         depth.addColorStop(0, 'rgba(36,31,64,.13)');
         depth.addColorStop(.30, 'rgba(36,31,64,0)');
-        depth.addColorStop(.49, 'rgba(23,51,69,.43)');
-        depth.addColorStop(.70, 'rgba(17,62,84,.73)');
-        depth.addColorStop(1, 'rgba(17,47,63,.87)');
+        depth.addColorStop(.49, 'rgba(43,53,84,.19)');
+        depth.addColorStop(.70, 'rgba(28,49,81,.39)');
+        depth.addColorStop(1, 'rgba(20,40,66,.66)');
         ctx.fillStyle = depth;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         // Amber light is strongest beside the painted sun; the far valley stays cool.
@@ -64,7 +64,14 @@ export class BackgroundView {
       }
       this.painted = scene.add.image(0, 0, key).setOrigin(0, 0);
       layer.add(this.painted);
-      if (mapId === 'windrift') {
+      {
+        const banks: Record<string, [string, number]> = {
+          bridge: ['224,199,224', .15], windrift: ['183,197,229', .14],
+          quarry: ['185,215,224', .105], sanseong: ['177,151,192', .095],
+          baekdu: ['205,161,186', .09], forest: ['102,184,186', .12],
+          cloud: ['255,247,215', .13], underworld: ['159,122,191', .105],
+        };
+        const [mistColor, opacity] = banks[mapId] ?? banks.quarry!;
         // Overlapping lit banks follow the slopes and float ahead of the distant ridges.
         const fog = document.createElement('canvas');
         fog.width = 960;
@@ -76,15 +83,15 @@ export class BackgroundView {
           for (let i = 0; i < 9; i++) {
             const u = i / 8;
             const x = side === 1 ? u * 360 : fog.width - u * 360;
-            const y = 173 + level * 103 + u * (52 - level * 14) + Math.sin(i * 2.3 + bank) * 5;
+            const y = (mapId === 'windrift' ? 173 : 250) + level * 103 + u * (52 - level * 14) + Math.sin(i * 2.3 + bank) * 5;
             mist.save();
             mist.translate(x, y);
             mist.rotate(side * (.11 - level * .035));
             mist.scale(85 + 22 * Math.cos(i + bank), 9 + level * 3);
             const haze = mist.createRadialGradient(0, 0, 0, 0, 0, 1);
-            haze.addColorStop(0, 'rgba(193,213,220,.105)');
-            haze.addColorStop(.5, 'rgba(168,198,211,.055)');
-            haze.addColorStop(1, 'rgba(162,194,207,0)');
+            haze.addColorStop(0, 'rgba(' + mistColor + ',' + opacity + ')');
+            haze.addColorStop(.5, 'rgba(' + mistColor + ',' + opacity * .44 + ')');
+            haze.addColorStop(1, 'rgba(' + mistColor + ',0)');
             mist.fillStyle = haze;
             mist.fillRect(-1, -1, 2, 2);
             mist.restore();

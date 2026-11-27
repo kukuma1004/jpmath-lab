@@ -42,17 +42,39 @@ export class TerrainView {
     const g=this.bridgeRails;if(!g)return;g.clear();
     const t=this.terrain;
     const yAt=(x:number)=>600+90*Math.sin((x-320)/1760*Math.PI);
-    for(let x=332;x<2070;x+=6){
-      const y=yAt(x),ny=yAt(x+6);
-      if(t.matAt(x,y)!==Mat.Wood||t.matAt(x+6,ny)!==Mat.Wood)continue;
-      const sag=4*Math.sin(((x-332)%72)/72*Math.PI);
-      g.lineStyle(5,0x382833,0.9);g.lineBetween(x,y-40+sag,x+6,ny-40+sag);
-      g.lineStyle(2.5,0xd9b977,1);g.lineBetween(x,y-41+sag,x+6,ny-41+sag);
-      if((x-332)%72===0){
-        g.lineStyle(6,0x443038,1);g.lineBetween(x,y-9,x,y-47);
-        g.lineStyle(3,0xb58a51,1);g.lineBetween(x-1,y-10,x-1,y-47);
-        g.lineStyle(2,0xe5cd98,0.95);g.lineBetween(x-5,y-38,x+4,y-38);g.lineBetween(x-5,y-34,x+4,y-34);
-        g.lineStyle(1.5,0x9b7b58,0.85);g.lineBetween(x,y-36,x+30,yAt(x+30)-9);
+    const supported = (x: number) => t.matAt(x, yAt(x)) === Mat.Wood;
+    const anchors = [332];
+    for (let x = 404; x < 2068; x += 72) anchors.push(x);
+    anchors.push(2068);
+    for (const [index, anchor] of anchors.entries()) {
+      const end = anchors[index + 1];
+      if (supported(anchor)) {
+        const y = yAt(anchor);
+        const pier = index === 0 || index === anchors.length - 1;
+        const width = pier ? 18 : 5;
+        if (pier) {
+          g.lineStyle(7, 0x412a31); g.lineBetween(anchor - 15, y - 9, anchor, y - 32);
+          g.fillStyle(0x4c332d); g.fillEllipse(anchor, y - 49, width + 6, 9);
+          g.fillStyle(0xe2ad6b); g.fillEllipse(anchor - 1, y - 51, width, 5);
+        }
+        g.lineStyle(width + 2, 0x442a2b); g.lineBetween(anchor, y - 6, anchor, y - 47);
+        g.lineStyle(width * .55, 0xbc8548); g.lineBetween(anchor - 1, y - 7, anchor - 1, y - 47);
+        for (const height of [33, 37, 41]) {
+          g.lineStyle(3, 0xe2ad66); g.lineBetween(anchor - width / 2, y - height, anchor + width / 2, y - height + 2);
+        }
+      }
+      if (end === undefined || !supported(anchor) || !supported(end)) continue;
+      let continuous = true;
+      for (let x = anchor; x <= end; x += CELL) {
+        if (!supported(x)) { continuous = false; break; }
+      }
+      if (!continuous) continue;
+      const ropeY = (x: number) => yAt(x) - 40 + 4 * Math.sin((x - anchor) / (end - anchor) * Math.PI);
+      for (let x = anchor; x < end; x += 6) {
+        const next = Math.min(end, x + 6), y = ropeY(x), ny = ropeY(next);
+        g.lineStyle(5, 0x4b302c); g.lineBetween(x, y, next, ny);
+        g.lineStyle(3, 0xd8a265); g.lineBetween(x, y - 1.4, next, ny - 1.4);
+        g.lineStyle(1.5, 0xffdb91); g.lineBetween(x + 1, y - 2.5, Math.min(next, x + 3), y - 1);
       }
     }
   }

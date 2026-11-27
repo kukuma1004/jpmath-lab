@@ -87,32 +87,31 @@ test('낮은 둔턱은 이동 키로 넘고 경사에서 실제 발사각을 보
   expect(await wr(page, '__wr.battle.cur.y')).toBeLessThan(880);
   const launchAngle = await wr(page, '__wr.battle.launchAngle(__wr.battle.cur)');
   expect(launchAngle).toBeGreaterThan(55);
-  await page.keyboard.down('Space');
+  await page.keyboard.press('Space');
   await page.waitForFunction(() => (window as any).__wr.battle.cur.power >= 40, undefined, {polling:'raf'});
-  await page.keyboard.up('Space');
+  await page.keyboard.press('Space');
   await expect.poll(() => wr(page, '__wr.battle.projectiles.length')).toBe(1);
   const { power, vx } = await wr(page, '({power: __wr.battle.cur.lastPower, vx: __wr.battle.projectiles[0].vx})');
   // Wind is zero, so waiting a frame to read the projectile cannot change its horizontal speed.
   expect(vx).toBeCloseTo(MAX_LAUNCH_SPEED * power / 100 * Math.cos(launchAngle * Math.PI / 180), 5);
 });
 
-test('스페이스바를 누르는 동안 힘이 차고 떼는 순간 한 발만 나간다', async ({page}) => {
+test('스페이스바를 다시 눌렀을 때만 한 발이 나가고 창을 벗어나면 취소된다', async ({page}) => {
   await openBattle(page, 'local', ['general', 'archer'], 'quarry');
   await waitAim(page);
   const hud = page.locator('[data-s=hud]');
   await expect(hud.locator('.power input')).toHaveCount(0);
   const who = (await state(page)).current;
   await page.keyboard.press('e');
-  await page.keyboard.down('Space');
+  await page.keyboard.press('Space');
   await page.waitForFunction(() => (window as any).__wr.battle.cur.power > 10);
   await page.evaluate(() => window.dispatchEvent(new Event('blur')));
-  await page.keyboard.up('Space');
   await waitAim(page, who);
   expect((await state(page)).shots[who]).toBe(0);
-  await page.keyboard.down('Space');
+  await page.keyboard.press('Space');
   await page.waitForFunction(() => (window as any).__wr.battle.cur.power >= 55);
   expect((await state(page)).shots[who]).toBe(0);
-  await page.keyboard.up('Space');
+  await page.keyboard.press('Space');
   await expect.poll(async () => (await state(page)).shots[who]).toBe(1);
   expect(await wr(page, `__wr.battle.fighters[${who}].lastPower`)).toBeGreaterThanOrEqual(55);
 });
@@ -131,10 +130,10 @@ test('바로 한 판: 선공으로 직접 쏘고 지난 포격을 본 뒤 같은
   const hud = page.locator('[data-s=hud]');
   await expect(hud.locator('.power')).toHaveText('발사 힘');
   const shots = (await state(page)).shots[0];
-  await page.keyboard.down('Space');
+  await page.keyboard.press('Space');
   await expect.poll(async () => (await state(page)).phase).toBe('CHARGE');
   await page.waitForTimeout(450);
-  await page.keyboard.up('Space');
+  await page.keyboard.press('Space');
   await expect.poll(async () => (await state(page)).shots[0]).toBe(shots + 1);
   await waitAim(page, 0, 45000);
   await expect(hud.locator('.status')).toHaveText(/지난 포격 [←→]\d+° · 힘 \d+ · 바람 잔잔/);
@@ -246,12 +245,12 @@ test('굴착대장: 2번 철편을 선택하면 세 갈래가 나가 옆탄으�
   await expect.poll(async () => (await state(page)).hp[1]).toBe(character('archer').hp - 120);
 });
 
-test('무당: 낮게 발사해도 적을 추적하여 맞힌다',async({page})=>{
+test('무당: 높은 탄이 적 근처로 접근하면 포착해서 맞힌다',async({page})=>{
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
   await openBattle(page,'local',['mudang','driller'],'bridge');await waitAim(page);
-  await wr(page,`const b=__wr.battle;b.terrain.cells.fill(0);for(let y=450;y<600;y++)for(let x=0;x<1200;x++)b.terrain.set(x,y,4);b.terrain.pending=[];b.current=0;b.phase='AIM';b.timeLeft=30;b.wind=0;for(const [i,x] of [400,1700].entries()){const f=b.fighters[i];f.x=x;f.y=900;f.airPeakY=900;f.vx=f.vy=0;f.onGround=true;} __wr.fire(25,67,0);`);
+  await wr(page,`const b=__wr.battle;b.terrain.cells.fill(0);for(let y=450;y<600;y++)for(let x=0;x<1200;x++)b.terrain.set(x,y,4);b.terrain.pending=[];b.current=0;b.phase='AIM';b.timeLeft=30;b.wind=0;for(const [i,x] of [400,1700].entries()){const f=b.fighters[i];f.x=x;f.y=900;f.airPeakY=900;f.vx=f.vy=0;f.onGround=true;} __wr.fire(65,80,0);`);
   await page.waitForFunction(()=> (window as any).__wr.battle.projectiles.some((p:any)=>p.seekTarget===1),undefined,{polling:'raf'});
-  await page.screenshot({path:'test-results/low-angle-guidance.png'});
+  await page.screenshot({path:'test-results/near-path-guidance.png'});
   await page.waitForFunction(()=> {
     const foe = (window as any).__wr.battle.fighters[1];
     return foe.hp < foe.maxHp;
@@ -271,7 +270,7 @@ test('첫 차례의 자유 탄 선택: 2번 발사 후 1번으로 돌아간다',
   await page.keyboard.press('2');
   await expect.poll(()=>wr(page,'__wr.battle.cur.slot')).toBe(1);
   await expect(hud.locator('[data-w="1"]')).toHaveClass(/on/);
-  await page.keyboard.down('Space');await page.waitForTimeout(850);await page.keyboard.up('Space');
+  await page.keyboard.press('Space');await page.waitForTimeout(850);await page.keyboard.press('Space');
   await expect.poll(async()=>(await state(page)).shots[who]).toBe(before.shots[who]!+1);
   await waitAim(page,1-who,45_000);
   await expect(hud.locator('[data-w="1"]')).toBeEnabled();
@@ -355,10 +354,10 @@ test('로컬 대전: 1P 발사 → 2P 발사, 키보드로 턴이 번갈아 바�
     await page.keyboard.down('ArrowUp');
     await page.waitForTimeout(150);
     await page.keyboard.up('ArrowUp');
-    await page.keyboard.down('Space');
+    await page.keyboard.press('Space');
     await expect.poll(async () => (await state(page)).phase).toBe('CHARGE');
     await page.waitForTimeout(500);
-    await page.keyboard.up('Space');
+    await page.keyboard.press('Space');
     await expect.poll(async () => (await state(page)).shots[who]).toBe(before.shots[who]! + 1);
     // 다음 사람 차례로
     await expect.poll(async () => {
@@ -388,7 +387,7 @@ test('게임 끝 → 결과 화면 → 재대전', async ({ page }) => {
   await waitAim(page);
 });
 
-for (const vp of [{ name: '가로', width: 844, height: 390 }, { name: '세로', width: 390, height: 630 }]) {
+for (const vp of [{ name: '가로', width: 844, height: 390 }, { name: '세로', width: 390, height: 630 }, { name: '태블릿 가로', width: 1024, height: 768 }, { name: '큰 태블릿 가로', width: 1194, height: 834 }]) {
   test(`모바일 ${vp.name} 화면: 조작 단추가 손가락 크기로 화면 안에 있고 누르면 쏜다`, async ({ browser }) => {
     const ctx = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, hasTouch: true, isMobile: true, baseURL: 'http://127.0.0.1:5213/' });
     const page = await ctx.newPage();
@@ -396,7 +395,7 @@ for (const vp of [{ name: '가로', width: 844, height: 390 }, { name: '세로',
     await waitAim(page);
     await expect(page.locator('[data-s=hud] .angle-hint')).toBeVisible();
     await expect(page.locator('[data-s=hud] .power')).toBeVisible();
-    const ids = ['[data-hold=left]', '[data-hold=right]', '[data-hold=aimUp]', '[data-hold=aimDown]', '[data-act=flip]', '[data-hold=charge]', '[data-w="0"]', '[data-w="1"]', '[data-w="2"]', '.pausebtn'];
+    const ids = ['[data-hold=left]', '[data-hold=right]', '[data-hold=aimUp]', '[data-hold=aimDown]', '[data-act=flip]', '[data-act=fire]', '[data-w="0"]', '[data-w="1"]', '[data-w="2"]', '.pausebtn'];
     const boxes = [];
     for (const sel of ids) {
       const b = await page.locator(`[data-s=hud] ${sel}`).boundingBox();
@@ -415,12 +414,13 @@ for (const vp of [{ name: '가로', width: 844, height: 390 }, { name: '세로',
       const overlap = a.x < c.x + c.width - 1 && c.x < a.x + a.width - 1 && a.y < c.y + c.height - 1 && c.y < a.y + a.height - 1;
       expect(overlap, `${a.sel} / ${c.sel} 겹침`).toBe(false);
     }
-    // 발사 단추를 누르고 있다가 떼면 쏜다
+    // 발사 단추의 두 번째 터치에서만 쏜다
     const s0 = await state(page);
-    const fire = page.locator('[data-s=hud] [data-hold=charge]');
-    await fire.dispatchEvent('pointerdown', { pointerId: 7, pointerType: 'touch', isPrimary: true });
+    const fire = page.locator('[data-s=hud] [data-act=fire]');
+    await fire.tap();
     await page.waitForTimeout(500);
-    await fire.dispatchEvent('pointerup', { pointerId: 7, pointerType: 'touch', isPrimary: true });
+    expect((await state(page)).shots[s0.current]).toBe(s0.shots[s0.current]);
+    await fire.tap();
     await expect.poll(async () => (await state(page)).shots[s0.current]).toBe(s0.shots[s0.current]! + 1);
     // 문서가 가로로 넘치지 않는다
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);

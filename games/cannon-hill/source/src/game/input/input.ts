@@ -5,21 +5,18 @@ import type { WeaponSlot } from '../combat/types';
  * A/D 이동, ←/→ 각도(왼쪽으로/오른쪽으로 돌리기), ↑/↓ 포신 올리기/내리기, Space 힘 모으기·발사,
  * I/J/K/L 화면 이동(둘러보기).
  */
-export type Hold = 'left' | 'right' | 'aimL' | 'aimR' | 'aimUp' | 'aimDown' | 'charge' | 'camU' | 'camD' | 'camL' | 'camR';
+export type Hold = 'left' | 'right' | 'aimL' | 'aimR' | 'aimUp' | 'aimDown' | 'camU' | 'camD' | 'camL' | 'camR';
 
 export class InputState {
-  held: Record<Hold, boolean> = { left: false, right: false, aimL: false, aimR: false, aimUp: false, aimDown: false, charge: false, camU: false, camD: false, camL: false, camR: false };
-  /** 다음 턴에 Space를 누른 채로 넘어가면, 한 번 뗄 때까지 무시한다 */
-  chargeLatch = false;
-  chargeCancelled = false;
+  held: Record<Hold, boolean> = { left: false, right: false, aimL: false, aimR: false, aimUp: false, aimDown: false, camU: false, camD: false, camL: false, camR: false };
   active = false;
   private onKey: ((e: KeyboardEvent) => void) | null = null;
-  listeners: { weapon?: (slot: WeaponSlot) => void; pause?: () => void; camera?: () => void; recenter?: () => void; zoom?: (d: number) => void } = {};
+  listeners: { fire?: () => void; cancelFire?: () => void; weapon?: (slot: WeaponSlot) => void; pause?: () => void; camera?: () => void; recenter?: () => void; zoom?: (d: number) => void } = {};
 
   attach(): void {
     if (this.onKey) return;
     const map: Record<string, Hold> = {
-      KeyA: 'left', KeyD: 'right', ArrowLeft: 'aimL', ArrowRight: 'aimR', ArrowUp: 'aimUp', ArrowDown: 'aimDown', Space: 'charge',
+      KeyA: 'left', KeyD: 'right', ArrowLeft: 'aimL', ArrowRight: 'aimR', ArrowUp: 'aimUp', ArrowDown: 'aimDown',
       KeyW: 'aimUp', KeyS: 'aimDown',
       KeyI: 'camU', KeyK: 'camD', KeyJ: 'camL', KeyL: 'camR',
     };
@@ -29,6 +26,11 @@ export class InputState {
       if (tgt instanceof HTMLInputElement) return;
       if (tgt instanceof HTMLSelectElement) return;
       const down = e.type === 'keydown';
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (down && !e.repeat) this.listeners.fire?.();
+        return;
+      }
       const h = map[e.code];
       if (h) {
         e.preventDefault();
@@ -53,32 +55,16 @@ export class InputState {
   }
 
   set(h: Hold, on: boolean): void {
-    if (h === 'charge' && !on) this.chargeLatch = false;
     this.held[h] = on;
   }
 
   reset(): void {
-    this.cancelCharge();
+    if (this.active) this.listeners.cancelFire?.();
     for (const k of Object.keys(this.held) as Hold[]) this.held[k] = false;
-    this.chargeLatch = false;
   }
 
-  /** 턴이 바뀔 때: 누르고 있던 Space는 떼기 전까지 무시 */
   newTurn(): void {
-    this.chargeCancelled = false;
-    this.chargeLatch = this.held.charge;
     this.held.left = this.held.right = false;
-  }
-
-  cancelCharge(): void {
-    if (this.held.charge) this.chargeCancelled = true;
-    this.set('charge', false);
-  }
-
-  takeChargeCancellation(): boolean {
-    const cancelled = this.chargeCancelled;
-    this.chargeCancelled = false;
-    return cancelled;
   }
 
   /** 화면 이동 방향(키보드 I/J/K/L) */
@@ -97,9 +83,6 @@ export class InputState {
     return Math.max(-1, Math.min(1, d)) as -1 | 0 | 1;
   }
 
-  get charge(): boolean {
-    return this.held.charge && !this.chargeLatch;
-  }
 }
 
 export const input = new InputState();

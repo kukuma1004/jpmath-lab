@@ -106,10 +106,10 @@ export const WEAPONS: Record<string, WeaponDef> = {
     look: 'goblinfire', color: 0x6dff9e, glow: 0x2ee6a6, size: 8,
   },
   bujeok: {
-    id: 'bujeok', name: '추적 부적탄', use: '적 자동 추적', desc: '각도와 무관하게 비행 중 가까운 적을 잡아 따라갑니다. 한 발의 피해는 낮으며, 땅이나 장애물에 먼저 닿으면 터집니다.',
+    id: 'bujeok', name: '추적 부적탄', use: '진행 방향 추적', desc: '진행 방향 가까이에 있는 적을 포착해 부드럽게 휩니다. 땅이나 장애물에 먼저 닿으면 터집니다.',
     behavior: 'shell', pattern: 'single',
     radius: 52, carve: 48, rockMul: 0.7, damage: 126, directBonus: 1.15, knockback: 230,
-    homing: { range: 530, turnRate: 6.2 },
+    homing: { range: 405, turnRate: 3.1 },
     look: 'paper', color: 0xf7d354, glow: 0xff5a5a, size: 7,
   },
   nakroe: {
@@ -219,9 +219,9 @@ export const WEAPONS: Record<string, WeaponDef> = {
     id: 'fanFestival', name: '풍류 한마당', use: '세 번 울리는 큰 장단',
     desc: '세 번의 장단이 이어지며 착탄점 주변으로 넓게 퍼집니다. 가까이 모인 상대를 노리세요.',
     behavior: 'bounceBurst', pattern: 'single',
-    damage: 164, directBonus: 1.14, radius: 87, carve: 41, rockMul: 0.58, knockback: 195,
+    damage: 201, directBonus: 1.14, radius: 91, carve: 41, rockMul: 0.58, knockback: 195,
     bounces: 3, restitution: 0.26, fuse: 5,
-    burstDamage: 69, burstRadius: 76, burstCarve: 22,
+    burstDamage: 81, burstRadius: 82, burstCarve: 22,
     look: 'fan', color: 0xc7af60, glow: 0xffe3a3, size: 9, renderScale: 1.15,
   },
 };
@@ -250,7 +250,7 @@ WEAPONS.shadowPair = { ...WEAPONS.iron!, id: 'shadowPair', name: '그림자 협�
 WEAPONS.royalBarrage = { ...WEAPONS.hwapo!, id: 'royalBarrage', name: '천지 대포', use: '대형 폭발',
     desc: '거대한 포탄 한 발로 크게 폭발시켜 전장에 깊은 구덩이를 냅니다.', radius: 89, carve: 107, damage: 259, rockMul: 0.86, directBonus: 1.15, knockback: 290, look: "megabomb", glow: 16765298 };
 WEAPONS.skyArrows = { ...WEAPONS.samyeonsi!, id: 'skyArrows', name: '달가름 삼시', use: '세 발 정밀 관통',
-    desc: '촘촘하게 모인 세 화살이 한 자리를 꿰뚫습니다.', radius: 44, damage: 97, directBonus: 1.26, spreadDeg: 0.9, glow: 16772514 };
+    desc: '촘촘하게 모인 세 화살이 한 자리를 꿰뚫습니다.', radius: 47, damage: 110, directBonus: 1.26, spreadDeg: 0.9, glow: 16772514 };
 WEAPONS.goblinCarnival = { ...WEAPONS.dokkaebiFire!, id: 'goblinCarnival', name: '도깨비 난장', use: '연쇄 폭발',
     desc: '불덩이가 낮게 뛰면서 여러 번 터지고 끝에 크게 폭발합니다.', bounces: 3, restitution: 0.32, radius: 76, damage: 174, burstDamage: 88, burstRadius: 69, knockback: 220 };
 WEAPONS.fiveThunders = { ...WEAPONS.nakroe!, id: 'fiveThunders', name: '오방 천둥', use: '집중 벼락 다섯 줄',
@@ -258,11 +258,11 @@ WEAPONS.fiveThunders = { ...WEAPONS.nakroe!, id: 'fiveThunders', name: '오방 �
 WEAPONS.ironBroadside = { ...WEAPONS.salvo!, id: 'ironBroadside', name: '용두 제압', use: '중함포 네 발',
     desc: '흔들림을 줄인 중함포 네 발을 연이어 쏩니다.', count: 4, radius: 58, damage: 100, carve: 37, salvoGap: 0.13, salvoPowerStep: 0.6 };
 WEAPONS.foxComet = { ...WEAPONS.foxSplit!, id: 'foxComet', name: '칠성 여우불', use: '일곱 갈래 낙하',
-    desc: '하늘에서 여우불 일곱 갈래가 나뉘어 떨어집니다.', childCount: 7, childSpread: 46, childDamage: 75, childRadius: 48, glow: 15382527 };
+    desc: '하늘에서 여우불 일곱 갈래가 나뉘어 떨어집니다.', childCount: 7, childSpread: 40, childDamage: 85, childRadius: 51, glow: 15382527 };
 WEAPONS.rocketTempest = { ...WEAPONS.hwachaStorm!, id: 'rocketTempest', name: '신기전 폭풍', use: '집중 부채꼴',
-    desc: '신기전 열한 발이 부채꼴로 날아가 비탈을 훑습니다.', count: 11, spreadDeg: 1.67, radius: 38, damage: 40, glow: 16760174 };
+    desc: '신기전 열한 발이 부채꼴로 날아가 비탈을 훑습니다.', count: 11, spreadDeg: 1.42, radius: 44, damage: 48, glow: 16760174 };
 WEAPONS.greenDeluge = { ...WEAPONS.poisonCloud!, id: 'greenDeluge', name: '청록 대독무', use: '넓은 독구름',
-    desc: '넓은 독구름 안에서 자기 차례를 맞으면 62 피해를 받습니다. 독무는 네 차례까지 남습니다.', damage: 106, cloudTurns: 4, cloudRadius: 178, cloudDamage: 62 };
+    desc: '착탄 즉시 피해를 주고 독구름을 남깁니다. 구름 속에서 자기 차례를 맞으면 62 피해를 받습니다.', damage: 150, cloudTurns: 4, cloudRadius: 178, cloudDamage: 62 };
 WEAPONS.deepFault = { ...WEAPONS.drillBore!, id: 'deepFault', name: '대지 단층파', use: '긴 굴착·발판 붕괴',
     desc: '두꺼운 벽을 뚫고 출구에서 폭발합니다. 얇은 발판에는 넓은 붕괴가 이어집니다.',
     drillDepth: 350, drillRadius: 21, radius: 81, carve: 70, damage: 234,
@@ -270,7 +270,7 @@ WEAPONS.deepFault = { ...WEAPONS.drillBore!, id: 'deepFault', name: '대지 단�
 WEAPONS.fullTide = { ...WEAPONS.waveShell!, id: 'fullTide', name: '만조 파도', use: '넓은 밀어내기',
     desc: '넓은 파도가 폭발해 가장자리의 상대를 멀리 밀어냅니다.', radius: 98, damage: 218, carve: 65, knockback: 455, glow: 6351871 };
 WEAPONS.whiteSky = { ...WEAPONS.frostSplit!, id: 'whiteSky', name: '백야 빙우', use: '다섯 빙편 직하',
-    desc: '하늘에서 다섯 빙편이 갈라져 가까운 범위에 꽂힙니다.', childCount: 5, childSpread: 33, childDamage: 82, childRadius: 44, glow: 12712191 };
+    desc: '하늘에서 다섯 빙편이 갈라져 가까운 범위에 꽂힙니다.', childCount: 5, childSpread: 30, childDamage: 93, childRadius: 48, glow: 12712191 };
 WEAPONS.beaconRain = { ...WEAPONS.lanternSalvo!, id: 'beaconRain', name: '봉화 폭우', use: '다섯 발 연속',
     desc: '불꽃탄 다섯 발이 거리를 조금씩 달리해 연달아 떨어집니다.', count: 5, damage: 87, radius: 55, salvoPowerStep: 1.1, salvoGap: 0.11, glow: 16750676 };
 WEAPONS.cliffBreak = { ...WEAPONS.ledgeWedge!, id: 'cliffBreak', name: '산허리 붕괴', use: '대형 분화구',

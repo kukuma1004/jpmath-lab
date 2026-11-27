@@ -30,6 +30,7 @@ export interface UIHooks {
   restart(): void;
   pause(): void;
   weapon(slot: WeaponSlot): void;
+  fire(): void;
   flip(): void;
   camera(): void;
   recenter(): void;
@@ -401,7 +402,7 @@ export class UI {
           <div class="weapons" aria-label="포탄과 궁극기"><button class="wbtn" data-w="0"><kbd>1</kbd><b class="wn0"></b><small class="wu0"></small></button><button class="wbtn" data-w="1"><kbd>2</kbd><b class="wn1"></b><small class="wu1"></small></button><button class="wbtn ult-btn" data-w="2"><kbd>R</kbd><b class="wn2"></b><small class="wu2"></small></button></div>
           <div class="firewrap">
             <div class="power"><div class="ticks"></div><i></i><div class="last" hidden></div><span>힘 0</span></div>
-            <button class="fire" data-hold="charge" aria-label="힘 모아 발사">발사<small>Space 꾹</small></button>
+            <button class="fire" data-act="fire" aria-label="힘 모아 발사"><span>힘 시작</span><small>Space</small></button>
           </div>
         </div>
       </section>`));
@@ -416,11 +417,10 @@ export class UI {
         b.classList.add('held');
         input.set(hold, true);
       };
-      const off = (e: PointerEvent) => {
+      const off = () => {
         if (!b.classList.contains('held')) return;
         b.classList.remove('held');
-        if (hold === 'charge' && e.type !== 'pointerup') input.cancelCharge();
-        else input.set(hold, false);
+        input.set(hold, false);
       };
       b.addEventListener('pointerdown', on);
       b.addEventListener('pointerup', off);
@@ -433,6 +433,7 @@ export class UI {
       if (w !== undefined) { this.hooks.weapon(Number(w) as WeaponSlot); return; }
       const act = t.closest<HTMLElement>('[data-act]')?.dataset.act;
       if (act === 'pause') this.hooks.pause();
+      else if (act === 'fire') { audio.unlock(); this.hooks.fire(); }
       else if (act === 'flip') this.hooks.flip();
       else if (act === 'camera') this.hooks.camera();
       else if (act === 'recenter') this.hooks.recenter();
@@ -523,6 +524,12 @@ export class UI {
     const c = character(f.charId);
     const canAct = opts.humanTurn && b.isPlayerPhase();
     this.set('act', `${canAct}`, () => el.querySelector('.bottom')!.classList.toggle('off', !canAct));
+    const charging = b.phase === 'CHARGE' && canAct;
+    this.set('fire', `${charging}`, () => {
+      const fire = el.querySelector<HTMLButtonElement>('.fire')!;
+      fire.querySelector('span')!.textContent = charging ? '발사' : '힘 시작';
+      fire.classList.toggle('held', charging);
+    });
     this.set('wn', c.id, () => {
       el.querySelector('.wn0')!.textContent = weapon(c.normal).name;
       el.querySelector('.wn1')!.textContent = weapon(c.special).name;
@@ -791,12 +798,12 @@ export class UI {
         <ul>
           <li><kbd>A</kbd> <kbd>D</kbd> 이동(한 턴에 갈 수 있는 거리가 정해져 있어요)</li>
           <li><kbd>←</kbd> <kbd>→</kbd> 포신을 왼쪽·오른쪽으로 돌리기, <kbd>↑</kbd> <kbd>↓</kbd> 포신 올리기·내리기</li>
-          <li><kbd>Space</kbd> 꾹 눌러 힘 모으기 → 떼면 발사(힘은 끝까지 차면 다시 줄어듭니다)</li>
+          <li><kbd>Space</kbd>를 한 번 누르면 힘이 0~100 사이를 오갑니다. 원하는 힘에서 다시 눌러 발사합니다.</li>
           <li><kbd>1</kbd> <kbd>2</kbd> 무기 바꾸기 · <kbd>R</kbd> 궁극기 선택 · <kbd>Esc</kbd> 일시정지</li>
           <li>화면 둘러보기: 마우스로 끌기 또는 <kbd>I</kbd> <kbd>J</kbd> <kbd>K</kbd> <kbd>L</kbd>, 휠로 확대 · <kbd>Tab</kbd> 따라가기/상대/전체 보기 · <kbd>C</kbd> 내 장수로 돌아오기</li>
         </ul>
         <h3>휴대폰·태블릿</h3>
-        <ul><li>왼쪽 ◀ ▶ 이동, ▲ ▼ 각도, ⇄ 방향 바꾸기, 오른쪽 큰 <b>발사</b> 단추를 누르고 있다가 떼면 발사.</li>
+        <ul><li>왼쪽 ◀ ▶ 이동, ▲ ▼ 각도, ⇄ 방향 바꾸기, 오른쪽 단추로 힘을 시작하고 한 번 더 눌러 발사.</li>
           <li>전장을 끌어서 둘러보고, 두 손가락으로 벌려 확대할 수 있습니다. 「전체 보기」와 「따라가기」로 전환하고, <kbd>Tab</kbd>으로 상대도 볼 수 있습니다.</li></ul>
         <h3>규칙</h3>
         <ul>
@@ -804,8 +811,8 @@ export class UI {
           <li>장수마다 자기 ${ULTIMATE_TURN}번째 차례에 궁극기가 열리고, 발사 후 자기 차례가 ${ULTIMATE_RECHARGE_TURNS}번 돌아오면 다시 쓸 수 있어요. 궁극기를 고른 다음 평소처럼 힘을 모아 발사하세요.</li>
           <li>시작 위치는 고지·저지·다리·발판 중 무작위로 고르며, 양 팀은 같은 높이·발판의 좌우 대칭 위치에서 시작합니다. 2:2도 서로 대응하는 두 자리를 대칭으로 놓습니다. 높은 곳에서 떨어지면 큰 피해를 받고, 벼랑 외나무다리의 추락선을 넘으면 체력과 무관하게 탈락합니다.</li>
           <li>바람은 턴마다 바뀝니다. 화면 위 화살표가 방향과 세기(0~10)입니다. 모든 탄의 기본 발사속도·중력·바람 영향은 같습니다.</li>
-          <li><b>무당의 추적 부적탄</b>은 가까운 적을 찾아 따라갑니다. 표적에 금빛 조준 표시가 뜨며, 장애물에 먼저 닿으면 막힙니다.</li>
-          <li><kbd>Space</kbd>나 「발사」를 누르면 힘이 차고, 떼는 순간 쏩니다. 힘 게이지에는 현재 모은 힘과 지난 발사 힘이 표시됩니다.</li>
+          <li><b>무당의 추적 부적탄</b>은 진행 방향 가까이에 있는 적을 향해 휩니다. 표적에 금빛 조준 표시가 뜨며, 장애물에 먼저 닿으면 막힙니다.</li>
+          <li>힘 게이지에는 현재 힘과 지난 발사 힘이 표시됩니다.</li>
           <li><b>굴착대장</b>의 1번 탄은 벽을 뚫고, 채석장의 얇은 발판은 아래까지 끊을 수 있습니다. 2번 탄은 철편 세 발을 펼쳐 명중을 노립니다.</li>
           <li>지지점을 잃은 땅은 덩어리째 무너지고, 바위는 낙석이 되어 굴러갑니다. 깔리거나 높은 곳에서 떨어지면 다칩니다.</li>
           <li><b>1번과 2번 탄은 매 차례 자유롭게 선택</b>합니다. 횟수 제한과 기세 조건이 없고, 발사 뒤에도 고른 탄을 기억합니다. 누르고 모으는 힘은 포탄의 날아갈 거리입니다.</li>

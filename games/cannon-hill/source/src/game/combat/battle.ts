@@ -743,15 +743,20 @@ export class Battle {
   private seek(p: Projectile, {range, turnRate}: NonNullable<WeaponDef['homing']>, dt: number): void {
     const owner = this.fighters[p.owner];
     if (!owner) return;
+    const speed = Math.hypot(p.vx, p.vy);
+    const cosineTo = (f: Fighter, distance: number) => distance <= 1 ? 1 :
+      ((f.x - p.x) * p.vx + (f.y - CHAR_CENTER_Y - p.y) * p.vy) / (distance * Math.max(1, speed));
     const distanceTo = (f: Fighter) => Math.hypot(f.x - p.x, f.y - CHAR_CENTER_Y - p.y);
     const previous = this.fighters[p.seekTarget ?? -1];
-    let best = previous?.alive && previous.team !== owner.team && distanceTo(previous) < range * 1.2 ? previous : null;
+    const previousDistance = previous ? distanceTo(previous) : Infinity;
+    let best = previous?.alive && previous.team !== owner.team && previousDistance < range * 1.15 &&
+      cosineTo(previous, previousDistance) > 0 ? previous : null;
     if (!best) {
       let distance = range;
       for (const f of this.fighters) {
         if (!f.alive || f.team === owner.team) continue;
         const d = distanceTo(f);
-        if (d < distance) { distance = d; best = f; }
+        if (d < distance && cosineTo(f, d) >= 0.5) { distance = d; best = f; }
       }
     }
     if (best && best.idx !== p.seekTarget) this.emit({ type: 'seekLock', x: best.x, y: best.y });
@@ -762,9 +767,9 @@ export class Battle {
     const desired = Math.atan2(dy, dx);
     const delta = Math.atan2(Math.sin(desired - heading), Math.cos(desired - heading));
     const angle = heading + clamp(delta, -turnRate * dt, turnRate * dt);
-    const speed = Math.max(220, Math.hypot(p.vx, p.vy));
-    p.vx = Math.cos(angle) * speed;
-    p.vy = Math.sin(angle) * speed;
+    const steerSpeed = Math.max(220, speed);
+    p.vx = Math.cos(angle) * steerSpeed;
+    p.vy = Math.sin(angle) * steerSpeed;
   }
 
   private bounce(p: Projectile, w: WeaponDef): void {

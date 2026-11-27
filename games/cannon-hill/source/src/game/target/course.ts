@@ -11,6 +11,12 @@ export const FLOOR_HEIGHT = -92;
 export const WALL_SPAN = 52;
 export const BANDS = [20, 50, 100] as const;
 export const CENTER_SCORE = MAX_SHOT_SCORE - BANDS[0] * 10;
+export const COURSE_LENGTH = 10;
+export const MAX_COURSE_SEED = 2147483646;
+export const NEAR_DISTANCE = 490;
+export const FAR_DISTANCE = 1660;
+export const COURSE_STRIDES = [1, 3, 7, 9] as const;
+export const COURSE_ROLLS = [48271, 62039, 79259, 98081, 112997, 134339, 154873, 176989, 199403, 221223] as const;
 
 // Distances and elevations from the muzzle. A wall has a distance and a top height.
 export const ROUNDS = [
@@ -48,10 +54,32 @@ export interface TargetShot extends TargetAim {
 }
 
 export interface TargetResult {
+  seed?: number;
   score: number;
   centers: number;
   rank: number;
   shots: TargetShot[];
+}
+
+export function validCourseSeed(seed: unknown): seed is number {
+  return typeof seed === 'number' && Number.isInteger(seed) && seed > 0 && seed <= MAX_COURSE_SEED;
+}
+
+export function courseFromSeed(seed: number): Target[] {
+  const stride = COURSE_STRIDES[Math.floor(seed / 10) % COURSE_STRIDES.length]!;
+  return COURSE_ROLLS.map((multiplier, index) => {
+    const tier = (seed % 10 + index * stride) % COURSE_LENGTH;
+    const roll = (seed * multiplier + (index + 1) * 104729) % (MAX_COURSE_SEED + 1);
+    const distance = NEAR_DISTANCE + tier * 120 + roll % 91;
+    const height = Math.floor(roll / 91) % 181 - 58;
+    const wind = Math.floor(roll / 16471) % 13 - 6;
+    const needsWall = tier === 3 || tier === 5 || tier === 7 || tier === 9;
+    const wall = needsWall ? {
+      distance: Math.floor(distance * 45 / 100) + Math.floor(roll / 214123) % 121,
+      height: 86 + tier * 10 + Math.floor(roll / 25908883) % 41,
+    } : undefined;
+    return {distance, height, wind, wall};
+  });
 }
 
 export function angleDegrees(slope: number): number {
@@ -101,14 +129,16 @@ export function isCenter(shot: TargetShot): boolean {
   return shot.points >= CENTER_SCORE;
 }
 
-export function summarize(aims: readonly TargetAim[]): TargetResult | null {
-  if (aims.length !== ROUNDS.length || aims.some(aim => !aim ||
+export function summarize(aims: readonly TargetAim[], seed?: number): TargetResult | null {
+  if (seed !== undefined && !validCourseSeed(seed)) return null;
+  if (aims.length !== COURSE_LENGTH || aims.some(aim => !aim ||
     !Number.isInteger(aim.power) || aim.power < 0 || aim.power > MAX_POWER ||
     !Number.isInteger(aim.slope) || aim.slope < MIN_SLOPE || aim.slope > MAX_SLOPE)) return null;
-  const shots = aims.map((aim, index) => scoreShot(ROUNDS[index]!, aim));
+  const targets = seed === undefined ? ROUNDS : courseFromSeed(seed);
+  const shots = aims.map((aim, index) => scoreShot(targets[index]!, aim));
   const score = shots.reduce((sum, shot) => sum + shot.points, 0);
   const centers = shots.filter(isCenter).length;
-  return {score, centers, rank: score * (ROUNDS.length + 1) + centers, shots};
+  return {seed, score, centers, rank: score * (COURSE_LENGTH + 1) + centers, shots};
 }
 
 export function validNickname(name: string): boolean {

@@ -99,6 +99,8 @@
 .target-dialog header { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .target-dialog header h2 { margin: 0; font-size: 23px; }
 .target-dialog header p { margin: 3px 0 0; color: var(--range-muted); font-size: 13px; }
+.target-board-choice { display:flex; align-items:center; gap:8px; margin-block:12px; font-size:13px; }
+.target-board-choice select { color:inherit; background:#26212a; border:1px solid #856d50; border-radius:6px; padding:5px; font:inherit; }
 .target-submit { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 5px 9px; margin-top: 14px; }
 .target-submit label { grid-column: 1 / -1; color: var(--range-muted); font-size: 13px; }
 .target-submit input { min-width: 0; width: 100%; padding: 9px; border: 1px solid #657a72; border-radius: 8px; background: #0e1a26; color: var(--range-cream); font: 16px/1.2 var(--body-font); }
