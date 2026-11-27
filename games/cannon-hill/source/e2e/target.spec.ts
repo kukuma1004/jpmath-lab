@@ -14,7 +14,7 @@ test('울트라와이드와 낮은 창에서 포대와 표적이 하단 조작�
   for (const [width, height] of [[3440, 1090], [2560, 830], [1920, 620], [1366, 575], [1920, 300]]) {
     await page.setViewportSize({width, height});
     const field = (await page.locator('.target-field').boundingBox())!;
-    const canvas = (await page.locator('.target-field canvas').boundingBox())!;
+    const canvas = (await page.locator('.target-field canvas[aria-label]').boundingBox())!;
     const controls = (await page.locator('.target-control').boundingBox())!;
     expect(canvas).toEqual(field);
     // The bottom edge of the lowest target is 70% down the field.

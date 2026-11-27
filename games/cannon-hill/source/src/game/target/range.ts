@@ -1,5 +1,6 @@
 import {audio} from '../audio/audio';
 import {PLAYER_CHARGE_TIME} from '../config/constants';
+import {WindStreaks, traceWind} from '../render/windStreaks';
 import {BANDS, COURSE_LENGTH, FAR_DISTANCE, FLOOR_HEIGHT, MAX_COURSE_SEED, MAX_POWER, MAX_SCORE, MAX_SHOT_SCORE, MAX_SLOPE, MIN_SLOPE, NEAR_DISTANCE, SLOPE_SCALE, WALL_SPAN, angleDegrees, courseFromSeed, formatTenths, heightAt, isCenter, scoreShot, summarize, validCourseSeed, type TargetAim, type TargetResult, type TargetShot} from './course';
 import {deleteScore, loadBoard, publishScore, type RecordRow} from './ranking';
 import {drawCliff, drawBarricade} from './rangeArt';
@@ -66,9 +67,12 @@ export class TargetRange {
   private readonly controls = new AbortController();
   private readonly ctx: CanvasRenderingContext2D;
   private readonly canvasSize: ResizeObserver;
+  private readonly windCanvas: HTMLCanvasElement;
+  private readonly breeze: WindStreaks;
   private readonly board: HTMLDialogElement;
   private readonly reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   private animation = 0;
+  private lastFrame = 0;
   private destroyed = false;
   private boardRequest = 0;
   private busy = false;
@@ -102,6 +106,7 @@ export class TargetRange {
           <span><small>합계</small><strong data-score></strong></span>
         </div>
         <div class="target-field">
+          <canvas class="target-wind" aria-hidden="true"></canvas>
           <canvas width="${WIDTH * 2}" height="${HEIGHT * 2}" aria-label="높낮이가 있는 표적과 엄폐물을 넘겨 쏘는 사격장"></canvas>
           <div class="target-note" data-feedback role="status" aria-live="polite"></div>
           <section class="target-finish" hidden aria-label="도전 결과">
@@ -144,16 +149,42 @@ export class TargetRange {
         <div class="target-board-actions"><button class="btn ghost" type="button" data-action="reload">새로고침</button><button class="btn ghost" type="button" data-action="remove" hidden>내 등록 삭제</button></div>
       </dialog>`;
     container.appendChild(this.root);
-    const canvas = this.select<HTMLCanvasElement>('canvas');
+    const canvas = this.select<HTMLCanvasElement>('canvas[aria-label]');
     this.ctx = canvas.getContext('2d')!;
     this.ctx.scale(2, 2);
-    this.canvasSize = new ResizeObserver(([entry]) => {
-      if (!entry?.contentRect.width || !entry.contentRect.height) return;
-      const { width, height } = entry.contentRect;
-      this.objectAspect = Math.min(2.6, height * WIDTH / (width * HEIGHT));
-      this.needsPaint = true;
+    const windCanvas = this.windCanvas = this.select<HTMLCanvasElement>('.target-wind');
+    const air = windCanvas.getContext('2d')!;
+    this.breeze = new WindStreaks(() => {
+      air.clearRect(0, 0, windCanvas.width, windCanvas.height);
+      air.fillStyle = '#e0f7ff';
+      air.strokeStyle = '#294962';
+    }, (x, y, length, bend, thickness, alpha) => {
+      air.beginPath();
+      traceWind(air, x, y, length, bend, thickness);
+      air.globalAlpha = alpha * .55;
+      air.lineWidth = Math.max(.85, thickness * .65);
+      air.stroke();
+      air.globalAlpha = alpha;
+      air.fill();
+    });
+    this.canvasSize = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        if (!width || !height) continue;
+        if (entry.target === windCanvas) {
+          const scale = Math.min(1, 1440 / width, 960 / height);
+          const rasterWidth = Math.ceil(width * scale);
+          const rasterHeight = Math.ceil(height * scale);
+          if (windCanvas.width !== rasterWidth) windCanvas.width = rasterWidth;
+          if (windCanvas.height !== rasterHeight) windCanvas.height = rasterHeight;
+        } else {
+          this.objectAspect = Math.min(2.6, height * WIDTH / (width * HEIGHT));
+          this.needsPaint = true;
+        }
+      }
     });
     this.canvasSize.observe(canvas);
+    this.canvasSize.observe(windCanvas);
     this.board = this.select('dialog');
     const { signal } = this.controls;
     this.portrait.addEventListener('load', () => { this.needsPaint = true; }, { signal });
@@ -350,6 +381,8 @@ export class TargetRange {
 
   private update = (now: number): void => {
     if (this.destroyed) return;
+    const dt = this.lastFrame ? Math.min(.1, (now - this.lastFrame) / 1000) : 0;
+    this.lastFrame = now;
     if (this.hold) {
       this.aim.power = this.chargePower(now, this.hold.start);
       this.paintPower();
@@ -381,6 +414,8 @@ export class TargetRange {
       this.needsPaint = false;
       this.draw(now);
     }
+    this.breeze.update(this.trajectory?.wind ?? this.target.wind, this.windCanvas.width, this.windCanvas.height,
+      this.board.open || this.phase === 'result' ? 0 : dt);
     this.animation = requestAnimationFrame(this.update);
   };
 

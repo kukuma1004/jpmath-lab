@@ -115,7 +115,7 @@ export class BattleScene extends Phaser.Scene {
     this.cam.ignore(this.bgLayer);
     this.bgCam.ignore(this.world);
 
-    this.bg = new BackgroundView(this, this.bgLayer, def.id, s.quality, W);
+    this.bg = new BackgroundView(this, this.bgLayer, def.id, s.quality, W, true);
     this.makeBottom(def.id);
     if (def.ringOutY !== undefined) {
       const line = this.add.graphics().setDepth(8);
@@ -765,7 +765,7 @@ export class BattleScene extends Phaser.Scene {
     this.drawBottom(dt);
     this.updateCamera(dt);
     const wv = this.cam.worldView;
-    this.bg.update(wv.centerX, wv.centerY, this.camZ, dt);
+    this.bg.update(wv.centerX, wv.centerY, this.camZ, dt, b.wind, this.paused);
     if (b.phase === 'CHARGE' && !this.paused) audio.charge(b.cur.power);
     else audio.charge(null);
 

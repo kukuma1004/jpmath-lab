@@ -3,6 +3,7 @@ import { VIEW_H, WORLD_W } from '../config/constants';
 import { LAYER_W, backgroundFor, type BgLayers } from '../art/backgrounds';
 import { artKey } from '../art/artAssets';
 import type { Quality } from '../settings';
+import { WindStreaks, traceWind } from './windStreaks';
 
 let uid = 0;
 
@@ -19,8 +20,10 @@ export class BackgroundView {
   private keys: string[] = [];
   private bg: BgLayers;
   private t = 0;
+  private breeze: Phaser.GameObjects.Graphics | null = null;
+  private wind: WindStreaks | null = null;
 
-  constructor(private scene: Phaser.Scene, private layer: Phaser.GameObjects.Layer, mapId: string, quality: Quality, private viewW: number) {
+  constructor(private scene: Phaser.Scene, private layer: Phaser.GameObjects.Layer, mapId: string, quality: Quality, private viewW: number, battle = false) {
     this.bg = backgroundFor(mapId);
     const id = ++uid;
     const add = (name: string, c: HTMLCanvasElement) => {
@@ -109,6 +112,18 @@ export class BackgroundView {
       layer.add(img);
       this.layers.push({ img, f, fy });
     }
+    if (battle) {
+      const breeze = this.breeze = scene.add.graphics();
+      layer.add(breeze);
+      this.wind = new WindStreaks(() => breeze.clear(), (x, y, length, bend, thickness, alpha) => {
+        breeze.fillStyle(0xe0f7ff, alpha);
+        breeze.lineStyle(Math.max(.8, thickness * .62), 0x294962, alpha * .55);
+        breeze.beginPath();
+        traceWind(breeze, x, y, length, bend, thickness);
+        breeze.strokePath();
+        breeze.fillPath();
+      }, quality === 'low');
+    }
     this.makeAmbient(quality);
     this.resize(viewW);
   }
@@ -149,7 +164,7 @@ export class BackgroundView {
   }
 
   /** camX/camY는 월드 카메라가 보는 가운데 */
-  update(camX: number, camY: number, zoom: number, dt: number): void {
+  update(camX: number, camY: number, zoom: number, dt: number, wind = 0, freezeWind = false): void {
     this.t += dt;
     const p = this.painted;
     if (p) {
@@ -174,6 +189,7 @@ export class BackgroundView {
       img.x = this.viewW / 2 - w / 2 - (camX - WORLD_W / 2) * f;
       img.y = -40 - (camY - 760) * fy + (1 - s) * 360;
     }
+    this.wind?.update(wind, this.viewW, VIEW_H, freezeWind ? 0 : dt);
   }
 
   destroy(): void {
@@ -182,6 +198,7 @@ export class BackgroundView {
     this.valleyMist?.destroy();
     for (const l of this.layers) l.img.destroy();
     this.ambient?.destroy();
+    this.breeze?.destroy();
     for (const k of this.keys) if (this.scene.textures.exists(k)) this.scene.textures.remove(k);
   }
 }
