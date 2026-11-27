@@ -488,7 +488,88 @@ window.JPKillerFigures = (function () {
     return () => { a = sa.value; bb = sb.value; t = st.value; sa.show(); sb.show(); st.show(); draw() };
   }
 
-  const FIGURES = { k01, k02, k03, k04, k05, s01, s02, s03, s04, t01, t02 };
+  /* ── 난이도별 추가 문항 · 핵심 구조를 한눈에 보는 정적 판 ─────── */
+  function u01(host) {
+    const f = (x) => x * x * x - 6 * x * x + 9 * x + 4;
+    const b = board(host, { xmin: -0.4, xmax: 4.3, ymin: 2, ymax: 9, height: 250 });
+    return () => { b.clear(); b.grid(1, 1); b.axes(); b.curve(f, CURVE, 3); [1, 3].forEach((x) => { b.dot(x, f(x), HOT); b.line(x - .6, f(x), x + .6, f(x), HOT, [], 2) }) };
+  }
+  function u02(host) {
+    const f = (x) => x * (x - 1) * (x - 3);
+    const b = board(host, { xmin: -.5, xmax: 3.5, ymin: -3, ymax: 5, height: 250 });
+    return () => { b.clear(); b.grid(1, 1); b.axes(); b.shade(f, 0, 3); b.curve(f, CURVE, 3); [0, 1, 3].forEach((x) => b.dot(x, 0, HOT)) };
+  }
+  function u03(host) {
+    const p = (x) => x * x * x - 3 * x - 2;
+    const b = board(host, { xmin: -3, xmax: 3.3, ymin: -7, ymax: 10, height: 250 });
+    return () => { b.clear(); b.grid(1, 2); b.axes(); b.curve(p, CURVE, 3); b.dot(-1, 0, HOT); b.dot(2, 0, HOT); b.text(-1, 1.5, '중근', HOT); b.text(2, -1.4, '단순근', HOT) };
+  }
+  function u04(host) {
+    const f = (x) => x * x * x - 3 * x;
+    const b = board(host, { xmin: -2.5, xmax: 2.5, ymin: -4, ymax: 4, height: 250 });
+    return () => { b.clear(); b.grid(1, 1); b.axes(); b.curve(f, CURVE, 3); b.hline(2, HOT, [6, 5]); b.hline(-2, COOL, [6, 5]); b.dot(-1, 2, HOT); b.dot(1, -2, COOL) };
+  }
+  function u05(host) {
+    const f = (x) => x ** 4 - 4 * x ** 3 + 2 * x * x + 4 * x + 1;
+    const b = board(host, { xmin: -.7, xmax: 2.7, ymin: -2, ymax: 12, height: 250 });
+    return () => { b.clear(); b.grid(1, 2); b.axes(); b.curve(f, CURVE, 3); b.through(0, 1, 4, HOT, [7, 5], 2); b.through(2, 1, -4, COOL, [7, 5], 2); b.dot(0, 1, HOT); b.dot(2, 1, COOL) };
+  }
+  function u06(host) {
+    const f = (x) => x * x * x - 3 * x;
+    const b = board(host, { xmin: -2.5, xmax: 2.5, ymin: -4, ymax: 4, height: 250 });
+    return () => { b.clear(); b.grid(1, 1); b.axes(); b.curve(f, CURVE, 3); b.hline(2, HOT, [6, 5]); b.hline(-2, HOT, [6, 5]); [-2, -1, 1, 2].forEach((x) => b.dot(x, f(x), x < 0 ? COOL : HOT)) };
+  }
+
+  function u07(host) {
+    const f = (x) => x * (x - 6) ** 2 + 3;
+    const b = board(host, { xmin: -.45, xmax: 7.55, ymin: 0, ymax: 41, height: 250 });
+    return () => {
+      b.clear(); b.grid(1, 5); b.axes();
+      b.hline(10, HOT, [5, 4]); b.hline(19, COOL, [5, 4]);
+      b.curve((x) => x >= 0 && x <= 7 ? f(x) : NaN, CURVE, 3);
+      b.line(1, 0.8, 4, 0.8, COOL, [], 3);
+      [0, 1, 2, 4, 6, 7].forEach((x) => b.dot(x, f(x), x === 1 || x === 4 ? COOL : HOT));
+      b.text(6.95, 13, '(7, 10)', HOT, 'right');
+      b.text(4, 22, '(4, 19)', COOL);
+      b.text(2, 38, '(2, 35)', HOT);
+    };
+  }
+  function u08(host) {
+    const F = (x) => x ** 3 - 3 * x * x + 4 * x + 1;
+    const b = board(host, { xmin: -1.45, xmax: 3.65, ymin: -13, ymax: 26, height: 250 });
+    return () => {
+      b.clear(); b.grid(1, 5); b.axes();
+      b.through(2, 5, 4, COOL, [7, 4], 2); b.curve(F, CURVE, 3);
+      b.dot(0, 1, COOL); b.dot(2, 5, HOT);
+      b.text(0, 4, 'F(0)=1', COOL);
+      b.text(2.29, 2.5, '접점 (2, 5)', HOT);
+    };
+  }
+  function u09(host) {
+    const H = (s) => 5 + 2 * (s * s - 1) * (s + 2);
+    const b = board(host, { xmin: -2.45, xmax: 2.45, ymin: -5, ymax: 38, height: 250 });
+    return () => {
+      b.clear(); b.grid(1, 5); b.axes();
+      b.hline(5, COOL, [5, 4]); b.curve(H, CURVE, 3);
+      [-2, -1, 0, 1, 2].forEach((s) => b.dot(s, H(s), s === 2 ? HOT : COOL));
+      b.text(0, 8.5, 'H(s)=5', COOL);
+      b.text(2.16, 33, '29', HOT);
+    };
+  }
+  function u10(host) {
+    const v = (t) => 3 * (t - 1) * (t - 4);
+    const b = board(host, { xmin: -.35, xmax: 6.35, ymin: -10, ymax: 33, height: 250 });
+    return () => {
+      b.clear(); b.grid(1, 5); b.axes();
+      b.shade(v, 0, 1); b.shade(v, 4, 6);
+      b.shade(v, 1, 4, 'rgba(220,38,38,.18)');
+      b.curve((t) => t >= 0 && t <= 6 ? v(t) : NaN, CURVE, 3);
+      [0, 1, 4, 6].forEach((t) => b.dot(t, v(t), t === 1 || t === 4 ? HOT : COOL));
+      b.text(2.5, -8.5, '되돌아간 구간', HOT);
+    };
+  }
+
+  const FIGURES = { k01, k02, k03, k04, k05, s01, s02, s03, s04, t01, t02, u01, u02, u03, u04, u05, u06, u07, u08, u09, u10 };
   const CAPTION = {
     k01: 't 를 밀어 보세요. 현이 회전하면서 평행한 접선이 구간 안팎을 드나듭니다 — 개수가 바뀌는 것은 접점이 끝을 지날 때뿐입니다.',
     k02: 'y=t 를 위아래로 밀어 보세요. t 가 0 을 지날 때 곡선은 평평해지지만 교점의 개수는 그대로입니다. 바뀌는 곳은 −27 하나뿐입니다.',
@@ -500,7 +581,17 @@ window.JPKillerFigures = (function () {
     s03: '점 A 를 위아래로 밀어 보세요. 대개 접선이 세 개인데, 딱 두 자리에서 두 개로 줄어듭니다. 그때 접점 두 개 중 하나가 중근입니다.',
     s04: 't 를 밀어 보세요. 오른쪽 조각이 회색 가로선을 기준으로 뒤집힙니다. 대부분은 이음매에서 뾰족하게 꺾이고, 꺾이지 않는 자리는 셋뿐입니다.',
     t01: 'p 를 −4 부터 4 까지 바꿔 보세요. 1 이 아닌 실근 β 가 생기면 (β+1)/2 에서 분자가 0 이 아닌지 붉게 표시됩니다. 판별식이 0 인 p=2 와 p=−2 가 서로 다르게 끝나는 것을 보세요. 위쪽 점들은 β 에서 시작해 규칙을 되풀이한 사슬입니다.',
-    t02: 'a 와 b 를 바꾸면 오른쪽 포물선의 바닥 c(노란 점선)가 움직입니다. 바닥이 4 보다 높으면 g=2 인 구간이 생기고, 4 보다 낮으면 그 구간은 없지만 합이 6 인 k 가 둘이 됩니다. (48,2), (12,3), (3,5) 에서만 하나가 됩니다.'
+    t02: 'a 와 b 를 바꾸면 오른쪽 포물선의 바닥 c(노란 점선)가 움직입니다. 바닥이 4 보다 높으면 g=2 인 구간이 생기고, 4 보다 낮으면 그 구간은 없지만 합이 6 인 k 가 둘이 됩니다. (48,2), (12,3), (3,5) 에서만 하나가 됩니다.',
+    u01: '수평 접선 두 개가 도함수의 두 근을 정합니다.',
+    u02: '누적함수의 정지는 원래 함수의 근입니다. 0, 1, 3 세 근을 한꺼번에 보세요.',
+    u03: '접선이 둘뿐인 경계에서는 접점 방정식의 한 근이 중근이 됩니다.',
+    u04: '수평선이 극값 높이에 닿을 때 중근은 남지만 절댓값 그래프는 그 자리에서 꺾이지 않습니다.',
+    u05: '두 접선은 접점마다 함수값과 미분값, 모두 네 조건을 줍니다.',
+    u06: 't=2에서 두 수평선은 각각 한 번 가로지르고 한 번 접하여 서로 다른 네 근을 만듭니다.',
+    u07: '붉은 점선 높이 10에서는 오른쪽 끝점 (7, 10)도 교점입니다. 청록색으로 표시한 [1, 4]의 최솟값은 19입니다.',
+    u08: '청록색 점선 y=4x−3은 x=2에서 원시함수에 접합니다. 높이와 기울기가 함께 일치하는 점입니다.',
+    u09: '가로축은 적분구간의 중심 s, 세로축은 정적분값 H(s)입니다. 중심이 −1과 1인 두 구간의 적분값은 모두 5입니다.',
+    u10: '이동거리와 변위를 빼면 붉은 부분의 넓이만 두 배로 남습니다. 위치의 범위를 구할 때는 속도의 근 1, 4뿐 아니라 시각 0과 6도 비교합니다.'
   };
 
   return {

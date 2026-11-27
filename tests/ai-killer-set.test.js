@@ -13,6 +13,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
+const katex = require('../vendor/katex/katex.min.js');
 
 const ROOT = path.join(__dirname, '..');
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
@@ -404,6 +405,73 @@ function cubicRealRoots(A, B, C) {
   say(s(4) === 8 && s(16) === 10 && s(20) === 6, `T02 · 바닥 4 에서 합: k=4→${s(4)}, 16→${s(16)}, 20→${s(20)}`);
 }
 
+/* 추가 문항 U01~U06 · 난이도별 확장 */
+{
+  const a = -6, b = 9;
+  const f = (x) => x ** 3 + a * x * x + b * x + 4;
+  const df = (x) => 3 * x * x + 2 * a * x + b;
+  say(df(1) === 0 && df(3) === 0 && f(2) === 6, 'U01 · 두 수평접선이 a=-6, b=9 와 답 6 을 정한다');
+
+  const integral = 3 ** 4 / 4 - 4 * 3 ** 3 / 3 + 3 * 3 ** 2 / 2;
+  say(near(4 * integral, -9), 'U02 · f=x(x-1)(x-3) 에서 4F(3)=-9');
+
+  const P = (x) => x ** 3 - 3 * x - 2;
+  say(near(P(-1), 0) && near(P(2), 0) && near(3 * (-1) ** 2 - 3, 0),
+    'U03 · a=3 일 때 -1 은 중근, 2 는 단순근이다');
+
+  const rootCounts = { '-2': 1, '-1': 3, '0': 3, '1': 3, '2': 1 };
+  const hits = Object.keys(rootCounts).map(Number).filter((p) => rootCounts[p] === 1);
+  say(hits.length === 2 && hits[0] * hits[1] === -4, 'U04 · 미분불가능점이 하나인 p는 -2, 2 이고 곱은 -4');
+
+  const coeffs = { a: -4, b: 2, c: 4, d: 1 };
+  const q = (x) => x ** 4 + coeffs.a * x ** 3 + coeffs.b * x ** 2 + coeffs.c * x + coeffs.d;
+  const dq = (x) => 4 * x ** 3 + 3 * coeffs.a * x ** 2 + 2 * coeffs.b * x + coeffs.c;
+  const qIntegral = 32 / 5 - 16 + 16 / 3 + 8 + 2;
+  say(q(0) === 1 && dq(0) === 4 && q(2) === 1 && dq(2) === -4 && near(15 * qIntegral, 86),
+    'U05 · 두 접선 조건과 적분값 86 이 함께 맞는다');
+
+  const N = (t) => t < 0 ? 0 : near(t, 0) ? 3 : t < 2 ? 6 : near(t, 2) ? 4 : 2;
+  say(N(2 - 1e-4) + N(2) + N(2 + 1e-4) === 12 && 10 * 2 === 20,
+    'U06 · k=2 에서 좌·함숫값·우가 6+4+2=12, 답은 20');
+}
+
+/* CALC-18~21 · 끝점·접점·적분 조건·속도 부호를 각각 검산한다. */
+const addedAnswers = (() => {
+  const f = (x) => x * (x - 6) ** 2 + 3;
+  const heights = [0, 2, 6, 7].map(f);
+  const count = (k) => heights.filter((h) => h === k).length
+    + heights.slice(1).filter((h, i) => Math.min(h, heights[i]) < k && k < Math.max(h, heights[i])).length;
+  say([2, 3, 4, 10, 11, 35, 36].map(count).join(',') === '0,2,3,3,2,1,0',
+    'CALC-18 · 극값·끝점의 높이가 같은 경우도 교점을 중복 없이 센다.');
+  const ks = [];
+  for (let k = Math.min(...heights); k <= Math.max(...heights); k++) {
+    if (count(k) === 2 && k <= Math.min(...[1, 2, 4].map(f))) ks.push(k);
+  }
+  say(ks.join(',') === '3,11,12,13,14,15,16,17,18,19', 'CALC-18 · 실근 조건과 구간 최솟값의 교집합');
+
+  const F = (x) => x ** 3 - 3 * x * x + 4 * x + 1;
+  const dF = (x) => 3 * x * x - 6 * x + 4;
+  say(F(0) === 1 && F(1) - F(-1) === 10, 'CALC-19 · 두 함숫값 조건으로 C와 b 결정');
+  const contacts = [0, 2].filter((x) => dF(x) === 4 && F(x) === 4 * x - 3);
+  say(contacts.join(',') === '2', 'CALC-19 · 기울기가 같은 점 두 곳 중 양의 접점에서 높이도 일치');
+
+  // 계수를 직접 구한 f=x³+2x²−2x−1/6의 원시함수로, H의 인수분해 풀이를 검산한다.
+  const primitive12 = (x) => 3 * x ** 4 + 8 * x ** 3 - 12 * x * x - 2 * x;
+  const integrate = (lo, hi) => (primitive12(hi) - primitive12(lo)) / 12;
+  say([integrate(-2, 0), integrate(0, 2), integrate(-1, 1)].join(',') === '5,5,1',
+    'CALC-20 · 하나의 삼차함수가 세 적분값을 모두 만족한다.');
+
+  const a = 4 - Math.cbrt(27);
+  const X = (t) => t ** 3 - 3 * (a + 4) * t * t / 2 + 12 * a * t;
+  const positions = [0, a, 4, 6].map(X);
+  const D = positions.slice(1).reduce((d, p, i) => d + Math.abs(p - positions[i]), 0);
+  const S = X(6) - X(0);
+  say(D === 45 && S === 18 && D - S === 27, 'CALC-21 · 부호가 바뀌는 세 구간을 나눠 거리와 변위를 각각 검산');
+  say(positions.indexOf(Math.max(...positions)) === 3 && positions.indexOf(Math.min(...positions)) === 2,
+    'CALC-21 · 위치의 최댓값은 닫힌구간 끝점, 최솟값은 내부 극소점');
+  return { 7: ks.reduce((sum, k) => sum + k, 0), 8: F(4), 9: integrate(1, 3), 10: Math.max(...positions) - Math.min(...positions) };
+})();
+
 for (const c of checks) if (!c.ok) console.log('  X ' + c.msg);
 assert.equal(checks.filter((c) => !c.ok).length, 0,
   '킬러문제의 수학이 맞지 않는다:\n' + checks.filter((c) => !c.ok).map((c) => '  ' + c.msg).join('\n'));
@@ -413,7 +481,8 @@ assert.equal(checks.filter((c) => !c.ok).length, 0,
 const VERIFIED = {
   1: { 1: 9, 2: 125, 3: 27, 4: 8, 5: 9 },
   2: { 1: 15, 2: 50, 3: 18, 4: 84 },
-  3: { 1: 68, 2: 73 }
+  3: { 1: 68, 2: 73 },
+  4: { 1: 6, 2: -9, 3: 3, 4: -4, 5: 86, 6: 20, ...addedAnswers }
 };
 
 function loadSets(files, globalName) {
@@ -423,8 +492,41 @@ function loadSets(files, globalName) {
   assert.ok(Array.isArray(sets) && sets.length, `${globalName} 에 세트가 등록되지 않았다.`);
   return sets.slice().sort((a, b) => a.id - b.id);
 }
-const pubSets = loadSets(['AI킬러문제/문제.js', 'AI킬러문제/문제2.js', 'AI킬러문제/문제3.js'], 'JPKillerSets');
-const teaSets = loadSets(['수업창고/AI킬러문제/풀이.js', '수업창고/AI킬러문제/풀이2.js', '수업창고/AI킬러문제/풀이3.js'], 'JPKillerSolutionSets');
+const pubSets = loadSets(['AI킬러문제/문제.js', 'AI킬러문제/문제2.js', 'AI킬러문제/문제3.js', 'AI킬러문제/문제4.js'], 'JPKillerSets');
+const teaSets = loadSets(['수업창고/AI킬러문제/풀이.js', '수업창고/AI킬러문제/풀이2.js', '수업창고/AI킬러문제/풀이3.js', '수업창고/AI킬러문제/풀이4.js'], 'JPKillerSolutionSets');
+
+/* 학생 목록은 내부 세트가 아니라 과목·대단원·난이도로 분류된다. */
+{
+  const box = { window: {} };
+  for (const f of ['AI킬러문제/문제.js', 'AI킬러문제/문제2.js', 'AI킬러문제/문제3.js', 'AI킬러문제/문제4.js', 'AI킬러문제/catalog.js']) {
+    vm.runInNewContext(read(f), box);
+  }
+  const catalog = box.window.JPKillerCatalog;
+  assert.deepEqual(Array.from(catalog.domains, (d) => d.label), ['극한·연속', '미분', '적분'],
+    '미적분 대단원은 극한·연속, 미분, 적분 세 갈래여야 한다.');
+  assert.deepEqual(Array.from(catalog.difficulties, (d) => d.label), ['준킬러', '킬러', '극킬러'],
+    '학생용 난이도는 준킬러·킬러·극킬러 세 단계여야 한다.');
+  assert.ok(catalog.subjects.some((s) => s.label === '미적분Ⅰ' && s.ready), '미적분Ⅰ 과목 분류가 열려 있어야 한다.');
+  assert.ok(catalog.subjects.some((s) => s.label === '대수'), '나중에 대수를 넣을 과목 자리가 있어야 한다.');
+  assert.ok(catalog.subjects.some((s) => s.label === '확률과 통계'), '나중에 확률과 통계를 넣을 과목 자리가 있어야 한다.');
+  assert.equal(catalog.problems.length, 21, '현재 AI 킬러문제는 21문항이어야 한다.');
+  assert.equal(new Set(catalog.problems.map((p) => p.code)).size, catalog.problems.length, '문항 코드가 겹친다.');
+  assert.deepEqual(
+    Object.fromEntries(catalog.domains.map((d) => [d.key, catalog.problems.filter((p) => p.domain === d.key).length])),
+    { limit: 3, derivative: 11, integral: 7 },
+    '현재 문항의 대단원별 개수가 예상과 다르다.'
+  );
+  for (const p of catalog.problems) {
+    assert.ok(p.subjectKey && p.domain && p.difficulty && p.href, `${p.code} 의 과목·대단원·난이도·주소 분류가 비었다.`);
+  }
+  const added = catalog.problems.filter((p) => p.setId === 4 && p.no >= 7);
+  assert.deepEqual(Array.from(added, (p) => [p.code, p.domain, p.difficulty]), [
+    ['CALC-18', 'derivative', 'killer'],
+    ['CALC-19', 'integral', 'killer'],
+    ['CALC-20', 'integral', 'killer'],
+    ['CALC-21', 'integral', 'killer']
+  ]);
+}
 
 assert.equal(pubSets.length, teaSets.length, '공개용과 교사용의 세트 수가 다르다.');
 assert.equal(pubSets.length, Object.keys(VERIFIED).length, '검산해 둔 세트 수와 실제 세트 수가 다르다.');
@@ -477,6 +579,14 @@ for (const pub of pubSets) {
         ? new RegExp('<(?!/b>|b>|b |br>)', 'g')
         : new RegExp('<(?!/?b>|b |br>|/?table[ >]|/?tr>|/?th>|/?td>)', 'g');
       for (const one of fields) {
+        if (pub.id === 4 && q.no >= 7) {
+          for (const pattern of [/\\\(([\s\S]+?)\\\)/g, /\\\[([\s\S]+?)\\\]/g]) {
+            for (const [, tex] of one.matchAll(pattern)) {
+              assert.doesNotThrow(() => katex.renderToString(tex, { throwOnError: true, strict: 'error' }),
+                tag + ' ' + label + ' 조판 오류: ' + tex);
+            }
+          }
+        }
         assert.doesNotMatch(one, rawLt,
           `${tag} ${label} 수식에 날 '<' 가 있다 — \\lt 로 바꿔야 한다: ${one.slice(0, 60)}`);
       }
@@ -527,7 +637,7 @@ for (const pub of pubSets) {
 }
 
 // ── 3) 풀이가 공개 쪽으로 새지 않는가 ─────────────────────────────
-for (const file of ['AI킬러문제/문제.js', 'AI킬러문제/문제2.js', 'AI킬러문제/문제3.js']) {
+for (const file of ['AI킬러문제/문제.js', 'AI킬러문제/문제2.js', 'AI킬러문제/문제3.js', 'AI킬러문제/문제4.js']) {
   const js = read(file);
   assert.doesNotMatch(js, /steps\s*:/, `${file} 에 풀이가 들어 있다.`);
   assert.doesNotMatch(js, /\bnote\s*:/, `${file} 에 수업 노트가 들어 있다.`);
@@ -536,7 +646,7 @@ for (const file of ['AI킬러문제/문제.js', 'AI킬러문제/문제2.js', 'AI
 for (const page of ['AI킬러문제/index.html', 'AI킬러문제/문제.html']) {
   const html = read(page);
   assert.doesNotMatch(html, /auth\.js/, `${page} 는 공개여야 한다.`);
-  for (const data of ['문제\\.js', '문제2\\.js', '문제3\\.js']) {
+  for (const data of ['문제\\.js', '문제2\\.js', '문제3\\.js', '문제4\\.js', 'catalog\\.js']) {
     assert.match(html, new RegExp(data), `${page} 가 ${data.replace('\\', '')} 를 불러와야 한다.`);
   }
 }
@@ -545,6 +655,7 @@ for (const page of ['수업창고/AI킬러문제/index.html', '수업창고/AI�
   assert.match(html, /auth\.js/, `${page} 에 수업창고 잠금이 걸려야 한다.`);
   assert.match(html, /풀이2\.js/, `${page} 가 SET 02 풀이를 불러와야 한다.`);
   assert.match(html, /풀이3\.js/, `${page} 가 SET 03 풀이를 불러와야 한다.`);
+  assert.match(html, /풀이4\.js/, `${page} 가 추가 풀이를 불러와야 한다.`);
 }
 
 /* 기출과 섞이지 않아야 한다. 공개 목록은 서로 다른 자리에 있고,
@@ -555,12 +666,15 @@ assert.match(csat, /AI킬러문제\/index\.html/, '기출 목록에서 킬러문
 assert.match(read('AI킬러문제/index.html'), /수능문제\/index\.html/, '킬러문제 목록에서 기출로 가는 길이 있어야 한다.');
 assert.match(read('AI킬러문제/index.html'), /기출이 아닙니다/, '기출이 아니라는 것을 밝혀야 한다.');
 
-// 목록은 단순 카드 나열이 아니라, 세트 전체를 조망하고 시작점을 고르는 메인 허브다.
+// 목록은 세트를 숨기고 과목·대단원·난이도로 시작점을 고르는 메인 허브다.
 const killerHome = read('AI킬러문제/index.html');
 assert.match(killerHome, /class="killer-home-page"/, '학생용 목록에 최신 메인 화면 범위가 있어야 한다.');
-assert.match(killerHome, /CHALLENGE CONTROL ROOM/, '첫 화면에 도전 관제실 정체성이 보여야 한다.');
-assert.match(killerHome, /id="featuredList"/, '세트별 추천 문제가 첫 화면에 있어야 한다.');
-assert.match(killerHome, /id="setMap"/, '세트로 바로 가는 도전 지도가 있어야 한다.');
+assert.match(killerHome, /AI KILLER LIBRARY/, '첫 화면에 AI 킬러 라이브러리 정체성이 보여야 한다.');
+assert.match(killerHome, /id="featuredList"/, '난이도별 추천 문제가 첫 화면에 있어야 한다.');
+assert.match(killerHome, /id="subjectMap"/, '미적분·대수·확통의 과목 분류가 있어야 한다.');
+assert.match(killerHome, /id="domainMap"/, '극한·연속·미분·적분의 대단원 분류가 있어야 한다.');
+assert.match(killerHome, /대단원 지도/, '각 미적분 대단원으로 바로 가는 지도가 있어야 한다.');
+assert.doesNotMatch(killerHome, /ROOM 0|도전 세트|세 개의 방/, '학생 화면에 예전 세트·방 분류가 남아 있다.');
 assert.match(killerHome, /data-total/, '전체 문항 수를 데이터에서 계산해 보여 줘야 한다.');
 const killerProblem = read('AI킬러문제/문제.html');
 assert.match(killerProblem, /class="killer-problem-page"/, '문항 화면도 최신 디자인 범위를 써야 한다.');

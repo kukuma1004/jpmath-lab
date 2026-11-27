@@ -163,6 +163,11 @@ body.killer-home-page{
 .killer-feature-card h3{position:relative;z-index:1;max-width:82%;margin:48px 0 10px;font:800 22px/1.4 'IBM Plex Sans KR',sans-serif;letter-spacing:-.035em}
 .killer-feature-card p{position:relative;z-index:1;margin:0;color:#68716c;font-size:13px}
 .feature-go{position:absolute;left:22px;bottom:20px;color:var(--kh-rust);font-size:13px;font-weight:800}
+.killer-subjects{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:46px 0 14px}
+.killer-subjects>a,.killer-subjects>span{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:72px;padding:14px 18px;border:1px solid var(--kh-line);border-radius:15px;background:var(--kh-paper);color:var(--kh-ink);text-decoration:none}
+.killer-subjects b{font:900 18px/1.2 'Noto Serif KR',serif}.killer-subjects span span,.killer-subjects a span{color:#737a76;font-size:11px}
+.killer-subjects .active{border-color:var(--kh-green);background:var(--kh-green);color:#fff;box-shadow:0 12px 28px rgba(24,87,70,.14)}
+.killer-subjects .active span{color:#e9c77f}.killer-subjects .coming{opacity:.62;background:#ebe6dc}
 .killer-set-map{position:sticky;z-index:5;top:10px;display:grid;grid-template-columns:auto repeat(3,1fr);align-items:stretch;gap:0;margin:46px 0 70px;border:1px solid var(--kh-line);border-radius:16px;background:rgba(250,248,241,.94);box-shadow:0 12px 32px rgba(31,40,36,.08);backdrop-filter:blur(12px);overflow:hidden}
 .killer-set-map>span{display:grid;place-items:center;padding:0 20px;background:var(--kh-green);color:#fff;font:800 11px 'IBM Plex Mono',monospace;letter-spacing:.08em}
 .killer-set-map a{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;min-height:70px;padding:10px 16px;border-right:1px solid var(--kh-line);color:var(--kh-ink);text-decoration:none}
@@ -175,6 +180,8 @@ body.killer-home-page{
 .set-copy{position:relative;z-index:1;max-width:650px}.set-copy p{margin:0 0 8px;color:#dfc182;font:700 10px 'IBM Plex Mono',monospace;letter-spacing:.1em}.set-copy h2{margin:0;font:900 clamp(25px,3vw,38px)/1.25 'Noto Serif KR',serif;letter-spacing:-.035em}.set-copy>span{display:block;margin-top:14px;color:rgba(255,255,255,.72);font-size:14px;line-height:1.75}
 .set-facts{position:relative;z-index:1;display:grid;justify-items:end;gap:8px}.set-facts b,.set-facts span{padding:6px 11px;border:1px solid rgba(255,255,255,.24);border-radius:999px;font-size:11px}.set-facts b{border-color:#dfc182;color:#dfc182}
 .set-art{position:absolute;right:-50px;bottom:-85px;width:340px;height:340px;border:1px solid rgba(255,255,255,.14);border-radius:50%}.set-art i{position:absolute;inset:18%;border:1px solid rgba(223,193,130,.35);border-radius:50%;transform:scaleY(.46) rotate(25deg)}.set-art i:nth-child(2){transform:scaleY(.35) rotate(72deg)}.set-art i:nth-child(3){inset:38%;background:rgba(223,193,130,.12);transform:none}
+.domain-levels{display:grid;gap:34px}.domain-difficulty{scroll-margin-top:105px}.domain-difficulty-head{display:flex;align-items:end;justify-content:space-between;gap:18px;margin:0 2px 12px;padding-bottom:11px;border-bottom:1px solid var(--kh-line)}
+.domain-difficulty-head>div{display:flex;align-items:baseline;gap:12px}.domain-difficulty-head b{font:900 23px/1.25 'Noto Serif KR',serif;letter-spacing:-.035em}.domain-difficulty-head span{color:#68716c;font-size:12px}.domain-difficulty-head i{padding:5px 9px;border-radius:999px;background:#e8e2d7;color:var(--kh-green);font:800 10px 'IBM Plex Mono',monospace;font-style:normal}
 .killer-home-page .killer-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .killer-home-page .killer-card{padding:22px;border:1px solid var(--kh-line);border-top:4px solid var(--kh-green);border-left-width:1px;border-radius:17px;background:var(--kh-paper);box-shadow:none}
 .set-room-2 .killer-card{border-top-color:var(--kh-navy)}.set-room-3 .killer-card{border-top-color:var(--kh-rust)}
@@ -193,8 +200,10 @@ body.killer-home-page{
   .killer-hero-stats{grid-template-columns:repeat(2,1fr)}.killer-hero-stats div{padding:11px 10px}.killer-hero-stats strong{font-size:18px}.killer-hero-stats span{font-size:10px}.killer-hero-stats div:nth-child(2){border-right:0}.killer-hero-stats div:nth-child(-n+2){border-bottom:1px solid var(--kh-line)}
   .killer-home-page .origin{grid-template-columns:1fr;gap:7px;margin-bottom:42px}.killer-home-page .origin a{justify-self:start}
   .killer-section-head{align-items:start;flex-direction:column;gap:6px}.killer-feature-grid{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:7px}.killer-feature-card{flex:0 0 min(86%,330px);scroll-snap-align:start}
-  .killer-set-map{top:8px;grid-template-columns:repeat(3,1fr);margin:34px 0 54px}.killer-set-map>span{grid-column:1/-1;min-height:34px}.killer-set-map a{grid-template-columns:auto 1fr;min-height:62px;padding:8px 10px}.killer-set-map a>i,.killer-set-map small{display:none}
+  .killer-subjects{grid-template-columns:1fr;margin:34px 0 12px}.killer-subjects>a,.killer-subjects>span{min-height:56px}.killer-subjects .coming{display:none}
+  .killer-set-map{top:8px;grid-template-columns:repeat(3,1fr);margin:12px 0 54px}.killer-set-map>span{grid-column:1/-1;min-height:34px}.killer-set-map a{grid-template-columns:auto 1fr;min-height:62px;padding:8px 10px}.killer-set-map a>i,.killer-set-map small{display:none}
   .set-hero{grid-template-columns:70px minmax(0,1fr);gap:15px;min-height:220px;padding:24px 20px}.set-index strong{font-size:44px}.set-facts{grid-column:1/-1;grid-template-columns:auto auto;justify-content:start}.set-copy>span{font-size:13px}.set-art{width:250px;height:250px}
+  .domain-levels{gap:28px}.domain-difficulty-head{align-items:flex-start;flex-direction:column;gap:6px}.domain-difficulty-head>div{align-items:flex-start;flex-direction:column;gap:3px}.domain-difficulty-head b{font-size:20px}
   .killer-home-page .killer-grid{grid-template-columns:1fr}.killer-home-page .turn{grid-template-columns:1fr}.killer-home-page .note{margin-top:-55px}.killer-footer{align-items:flex-start;flex-direction:column;padding:24px 20px}.killer-footer a{width:100%;text-align:center}
 }
 

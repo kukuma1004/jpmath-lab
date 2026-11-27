@@ -19,9 +19,20 @@
   <link rel="stylesheet" href="../../jp-nav-2.css?v=20261104-2">
   <script src="../../jp-polish.js?v=20261104-2" defer></script>
   <script src="../../jp-nav-2.js?v=20261117-1" data-jp-section="수업창고" defer></script>
+  <script defer src="../../AI킬러문제/문제.js?v=5"></script>
+  <script defer src="../../AI킬러문제/문제2.js?v=1"></script>
+  <script defer src="../../AI킬러문제/문제3.js?v=1"></script>
+  <script defer src="../../AI킬러문제/문제4.js?v=2"></script>
+  <script defer src="../../AI킬러문제/catalog.js?v=2"></script>
   <script defer src="풀이.js?v=5"></script>
   <script defer src="풀이2.js?v=1"></script>
   <script defer src="풀이3.js?v=1"></script>
+  <script defer src="풀이4.js?v=2"></script>
+  <style>
+    .teacher-level-group{margin:22px 0 34px}
+    .teacher-level-group>h3{display:flex;align-items:center;gap:9px;margin:0 0 12px;padding-bottom:9px;border-bottom:1px solid var(--line,#ddd);font-size:18px}
+    .teacher-level-group>h3 small{padding:4px 8px;border-radius:999px;background:#eee9de;color:#315d50;font:700 10px 'IBM Plex Mono',monospace}
+  </style>
 </head>
 <body>
   <section class="auth-gate" id="classroomGate" aria-labelledby="gateTitle" hidden>
@@ -59,8 +70,9 @@
 window.addEventListener('DOMContentLoaded', function(){
   'use strict';
   const sets = (window.JPKillerSolutionSets || []).slice().sort((a, b) => a.id - b.id);
+  const catalog = window.JPKillerCatalog;
   const host = document.getElementById('sets');
-  if (!sets.length) { host.innerHTML = '<p>풀이를 불러오지 못했습니다.</p>'; return }
+  if (!sets.length || !catalog) { host.innerHTML = '<p>풀이를 불러오지 못했습니다.</p>'; return }
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   /* 카드에는 조판을 걸지 않는다. 그러니 TeX 구분기호를 떼어 내야 글로 읽힌다 —
      떼지 않으면 목록에 \(c\) 같은 것이 그대로 드러난다. */
@@ -70,27 +82,42 @@ window.addEventListener('DOMContentLoaded', function(){
     .replace(/\s+/g, ' ')
     .trim();
 
-  host.innerHTML = sets.map((data) => `
-    <section class="archive-section" aria-label="${esc(data.subject)} ${esc(data.set)}">
+  const solutions = sets.flatMap((data) => data.problems.map((problem) => {
+    const meta = catalog.problems.find((p) => p.setId === data.id && p.no === problem.no);
+    return { data, problem, meta };
+  }));
+
+  host.innerHTML = catalog.domains.map((domain, domainIndex) => {
+    const domainItems = solutions.filter((item) => item.meta && item.meta.subjectKey === 'calculus' && item.meta.domain === domain.key);
+    return `
+    <section class="archive-section" aria-label="미적분Ⅰ ${esc(domain.label)}">
       <div class="section-heading">
         <div>
-          <p class="section-number">${String(data.id).padStart(2, '0')}</p>
-          <h2>${esc(data.subject)} · ${esc(data.set)}</h2>
+          <p class="section-number">${String(domainIndex + 1).padStart(2, '0')}</p>
+          <h2>미적분Ⅰ · ${esc(domain.label)}</h2>
         </div>
-        <p>${esc(data.headline || '한 문항씩 풀이와 수업 노트')}</p>
+        <p>${esc(domain.caption)} · ${domainItems.length}문항</p>
       </div>
-      <ul class="resource-grid teacher-grid">
-        ${data.problems.map((p) => `
-          <li>
-            <a class="resource-card teacher-csat" href="풀이.html?set=${data.id}&amp;no=${p.no}">
-              <div class="card-meta"><span>교사용 풀이</span><b>${String(p.no).padStart(2, '0')}</b></div>
-              <h3>${esc(p.title)}</h3>
-              <p>${esc(strip(p.why))}</p>
-              <div class="card-action">풀이 열기 <span>→</span></div>
-            </a>
-          </li>`).join('')}
-      </ul>
-    </section>`).join('')
+      ${catalog.difficulties.map((difficulty) => {
+        const items = domainItems.filter((item) => item.meta.difficulty === difficulty.key);
+        if (!items.length) return '';
+        return `<div class="teacher-level-group">
+          <h3>${esc(difficulty.label)} <small>${items.length}문항</small></h3>
+          <ul class="resource-grid teacher-grid">
+            ${items.map(({ data, problem: p, meta }) => `
+              <li>
+                <a class="resource-card teacher-csat" href="풀이.html?set=${data.id}&amp;no=${p.no}">
+                  <div class="card-meta"><span>${esc(difficulty.label)} 풀이</span><b>${esc(meta.code)}</b></div>
+                  <h3>${esc(p.title)}</h3>
+                  <p>${esc(strip(p.why))}</p>
+                  <div class="card-action">풀이 열기 <span>→</span></div>
+                </a>
+              </li>`).join('')}
+          </ul>
+        </div>`;
+      }).join('')}
+    </section>`;
+  }).join('')
     + `<ul class="resource-grid teacher-grid"><li>
       <a class="resource-card teacher-csat" href="../../AI킬러문제/index.html">
         <div class="card-meta"><span>학생용 문제지</span><b>공개</b></div>

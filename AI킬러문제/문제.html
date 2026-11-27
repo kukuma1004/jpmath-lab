@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="../vendor/katex/katex.min.css"/>
 <link rel="stylesheet" href="../jp-math-typography.css?v=4"/>
 <link rel="stylesheet" href="../jp-polish.css?v=11"/>
-<link rel="stylesheet" href="killer.css?v=20261117-2"/>
+<link rel="stylesheet" href="killer.css?v=20261117-4"/>
 <script defer src="../vendor/katex/katex.min.js"></script>
 <script defer src="../jp-polish.js?v=20261104-2"></script>
 <link rel="stylesheet" href="../jp-nav-2.css?v=20261104-2">
@@ -22,6 +22,8 @@
 <script defer src="문제.js?v=5"></script>
 <script defer src="문제2.js?v=1"></script>
 <script defer src="문제3.js?v=1"></script>
+<script defer src="문제4.js?v=2"></script>
+<script defer src="catalog.js?v=2"></script>
 </head>
 <body class="killer-problem-page">
 
@@ -43,25 +45,30 @@
 <script>
 window.addEventListener('DOMContentLoaded', function(){
   'use strict';
-  const sets = (window.JPKillerSets || []).slice().sort((a, b) => a.id - b.id);
+  const catalog = window.JPKillerCatalog;
   const paper = document.getElementById('paper');
-  if (!sets.length) { paper.innerHTML = '<p class="empty">문항을 불러오지 못했습니다.</p>'; return }
+  if (!catalog || !catalog.problems.length) { paper.innerHTML = '<p class="empty">문항을 불러오지 못했습니다.</p>'; return }
 
   /* 주소에 set 이 없으면 첫 세트다 — SET 01 시절 주소가 그대로 살아 있어야 한다. */
   const query = new URLSearchParams(location.search);
+  const sets = (window.JPKillerSets || []).slice().sort((a, b) => a.id - b.id);
   const data = sets.find((s) => s.id === Number(query.get('set'))) || sets[0];
   const want = Number(query.get('no')) || 1;
-  const item = data.problems.find((p) => p.no === want) || data.problems[0];
-  const index = data.problems.indexOf(item);
+  const raw = data.problems.find((p) => p.no === want) || data.problems[0];
+  const item = catalog.problems.find((p) => p.setId === data.id && p.no === raw.no) || catalog.problems[0];
+  const group = catalog.problems.filter((p) => p.subjectKey === item.subjectKey && p.domain === item.domain && p.difficulty === item.difficulty);
+  const index = group.indexOf(item);
+  const domain = catalog.domains.find((d) => d.key === item.domain);
+  const difficulty = catalog.difficulties.find((d) => d.key === item.difficulty);
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-  document.title = `${data.set} KILLER ${String(item.no).padStart(2, '0')} · ${item.title} · AI 킬러문제`;
-  document.getElementById('crumb').textContent = `KILLER ${String(item.no).padStart(2, '0')}`;
+  document.title = `${item.code} · ${item.title} · AI 킬러문제`;
+  document.getElementById('crumb').textContent = `${item.subject} · ${domain.label} · ${difficulty.label} · ${item.code}`;
 
   // 앞뒤 문항으로 가는 길. 끝에서는 눌리지 않게 둔다.
   const link = (el, at) => {
-    const to = data.problems[at];
-    if (to) { el.href = `문제.html?set=${data.id}&no=${to.no}`; el.removeAttribute('aria-disabled') }
+    const to = group[at];
+    if (to) { el.href = to.href; el.removeAttribute('aria-disabled') }
     else { el.href = '#'; el.setAttribute('aria-disabled', 'true') }
   };
   link(document.getElementById('prev'), index - 1);
@@ -70,8 +77,8 @@ window.addEventListener('DOMContentLoaded', function(){
   paper.innerHTML = `
     <article class="paper">
       <div class="head">
-        <span class="no">${esc(data.set)} · KILLER ${String(item.no).padStart(2, '0')} · ${esc(data.subject)}</span>
-        <span class="level ${item.level === '킬러' ? 'hard' : ''}">${esc(item.level)}</span>
+        <span class="no">${esc(item.subject)} · ${esc(domain.label)} · ${esc(item.code)}</span>
+        <span class="level ${item.difficulty !== 'semi' ? 'hard' : ''}">${esc(difficulty.label)}</span>
       </div>
       <h1>${esc(item.title)}</h1>
       <p class="topic">${esc(item.topic)}</p>
