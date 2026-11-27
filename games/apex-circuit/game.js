@@ -2,7 +2,7 @@ import { sampleDriver } from './bypass.js?v=14';
 import * as T from './vendor/three.module.min.js';
 import { tracks, courseRecordId } from './track.js?v=14';
 import { createRace, vehicleSpecs } from './race.js?v=14';
-import { buildWorld } from './world.js?v=17';
+import { buildWorld } from './world.js?v=18';
 import { buildCars, driveCar, selectVehicle } from './cars.js?v=16';
 import { drivingKeys, resolveDrivingKey } from './input.js?v=10';
 import { createAudio } from './audio.js?v=4';
@@ -113,10 +113,9 @@ function createCamera() {
   const subject = new T.Vector3(), screenSubject = new T.Vector3(), cameraDelta = new T.Vector3();
   const p = {}, preview = {}, trailing = {};
   let ready = false;
-  function update(track, race, vehicle, state, animateTime, dt, reduced, snap = false) {
+  function update(track, race, vehicle, state, animateTime, dt, reduced, snap = false, player = race.cars[0]) {
     const portrait = camera.aspect < .95;
     const isMenu = state === 'menu';
-    const player = race.cars[0];
     sampleDriver(track, player, player.distance, p);
     let fov;
     if (isMenu) {
@@ -246,25 +245,30 @@ function setup() {
   const mirrorCamera = new T.PerspectiveCamera();
   const roadPlane = new T.Plane();
   const mirrorAim = new T.Vector3();
+  const mirrorCenter = new T.Vector3();
+  const mirrorTangent = new T.Vector3();
+  const mirrorNormal = new T.Vector3();
+  const mirrorSample = {};
+  const reflectedSky = new T.Color(0x202c49);
   let lastMirror = -Infinity;
-  function reflectGarage(scene, camera) {
+  function reflectRoad(scene, camera, player, refresh) {
     const mirror = scene.userData.wetMirror;
     if (!mirror) return;
     const now = performance.now();
-    const mirrorInterval = camera.aspect < .85 ? 160 : 125;
-    if (state !== 'menu' && mirror.wetView.value && now - lastMirror < mirrorInterval) return;
+    const mirrorInterval = state === 'menu' ? 100 : renderScale < 1 ? 220 : 140;
+    if (!refresh && mirror.wetView.value && now - lastMirror < mirrorInterval) return;
     lastMirror = now;
-    const distance = race.cars[0].distance;
-    const p = sampleDriver(track,race.cars[0],distance);
-    const center = new T.Vector3(p.x,p.y,p.z);
-    const direction = new T.Vector3(p.dx,p.slope,p.dz);
-    const lateral = new T.Vector3(-p.dz,p.bank,p.dx);
-    const normal = lateral.cross(direction).normalize();
+    const p = sampleDriver(track, player, player.distance, mirrorSample);
+    mirrorCenter.set(p.x, p.y, p.z);
+    mirrorTangent.set(p.dx, p.slope, p.dz);
+    const normal = mirrorNormal.set(-p.dz, p.bank, p.dx).cross(mirrorTangent).normalize();
     if (normal.y < 0) normal.negate();
-    roadPlane.setFromNormalAndCoplanarPoint(normal, center);
+    roadPlane.setFromNormalAndCoplanarPoint(normal, mirrorCenter);
     camera.updateMatrixWorld();
     mirrorCamera.copy(camera, false);
-    mirrorCamera.far = Math.min(camera.far, 190);
+    mirrorCamera.layers.set(1);
+    mirrorCamera.zoom *= .88;
+    mirrorCamera.far = 155;
     mirrorCamera.updateProjectionMatrix();
     mirrorCamera.position.addScaledVector(normal, -2 * roadPlane.distanceToPoint(camera.position));
     camera.getWorldDirection(mirrorAim).reflect(normal).add(mirrorCamera.position);
@@ -272,30 +276,24 @@ function setup() {
     mirrorCamera.lookAt(mirrorAim);
     mirrorCamera.updateMatrixWorld();
     mirror.wetProjection.value.multiplyMatrices(mirrorCamera.projectionMatrix, mirrorCamera.matrixWorldInverse);
-    const pavement = scene.userData.wetPavement;
-    // Distant rivals and contact-shadow decals are imperceptible in rough wet
-    // pavement. Keep the hero and nearby traffic, but avoid drawing full fleets
-    // a second time. Save each visibility flag rather than reviving hidden cars.
-    const hidden = [];
-    const hide = object => {
-      if (object?.visible) { hidden.push(object); object.visible = false; }
-    };
-    hide(pavement);
-    hide(scene.userData.marinaWater);
-    for (let i=0;i<vehicles.length;i++) {
-      hide(vehicles[i].shadow);
-      if (i && vehicles[i].model.position.distanceToSquared(vehicles[0].model.position)>32*32) hide(vehicles[i].model);
-    }
+    // The showroom mirror includes the hero. In a race the road only needs
+    // broad building silhouettes and lights.
+    showroomReflection(state === 'menu');
     const oldPlanes = renderer.clippingPlanes;
     const oldTarget = renderer.getRenderTarget();
+    const oldBackground = scene.background;
+    const updateShadows = renderer.shadowMap.needsUpdate;
     try {
+      scene.background = reflectedSky;
+      renderer.shadowMap.needsUpdate = false;
       renderer.clippingPlanes = [roadPlane];
       renderer.setRenderTarget(wetTarget);
       renderer.render(scene, mirrorCamera);
     } finally {
       renderer.setRenderTarget(oldTarget);
       renderer.clippingPlanes = oldPlanes;
-      for (const object of hidden) object.visible = true;
+      renderer.shadowMap.needsUpdate = updateShadows;
+      scene.background = oldBackground;
     }
     mirror.wetView.value = wetTarget.texture;
     mirror.wetStrength.value = state === 'menu' ? 1 : .72;
@@ -393,6 +391,10 @@ function setup() {
   const pointers = new Map();
   const input = { steer: 0, brake: false, boost: false };
   const fixed = 1 / 60;
+  const poseFields = ['distance', 'lane', 'air', 'pitch', 'slip', 'speed'];
+  const previousPoses = vehicles.map(() => ({}));
+  const screenPoses = vehicles.map(() => ({}));
+  let renderScale = 1, slowTime = 0, steadyTime = 0, resolutionPending = false;
   let state = 'loading', pausedState = 'racing';
   let best = null;
   let countdown = 3, previousBeat = 0, startFlash = 0;
@@ -401,6 +403,39 @@ function setup() {
   let manual = false, snap = true, resizePending = true, visualOnly = false;
   let lastHUD = '', lastMapUpdate = -1, lastStateRendered;
   const projected = new T.Vector3();
+  const boostLabel = byId('boost-label');
+
+  function showroomReflection(enabled) {
+    vehicles[0].model.traverse(object => {
+      if (enabled) object.layers.enable(1);
+      else object.layers.disable(1);
+    });
+  }
+
+  function rememberPoses() {
+    race.cars.forEach((car, index) => {
+      const previous = previousPoses[index];
+      for (const field of poseFields) previous[field] = car[field];
+      previous.shortcut = car.shortcut;
+      previous.shortcutBase = car.shortcutBase;
+    });
+  }
+
+  function screenPose(car, index, fraction) {
+    if (fraction === 1) return car;
+    const previous = previousPoses[index], pose = screenPoses[index];
+    for (const field of poseFields) pose[field] = T.MathUtils.lerp(previous[field], car[field], fraction);
+    pose.flight = car.flight;
+    // Both sides of the gate share the shortcut's lateral origin while
+    // interpolating across it. Race progress stays in the simulation.
+    pose.shortcut = car.shortcut || previous.shortcut;
+    pose.shortcutBase = car.shortcut ? car.shortcutBase : previous.shortcutBase;
+    if (car.shortcut !== previous.shortcut) {
+      const offset = pose.shortcut.entryLane;
+      pose.lane -= offset * (car.shortcut ? 1 - fraction : fraction);
+    }
+    return pose;
+  }
 
   const recordFinish = bindRanking({
     tracks, vehicleSpecs, read, save, canPublish: !measured,
@@ -433,6 +468,7 @@ function setup() {
     trimWorldCache();
     selectVehicle(vehicles, vehicle, roadRoster);
     race = createRace(track, vehicle);
+    rememberPoses();
     best = readBestLap(track.id);
     lastMapUpdate = -1;
     lastHUD = '';
@@ -463,12 +499,32 @@ function setup() {
   function resize() {
     const width = world.clientWidth;
     const height = world.clientHeight;
-    renderer.setPixelRatio(Math.min(devicePixelRatio || 1, width < 850 ? 1.45 : 1.65));
-    renderer.setSize(width, height, false);
+    const cap = width < 850 ? 1.45 : 1.65;
+    const pixelRatio = Math.min(devicePixelRatio || 1, cap, Math.sqrt(3300000 / Math.max(width * height, 1)));
+    // setPixelRatio also resizes the drawing buffer using the current size.
+    const targetRatio = pixelRatio * renderScale;
+    if (renderer.getPixelRatio() !== targetRatio) renderer.setPixelRatio(targetRatio);
+    if (resizePending) renderer.setSize(width, height, false);
     view.camera.aspect = width / Math.max(height, 1);
     view.camera.updateProjectionMatrix();
-    resizePending = false;
-    snap = true;
+    if (resizePending) snap = true;
+    resizePending = resolutionPending = false;
+  }
+
+  function adjustResolution(dt) {
+    if (state !== 'racing') {
+      slowTime = steadyTime = 0;
+      return;
+    }
+    slowTime = dt > .022 ? slowTime + dt : Math.max(0, slowTime - dt * .6);
+    steadyTime = dt < .0185 ? steadyTime + dt : 0;
+    if (slowTime > .65 && renderScale > .72) {
+      renderScale = Math.max(.72, renderScale - .14);
+    } else if (steadyTime > 7 && renderScale < 1) {
+      renderScale = Math.min(1, renderScale + .14);
+    } else return;
+    slowTime = steadyTime = 0;
+    resolutionPending = true;
   }
   function updateControls() {
     const active = new Set(pointers.values());
@@ -512,6 +568,7 @@ function setup() {
   function start() {
     audio.unlock();
     race.reset();
+    rememberPoses();
     effects.reset();
     clearControls();
     clearMessage();
@@ -610,6 +667,7 @@ function setup() {
       feedbackTime = Math.max(0, feedbackTime - dt);
       if (!feedbackTime) clearMessage();
       signalTime = Math.max(0, signalTime - dt);
+      rememberPoses();
       race.step(dt, input);
       for (const event of race.events) playEvent(event);
     }
@@ -619,7 +677,7 @@ function setup() {
     const speed = Math.round(race.cars[0].speed * 3.6);
     const percent = Math.round(race.boost * 100);
     const display = [race.place, race.lap, formatTime(race.time), speed, percent];
-    setText(byId('boost-label'), race.drifting ? (percent < 100 ? '드리프트 충전' : '충전 완료') : '부스터');
+    setText(boostLabel, race.drifting ? (percent < 100 ? '드리프트 충전' : '충전 완료') : '부스터');
     const next = display.join(',');
     if (lastHUD !== next) {
       lastHUD = next;
@@ -631,9 +689,9 @@ function setup() {
       lastMapUpdate = race.time;
     }
   }
-  function render(dt) {
+  function render(dt, fraction = 1) {
     renderer.info.reset();
-    if (resizePending) resize();
+    if (resizePending || resolutionPending) resize();
     if (!['paused', 'results'].includes(state) && !motion.matches && !visualOnly) worldTime += dt;
     const { waves, lights, scene } = activeWorld;
     waves.value = worldTime;
@@ -653,17 +711,22 @@ function setup() {
       garageKey.target.updateMatrixWorld();
       garageKey.position.copy(track.point(race.cars[0].distance + 8, 6, 12));
     }
+    if (state !== 'racing') fraction = 1;
+    const player = screenPose(race.cars[0], 0, fraction);
     race.cars.forEach((car, index) => {
       const visual = vehicles[index];
       const visible = state !== 'menu' || index === 0;
       visual.model.visible = visual.shadow.visible = visible;
-      if (visible) driveCar(visual, car, index === 0 ? boosting : state === "racing" && car.boosting, motion.matches ? 0 : worldTime, track);
+      if (visible) driveCar(visual, index === 0 ? player : screenPose(car, index, fraction),
+        index === 0 ? boosting : state === 'racing' && car.boosting, motion.matches ? 0 : worldTime, track);
     });
-    if (state !== 'paused' || snap) view.update(track, race, vehicle, state === 'paused' ? pausedState : state, worldTime, dt, motion.matches, snap);
+    if (state !== 'paused' || snap) view.update(track, race, vehicle, state === 'paused' ? pausedState : state, worldTime, dt, motion.matches, snap, player);
+    reflectRoad(scene, view.camera, player, snap || state !== lastStateRendered);
     snap = false;
     audio.drive(race.cars[0].speed, boosting, state === 'racing' || state === 'countdown');
     hud();
-    reflectGarage(scene, view.camera);
+    const mirrorCalls = renderer.info.render.calls;
+    const mirrorTriangles = renderer.info.render.triangles;
     renderer.render(scene, view.camera);
     frame++;
     lastStateRendered = state;
@@ -679,6 +742,7 @@ function setup() {
         grounded: { modelY: vehicles[0].model.position.y, shadowOffset: vehicles[0].shadow.position.distanceTo(vehicles[0].model.position),
           rivalExhaust: vehicles.slice(1).map(v => ({visible: v.jets.visible, meshes: v.jets.children.length})) },
         render: { ...renderer.info.render }, memory: { ...renderer.info.memory },
+        presentation: { distance: player.distance, scale: renderScale, mirrorCalls, mirrorTriangles },
       };
     }
   }
@@ -686,13 +750,14 @@ function setup() {
     const dt = Math.max(0, Math.min(.12, (now - lastFrame) / 1000));
     lastFrame = now;
     if (!manual) {
+      adjustResolution(dt);
       accumulator = Math.min(.12, accumulator + dt);
       while (accumulator >= fixed) {
         tick(fixed);
         accumulator -= fixed;
       }
       const rests = state === 'paused' || state === 'results' || (state === 'menu' && motion.matches);
-      if (!rests || resizePending || lastStateRendered !== state) render(dt);
+      if (!rests || resizePending || lastStateRendered !== state) render(dt, accumulator / fixed);
     }
     requestAnimationFrame(animate);
   }

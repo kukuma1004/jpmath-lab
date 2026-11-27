@@ -1,5 +1,5 @@
 import * as T from './vendor/three.module.min.js';
-import {instances, matrix, random} from './world-landmarks.js?v=17';
+import {instances, matrix, random} from './world-landmarks.js?v=18';
 
 // Each course-facing terrace is a glazed drum. Shared indexed buffers keep the
 // illuminated reveals, curved curtain walls and deep balcony edges inexpensive.
@@ -100,7 +100,9 @@ export function marinaArchitecture(scene, course, office) {
     geometry.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));
     geometry.setIndex(indices);geometry.computeVertexNormals();
     materials[i].side=T.DoubleSide;
-    scene.add(new T.Mesh(geometry,materials[i]));
+    const mesh = new T.Mesh(geometry, materials[i]);
+    mesh.userData.reflectOnRoad = i === 0 || i === 3;
+    scene.add(mesh);
   });
   const box=new T.BoxGeometry();
   instances(scene,box,new T.MeshStandardMaterial({color:0x9a846f,metalness:.45,roughness:.36}),mullions);

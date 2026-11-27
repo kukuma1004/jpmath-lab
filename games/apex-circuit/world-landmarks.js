@@ -437,7 +437,7 @@ export function metropolis(scene,course) {
   scene.userData.officeGlazing=curtainWall;
   for(let i=0;i<2;i++){
     // A dark roof closes each lit facade at its skyline silhouette.
-    instances(scene,cube,facade(i ? glazing : curtainWall,i),bodies[i]);
+    instances(scene, cube, facade(i ? glazing : curtainWall, i), bodies[i]).userData.reflectOnRoad = true;
     instances(scene,cube,glow(i?0xfd7696:0x67daf5),trim[i]);
   }
   instances(scene,cube,mat(0x1d293a),caps);

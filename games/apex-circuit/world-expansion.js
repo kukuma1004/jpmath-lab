@@ -1,5 +1,5 @@
 import * as T from './vendor/three.module.min.js';
-import { instances, matrix, nearest, noise, pathSamples } from './world-landmarks.js?v=17';
+import { instances, matrix, nearest, noise, pathSamples } from './world-landmarks.js?v=18';
 
 const UP = new T.Vector3(0, 1, 0);
 const cube = new T.BoxGeometry();

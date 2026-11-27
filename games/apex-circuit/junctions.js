@@ -143,6 +143,7 @@ export function buildJunctions(scene, course, kit) {
       g.position.copy(f.position);g.rotation.y=f.rotation.y;scene.add(g);
       block(g,concrete,0,2.1,0,5.8,6.3,12.62);
       const window=new T.Mesh(new T.PlaneGeometry(12.24,3.85),glass);
+      window.userData.reflectOnRoad = true;
       // Local -X is the driver's right when the group's +Z follows the road.
       window.position.set(-2.94,2.0,0);window.rotation.y=-Math.PI/2;g.add(window);
       block(g,beam,-3.25,4.18,0,1.28,.22,12.76);
@@ -180,6 +181,7 @@ export function buildJunctions(scene, course, kit) {
       }
       // Recess the dining room behind its open terrace and reuse the interior atlas.
       const upperWindow=new T.Mesh(window.geometry,glass);
+      upperWindow.userData.reflectOnRoad = true;
       upperWindow.position.set(-2.2,6.53,0);
       upperWindow.rotation.y=window.rotation.y;
       upperWindow.scale.y=.48;
@@ -212,7 +214,6 @@ export function buildJunctions(scene, course, kit) {
     };
     const water=new T.Mesh(new T.PlaneGeometry(289,84),waterMaterial);
     water.rotation.x=-Math.PI/2;water.position.set(95,-2.9,105);scene.add(water);
-    scene.userData.marinaWater=water;
     const hulls=[];
     for(let i=0;i<12;i++) {
       const x=-25+i*21,z=78+(i%3)*5;

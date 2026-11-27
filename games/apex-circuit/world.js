@@ -1,9 +1,9 @@
-import { frontier } from './world-frontiers.js?v=17';
-import { buildJunctions } from './junctions.js?v=17';
+import { frontier } from './world-frontiers.js?v=18';
+import { buildJunctions } from './junctions.js?v=18';
 import * as T from './vendor/three.module.min.js';
-import { grain, alpine, metropolis, coastalBridge, roadFurniture } from './world-landmarks.js?v=17';
-import { harborVillage, quarryArch, streetShops } from './world-districts.js?v=17';
-import { expansion } from './world-expansion.js?v=17';
+import { grain, alpine, metropolis, coastalBridge, roadFurniture } from './world-landmarks.js?v=18';
+import { harborVillage, quarryArch, streetShops } from './world-districts.js?v=18';
+import { expansion } from './world-expansion.js?v=18';
 import { courseFrame, coursePoint, track } from './track.js?v=14';
 
 const box = new T.BoxGeometry();
@@ -128,7 +128,7 @@ function road(scene, track, theme) {
     const mirror = scene.userData.wetMirror = {
       wetView: {value:null}, wetProjection: {value:new T.Matrix4()}, wetStrength:{value:0}
     };
-    asphalt.customProgramCacheKey = () => 'metro-rain-film';
+    asphalt.customProgramCacheKey = () => 'metro-rain-film-v2';
     asphalt.onBeforeCompile = shader => {
       Object.assign(shader.uniforms,mirror);
       shader.vertexShader = 'uniform mat4 wetProjection; varying vec4 wetCoord;\n' + shader.vertexShader.replace('#include <project_vertex>', '#include <project_vertex>\nwetCoord = wetProjection * modelMatrix * vec4(transformed,1.);');
@@ -147,22 +147,27 @@ function road(scene, track, theme) {
         float lampX = lateral-(${width.toFixed(2)}-1.65);
         float spread = .30 + .055*abs(lampZ);
         float shine = exp(-lampX*lampX/(spread*spread)) * exp(-abs(lampZ)*.43);
-        float flutter = .57+.43*sin(distanceM*27.+sin(lane*23.))*sin(lane*9.+distanceM*8.);
-        vec3 lens = lane < ${width.toFixed(2)} ? vec3(.47,.72,1.) : vec3(1.,.63,.31);
-        diffuseColor.rgb += lens * shine * flutter * (.55+film*.56);
+        float ripples = sin(distanceM * 21. + lane * 9.);
+        float streak = .76 + .24 * ripples * (1. - smoothstep(.4, 2.5, fwidth(distanceM * 21. + lane * 9.)));
+        vec3 lampColor = lane < ${width.toFixed(2)} ? vec3(.45,.69,1.) : vec3(1.,.57,.22);
+        // Street and quay lights leave long glints in the wet shoulders.
+        float glow = exp(-abs(lampZ) * .23) * (1. - smoothstep(0., 2.8, lampX * lampX));
+        diffuseColor.rgb += lampColor * (shine * .26 + glow * .13) * streak * (.38 + film * .72);
       `).replace('#include <roughnessmap_fragment>', `
         #include <roughnessmap_fragment>
         roughnessFactor = mix(.61,.33,film);
       `).replace('#include <opaque_fragment>', `
         if(wetStrength>0. && wetCoord.w>0.){
           vec2 wetUv=wetCoord.xy/wetCoord.w*.5+.5;
+          vec2 edge = min(wetUv, 1. - wetUv);
+          float coverage = smoothstep(.006, .09, min(edge.x, edge.y));
           vec2 ripple=vec2(dFdx(grit),dFdy(grit))*.017 + .0011*vec2(sin(distanceM*7.+lane*4.),cos(lane*13.));
           vec2 smear=vec2(.0017,.0058)*(.8+grit);
           vec3 echo=texture2D(wetView,wetUv+ripple).rgb*.50
             +texture2D(wetView,wetUv+ripple+smear).rgb*.25
             +texture2D(wetView,wetUv+ripple-smear).rgb*.25;
           float grazing=pow(1.-clamp(dot(normal,normalize(vViewPosition)),0.,1.),2.);
-          outgoingLight=mix(outgoingLight,echo,wetStrength*(.035+.24*film+.19*grazing));
+          outgoingLight=mix(outgoingLight,echo,coverage*wetStrength*(.025+.25*film+.20*grazing));
         }
         #include <opaque_fragment>
       `);
@@ -196,7 +201,6 @@ function road(scene, track, theme) {
   steel.side = T.DoubleSide;
   const pavement = strip(track, scene, asphalt, -width, width, 0, 0);
   pavement.receiveShadow = true;
-  if(theme === 'metro') scene.userData.wetPavement = pavement;
   strip(track, scene, steel, -width-.4, width+.4, -0.68, -0.68);
   for (const side of [-1, 1]) {
     strip(track, scene, steel, side * (width+.39), side * (width+.39), -0.68, 0.08);
@@ -741,6 +745,7 @@ export function buildWorld(scene, course = track) {
   const lights = gantry(scene, course, theme === 'windway' ? 'TURBINE CAUSEWAY' : theme === 'foundry' ? 'IRONWORKS DROP' : theme === 'frost' ? 'FROST PASS' : theme === 'redrock' ? 'RED ROCK CANYON' : mountain ? 'SKYLINE DROP' : night ? 'MIDNIGHT RING' : 'SUNSET PIER');
   combineStaticBoxes(scene);
   scene.traverse(object => {
+    if (night && (object.isLight || object.userData.reflectOnRoad)) object.layers.enable(1);
     if (!object.isMesh || !object.material.isMeshStandardMaterial) return;
     object.castShadow = !object.userData.distant;
     object.receiveShadow = true;

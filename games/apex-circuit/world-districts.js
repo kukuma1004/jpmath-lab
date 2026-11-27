@@ -1,6 +1,6 @@
-import {marinaArchitecture} from './marina-architecture.js?v=17';
+import {marinaArchitecture} from './marina-architecture.js?v=18';
 import * as T from './vendor/three.module.min.js';
-import {grain, instances, matrix, nearest, pathSamples, random} from './world-landmarks.js?v=17';
+import {grain, instances, matrix, nearest, pathSamples, random} from './world-landmarks.js?v=18';
 
 const box=new T.BoxGeometry();
 const finish=(color,options={})=>new T.MeshStandardMaterial({color,roughness:.78,...options});
@@ -149,7 +149,10 @@ export function streetShops(scene,course,placard){
   instances(scene,box,finish(0x706d69),parapets);
   instances(scene,box,lit(0xfbca84),warm);
   instances(scene,box,finish(0x855f43),frames);
-  instances(scene,box,new T.MeshBasicMaterial({map:scene.userData.officeGlazing,color:0xffefda}),glass);
+  const shopWindows = instances(scene, box, new T.MeshBasicMaterial({
+    map: scene.userData.officeGlazing, color: 0xffefda
+  }), glass);
+  if (shopWindows) shopWindows.userData.reflectOnRoad = true;
   instances(scene,box,finish(0x9d6748),signs);
   instances(scene,box,lit(0xf6ca8b),coolSigns);
   instances(scene,box,finish(0x6d6f68),planters);
