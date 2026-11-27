@@ -1,14 +1,16 @@
 const {test,before}=require('node:test');
 const assert=require('node:assert/strict');
-let createRace,vehicleSpecs,tracks;
+let createRace,vehicleSpecs,tracks,rankedTrack,officialEvent;
 before(async()=>{
   ({createRace,vehicleSpecs}=await import('../games/apex-circuit/race.js'));
-  ({tracks}=await import('../games/apex-circuit/track.js'));
+  ({tracks,rankedTrack}=await import('../games/apex-circuit/track.js'));
+  ({officialEvent}=await import('../games/apex-circuit/official-event.js'));
 });
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function drive(track,trained=false,id='model-3'){
-  const spec=vehicleSpecs.find(v=>v.id===id),race=createRace(track,spec);
-  let boostFrames=0,boostEnded=false,wasBoosting=false;
+  const race=createRace(track,vehicleSpecs.find(v=>v.id===id));
+  const spec=vehicleSpecs.find(v=>v.id===race.cars[0].vehicleId);
+  let boostFrames=0,boostEnded=false,wasBoosting=false,drifts=0;
   const previous=race.cars.map(c=>c.distance);
   for(let frame=0;frame<18000&&!race.finished;frame++){
     const p=race.cars[0],curve=track.sample(p.distance+8).curve;
@@ -33,6 +35,7 @@ function drive(track,trained=false,id='model-3'){
     }
     const boost=trained?!brake&&race.boost>.16&&(Math.abs(track.sample(p.distance+7).curve)<.045||race.boost>.8):frame%240<160;
     race.step(1/60,{steer,brake,boost});
+    if(race.events.includes('drift'))drifts++;
     let active=false;
     race.cars.forEach((car,i)=>{
       assert.ok(Number.isFinite(car.distance)&&Number.isFinite(car.speed)&&Number.isFinite(car.lane),track.id+' finite race');
@@ -47,9 +50,30 @@ function drive(track,trained=false,id='model-3'){
     if(wasBoosting&&!active)boostEnded=true;
     wasBoosting=active;
   }
-  assert.ok(race.finished,track.id+' finishes three laps');
-  return {race,boostFrames,boostEnded};
+  assert.ok(race.finished,track.id+' finishes all laps');
+  return {race,boostFrames,boostEnded,drifts};
 }
+
+test('official time attack fixes the grid, rewards cornering, and records exactly two lap crossings',()=>{
+  assert.ok(!tracks.includes(rankedTrack),'official records use a separate course');
+  assert.equal(rankedTrack.shortcuts.length,0);
+  assert.equal(rankedTrack.gaps.length,0);
+  const {race,drifts}=drive(rankedTrack,true,'cybertruck');
+  const alternate=drive(rankedTrack,true,'nova').race;
+  const handsOff=drive(rankedTrack).race;
+  assert.deepEqual(race.cars.map(car=>car.vehicleId),[officialEvent.vehicle]);
+  assert.equal(race.laps,2);
+  assert.deepEqual(race.lapEnds,alternate.lapEnds,'same inputs produce the same record across garage selections');
+  assert.equal(race.lapEnds.length,race.laps);
+  assert.equal(race.lapEnds[1],race.time);
+  assert.ok(race.lapEnds[0]>8.5 && race.lapEnds[1]-race.lapEnds[0]>8.5,'splits satisfy board bounds');
+  assert.ok(drifts>=4 && race.time+3<handsOff.time,'correct lines and drift exits beat repeated boost');
+  race.reset();
+  assert.deepEqual(race.lapEnds,[]);
+  assert.ok(!race.finished && race.time===0);
+  assert.equal(createRace(tracks[0]).cars.length,5);
+  assert.equal(createRace(tracks[0]).laps,3);
+});
 test('rivals contest repeated boosts with bounded rechargeable boost and continuous progress',()=>{
   let easyWins=0;
   for(const track of tracks){

@@ -1,14 +1,16 @@
 import { sampleDriver } from './bypass.js?v=14';
 import * as T from './vendor/three.module.min.js';
-import { tracks, courseRecordId } from './track.js?v=14';
-import { createRace, vehicleSpecs } from './race.js?v=14';
-import { buildWorld } from './world.js?v=18';
-import { buildCars, driveCar, selectVehicle } from './cars.js?v=16';
+import { tracks, courseRecordId, rankedTrack } from './track.js?v=19';
+import { createRace, vehicleSpecs } from './race.js?v=19';
+import { buildWorld } from './world.js?v=19';
+import { buildCars, driveCar, selectVehicle } from './cars.js?v=19';
 import { drivingKeys, resolveDrivingKey } from './input.js?v=10';
 import { createAudio } from './audio.js?v=4';
 import { createEffects } from './effects.js?v=14';
 import { bindGarage } from './garage.js?v=11';
-import { bindRanking, formatTime } from './ranking.js?v=14';
+import { bindRanking, formatTime } from './ranking.js?v=19';
+import { officialEvent } from './official-event.js?v=19';
+import { bindOfficialRanking } from './official-ranking.js?v=19';
 
 const byId = id => document.getElementById(id);
 const recordKey = 'jp-apex-circuit-lap';
@@ -380,6 +382,7 @@ function setup() {
   let track = tracks.find(course => course.id === read(courseKey)) || tracks[0];
   let vehicle = vehicleSpecs.find(spec => spec.id === read(vehicleKey)) || vehicleSpecs[0];
   let race, map, activeWorld;
+  let garageSelection, officialName, runNumber = 0;
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const nodes = Object.fromEntries(['start', 'pause', 'resume', 'retry', 'play-again', 'menu', 'sound', 'rank',
     'lap', 'race-time', 'speed', 'boost-fill', 'boost-value', 'countdown', 'feedback', 'result-rank',
@@ -442,6 +445,17 @@ function setup() {
     getCourse: () => track.id,
     getBest: id => id === courseRecordId(track.id) ? best : readBestRecord(id)
   });
+  const recordOfficial = bindOfficialRanking({
+    read, save, canPublish: !measured,
+    onStart(name) {
+      if (!track.official) garageSelection = { track, vehicle };
+      officialName = name;
+      track = rankedTrack;
+      vehicle = vehicleSpecs.find(spec => spec.id === officialEvent.vehicle);
+      if (!race || document.body.dataset.mode !== 'official') loadSelection();
+      start();
+    }
+  });
   function loadSelection() {
     let nextWorld = worldCache.get(track.id);
     if (!nextWorld) {
@@ -468,6 +482,8 @@ function setup() {
     trimWorldCache();
     selectVehicle(vehicles, vehicle, roadRoster);
     race = createRace(track, vehicle);
+    document.body.dataset.mode = track.official ? 'official' : 'arcade';
+    setText(byId('lap-count'), `/ ${race.laps}`);
     rememberPoses();
     best = readBestLap(track.id);
     lastMapUpdate = -1;
@@ -566,6 +582,7 @@ function setup() {
     if (focus) nodes.start.focus({ preventScroll: true });
   }
   function start() {
+    runNumber++;
     audio.unlock();
     race.reset();
     rememberPoses();
@@ -585,6 +602,13 @@ function setup() {
   }
   function openGarage() {
     if (!['paused', 'results'].includes(state)) return;
+    if (track.official) {
+      ({ track, vehicle } = garageSelection);
+      garageSelection = null;
+      loadSelection();
+      byId('official-ranking-open').focus({ preventScroll: true });
+      return;
+    }
     showMenu(false);
     document.querySelector('.garage-scroll').scrollTop = 0;
     document.querySelector('[data-vehicle="' + vehicle.id + '"]').focus({preventScroll: true});
@@ -603,15 +627,31 @@ function setup() {
     focusDriving();
   }
   function finish() {
-    if (race.bestLap !== null && (best === null || race.bestLap < best)) {
-      best = race.bestLap;
-      save(lapKey(track.id), best);
+    const official = track.official === true;
+    const message = byId('official-result-message');
+    message.hidden = byId('official-result-board').hidden = !official;
+    byId('result-ranking').hidden = official;
+    setText(byId('result-best-label'), official ? '내 최고 완주' : '내 최고 랩');
+    if (official) {
+      const finishedRun = runNumber;
+      setText(message, '완주 기록 확인 중…');
+      setText(nodes['result-best'], '—');
+      recordOfficial(race, officialName, (status, record) => {
+        if (runNumber !== finishedRun || state !== 'results' || !track.official) return;
+        setText(message, status);
+        setText(nodes['result-best'], formatTime(record ? record.time / 100 : null));
+      });
+    } else {
+      if (race.bestLap !== null && (best === null || race.bestLap < best)) {
+        best = race.bestLap;
+        save(lapKey(track.id), best);
+      }
+      recordFinish(track.id, vehicle.id, race.time, race.bestLap);
+      setText(nodes['result-best'], formatTime(best));
     }
-    recordFinish(track.id, vehicle.id, race.time, race.bestLap);
     setText(nodes['result-rank'], race.place);
     setText(nodes['result-time'], formatTime(race.time));
     setText(nodes['result-lap'], formatTime(race.bestLap));
-    setText(nodes['result-best'], formatTime(best));
     change('results');
     nodes.menu.focus({ preventScroll: true });
   }
@@ -713,9 +753,9 @@ function setup() {
     }
     if (state !== 'racing') fraction = 1;
     const player = screenPose(race.cars[0], 0, fraction);
-    race.cars.forEach((car, index) => {
-      const visual = vehicles[index];
-      const visible = state !== 'menu' || index === 0;
+    vehicles.forEach((visual, index) => {
+      const car = race.cars[index];
+      const visible = !!car && (state !== 'menu' || index === 0);
       visual.model.visible = visual.shadow.visible = visible;
       if (visible) driveCar(visual, index === 0 ? player : screenPose(car, index, fraction),
         index === 0 ? boosting : state === 'racing' && car.boosting, motion.matches ? 0 : worldTime, track);
@@ -800,7 +840,7 @@ function setup() {
       event.preventDefault();
       return;
     }
-    if (code === 'Escape' && !event.repeat && state === 'results' && !byId('ranking').open) {
+    if (code === 'Escape' && !event.repeat && state === 'results' && !document.querySelector('dialog[open]')) {
       event.preventDefault();
       openGarage();
       return;
@@ -848,7 +888,7 @@ function setup() {
     pause();
   });
   world.addEventListener('webglcontextrestored', () => {
-    for (const course of tracks) {
+    for (const course of [...tracks, rankedTrack]) {
       const cached = worldCache.get(course.id);
       if (cached) refreshReflections(cached, course);
     }

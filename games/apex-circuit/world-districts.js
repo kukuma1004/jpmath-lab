@@ -35,7 +35,8 @@ export function harborVillage(scene,course) {
     roofs.push(matrix(x,-7.05,z,1.4,.58,3.6,yaw));
   }
   // Slender travelling dock cranes with open trusses, counterweights and hanging hooks.
-  for(const [x,z] of [[112,37],[126,51],[115,99],[-58,102]]){
+  const craneSites = course.official ? [[96,16],[140,62],[115,99],[-58,102]] : [[112,37],[126,51],[115,99],[-58,102]];
+  for(const [x,z] of craneSites){
     const mast=9+rng()*4, deck=-2;
     girders.push(matrix(x,deck-.5,z,8,1.2,5));
     for(const dx of [-1.35,1.35]){

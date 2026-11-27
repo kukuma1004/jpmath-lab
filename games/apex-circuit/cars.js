@@ -1,6 +1,6 @@
 import { sampleDriver } from './bypass.js?v=14';
 import * as T from './vendor/three.module.min.js';
-import { track } from './track.js?v=14';
+import { track } from './track.js?v=19';
 import { buildRoadCar } from './road-cars.js?v=16';
 
 const box = new T.BoxGeometry();

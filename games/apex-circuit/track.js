@@ -1,6 +1,7 @@
 import * as T from './vendor/three.module.min.js';
 
 import { makeBypass } from './bypass.js?v=14';
+import { officialEvent } from './official-event.js?v=19';
 
 const sunsetPoints = [
   [-55, 0, 34], [-7, 0, 34], [28, 0.7, 32], [57, 3.2, 20],
@@ -141,6 +142,23 @@ export const tracks = [
     (length, at) => ({ pads: [{distance: at(3)+4, lane: 2.7}, {distance: at(12)-7, lane: 0}, {distance: at(16)+5, lane: -2.6}, {distance: at(21)+5, lane: 2.6}],
       gaps: [{start: at(13), end: at(14), drop: 18}] }))
 ];
+// A short opening run, two opposite-direction S sections, and a tight pier hairpin.
+const portPoints = [
+  [-86,1,61], [-49,1,61], [-21,1.5,52], [5,2.1,56], [31,2.8,77],
+  [57,3.3,82], [81,3.7,68], [100,4.3,46], [127,4.6,32], [141,5,11],
+  [132,4.8,-11], [106,4.1,-18], [70,3.4,-12], [44,2.9,-29], [28,2.5,-55],
+  [0,2.2,-64], [-24,2,-46], [-55,1.6,-37], [-81,1.3,-53],
+  [-108,1,-54], [-130,1,-32], [-136,1,-1], [-134,1,28], [-118,1,53]
+];
+export const rankedTrack = makeCourse({
+  id: officialEvent.course, name: '항만 그랑프리', theme: 'sunset', official: true, halfWidth: 7.5
+}, portPoints, (_, at) => ({
+  pads: [
+    { distance: at(5) + 9, lane: 2.8 }, { distance: at(11) + 12, lane: -2.8 },
+    { distance: at(16) + 10, lane: 2.8 }, { distance: at(21) + 9, lane: -2.8 }
+  ]
+}));
+
 export const courseRecordId = id => tracks.find(course => course.id === id)?.recordId || id;
 export const track = tracks[0];
 export const coursePoint = track.point;

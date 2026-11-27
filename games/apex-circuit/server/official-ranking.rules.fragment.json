@@ -1,0 +1,34 @@
+{
+  "apexCircuitRankedV1": {
+    "board": {
+      ".read": "query.orderByChild == 'time' && query.limitToFirst != null && query.limitToFirst > 0 && query.limitToFirst <= 100",
+      ".indexOn": "time",
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && auth.uid == $uid && auth.token.firebase.sign_in_provider == 'anonymous' && newData.exists() && (!data.exists() || newData.child('time').val() < data.child('time').val())",
+        ".validate": "newData.hasChildren(['nickname','model','time','lap1','lap2','submittedAt']) && newData.child('time').val() == newData.child('lap1').val() + newData.child('lap2').val()",
+        "nickname": {
+          ".validate": "newData.isString() && newData.val().matches(/^[가-힣ㄱ-ㅎㅏ-ㅣA-Za-z0-9 _.-]{1,12}$/) && newData.val().matches(/^[^ ](.*[^ ])?$/)"
+        },
+        "model": {
+          ".validate": "newData.val() == 'model-3'"
+        },
+        "lap1": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 850 && newData.val() <= 8640000"
+        },
+        "lap2": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 850 && newData.val() <= 8640000"
+        },
+        "time": {
+          ".validate": "newData.isNumber()"
+        },
+        "submittedAt": {
+          ".validate": "newData.isNumber() && newData.val() == now"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    }
+  }
+}

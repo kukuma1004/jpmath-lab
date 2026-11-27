@@ -2,9 +2,9 @@ import { frontier } from './world-frontiers.js?v=18';
 import { buildJunctions } from './junctions.js?v=18';
 import * as T from './vendor/three.module.min.js';
 import { grain, alpine, metropolis, coastalBridge, roadFurniture } from './world-landmarks.js?v=18';
-import { harborVillage, quarryArch, streetShops } from './world-districts.js?v=18';
+import { harborVillage, quarryArch, streetShops } from './world-districts.js?v=19';
 import { expansion } from './world-expansion.js?v=18';
-import { courseFrame, coursePoint, track } from './track.js?v=14';
+import { courseFrame, coursePoint, track } from './track.js?v=19';
 
 const box = new T.BoxGeometry();
 const dummy = new T.Object3D();
@@ -359,7 +359,7 @@ function gantry(scene, course, label) {
   const group = new T.Group();
   group.position.copy(start.position);
   group.rotation.copy(start.rotation);
-  const style = roadStyles[course.id];
+  const style = roadStyles[course.theme || course.id];
   const panel = surface(style.signal, .42);
   const panelTrim = surface(style.pale, .63);
   for (const x of [-8.4, 8.4]) {
@@ -702,7 +702,7 @@ function sky(scene, night, mountain, theme) {
 }
 
 export function buildWorld(scene, course = track) {
-  const theme = course.id || 'sunset';
+  const theme = course.theme || course.id || 'sunset';
   const night = theme === 'metro', mountain = theme === 'summit';
   const extra = theme === 'frost' || theme === 'redrock';
   const expanded = theme === 'windway' || theme === 'foundry';
@@ -733,7 +733,19 @@ export function buildWorld(scene, course = track) {
   else if (extra) frontier(scene, course, {block,surface,placard,grain});
   else if (mountain) alpine(scene, course, waves);
   else if (night) metropolis(scene, course);
-  else { scenery(scene, waves); coastalBridge(scene); }
+  else if (course.official) {
+    const coast = { positions: [], uvs: [] };
+    island(scene, -9, 6, 169, 94, -.6, 332, coast);
+    island(scene, -44, -88, 7.3, 5.3, 4.1, 70, coast);
+    shoreFoam(scene, coast, waves);
+    paddock(scene);
+    lighthouse(scene);
+    harbor(scene);
+  }
+  else {
+    scenery(scene, waves);
+    coastalBridge(scene);
+  }
   if (theme==='sunset') harborVillage(scene,course);
   if (night) streetShops(scene,course,placard);
   if (theme==='redrock') quarryArch(scene);
@@ -742,7 +754,7 @@ export function buildWorld(scene, course = track) {
     scene.userData.facadeReady || Promise.resolve(false), scene.userData.junctionReady || Promise.resolve(false)])
     .then(loaded => loaded.some(Boolean));
   roadFurniture(scene, course, theme);
-  const lights = gantry(scene, course, theme === 'windway' ? 'TURBINE CAUSEWAY' : theme === 'foundry' ? 'IRONWORKS DROP' : theme === 'frost' ? 'FROST PASS' : theme === 'redrock' ? 'RED ROCK CANYON' : mountain ? 'SKYLINE DROP' : night ? 'MIDNIGHT RING' : 'SUNSET PIER');
+  const lights = gantry(scene, course, course.official ? 'PORT GRAND PRIX' : theme === 'windway' ? 'TURBINE CAUSEWAY' : theme === 'foundry' ? 'IRONWORKS DROP' : theme === 'frost' ? 'FROST PASS' : theme === 'redrock' ? 'RED ROCK CANYON' : mountain ? 'SKYLINE DROP' : night ? 'MIDNIGHT RING' : 'SUNSET PIER');
   combineStaticBoxes(scene);
   scene.traverse(object => {
     if (night && (object.isLight || object.userData.reflectOnRoad)) object.layers.enable(1);

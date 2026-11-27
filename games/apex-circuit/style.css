@@ -484,6 +484,36 @@ body.is-drifting .boost-caption { color: #ffc65b; }
   pointer-events: auto;
 }
 .garage-record > span { font-size: 12px; font-weight: 800; }
+.garage-record > span, .garage-record > small { white-space: nowrap; }
+#official-ranking-open {
+  border-color: #63d8bd8c;
+  color: #bdfff1;
+  background: #143039f2;
+}
+body[data-mode="official"] :is(.rank-stat, .result-place) { display: none; }
+#official-result-message { margin-bottom: 9px; color: #bdfff1; }
+#official-ranking { border-top-color: #63d8bd; }
+#official-rules, #official-consent { word-break: keep-all; }
+.official-board-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.official-board-heading .ranking-best { padding: 0; border: 0; }
+#official-refresh {
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid #8b9ba470;
+  color: inherit;
+  background: #182633;
+  font: 700 21px/1 system-ui, sans-serif;
+}
+#official-start-form button { color: #10222a; background: #7be8cf; border-color: #7be8cf; }
+@media (max-height: 520px) and (orientation: landscape) {
+  #official-start-form { grid-template-columns: auto minmax(0, 1fr); }
+  #official-consent { grid-column: 1 / -1; }
+}
+@media (max-width: 360px) {
+  .garage-launch { gap: 5px; }
+  .garage-launch .garage-record { padding-inline: 6px; }
+  .garage-launch .race-button { padding-inline: 9px; white-space: nowrap; }
+}
 .garage-record small { color: var(--muted); font-size: 10px; }
 .garage-record strong { margin-left: 2px; color: var(--cream); font: 700 13px/1 var(--display); }
 .garage-record:hover { border-color: #ffcf57; }

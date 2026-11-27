@@ -7,7 +7,7 @@ const config = {
 const base = 'https://jpmathlab-default-rtdb.asia-southeast1.firebasedatabase.app/apexCircuitV1';
 let session;
 
-async function identity() {
+export async function identity() {
   if (!session) {
     session = (async () => {
       const [appSdk, authSdk] = await Promise.all([
@@ -28,7 +28,7 @@ async function identity() {
   return session;
 }
 
-async function request(url, options = {}) {
+export async function request(url, options = {}) {
   try {
     const response = await fetch(url, { ...options, signal: AbortSignal.timeout(12000) });
     if (!response.ok && response.status !== 412) throw new Error();

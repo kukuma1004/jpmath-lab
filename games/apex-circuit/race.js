@@ -1,5 +1,5 @@
 import { sampleDriver } from './bypass.js?v=14';
-const LAPS = 3;
+import { officialEvent } from './official-event.js?v=19';
 // Arcade handling profiles, authored for this game rather than real-car specifications.
 const roadTuning = { cosmetic: true };
 const roadVehicles = [
@@ -122,19 +122,23 @@ function compareCars(first, second) {
 }
 
 export function createRace(track, vehicle = vehicleSpecs[0]) {
-  const finishDistance = track.length * LAPS;
+  const official = track.id === officialEvent.course;
+  const laps = official ? officialEvent.laps : 3;
+  const rivals = official ? [] : RIVALS;
+  if (official) vehicle = vehicleSpecs.find(spec => spec.id === officialEvent.vehicle);
+  const finishDistance = track.length * laps;
   const laneLimit = track.halfWidth - CAR_WIDTH * 0.52;
   const player = createCar(0, "나");
-  const cars = [player, ...RIVALS.map((rival, index) => createCar(index + 1, rival.name))];
+  const cars = [player, ...rivals.map((rival, index) => createCar(index + 1, rival.name))];
   const roadRoster = vehicleSpecs.filter(spec => spec.cosmetic);
   const selected = roadRoster.findIndex(spec => spec.id === vehicle.id);
-  const rivalVehicles = RIVALS.map((_, i) => vehicle.cosmetic
+  const rivalVehicles = rivals.map((_, i) => vehicle.cosmetic
     ? roadRoster[(selected + i + 1) % roadRoster.length] : vehicle);
   cars.forEach((car, i) => { car.vehicleId = i ? rivalVehicles[i - 1].id : vehicle.id; });
   const order = cars.slice();
   const events = [];
   const padLaps = new Array(track.pads.length);
-  const rivalPadLaps = RIVALS.map(() => new Array(track.pads.length));
+  const rivalPadLaps = rivals.map(() => new Array(track.pads.length));
   const course = {};
   const preview = {};
   let boostSpent = false;
@@ -147,7 +151,8 @@ export function createRace(track, vehicle = vehicleSpecs[0]) {
     cars,
     order,
     events,
-    laps: LAPS,
+    laps,
+    lapEnds: [],
     time: 0,
     progress: 0,
     lapProgress: 0,
@@ -170,8 +175,8 @@ export function createRace(track, vehicle = vehicleSpecs[0]) {
 
   function reset() {
     resetCar(player, -16, 0);
-    for (let i = 0; i < RIVALS.length; i++) {
-      const rival = RIVALS[i];
+    for (let i = 0; i < rivals.length; i++) {
+      const rival = rivals[i];
       resetCar(cars[i + 1], rival.grid, track.halfWidth * rival.line);
     }
 
@@ -189,6 +194,7 @@ export function createRace(track, vehicle = vehicleSpecs[0]) {
     race.progress = 0;
     race.lapProgress = 0;
     race.lap = 1;
+    race.lapEnds.length = 0;
     race.lapTime = 0;
     race.bestLap = null;
     race.boost = 0.66;
@@ -454,7 +460,8 @@ export function createRace(track, vehicle = vehicleSpecs[0]) {
       const completedLap = lapEnd - lapStart;
       race.bestLap = race.bestLap === null ? completedLap : Math.min(race.bestLap, completedLap);
       lapStart = lapEnd;
-      if (lap <= LAPS) {
+      race.lapEnds.push(lapEnd);
+      if (lap <= laps) {
         race.lap = lap;
         events.push("lap");
       } else {
@@ -515,7 +522,7 @@ export function createRace(track, vehicle = vehicleSpecs[0]) {
     const oldPlace = race.place;
     bumpCooldown -= dt;
     advancePlayer(dt, clamp(steer, -1, 1), brake, boost);
-    for (let i = 0; i < RIVALS.length; i++) advanceRival(cars[i + 1], RIVALS[i], dt);
+    for (let i = 0; i < rivals.length; i++) advanceRival(cars[i + 1], rivals[i], dt);
     if (race.finished) race.time = player.time;
     else settleContact();
     updateOrder();
