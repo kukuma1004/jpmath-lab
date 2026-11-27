@@ -109,7 +109,7 @@ export const WEAPONS: Record<string, WeaponDef> = {
     id: 'bujeok', name: '추적 부적탄', use: '진행 방향 추적', desc: '진행 방향 가까이에 있는 적을 포착해 부드럽게 휩니다. 땅이나 장애물에 먼저 닿으면 터집니다.',
     behavior: 'shell', pattern: 'single',
     radius: 52, carve: 48, rockMul: 0.7, damage: 126, directBonus: 1.15, knockback: 230,
-    homing: { range: 405, turnRate: 3.1 },
+    homing: { range: 310, turnRate: 3.1 },
     look: 'paper', color: 0xf7d354, glow: 0xff5a5a, size: 7,
   },
   nakroe: {

@@ -148,9 +148,9 @@ export class TargetRange {
     this.ctx = canvas.getContext('2d')!;
     this.ctx.scale(2, 2);
     this.canvasSize = new ResizeObserver(([entry]) => {
-      if (!entry?.contentRect.width) return;
+      if (!entry?.contentRect.width || !entry.contentRect.height) return;
       const { width, height } = entry.contentRect;
-      this.objectAspect = Math.max(1, Math.min(2.6, height * WIDTH / (width * HEIGHT)));
+      this.objectAspect = Math.min(2.6, height * WIDTH / (width * HEIGHT));
       this.needsPaint = true;
     });
     this.canvasSize.observe(canvas);

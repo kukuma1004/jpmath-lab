@@ -27,7 +27,7 @@ const DEFAULTS: Settings = {
   shake: 1,
   trajectory: true,
   aimHints: true,
-  difficulty: 'normal',
+  difficulty: 'easy',
   turnTime: TURN_TIME_DEFAULT,
   turnLimit: TURN_LIMIT_DEFAULT,
   battleRules: 2,

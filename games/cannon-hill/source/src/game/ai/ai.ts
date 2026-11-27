@@ -1,4 +1,4 @@
-import { DT, WALK_SPEED } from '../config/constants';
+import { DT, WALK_SPEED, WORLD_H } from '../config/constants';
 import { Battle, type DryResult } from '../combat/battle';
 import type { Difficulty, Fighter, Phase, WeaponSlot } from '../combat/types';
 import { Rng, clamp, hashString } from '../utils/rng';
@@ -25,8 +25,8 @@ interface Level {
 }
 
 const LEVELS: Record<Difficulty, Level> = {
-  easy: { angleLo: 10, angleHi: 80, angleStep: 7, powerLo: 15, powerStep: 7, refine: 0, refineTop: 0, full: 0, noiseAngle: 6.5, noisePower: 8, moves: 1, pickTop: 3 },
-  normal: { angleLo: 5, angleHi: 85, angleStep: 4, powerLo: 10, powerStep: 4, refine: 1, refineTop: 2, full: 2, noiseAngle: 2.3, noisePower: 3.2, moves: 1, pickTop: 1 },
+  easy: { angleLo: 10, angleHi: 80, angleStep: 7, powerLo: 15, powerStep: 7, refine: 0, refineTop: 0, full: 0, noiseAngle: 9, noisePower: 11, moves: 0, pickTop: 6 },
+  normal: { angleLo: 5, angleHi: 85, angleStep: 4, powerLo: 10, powerStep: 4, refine: 1, refineTop: 2, full: 2, noiseAngle: 5, noisePower: 7, moves: 1, pickTop: 2 },
   hard: { angleLo: 0, angleHi: 88, angleStep: 4, powerLo: 5, powerStep: 4, refine: 2, refineTop: 3, full: 4, noiseAngle: 0.9, noisePower: 1.4, moves: 2, pickTop: 1 },
 };
 
@@ -56,6 +56,23 @@ interface Pos {
   steps: number;
 }
 
+function* simulateShot(b: Battle, idx: number, pos: Pos, shot: {slot: WeaponSlot; angle: number; power: number}): Generator<void, Battle, void> {
+  const sim = b.clone();
+  const f = sim.fighters[idx]!;
+  f.x = pos.x;
+  f.y = pos.y;
+  if (pos.dir !== 0) f.moved = true;
+  f.slot = shot.slot;
+  f.angle = shot.angle;
+  sim.phase = 'AIM' as Phase;
+  sim.fireNow(shot.power);
+  for (let steps = 1; steps <= 900 && sim.phase !== 'TURN_END' && sim.phase !== 'GAME_OVER'; steps++) {
+    sim.step();
+    if (steps % 90 === 0) yield;
+  }
+  return sim;
+}
+
 /** 실제 걷기 코드로 이동 결과를 미리 계산한다 */
 export function predictWalk(b: Battle, f: Fighter, dir: -1 | 1, maxDist: number): Pos | null {
   const copy: Fighter = { ...f, stats: { ...f.stats } };
@@ -75,12 +92,11 @@ export function predictWalk(b: Battle, f: Fighter, dir: -1 | 1, maxDist: number)
   return { x: copy.x, y: copy.y, dir, steps };
 }
 
-/** 상대(들)에게 준 피해 − 우리 편(나 포함)이 입은 피해의 1.5배 */
-function scoreDry(r: DryResult, allies: Fighter[], foes: Fighter[]): number {
+function scoreDry(r: DryResult, allies: Fighter[], foes: Fighter[], enemyWeight: number, groundWeight: number): number {
   let enemy = 0, self = 0;
   for (const f of foes) enemy += r.damage[f.idx] ?? 0;
   for (const f of allies) self += r.damage[f.idx] ?? 0;
-  let s = enemy - 1.5 * self + r.enemyGroundHit * 45;
+  let s = enemy * enemyWeight - 1.5 * self + r.enemyGroundHit * groundWeight;
   if (enemy <= 0) {
     let best = 1e9;
     for (const p of r.impacts) for (const foe of foes) best = Math.min(best, Math.hypot(p.x - foe.x, p.y - (foe.y - 20)));
@@ -143,6 +159,10 @@ export class AIPlanner {
     const foes = b.enemiesOf(me).filter((f) => f.alive);
     const allies = b.alliesOf(me).filter((f) => f.alive);
     const rng = new Rng(hashString(`${b.cfg.seed}:${b.turnNo}:${this.idx}:${this.diff}`));
+    const easy = this.diff === 'easy';
+    // 쉬움 AI는 사격을 일부 빗맞히고, 상대 발밑의 지형을 덜 노린다.
+    const enemyWeight = easy && rng.next() < 0.55 ? -1.8 : 1;
+    const groundWeight = easy ? -150 : 45;
 
     const positions: Pos[] = [{ x: me.x, y: me.y, dir: 0, steps: 0 }];
     const inGas = b.clouds.some((c) => (c.turns[me.idx] ?? 0) > 0 && b.inCloud(me, c));
@@ -152,7 +172,8 @@ export class AIPlanner {
         if (p) positions.push(p);
       }
     }
-    const slots: WeaponSlot[] = b.ultimateReady(me) ? [0, 1, 2] : [0, 1];
+    const canUseUltimate = b.ultimateReady(me) && (!easy || me.turnsTaken >= 4);
+    const slots: WeaponSlot[] = canUseUltimate ? [0, 1, 2] : [0, 1];
     if (this.forceSlots) slots.splice(0, slots.length, ...this.forceSlots);
     const gasPenalty = positions.map((p) => b.clouds.reduce((sum, c) =>
       sum + ((c.turns[me.idx] ?? 0) > 0 && b.inCloud({ ...me, x: p.x, y: p.y }, c) ? c.damage * 1.4 : 0), 0));
@@ -171,7 +192,7 @@ export class AIPlanner {
       const pos = positions[c.pos]!;
       const r = b.dryShot(this.idx, c.slot, c.angle, c.power, { x: pos.x, y: pos.y });
       this.sims++;
-      c.score = scoreDry(r, allies, foes) - gasPenalty[c.pos]!;
+      c.score = scoreDry(r, allies, foes, enemyWeight, groundWeight) - gasPenalty[c.pos]!;
       if (c.slot === 2) c.score -= 32;
       if (pos.dir !== 0) c.score -= 6; // 같은 값이면 덜 움직인다
       return c;
@@ -222,30 +243,15 @@ export class AIPlanner {
     }
     for (const c of distinct) {
       const pos = positions[c.pos]!;
-      const sim = b.clone();
-      const f = sim.fighters[this.idx]!;
-      f.x = pos.x;
-      f.y = pos.y;
-      if (pos.dir !== 0) f.moved = true;
-      f.slot = c.slot;
-      f.angle = c.angle;
-      sim.phase = 'AIM' as Phase;
-      const hp0 = sim.fighters.map((x) => x.hp);
-      sim.fireNow(c.power);
-      let n = 0;
-      while (n < 900 && sim.phase !== 'TURN_END' && sim.phase !== 'GAME_OVER') {
-        sim.step();
-        n++;
-        if (n % 90 === 0) yield;
-      }
+      const sim = yield* simulateShot(b, this.idx, pos, c);
       let gain = 0;
       for (const e of foes) {
         const sf = sim.fighters[e.idx]!;
-        gain += (hp0[e.idx]! - sf.hp) + (sf.alive ? 0 : 1500);
+        gain += (e.hp - sf.hp) + (sf.alive ? 0 : 1500);
       }
       for (const a of allies) {
         const sa = sim.fighters[a.idx]!;
-        gain -= 1.5 * (hp0[a.idx]! - sa.hp) + (sa.alive ? 0 : a.idx === this.idx ? 2500 : 2000);
+        gain -= 1.5 * (a.hp - sa.hp) + (sa.alive ? 0 : a.idx === this.idx ? 2500 : 2000);
       }
       c.full = gain - gasPenalty[c.pos]! - (pos.dir !== 0 ? 6 : 0);
       yield;
@@ -260,8 +266,17 @@ export class AIPlanner {
 
     // 사람처럼 오차를 섞는다(어려움도 완벽하지 않다)
     const angle = clamp(pick.angle + rng.gauss() * lv.noiseAngle, 0, 180);
-    const power = clamp(pick.power + rng.gauss() * lv.noisePower, 5, 100);
+    let power = clamp(pick.power + rng.gauss() * lv.noisePower, 5, 100);
     const pos = positions[pick.pos]!;
+    if (easy && me.turnsTaken <= 2 && b.ringOutY < WORLD_H) {
+      // 낙사 전장의 첫 두 차례에는 상대를 바로 떨어뜨릴 포격의 힘을 줄인다.
+      const initialPower = power;
+      for (const strength of [1, 0.8, 0.6]) {
+        power = Math.max(5, initialPower * strength);
+        const sim = yield* simulateShot(b, this.idx, pos, {slot:pick.slot, angle, power});
+        if (foes.every(f => sim.fighters[f.idx]!.alive)) break;
+      }
+    }
     return {
       slot: pick.slot, angle, power, walkDir: pos.dir, walkSteps: pos.steps, score: pick.full ?? pick.score,
       exact: { angle: pick.angle, power: pick.power },

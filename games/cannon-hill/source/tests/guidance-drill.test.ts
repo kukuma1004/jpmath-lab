@@ -14,11 +14,12 @@ function flat(char='mudang') {
 
 describe('무당의 진행 방향 유도',()=>{
   it.each([
-    {relative:65,power:80,mirror:false}, {relative:65,power:80,mirror:true},
+    {relative:65,power:83,mirror:false}, {relative:65,power:83,mirror:true},
   ])('$relative°에서 빗나갈 탄을 적에게 꺾어 맞힌다 (좌우 반전 $mirror)',({relative,power,mirror})=>{
     const b=flat(),normal=flat('general');
     for(const s of [b,normal])if(mirror)s.fighters.forEach(f=>{f.x=2400-f.x;});
     const angle=mirror?180-relative:relative;
+    expect(b.dryShot(0,0,angle,80).damage[1]).toBe(0);
     expect(normal.dryShot(0,0,angle,power).damage[1]).toBe(0);
     const predicted=b.dryShot(0,0,angle,power);
     expect(predicted.damage[1]).toBe(145);
@@ -67,6 +68,16 @@ describe('무당의 진행 방향 유도',()=>{
       expect(p.seekTarget).toBe(-1);
       expect(p.vx).toBe(vx);
     }
+  });
+  it('앞으로 날아가도 가까워지기 전에는 표적을 포착하지 않는다', () => {
+    const b = flat();
+    const target = b.fighters[1]!;
+    const p = b.newProjectile(0, 1, 'bujeok', target.x - 330, target.y - 34, 600, 0);
+    p.age = .4;
+    b.stepProjectile(p, DT);
+    expect(p.seekTarget).toBe(-1);
+    for (let i = 0; i < 8 && p.seekTarget !== target.idx; i++) b.stepProjectile(p, DT);
+    expect(p.seekTarget).toBe(target.idx);
   });
   it('유도 중에도 성벽에 막힌다',()=>{
     const b=flat();

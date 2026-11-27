@@ -248,7 +248,7 @@ test('굴착대장: 2번 철편을 선택하면 세 갈래가 나가 옆탄으�
 test('무당: 높은 탄이 적 근처로 접근하면 포착해서 맞힌다',async({page})=>{
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
   await openBattle(page,'local',['mudang','driller'],'bridge');await waitAim(page);
-  await wr(page,`const b=__wr.battle;b.terrain.cells.fill(0);for(let y=450;y<600;y++)for(let x=0;x<1200;x++)b.terrain.set(x,y,4);b.terrain.pending=[];b.current=0;b.phase='AIM';b.timeLeft=30;b.wind=0;for(const [i,x] of [400,1700].entries()){const f=b.fighters[i];f.x=x;f.y=900;f.airPeakY=900;f.vx=f.vy=0;f.onGround=true;} __wr.fire(65,80,0);`);
+  await wr(page,`const b=__wr.battle;b.terrain.cells.fill(0);for(let y=450;y<600;y++)for(let x=0;x<1200;x++)b.terrain.set(x,y,4);b.terrain.pending=[];b.current=0;b.phase='AIM';b.timeLeft=30;b.wind=0;for(const [i,x] of [400,1700].entries()){const f=b.fighters[i];f.x=x;f.y=900;f.airPeakY=900;f.vx=f.vy=0;f.onGround=true;} __wr.fire(65,83,0);`);
   await page.waitForFunction(()=> (window as any).__wr.battle.projectiles.some((p:any)=>p.seekTarget===1),undefined,{polling:'raf'});
   await page.screenshot({path:'test-results/near-path-guidance.png'});
   await page.waitForFunction(()=> {
@@ -331,6 +331,7 @@ test('AI 대전: 타이틀 → 장수 → 전장 → 전투, AI가 실제로 쏜
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await openBattle(page, 'ai');
+  expect(await wr(page, '__wr.battle.cfg.difficulty')).toBe('easy');
   await expect(page.locator('.pcard.p1 .nm')).toContainText('나');
   await wr(page, '__wr.speed(3)');
   // 내 차례면 넘기고, AI가 직접 쏠 때까지 기다린다

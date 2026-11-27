@@ -50,7 +50,7 @@
   background-position: center 48%;
   box-shadow: 0 7px 18px #0006;
 }
-.target-field canvas { display: block; width: 100%; height: 100%; }
+.target-field canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
 .target-note {
   position: absolute;
   top: 8px;
@@ -197,7 +197,7 @@
 .target-scoreboard>span:last-child { border:0; }
 .target-note { top:max(72px,10%); }
 .target-finish { z-index:2; background:#172030df; }
-.target-control { inset:auto max(15px,env(safe-area-inset-right)) max(22px,env(safe-area-inset-bottom)) max(15px,env(safe-area-inset-left)); grid-template-columns:minmax(125px,1fr) minmax(235px,1.45fr) minmax(125px,1fr) clamp(60px,6vw,88px); gap:8px; align-items:end; }
+.target-control { inset:auto max(15px,env(safe-area-inset-right)) max(22px,env(safe-area-inset-bottom)) max(15px,env(safe-area-inset-left)); grid-template-columns:minmax(125px,1fr) minmax(235px,1.45fr) minmax(125px,1fr) var(--range-fire-width,clamp(60px,6vw,88px)); gap:8px; align-items:end; }
 .target-aim-controls { display:contents; }
 .target-adjust { padding:7px 10px; grid-row:1; grid-column:1; }
 .target-adjust:last-child { grid-column:3; }
@@ -244,5 +244,5 @@
   .target-scoreboard strong { font-size:14px; }
   .target-scoreboard>span { padding-inline:5px; }
   .target-note { top:50px; padding:2px 6px; }
-  .target-control { bottom:5px; }
+  .target-control { bottom:5px; --range-fire-width:64px; }
 }

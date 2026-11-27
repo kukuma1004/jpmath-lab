@@ -8,6 +8,21 @@ async function openRange(page: Page) {
   await page.clock.pauseAt(new Date(Date.now() + 250));
 }
 
+test('울트라와이드와 낮은 창에서 포대와 표적이 하단 조작판 위에 보인다', async ({page}) => {
+  await page.goto('./');
+  await page.getByRole('button', {name: /표적 10발/}).click();
+  for (const [width, height] of [[3440, 1090], [2560, 830], [1920, 620], [1366, 575], [1920, 300]]) {
+    await page.setViewportSize({width, height});
+    const field = (await page.locator('.target-field').boundingBox())!;
+    const canvas = (await page.locator('.target-field canvas').boundingBox())!;
+    const controls = (await page.locator('.target-control').boundingBox())!;
+    expect(canvas).toEqual(field);
+    // The bottom edge of the lowest target is 70% down the field.
+    expect(canvas.y + canvas.height * .7).toBeLessThan(controls.y);
+    expect(controls.y + controls.height).toBeLessThanOrEqual(height);
+  }
+});
+
 test('스페이스바 두 번째 입력의 왕복 게이지 힘으로 1발만 쏜다', async ({ page }) => {
   await openRange(page);
   const power = page.locator('[data-power]');
