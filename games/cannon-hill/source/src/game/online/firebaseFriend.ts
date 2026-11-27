@@ -7,7 +7,9 @@ import { DT } from '../config/constants';
 import { CHARACTERS } from '../data/characters';
 import { MAPS } from '../data/maps';
 import { firebaseProject } from './firebaseConfig';
-import { DUEL_ACCOUNT_DOMAIN, FRIEND_BRANCH, FRIEND_MODES, FRIEND_MEADOW_RULESET, FRIEND_RULESET, isFriendMode, OnlineError, RECONNECT_MS, ROOM_DURATION_MS, ROOM_LIST_LIMIT, ROOM_WAIT_MS, STARTING_RATING, type Control, type FriendMode, type OnlineRoom, type OnlineState, type PublicRoom, type ReplayCommand } from './protocol';
+import { DUEL_ACCOUNT_DOMAIN, FRIEND_BALANCE_RULESET, FRIEND_BRANCH, FRIEND_MODES, isFriendMode, OnlineError, RECONNECT_MS, ROOM_DURATION_MS, ROOM_LIST_LIMIT, ROOM_WAIT_MS, type Control, type FriendMode, type OnlineRoom, type OnlineState, type Profile, type PublicRoom, type RatingChange, type ReplayCommand } from './protocol';
+import { FirebaseRank } from './firebaseRank';
+import { startingRank } from './rank';
 
 const alphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
 const activeKey = 'jpml.warureu.friend.room.';
@@ -19,10 +21,9 @@ const invalidLogin = { 'auth/email-already-in-use':'이미 사용 중인 아이�
   'auth/too-many-requests':'요청이 많아요. 잠시 후 다시 시도해 주세요.' } as Record<string,string>;
 const characters = new Set(CHARACTERS.map(c=>c.id));
 const maps = new Set(MAPS.map(m=>m.id));
-const rulesetFor = (map:string) => map==='meadow'?FRIEND_MEADOW_RULESET:FRIEND_RULESET;
 
 type Name = { uid: string; nickname: string; char: string };
-type Info = Name & { map: string; seed: number; created: number; listed?: boolean; mode?: FriendMode; ruleset?: number };
+type Info = Name & { map: string; seed: number; created: number; listed?: boolean; mode?: FriendMode; ruleset?: number; ranked?: true };
 type Head = { step: number; turn: number; cursor: number; done: boolean; ack: string; writer: string };
 type Packet = { turn: number; player?: Team; control: Control | {kind:'leave'} };
 type Room = {
@@ -34,6 +35,10 @@ type Room = {
   head: Head | null;
   log: DataSnapshot | null;
   config: BattleConfig | null;
+  ranks?: number[];
+  rating?: RatingChange;
+  settling?: boolean;
+  settleAgain?: boolean;
   inbox: Record<string,Packet>;
   presence: Record<string,Record<string,boolean>>;
 };
@@ -49,12 +54,17 @@ const memberState = (info:Info, mode:FriendMode, guests:DataSnapshot): (Name|nul
 export class FirebaseFriend {
   private readonly auth: Auth;
   private readonly db: Database;
+  private readonly rank: FirebaseRank;
   private readonly tab = sessionStorage.getItem('jpml.warureu.friend.tab') ?? crypto.randomUUID();
   private readonly gameRef: string = FRIEND_BRANCH;
   private readonly unsubscribers: Unsubscribe[] = [];
   private connected = false;
   private offset = 0;
   private nickname = '';
+  private rankProfile: Profile | null = null;
+  private rankPollAt = 0;
+  private matchingRank = false;
+  private transferringRoom: Room | null = null;
   private selection: Room | null = null;
   private openRooms: PublicRoom[] = [];
   private stopListings: Unsubscribe | null = null;
@@ -85,6 +95,7 @@ export class FirebaseFriend {
     const app = initializeApp(emulator?{...firebaseProject,projectId:'demo-warureu',databaseURL:'http://127.0.0.1:9018?ns=demo-warureu'}:firebaseProject,'warureu-friendly-v1');
     this.auth = getAuth(app);
     this.db = getDatabase(app);
+    this.rank = new FirebaseRank(this.db);
     if(emulator) {
       connectAuthEmulator(this.auth,'http://127.0.0.1:9196',{disableWarnings:true});
       connectDatabaseEmulator(this.db,'127.0.0.1',9018);
@@ -121,6 +132,7 @@ export class FirebaseFriend {
       throw new OnlineError(400,invalidLogin[code]??'계정을 확인하지 못했어요. 잠시 후 다시 시도해 주세요.');
     }
     this.nickname=register?nickname:'';
+    this.rankProfile=null;
     return {token:this.uid};
   }
 
@@ -134,10 +146,12 @@ export class FirebaseFriend {
         this.nickname=(await get(this.at('profiles/'+uid))).val()??'';
         if(!this.nickname) throw new OnlineError(401,'계정 정보를 불러오지 못했어요. 다시 로그인해 주세요.');
       }
+      if(!this.rankProfile)this.rankProfile=await this.rank.profile({uid,nickname:this.nickname});
       const params=new URLSearchParams(action.slice(6));
       const code=readActive(uid);
       if(code&&!this.selection)await this.enter(code).catch(()=>localStorage.removeItem(activeKey+uid));
       if(!this.selection&&!this.stopListings)this.watchListings();
+      if(this.selection)this.seekRanked(this.selection);
       const cursor=this.selection?.code===params.get('code')?Math.max(0,Number(params.get('cursor'))||0):0;
       return this.state(cursor);
     }
@@ -145,26 +159,30 @@ export class FirebaseFriend {
       this.close();
       await signOut(this.auth);
       this.nickname='';
-    } else if(action==='create'||action==='join') {
+      this.rankProfile=null;
+    } else if(action==='ranking') {
+      return this.rank.board();
+    } else if(action==='create'||action==='join'||action==='queue') {
       const char=String(body?.char);
       if(!characters.has(char))throw new OnlineError(400,'플레이할 장수를 골라 주세요.');
       if(this.selection)throw new OnlineError(409,'이미 참가한 방이 있어요.');
-      if(action==='create') {
-        const choice=String(body?.map);
+      if(action!=='join') {
+        const ranked=action==='queue';
+        const choice=ranked?'random':String(body?.map);
         if(choice!=='random'&&!maps.has(choice))throw new OnlineError(400,'전장을 골라 주세요.');
         const bytes=crypto.getRandomValues(new Uint32Array(8));
         const map=choice==='random'?MAPS[bytes[7]!%MAPS.length]!.id:choice;
         const code=Array.from(bytes.slice(0,6),n=>alphabet[n%alphabet.length]).join('');
-        const mode=isFriendMode(body?.mode)?body.mode:'duel';
+        const mode=!ranked&&isFriendMode(body?.mode)?body.mode:'duel';
         await set(this.at('rooms/'+code+'/info'),{uid,nickname:this.nickname,char,map,seed:bytes[6]!%2147483646+1,
-          created:serverTimestamp(),listed:body?.listed===true,mode,ruleset:rulesetFor(map)});
+          created:serverTimestamp(),listed:!ranked&&body?.listed===true,mode,ruleset:FRIEND_BALANCE_RULESET,...(ranked?{ranked:true}:{})});
         await this.enter(code);
       } else {
         const code=String(body?.code??'').trim().toUpperCase();
         if(!/^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{6}$/.test(code))throw new OnlineError(400,'방 코드 6자리를 확인해 주세요.');
         try {
           const info:Info|null=(await get(this.at('rooms/'+code+'/info'))).val();
-          if(!info||!maps.has(info.map))throw new Error();
+          if(!info||!maps.has(info.map)||info.ranked)throw new Error();
           if(info.uid!==uid) await this.join(code,info,char,body?.listedOnly===true);
           await this.enter(code);
         } catch { throw new OnlineError(404,'참가할 수 있는 방을 찾지 못했어요.'); }
@@ -173,6 +191,54 @@ export class FirebaseFriend {
       await this.leave();
     }
     return {ok:true};
+  }
+
+  private seekRanked(room:Room):void {
+    if(!room.info.ranked||room.you!==0||room.config||!this.connected||this.matchingRank||performance.now()<this.rankPollAt)return;
+    this.rankPollAt=performance.now()+1400;
+    this.matchingRank=true;
+    void this.matchEarlier(room).catch(()=>{}).finally(()=>{this.matchingRank=false;});
+  }
+
+  private async matchEarlier(room:Room):Promise<void> {
+    const now=Date.now()+this.offset;
+    const waiting=await this.rank.waiting(now);
+    for(const {code,created} of waiting) {
+      if(this.selection!==room||room.config)return;
+      if(created>room.info.created||created===room.info.created&&code>=room.code)continue;
+      const info:Info|null=(await get(this.at('rooms/'+code+'/info'))).val();
+      if(this.selection!==room||!info?.ranked||info.uid===this.uid||room.config)continue;
+      try {
+        this.transferringRoom=room;
+        await update(ref(this.db,this.gameRef),{
+          ['rooms/'+room.code]:null,
+          ['rankedQueue/'+room.code]:null,
+          ['rooms/'+code+'/guest']:{uid:this.uid,nickname:this.nickname,char:room.info.char,ruleset:FRIEND_BALANCE_RULESET,ranked:true},
+          ['rankedQueue/'+code]:null,
+        });
+      } catch { continue; }
+      finally {this.transferringRoom=null;}
+      await this.enter(code);
+      this.notify();
+      return;
+    }
+  }
+
+  reportRanked(winner:-1|0|1):void {
+    const room=this.selection;
+    if(!room?.info.ranked||!room.head?.done)return;
+    void this.rank.confirm(room.code,this.uid,winner).then(()=>this.settleRanked(room)).catch(()=>{});
+  }
+
+  private settleRanked(room:Room):void {
+    const [host,guest]=room.members;
+    if(!host||!guest||room.rating||this.selection!==room)return;
+    if(room.settling){room.settleAgain=true;return;}
+    room.settling=true;
+    void this.rank.settle(room.code,[host,guest]).catch(()=>{}).finally(()=>{
+      room.settling=false;
+      if(room.settleAgain){room.settleAgain=false;this.settleRanked(room);}
+    });
   }
 
   async command(code:string, turn:number, control:Control):Promise<void> {
@@ -192,7 +258,7 @@ export class FirebaseFriend {
     const mode=info.mode??'duel';
     const root='rooms/'+code+'/';
     const members=this.at(root+(mode==='duel'?'guest':'seats'));
-    const guest={uid:this.uid,nickname:this.nickname,char,ruleset:rulesetFor(info.map),...(listedOnly?{listedOnly:true}:{})};
+    const guest={uid:this.uid,nickname:this.nickname,char,...(info.ruleset?{ruleset:info.ruleset}:{}),...(listedOnly?{listedOnly:true}:{})};
     for(let attempt=1;attempt<seatsOf(mode);attempt++) {
       const roster=memberState(info,mode,await get(members));
       if(roster.some(member=>member?.uid===this.uid))return;
@@ -257,7 +323,7 @@ export class FirebaseFriend {
         }).catch(listenError);
       }),
       onValue(this.at(root+'info'),s=>{
-        if(!s.exists()&&this.selection===room) {
+        if(!s.exists()&&this.selection===room&&this.transferringRoom!==room) {
           localStorage.removeItem(activeKey+uid);
           this.close();
           this.notify();
@@ -286,6 +352,19 @@ export class FirebaseFriend {
       },listenError));
       this.hostTimer=window.setInterval(()=>this.drive(room),1000*DT);
     }
+    if(room.info.ranked){
+      for(const branch of ['verdicts','withdrawals'])this.unsubscribers.push(onValue(this.at(root+branch),s=>{
+        if(s.exists())this.settleRanked(room);
+      },listenError));
+      this.unsubscribers.push(onValue(this.at('rankedResults/'+code),s=>{
+        if(!s.exists()||this.selection!==room)return;
+        room.rating=this.rank.change(s.val(),room.you===0?0:1);
+        void this.rank.profile({uid,nickname:this.nickname}).then(profile=>{
+          if(this.auth.currentUser?.uid===uid){this.rankProfile=profile;this.notify();}
+        }).catch(()=>{});
+        this.notify();
+      },listenError));
+    }
   }
 
   private notify():void {
@@ -303,23 +382,31 @@ export class FirebaseFriend {
     const chars=room.members.map(member=>member?.char);
     room.config=chars.every((char):char is string=>!!char) ? defaultConfig({
       mapId:map,seed,chars,controllers:chars.map(()=>'human'),turnTime:25,turnLimit:0,
-      freeForAll:FRIEND_MODES[room.mode].freeForAll,legacyPoison:ruleset===undefined,
+      freeForAll:FRIEND_MODES[room.mode].freeForAll,legacyPoison:ruleset===undefined,legacyBalance:ruleset!==FRIEND_BALANCE_RULESET,
     }) : null;
+    if(room.config&&!room.ranks)void Promise.all(room.members.map(player=>this.rank.profile(player!))).then(rows=>{
+      if(this.selection===room){room.ranks=rows.map(row=>row.rating);this.notify();}
+    }).catch(()=>{});
   }
 
   private updateListing(room:Room):void {
-    if(!this.connected||room.you!==0||!room.info.listed)return;
+    if(!this.connected||room.you!==0||!room.info.listed&&!room.info.ranked)return;
+    if(room.info.ranked){
+      if(!room.config&&!room.head)void this.listRoom(room).then(()=>this.seekRanked(room));
+      return;
+    }
     if(room.config||room.head)void remove(this.at('listings/'+room.code)).catch(()=>{});
     else void this.listRoom(room);
   }
 
   private async listRoom(room:Room):Promise<void> {
-    const entry=this.at('listings/'+room.code);
+    const entry=this.at((room.info.ranked?'rankedQueue/':'listings/')+room.code);
     const {nickname,map,created,mode}=room.info;
     if(Date.now()+this.offset-created>=ROOM_WAIT_MS)return;
     try {
       await onDisconnect(entry).remove();
-      if(this.selection===room&&!room.config&&!room.head)await set(entry,{nickname,map,created,...(mode?{mode}:{})});
+      if(this.selection===room&&!room.config&&!room.head)await set(entry,room.info.ranked?
+        {created,ruleset:FRIEND_BALANCE_RULESET}:{nickname,map,created,...(mode?{mode}:{})});
     } catch {
       // A visitor may have joined while the browser reconnected.
     }
@@ -364,7 +451,9 @@ export class FirebaseFriend {
   }
 
   roomState(code:string,cursor:number):OnlineState|null {
-    return this.selection?.code===code?this.state(cursor):null;
+    if(this.selection?.code!==code)return null;
+    this.seekRanked(this.selection);
+    return this.state(cursor);
   }
 
   private state(cursor:number):OnlineState {
@@ -379,16 +468,16 @@ export class FirebaseFriend {
       if(!command)break;
       commands.push({...command,a:Array.isArray(command.a)?command.a:[]});
     }
-    const view:OnlineRoom={code:room.code,kind:'friendly',you:room.you,names:room.members.flatMap(member=>member?[member.nickname]:[]),
+    const view:OnlineRoom={code:room.code,kind:room.info.ranked?'ranked':'friendly',you:room.you,names:room.members.flatMap(member=>member?[member.nickname]:[]),
       map:room.info.map,listed:room.info.listed===true,
       mode:room.mode,connectedSeats:room.members.map((_,player)=>this.present(room,player)),
       config:head?room.config:null,turn:head?.turn??1,step:head?.step??0,cursor:head?.cursor??0,commands,
-      opponentConnected:this.playConnected(room),done:head?.done??false,rating:null};
-    return {profile:this.profile(),queued:false,room:view,rooms:[]};
+      opponentConnected:this.playConnected(room),done:head?.done??false,rating:room.rating??null,ranks:room.ranks};
+    return {profile:this.profile(),queued:room.info.ranked===true&&!head,room:view,rooms:[]};
   }
 
   private profile() {
-    return {nickname:this.nickname,rating:STARTING_RATING,wins:0,losses:0,draws:0};
+    return this.rankProfile??startingRank(this.nickname);
   }
 
   private lease(room:Room,now:number):boolean {
@@ -545,9 +634,15 @@ export class FirebaseFriend {
       if(!room.head) {
         const path='rooms/'+room.code;
         if(room.you!==0)await remove(this.at(path+'/'+playerPath(room.mode,room.you)));
+        else if(room.info.ranked)await update(ref(this.db,this.gameRef),{[path]:null,['rankedQueue/'+room.code]:null});
         else if(room.info.listed)await update(ref(this.db,this.gameRef),{[path]:null,['listings/'+room.code]:null});
         else await remove(this.at(path));
       } else if(!room.head.done) {
+        if(room.info.ranked){
+          await this.rank.withdraw(room.code,this.uid);
+          const [host,guest]=room.members;
+          if(host&&guest)await this.rank.settle(room.code,[host,guest]);
+        }
         if(room.you!==0) await set(push(this.at('rooms/'+room.code+'/inbox')),{
           turn:0,control:{kind:'leave'},...(room.mode==='duel'?{}:{player:room.you}),
         });
@@ -562,6 +657,7 @@ export class FirebaseFriend {
       }
     }
     localStorage.removeItem(activeKey+this.uid);
+    if(room?.info.ranked)this.rankProfile=null;
     this.close();
   }
 }

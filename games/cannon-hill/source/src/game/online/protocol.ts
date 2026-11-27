@@ -6,6 +6,7 @@ export const RECONNECT_MS = 45_000;
 export const FRIEND_BRANCH = 'warureuFriendV1';
 export const FRIEND_RULESET = 2;
 export const FRIEND_MEADOW_RULESET = 3;
+export const FRIEND_BALANCE_RULESET = 4;
 export const DUEL_ACCOUNT_DOMAIN = 'id.warureu.example';
 export const ROOM_DURATION_MS = 7_200_000;
 export const ROOM_WAIT_MS = 900_000;
@@ -59,6 +60,7 @@ export interface OnlineRoom {
   opponentConnected: boolean;
   done: boolean;
   rating: RatingChange | null;
+  ranks?: number[];
 }
 
 export interface PublicRoom {

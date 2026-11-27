@@ -10,6 +10,7 @@ import { input, type Hold } from '../input/input';
 import type { Settings } from '../settings';
 import { audio } from '../audio/audio';
 import type { OnlineRoom } from '../online/protocol';
+import { rankBadge } from '../online/rank';
 
 export type Mode = 'ai' | 'local';
 
@@ -25,7 +26,7 @@ export interface UIHooks {
   quickBattle(): void;
   targetRange(): void;
   online?: () => void;
-  onlineRanked?: boolean;
+  onlineGroups?: boolean;
   toTitle(): void;
   rematch(): void;
   rechar(): void;
@@ -132,7 +133,7 @@ export class UI {
           <div class="menu">
             <button class="btn primary quick" data-act="quick">바로 한 판<small>쉬운 AI · 내가 먼저 발사</small></button>
             <button class="btn jade target-entry" data-act="target">표적 10발<small>각도와 힘으로 누적 순위 도전</small></button>
-            ${this.hooks.online ? `<button class="btn jade online-entry" data-act="online">${this.hooks.onlineRanked?'온라인 1:1':'온라인 대전'}<small>${this.hooks.onlineRanked?'1:1 친선전 · 공개 랭킹전':'1:1 · 2:2 · 3~4인 개인전'}</small></button>` : ''}
+            ${this.hooks.online ? `<button class="btn jade online-entry" data-act="online">${this.hooks.onlineGroups?'온라인 대전':'온라인 1:1'}<small>랭크전 · 친선전</small></button>` : ''}
             <button class="btn" data-act="ai">AI와 겨루기<small>장수·전장 고르기</small></button>
             <button class="btn jade" data-act="local">함께 하기<small>한 기기로 2~4명</small></button>
             <button class="btn" data-act="howto">게임 방법</button>
@@ -456,7 +457,7 @@ export class UI {
         return `
         <div class="pcard p${team + 1}${mini ? ' mini' : ''}" data-f="${f.idx}" data-team="${f.team + 1}">
           <div class="who"><img alt="" src="${this.portraits[c.id]?.[team === 1 ? 'bustFlip' : 'bust'] ?? ''}"><i>${esc(names[f.idx] ?? '')}</i></div>
-          <div><div class="name"><span class="nm">${mini && !b.cfg.freeForAll ? c.name : `${esc(names[f.idx] ?? '')} · ${c.name}`}</span><small class="hpn"></small></div>
+          <div><div class="name"><span class="nm">${mini && !b.cfg.freeForAll ? c.name : `${esc(names[f.idx] ?? '')} · ${c.name}`}</span><span data-rank-badge></span><small class="hpn"></small></div>
           <div class="bar"><b></b><i></i><span></span></div>
           </div>
         </div>`;
@@ -482,12 +483,16 @@ export class UI {
   }
 
   updateHud(b: Battle, opts: { names: string[]; humanTurn: boolean; status: string; aimHint: AimHint|null;
-    firePending?: 'start' | 'release'; lockedPower?: number }): void {
+    firePending?: 'start' | 'release'; lockedPower?: number; ranks?:number[] }): void {
     const el = this.screens.get('hud')!;
     for (const f of b.fighters) {
       const i = f.idx;
       const card = el.querySelector<HTMLElement>(`.pcard[data-f="${i}"]`);
       if (!card) continue;
+      const rank=opts.ranks?.[i];
+      if(rank!==undefined)this.set(`rank${i}`,String(rank),()=>{
+        card.querySelector('[data-rank-badge]')!.innerHTML=rankBadge(rank);
+      });
       const pct = Math.max(0, (f.hp / f.maxHp) * 100);
       this.set(`hp${i}`, `${f.hp}`, () => {
         const bar = card.querySelector<HTMLElement>('.bar')!;
@@ -734,12 +739,10 @@ export class UI {
       const unique = vals.filter((v) => v === top).length === 1;
       return `<tr><td>${label}</td>${vals.map((v) => `<td class="${unique && v === top && v > 0 ? 'best' : ''}">${fmt(v)}</td>`).join('')}</tr>`;
     }).join('');
-    const rating = online?.rating;
-    const delta = rating ? rating.after-rating.before : 0;
     el.innerHTML = `
       <h2 class="${cls}">${title}</h2>
       <div class="why">${esc(why)}</div>
-      ${rating ? `<p class="online-rating">랭킹 점수 ${rating.before} → ${rating.after} (${delta>0?'+':''}${delta}) · 상대 ${rating.opponent}점</p>` : ''}
+      ${online?.kind==='ranked'?`<p class="online-rating" role="status">${b.endReason==='forfeit'?'랭크 점수 확인을 기다리는 중…':'두 장수의 경기 결과 확인 중…'}</p>`:''}
       <div class="who">${img}</div>
       <table class="table${four ? ' four' : ''}">${head}${body}</table>
       <div class="actions">
@@ -748,6 +751,16 @@ export class UI {
         <button class="btn ghost" data-act="home">처음 화면으로</button>
       </div>`;
     this.show('result');
+    this.updateRankResult(online);
+  }
+
+  updateRankResult(online?: OnlineRoom):void {
+    const rating=online?.rating;
+    const row=this.screens.get('result')!.querySelector<HTMLElement>('.online-rating');
+    if(!row||!rating||row.dataset.score===String(rating.after))return;
+    const delta=rating.after-rating.before;
+    row.dataset.score=String(rating.after);
+    row.innerHTML=`${rankBadge(rating.after,true)} ${rating.before} → ${rating.after}점 (${delta>0?'+':''}${delta})`;
   }
 
   hideResult(): void {

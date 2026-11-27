@@ -2,6 +2,7 @@ import { CHARACTERS } from '../data/characters';
 import { MAPS } from '../data/maps';
 import type { OnlineClient } from './client';
 import { FRIEND_MODES, type PublicRoom } from './protocol';
+import { RANKS, rankBadge } from './rank';
 import './online.css';
 
 const mapNames = new Map(MAPS.map(map=>[map.id,map.name]));
@@ -15,7 +16,7 @@ export class OnlineLobby {
 
   constructor(container: HTMLElement, private readonly client: OnlineClient, close: () => void) {
     this.root.className='online-lobby';
-    const title=client.ranked?'온라인 1:1':'온라인 대전';
+    const title=client.groups?'온라인 대전':'온라인 1:1';
     this.root.setAttribute('aria-label',title);
     this.root.innerHTML=`
       <div class="online-panel">
@@ -28,12 +29,18 @@ export class OnlineLobby {
           <div class="online-actions"><button class="btn primary" type="submit">로그인</button><button class="btn" type="button" data-act="toggle">계정 만들기</button></div>
         </form>
         <div class="online-signed" hidden>
-          <div class="online-profile"><strong data-profile></strong><button class="btn ghost" data-act="logout">로그아웃</button></div>
+          <div class="online-profile"><div class="rank-profile"><strong data-profile></strong><span data-medal></span><small data-rank-score></small></div><button class="btn ghost" data-act="logout">로그아웃</button></div>
           <div class="online-options">
             <label>내 장수<select name="char">${CHARACTERS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}</select></label>
+            <section class="ranked-options">
+              <h3>1:1 랭크전</h3>
+              <p>랜덤 전장 · 1,000점부터 시작</p>
+              <div class="online-actions"><button class="btn primary" data-act="queue">상대 찾기</button><button class="btn" data-act="rankings">누적 순위</button></div>
+              <details class="rank-tiers"><summary>훈장 기준</summary><ul>${RANKS.map(tier=>`<li>${rankBadge(tier.min,true)} ${tier.min.toLocaleString('ko-KR')}점 이상</li>`).join('')}</ul></details>
+            </section>
             <section>
               <h3>친선전</h3>
-              <label${client.ranked?' hidden':''}>대전 방식<select name="mode">${Object.entries(FRIEND_MODES).map(([mode,details])=>`<option value="${mode}">${details.title}</option>`).join('')}</select></label>
+              <label${client.groups?'':' hidden'}>대전 방식<select name="mode">${Object.entries(FRIEND_MODES).map(([mode,details])=>`<option value="${mode}">${details.title}</option>`).join('')}</select></label>
               <div class="online-room-settings">
                 <label>전장<select name="map"><option value="random">랜덤 전장</option>${MAPS.map(m=>`<option value="${m.id}">${m.name}</option>`).join('')}</select></label>
                 <label>공개 범위<select name="visibility"><option value="public">공개방</option><option value="code">코드 전용</option></select></label>
@@ -48,11 +55,6 @@ export class OnlineLobby {
               <h3 id="open-room-title">공개방 목록</h3>
               <p class="online-room-empty">대기 중인 공개방이 없어요.</p>
               <ul class="online-room-rows" aria-label="대기 중인 공개방"></ul>
-            </section>
-            <section class="ranked-options"${client.ranked?'':' hidden'}>
-              <h3>공개 랭킹전</h3>
-              <button class="btn primary" data-act="queue">상대 찾기</button>
-              <button class="btn" data-act="rankings">누적 순위</button>
             </section>
           </div>
           <section class="online-wait" hidden>
@@ -116,7 +118,13 @@ export class OnlineLobby {
           const board=this.select('.online-board');
           board.replaceChildren(...rows.map(row=>{
             const li=document.createElement('li');
-            li.textContent=`${row.nickname} · ${row.rating}점 · ${row.wins}승 ${row.draws}무 ${row.losses}패`;
+            const name=document.createElement('strong');
+            name.textContent=row.nickname;
+            const medal=document.createElement('span');
+            medal.innerHTML=rankBadge(row.rating,true);
+            const stats=document.createElement('small');
+            stats.textContent=`${row.rating.toLocaleString('ko-KR')}점 · ${row.wins}승 ${row.draws}무 ${row.losses}패`;
+            li.append(name,medal,stats);
             return li;
           }));
           this.message=rows.length?'':'첫 랭킹전 기록을 기다리고 있어요.';
@@ -169,8 +177,16 @@ export class OnlineLobby {
     this.select('.online-auth').hidden=this.client.authenticated;
     this.select('.online-signed').hidden=!state;
     if(!state)this.select('.online-board').hidden=true;
-    if(state) this.select('[data-profile]').textContent=this.client.ranked
-      ? `${state.profile.nickname} · ${state.profile.rating}점` : state.profile.nickname;
+    if(state) {
+      this.select('[data-profile]').textContent=state.profile.nickname;
+      const medal=this.select('[data-medal]');
+      const points=String(state.profile.rating);
+      if(medal.dataset.points!==points) {
+        medal.dataset.points=points;
+        medal.innerHTML=rankBadge(state.profile.rating,true);
+        this.select('[data-rank-score]').textContent=`${state.profile.rating.toLocaleString('ko-KR')}점`;
+      }
+    }
     this.select('.online-options').hidden=waiting;
     this.select('.online-wait').hidden=!waiting;
     const room=state?.room;

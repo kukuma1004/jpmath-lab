@@ -21,7 +21,7 @@ export class OnlineClient {
   private lastInput = '';
   private commands = Promise.resolve();
   private friend?: FirebaseFriend;
-  readonly ranked = !firebaseFriend;
+  readonly groups = firebaseFriend;
   state: OnlineState | null = null;
   error = '';
 
@@ -158,6 +158,8 @@ export class OnlineClient {
   }
 
   rankings(): Promise<Profile[]> { return this.request('ranking'); }
+
+  reportRanked(winner:-1|0|1):void { this.friend?.reportRanked(winner); }
 
   send(turn: number, control: Control, onError?: () => void): boolean {
     const room = this.room;

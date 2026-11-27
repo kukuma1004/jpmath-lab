@@ -90,6 +90,7 @@ describe('무당의 진행 방향 유도',()=>{
   it('상승 중에도 적을 포착하고 더 가까워진 다른 장수에게 갑자기 바꾸지 않는다', () => {
     const b = flat();
     const target = b.fighters[1]!;
+    target.x = 1650;
     const p = b.newProjectile(0, 1, 'bujeok', 1400, 838, 600, -80);
     p.age = .4;
     b.stepProjectile(p, DT);

@@ -278,8 +278,26 @@ WEAPONS.cliffBreak = { ...WEAPONS.ledgeWedge!, id: 'cliffBreak', name: '산허�
 WEAPONS.inkAmbush = { ...WEAPONS.shadowPair!, id: 'inkAmbush', name: '삼영 매복', use: '세 위치 협공',
     desc: '본체와 양쪽의 그림자 둘이 동시에 침을 던져 여러 궤도를 만듭니다.', count: 3, damage: 143, radius: 65, glow: 0xd5a2ff };
 
-export function weapon(id: string): WeaponDef {
-  const w = WEAPONS[id];
+const balancePatch: Record<string, Partial<WeaponDef>> = {
+  inkDart: {damage:190,radius:48,carve:36,pierceDepth:58},
+  shadowPair: {damage:125,radius:64,carve:37},
+  inkAmbush: {damage:157,radius:72,carve:36},
+  arrow: {damage:162,radius:47},
+  samyeonsi: {damage:87,radius:41},
+  skyArrows: {damage:117,radius:50},
+  venomJar: {damage:187},
+  greenDeluge: {damage:168},
+  bujeok: {homing:{range:275,turnRate:2.8}},
+  fiveThunders: {strikeDamage:61},
+  royalBarrage: {damage:243,carve:95},
+  iron: {damage:173,carve:43},
+  ironBroadside: {damage:94},
+  drillBore: {shelfCut:{maxThickness:96,radius:129,followThrough:'faultBreaker'}},
+};
+const balancedWeapons = Object.fromEntries(Object.entries(WEAPONS).map(([id,base])=>[id,{...base,...balancePatch[id]}]));
+
+export function weapon(id: string, legacyBalance = false): WeaponDef {
+  const w = (legacyBalance ? WEAPONS : balancedWeapons)[id];
   if (!w) throw new Error(`알 수 없는 무기: ${id}`);
   return w;
 }

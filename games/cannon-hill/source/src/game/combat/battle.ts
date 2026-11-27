@@ -180,7 +180,7 @@ export class Battle {
 
   weaponOf(f: Fighter, slot: WeaponSlot = f.slot): WeaponDef {
     const d = character(f.charId);
-    return weapon(slot === 2 ? d.ultimate : slot === 1 ? d.special : d.normal);
+    return weapon(slot === 2 ? d.ultimate : slot === 1 ? d.special : d.normal, this.cfg.legacyBalance);
   }
 
   ultimateReady(f: Fighter): boolean {
@@ -606,7 +606,7 @@ export class Battle {
     if (!due.length) return;
     this.scheduled = this.scheduled.filter((s) => s.t > this.time + 1e-9);
     for (const s of due) {
-      const w = weapon(s.weaponId);
+      const w = weapon(s.weaponId, this.cfg.legacyBalance);
       if (s.kind === 'salvo') {
         const f = this.fighters[s.owner];
         if (f.alive) this.spawnShot(f, w, s.angle, s.power, s.shot);
@@ -629,7 +629,7 @@ export class Battle {
 
   /** 포탄 한 걸음. 예상 궤적·AI·실전이 모두 이 함수를 쓴다. */
   stepProjectile(p: Projectile, dt: number): void {
-    const w = weapon(p.weaponId);
+    const w = weapon(p.weaponId, this.cfg.legacyBalance);
     p.age += dt;
     if (p.age > FLIGHT_LIMIT) { p.dead = true; return; }
     if (p.stuck) {
@@ -686,7 +686,7 @@ export class Battle {
           p.drilling = true;
           const speed = Math.hypot(p.vx, p.vy) || 1;
           const cut = w.shelfCut && p.vy > 0 && this.cutShelf(p, w.shelfCut);
-          const drill = cut && w.shelfCut?.followThrough ? weapon(w.shelfCut.followThrough) : w;
+          const drill = cut && w.shelfCut?.followThrough ? weapon(w.shelfCut.followThrough, this.cfg.legacyBalance) : w;
           p.weaponId = drill.id;
           if (drill.drillExit) p.drillExitAt = this.findDrillExit(p.x, p.y, p.vx / speed, p.vy / speed, drill.drillDepth ?? 280, drill.drillExit.gap);
           p.vx = p.vx / speed * (drill.drillSpeed ?? 420);
@@ -1731,7 +1731,7 @@ export class Battle {
 
   serialize(): string {
     return JSON.stringify({
-      cfg: this.cfg,
+      cfg: { ...this.cfg, legacyBalance: this.cfg.legacyBalance ?? false },
       terrain: this.terrain.serialize(),
       fighters: this.fighters,
       projectiles: this.projectiles,
@@ -1752,7 +1752,7 @@ export class Battle {
 
   static deserialize(json: string): Battle {
     const o = JSON.parse(json);
-    const b = new Battle(o.cfg, true);
+    const b = new Battle({ ...o.cfg, legacyBalance: o.cfg.legacyBalance ?? true }, true);
     b.terrain = Terrain.deserialize(o.terrain);
     b.fighters = o.fighters.map(({ ultimateUsed, ...f }: Fighter & { ultimateUsed?: boolean }) => {
       const turnsTaken = f.turnsTaken ?? 0;

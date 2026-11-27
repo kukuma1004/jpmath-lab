@@ -22,6 +22,21 @@
 .online-options { grid-template-columns:repeat(2,minmax(0,1fr)); margin-top:12px; }
 .online-options > label { grid-column:1/-1; }
 .online-options section { padding:12px; border:1px solid #6d6258; border-radius:10px; align-content:start; }
+.ranked-options { grid-column: 1 / -1; background:#2f2930; }
+.ranked-options p { margin:0; color:#dac9a9; font-size:14px; }
+.ranked-options .online-actions { justify-content:flex-start; }
+.rank-profile { display:flex; align-items:center; flex-wrap:wrap; gap:7px; }
+.rank-profile small,.online-board small { color:#d9c8a9; }
+.rank-medal { display:inline-flex; align-items:center; gap:4px; border:1px solid currentColor; border-radius:4px; padding:1px 4px; font-size:.83em; line-height:1.2; font-style:normal; white-space:nowrap; background:#222129; }
+.rank-bronze { color:#e0a277; }
+.rank-silver { color:#d0dce8; }
+.rank-gold { color:#ffd566; }
+.rank-jade { color:#91e5c2; }
+.rank-royal { color:#f4b5ef; }
+.rank-tiers { color:#dbcbaa; font-size:14px; }
+.rank-tiers summary { cursor:pointer; }
+.rank-tiers ul { margin:8px 0 0; display:flex; gap:8px 14px; flex-wrap:wrap; padding:0; list-style:none; }
+.online-board li>* { margin-right:6px; }
 .online-room-settings { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; }
 .online-join { grid-template-columns:minmax(0,1fr) auto; align-items:end; }
 .online-join button { padding-inline:10px; }
@@ -42,6 +57,5 @@
 body.online-match [data-s=pause] [data-act=restart] { display:none; }
 @media(max-width:460px) {
   .online-options { grid-template-columns:1fr; }
-  .online-room-list { grid-row:2; }
   .online-room-rows { max-height:162px; }
 }

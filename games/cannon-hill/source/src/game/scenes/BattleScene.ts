@@ -43,6 +43,7 @@ export class BattleScene extends Phaser.Scene {
   paused = false;
   private firePresses = 0;
   private pendingFire: PendingFire | null = null;
+  private rankReported = false;
   private online: OnlineClient | null = null;
   timeScale = 1;
   private acc = 0;
@@ -94,6 +95,7 @@ export class BattleScene extends Phaser.Scene {
     this.paused = false;
     this.firePresses = 0;
     this.pendingFire = null;
+    this.rankReported = false;
     this.acc = 0;
     this.t = 0;
     this.free = false;
@@ -849,6 +851,14 @@ export class BattleScene extends Phaser.Scene {
       if (n >= maxSteps) this.acc = 0;
     }
     this.handle(b.drainEvents());
+    const onlineRoom=this.online?.room??undefined;
+    if(onlineRoom?.kind==='ranked'&&onlineRoom.done&&b.winner!==null){
+      if(!this.rankReported&&b.endReason!=='forfeit'&&(b.winner===-1||b.winner===0||b.winner===1)){
+        this.rankReported=true;
+        this.online!.reportRanked(b.winner);
+      }
+      this.app.ui.updateRankResult(onlineRoom);
+    }
 
     // 그리기
     const terrainChanged = b.terrain.dirty.length > 0;
@@ -891,7 +901,7 @@ export class BattleScene extends Phaser.Scene {
       : ''));
     const aimHint=this.advisor.update(b,this.app.settings.aimHints&&this.humanTurn());
     const firePending = this.pendingFire?.kind === 'start' && this.pendingFire.releaseQueued ? 'release' : this.pendingFire?.kind;
-    this.app.ui.updateHud(b, { names: this.names, humanTurn: this.humanTurn(), status, aimHint, firePending, lockedPower });
+    this.app.ui.updateHud(b, { names: this.names, humanTurn: this.humanTurn(), status, aimHint, firePending, lockedPower, ranks:onlineRoom?.ranks });
   }
 
   // ───────── 시험용 손잡이(?qa=1) ─────────

@@ -27,6 +27,7 @@ export interface BattleConfig {
   starterMatch?: boolean;
   freeForAll?: boolean;
   legacyPoison?: boolean;
+  legacyBalance?: boolean;
   turnTime: number;
   turnLimit: number; // 0은 상대 편 전멸까지 계속하는 끝장전
 }
