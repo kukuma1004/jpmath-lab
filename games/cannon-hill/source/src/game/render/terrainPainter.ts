@@ -24,6 +24,7 @@ const SURFACE_LIGHT: Record<string, SurfaceLight> = {
   sanseong: { top: [210, 158, 89], side: [95, 66, 65], reach: 5, joint: 23 },
   baekdu: { top: [222, 205, 218], side: [81, 65, 84], reach: 5, joint: 19 },
   forest: { top: [154, 155, 86], side: [58, 69, 77], reach: 5, joint: 26 },
+  meadow: { top: [183, 188, 108], side: [104, 90, 72], reach: 4, joint: 20 },
   cloud: { top: [240, 222, 178], side: [116, 128, 159], reach: 6, joint: 22 },
   underworld: { top: [190, 126, 160], side: [74, 59, 92], reach: 6, joint: 14 },
 };

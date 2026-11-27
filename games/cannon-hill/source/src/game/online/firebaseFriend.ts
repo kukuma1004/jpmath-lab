@@ -7,7 +7,7 @@ import { DT } from '../config/constants';
 import { CHARACTERS } from '../data/characters';
 import { MAPS } from '../data/maps';
 import { firebaseProject } from './firebaseConfig';
-import { DUEL_ACCOUNT_DOMAIN, FRIEND_BRANCH, FRIEND_MODES, FRIEND_RULESET, isFriendMode, OnlineError, RECONNECT_MS, ROOM_DURATION_MS, ROOM_LIST_LIMIT, ROOM_WAIT_MS, STARTING_RATING, type Control, type FriendMode, type OnlineRoom, type OnlineState, type PublicRoom, type ReplayCommand } from './protocol';
+import { DUEL_ACCOUNT_DOMAIN, FRIEND_BRANCH, FRIEND_MODES, FRIEND_MEADOW_RULESET, FRIEND_RULESET, isFriendMode, OnlineError, RECONNECT_MS, ROOM_DURATION_MS, ROOM_LIST_LIMIT, ROOM_WAIT_MS, STARTING_RATING, type Control, type FriendMode, type OnlineRoom, type OnlineState, type PublicRoom, type ReplayCommand } from './protocol';
 
 const alphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
 const activeKey = 'jpml.warureu.friend.room.';
@@ -18,6 +18,7 @@ const invalidLogin = { 'auth/email-already-in-use':'이미 사용 중인 아이�
   'auth/too-many-requests':'요청이 많아요. 잠시 후 다시 시도해 주세요.' } as Record<string,string>;
 const characters = new Set(CHARACTERS.map(c=>c.id));
 const maps = new Set(MAPS.map(m=>m.id));
+const rulesetFor = (map:string) => map==='meadow'?FRIEND_MEADOW_RULESET:FRIEND_RULESET;
 
 type Name = { uid: string; nickname: string; char: string };
 type Info = Name & { map: string; seed: number; created: number; listed?: boolean; mode?: FriendMode; ruleset?: number };
@@ -152,14 +153,14 @@ export class FirebaseFriend {
         const code=Array.from(bytes.slice(0,6),n=>alphabet[n%alphabet.length]).join('');
         const mode=isFriendMode(body?.mode)?body.mode:'duel';
         await set(this.at('rooms/'+code+'/info'),{uid,nickname:this.nickname,char,map,seed:bytes[6]!%2147483646+1,
-          created:serverTimestamp(),listed:body?.listed===true,mode,ruleset:FRIEND_RULESET});
+          created:serverTimestamp(),listed:body?.listed===true,mode,ruleset:rulesetFor(map)});
         await this.enter(code);
       } else {
         const code=String(body?.code??'').trim().toUpperCase();
         if(!/^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{6}$/.test(code))throw new OnlineError(400,'방 코드 6자리를 확인해 주세요.');
         try {
           const info:Info|null=(await get(this.at('rooms/'+code+'/info'))).val();
-          if(!info)throw new Error();
+          if(!info||!maps.has(info.map))throw new Error();
           if(info.uid!==uid) await this.join(code,info,char,body?.listedOnly===true);
           await this.enter(code);
         } catch { throw new OnlineError(404,'참가할 수 있는 방을 찾지 못했어요.'); }
@@ -187,7 +188,7 @@ export class FirebaseFriend {
     const mode=info.mode??'duel';
     const root='rooms/'+code+'/';
     const members=this.at(root+(mode==='duel'?'guest':'seats'));
-    const guest={uid:this.uid,nickname:this.nickname,char,ruleset:FRIEND_RULESET,...(listedOnly?{listedOnly:true}:{})};
+    const guest={uid:this.uid,nickname:this.nickname,char,ruleset:rulesetFor(info.map),...(listedOnly?{listedOnly:true}:{})};
     for(let attempt=1;attempt<seatsOf(mode);attempt++) {
       const roster=memberState(info,mode,await get(members));
       if(roster.some(member=>member?.uid===this.uid))return;
@@ -292,7 +293,7 @@ export class FirebaseFriend {
     const chars=room.members.map(member=>member?.char);
     room.config=chars.every((char):char is string=>!!char) ? defaultConfig({
       mapId:map,seed,chars,controllers:chars.map(()=>'human'),turnTime:25,turnLimit:0,
-      freeForAll:FRIEND_MODES[room.mode].freeForAll,legacyPoison:ruleset!==FRIEND_RULESET,
+      freeForAll:FRIEND_MODES[room.mode].freeForAll,legacyPoison:ruleset===undefined,
     }) : null;
   }
 

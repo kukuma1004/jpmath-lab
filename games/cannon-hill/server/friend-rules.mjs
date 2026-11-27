@@ -1,4 +1,4 @@
-import { FRIEND_BRANCH, FRIEND_RULESET, ROOM_DURATION_MS, ROOM_LIST_LIMIT, ROOM_WAIT_MS } from '../source/src/game/online/protocol.ts';
+import { FRIEND_BRANCH, FRIEND_MEADOW_RULESET, FRIEND_RULESET, ROOM_DURATION_MS, ROOM_LIST_LIMIT, ROOM_WAIT_MS } from '../source/src/game/online/protocol.ts';
 
 export const BRANCH = FRIEND_BRANCH;
 const account = String.raw`auth != null && auth.token.firebase.sign_in_provider == 'password' && auth.token.email.matches(/^[a-z0-9_]{3,20}@id\.warureu\.example$/)`;
@@ -19,7 +19,8 @@ const member = `(${account}) && ((${host}) || ${visitor})`;
 const fresh = `now - ${base}.child('info/created').val() < ${ROOM_DURATION_MS}`;
 const activeHost = `${account} && ${host} && ${playing} && ${fresh} && now - ${base}.child('leader/at').val() < 8000`;
 const gameId = 'newData.isString() && newData.val().matches(/^[a-zA-Z0-9_-]{1,24}$/)';
-const ruleset = `newData.val() == ${FRIEND_RULESET}`;
+const allowedRuleset = value => `(${value} == ${FRIEND_RULESET} || ${value} == ${FRIEND_MEADOW_RULESET})`;
+const ruleset = allowedRuleset('newData.val()');
 const valid = rule => ({'.validate':rule});
 const number = (lo,hi) => `newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= ${lo} && newData.val() <= ${hi}`;
 const required = names => `newData.hasChildren(${JSON.stringify(names)})`;
@@ -60,10 +61,11 @@ export function targetRules() {
       info:{
         '.read':account,
         '.write':`${account} && !data.exists() && newData.exists() && $code.matches(/^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{6}$/)`,
-        '.validate':required(['uid','nickname','char','map','seed','created']),
+        '.validate':required(['uid','nickname','char','map','seed','created']) +
+          ` && (newData.child('map').val() != 'meadow' || newData.child('ruleset').val() == ${FRIEND_MEADOW_RULESET})`,
         ...player, map:valid(gameId), seed:valid(number(1,2147483646)), created:valid('newData.val() == now'),
         listed:valid('newData.isBoolean()'), ruleset:valid(ruleset),
-        mode:valid(`newData.parent().child('ruleset').val() == ${FRIEND_RULESET} && newData.isString() && newData.val().matches(/^(duel|teams|solo3|solo4)$/)`),
+        mode:valid(`${allowedRuleset("newData.parent().child('ruleset').val()")} && newData.isString() && newData.val().matches(/^(duel|teams|solo3|solo4)$/)`),
         $other:unknown,
       },
       guest:{

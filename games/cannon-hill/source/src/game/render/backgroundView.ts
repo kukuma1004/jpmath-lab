@@ -73,6 +73,7 @@ export class BackgroundView {
           quarry: ['185,215,224', .105], sanseong: ['177,151,192', .095],
           baekdu: ['205,161,186', .09], forest: ['102,184,186', .12],
           cloud: ['255,247,215', .13], underworld: ['159,122,191', .105],
+          meadow: ['223,235,211', .075],
         };
         const [mistColor, opacity] = banks[mapId] ?? banks.quarry!;
         // Overlapping lit banks follow the slopes and float ahead of the distant ridges.

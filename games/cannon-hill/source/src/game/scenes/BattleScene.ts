@@ -208,6 +208,22 @@ export class BattleScene extends Phaser.Scene {
       gorge.fillRect(-400, 705, WORLD_W + 800, WORLD_H - 705);
       gorge.fillStyle(color, 0.7).fillRect(-400, WORLD_H, WORLD_W + 800, 600);
       this.world.add(gorge);
+    } else if (mapId === 'meadow') {
+      // At wide zoom the bedrock continues below the simulated terrain.
+      const bedrock = this.add.graphics().setDepth(7);
+      bedrock.fillGradientStyle(0x5b4a39, 0x5b4a39, 0x302b26, 0x302b26, 1);
+      bedrock.fillRect(-40, WORLD_H - 4, WORLD_W + 80, VIEW_H * 2);
+      for (let layer = 0; layer < 4; layer++) {
+        bedrock.lineStyle(7 + layer * 2, 0xa47e55, .14 - layer * .02);
+        bedrock.beginPath();
+        for (let x = -40; x <= WORLD_W + 40; x += 80) {
+          const y = WORLD_H + 43 + layer * 100 + 24 * Math.sin(x / 190 + layer * .65);
+          if (x === -40) bedrock.moveTo(x, y);
+          else bedrock.lineTo(x, y);
+        }
+        bedrock.strokePath();
+      }
+      this.world.add(bedrock);
     }
   }
 

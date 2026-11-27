@@ -5,6 +5,7 @@ export const STARTING_RATING = 1000;
 export const RECONNECT_MS = 45_000;
 export const FRIEND_BRANCH = 'warureuFriendV1';
 export const FRIEND_RULESET = 2;
+export const FRIEND_MEADOW_RULESET = 3;
 export const DUEL_ACCOUNT_DOMAIN = 'id.warureu.example';
 export const ROOM_DURATION_MS = 7_200_000;
 export const ROOM_WAIT_MS = 900_000;

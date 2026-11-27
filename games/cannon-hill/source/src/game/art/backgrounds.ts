@@ -356,8 +356,21 @@ function windRift(): BgLayers {
   return { sky, far, mid, near, ambient: 'clouds' };
 }
 
+function meadow(): BgLayers {
+  const [sky, s] = canvas(LAYER_W, VIEW_H, .5);
+  s.fillStyle = vg(s, 0, VIEW_H, [[0,'#8eb7d7'],[.65,'#dfe5bf'],[1,'#ccbd83']]);
+  s.fillRect(0,0,LAYER_W,VIEW_H);
+  const [far, f] = canvas(LAYER_W,LAYER_H,.5);
+  ridge(f, 544, 100, 320, 63, '#a6beb4', 0);
+  const [mid, m] = canvas(LAYER_W,LAYER_H,.5);
+  ridge(m, 614, 96, 280, 64, '#9caa7f', 0);
+  const [near, n] = canvas(LAYER_W,LAYER_H,.5);
+  ridge(n, 718, 110, 220, 65, '#a9aa69', 0);
+  return {sky,far,mid,near,ambient:'clouds'};
+}
+
 const BUILDERS: Record<string, () => BgLayers> = {
-  baekdu, sanseong, forest, cloud: cloudPalace, underworld, bridge: sanseong, quarry: sanseong, windrift: windRift,
+  baekdu, sanseong, forest, cloud: cloudPalace, underworld, bridge: sanseong, quarry: sanseong, windrift: windRift, meadow,
 };
 
 const cache = new Map<string, BgLayers>();

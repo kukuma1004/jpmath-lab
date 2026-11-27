@@ -16,6 +16,7 @@ const ART: ArtData = { ...BASE_ART, chars: { ...BASE_ART.chars,
 }, bgs: {
   ...BASE_ART.bgs,
   bridge: { w: 1536, h: 1024 }, quarry: { w: 1536, h: 1024 }, windrift: { w: 1536, h: 1024 },
+  meadow: { w: 1672, h: 941 },
 } };
 
 /**

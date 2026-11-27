@@ -435,7 +435,29 @@ const windrift: MapDef = {
   },
 };
 
-export const MAPS: MapDef[] = [quarry, windrift, bridge, sanseong, baekdu, forest, cloud, underworld];
+const meadow: MapDef = {
+  id: 'meadow', name: '솔바람 들판',
+  desc: '둔덕과 얕은 골짜기가 이어지는 탁 트인 들판입니다. 넓은 사선에서 낮은 탄과 높은 탄을 모두 써 보세요.',
+  features: '완만한 둔덕 · 넓은 사선 · 파이는 흙바닥',
+  voidBottom: false, spawn: [365, 899], spawnTiers: [[365, 495], [793, 899]], windBias: 0,
+  sky: ['#92b9ca', '#b6c4aa', '#e6cf92'],
+  colors: {
+    [Mat.Dirt]: { base: '#997b52', dark: '#584337', crust: '#b7be68' },
+    [Mat.Bedrock]: { base: '#49524b', dark: '#2b362e' },
+  },
+  generate(t, _rng, seed) {
+    const shoulders: Pt[] = [
+      [0, 752], [145, 730], [308, 698], [385, 700], [499, 702], [626, 770],
+      [786, 705], [892, 706], [992, 768], [1110, 725], [1200, 745],
+    ];
+    const noise = surfaceNoise(seed, 8, 150);
+    // Spawn shoulders are the high points of the lanes between the players.
+    fillColumns(t, x => profile(x, shoulders) + noise(x), (_x, y) =>
+      y >= WORLD_H - 24 ? Mat.Bedrock : Mat.Dirt, 0, WORLD_W / 2 - CELL);
+  },
+};
+
+export const MAPS: MapDef[] = [quarry, windrift, bridge, sanseong, baekdu, forest, cloud, underworld, meadow];
 
 export function mapDef(id: string): MapDef {
   const m = MAPS.find((x) => x.id === id);
