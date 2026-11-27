@@ -45,6 +45,7 @@ export class App {
       quickBattle: () => this.startBattle('ai', ['general', 'archer'], 'quarry', true),
       targetRange: () => this.openTargetRange(),
       online: this.online ? () => this.openOnline() : undefined,
+      onlineRanked: this.online?.ranked,
       toTitle: () => this.toTitle(),
       rematch: () => this.rematch(),
       rechar: () => { this.toTitle(); this.ui.openChars(this.last?.mode ?? 'ai'); },

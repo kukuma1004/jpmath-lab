@@ -35,7 +35,7 @@ export class OnlineLobby {
                 <button class="btn" type="submit">방 참가</button>
               </form>
             </section>
-            <section>
+            <section class="ranked-options"${client.ranked?'':' hidden'}>
               <h3>공개 랭킹전</h3>
               <button class="btn primary" data-act="queue">상대 찾기</button>
               <button class="btn" data-act="rankings">누적 순위</button>
@@ -124,7 +124,8 @@ export class OnlineLobby {
     this.select('.online-auth').hidden=this.client.authenticated;
     this.select('.online-signed').hidden=!state;
     if(!state)this.select('.online-board').hidden=true;
-    if(state) this.select('[data-profile]').textContent=`${state.profile.nickname} · ${state.profile.rating}점`;
+    if(state) this.select('[data-profile]').textContent=this.client.ranked
+      ? `${state.profile.nickname} · ${state.profile.rating}점` : state.profile.nickname;
     this.select('.online-options').hidden=waiting;
     this.select('.online-wait').hidden=!waiting;
     this.select('[data-wait]').textContent=state?.queued?'랭킹전 상대를 기다리는 중':'친구가 방 코드를 입력할 때까지 기다리는 중';

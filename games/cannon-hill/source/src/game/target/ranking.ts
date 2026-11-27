@@ -3,12 +3,7 @@ import { COURSE_LENGTH, MAX_SCORE, courseFromSeed, isCenter, summarize, validNic
 const BASE = 'https://jpmathlab-default-rtdb.asia-southeast1.firebasedatabase.app/warureuTargetV3';
 const LEGACY_BASE = BASE.replace(/V3$/, 'V2');
 const SDK = 'https://www.gstatic.com/firebasejs/12.16.0';
-const config = {
-  projectId: 'jpmathlab',
-  authDomain: 'jpmathlab.firebaseapp.com',
-  apiKey: 'AIzaSyD9mHiQ8Cyh4zJKbyhW_oYZkcu3WPMYw3k',
-  appId: '1:1061208248935:web:839fa3cc986bc687cebac2',
-};
+const config = firebaseProject;
 const rankFactor = COURSE_LENGTH + 1;
 const APP_NAME = 'warureu-target-v1';
 interface User { uid: string; getIdToken(): Promise<string> }
@@ -110,3 +105,4 @@ export async function deleteScore(legacy = false): Promise<void> {
     body:JSON.stringify({[`proof/${user.uid}`]:null, [`board/${user.uid}`]:null}),
   });
 }
+import { firebaseProject } from '../online/firebaseConfig';

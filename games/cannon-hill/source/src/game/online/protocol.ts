@@ -3,6 +3,9 @@ import type { BattleConfig, WeaponSlot } from '../combat/types';
 export const ONLINE_API = '/api/warureu/v1';
 export const STARTING_RATING = 1000;
 export const RECONNECT_MS = 45_000;
+export const FRIEND_BRANCH = 'warureuFriendV1';
+export const DUEL_ACCOUNT_DOMAIN = 'id.warureu.example';
+export const ROOM_DURATION_MS = 7_200_000;
 export type MatchKind = 'friendly' | 'ranked';
 export type ReplayCommand = { s: number; c: string; a: number[] };
 export type Control =
@@ -44,4 +47,9 @@ export interface OnlineState {
   profile: Profile;
   queued: boolean;
   room: OnlineRoom | null;
+}
+
+export class OnlineError extends Error {
+  readonly status: number;
+  constructor(status: number, message: string) { super(message); this.status=status; }
 }

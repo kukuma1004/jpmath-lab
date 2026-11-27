@@ -1,13 +1,11 @@
 import type { Battle } from '../combat/battle';
-import { type Control, type OnlineRoom, type OnlineState, type Profile, type ReplayCommand } from './protocol';
+import { OnlineError, type Control, type OnlineRoom, type OnlineState, type Profile, type ReplayCommand } from './protocol';
+import type { FirebaseFriend } from './firebaseFriend';
 
-const storageKey = 'jpml.warureu.online.v1';
 const base = import.meta.env.VITE_WARUREU_ONLINE_URL as string | undefined;
-export const onlineEnabled = !!base;
-
-class OnlineError extends Error {
-  constructor(public readonly status: number, message: string) { super(message); }
-}
+const firebaseFriend = !base && import.meta.env.VITE_WARUREU_FIREBASE_DUELS === '1';
+const storageKey = firebaseFriend ? 'jpml.warureu.friend.v1' : 'jpml.warureu.online.v1';
+export const onlineEnabled = !!base || firebaseFriend;
 
 function loadToken(): string {
   try { return localStorage.getItem(storageKey) ?? ''; } catch { return ''; }
@@ -22,6 +20,8 @@ export class OnlineClient {
   private index = 0;
   private lastInput = '';
   private commands = Promise.resolve();
+  private friend?: FirebaseFriend;
+  readonly ranked = !firebaseFriend;
   state: OnlineState | null = null;
   error = '';
 
@@ -40,6 +40,7 @@ export class OnlineClient {
     this.running = false;
     this.epoch++;
     window.clearTimeout(this.timer);
+    this.friend?.close();
   }
 
   private setToken(token: string): void {
@@ -63,6 +64,10 @@ export class OnlineClient {
   }
 
   private async request<T>(action: string, body?: object): Promise<T> {
+    if (firebaseFriend) {
+      this.friend ??= new (await import('./firebaseFriend')).FirebaseFriend();
+      return this.friend.request(action,body) as Promise<T>;
+    }
     const headers = new Headers();
     if (this.token) headers.set('Authorization','Bearer '+this.token);
     if (body) headers.set('Content-Type','application/json');

@@ -25,6 +25,7 @@ export interface UIHooks {
   quickBattle(): void;
   targetRange(): void;
   online?: () => void;
+  onlineRanked?: boolean;
   toTitle(): void;
   rematch(): void;
   rechar(): void;
@@ -131,7 +132,7 @@ export class UI {
           <div class="menu">
             <button class="btn primary quick" data-act="quick">바로 한 판<small>쉬운 AI · 내가 먼저 발사</small></button>
             <button class="btn jade target-entry" data-act="target">표적 10발<small>각도와 힘으로 누적 순위 도전</small></button>
-            ${this.hooks.online ? '<button class="btn jade online-entry" data-act="online">온라인 1:1<small>방 코드 친선전 · 공개 랭킹전</small></button>' : ''}
+            ${this.hooks.online ? `<button class="btn jade online-entry" data-act="online">온라인 1:1<small>방 코드 친선전${this.hooks.onlineRanked?' · 공개 랭킹전':''}</small></button>` : ''}
             <button class="btn" data-act="ai">AI와 겨루기<small>장수·전장 고르기</small></button>
             <button class="btn jade" data-act="local">함께 하기<small>한 기기로 2~4명</small></button>
             <button class="btn" data-act="howto">게임 방법</button>
