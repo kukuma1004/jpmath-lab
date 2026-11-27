@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Battle, defaultConfig } from '../src/game/combat/battle';
-import { DT, MAX_LAUNCH_SPEED } from '../src/game/config/constants';
+import { CHAR_CENTER_Y, DT, GRAVITY, MAX_LAUNCH_SPEED } from '../src/game/config/constants';
 import { Mat } from '../src/game/terrain/terrain';
 
 function flat(char='mudang') {
@@ -15,14 +15,14 @@ function flat(char='mudang') {
 describe('무당의 진행 방향 유도',()=>{
   it.each([
     {relative:65,power:83,mirror:false}, {relative:65,power:83,mirror:true},
-  ])('$relative°에서 빗나갈 탄을 적에게 꺾어 맞힌다 (좌우 반전 $mirror)',({relative,power,mirror})=>{
+  ])('$relative°에서 빗나갈 탄을 꺾어 맞히면 일반 피해를 준다 (좌우 반전 $mirror)',({relative,power,mirror})=>{
     const b=flat(),normal=flat('general');
     for(const s of [b,normal])if(mirror)s.fighters.forEach(f=>{f.x=2400-f.x;});
     const angle=mirror?180-relative:relative;
     expect(b.dryShot(0,0,angle,80).damage[1]).toBe(0);
     expect(normal.dryShot(0,0,angle,power).damage[1]).toBe(0);
     const predicted=b.dryShot(0,0,angle,power);
-    expect(predicted.damage[1]).toBe(145);
+    expect(predicted.damage[1]).toBe(126);
     b.setAngle(angle);b.fireNow(power);
     let acquired=false;
     for(let n=0;n<600&&b.projectiles.length;n++){
@@ -31,6 +31,50 @@ describe('무당의 진행 방향 유도',()=>{
     }
     expect(acquired).toBe(true);
     expect(b.fighters[1]!.maxHp-b.fighters[1]!.hp).toBeCloseTo(predicted.damage[1]!,0);
+    const hit = b.drainEvents().find(e => e.type === 'damage' && e.target === 1 && e.cause === 'blast');
+    expect(hit).toMatchObject({amount:126, crit:false});
+  });
+  it('궤적을 바꾸지 않고 직격하면 부적탄도 치명타가 난다', () => {
+    const b = flat();
+    const target = b.fighters[1]!;
+    target.x = 600;
+    b.setAngle(3);
+    b.fireNow(90);
+    for (let i = 0; i < 60 && b.projectiles.length; i++) b.step();
+    const hit = b.drainEvents().find(e => e.type === 'damage' && e.target === 1 && e.cause === 'blast');
+    expect(hit).toMatchObject({amount:145, crit:true});
+  });
+  it('표적을 포착해도 속도나 방향이 그대로면 치명타가 난다', () => {
+    const b = flat();
+    const target = b.fighters[1]!;
+    const p = b.newProjectile(0, 1, 'bujeok', target.x - 21, target.y - CHAR_CENTER_Y, 600, -GRAVITY * DT);
+    p.age = .4;
+    b.stepProjectile(p, DT);
+    expect(p.seekTarget).toBe(target.idx);
+    expect(p.homingAdjusted).toBe(false);
+    const hit = b.drainEvents().find(e => e.type === 'damage' && e.target === 1 && e.cause === 'blast');
+    expect(hit).toMatchObject({amount:145, crit:true});
+  });
+  it('유도 후 표적을 놓쳐도 저장과 복원 뒤에 치명타가 돌아오지 않는다', () => {
+    const b = flat();
+    const target = b.fighters[1]!;
+    const p = b.newProjectile(0, 1, 'bujeok', target.x - 200, target.y - 60, 600, 0);
+    p.age = .4;
+    b.projectiles = [p];
+    b.stepProjectile(p, DT);
+    expect(p.homingAdjusted).toBe(true);
+    target.x = p.x - 90;
+    b.stepProjectile(p, DT);
+    expect(p.seekTarget).toBe(-1);
+    const restored = Battle.deserialize(b.serialize());
+    const shell = restored.projectiles[0]!;
+    const foe = restored.fighters[1]!;
+    foe.x = shell.x - 6;
+    foe.y = shell.y + CHAR_CENTER_Y;
+    restored.stepProjectile(shell, DT);
+    expect(shell.seekTarget).toBe(-1);
+    const hit = restored.drainEvents().find(e => e.type === 'damage' && e.target === 1 && e.cause === 'blast');
+    expect(hit).toMatchObject({amount:126, crit:false});
   });
   it.each([false, true])('힘이 크게 모자란 탄은 적까지 끌려가지 않는다 (좌우 반전 %s)', mirror => {
     const b = flat();

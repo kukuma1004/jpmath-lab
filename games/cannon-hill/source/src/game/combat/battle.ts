@@ -579,7 +579,7 @@ export class Battle {
     return {
       id: this.nextId++, owner, shot, weaponId, x, y, px: x, py: y, vx, vy, age: 0, bounces: 0, pierced: 0,
       carveAcc: 0, child, boost: 1, stuck: false, fuse: 0, split: false, dead: false,
-      seekTarget: -1, drilling: false,
+      seekTarget: -1, homingAdjusted: false, drilling: false,
     };
   }
 
@@ -768,8 +768,11 @@ export class Battle {
     const delta = Math.atan2(Math.sin(desired - heading), Math.cos(desired - heading));
     const angle = heading + clamp(delta, -turnRate * dt, turnRate * dt);
     const steerSpeed = Math.max(220, speed);
-    p.vx = Math.cos(angle) * steerSpeed;
-    p.vy = Math.sin(angle) * steerSpeed;
+    const vx = Math.cos(angle) * steerSpeed;
+    const vy = Math.sin(angle) * steerSpeed;
+    if (!p.homingAdjusted && Math.abs(vx - p.vx) + Math.abs(vy - p.vy) > 1e-6) p.homingAdjusted = true;
+    p.vx = vx;
+    p.vy = vy;
   }
 
   private bounce(p: Projectile, w: WeaponDef): void {
@@ -965,6 +968,7 @@ export class Battle {
       carve *= TRAIT.steadyBlast;
     }
     if (st === 'eagle') directBonus *= TRAIT.eagleDirect;
+    if (p.homingAdjusted) directBonus = 1;
     if (st === 'shove') knockback *= TRAIT.shoveKnock;
     if (st === 'engineer') rockMul = Math.min(1, rockMul * TRAIT.engineerRock);
     if (this.dry) {
@@ -989,7 +993,7 @@ export class Battle {
       const direct = f.idx === target;
       const dmg = this.blastDamageTo(f, x, y, radius, damage, directBonus, direct);
       if (dmg > 0) {
-        this.applyDamage(f, dmg, x, y, direct && dmg >= 100, 'blast', p.owner, p.shot);
+        this.applyDamage(f, dmg, x, y, direct && !p.homingAdjusted && dmg >= 100, 'blast', p.owner, p.shot);
         // 밀려남
         const cx = f.x, cy = f.y - CHAR_CENTER_Y;
         const dist = Math.max(1, Math.hypot(cx - x, cy - y));
@@ -1732,7 +1736,9 @@ export class Battle {
       const nextUltimateTurn = f.nextUltimateTurn ?? (ultimateUsed ? turnsTaken + ULTIMATE_RECHARGE_TURNS : ULTIMATE_TURN);
       return { ...f, turnsTaken, nextUltimateTurn };
     });
-    b.projectiles = o.projectiles;
+    b.projectiles = (o.projectiles as Projectile[]).map(p => ({
+      ...p, homingAdjusted: p.homingAdjusted ?? ((p.seekTarget ?? -1) >= 0),
+    }));
     b.boulders = o.boulders;
     b.chunks = o.chunks.map((c: Chunk & { cells: number[]; mats: number[]; bottom: number[] }) => ({ ...c, cells: Int32Array.from(c.cells), mats: Uint8Array.from(c.mats), bottom: Int32Array.from(c.bottom) }));
     b.scheduled = o.scheduled;

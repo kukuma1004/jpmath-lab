@@ -96,6 +96,8 @@ export interface Projectile {
   split: boolean;
   /** 기본 포물선 뒤 발동하는 특수 동작. 구형 저장에는 없을 수 있다. */
   seekTarget?: number;
+  /** 유도로 속도가 바뀌면 표적을 놓친 뒤에도 유지한다. */
+  homingAdjusted: boolean;
   drilling?: boolean;
   drillExitAt?: number;
   dead: boolean;

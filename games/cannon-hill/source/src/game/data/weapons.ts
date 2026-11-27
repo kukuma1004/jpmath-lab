@@ -106,7 +106,7 @@ export const WEAPONS: Record<string, WeaponDef> = {
     look: 'goblinfire', color: 0x6dff9e, glow: 0x2ee6a6, size: 8,
   },
   bujeok: {
-    id: 'bujeok', name: '추적 부적탄', use: '진행 방향 추적', desc: '진행 방향 가까이에 있는 적을 포착해 부드럽게 휩니다. 땅이나 장애물에 먼저 닿으면 터집니다.',
+    id: 'bujeok', name: '추적 부적탄', use: '진행 방향 추적', desc: '진행 방향 가까이에 있는 적을 포착해 부드럽게 휩니다. 장애물에 닿으면 터지고, 원래 궤적으로 직격하면 치명타가 납니다.',
     behavior: 'shell', pattern: 'single',
     radius: 52, carve: 48, rockMul: 0.7, damage: 126, directBonus: 1.15, knockback: 230,
     homing: { range: 310, turnRate: 3.1 },
