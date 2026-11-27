@@ -7,8 +7,9 @@ import { DT } from '../config/constants';
 import { CHARACTERS } from '../data/characters';
 import { MAPS } from '../data/maps';
 import { firebaseProject } from './firebaseConfig';
-import { DUEL_ACCOUNT_DOMAIN, FRIEND_BALANCE_RULESET, FRIEND_BRANCH, FRIEND_MODES, isFriendMode, OnlineError, RECONNECT_MS, ROOM_DURATION_MS, ROOM_LIST_LIMIT, ROOM_WAIT_MS, type Control, type FriendMode, type OnlineRoom, type OnlineState, type Profile, type PublicRoom, type RatingChange, type ReplayCommand } from './protocol';
+import { DUEL_ACCOUNT_DOMAIN, FRIEND_BALANCE_RULESET, FRIEND_BRANCH, FRIEND_FAST_CHARGE_RULESET, FRIEND_MODES, isFriendMode, OnlineError, RECONNECT_MS, ROOM_DURATION_MS, ROOM_LIST_LIMIT, ROOM_WAIT_MS, type Control, type FriendMode, type OnlineRoom, type OnlineState, type Profile, type PublicRoom, type RatingChange, type ReplayCommand } from './protocol';
 import { FirebaseRank } from './firebaseRank';
+import { confirmedChargePower } from './charge';
 import { startingRank } from './rank';
 
 const alphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
@@ -25,7 +26,7 @@ const maps = new Set(MAPS.map(m=>m.id));
 type Name = { uid: string; nickname: string; char: string };
 type Info = Name & { map: string; seed: number; created: number; listed?: boolean; mode?: FriendMode; ruleset?: number; ranked?: true };
 type Head = { step: number; turn: number; cursor: number; done: boolean; ack: string; writer: string };
-type Packet = { turn: number; player?: Team; control: Control | {kind:'leave'} };
+type Packet = { turn: number; player?: Team; receivedAt?: number; control: Control | {kind:'leave'} };
 type Room = {
   code: string;
   you: Team;
@@ -86,6 +87,7 @@ export class FirebaseFriend {
   private lastPublish = 0;
   private readonly missingSince = new Map<number,number>();
   private readonly chargeSamples = new Map<number,number>();
+  private chargeReceivedAt: number | null = null;
   private notifyQueued = false;
   private failure = '';
 
@@ -175,7 +177,7 @@ export class FirebaseFriend {
         const code=Array.from(bytes.slice(0,6),n=>alphabet[n%alphabet.length]).join('');
         const mode=!ranked&&isFriendMode(body?.mode)?body.mode:'duel';
         await set(this.at('rooms/'+code+'/info'),{uid,nickname:this.nickname,char,map,seed:bytes[6]!%2147483646+1,
-          created:serverTimestamp(),listed:!ranked&&body?.listed===true,mode,ruleset:FRIEND_BALANCE_RULESET,...(ranked?{ranked:true}:{})});
+          created:serverTimestamp(),listed:!ranked&&body?.listed===true,mode,ruleset:FRIEND_FAST_CHARGE_RULESET,...(ranked?{ranked:true}:{})});
         await this.enter(code);
       } else {
         const code=String(body?.code??'').trim().toUpperCase();
@@ -207,13 +209,13 @@ export class FirebaseFriend {
       if(this.selection!==room||room.config)return;
       if(created>room.info.created||created===room.info.created&&code>=room.code)continue;
       const info:Info|null=(await get(this.at('rooms/'+code+'/info'))).val();
-      if(this.selection!==room||!info?.ranked||info.uid===this.uid||room.config)continue;
+      if(this.selection!==room||!info?.ranked||info.ruleset!==FRIEND_FAST_CHARGE_RULESET||info.uid===this.uid||room.config)continue;
       try {
         this.transferringRoom=room;
         await update(ref(this.db,this.gameRef),{
           ['rooms/'+room.code]:null,
           ['rankedQueue/'+room.code]:null,
-          ['rooms/'+code+'/guest']:{uid:this.uid,nickname:this.nickname,char:room.info.char,ruleset:FRIEND_BALANCE_RULESET,ranked:true},
+          ['rooms/'+code+'/guest']:{uid:this.uid,nickname:this.nickname,char:room.info.char,ruleset:FRIEND_FAST_CHARGE_RULESET,ranked:true,fastCharge:true},
           ['rankedQueue/'+code]:null,
         });
       } catch { continue; }
@@ -245,12 +247,14 @@ export class FirebaseFriend {
     const room=this.selection;
     if(!room || room.code!==code || !this.playConnected(room))throw new OnlineError(409,'지금은 조작할 수 없어요.');
     const packet:Packet={turn,control};
+    const timed=control.kind==='startCharge'||control.kind==='releaseCharge';
     if(room.you===0) {
+      if(timed)packet.receivedAt=Date.now()+this.offset;
       this.apply(0,packet);
       this.publish(room);
     } else {
       if(room.mode!=='duel') packet.player=room.you;
-      await set(push(this.at('rooms/'+code+'/inbox')),packet);
+      await set(push(this.at('rooms/'+code+'/inbox')),timed?{...packet,receivedAt:serverTimestamp()}:packet);
     }
   }
 
@@ -258,7 +262,8 @@ export class FirebaseFriend {
     const mode=info.mode??'duel';
     const root='rooms/'+code+'/';
     const members=this.at(root+(mode==='duel'?'guest':'seats'));
-    const guest={uid:this.uid,nickname:this.nickname,char,...(info.ruleset?{ruleset:info.ruleset}:{}),...(listedOnly?{listedOnly:true}:{})};
+    const guest={uid:this.uid,nickname:this.nickname,char,...(info.ruleset?{ruleset:info.ruleset}:{}),
+      ...(info.ruleset===FRIEND_FAST_CHARGE_RULESET?{fastCharge:true}:{}),...(listedOnly?{listedOnly:true}:{})};
     for(let attempt=1;attempt<seatsOf(mode);attempt++) {
       const roster=memberState(info,mode,await get(members));
       if(roster.some(member=>member?.uid===this.uid))return;
@@ -382,7 +387,7 @@ export class FirebaseFriend {
     const chars=room.members.map(member=>member?.char);
     room.config=chars.every((char):char is string=>!!char) ? defaultConfig({
       mapId:map,seed,chars,controllers:chars.map(()=>'human'),turnTime:25,turnLimit:0,
-      freeForAll:FRIEND_MODES[room.mode].freeForAll,legacyPoison:ruleset===undefined,legacyBalance:ruleset!==FRIEND_BALANCE_RULESET,
+      freeForAll:FRIEND_MODES[room.mode].freeForAll,legacyPoison:ruleset===undefined,legacyBalance:(ruleset??0)<FRIEND_BALANCE_RULESET,
     }) : null;
     if(room.config&&!room.ranks)void Promise.all(room.members.map(player=>this.rank.profile(player!))).then(rows=>{
       if(this.selection===room){room.ranks=rows.map(row=>row.rating);this.notify();}
@@ -406,7 +411,7 @@ export class FirebaseFriend {
     try {
       await onDisconnect(entry).remove();
       if(this.selection===room&&!room.config&&!room.head)await set(entry,room.info.ranked?
-        {created,ruleset:FRIEND_BALANCE_RULESET}:{nickname,map,created,...(mode?{mode}:{})});
+        {created,ruleset:room.info.ruleset}:{nickname,map,created,...(mode?{mode}:{})});
     } catch {
       // A visitor may have joined while the browser reconnected.
     }
@@ -439,6 +444,7 @@ export class FirebaseFriend {
     this.renewing=false;
     this.missingSince.clear();
     this.chargeSamples.clear();
+    this.chargeReceivedAt=null;
   }
 
   private present(room:Room,player:number):boolean {
@@ -472,7 +478,8 @@ export class FirebaseFriend {
       map:room.info.map,listed:room.info.listed===true,
       mode:room.mode,connectedSeats:room.members.map((_,player)=>this.present(room,player)),
       config:head?room.config:null,turn:head?.turn??1,step:head?.step??0,cursor:head?.cursor??0,commands,
-      opponentConnected:this.playConnected(room),done:head?.done??false,rating:room.rating??null,ranks:room.ranks};
+      opponentConnected:this.playConnected(room),done:head?.done??false,rating:room.rating??null,ranks:room.ranks,
+      fastCharge:room.info.ruleset===FRIEND_FAST_CHARGE_RULESET};
     return {profile:this.profile(),queued:room.info.ranked===true&&!head,room:view,rooms:[]};
   }
 
@@ -512,6 +519,7 @@ export class FirebaseFriend {
       this.lastTick=performance.now();
       this.remainder=0;
       this.chargeSamples.clear();
+      this.chargeReceivedAt=null;
       for(let i=0;i<this.sent;i++) {
         const command=log.child(keyOf(i)).val() as ReplayCommand|null;
         if(!command)return;
@@ -565,8 +573,9 @@ export class FirebaseFriend {
   private sampleCharge(b:Battle):void {
     if(b.phase==='CHARGE') {
       this.chargeSamples.set(b.stepNo,b.cur.power);
-    } else if(this.chargeSamples.size) {
+    } else {
       this.chargeSamples.clear();
+      this.chargeReceivedAt=null;
     }
   }
 
@@ -583,6 +592,21 @@ export class FirebaseFriend {
         if(b.phase==='CHARGE')b.fireNow(this.chargeSamples.get(c.step)??b.cur.power);
         else b.setCharge(true);
         this.sampleCharge(b);
+        break;
+      case 'startCharge':
+        if(b.phase!=='CHARGE'){
+          b.setCharge(true);
+          this.chargeReceivedAt=packet.receivedAt??null;
+          this.sampleCharge(b);
+        }
+        break;
+      case 'releaseCharge':
+        if(b.phase==='CHARGE'){
+          const elapsed=this.chargeReceivedAt!==null&&packet.receivedAt!==undefined
+            ? packet.receivedAt-this.chargeReceivedAt : b.phaseT*1000;
+          b.fireNow(confirmedChargePower(c.holdMs,elapsed));
+          this.sampleCharge(b);
+        }
         break;
       case 'cancel': b.cancelCharge(); this.sampleCharge(b); break;
       case 'flip': if(b.phase!=='CHARGE')b.setAngle(180-b.cur.angle); break;

@@ -7,6 +7,8 @@ export const FRIEND_BRANCH = 'warureuFriendV1';
 export const FRIEND_RULESET = 2;
 export const FRIEND_MEADOW_RULESET = 3;
 export const FRIEND_BALANCE_RULESET = 4;
+export const FRIEND_FAST_CHARGE_RULESET = 5;
+export const MAX_CHARGE_HOLD_MS = 25_000;
 export const DUEL_ACCOUNT_DOMAIN = 'id.warureu.example';
 export const ROOM_DURATION_MS = 7_200_000;
 export const ROOM_WAIT_MS = 900_000;
@@ -27,7 +29,8 @@ export type Control =
   | { kind: 'input'; move: -1 | 0 | 1; aim: -1 | 0 | 1 }
   | { kind: 'slot'; slot: WeaponSlot }
   | { kind: 'fire'; step: number }
-  | { kind: 'flip' | 'cancel' };
+  | { kind: 'releaseCharge'; holdMs: number }
+  | { kind: 'flip' | 'cancel' | 'startCharge' };
 
 export interface Profile {
   nickname: string;
@@ -61,6 +64,7 @@ export interface OnlineRoom {
   done: boolean;
   rating: RatingChange | null;
   ranks?: number[];
+  fastCharge?: boolean;
 }
 
 export interface PublicRoom {

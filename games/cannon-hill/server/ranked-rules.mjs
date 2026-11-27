@@ -1,4 +1,4 @@
-import { FRIEND_BALANCE_RULESET, FRIEND_BRANCH, ROOM_LIST_LIMIT, ROOM_WAIT_MS, STARTING_RATING } from '../source/src/game/online/protocol.ts';
+import { FRIEND_BALANCE_RULESET, FRIEND_FAST_CHARGE_RULESET, FRIEND_BRANCH, ROOM_LIST_LIMIT, ROOM_WAIT_MS, STARTING_RATING } from '../source/src/game/online/protocol.ts';
 
 export function rankedRules(account) {
   const rootBranch = "root.child('" + FRIEND_BRANCH + "')";
@@ -65,7 +65,7 @@ export function rankedRules(account) {
         '.write':`${account} && ${ranked} && ((${host} == auth.uid && (!newData.exists() || (${waiting} && !${started} && ${guest} == null))) || (!newData.exists() && newData.parent().parent().child('rooms/' + $code + '/guest/uid').val() == auth.uid))`,
         '.validate':required(['created','ruleset']),
         created:valid(`newData.val() == ${room}.child('info/created').val()`),
-        ruleset:valid(`newData.val() == ${FRIEND_BALANCE_RULESET}`),
+        ruleset:valid(`newData.val() == ${room}.child('info/ruleset').val() && (newData.val() == ${FRIEND_BALANCE_RULESET} || newData.val() == ${FRIEND_FAST_CHARGE_RULESET})`),
         $other:valid(false),
       },
     },

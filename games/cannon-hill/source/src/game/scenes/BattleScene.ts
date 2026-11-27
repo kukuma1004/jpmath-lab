@@ -21,12 +21,15 @@ import { particleScale } from '../settings';
 import type { App } from '../app';
 import { playerLabel, type Mode } from '../ui/ui';
 import type { OnlineClient } from '../online/client';
+import { onlineChargePower } from '../online/charge';
+import { MAX_CHARGE_HOLD_MS } from '../online/protocol';
 
 const DEG = Math.PI / 180;
 
 type PendingFire =
   | {turn: number; kind: 'start'; releaseQueued: boolean}
   | {turn: number; kind: 'release'; power: number};
+type ChargePreview = { turn:number; start:number; shownMs:number; released:boolean; confirmed:boolean };
 
 export interface BattleData {
   cfg: BattleConfig;
@@ -43,6 +46,7 @@ export class BattleScene extends Phaser.Scene {
   paused = false;
   private firePresses = 0;
   private pendingFire: PendingFire | null = null;
+  private chargePreview: ChargePreview | null = null;
   private rankReported = false;
   private online: OnlineClient | null = null;
   timeScale = 1;
@@ -95,6 +99,7 @@ export class BattleScene extends Phaser.Scene {
     this.paused = false;
     this.firePresses = 0;
     this.pendingFire = null;
+    this.chargePreview = null;
     this.rankReported = false;
     this.acc = 0;
     this.t = 0;
@@ -496,6 +501,10 @@ export class BattleScene extends Phaser.Scene {
     const b = this.battle;
     if (this.paused || !this.humanTurn() || !b.isPlayerPhase()) return;
     if (this.online) {
+      if (this.online.room?.fastCharge && (this.chargePreview || b.phase!=='CHARGE'&&!this.pendingFire)) {
+        this.pressPreviewFire();
+        return;
+      }
       if (this.pendingFire?.kind === 'start') {
         this.pendingFire.releaseQueued = true;
         this.app.ui.showFireInput(false, 'release');
@@ -505,6 +514,21 @@ export class BattleScene extends Phaser.Scene {
       return;
     }
     this.firePresses = Math.min(b.phase === 'CHARGE' ? 1 : 2, this.firePresses + 1);
+  }
+
+  private pressPreviewFire(): void {
+    const b=this.battle;
+    const active=this.chargePreview;
+    if(active?.released)return;
+    const preview:ChargePreview=active??{turn:b.turnNo,start:performance.now(),shownMs:0,released:false,confirmed:false};
+    const control=active?{kind:'releaseCharge' as const,holdMs:preview.shownMs}:{kind:'startCharge' as const};
+    if(!this.online!.send(b.turnNo,control,()=>{
+      if(this.chargePreview===preview)this.chargePreview=null;
+    }))return;
+    this.chargePreview=preview;
+    preview.released=!!active;
+    this.app.ui.showFireInput(true,active?'release':undefined);
+    this.app.ui.showPower(b.cur,onlineChargePower(preview.shownMs));
   }
 
   private sendOnlineFire(): void {
@@ -521,9 +545,18 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private settleOnlineFire(): void {
+    const b = this.battle;
+    const preview=this.chargePreview;
+    if(preview){
+      if(b.turnNo!==preview.turn||!b.isPlayerPhase()||!this.humanTurn()||(preview.confirmed&&b.phase!=='CHARGE')){
+        this.chargePreview=null;
+      }else{
+        preview.confirmed ||= b.phase==='CHARGE';
+        if(!preview.released)preview.shownMs=Math.min(MAX_CHARGE_HOLD_MS,Math.round(performance.now()-preview.start));
+      }
+    }
     const pending = this.pendingFire;
     if (!pending) return;
-    const b = this.battle;
     if (b.turnNo !== pending.turn || !b.isPlayerPhase() || !this.humanTurn()) {
       this.pendingFire = null;
     } else if (pending.kind === 'start' && b.phase === 'CHARGE') {
@@ -535,6 +568,7 @@ export class BattleScene extends Phaser.Scene {
   cancelFire(): void {
     this.firePresses = 0;
     this.pendingFire = null;
+    this.chargePreview = null;
     if (this.online) {
       if (this.humanTurn()) {
         this.online.input(this.battle.turnNo,0,0);
@@ -547,14 +581,14 @@ export class BattleScene extends Phaser.Scene {
 
   selectWeapon(slot: WeaponSlot): void {
     const b = this.battle;
-    if (this.paused || !this.humanTurn() || !b.isPlayerPhase()) return;
+    if (this.paused || !this.humanTurn() || !b.isPlayerPhase() || this.chargePreview) return;
     if (this.online) { this.online.send(b.turnNo,{kind:'slot',slot}); return; }
     b.selectWeapon(slot);
   }
 
   flip(): void {
     const b = this.battle;
-    if (this.paused || !this.humanTurn() || !b.isPlayerPhase() || b.phase === 'CHARGE') return;
+    if (this.paused || !this.humanTurn() || !b.isPlayerPhase() || b.phase === 'CHARGE' || this.chargePreview) return;
     if (this.online) { this.online.send(b.turnNo,{kind:'flip'}); return; }
     b.setAngle(180 - b.cur.angle);
   }
@@ -777,7 +811,7 @@ export class BattleScene extends Phaser.Scene {
     const f = b.cur;
     const visible = b.isPlayerPhase() && f.alive;
     const power = visible && this.app.settings.trajectory && this.humanTurn()
-      ? b.phase === 'CHARGE' ? (lockedPower ?? f.power) : f.lastPower : null;
+      ? lockedPower ?? (b.phase === 'CHARGE' ? f.power : f.lastPower) : null;
     const key = visible ? `${b.current}:${f.x}:${f.y}:${f.angle}:${power}:${b.wind}` : '';
     if (key === this.guideKey && !terrainChanged) return;
     this.guideKey = key;
@@ -867,13 +901,14 @@ export class BattleScene extends Phaser.Scene {
     for (const p of b.projectiles) audio.whistleUpdate(p.id, p.vy);
     const showArrow = b.isPlayerPhase() || b.phase === 'TURN_START';
     this.fighters.forEach((v, i) => v.update(b, dt, b.current === i, showArrow && b.current === i));
-    const lockedPower = this.pendingFire?.kind === 'release' ? this.pendingFire.power : undefined;
+    const previewPower=this.chargePreview?onlineChargePower(this.chargePreview.shownMs):undefined;
+    const lockedPower = previewPower ?? (this.pendingFire?.kind === 'release' ? this.pendingFire.power : undefined);
     this.drawGuide(terrainChanged, lockedPower);
     this.drawBottom(dt);
     this.updateCamera(dt);
     const wv = this.cam.worldView;
     this.bg.update(wv.centerX, wv.centerY, this.camZ, dt, b.wind, this.paused);
-    if (b.phase === 'CHARGE' && !this.paused) audio.charge(lockedPower ?? b.cur.power);
+    if ((b.phase === 'CHARGE' || previewPower!==undefined) && !this.paused) audio.charge(lockedPower ?? b.cur.power);
     else audio.charge(null);
 
     const actor = this.actors[b.current];
@@ -900,7 +935,7 @@ export class BattleScene extends Phaser.Scene {
       : b.isPlayerPhase() && b.steadyReady(b.cur) ? '자리 잡은 포격 — 움직이지 않고 쏘면 피해 +15%'
       : ''));
     const aimHint=this.advisor.update(b,this.app.settings.aimHints&&this.humanTurn());
-    const firePending = this.pendingFire?.kind === 'start' && this.pendingFire.releaseQueued ? 'release' : this.pendingFire?.kind;
+    const firePending = this.chargePreview?.released || this.pendingFire?.kind === 'start' && this.pendingFire.releaseQueued ? 'release' : this.pendingFire?.kind;
     this.app.ui.updateHud(b, { names: this.names, humanTurn: this.humanTurn(), status, aimHint, firePending, lockedPower, ranks:onlineRoom?.ranks });
   }
 

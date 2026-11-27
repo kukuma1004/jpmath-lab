@@ -1,4 +1,4 @@
-import { FRIEND_BALANCE_RULESET, FRIEND_BRANCH, FRIEND_MEADOW_RULESET, FRIEND_RULESET, ROOM_DURATION_MS, ROOM_LIST_LIMIT, ROOM_WAIT_MS } from '../source/src/game/online/protocol.ts';
+import { FRIEND_BALANCE_RULESET, FRIEND_BRANCH, FRIEND_FAST_CHARGE_RULESET, FRIEND_MEADOW_RULESET, FRIEND_RULESET, MAX_CHARGE_HOLD_MS, ROOM_DURATION_MS, ROOM_LIST_LIMIT, ROOM_WAIT_MS } from '../source/src/game/online/protocol.ts';
 import { rankedRules } from './ranked-rules.mjs';
 
 export const BRANCH = FRIEND_BRANCH;
@@ -20,7 +20,8 @@ const member = `(${account}) && ((${host}) || ${visitor})`;
 const fresh = `now - ${base}.child('info/created').val() < ${ROOM_DURATION_MS}`;
 const activeHost = `${account} && ${host} && ${playing} && ${fresh} && now - ${base}.child('leader/at').val() < 8000`;
 const gameId = 'newData.isString() && newData.val().matches(/^[a-zA-Z0-9_-]{1,24}$/)';
-const allowedRuleset = value => `(${value} == ${FRIEND_RULESET} || ${value} == ${FRIEND_MEADOW_RULESET} || ${value} == ${FRIEND_BALANCE_RULESET})`;
+const oneOfRulesets = (value,...options) => '(' + options.map(id=>`${value} == ${id}`).join(' || ') + ')';
+const allowedRuleset = value => oneOfRulesets(value,FRIEND_RULESET,FRIEND_MEADOW_RULESET,FRIEND_BALANCE_RULESET,FRIEND_FAST_CHARGE_RULESET);
 const ruleset = allowedRuleset('newData.val()');
 const valid = rule => ({'.validate':rule});
 const number = (lo,hi) => `newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= ${lo} && newData.val() <= ${hi}`;
@@ -34,7 +35,10 @@ const player = {
 const groupSeat = `($seat == 'p1' || $seat == 'p2' || ($seat == 'p3' && ${mode} != 'solo3'))`;
 const ownSeat = `${base}.child('seats/' + $seat + '/uid').val() == auth.uid`;
 const uniqueSeat = seats.map(seat=>`($seat == '${seat}' || newData.parent().child('${seat}/uid').val() != auth.uid)`).join(' && ');
-const visitorRuleset = `(!${base}.child('info/ruleset').exists() || newData.child('ruleset').val() == ${base}.child('info/ruleset').val())`;
+const fastRoom = `(${base}.child('info/ruleset').val() == ${FRIEND_FAST_CHARGE_RULESET})`;
+const visitorRuleset = `(!${base}.child('info/ruleset').exists() || newData.child('ruleset').val() == ${base}.child('info/ruleset').val()) && (!${fastRoom} || newData.child('fastCharge').val() == true)`;
+const supportsFastCharge = valid(`newData.val() == true && ${fastRoom}`);
+const timed = `(newData.child('control/kind').val() == 'startCharge' || newData.child('control/kind').val() == 'releaseCharge')`;
 const listedOnly = valid(`newData.val() == true && ${listing}.exists()`);
 const {rooms:rankedRoomRules,...rankedBranches}=rankedRules(account);
 const ranked = base + ".child('info/ranked').val() == true";
@@ -67,24 +71,24 @@ export function targetRules() {
         '.read':account,
         '.write':`${account} && !data.exists() && newData.exists() && $code.matches(/^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{6}$/)`,
         '.validate':required(['uid','nickname','char','map','seed','created']) +
-          ` && (newData.child('map').val() != 'meadow' || newData.child('ruleset').val() == ${FRIEND_MEADOW_RULESET} || newData.child('ruleset').val() == ${FRIEND_BALANCE_RULESET})`,
+          ` && (newData.child('map').val() != 'meadow' || ${oneOfRulesets("newData.child('ruleset').val()",FRIEND_MEADOW_RULESET,FRIEND_BALANCE_RULESET,FRIEND_FAST_CHARGE_RULESET)})`,
         ...player, map:valid(gameId), seed:valid(number(1,2147483646)), created:valid('newData.val() == now'),
         listed:valid('newData.isBoolean()'), ruleset:valid(ruleset),
         mode:valid(`${allowedRuleset("newData.parent().child('ruleset').val()")} && newData.isString() && newData.val().matches(/^(duel|teams|solo3|solo4)$/)`),
-        ranked:valid(`newData.val() == true && newData.parent().child('ruleset').val() == ${FRIEND_BALANCE_RULESET} && newData.parent().child('mode').val() == 'duel' && newData.parent().child('listed').val() == false`),
+        ranked:valid(`newData.val() == true && ${oneOfRulesets("newData.parent().child('ruleset').val()",FRIEND_BALANCE_RULESET,FRIEND_FAST_CHARGE_RULESET)} && newData.parent().child('mode').val() == 'duel' && newData.parent().child('listed').val() == false`),
         $other:unknown,
       },
       guest:{
         '.read':account,
         '.write':`${account} && !${group} && !${started} && ((!data.exists() && newData.exists() && ${waiting} && !(${host})) || (!newData.exists() && ${guest}))`,
         '.validate':required(['uid','nickname','char']) + ` && ${visitorRuleset} && (!(${ranked}) || newData.child('ranked').val() == true)`,
-        ...player, listedOnly, ruleset:valid(ruleset),
+        ...player, listedOnly, ruleset:valid(ruleset), fastCharge:supportsFastCharge,
         ranked:valid(`newData.val() == true && ${ranked} && root.child('${BRANCH}/rankedQueue/' + $code).exists()`), $other:unknown,
       },
       seats:{ '.read':account, $seat:{
         '.write':`${account} && ${group} && ${groupSeat} && !${started} && ((!data.exists() && newData.exists() && ${waiting} && !(${host}) && !${visitor}) || (!newData.exists() && ${ownSeat}))`,
         '.validate':required(['uid','nickname','char','ruleset']) + ` && ${visitorRuleset} && ${uniqueSeat}`,
-        ...player, listedOnly, ruleset:valid(ruleset), $other:unknown,
+        ...player, listedOnly, ruleset:valid(ruleset), fastCharge:supportsFastCharge, $other:unknown,
       },
       },
       presence:{
@@ -128,13 +132,14 @@ export function targetRules() {
         '.read':`${account} && ${host}`,
         $id:{
           '.write':`${account} && ${fresh} && ((${visitor} && ${started} && !data.exists() && newData.exists() && ${base}.child('wire/head/done').val() != true) || (${host} && !newData.exists()))`,
-          '.validate':required(['turn','control']) + ` && (!${group} || newData.child('player').exists())`,
+          '.validate':required(['turn','control']) + ` && (!${group} || newData.child('player').exists()) && (!${timed} || (${fastRoom} && newData.child('receivedAt').exists()))`,
           player:valid(`(!${group} && newData.val() == 1 && ${guest}) || (${group} && (${seats.map((seat,index)=>`(newData.val() == ${index+1} && ${seatUser(seat)})`).join(' || ')}))`),
           turn:valid(number(0,432000)),
+          receivedAt:valid('newData.val() == now'),
           control:{
-            '.validate':`(newData.child('kind').val() == 'input' && ${required(['move','aim'])}) || (newData.child('kind').val() == 'slot' && newData.child('slot').exists()) || (newData.child('kind').val() == 'fire' && newData.child('step').exists()) || newData.child('kind').val() == 'flip' || newData.child('kind').val() == 'cancel' || newData.child('kind').val() == 'leave'`,
+            '.validate':`(newData.child('kind').val() == 'input' && ${required(['move','aim'])}) || (newData.child('kind').val() == 'slot' && newData.child('slot').exists()) || (newData.child('kind').val() == 'fire' && newData.child('step').exists()) || (newData.child('kind').val() == 'releaseCharge' && newData.child('holdMs').exists()) || newData.child('kind').val() == 'startCharge' || newData.child('kind').val() == 'flip' || newData.child('kind').val() == 'cancel' || newData.child('kind').val() == 'leave'`,
             kind:valid('newData.isString()'), move:valid(number(-1,1)), aim:valid(number(-1,1)),
-            slot:valid(number(0,2)), step:valid(number(0,432000)), $other:unknown,
+            slot:valid(number(0,2)), step:valid(number(0,432000)), holdMs:valid(number(0,MAX_CHARGE_HOLD_MS)), $other:unknown,
           },
           $other:unknown,
         },

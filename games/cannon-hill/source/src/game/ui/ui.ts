@@ -5,7 +5,7 @@ import { weapon } from '../data/weapons';
 import type { Battle } from '../combat/battle';
 import { ULTIMATE_RECHARGE_TURNS, ULTIMATE_TURN } from '../combat/battle';
 import type { AimHint } from '../combat/aimAdvisor';
-import type { Difficulty, Team, WeaponSlot } from '../combat/types';
+import type { Difficulty, Fighter, Team, WeaponSlot } from '../combat/types';
 import { input, type Hold } from '../input/input';
 import type { Settings } from '../settings';
 import { audio } from '../audio/audio';
@@ -482,6 +482,19 @@ export class UI {
     });
   }
 
+  showPower(f:Fighter,power:number|null,waiting=false):void {
+    const value=power?.toFixed(1);
+    this.set('pw',`${value}|${f.lastPower.toFixed(1)}|${f.stats.shots}|${waiting}`,()=>{
+      const gauge=this.screens.get('hud')!.querySelector<HTMLElement>('.power')!;
+      gauge.querySelector<HTMLElement>('i')!.style.width=`${power??0}%`;
+      const last=gauge.querySelector<HTMLElement>('.last')!;
+      last.hidden=f.stats.shots===0;
+      last.style.left=`${f.lastPower}%`;
+      gauge.querySelector('span')!.textContent=value!==undefined?`힘 ${value}` :
+        waiting?'힘 모으는 중':f.stats.shots?`지난 힘 ${f.lastPower.toFixed(1)}`:'발사 힘';
+    });
+  }
+
   updateHud(b: Battle, opts: { names: string[]; humanTurn: boolean; status: string; aimHint: AimHint|null;
     firePending?: 'start' | 'release'; lockedPower?: number; ranks?:number[] }): void {
     const el = this.screens.get('hud')!;
@@ -545,7 +558,8 @@ export class UI {
     const c = character(f.charId);
     const canAct = opts.humanTurn && b.isPlayerPhase();
     this.set('act', `${canAct}`, () => el.querySelector('.bottom')!.classList.toggle('off', !canAct));
-    this.showFireInput(b.phase === 'CHARGE' && canAct, opts.firePending);
+    const charging=b.phase==='CHARGE'||opts.lockedPower!==undefined;
+    this.showFireInput(charging && canAct, opts.firePending);
     this.set('wn', c.id, () => {
       el.querySelector('.wn0')!.textContent = weapon(c.normal).name;
       el.querySelector('.wn1')!.textContent = weapon(c.special).name;
@@ -558,11 +572,11 @@ export class UI {
       }
     });
     const ready = b.ultimateReady(f);
-    this.set('slot', `${b.current}|${f.slot}|${canAct}|${b.phase}|${f.turnsTaken}|${f.nextUltimateTurn}`, () => {
+    this.set('slot', `${b.current}|${f.slot}|${canAct}|${charging}|${f.turnsTaken}|${f.nextUltimateTurn}`, () => {
       for (const slot of [0, 1, 2]) {
         const button = el.querySelector<HTMLButtonElement>(`[data-w="${slot}"]`)!;
         button.classList.toggle('on', f.slot === slot);
-        button.disabled = !canAct || b.phase === 'CHARGE' || (slot === 2 && !ready);
+        button.disabled = !canAct || charging || (slot === 2 && !ready);
         button.setAttribute('aria-pressed', String(f.slot === slot));
         if (slot === 2) button.classList.toggle('ready', ready);
       }
@@ -580,16 +594,7 @@ export class UI {
     });
     const mv = Math.max(0, (f.moveLeft / (MOVE_BUDGET * c.moveMul)) * 100);
     this.set('mv', `${Math.round(mv)}`, () => { el.querySelector<HTMLElement>('.movebar i')!.style.width = `${mv}%`; });
-    const pw = opts.lockedPower ?? (b.phase === 'CHARGE' ? f.power : 0);
-    this.set('pw', `${pw.toFixed(1)}|${f.lastPower.toFixed(1)}|${b.phase}|${f.stats.shots}|${opts.firePending}`, () => {
-      const p = el.querySelector<HTMLElement>('.power')!;
-      p.querySelector<HTMLElement>('i')!.style.width = `${pw}%`;
-      const last = p.querySelector<HTMLElement>('.last')!;
-      last.hidden = f.stats.shots === 0;
-      last.style.left = `${f.lastPower}%`;
-      p.querySelector('span')!.textContent = b.phase === 'CHARGE' ? `힘 ${pw.toFixed(1)}` :
-        opts.firePending === 'start' ? '힘 모으는 중' : f.stats.shots ? `지난 힘 ${f.lastPower.toFixed(1)}` : '발사 힘';
-    });
+    this.showPower(f,opts.lockedPower??(b.phase==='CHARGE'?f.power:null),opts.firePending==='start');
     this.updateAimHint(el,b,opts.aimHint);
   }
 

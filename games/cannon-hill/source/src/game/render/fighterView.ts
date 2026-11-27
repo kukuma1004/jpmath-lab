@@ -6,7 +6,86 @@ import type { Battle } from '../combat/battle';
 import type { Fighter } from '../combat/types';
 
 const DEG = Math.PI / 180;
-const FIGURE_SCALE = 1.19;
+const FIGURE_SCALE = 1.42;
+
+// Upper light, sky fill, ground bounce and projected shadow for each battlefield.
+type FieldLight = readonly [number, number, number, number, number];
+const FIELD_LIGHT: Record<string, FieldLight> = {
+  meadow: [0xfff4dc, 0xedf4ff, 0xd7c393, 0x493318, 0.61],
+  baekdu: [0xffe6d2, 0xe4e3ec, 0xe5a48c, 0x332935, 0.42],
+  sanseong: [0xffedd0, 0xe5eef5, 0xc6c5a7, 0x393a32, 0.52],
+  forest: [0xf2f4c9, 0xd9ede5, 0xaab692, 0x24342a, 0.34],
+  cloud: [0xfff8e8, 0xe9f2ff, 0xccc8eb, 0x535475, 0.29],
+  underworld: [0xd5eaff, 0xc6c9f4, 0xafa2cb, 0x22233c, 0.24],
+  bridge: [0xffefd9, 0xdceff1, 0xc8b390, 0x3c342c, 0.50],
+  quarry: [0xffe5c7, 0xe2e5ec, 0xc8ae99, 0x413530, 0.55],
+  windrift: [0xffebce, 0xe3edf7, 0xd2af92, 0x49392e, 0.49],
+};
+
+// Prefilter high-resolution illustrations once so small battlefield sprites retain
+// broad paint strokes without shimmering embroidery and broken dark outlines.
+function fitBattleTexture(scene: Phaser.Scene, sprite: Phaser.GameObjects.Image, size: number): number {
+  const key = sprite.texture.key + '_field';
+  const src = sprite.texture.getSourceImage() as HTMLImageElement;
+  const ratio = Math.min(1, size / Math.max(src.width, src.height));
+  if (ratio === 1) return 1;
+  const w = Math.max(1, Math.round(src.width * ratio));
+  const h = Math.max(1, Math.round(src.height * ratio));
+  if (!scene.textures.exists(key)) {
+    const texture = scene.textures.createCanvas(key, w, h);
+    if (!texture) return 1;
+    texture.context.imageSmoothingEnabled = true;
+    texture.context.imageSmoothingQuality = 'high';
+    texture.context.drawImage(src, 0, 0, w, h);
+    // Catch the daylight along exposed upper contours, preserving the dark
+    // ink below and the original colours of cloth, wood, metal and skin.
+    const pixels = texture.context.getImageData(0, 0, w, h);
+    const rgba = pixels.data;
+    const reach = Math.max(1, Math.round(h / 88));
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const i = (y * w + x) * 4;
+        const alpha = rgba[i + 3]!;
+        if (alpha < 40) continue;
+        const above = y < reach ? 0 : rgba[i - reach * w * 4 + 3]!;
+        const light = Math.max(0, alpha - above) / 255 * .48;
+        rgba[i] = rgba[i]! + (255 - rgba[i]!) * light;
+        rgba[i + 1] = rgba[i + 1]! + (242 - rgba[i + 1]!) * light;
+        rgba[i + 2] = rgba[i + 2]! + (209 - rgba[i + 2]!) * light;
+      }
+    }
+    texture.context.putImageData(pixels, 0, 0);
+    texture.refresh();
+  }
+  sprite.setTexture(key);
+  return ratio;
+}
+// Project the painted silhouette onto the ground plane. Cache both poses so
+// turning the fighter keeps the light source on the same side of the field.
+function fieldShadow(scene: Phaser.Scene, body: Phaser.GameObjects.Image, facing: number): string {
+  const key = body.texture.key + '_shadow_' + facing;
+  if (scene.textures.exists(key)) return key;
+  const src = body.texture.getSourceImage() as HTMLCanvasElement;
+  const width = src.width + Math.ceil(src.height * .79);
+  const height = Math.ceil(src.height * .26) + 2;
+  const texture = scene.textures.createCanvas(key, width, height);
+  if (!texture) return 'glow';
+  const ctx = texture.context;
+  ctx.setTransform(facing, 0, -.79, -.26, (facing < 0 ? src.width : 0) + .79 * src.height, .26 * src.height);
+  ctx.filter = 'blur(1.6px)';
+  ctx.drawImage(src, 0, 0);
+  ctx.filter = 'none';
+  ctx.resetTransform();
+  ctx.globalCompositeOperation = 'source-in';
+  const fade = ctx.createLinearGradient(0, 0, 0, height);
+  fade.addColorStop(0, '#625748');
+  fade.addColorStop(.55, '#625748e6');
+  fade.addColorStop(1, '#62574835');
+  ctx.fillStyle = fade;
+  ctx.fillRect(0, 0, width, height);
+  texture.refresh();
+  return key;
+}
 export const PLAYER_COLORS = [0x4f9cf0, 0xf05a4f, 0x61bb80, 0xc691ff];
 const TAG_COLORS = ['#2f6ab8', '#b8382f', '#397652', '#7247a0'];
 
@@ -16,7 +95,9 @@ export class FighterView {
   private rig: Phaser.GameObjects.Container;
   private body: Phaser.GameObjects.Image;
   private wpn: Phaser.GameObjects.Image;
-  private shadow: Phaser.GameObjects.Ellipse;
+  private shadow: Phaser.GameObjects.Image;
+  private castKeys?: [string, string];
+  private contact: Phaser.GameObjects.Image;
   private aura: Phaser.GameObjects.Image;
   private tag: Phaser.GameObjects.Text;
   private hpBg: Phaser.GameObjects.Rectangle;
@@ -39,7 +120,8 @@ export class FighterView {
     this.lastHp = f.hp;
     const id = f.charId;
     this.c = scene.add.container(f.x, f.y).setDepth(20);
-    this.shadow = scene.add.ellipse(3, 1, 34, 7, 0x18212d, 0.56);
+    this.shadow = scene.add.image(0, 0, 'glow').setAlpha(.84);
+    this.contact = scene.add.image(0, 0, 'glow').setTint(0x281e19).setDisplaySize(31, 6).setAlpha(.95);
     this.rig = scene.add.container(0, 0);
     this.aura = scene.add.image(0, -22, 'glow').setBlendMode(Phaser.BlendModes.ADD).setAlpha(0).setTint(PLAYER_COLORS[f.team]!);
     this.art = bodyArt(scene.textures, id);
@@ -50,7 +132,15 @@ export class FighterView {
     this.wpn = this.wart
       ? scene.add.image(0, 0, this.wart.key).setOrigin(this.wart.originX, this.wart.originY).setScale(this.wart.scale)
       : scene.add.image(0, 0, `wpn_${id}`).setOrigin(WEAPON_BOX.pivotX / WEAPON_BOX.w, WEAPON_BOX.pivotY / WEAPON_BOX.h).setScale(1 / TEX);
-    if (this.art) this.shadow.setSize(Math.max(30, this.art.width * 0.72), 7);
+    if (this.art) {
+      this.art.scale /= fitBattleTexture(scene, this.body, 152);
+      this.body.setScale(this.art.scale);
+      this.castKeys = [fieldShadow(scene, this.body, 1), fieldShadow(scene, this.body, -1)];
+    }
+    if (this.wart) {
+      this.wart.scale /= fitBattleTexture(scene, this.wpn, 120);
+      this.wpn.setScale(this.wart.scale);
+    }
     this.rig.add([this.aura, this.body, this.wpn]);
     this.tag = scene.add.text(0, -70, label, { fontFamily: 'Black Han Sans, sans-serif', fontSize: '13px', color: '#ffffff', backgroundColor: TAG_COLORS[f.team]!, padding: { x: 5, y: 2 } }).setOrigin(0.5, 1).setResolution(2);
     this.hpBg = scene.add.rectangle(0, -64, 40, 5, 0x000000, 0.6).setOrigin(0.5, 0.5);
@@ -61,7 +151,7 @@ export class FighterView {
     this.hpBg.setPosition(0, head - 4).setStrokeStyle(1.5, 0x3a3029);
     this.hpFill.y = head - 4;
     this.tag.y = head - 9;
-    this.c.add([this.shadow, this.rig, this.tag, this.hpBg, this.hpFill, this.arrow, ...this.stars]);
+    this.c.add([this.shadow, this.contact, this.rig, this.tag, this.hpBg, this.hpFill, this.arrow, ...this.stars]);
     this.stepDust = scene.add.particles(0, 0, 'blast_cloud', {
       emitting: false, speed: { min: 9, max: 23 }, angle: { min: 220, max: 320 },
       lifespan: 320, scale: { start: .12, end: .27 }, alpha: { start: .72, end: 0 },
@@ -114,9 +204,9 @@ export class FighterView {
     else this.wpn.setFlipY(fc < 0);
 
     // 몸짓
-    let bob = Math.sin(t * 2.6) * 1.1;
+    let bob = 0;
     let rot = 0;
-    let sx = 1, sy = 1;
+    let sx = 1, sy = 1 + Math.sin(t * 2.6) * .009;
     let ox = 0;
     this.aura.setAlpha(0);
     switch (f.anim) {
@@ -173,9 +263,36 @@ export class FighterView {
     this.rig.setPosition(ox, bob);
     this.rig.setRotation(rot + lean);
     this.rig.setScale(sx * FIGURE_SCALE, sy * FIGURE_SCALE);
-    this.shadow.setVisible(f.onGround);
-    this.shadow.setRotation(f.onGround ? f.slope * DEG : 0);
-    this.shadow.setScale(1 - Math.min(0.4, Math.abs(bob) / 30), 1);
+    const [sun, sky, bounce, shade, castOpacity] = FIELD_LIGHT[b.cfg.mapId] ?? FIELD_LIGHT.meadow!;
+    const slope = f.slope * DEG;
+    const castKey = this.castKeys?.[fc > 0 ? 0 : 1];
+    this.shadow.setVisible(f.onGround).setTint(shade).setRotation(slope);
+    if (castKey && castKey !== 'glow' && this.art) {
+      if (this.shadow.texture.key !== castKey) {
+        this.shadow.setTexture(castKey);
+        const foot = (fc > 0 ? this.art.originX : 1 - this.art.originX) * this.body.width;
+        this.shadow.setOrigin(foot / this.shadow.width, 0).setPosition(0, .5);
+      }
+      if (f.onGround) {
+        const scale = this.art.scale * FIGURE_SCALE;
+        const reach = (this.shadow.width - this.shadow.displayOriginX) * scale;
+        const dx = Math.cos(slope), dy = Math.sin(slope);
+        let fraction = 1;
+        // Shorten the projection at holes and platform edges so it stays on the ground.
+        for (let d = 8; d < reach; d += 8) {
+          if (b.terrain.solidAt(f.x + d * dx, f.y + d * dy + 6)) continue;
+          fraction = (d - 4) / reach;
+          break;
+        }
+        this.shadow.setScale(scale * fraction, scale * (.6 + fraction * .4)).setAlpha(castOpacity);
+      }
+    } else {
+      if (this.shadow.texture.key !== 'glow') this.shadow.setTexture('glow').setOrigin(.5).setAlpha(.84);
+      const width = (this.art?.width ?? 42) * 1.22;
+      this.shadow.setPosition(Math.cos(slope) * width * .30, 1 + Math.sin(slope) * width * .30)
+        .setDisplaySize(width, 10);
+    }
+    this.contact.setVisible(f.onGround).setRotation(slope);
 
     // 맞으면 번쩍
     if (this.flash > 0) {
@@ -186,8 +303,8 @@ export class FighterView {
       this.body.setTint(0x8a8a96);
       this.wpn.setTint(0x8a8a96);
     } else {
-      this.body.setTint(0xfff7e9, 0xfff6ea, 0xe4e2e3, 0xdbdfe8);
-      this.wpn.setTint(0xfffaf0, 0xffffff, 0xece8e5, 0xd7dce3);
+      this.body.setTint(fc > 0 ? sun : sky, fc > 0 ? sky : sun, bounce, bounce);
+      this.wpn.setTint(sun, sky, bounce, sky);
     }
 
     // 기절 별

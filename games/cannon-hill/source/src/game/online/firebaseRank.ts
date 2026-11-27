@@ -1,5 +1,5 @@
 import {get,limitToLast,orderByChild,query,ref,serverTimestamp,set,update,type Database} from '@firebase/database';
-import {FRIEND_BALANCE_RULESET, FRIEND_BRANCH, ROOM_LIST_LIMIT, ROOM_WAIT_MS, type Profile, type RatingChange} from './protocol';
+import {FRIEND_FAST_CHARGE_RULESET, FRIEND_BRANCH, ROOM_LIST_LIMIT, ROOM_WAIT_MS, type Profile, type RatingChange} from './protocol';
 import {rankAfter,startingRank} from './rank';
 
 type RankedPlayer = {uid:string;nickname:string};
@@ -13,7 +13,7 @@ export class FirebaseRank {
     const valid:{code:string;created:number}[]=[];
     list.forEach(node=>{
       const {created,ruleset}=node.val();
-      if(ruleset===FRIEND_BALANCE_RULESET&&created>now-ROOM_WAIT_MS)valid.push({code:node.key!,created});
+      if(ruleset===FRIEND_FAST_CHARGE_RULESET&&created>now-ROOM_WAIT_MS)valid.push({code:node.key!,created});
     });
     return valid;
   }
