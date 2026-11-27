@@ -471,7 +471,18 @@ export class UI {
     fn();
   }
 
-  updateHud(b: Battle, opts: { names: string[]; humanTurn: boolean; status: string; aimHint: AimHint|null }): void {
+  showFireInput(charging: boolean, pending?: 'start' | 'release'): void {
+    this.set('fire', `${charging}:${pending}`, () => {
+      const fire = this.screens.get('hud')!.querySelector<HTMLButtonElement>('.fire')!;
+      fire.querySelector('span')!.textContent = pending === 'start' ? '충전 중…' : pending === 'release' ? '발사 중…' : charging ? '발사' : '힘 시작';
+      fire.classList.toggle('held', charging || pending !== undefined);
+      if (pending) fire.setAttribute('aria-busy', 'true');
+      else fire.removeAttribute('aria-busy');
+    });
+  }
+
+  updateHud(b: Battle, opts: { names: string[]; humanTurn: boolean; status: string; aimHint: AimHint|null;
+    firePending?: 'start' | 'release'; lockedPower?: number }): void {
     const el = this.screens.get('hud')!;
     for (const f of b.fighters) {
       const i = f.idx;
@@ -529,12 +540,7 @@ export class UI {
     const c = character(f.charId);
     const canAct = opts.humanTurn && b.isPlayerPhase();
     this.set('act', `${canAct}`, () => el.querySelector('.bottom')!.classList.toggle('off', !canAct));
-    const charging = b.phase === 'CHARGE' && canAct;
-    this.set('fire', `${charging}`, () => {
-      const fire = el.querySelector<HTMLButtonElement>('.fire')!;
-      fire.querySelector('span')!.textContent = charging ? '발사' : '힘 시작';
-      fire.classList.toggle('held', charging);
-    });
+    this.showFireInput(b.phase === 'CHARGE' && canAct, opts.firePending);
     this.set('wn', c.id, () => {
       el.querySelector('.wn0')!.textContent = weapon(c.normal).name;
       el.querySelector('.wn1')!.textContent = weapon(c.special).name;
@@ -569,14 +575,15 @@ export class UI {
     });
     const mv = Math.max(0, (f.moveLeft / (MOVE_BUDGET * c.moveMul)) * 100);
     this.set('mv', `${Math.round(mv)}`, () => { el.querySelector<HTMLElement>('.movebar i')!.style.width = `${mv}%`; });
-    const pw = b.phase === 'CHARGE' ? f.power : 0;
-    this.set('pw', `${pw.toFixed(1)}|${f.lastPower.toFixed(1)}|${b.phase}|${f.stats.shots}`, () => {
+    const pw = opts.lockedPower ?? (b.phase === 'CHARGE' ? f.power : 0);
+    this.set('pw', `${pw.toFixed(1)}|${f.lastPower.toFixed(1)}|${b.phase}|${f.stats.shots}|${opts.firePending}`, () => {
       const p = el.querySelector<HTMLElement>('.power')!;
       p.querySelector<HTMLElement>('i')!.style.width = `${pw}%`;
       const last = p.querySelector<HTMLElement>('.last')!;
       last.hidden = f.stats.shots === 0;
       last.style.left = `${f.lastPower}%`;
-      p.querySelector('span')!.textContent = b.phase === 'CHARGE' ? `힘 ${pw.toFixed(1)}` : f.stats.shots ? `지난 힘 ${f.lastPower.toFixed(1)}` : '발사 힘';
+      p.querySelector('span')!.textContent = b.phase === 'CHARGE' ? `힘 ${pw.toFixed(1)}` :
+        opts.firePending === 'start' ? '힘 모으는 중' : f.stats.shots ? `지난 힘 ${f.lastPower.toFixed(1)}` : '발사 힘';
     });
     this.updateAimHint(el,b,opts.aimHint);
   }

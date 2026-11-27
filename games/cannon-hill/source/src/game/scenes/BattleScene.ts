@@ -24,6 +24,10 @@ import type { OnlineClient } from '../online/client';
 
 const DEG = Math.PI / 180;
 
+type PendingFire =
+  | {turn: number; kind: 'start'; releaseQueued: boolean}
+  | {turn: number; kind: 'release'; power: number};
+
 export interface BattleData {
   cfg: BattleConfig;
   mode: Mode;
@@ -38,6 +42,7 @@ export class BattleScene extends Phaser.Scene {
   names: string[] = ['1P', '2P'];
   paused = false;
   private firePresses = 0;
+  private pendingFire: PendingFire | null = null;
   private online: OnlineClient | null = null;
   timeScale = 1;
   private acc = 0;
@@ -88,6 +93,7 @@ export class BattleScene extends Phaser.Scene {
     this.names = this.online?.room?.names ?? this.battle.fighters.map(f => playerLabel(data.mode, f.team, !!data.cfg.freeForAll));
     this.paused = false;
     this.firePresses = 0;
+    this.pendingFire = null;
     this.acc = 0;
     this.t = 0;
     this.free = false;
@@ -485,16 +491,48 @@ export class BattleScene extends Phaser.Scene {
   // ───────── 입력 ─────────
 
   pressFire(): void {
-    if (this.paused || !this.humanTurn() || !this.battle.isPlayerPhase()) return;
+    const b = this.battle;
+    if (this.paused || !this.humanTurn() || !b.isPlayerPhase()) return;
     if (this.online) {
-      this.online.send(this.battle.turnNo,{kind:'fire',step:this.battle.stepNo});
+      if (this.pendingFire?.kind === 'start') {
+        this.pendingFire.releaseQueued = true;
+        this.app.ui.showFireInput(false, 'release');
+      } else if (!this.pendingFire) {
+        this.sendOnlineFire();
+      }
       return;
     }
-    this.firePresses = Math.min(this.battle.phase === 'CHARGE' ? 1 : 2, this.firePresses + 1);
+    this.firePresses = Math.min(b.phase === 'CHARGE' ? 1 : 2, this.firePresses + 1);
+  }
+
+  private sendOnlineFire(): void {
+    const b = this.battle;
+    const charging = b.phase === 'CHARGE';
+    const pending: PendingFire = charging
+      ? {turn:b.turnNo, kind:'release', power:b.cur.power}
+      : {turn:b.turnNo, kind:'start', releaseQueued:false};
+    if (!this.online!.send(b.turnNo, {kind:'fire',step:b.stepNo}, () => {
+      if (this.pendingFire === pending) this.pendingFire = null;
+    })) return;
+    this.pendingFire = pending;
+    this.app.ui.showFireInput(charging, pending.kind);
+  }
+
+  private settleOnlineFire(): void {
+    const pending = this.pendingFire;
+    if (!pending) return;
+    const b = this.battle;
+    if (b.turnNo !== pending.turn || !b.isPlayerPhase() || !this.humanTurn()) {
+      this.pendingFire = null;
+    } else if (pending.kind === 'start' && b.phase === 'CHARGE') {
+      this.pendingFire = null;
+      if (pending.releaseQueued && !this.paused) this.sendOnlineFire();
+    }
   }
 
   cancelFire(): void {
     this.firePresses = 0;
+    this.pendingFire = null;
     if (this.online) {
       if (this.humanTurn()) {
         this.online.input(this.battle.turnNo,0,0);
@@ -732,12 +770,12 @@ export class BattleScene extends Phaser.Scene {
 
   // ───────── 조준 안내·예상 궤적 ─────────
 
-  private drawGuide(terrainChanged: boolean): void {
+  private drawGuide(terrainChanged: boolean, lockedPower?: number): void {
     const b = this.battle;
     const f = b.cur;
     const visible = b.isPlayerPhase() && f.alive;
     const power = visible && this.app.settings.trajectory && this.humanTurn()
-      ? b.phase === 'CHARGE' ? f.power : f.lastPower : null;
+      ? b.phase === 'CHARGE' ? (lockedPower ?? f.power) : f.lastPower : null;
     const key = visible ? `${b.current}:${f.x}:${f.y}:${f.angle}:${power}:${b.wind}` : '';
     if (key === this.guideKey && !terrainChanged) return;
     this.guideKey = key;
@@ -785,11 +823,14 @@ export class BattleScene extends Phaser.Scene {
       if (!this.paused && this.humanTurn() && b.isPlayerPhase())
         this.online.input(b.turnNo,input.move,input.aimDir(b.cur.angle<=90?1:-1));
       const backlog=(this.online.room?.step??0)-b.stepNo;
-      this.acc=Math.min(this.acc+dt,6*DT);
+      // The network clock runs in real time even when Phaser smooths over a slow frame.
+      this.acc=Math.min(this.acc+this.game.loop.rawDelta/1000,15*DT);
       const paced=Math.floor(this.acc/DT);
       this.acc-=paced*DT;
-      const steps=backlog>8?Math.min(20,paced+Math.ceil((backlog-5)/3)):paced;
+      const reserve=b.isPlayerPhase()?3:5;
+      const steps=Math.min(20,paced+Math.ceil(Math.max(0,backlog-reserve-paced)/2));
       this.online.advance(b,steps,5);
+      this.settleOnlineFire();
     } else if (!this.paused) {
       const fastSettle = !b.projectiles.length && !b.scheduled.length &&
         (b.phase === 'EXPLOSION' || b.phase === 'TERRAIN_COLLAPSE' || b.phase === 'PHYSICS_SETTLING');
@@ -816,12 +857,13 @@ export class BattleScene extends Phaser.Scene {
     for (const p of b.projectiles) audio.whistleUpdate(p.id, p.vy);
     const showArrow = b.isPlayerPhase() || b.phase === 'TURN_START';
     this.fighters.forEach((v, i) => v.update(b, dt, b.current === i, showArrow && b.current === i));
-    this.drawGuide(terrainChanged);
+    const lockedPower = this.pendingFire?.kind === 'release' ? this.pendingFire.power : undefined;
+    this.drawGuide(terrainChanged, lockedPower);
     this.drawBottom(dt);
     this.updateCamera(dt);
     const wv = this.cam.worldView;
     this.bg.update(wv.centerX, wv.centerY, this.camZ, dt, b.wind, this.paused);
-    if (b.phase === 'CHARGE' && !this.paused) audio.charge(b.cur.power);
+    if (b.phase === 'CHARGE' && !this.paused) audio.charge(lockedPower ?? b.cur.power);
     else audio.charge(null);
 
     const actor = this.actors[b.current];
@@ -848,7 +890,8 @@ export class BattleScene extends Phaser.Scene {
       : b.isPlayerPhase() && b.steadyReady(b.cur) ? '자리 잡은 포격 — 움직이지 않고 쏘면 피해 +15%'
       : ''));
     const aimHint=this.advisor.update(b,this.app.settings.aimHints&&this.humanTurn());
-    this.app.ui.updateHud(b, { names: this.names, humanTurn: this.humanTurn(), status, aimHint });
+    const firePending = this.pendingFire?.kind === 'start' && this.pendingFire.releaseQueued ? 'release' : this.pendingFire?.kind;
+    this.app.ui.updateHud(b, { names: this.names, humanTurn: this.humanTurn(), status, aimHint, firePending, lockedPower });
   }
 
   // ───────── 시험용 손잡이(?qa=1) ─────────

@@ -159,24 +159,27 @@ export class OnlineClient {
 
   rankings(): Promise<Profile[]> { return this.request('ranking'); }
 
-  send(turn: number, control: Control): void {
+  send(turn: number, control: Control, onError?: () => void): boolean {
     const room = this.room;
-    if (!room || this.error || !room.opponentConnected) return;
+    if (!room || this.error || !room.opponentConnected) return false;
     if (this.friend) {
       // Firebase preserves the order of writes on this connection. A key release
       // or fire input can reach the host without waiting for the previous ACK.
       void this.friend.command(room.code,turn,control).catch(error=>{
+        onError?.();
         if (!(error instanceof OnlineError && error.status === 409) && this.room?.code===room.code) this.refresh();
       });
-      return;
+      return true;
     }
     this.commands = this.commands.then(async () => {
       if (this.room?.code !== room.code) return;
       try { await this.request('command',{code:room.code,turn,control}); }
       catch (error) {
+        onError?.();
         if (!(error instanceof OnlineError && error.status === 409)) this.refresh();
       }
     });
+    return true;
   }
 
   input(turn: number, move: -1|0|1, aim: -1|0|1): void {

@@ -13,6 +13,7 @@ const alphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
 const activeKey = 'jpml.warureu.friend.room.';
 const leasePeriod = 8_000;
 const clockPublishMs = 48;
+const commandWriteWindow = 4;
 const invalidLogin = { 'auth/email-already-in-use':'이미 사용 중인 아이디예요.',
   'auth/invalid-credential':'아이디 또는 비밀번호를 확인해 주세요.',
   'auth/too-many-requests':'요청이 많아요. 잠시 후 다시 시도해 주세요.' } as Record<string,string>;
@@ -62,11 +63,14 @@ export class FirebaseFriend {
   private remainder = 0;
   private ack = '';
   private sent = 0;
+  private submittedAck = '';
+  private submittedTurn = 0;
   private currentLease = 0;
   private lastLeaseAttempt = 0;
   private renewing = false;
   private hostTimer = 0;
-  private publishing = false;
+  private pendingCommandWrites = 0;
+  private submittedDone = false;
   private pendingClockWrites = 0;
   private rejectedWrite = false;
   private lastPublish = 0;
@@ -273,7 +277,13 @@ export class FirebaseFriend {
       onValue(this.at(root+'presence'),s=>{room.presence=s.val()??{};this.notify();},listenError),
     );
     if(room.you===0) {
-      this.unsubscribers.push(onValue(this.at(root+'inbox'),s=>{room.inbox=s.val()??{};},listenError));
+      this.unsubscribers.push(onValue(this.at(root+'inbox'),s=>{
+        room.inbox=s.val()??{};
+        // Drive after Firebase has delivered this update's other local events.
+        if(Object.keys(room.inbox).some(key=>key>this.ack)){
+          queueMicrotask(()=>{if(this.selection===room)this.drive(room);});
+        }
+      },listenError));
       this.hostTimer=window.setInterval(()=>this.drive(room),1000*DT);
     }
   }
@@ -333,8 +343,10 @@ export class FirebaseFriend {
     this.currentLease=0;
     this.lastLeaseAttempt=0;
     this.failure='';
-    this.publishing=false;
+    this.pendingCommandWrites=0;
     this.pendingClockWrites=0;
+    this.ack='';
+    this.submittedDone=false;
     this.rejectedWrite=false;
     this.lastPublish=0;
     this.renewing=false;
@@ -398,13 +410,15 @@ export class FirebaseFriend {
 
   private drive(room:Room):void {
     const {config,head,log}=room;
-    if(!this.connected||!config||!log||head?.done||this.rejectedWrite)return;
+    if(!this.connected||!config||!log||head?.done||this.submittedDone||this.rejectedWrite)return;
     if(!head&&room.members.some((_,player)=>!this.present(room,player)))return;
     const now=Date.now()+this.offset;
     if(!this.lease(room,now))return;
     if(!this.hostBattle) {
       const b=new Battle(config);
       this.ack=head?.ack??'';
+      this.submittedAck=this.ack;
+      this.submittedTurn=head?.turn??-1;
       this.sent=head?.cursor??0;
       this.lastTick=performance.now();
       this.remainder=0;
@@ -488,15 +502,18 @@ export class FirebaseFriend {
 
   private publish(room:Room):void {
     const b=this.hostBattle;
-    if(!b||this.publishing||this.rejectedWrite||room.head?.done||!this.connected)return;
-    const previousAck=room.head?.ack??'';
+    if(!b||this.rejectedWrite||this.submittedDone||room.head?.done||!this.connected)return;
+    const previousAck=this.submittedAck;
     const cursor=b.log.length;
     const done=b.winner!==null;
-    const important=cursor!==this.sent||this.ack!==previousAck||done!==room.head?.done||b.turnNo!==room.head?.turn;
+    const important=cursor!==this.sent||this.ack!==previousAck||done||b.turnNo!==this.submittedTurn;
     const now=performance.now();
     const interval=b.phase==='AIM'&&!b.input.move&&!b.input.aim?120:clockPublishMs;
     if(!important&&(b.stepNo===room.head?.step||now-this.lastPublish<interval||this.pendingClockWrites>=2))return;
-    if(important)this.publishing=true;
+    // This connection sends multi-path updates in order. Reserve this log
+    // suffix at submission so the next input can append its own suffix.
+    if(important&&this.pendingCommandWrites>=commandWriteWindow)return;
+    if(important)this.pendingCommandWrites++;
     else this.pendingClockWrites++;
     this.lastPublish=now;
     const patch:Record<string,unknown>={'wire/head':{
@@ -504,16 +521,19 @@ export class FirebaseFriend {
     }};
     for(let i=this.sent;i<cursor;i++)patch['wire/log/'+keyOf(i)]=b.log[i];
     if(this.ack!==previousAck)for(const key of Object.keys(room.inbox))if(key<=this.ack)patch['inbox/'+key]=null;
-    void update(this.at('rooms/'+room.code),patch).then(()=>{
-      if(this.selection===room&&important)this.sent=cursor;
-    }).catch(()=>{
+    this.sent=cursor;
+    this.submittedAck=this.ack;
+    this.submittedTurn=b.turnNo;
+    this.submittedDone=done;
+    void update(this.at('rooms/'+room.code),patch).catch(()=>{
       if(this.selection===room)this.rejectedWrite=true;
     }).finally(()=>{
       if(this.selection!==room)return;
-      if(important)this.publishing=false;
+      if(important)this.pendingCommandWrites--;
       else this.pendingClockWrites--;
-      if(this.rejectedWrite&&!this.publishing&&!this.pendingClockWrites) {
+      if(this.rejectedWrite&&!this.pendingCommandWrites&&!this.pendingClockWrites) {
         this.hostBattle=null;
+        this.submittedDone=false;
         this.rejectedWrite=false;
       }
     });
