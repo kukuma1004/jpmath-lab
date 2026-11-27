@@ -1,13 +1,17 @@
 import { CHARACTERS } from '../data/characters';
 import { MAPS } from '../data/maps';
 import type { OnlineClient } from './client';
+import type { PublicRoom } from './protocol';
 import './online.css';
+
+const mapNames = new Map(MAPS.map(map=>[map.id,map.name]));
 
 export class OnlineLobby {
   private readonly root = document.createElement('section');
   private register = false;
   private busy = false;
   private message = '';
+  private renderedRooms = '';
 
   constructor(container: HTMLElement, private readonly client: OnlineClient, close: () => void) {
     this.root.className='online-lobby';
@@ -28,12 +32,20 @@ export class OnlineLobby {
             <label>내 장수<select name="char">${CHARACTERS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}</select></label>
             <section>
               <h3>친선전</h3>
-              <label>전장<select name="map">${MAPS.map(m=>`<option value="${m.id}">${m.name}</option>`).join('')}</select></label>
+              <div class="online-room-settings">
+                <label>전장<select name="map"><option value="random">랜덤 전장</option>${MAPS.map(m=>`<option value="${m.id}">${m.name}</option>`).join('')}</select></label>
+                <label>공개 범위<select name="visibility"><option value="public">공개방</option><option value="code">코드 전용</option></select></label>
+              </div>
               <button class="btn jade" data-act="create">방 만들기</button>
               <form class="online-join">
                 <label>방 코드<input name="code" maxlength="6" minlength="6" autocomplete="off" autocapitalize="characters" required></label>
                 <button class="btn" type="submit">방 참가</button>
               </form>
+            </section>
+            <section class="online-room-list" aria-labelledby="open-room-title">
+              <h3 id="open-room-title">공개방 목록</h3>
+              <p class="online-room-empty">대기 중인 공개방이 없어요.</p>
+              <ul class="online-room-rows" aria-label="대기 중인 공개방"></ul>
             </section>
             <section class="ranked-options"${client.ranked?'':' hidden'}>
               <h3>공개 랭킹전</h3>
@@ -42,7 +54,7 @@ export class OnlineLobby {
             </section>
           </div>
           <section class="online-wait" hidden>
-            <p data-wait></p><strong data-code></strong>
+            <p data-wait></p><p data-wait-map></p><strong data-code></strong>
             <div class="online-actions"><button class="btn jade" data-act="copy" hidden>코드 복사</button><button class="btn" data-act="leave">대기 취소</button></div>
           </section>
           <ol class="online-board" aria-label="온라인 대전 누적 순위" hidden></ol>
@@ -64,7 +76,8 @@ export class OnlineLobby {
       }
     });
     this.root.addEventListener('click',event=>{
-      const action=(event.target as HTMLElement).closest<HTMLButtonElement>('[data-act]')?.dataset.act;
+      const button=(event.target as HTMLElement).closest<HTMLButtonElement>('[data-act]');
+      const action=button?.dataset.act;
       if(action==='toggle'){
         this.register=!this.register;
         this.message='';
@@ -78,7 +91,11 @@ export class OnlineLobby {
       }else if(action==='close'){
         void this.run(async()=>{await this.client.leave();close();});
       }else if(action==='create'){
-        void this.run(()=>this.client.lobby('create',{char:this.pick(),map:this.select<HTMLSelectElement>('select[name=map]').value}));
+        const map=this.select<HTMLSelectElement>('select[name=map]').value;
+        const listed=this.select<HTMLSelectElement>('select[name=visibility]').value==='public';
+        void this.run(()=>this.client.lobby('create',{char:this.pick(),map,listed}));
+      }else if(action==='join-room'){
+        void this.run(()=>this.client.lobby('join',{char:this.pick(),code:button!.dataset.roomCode,listedOnly:true}));
       }else if(action==='queue'){
         void this.run(()=>this.client.lobby('queue',{char:this.pick()}));
       }else if(action==='leave'){
@@ -115,6 +132,31 @@ export class OnlineLobby {
 
   private pick(): string { return this.select<HTMLSelectElement>('select[name=char]').value; }
 
+  private renderRooms(rooms: PublicRoom[]): void {
+    const key=JSON.stringify(rooms);
+    if(key===this.renderedRooms)return;
+    this.renderedRooms=key;
+    this.select('.online-room-empty').hidden=rooms.length>0;
+    this.select('.online-room-rows').replaceChildren(...rooms.map(room=>{
+      const li=document.createElement('li');
+      const details=document.createElement('div');
+      const name=document.createElement('strong');
+      name.textContent=room.nickname;
+      const map=document.createElement('small');
+      map.textContent=mapNames.get(room.map)??'';
+      details.append(name,map);
+      const join=document.createElement('button');
+      join.type='button';
+      join.className='btn jade';
+      join.dataset.act='join-room';
+      join.dataset.roomCode=room.code;
+      join.setAttribute('aria-label',`${room.nickname} 방 입장`);
+      join.textContent='입장';
+      li.append(details,join);
+      return li;
+    }));
+  }
+
   render(): void {
     const state=this.client.state;
     const waiting=!!(state?.queued || state?.room);
@@ -128,9 +170,12 @@ export class OnlineLobby {
       ? `${state.profile.nickname} · ${state.profile.rating}점` : state.profile.nickname;
     this.select('.online-options').hidden=waiting;
     this.select('.online-wait').hidden=!waiting;
-    this.select('[data-wait]').textContent=state?.queued?'랭킹전 상대를 기다리는 중':'친구가 방 코드를 입력할 때까지 기다리는 중';
+    const room=state?.room;
+    this.select('[data-wait]').textContent=state?.queued?'랭킹전 상대를 기다리는 중':room?.listed?'공개방에서 상대를 기다리는 중':'친구가 방 코드를 입력할 때까지 기다리는 중';
+    this.select('[data-wait-map]').textContent=room?.kind==='friendly'?mapNames.get(room.map)??'':'';
     this.select('[data-code]').textContent=state?.room?.kind==='friendly'?state.room.code:'';
     this.select('[data-act=copy]').hidden=!state?.room?.code || state.room.kind!=='friendly' || !navigator.clipboard;
+    this.renderRooms(state?.rooms??[]);
     this.root.querySelectorAll<HTMLButtonElement>('button').forEach(button=>{button.disabled=this.busy;});
   }
 

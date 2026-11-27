@@ -10,7 +10,7 @@
   border-radius:18px; background:linear-gradient(155deg,#302632,#1e2029); box-shadow:0 16px 55px #09050bb8;
 }
 .online-panel header,.online-profile,.online-actions { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:9px; }
-.online-panel h2,.online-panel h3 { margin:0; font-family:var(--title-font); }
+.online-panel h2,.online-panel h3 { margin:0; font-family:var(--title-font); font-weight:400; }
 .online-panel h3 { font-size:22px; }
 .online-panel .btn { min-height:44px; min-width:0; margin:0; }
 .online-panel label { display:grid; gap:5px; font-size:14px; }
@@ -22,6 +22,16 @@
 .online-options { grid-template-columns:repeat(2,minmax(0,1fr)); margin-top:12px; }
 .online-options > label { grid-column:1/-1; }
 .online-options section { padding:12px; border:1px solid #6d6258; border-radius:10px; align-content:start; }
+.online-room-settings { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; }
+.online-join { grid-template-columns:minmax(0,1fr) auto; align-items:end; }
+.online-join button { padding-inline:10px; }
+.online-room-empty { margin:0; font-size:14px; color:#c9bda6; }
+.online-room-rows { list-style:none; margin:0; padding:0; display:grid; gap:6px; max-height:245px; overflow:auto; }
+.online-room-rows:empty, .online-wait [data-wait-map]:empty { display:none; }
+.online-room-rows li { display:flex; gap:8px; align-items:center; justify-content:space-between; padding:5px 7px; border-radius:8px; background:#25232b; }
+.online-room-rows li div { display:grid; gap:3px; overflow-wrap:anywhere; }
+.online-room-rows small { color:#c9bda6; font-size:13px; }
+.online-room-rows button { flex:none; padding-inline:10px; }
 .online-message { color:#f7d99d; font-size:14px; margin:8px 0; }
 .online-message:empty { margin:0 0 10px; }
 .online-wait { text-align:center; margin-top:18px; }
@@ -30,4 +40,8 @@
 .online-board { margin:14px 0 0; padding-left:25px; }
 .online-board li { padding:5px; }
 body.online-match [data-s=pause] [data-act=restart] { display:none; }
-@media(max-width:460px) { .online-options { grid-template-columns:1fr; } }
+@media(max-width:460px) {
+  .online-options { grid-template-columns:1fr; }
+  .online-room-list { grid-row:2; }
+  .online-room-rows { max-height:162px; }
+}

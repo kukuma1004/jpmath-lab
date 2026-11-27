@@ -1,12 +1,12 @@
 import { initializeApp } from '@firebase/app';
 import { connectAuthEmulator, createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, signOut, type Auth } from '@firebase/auth';
-import { connectDatabaseEmulator, get, getDatabase, onDisconnect, onValue, push, ref, remove, runTransaction, serverTimestamp, set, update, type Database, type Unsubscribe } from '@firebase/database';
+import { connectDatabaseEmulator, get, getDatabase, limitToLast, onDisconnect, onValue, orderByChild, push, query, ref, remove, runTransaction, serverTimestamp, set, update, type Database, type Unsubscribe } from '@firebase/database';
 import { Battle, defaultConfig } from '../combat/battle';
 import { DT } from '../config/constants';
 import { CHARACTERS } from '../data/characters';
 import { MAPS } from '../data/maps';
 import { firebaseProject } from './firebaseConfig';
-import { DUEL_ACCOUNT_DOMAIN, FRIEND_BRANCH, OnlineError, RECONNECT_MS, ROOM_DURATION_MS, STARTING_RATING, type Control, type OnlineRoom, type OnlineState, type ReplayCommand } from './protocol';
+import { DUEL_ACCOUNT_DOMAIN, FRIEND_BRANCH, OnlineError, RECONNECT_MS, ROOM_DURATION_MS, ROOM_LIST_LIMIT, ROOM_WAIT_MS, STARTING_RATING, type Control, type OnlineRoom, type OnlineState, type PublicRoom, type ReplayCommand } from './protocol';
 
 const alphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
 const activeKey = 'jpml.warureu.friend.room.';
@@ -18,7 +18,7 @@ const characters = new Set(CHARACTERS.map(c=>c.id));
 const maps = new Set(MAPS.map(m=>m.id));
 
 type Name = { uid: string; nickname: string; char: string };
-type Info = Name & { map: string; seed: number; created: number };
+type Info = Name & { map: string; seed: number; created: number; listed?: boolean };
 type Head = { step: number; turn: number; cursor: number; done: boolean; ack: string; writer: string };
 type Wire = { head?: Head; log?: Record<string,ReplayCommand> };
 type Packet = { turn: number; control: Control | {kind:'leave'} };
@@ -45,6 +45,8 @@ export class FirebaseFriend {
   private offset = 0;
   private nickname = '';
   private selection: Room | null = null;
+  private openRooms: PublicRoom[] = [];
+  private stopListings: Unsubscribe | null = null;
   private hostBattle: Battle | null = null;
   private lastTick = 0;
   private remainder = 0;
@@ -114,6 +116,7 @@ export class FirebaseFriend {
       const params=new URLSearchParams(action.slice(6));
       const code=readActive(uid);
       if(code&&!this.selection)await this.enter(code).catch(()=>localStorage.removeItem(activeKey+uid));
+      if(!this.selection&&!this.stopListings)this.watchListings();
       const cursor=this.selection?.code===params.get('code')?Math.max(0,Number(params.get('cursor'))||0):0;
       return this.state(cursor);
     }
@@ -126,11 +129,12 @@ export class FirebaseFriend {
       if(!characters.has(char))throw new OnlineError(400,'플레이할 장수를 골라 주세요.');
       if(this.selection)throw new OnlineError(409,'이미 참가한 방이 있어요.');
       if(action==='create') {
-        const map=String(body?.map);
-        if(!maps.has(map))throw new OnlineError(400,'전장을 골라 주세요.');
-        const bytes=crypto.getRandomValues(new Uint32Array(7));
+        const choice=String(body?.map);
+        if(choice!=='random'&&!maps.has(choice))throw new OnlineError(400,'전장을 골라 주세요.');
+        const bytes=crypto.getRandomValues(new Uint32Array(8));
+        const map=choice==='random'?MAPS[bytes[7]!%MAPS.length]!.id:choice;
         const code=Array.from(bytes.slice(0,6),n=>alphabet[n%alphabet.length]).join('');
-        await set(this.at('rooms/'+code+'/info'),{uid,nickname:this.nickname,char,map,seed:bytes[6]!%2147483646+1,created:serverTimestamp()});
+        await set(this.at('rooms/'+code+'/info'),{uid,nickname:this.nickname,char,map,seed:bytes[6]!%2147483646+1,created:serverTimestamp(),listed:body?.listed===true});
         await this.enter(code);
       } else {
         const code=String(body?.code??'').trim().toUpperCase();
@@ -139,7 +143,11 @@ export class FirebaseFriend {
           const info:Info|null=(await get(this.at('rooms/'+code+'/info'))).val();
           if(!info)throw new Error();
           if(info.uid!==uid) {
-            try { await set(this.at('rooms/'+code+'/guest'),{uid,nickname:this.nickname,char}); }
+            try {
+              const guest={uid,nickname:this.nickname,char,...(body?.listedOnly===true?{listedOnly:true}:{})};
+              if(info.listed) await update(ref(this.db,this.gameRef),{['rooms/'+code+'/guest']:guest,['listings/'+code]:null});
+              else await set(this.at('rooms/'+code+'/guest'),guest);
+            }
             catch {
               const guest:Name|null=(await get(this.at('rooms/'+code+'/guest'))).val();
               if(guest?.uid!==uid)throw new Error();
@@ -160,6 +168,18 @@ export class FirebaseFriend {
     return {ok:true};
   }
 
+  private watchListings():void {
+    const newest=query(this.at('listings'),orderByChild('created'),limitToLast(ROOM_LIST_LIMIT));
+    this.stopListings=onValue(newest,snapshot=>{
+      const rooms:PublicRoom[]=[];
+      snapshot.forEach(item=>{
+        const {nickname,map,created}=item.val() as Omit<PublicRoom,'code'>;
+        if(maps.has(map))rooms.push({code:item.key!,nickname,map,created});
+      });
+      this.openRooms=rooms.reverse();
+    },()=>{this.openRooms=[];});
+  }
+
   private async enter(code:string):Promise<void> {
     const root='rooms/'+code+'/';
     const [info,guest]=await Promise.all([get(this.at(root+'info')),get(this.at(root+'guest'))]);
@@ -178,16 +198,33 @@ export class FirebaseFriend {
       onValue(ref(this.db,'.info/serverTimeOffset'),s=>{this.offset=s.val()??0;}),
       onValue(ref(this.db,'.info/connected'),s=>{
         this.connected=s.val()===true;
-        if(this.connected)void onDisconnect(marker).remove().then(()=>this.selection===room?set(marker,true):undefined).catch(listenError);
+        if(this.connected)void onDisconnect(marker).remove().then(async()=>{
+          if(this.selection!==room)return;
+          await set(marker,true);
+          if(this.selection===room&&room.you===0&&room.info.listed&&!room.guest)await this.listRoom(room);
+        }).catch(listenError);
       }),
       onValue(this.at(root+'guest'),s=>{
         const guest:Name|null=s.val();
         room.guest=guest&&characters.has(guest.char)?guest:null;
+        if(room.you===0&&room.info.listed&&guest) void remove(this.at('listings/'+room.code)).catch(()=>{});
       },listenError),
       onValue(this.at(root+'wire'),s=>{room.wire=s.val()??{};},listenError),
       onValue(this.at(root+'presence'),s=>{room.presence=s.val()??{};},listenError),
     );
     if(room.you===0)this.unsubscribers.push(onValue(this.at(root+'inbox'),s=>{room.inbox=s.val()??{};},listenError));
+  }
+
+  private async listRoom(room:Room):Promise<void> {
+    const entry=this.at('listings/'+room.code);
+    const {nickname,map,created}=room.info;
+    if(Date.now()+this.offset-created>=ROOM_WAIT_MS)return;
+    try {
+      await onDisconnect(entry).remove();
+      if(this.selection===room&&!room.guest)await set(entry,{nickname,map,created});
+    } catch {
+      // A visitor may have joined while the browser reconnected.
+    }
   }
 
   close():void {
@@ -198,6 +235,9 @@ export class FirebaseFriend {
       if(room.you===0&&this.connected)void runTransaction(this.at('rooms/'+room.code+'/leader'),data=>data?.key===this.tab?null:undefined).catch(()=>{});
     }
     for(const stop of this.unsubscribers.splice(0))stop();
+    this.stopListings?.();
+    this.stopListings=null;
+    this.openRooms=[];
     this.selection=null;
     this.hostBattle=null;
     this.connected=false;
@@ -220,7 +260,8 @@ export class FirebaseFriend {
 
   private state(cursor:number):OnlineState {
     const room=this.selection;
-    if(!room) return {profile:this.profile(),queued:false,room:null};
+    if(!room) return {profile:this.profile(),queued:false,room:null,
+      rooms:this.openRooms.filter(entry=>Date.now()+this.offset-entry.created<ROOM_WAIT_MS)};
     if(this.failure)throw new Error(this.failure);
     const config=this.config(room);
     if(room.you===0&&config) this.drive(room,config);
@@ -233,9 +274,10 @@ export class FirebaseFriend {
       commands.push({...command,a:Array.isArray(command.a)?command.a:[]});
     }
     const view:OnlineRoom={code:room.code,kind:'friendly',you:room.you,names:[room.info.nickname,...(room.guest?[room.guest.nickname]:[])],
+      map:room.info.map,listed:room.info.listed===true,
       config,turn:head?.turn??1,step:head?.step??0,cursor:head?.cursor??0,commands,
       opponentConnected:this.opponent(room),done:head?.done??false,rating:null};
-    return {profile:this.profile(),queued:false,room:view};
+    return {profile:this.profile(),queued:false,room:view,rooms:[]};
   }
 
   private profile() {
@@ -336,7 +378,10 @@ export class FirebaseFriend {
   private async leave():Promise<void> {
     const room=this.selection;
     if(room&&this.connected) {
-      if(!room.guest) await remove(this.at('rooms/'+room.code));
+      if(!room.guest) {
+        if(room.info.listed)await update(ref(this.db,this.gameRef),{['rooms/'+room.code]:null,['listings/'+room.code]:null});
+        else await remove(this.at('rooms/'+room.code));
+      }
       else if(!room.wire.head?.done) {
         if(room.you===1) await set(push(this.at('rooms/'+room.code+'/inbox')),{turn:0,control:{kind:'leave'}});
         else if(this.hostBattle) {

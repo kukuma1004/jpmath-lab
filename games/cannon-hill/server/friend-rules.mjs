@@ -1,4 +1,4 @@
-import { FRIEND_BRANCH, ROOM_DURATION_MS } from '../source/src/game/online/protocol.ts';
+import { FRIEND_BRANCH, ROOM_DURATION_MS, ROOM_LIST_LIMIT, ROOM_WAIT_MS } from '../source/src/game/online/protocol.ts';
 
 export const BRANCH = FRIEND_BRANCH;
 const account = String.raw`auth != null && auth.token.firebase.sign_in_provider == 'password' && auth.token.email.matches(/^[a-z0-9_]{3,20}@id\.warureu\.example$/)`;
@@ -6,6 +6,9 @@ const base = "root.child('" + BRANCH + "/rooms/' + $code)";
 const host = base + ".child('info/uid').val() == auth.uid";
 const guest = base + ".child('guest/uid').val() == auth.uid";
 const playing = base + ".child('guest').exists()";
+const listing = "root.child('" + BRANCH + "/listings/' + $code)";
+const waiting = `${base}.child('info').exists() && now - ${base}.child('info/created').val() < ${ROOM_WAIT_MS}`;
+const joined = "newData.parent().parent().child('rooms/' + $code + '/guest/uid').val() == auth.uid";
 const member = `(${account}) && ((${host}) || (${guest}))`;
 const fresh = `now - ${base}.child('info/created').val() < ${ROOM_DURATION_MS}`;
 const activeHost = `${account} && ${host} && ${playing} && ${fresh} && now - ${base}.child('leader/at').val() < 8000`;
@@ -27,19 +30,32 @@ export function targetRules() {
       '.write':`${account} && auth.uid == $uid && !data.exists() && newData.exists()`,
       '.validate':String.raw`newData.isString() && newData.val().matches(/^[가-힣ㄱ-ㅎㅏ-ㅣA-Za-z0-9 _.-]{2,12}$/) && newData.val().matches(/.*[^ ].*/)`,
     }},
+    listings:{
+      '.read':`${account} && query.orderByChild == 'created' && query.limitToLast >= 1 && query.limitToLast <= ${ROOM_LIST_LIMIT}`,
+      '.indexOn':['created'],
+      $code:{
+        '.write':`${account} && ((${host} && (!newData.exists() || (${waiting} && !${playing} && ${base}.child('info/listed').val() == true))) || (!newData.exists() && ${joined}))`,
+        '.validate':required(['nickname','map','created']),
+        nickname:valid(`newData.val() == ${base}.child('info/nickname').val()`),
+        map:valid(`newData.val() == ${base}.child('info/map').val()`),
+        created:valid(`newData.val() == ${base}.child('info/created').val()`),
+        $other:unknown,
+      },
+    },
     rooms:{ $code:{
       '.write':`${member} && !newData.exists() && ((${host} && !${playing}) || !(${fresh}))`,
       info:{
         '.read':account,
         '.write':`${account} && !data.exists() && newData.exists() && $code.matches(/^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{6}$/)`,
         '.validate':required(['uid','nickname','char','map','seed','created']),
-        ...player, map:valid(gameId), seed:valid(number(1,2147483646)), created:valid('newData.val() == now'), $other:unknown,
+        ...player, map:valid(gameId), seed:valid(number(1,2147483646)), created:valid('newData.val() == now'),
+        listed:valid('newData.isBoolean()'), $other:unknown,
       },
       guest:{
         '.read':account,
-        '.write':`${account} && !data.exists() && newData.exists() && ${base}.child('info').exists() && !(${host}) && now - ${base}.child('info/created').val() < 900000`,
+        '.write':`${account} && !data.exists() && newData.exists() && ${waiting} && !(${host})`,
         '.validate':required(['uid','nickname','char']),
-        ...player, $other:unknown,
+        ...player, listedOnly:valid(`newData.val() == true && ${listing}.exists()`), $other:unknown,
       },
       presence:{
         '.read':member,

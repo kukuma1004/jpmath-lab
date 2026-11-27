@@ -6,6 +6,8 @@ export const RECONNECT_MS = 45_000;
 export const FRIEND_BRANCH = 'warureuFriendV1';
 export const DUEL_ACCOUNT_DOMAIN = 'id.warureu.example';
 export const ROOM_DURATION_MS = 7_200_000;
+export const ROOM_WAIT_MS = 900_000;
+export const ROOM_LIST_LIMIT = 30;
 export type MatchKind = 'friendly' | 'ranked';
 export type ReplayCommand = { s: number; c: string; a: number[] };
 export type Control =
@@ -33,6 +35,8 @@ export interface OnlineRoom {
   kind: MatchKind;
   you: 0 | 1;
   names: string[];
+  map: string;
+  listed: boolean;
   config: BattleConfig | null;
   turn: number;
   step: number;
@@ -43,10 +47,18 @@ export interface OnlineRoom {
   rating: RatingChange | null;
 }
 
+export interface PublicRoom {
+  code: string;
+  nickname: string;
+  map: string;
+  created: number;
+}
+
 export interface OnlineState {
   profile: Profile;
   queued: boolean;
   room: OnlineRoom | null;
+  rooms: PublicRoom[];
 }
 
 export class OnlineError extends Error {

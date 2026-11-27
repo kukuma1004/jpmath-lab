@@ -6,14 +6,14 @@ import { Battle, defaultConfig } from '../../source/src/game/combat/battle';
 import { DT } from '../../source/src/game/config/constants';
 import { CHARACTERS } from '../../source/src/game/data/characters';
 import { MAPS } from '../../source/src/game/data/maps';
-import { RECONNECT_MS, STARTING_RATING, type MatchKind, type OnlineRoom, type OnlineState, type Profile, type RatingChange } from '../../source/src/game/online/protocol';
+import { RECONNECT_MS, ROOM_LIST_LIMIT, ROOM_WAIT_MS, STARTING_RATING, type MatchKind, type OnlineRoom, type OnlineState, type Profile, type RatingChange } from '../../source/src/game/online/protocol';
 
 const passwordKey = promisify(scrypt);
 const names = new Set(CHARACTERS.map(c => c.id));
 const mapIds = new Set(MAPS.map(m => m.id));
 const codeAlphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
 const connectedFor = 4_000;
-const roomLifetime = 15 * 60_000;
+const roomLifetime = ROOM_WAIT_MS;
 const sessionLifetime = 7 * 24 * 60 * 60_000;
 const sign = (value: unknown): value is -1 | 0 | 1 => value === -1 || value === 0 || value === 1;
 const tokenHash = (token: string) => createHash('sha256').update(token).digest('hex');
@@ -30,6 +30,7 @@ interface Room {
   accounts: string[];
   picks: string[];
   map: string;
+  listed: boolean;
   created: number;
   battle: Battle | null;
   accumulator: number;
@@ -119,7 +120,11 @@ export class OnlineAuthority {
 
   state(id: string, code: string | null, cursor: number): OnlineState {
     const room = this.roomOf(id);
-    return {profile:profile(this.accounts.get(id)!),queued:this.queue.has(id),room:room ? this.view(room,id,room.code===code ? cursor : 0) : null};
+    const now = Date.now();
+    const rooms = room ? [] : [...this.rooms.values()].reverse()
+      .filter(room => this.isListed(room,now)).slice(0,ROOM_LIST_LIMIT)
+      .map(({code,map,created,accounts})=>({code,map,created,nickname:this.accounts.get(accounts[0]!)!.nickname}));
+    return {profile:profile(this.accounts.get(id)!),queued:this.queue.has(id),rooms,room:room ? this.view(room,id,room.code===code ? cursor : 0) : null};
   }
 
   rankings(): Profile[] {
@@ -139,13 +144,13 @@ export class OnlineAuthority {
     this.queue.delete(id);
   }
 
-  private create(kind: MatchKind, id: string, char: string, map: string): Room {
+  private create(kind: MatchKind, id: string, char: string, map: string, listed = false): Room {
     let code: string;
     do {
       code = Array.from({length:6}, () => codeAlphabet[randomInt(codeAlphabet.length)]!).join('');
     } while (this.rooms.has(code));
     const room: Room = {
-      code,kind,accounts:[id],picks:[char],map,created:Date.now(),battle:null,accumulator:0,charge:new Map(),doneAt:null,ratings:null,
+      code,kind,accounts:[id],picks:[char],map,listed,created:Date.now(),battle:null,accumulator:0,charge:new Map(),doneAt:null,ratings:null,
     };
     this.rooms.set(code,room);
     this.memberships.set(id,code);
@@ -167,13 +172,15 @@ export class OnlineAuthority {
     const existing = this.roomOf(id);
     if (action === 'create') {
       this.available(id);
-      if (typeof body.map !== 'string' || !mapIds.has(body.map)) throw new RequestError(400,'전장을 골라 주세요.');
-      this.create('friendly',id,char,body.map);
+      const map = body.map === 'random' ? MAPS[randomInt(MAPS.length)]!.id : body.map;
+      if (typeof map !== 'string' || !mapIds.has(map)) throw new RequestError(400,'전장을 골라 주세요.');
+      this.create('friendly',id,char,map,body.listed===true);
     } else if (action === 'join') {
       const code = typeof body.code === 'string' ? body.code.trim().toUpperCase() : '';
       if (existing?.code === code) return;
       const room = this.rooms.get(code);
-      if (!room || room.kind !== 'friendly' || room.battle) throw new RequestError(404,'참가할 수 있는 방을 찾지 못했어요.');
+      if (!room || room.kind !== 'friendly' || room.battle || body.listedOnly===true&&!this.isListed(room,Date.now()))
+        throw new RequestError(404,'참가할 수 있는 방을 찾지 못했어요.');
       this.available(id);
       this.start(room,id,char);
     } else {
@@ -243,6 +250,10 @@ export class OnlineAuthority {
     return now - (this.seen.get(id) ?? 0) < connectedFor;
   }
 
+  private isListed(room: Room, now: number): boolean {
+    return room.listed && !room.battle && now-room.created<ROOM_WAIT_MS && this.isConnected(room.accounts[0]!,now);
+  }
+
   tick(now = Date.now()): void {
     const dt = Math.max(0, Math.min(.25, (now-this.lastTick)/1000));
     this.lastTick = now;
@@ -309,7 +320,7 @@ export class OnlineAuthority {
     const b = room.battle;
     const you = room.accounts[0] === id ? 0 : 1;
     const length = b?.log.length ?? 0;
-    return {code:room.code,kind:room.kind,you,names:room.accounts.map(a=>this.accounts.get(a)!.nickname),
+    return {code:room.code,kind:room.kind,you,names:room.accounts.map(a=>this.accounts.get(a)!.nickname),map:room.map,listed:room.listed,
       config:b?.cfg ?? null,turn:b?.turnNo ?? 0,step:b?.stepNo ?? 0,cursor:length,commands:b?.log.slice(Math.min(length,cursor)) ?? [],
       opponentConnected:!!room.accounts[1-you] && this.isConnected(room.accounts[1-you]!,Date.now()),
       done:room.doneAt !== null,rating:room.ratings?.[you] ?? null};
