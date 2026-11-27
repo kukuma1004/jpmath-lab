@@ -1,7 +1,7 @@
 import { COURSE_LENGTH, MAX_SCORE, TARGET_RANK_BRANCH, courseFromSeed, isCenter, summarize, validNickname, type TargetResult } from './course';
 import { firebaseProject } from '../online/firebaseConfig';
 
-const BOARD_BRANCHES = {arc: TARGET_RANK_BRANCH, random: 'warureuTargetV3', legacy: 'warureuTargetV2'} as const;
+const BOARD_BRANCHES = {rampart: TARGET_RANK_BRANCH, arc:'warureuTargetV4', random:'warureuTargetV3', legacy:'warureuTargetV2'} as const;
 export type BoardCourse = keyof typeof BOARD_BRANCHES;
 const boardBase = (course: BoardCourse) => `${firebaseProject.databaseURL}/${BOARD_BRANCHES[course]}`;
 const SDK = 'https://www.gstatic.com/firebasejs/12.16.0';
@@ -76,7 +76,7 @@ export async function publishScore(result: TargetResult, nickname: string): Prom
 
   const user = (await identity(true))!;
   const token = encodeURIComponent(await user.getIdToken());
-  const base = boardBase('arc');
+  const base = boardBase('rampart');
   const rowUrl = `${base}/board/${encodeURIComponent(user.uid)}.json?auth=${token}`;
   const previous = decode(user.uid, await (await request(rowUrl)).json());
   // Firebase rejects concurrent lower scores atomically. This read avoids unnecessary writes.

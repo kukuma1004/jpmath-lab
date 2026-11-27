@@ -87,12 +87,12 @@ test('모바일 발사 버튼은 두 번째 터치에서 1발만 쏜다', async 
   }
 });
 
-test('낮은 직격은 0점이고 엄폐물을 넘겨 떨어진 탄은 득점한다', async ({ page }) => {
+test('낮은 직격은 돌벽에 충돌하고 돌벽을 넘겨 떨어진 탄은 득점한다', async ({ page }) => {
   await openRange(page, 2);
   const slope = page.locator('#target-slope');
   const feedback = page.locator('[data-feedback]');
   const shots = page.locator('[data-shots] [data-hit]');
-  await expect(feedback).toHaveText('표적 위로 띄워 떨어뜨리면 득점');
+  await expect(feedback).toHaveText('가운데 돌벽을 넘겨 표적을 맞히세요');
   await expect(page.locator('[data-distance]')).toHaveText('800 · -19');
 
   await slope.fill('28');
@@ -101,16 +101,16 @@ test('낮은 직격은 0점이고 엄폐물을 넘겨 떨어진 탄은 득점한
   await page.keyboard.press('Space');
   await page.clock.runFor(2600);
   await expect(shots.nth(0)).toHaveText('0.0');
-  await expect(feedback).toContainText('궤적이 얕아요');
+  await expect(feedback).toContainText('돌벽에 맞았어요');
 
   await expect(page.locator('[data-distance]')).toHaveText('871 · -13');
-  await slope.fill('85');
+  await slope.fill('100');
   await page.keyboard.press('Space');
-  await page.clock.runFor(1512); // 63.0 clears the barricade and descends onto the target.
+  await page.clock.runFor(1502); // 62.6 clears the wall and descends onto the target.
   await page.keyboard.press('Space');
   await page.clock.runFor(2600);
   await expect(shots.nth(1)).toHaveAttribute('data-hit', 'center');
-  await expect(shots.nth(1)).toHaveText('99.4');
+  await expect(shots.nth(1)).toHaveText('98.8');
 });
 
 test('열 발을 마치고 다시 도전하면 새 코스가 열리고 순위 선택에 기존 코스가 있다', async ({ page }) => {
@@ -131,6 +131,6 @@ test('열 발을 마치고 다시 도전하면 새 코스가 열리고 순위 �
   await expect(target).not.toHaveText(first!);
   await page.getByRole('button', { name: '누적 순위' }).click();
   const boardCourse = page.getByLabel('순위 코스');
-  await expect(boardCourse).toHaveValue('arc');
-  await expect(boardCourse.locator('option')).toHaveText(['낙하 포격 코스', '이전 랜덤 코스', '이전 고정 코스']);
+  await expect(boardCourse).toHaveValue('rampart');
+  await expect(boardCourse.locator('option')).toHaveText(['돌벽 포격 코스', '이전 낙하 포격 코스', '이전 랜덤 코스', '이전 고정 코스']);
 });

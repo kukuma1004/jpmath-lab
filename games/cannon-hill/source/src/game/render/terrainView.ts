@@ -88,9 +88,11 @@ export class TerrainView {
   }
 
   /** 바뀐 영역만 다시 그린다(한 프레임에 너무 많으면 다음 프레임으로 미룬다) */
-  flush(maxTiles = 10): void {
+  flush(maxTiles = 10, budgetMs = Infinity): void {
     const d = this.terrain.dirty;
     if (!d.length && !this.pendingTiles.size) return;
+    const changed = d.length > 0;
+    const deadline = performance.now() + budgetMs;
     const want = this.pendingTiles;
     for (const r of d) {
       const x0 = Math.floor((r.x0 * CELL - 32) / TILE), x1 = Math.floor(((r.x1 + 1) * CELL + 32) / TILE);
@@ -101,12 +103,12 @@ export class TerrainView {
     d.length = 0;
     let n = 0;
     for (const i of want) {
-      if (n >= maxTiles) break;
+      if (n >= maxTiles || (n > 0 && performance.now() >= deadline)) break;
       this.drawTile(i);
       want.delete(i);
       n++;
     }
-    this.drawBridgeRails();
+    if (changed) this.drawBridgeRails();
   }
 
   destroy(): void {

@@ -16,6 +16,7 @@ import type {
 const DEG = Math.PI / 180;
 const TEAM_SIDES = [0, 1] as const;
 const SOLO_SIDES = [0, 1, 2, 3] as const;
+const THREE_SOLO_SIDES = [0, 1, 2] as const;
 export const ULTIMATE_TURN = 3;
 export const ULTIMATE_RECHARGE_TURNS = 3;
 
@@ -112,7 +113,7 @@ export class Battle {
     });
     for (const f of this.fighters) f.angle = this.nearestEnemy(f).x > f.x ? 50 : 130;
     // 먼저 쏠 편을 고른다(그 편의 첫 장수부터)
-    this.current = cfg.starterMatch ? 0 : cfg.freeForAll ? this.rng.int(0, 3) : this.rng.next() < 0.5 ? 0 : 1;
+    this.current = cfg.starterMatch ? 0 : cfg.freeForAll ? this.rng.int(0, this.fighters.length - 1) : this.rng.next() < 0.5 ? 0 : 1;
     this.wind = cfg.starterMatch ? 0 : Math.round(this.rng.gauss() * 6 * (0.5 + def.windBias));
     this.emit({ type: 'battleStart', first: this.current });
   }
@@ -146,7 +147,8 @@ export class Battle {
   }
 
   get sides(): readonly Team[] {
-    return this.cfg.freeForAll ? SOLO_SIDES : TEAM_SIDES;
+    if (!this.cfg.freeForAll) return TEAM_SIDES;
+    return this.fighters.length === 3 ? THREE_SOLO_SIDES : SOLO_SIDES;
   }
 
   /** 지금 차례인 장수에게 가장 가까운 살아 있는 상대(없으면 아무 상대) */
@@ -276,9 +278,17 @@ export class Battle {
   }
 
   forfeit(player: number): void {
-    if (this.phase === 'GAME_OVER' || this.fighters.length !== 2 || (player !== 0 && player !== 1)) return;
+    const fighter = this.fighters[player];
+    if (this.phase === 'GAME_OVER' || !fighter || (!fighter.alive && player !== 0 && this.fighters.length > 2)) return;
     this.rec('forfeit', [player]);
-    this.endGame(player === 0 ? 1 : 0, 'forfeit');
+    if (this.fighters.length === 2 || player === 0) {
+      this.endGame(this.cfg.freeForAll ? -1 : player === 0 ? 1 : 0, 'forfeit');
+      return;
+    }
+    this.kill(fighter, 'hp');
+    const alive = this.sides.filter(team => this.teamAlive(team));
+    if (alive.length <= 1) this.endGame(alive[0] ?? -1, 'forfeit');
+    else if (player === this.current && (this.isPlayerPhase() || this.phase === 'TURN_START' || this.phase === 'BATTLE_START')) this.toTurnEnd();
   }
 
   applyCommand(c: string, a: number[]): void {
@@ -877,8 +887,9 @@ export class Battle {
   }
 
   private makeCloud(p: Projectile, w: WeaponDef, x: number, y: number): void {
+    const damage = this.cfg.legacyPoison ? (w.id === 'greenDeluge' ? 62 : 48) : w.cloudDamage!;
     const c: PoisonCloud = { id: this.nextId, owner: p.owner, shot: p.shot, x, y: y - 28,
-      radius: w.cloudRadius!, damage: w.cloudDamage ?? 48,
+      radius: w.cloudRadius!, damage,
       turns: this.fighters.map((f) => f.alive ? w.cloudTurns ?? 3 : 0) };
     if (this.dry) {
       for (const f of this.fighters) if (f.alive && this.inCloud(f, c)) {
@@ -892,13 +903,18 @@ export class Battle {
   }
 
   private tickClouds(f: Fighter): void {
+    let strongest: PoisonCloud | undefined;
     for (const c of this.clouds) {
       if ((c.turns[f.idx] ?? 0) <= 0) continue;
       c.turns[f.idx] = (c.turns[f.idx] ?? 0) - 1;
-      if (f.alive && this.inCloud(f, c)) {
+      if (!f.alive || !this.inCloud(f, c)) continue;
+      if (this.cfg.legacyPoison) {
         this.applyDamage(f, c.damage, f.x, f.y - 40, false, 'poison', c.owner, c.shot);
+      } else if (!strongest || c.damage >= strongest.damage) {
+        strongest = c;
       }
     }
+    if (strongest) this.applyDamage(f, strongest.damage, f.x, f.y - 40, false, 'poison', strongest.owner, strongest.shot);
     this.clouds = this.clouds.filter((c) => this.fighters.some((a) => a.alive && (c.turns[a.idx] ?? 0) > 0));
   }
 
@@ -1588,7 +1604,7 @@ export class Battle {
 
   private endGame(winner: Team | -1, reason: EndReason): void {
     this.winner = winner;
-    this.endReason = winner === -1 ? 'draw' : reason;
+    this.endReason = winner === -1 && reason !== 'forfeit' ? 'draw' : reason;
     this.setPhase('GAME_OVER');
     for (const f of this.fighters) {
       if (winner === f.team) { f.anim = 'victory'; f.animT = 0; }

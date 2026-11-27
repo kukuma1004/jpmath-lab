@@ -1,7 +1,7 @@
 import { CHARACTERS } from '../data/characters';
 import { MAPS } from '../data/maps';
 import type { OnlineClient } from './client';
-import type { PublicRoom } from './protocol';
+import { FRIEND_MODES, type PublicRoom } from './protocol';
 import './online.css';
 
 const mapNames = new Map(MAPS.map(map=>[map.id,map.name]));
@@ -15,10 +15,11 @@ export class OnlineLobby {
 
   constructor(container: HTMLElement, private readonly client: OnlineClient, close: () => void) {
     this.root.className='online-lobby';
-    this.root.setAttribute('aria-label','온라인 1:1');
+    const title=client.ranked?'온라인 1:1':'온라인 대전';
+    this.root.setAttribute('aria-label',title);
     this.root.innerHTML=`
       <div class="online-panel">
-        <header><h2>온라인 1:1</h2><button class="btn ghost" data-act="close">← 처음 화면</button></header>
+        <header><h2>${title}</h2><button class="btn ghost" data-act="close">← 처음 화면</button></header>
         <p class="online-message" role="status"></p>
         <form class="online-auth">
           <label>아이디<input name="id" autocomplete="username" minlength="3" maxlength="20" required></label>
@@ -32,6 +33,7 @@ export class OnlineLobby {
             <label>내 장수<select name="char">${CHARACTERS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}</select></label>
             <section>
               <h3>친선전</h3>
+              <label${client.ranked?' hidden':''}>대전 방식<select name="mode">${Object.entries(FRIEND_MODES).map(([mode,details])=>`<option value="${mode}">${details.title}</option>`).join('')}</select></label>
               <div class="online-room-settings">
                 <label>전장<select name="map"><option value="random">랜덤 전장</option>${MAPS.map(m=>`<option value="${m.id}">${m.name}</option>`).join('')}</select></label>
                 <label>공개 범위<select name="visibility"><option value="public">공개방</option><option value="code">코드 전용</option></select></label>
@@ -54,7 +56,7 @@ export class OnlineLobby {
             </section>
           </div>
           <section class="online-wait" hidden>
-            <p data-wait></p><p data-wait-map></p><strong data-code></strong>
+            <p data-wait></p><p data-wait-map></p><p data-wait-players></p><strong data-code></strong>
             <div class="online-actions"><button class="btn jade" data-act="copy" hidden>코드 복사</button><button class="btn" data-act="leave">대기 취소</button></div>
           </section>
           <ol class="online-board" aria-label="온라인 대전 누적 순위" hidden></ol>
@@ -92,8 +94,9 @@ export class OnlineLobby {
         void this.run(async()=>{await this.client.leave();close();});
       }else if(action==='create'){
         const map=this.select<HTMLSelectElement>('select[name=map]').value;
+        const mode=this.select<HTMLSelectElement>('select[name=mode]').value;
         const listed=this.select<HTMLSelectElement>('select[name=visibility]').value==='public';
-        void this.run(()=>this.client.lobby('create',{char:this.pick(),map,listed}));
+        void this.run(()=>this.client.lobby('create',{char:this.pick(),map,mode,listed}));
       }else if(action==='join-room'){
         void this.run(()=>this.client.lobby('join',{char:this.pick(),code:button!.dataset.roomCode,listedOnly:true}));
       }else if(action==='queue'){
@@ -143,7 +146,7 @@ export class OnlineLobby {
       const name=document.createElement('strong');
       name.textContent=room.nickname;
       const map=document.createElement('small');
-      map.textContent=mapNames.get(room.map)??'';
+      map.textContent=[room.mode?FRIEND_MODES[room.mode].title:'',mapNames.get(room.map)??''].filter(Boolean).join(' · ');
       details.append(name,map);
       const join=document.createElement('button');
       join.type='button';
@@ -171,8 +174,11 @@ export class OnlineLobby {
     this.select('.online-options').hidden=waiting;
     this.select('.online-wait').hidden=!waiting;
     const room=state?.room;
-    this.select('[data-wait]').textContent=state?.queued?'랭킹전 상대를 기다리는 중':room?.listed?'공개방에서 상대를 기다리는 중':'친구가 방 코드를 입력할 때까지 기다리는 중';
+    const mode=room?.mode?FRIEND_MODES[room.mode]:null;
+    this.select('[data-wait]').textContent=state?.queued?'랭킹전 상대를 기다리는 중':mode?
+      `${mode.title} · ${room!.names.length}/${mode.seats}명` : room?.listed?'공개방에서 상대를 기다리는 중':'친구가 방 코드를 입력할 때까지 기다리는 중';
     this.select('[data-wait-map]').textContent=room?.kind==='friendly'?mapNames.get(room.map)??'':'';
+    this.select('[data-wait-players]').textContent=room?.mode&&room.mode!=='duel'?room.names.join(' · '):'';
     this.select('[data-code]').textContent=state?.room?.kind==='friendly'?state.room.code:'';
     this.select('[data-act=copy]').hidden=!state?.room?.code || state.room.kind!=='friendly' || !navigator.clipboard;
     this.renderRooms(state?.rooms??[]);

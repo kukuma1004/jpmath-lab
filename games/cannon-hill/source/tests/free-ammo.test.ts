@@ -80,11 +80,11 @@ describe('기세 없이 고르는 두 종류 탄', () => {
 });
 
 describe('독무는 자기 차례에만 작용하고 걸어 나와 피할 수 있다', () => {
-  it('첫 착탄 뒤 실시간 프레임으로 독 피해가 누적되지 않고 차례가 오면 48 피해', () => {
+  it('첫 착탄 뒤 실시간 프레임으로 독 피해가 누적되지 않고 차례가 오면 30 피해', () => {
     const b = gasBattle(); const f = b.fighters[1]!, hp = f.hp;
     for(let i=0;i<15;i++) b.step();expect(f.hp).toBe(hp);
     until(b, () => b.phase === 'AIM' && b.current === 1);
-    expect(f.hp).toBe(hp-48);expect(b.clouds[0]!.turns[1]).toBe(2);
+    expect(f.hp).toBe(hp-30);expect(b.clouds[0]!.turns[1]).toBe(2);
   });
 
   it('구름 밖으로 나온 상대는 다음 자기 차례에 피해를 받지 않는다', () => {
@@ -99,9 +99,18 @@ describe('독무는 자기 차례에만 작용하고 걸어 나와 피할 수 �
   it('독술사는 독 피해를 줄이고 구름은 각 장수의 세 차례 뒤 사라진다', () => {
     const b=gasBattle('alchemist'),f=b.fighters[1]!,hp=f.hp;
     until(b,()=>b.phase==='AIM' && b.current===1);
-    expect(hp-f.hp).toBe(Math.round(48*TRAIT.poisonResistance));
+    expect(hp-f.hp).toBe(Math.round(30*TRAIT.poisonResistance));
     for(let n=0;n<8 && b.clouds.length;n++) {b.skipTurn();until(b,()=>b.phase==='AIM');}
     expect(b.clouds).toHaveLength(0);
+  });
+
+  it('겹친 구름은 가장 강한 피해 한 번만 주고 각 구름은 따로 만료된다', () => {
+    const b=gasBattle(), f=b.fighters[1]!, hp=f.hp;
+    b.clouds.push({...b.clouds[0]!,id:99,damage:40,turns:[1,1]});
+    until(b,()=>b.phase==='AIM'&&b.current===1);
+    expect(hp-f.hp).toBe(40);
+    nextOwnTurn(b,1);
+    expect(hp-f.hp).toBe(70);
   });
 
   it('독구름 복제와 직렬화는 차례 수를 보존하고 서로 영향을 주지 않는다', () => {

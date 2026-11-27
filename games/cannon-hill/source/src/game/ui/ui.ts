@@ -132,7 +132,7 @@ export class UI {
           <div class="menu">
             <button class="btn primary quick" data-act="quick">바로 한 판<small>쉬운 AI · 내가 먼저 발사</small></button>
             <button class="btn jade target-entry" data-act="target">표적 10발<small>각도와 힘으로 누적 순위 도전</small></button>
-            ${this.hooks.online ? `<button class="btn jade online-entry" data-act="online">온라인 1:1<small>방 코드 친선전${this.hooks.onlineRanked?' · 공개 랭킹전':''}</small></button>` : ''}
+            ${this.hooks.online ? `<button class="btn jade online-entry" data-act="online">${this.hooks.onlineRanked?'온라인 1:1':'온라인 대전'}<small>${this.hooks.onlineRanked?'1:1 친선전 · 공개 랭킹전':'1:1 · 2:2 · 3~4인 개인전'}</small></button>` : ''}
             <button class="btn" data-act="ai">AI와 겨루기<small>장수·전장 고르기</small></button>
             <button class="btn jade" data-act="local">함께 하기<small>한 기기로 2~4명</small></button>
             <button class="btn" data-act="howto">게임 방법</button>
@@ -688,8 +688,8 @@ export class UI {
     let title: string, cls = '';
     if (w === -1 || w === null) title = '무승부';
     else if (online) {
-      title = w === online.you ? '승리!' : '패배…';
-      if (w !== online.you) cls = 'lose';
+      title = w === b.fighters[online.you]?.team ? '승리!' : '패배…';
+      if (w !== b.fighters[online.you]?.team) cls = 'lose';
     } else if (this.mode === 'ai') {
       title = w === 0 ? '승리!' : freeForAll ? `${names[shown[0]!.idx]} 승리!` : '패배…';
       if (w !== 0) cls = 'lose';

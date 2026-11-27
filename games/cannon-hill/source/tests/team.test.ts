@@ -229,3 +229,19 @@ describe('2:2 대전', () => {
     expect(enemy).toBeGreaterThan(friendly * 3);
   });
 });
+
+it('3인 개인전에는 참가한 세 편만 표시하고 기권한 장수는 차례에서 빠진다', () => {
+  const cfg = defaultConfig({
+    seed: 1849100839, chars: FOUR.slice(0,3), controllers: ['human','human','human'], freeForAll: true, turnLimit: 0,
+  });
+  const b = new Battle(cfg);
+  expect(b.sides).toEqual([0,1,2]);
+  expect(b.current).toBeLessThan(3);
+  runUntil(b,()=>b.phase==='AIM');
+  b.forfeit(1);
+  expect(b.fighters[1]!.alive).toBe(false);
+  expect(b.winner).toBeNull();
+  b.forfeit(2);
+  expect(b.winner).toBe(0);
+  expect(b.endReason).toBe('forfeit');
+});

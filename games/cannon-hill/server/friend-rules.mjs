@@ -1,18 +1,25 @@
-import { FRIEND_BRANCH, ROOM_DURATION_MS, ROOM_LIST_LIMIT, ROOM_WAIT_MS } from '../source/src/game/online/protocol.ts';
+import { FRIEND_BRANCH, FRIEND_RULESET, ROOM_DURATION_MS, ROOM_LIST_LIMIT, ROOM_WAIT_MS } from '../source/src/game/online/protocol.ts';
 
 export const BRANCH = FRIEND_BRANCH;
 const account = String.raw`auth != null && auth.token.firebase.sign_in_provider == 'password' && auth.token.email.matches(/^[a-z0-9_]{3,20}@id\.warureu\.example$/)`;
 const base = "root.child('" + BRANCH + "/rooms/' + $code)";
 const host = base + ".child('info/uid').val() == auth.uid";
 const guest = base + ".child('guest/uid').val() == auth.uid";
-const playing = base + ".child('guest').exists()";
+const mode = base + ".child('info/mode').val()";
+const group = `(${mode} == 'teams' || ${mode} == 'solo3' || ${mode} == 'solo4')`;
+const seats = ['p1','p2','p3'];
+const seatUser = seat => `${base}.child('seats/${seat}/uid').val() == auth.uid`;
+const playing = `((!${group} && ${base}.child('guest').exists()) || (${group} && ${base}.child('seats/p1').exists() && ${base}.child('seats/p2').exists() && (${mode} == 'solo3' || ${base}.child('seats/p3').exists())))`;
+const started = `${base}.child('wire/head').exists()`;
 const listing = "root.child('" + BRANCH + "/listings/' + $code)";
 const waiting = `${base}.child('info').exists() && now - ${base}.child('info/created').val() < ${ROOM_WAIT_MS}`;
 const joined = "newData.parent().parent().child('rooms/' + $code + '/guest/uid').val() == auth.uid";
-const member = `(${account}) && ((${host}) || (${guest}))`;
+const visitor = `((${guest}) || ${seats.map(seatUser).join(' || ')})`;
+const member = `(${account}) && ((${host}) || ${visitor})`;
 const fresh = `now - ${base}.child('info/created').val() < ${ROOM_DURATION_MS}`;
 const activeHost = `${account} && ${host} && ${playing} && ${fresh} && now - ${base}.child('leader/at').val() < 8000`;
 const gameId = 'newData.isString() && newData.val().matches(/^[a-zA-Z0-9_-]{1,24}$/)';
+const ruleset = `newData.val() == ${FRIEND_RULESET}`;
 const valid = rule => ({'.validate':rule});
 const number = (lo,hi) => `newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= ${lo} && newData.val() <= ${hi}`;
 const required = names => `newData.hasChildren(${JSON.stringify(names)})`;
@@ -22,6 +29,11 @@ const player = {
   nickname:valid(`newData.isString() && newData.val() == root.child('${BRANCH}/profiles/' + auth.uid).val()`),
   char:valid(gameId),
 };
+const groupSeat = `($seat == 'p1' || $seat == 'p2' || ($seat == 'p3' && ${mode} != 'solo3'))`;
+const ownSeat = `${base}.child('seats/' + $seat + '/uid').val() == auth.uid`;
+const uniqueSeat = seats.map(seat=>`($seat == '${seat}' || newData.parent().child('${seat}/uid').val() != auth.uid)`).join(' && ');
+const visitorRuleset = `(!${base}.child('info/ruleset').exists() || newData.child('ruleset').val() == ${base}.child('info/ruleset').val())`;
+const listedOnly = valid(`newData.val() == true && ${listing}.exists()`);
 
 export function targetRules() {
   return { [BRANCH]: {
@@ -34,28 +46,37 @@ export function targetRules() {
       '.read':`${account} && query.orderByChild == 'created' && query.limitToLast >= 1 && query.limitToLast <= ${ROOM_LIST_LIMIT}`,
       '.indexOn':['created'],
       $code:{
-        '.write':`${account} && ((${host} && (!newData.exists() || (${waiting} && !${playing} && ${base}.child('info/listed').val() == true))) || (!newData.exists() && ${joined}))`,
+        '.write':`${account} && ((${host} && (!newData.exists() || (${waiting} && !${started} && !${playing} && ${base}.child('info/listed').val() == true))) || (!${group} && !newData.exists() && ${joined}))`,
         '.validate':required(['nickname','map','created']),
         nickname:valid(`newData.val() == ${base}.child('info/nickname').val()`),
         map:valid(`newData.val() == ${base}.child('info/map').val()`),
         created:valid(`newData.val() == ${base}.child('info/created').val()`),
+        mode:valid(`newData.val() == ${mode}`),
         $other:unknown,
       },
     },
     rooms:{ $code:{
-      '.write':`${member} && !newData.exists() && ((${host} && !${playing}) || !(${fresh}))`,
+      '.write':`${member} && !newData.exists() && ((${host} && !${started}) || !(${fresh}))`,
       info:{
         '.read':account,
         '.write':`${account} && !data.exists() && newData.exists() && $code.matches(/^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{6}$/)`,
         '.validate':required(['uid','nickname','char','map','seed','created']),
         ...player, map:valid(gameId), seed:valid(number(1,2147483646)), created:valid('newData.val() == now'),
-        listed:valid('newData.isBoolean()'), $other:unknown,
+        listed:valid('newData.isBoolean()'), ruleset:valid(ruleset),
+        mode:valid(`newData.parent().child('ruleset').val() == ${FRIEND_RULESET} && newData.isString() && newData.val().matches(/^(duel|teams|solo3|solo4)$/)`),
+        $other:unknown,
       },
       guest:{
         '.read':account,
-        '.write':`${account} && !data.exists() && newData.exists() && ${waiting} && !(${host})`,
-        '.validate':required(['uid','nickname','char']),
-        ...player, listedOnly:valid(`newData.val() == true && ${listing}.exists()`), $other:unknown,
+        '.write':`${account} && !${group} && !${started} && ((!data.exists() && newData.exists() && ${waiting} && !(${host})) || (!newData.exists() && ${guest}))`,
+        '.validate':required(['uid','nickname','char']) + ` && ${visitorRuleset}`,
+        ...player, listedOnly, ruleset:valid(ruleset), $other:unknown,
+      },
+      seats:{ '.read':account, $seat:{
+        '.write':`${account} && ${group} && ${groupSeat} && !${started} && ((!data.exists() && newData.exists() && ${waiting} && !(${host}) && !${visitor}) || (!newData.exists() && ${ownSeat}))`,
+        '.validate':required(['uid','nickname','char','ruleset']) + ` && ${visitorRuleset} && ${uniqueSeat}`,
+        ...player, listedOnly, ruleset:valid(ruleset), $other:unknown,
+      },
       },
       presence:{
         '.read':member,
@@ -97,8 +118,9 @@ export function targetRules() {
       inbox:{
         '.read':`${account} && ${host}`,
         $id:{
-          '.write':`${account} && ${fresh} && ((${guest} && !data.exists() && newData.exists() && ${base}.child('wire/head/done').val() != true) || (${host} && !newData.exists()))`,
-          '.validate':required(['turn','control']),
+          '.write':`${account} && ${fresh} && ((${visitor} && ${started} && !data.exists() && newData.exists() && ${base}.child('wire/head/done').val() != true) || (${host} && !newData.exists()))`,
+          '.validate':required(['turn','control']) + ` && (!${group} || newData.child('player').exists())`,
+          player:valid(`(!${group} && newData.val() == 1 && ${guest}) || (${group} && (${seats.map((seat,index)=>`(newData.val() == ${index+1} && ${seatUser(seat)})`).join(' || ')}))`),
           turn:valid(number(0,432000)),
           control:{
             '.validate':`(newData.child('kind').val() == 'input' && ${required(['move','aim'])}) || (newData.child('kind').val() == 'slot' && newData.child('slot').exists()) || (newData.child('kind').val() == 'fire' && newData.child('step').exists()) || newData.child('kind').val() == 'flip' || newData.child('kind').val() == 'cancel' || newData.child('kind').val() == 'leave'`,

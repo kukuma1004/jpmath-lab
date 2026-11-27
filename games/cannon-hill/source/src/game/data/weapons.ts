@@ -166,10 +166,10 @@ export const WEAPONS: Record<string, WeaponDef> = {
     look: 'poison', color: 0xa6e254, glow: 0x91d65b, size: 9,
   },
   poisonCloud: {
-    id: 'poisonCloud', name: '자욱한 독무', use: '세 차례 자리 압박', desc: '작게 터진 뒤 독구름이 남습니다. 구름 속에서 자기 차례를 맞으면 48 피해. 장수별 세 차례까지 남고, 걸어 나오면 피합니다. 아군도 주의하세요.',
+    id: 'poisonCloud', name: '자욱한 독무', use: '세 차례 자리 압박', desc: '독구름 속에서 차례가 오면 30 피해를 받습니다. 독이 겹치면 가장 강한 구름만 적용됩니다. 구름은 장수별 세 차례까지 남습니다.',
     behavior: 'shell', pattern: 'single',
     radius: 55, carve: 24, rockMul: 0.5, damage: 96, directBonus: 1.05, knockback: 35,
-    cloudRadius: 150, cloudDamage: 48, cloudTurns: 3,
+    cloudRadius: 150, cloudDamage: 30, cloudTurns: 3,
     look: 'poison', color: 0xd2fa79, glow: 0x9bdf64, size: 9,
   },
   drillBore: {
@@ -262,7 +262,7 @@ WEAPONS.foxComet = { ...WEAPONS.foxSplit!, id: 'foxComet', name: '칠성 여우�
 WEAPONS.rocketTempest = { ...WEAPONS.hwachaStorm!, id: 'rocketTempest', name: '신기전 폭풍', use: '집중 부채꼴',
     desc: '신기전 열한 발이 부채꼴로 날아가 비탈을 훑습니다.', count: 11, spreadDeg: 1.42, radius: 44, damage: 48, glow: 16760174 };
 WEAPONS.greenDeluge = { ...WEAPONS.poisonCloud!, id: 'greenDeluge', name: '청록 대독무', use: '넓은 독구름',
-    desc: '착탄 즉시 피해를 주고 독구름을 남깁니다. 구름 속에서 자기 차례를 맞으면 62 피해를 받습니다.', damage: 150, cloudTurns: 4, cloudRadius: 178, cloudDamage: 62 };
+    desc: '착탄 피해와 함께 네 차례 동안 넓은 독구름을 남깁니다. 구름 속에서 차례가 오면 40 피해를 받습니다. 겹친 독 피해는 더해지지 않습니다.', damage: 150, cloudTurns: 4, cloudRadius: 178, cloudDamage: 40 };
 WEAPONS.deepFault = { ...WEAPONS.drillBore!, id: 'deepFault', name: '대지 단층파', use: '긴 굴착·발판 붕괴',
     desc: '두꺼운 벽을 뚫고 출구에서 폭발합니다. 얇은 발판에는 넓은 붕괴가 이어집니다.',
     drillDepth: 350, drillRadius: 21, radius: 81, carve: 70, damage: 234,

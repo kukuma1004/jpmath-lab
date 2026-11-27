@@ -1,7 +1,7 @@
 import {
   BASE_RANGE, WIND_RANGE, FLOOR_HEIGHT, WALL_SPAN, MIN_SLOPE, MAX_SLOPE, SLOPE_SCALE, MAX_POWER, MAX_SCORE,
   MAX_SHOT_SCORE, CENTER_SCORE, COURSE_LENGTH, MAX_COURSE_SEED, COURSE_ROLLS, COURSE_STRIDES, NEAR_DISTANCE,
-  MIN_DESCENT_SLOPE, TARGET_RANK_BRANCH,
+  BANDS, WALL_POSITION_PERCENT, WALL_POSITION_SPREAD, WALL_HEIGHT_RANGE_PERCENT, WALL_HEIGHT_TARGET_PERCENT, TARGET_RANK_BRANCH,
 } from '../source/src/game/target/course.ts';
 
 export const BRANCH = TARGET_RANK_BRANCH;
@@ -22,14 +22,14 @@ function courseFields(index) {
     const tier = tierAt(seed, index, stride);
     return `(${strideIndex} == ${i} && (${make(tier)}))`;
   }).join(' || ') + ')';
-  const hasWall = tier => '(' + [3, 5, 7, 9].map(value => `${tier} == ${value}`).join(' || ') + ')';
   const check = expression => ({'.validate': `newData.isNumber() && (${expression})`});
+  const wallHeight = `((${field('height')} + ${BANDS[2]}) * ${WALL_HEIGHT_TARGET_PERCENT} + ${field('distance')} * ${WALL_HEIGHT_RANGE_PERCENT} + 99)`;
   return {
     distance: check(forTier(tier => `newData.val() == ${NEAR_DISTANCE} + ${tier} * 120 + ${roll} % 91`)),
     height: check(`newData.val() == ${floorDiv(roll, 91)} % 181 - 58`),
     wind: check(`newData.val() == ${floorDiv(roll, 16471)} % 13 - 6`),
-    wallX: check(forTier(tier => `(${hasWall(tier)} && newData.val() == ${floorDiv(`(${field('distance')} * 45)`, 100)} + ${floorDiv(roll, 214123)} % 121) || (!${hasWall(tier)} && newData.val() == 0)`)),
-    wallY: check(forTier(tier => `(${hasWall(tier)} && newData.val() == 86 + ${tier} * 10 + ${floorDiv(roll, 25908883)} % 41) || (!${hasWall(tier)} && newData.val() == 0)`)),
+    wallX: check(`newData.val() == ${floorDiv(`(${field('distance')} * ${WALL_POSITION_PERCENT})`, 100)} + ${floorDiv(roll, 214123)} % ${WALL_POSITION_SPREAD}`),
+    wallY: check(`newData.val() == ${floorDiv(wallHeight, 100)}`),
   };
 }
 
@@ -41,9 +41,8 @@ function proofShot(index) {
   const curvature = `((1 + ${slope} * ${slope}) / (2 * (${BASE_RANGE} + ${WIND_RANGE} * ${wind}) * ${strength} * ${strength}))`;
   const arcAt = x => `(${x} * ${slope} - ${x} * ${x} * ${curvature})`;
   const targetHeight = arcAt(distance);
-  const clearWall = ` && (${wallX} == 0 || (${arcAt(wallX)} > ${wallY} && ${arcAt(`(${wallX} + ${WALL_SPAN})`)} > ${wallY}))`;
-  const arrivalSlope = `(${slope} - 2 * ${distance} * ${curvature})`;
-  const reachable = `(${power} > 0 && ${targetHeight} >= ${FLOOR_HEIGHT} && ${arrivalSlope} <= 0 - ${MIN_DESCENT_SLOPE}${clearWall})`;
+  const clearWall = `${arcAt(wallX)} > ${wallY} && ${arcAt(`(${wallX} + ${WALL_SPAN})`)} > ${wallY}`;
+  const reachable = `(${power} > 0 && ${targetHeight} >= ${FLOOR_HEIGHT} && ${clearWall})`;
   const value = "newData.val()";
   const factor = COURSE_LENGTH + 1;
   const center = `(${value} % ${factor})`;

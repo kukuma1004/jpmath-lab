@@ -9,8 +9,11 @@ export const BASE_RANGE = 2160;
 export const WIND_RANGE = 27;
 export const FLOOR_HEIGHT = -92;
 export const WALL_SPAN = 52;
-export const MIN_DESCENT_SLOPE = 0.6;
-export const TARGET_RANK_BRANCH = 'warureuTargetV4';
+export const WALL_POSITION_PERCENT = 45;
+export const WALL_POSITION_SPREAD = 45;
+export const WALL_HEIGHT_RANGE_PERCENT = 15;
+export const WALL_HEIGHT_TARGET_PERCENT = 80;
+export const TARGET_RANK_BRANCH = 'warureuTargetV5';
 export const BANDS = [20, 50, 100] as const;
 export const CENTER_SCORE = MAX_SHOT_SCORE - BANDS[0] * 10;
 export const COURSE_LENGTH = 10;
@@ -52,7 +55,7 @@ export interface TargetShot extends TargetAim {
   distanceTenths: number;
   impactX: number;
   impactHeight: number;
-  stop: 'floor' | 'wall' | 'shallow' | 'target';
+  stop: 'floor' | 'wall' | 'target';
 }
 
 export interface TargetResult {
@@ -75,11 +78,12 @@ export function courseFromSeed(seed: number): Target[] {
     const distance = NEAR_DISTANCE + tier * 120 + roll % 91;
     const height = Math.floor(roll / 91) % 181 - 58;
     const wind = Math.floor(roll / 16471) % 13 - 6;
-    const needsWall = tier === 3 || tier === 5 || tier === 7 || tier === 9;
-    const wall = needsWall ? {
-      distance: Math.floor(distance * 45 / 100) + Math.floor(roll / 214123) % 121,
-      height: 86 + tier * 10 + Math.floor(roll / 25908883) % 41,
-    } : undefined;
+    // At this position, a shallow trajectory in the scoring rings rises at most
+    // 80% of its height at the target plus 15% of the distance to it.
+    const wall = {
+      distance: Math.floor(distance * WALL_POSITION_PERCENT / 100) + Math.floor(roll / 214123) % WALL_POSITION_SPREAD,
+      height: Math.ceil(((height + BANDS[2]) * WALL_HEIGHT_TARGET_PERCENT + distance * WALL_HEIGHT_RANGE_PERCENT) / 100),
+    };
     return {distance, height, wind, wall};
   });
 }
@@ -114,12 +118,7 @@ export function scoreShot(target: Target, aim: TargetAim): TargetShot {
   }
   const offset = height - target.height;
   const distanceTenths = Math.round(Math.abs(offset) * 10);
-  // A shot near the target must be falling steeply enough at its plane to score.
-  const arrivalSlope = tangent - 2 * target.distance * arc;
-  let stop: TargetShot['stop'] = 'target';
-  if (wallX < floorX) stop = 'wall';
-  else if (aim.power === 0 || height < FLOOR_HEIGHT) stop = 'floor';
-  else if (distanceTenths < MAX_SHOT_SCORE && arrivalSlope > -MIN_DESCENT_SLOPE) stop = 'shallow';
+  const stop = wallX <= floorX ? 'wall' : aim.power === 0 || height < FLOOR_HEIGHT ? 'floor' : 'target';
   const points = stop === 'target' ? Math.max(0, MAX_SHOT_SCORE - distanceTenths) : 0;
   return {
     ...aim, points, offset, distanceTenths, stop,

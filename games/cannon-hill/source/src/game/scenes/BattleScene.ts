@@ -51,6 +51,7 @@ export class BattleScene extends Phaser.Scene {
   private bodies!: BodiesView;
   effects!: Effects;
   private guide!: Phaser.GameObjects.Graphics;
+  private guideKey = '';
   private bottomFx: Phaser.GameObjects.GameObject[] = [];
   private river: Phaser.GameObjects.Graphics | null = null;
   private actors: (AIActor | null)[] = [];
@@ -99,6 +100,7 @@ export class BattleScene extends Phaser.Scene {
     this.fighters = [];
     this.bottomFx = [];
     this.river = null;
+    this.guideKey = '';
     this.resultTimer = null;
     this.advisor.reset();
     this.shotReview.reset();
@@ -701,7 +703,7 @@ export class BattleScene extends Phaser.Scene {
           const w = e.winner;
           for (const f of b.fighters) if (f.team === w && f.alive) this.effects.confetti(f.x, f.y - 40);
           const you = this.online?.room?.you;
-          const iWon = you !== undefined ? w===you : this.mode === 'local' ? w !== -1 : w === 0;
+          const iWon = you !== undefined ? w===b.fighters[you]?.team : this.mode === 'local' ? w !== -1 : w === 0;
           this.time.delayedCall(220, () => (iWon ? audio.victory() : audio.defeat()));
           this.resultTimer = this.time.delayedCall(900, () => this.app.ui.showResult(b, this.names, this.online?.room??undefined));
           break;
@@ -714,13 +716,18 @@ export class BattleScene extends Phaser.Scene {
 
   // ───────── 조준 안내·예상 궤적 ─────────
 
-  private drawGuide(): void {
+  private drawGuide(terrainChanged: boolean): void {
+    const b = this.battle;
+    const f = b.cur;
+    const visible = b.isPlayerPhase() && f.alive;
+    const power = visible && this.app.settings.trajectory && this.humanTurn()
+      ? b.phase === 'CHARGE' ? f.power : f.lastPower : null;
+    const key = visible ? `${b.current}:${f.x}:${f.y}:${f.angle}:${power}:${b.wind}` : '';
+    if (key === this.guideKey && !terrainChanged) return;
+    this.guideKey = key;
     const g = this.guide;
     g.clear();
-    const b = this.battle;
-    if (!b.isPlayerPhase()) return;
-    const f = b.cur;
-    if (!f.alive) return;
+    if (!visible) return;
     const col = PLAYER_COLORS[f.team]!;
     const launchAngle = b.launchAngle(f);
     const a = launchAngle * DEG;
@@ -741,8 +748,7 @@ export class BattleScene extends Phaser.Scene {
     g.fillStyle(col, 1);
     g.fillCircle(mx + Math.cos(a) * 38, my - Math.sin(a) * 38, 3.5);
     // 예상 궤적(실제 물리와 같은 계산, 처음 1.1초)
-    if (this.app.settings.trajectory && this.humanTurn()) {
-      const power = b.phase === 'CHARGE' ? f.power : f.lastPower;
+    if (power !== null) {
       const pts = b.previewPath(b.traitOf(f) === 'eagle' ? TRAIT.eaglePreview : 1.1, power);
       for (let i = 2; i < pts.length; i += 3) {
         const p = pts[i]!;
@@ -763,7 +769,11 @@ export class BattleScene extends Phaser.Scene {
       if (!this.paused && this.humanTurn() && b.isPlayerPhase())
         this.online.input(b.turnNo,input.move,input.aimDir(b.cur.angle<=90?1:-1));
       const backlog=(this.online.room?.step??0)-b.stepNo;
-      this.online.advance(b,backlog>120?20:backlog>8?3:1);
+      this.acc=Math.min(this.acc+dt,6*DT);
+      const paced=Math.floor(this.acc/DT);
+      this.acc-=paced*DT;
+      const steps=backlog>8?Math.min(20,paced+Math.ceil((backlog-5)/3)):paced;
+      this.online.advance(b,steps,5);
     } else if (!this.paused) {
       const fastSettle = !b.projectiles.length && !b.scheduled.length &&
         (b.phase === 'EXPLOSION' || b.phase === 'TERRAIN_COLLAPSE' || b.phase === 'PHYSICS_SETTLING');
@@ -784,12 +794,13 @@ export class BattleScene extends Phaser.Scene {
     this.handle(b.drainEvents());
 
     // 그리기
-    this.terrainView.flush(this.app.settings.quality === 'low' ? 6 : 12);
+    const terrainChanged = b.terrain.dirty.length > 0;
+    this.terrainView.flush(this.app.settings.quality === 'low' ? 6 : 12, this.online ? 3 : Infinity);
     this.bodies.sync(b, this.t);
     for (const p of b.projectiles) audio.whistleUpdate(p.id, p.vy);
     const showArrow = b.isPlayerPhase() || b.phase === 'TURN_START';
     this.fighters.forEach((v, i) => v.update(b, dt, b.current === i, showArrow && b.current === i));
-    this.drawGuide();
+    this.drawGuide(terrainChanged);
     this.drawBottom(dt);
     this.updateCamera(dt);
     const wv = this.cam.worldView;
@@ -801,7 +812,8 @@ export class BattleScene extends Phaser.Scene {
     const previousShot = !actor && b.isPlayerPhase() ? this.shotReview.summary(b) : '';
     const onlineStatus = this.online && b.winner===null
       ? this.online.error || (!this.online.room ? '대전 연결이 종료됐어요.' : !this.online.room.opponentConnected ? '상대의 재접속을 기다리는 중…' :
-        b.isPlayerPhase() && !this.humanTurn() ? '상대가 조준하는 중…' : '')
+        b.isPlayerPhase() && this.online.room.connectedSeats?.[b.current] === false ? `${this.names[b.current]} 님의 재접속을 기다리는 중…` :
+        b.isPlayerPhase() && !this.humanTurn() ? `${this.names[b.current]} 님이 조준하는 중…` : '')
       : '';
     const status = onlineStatus || (actor && b.isPlayerPhase()
       ? actor.stage === 'think' ? `${character(b.cur.charId).name} AI가 궁리하는 중…` : actor.stage === 'walk' ? '자리를 옮기는 중…' : '조준하는 중…'

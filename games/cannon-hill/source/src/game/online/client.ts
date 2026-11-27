@@ -65,7 +65,10 @@ export class OnlineClient {
 
   private async request<T>(action: string, body?: object): Promise<T> {
     if (firebaseFriend) {
-      this.friend ??= new (await import('./firebaseFriend')).FirebaseFriend();
+      if (!this.friend) {
+        const {FirebaseFriend} = await import('./firebaseFriend');
+        this.friend ??= new FirebaseFriend(this.syncFriendRoom);
+      }
       return this.friend.request(action,body) as Promise<T>;
     }
     const headers = new Headers();
@@ -83,13 +86,28 @@ export class OnlineClient {
     return data as T;
   }
 
+  private syncFriendRoom = (): void => {
+    const room=this.room;
+    if(!this.running||!this.token||!room||!this.friend)return;
+    try {
+      const state=this.friend.roomState(room.code,this.log.length);
+      if(!state)return;
+      this.error='';
+      this.setState(state);
+    } catch(error) {
+      this.error=error instanceof Error?error.message:'온라인 연결을 확인해 주세요.';
+    }
+    this.changed();
+  };
+
   private async poll(epoch: number): Promise<void> {
     if (!this.running || epoch !== this.epoch) return;
     if (this.token) {
       try {
         const room = this.room;
         const params = new URLSearchParams(room ? {code:room.code,cursor:String(this.log.length)} : {});
-        const state = await this.request<OnlineState>('state?'+params);
+        const cached = room ? this.friend?.roomState(room.code,this.log.length) : null;
+        const state = cached ?? await this.request<OnlineState>('state?'+params);
         if (epoch !== this.epoch) return;
         this.error = '';
         this.setState(state);
@@ -104,7 +122,7 @@ export class OnlineClient {
     }
     this.changed();
     if (this.running && epoch === this.epoch) {
-      this.timer=window.setTimeout(() => void this.poll(epoch),this.room?.config&&!this.room.done?90:500);
+      this.timer=window.setTimeout(() => void this.poll(epoch),!firebaseFriend&&this.room?.config&&!this.room.done?90:500);
     }
   }
 
@@ -144,6 +162,14 @@ export class OnlineClient {
   send(turn: number, control: Control): void {
     const room = this.room;
     if (!room || this.error || !room.opponentConnected) return;
+    if (this.friend) {
+      // Firebase preserves the order of writes on this connection. A key release
+      // or fire input can reach the host without waiting for the previous ACK.
+      void this.friend.command(room.code,turn,control).catch(error=>{
+        if (!(error instanceof OnlineError && error.status === 409) && this.room?.code===room.code) this.refresh();
+      });
+      return;
+    }
     this.commands = this.commands.then(async () => {
       if (this.room?.code !== room.code) return;
       try { await this.request('command',{code:room.code,turn,control}); }
@@ -171,15 +197,16 @@ export class OnlineClient {
     }
   }
 
-  advance(b: Battle, maxSteps = 2): void {
+  advance(b: Battle, maxSteps = 2, budgetMs = Infinity): void {
     const room=this.room;
     if (!room) return;
+    const deadline=performance.now()+budgetMs;
     for (let i=0; i<=maxSteps; i++) {
       while (this.index<this.log.length && this.log[this.index]!.s<=b.stepNo) {
         const {c,a}=this.log[this.index++]!;
         b.applyCommand(c,a);
       }
-      if (i===maxSteps || b.stepNo>=room.step || b.winner!==null) return;
+      if (i===maxSteps || b.stepNo>=room.step || b.winner!==null || (i>0&&performance.now()>=deadline)) return;
       b.step();
     }
   }
