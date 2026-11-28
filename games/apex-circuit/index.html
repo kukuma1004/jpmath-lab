@@ -10,8 +10,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;1,800;1,900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./style.css?v=20">
-  <script type="module" src="./game.js?v=20"></script>
+  <link rel="stylesheet" href="./style.css?v=21">
+  <script type="module" src="./game.js?v=21"></script>
 </head>
 <body data-state="loading">
   <canvas id="world" tabindex="0" aria-label="레이스 화면. 방향키 또는 A D로 조향, 아래 방향키 또는 S로 드리프트, 스페이스로 부스터"></canvas>
@@ -19,8 +19,9 @@
   <canvas id="boost-streaks" aria-hidden="true"></canvas>
 
   <header class="topbar">
-    <a class="room-link" href="../"><span aria-hidden="true">←</span> JP Math Lab <span class="room-label">게임룸</span></a>
+    <a class="room-link" href="../" aria-label="JP Math Lab 게임룸"><span aria-hidden="true">←</span> JP Math Lab <span class="room-label">게임룸</span></a>
     <div class="top-actions">
+      <button type="button" id="garage-help" class="tool-button" aria-haspopup="dialog">조작법</button>
       <button type="button" id="sound" class="tool-button" aria-label="게임 소리" aria-pressed="false">
         <span class="sound-icon" aria-hidden="true"></span><span class="sound-label" aria-hidden="true"></span>
       </button>
@@ -34,12 +35,26 @@
     <section class="start-screen" aria-labelledby="game-title">
       <h1 id="game-title" lang="en" aria-label="에이펙스 서킷">APEX <span>CIRCUIT</span></h1>
       <div class="start-content">
-        <div class="garage-scroll" tabindex="0" aria-label="차량 성능과 코스 선택">
-        <fieldset class="garage-group"><legend>차량 선택</legend><div class="brand-options" id="brand-options" role="group" aria-label="브랜드"></div><div class="garage-options" id="vehicle-options" role="group" aria-label="모델"></div></fieldset>
-        <section id="vehicle-profile" class="vehicle-profile" aria-label="선택한 차량 성능"></section>
-        <fieldset class="garage-group"><legend>코스 선택</legend><div class="garage-options" id="course-options"></div></fieldset>
-        <p id="garage-description"></p>
+        <div class="garage-tabs" role="tablist" aria-label="레이스 설정">
+          <button type="button" id="vehicle-tab" role="tab" aria-controls="vehicle-panel" aria-selected="true">
+            <span>차량</span><strong id="selected-vehicle"></strong>
+          </button>
+          <button type="button" id="course-tab" role="tab" aria-controls="course-panel" aria-selected="false" tabindex="-1">
+            <span>코스</span><strong id="selected-course"></strong>
+          </button>
         </div>
+        <section id="vehicle-panel" class="garage-panel" role="tabpanel" aria-labelledby="vehicle-tab">
+          <div class="brand-options" id="brand-options" role="group" aria-label="브랜드"></div>
+          <div class="garage-options" id="vehicle-options" role="group" aria-label="차량 모델"></div>
+          <div id="vehicle-profile" class="garage-detail vehicle-profile" aria-label="선택한 차량 성능"></div>
+        </section>
+        <section id="course-panel" class="garage-panel" role="tabpanel" aria-labelledby="course-tab" hidden>
+          <div class="garage-options" id="course-options" role="group" aria-label="코스 선택"></div>
+          <div class="garage-detail course-profile">
+            <div class="garage-detail-heading"><strong id="course-terrain"></strong><span id="course-length"></span></div>
+            <p id="garage-description"></p>
+          </div>
+        </section>
         <div class="garage-launch">
           <button type="button" id="start" class="race-button">레이스 시작 <span aria-hidden="true">↗</span></button>
           <button type="button" id="menu-ranking" class="garage-record" aria-haspopup="dialog">
@@ -49,13 +64,6 @@
             <span>공식 랭킹전</span><small>항만 그랑프리</small>
           </button>
         </div>
-      </div>
-      <div class="instructions">
-        <span class="auto-drive"><i aria-hidden="true"></i> 자동 가속</span>
-        <span class="keyboard-guide"><kbd>← →</kbd> / <kbd>A D</kbd> 조향</span>
-        <span class="keyboard-guide"><kbd>↓</kbd> / <kbd>S</kbd> + 조향 드리프트</span>
-        <span class="keyboard-guide"><kbd>Space</kbd> / <kbd>W</kbd> 부스터</span>
-        <span class="touch-guide">방향과 드리프트를 함께 누르고, 코너 출구에서 떼면 터보</span>
       </div>
     </section>
 
@@ -104,7 +112,7 @@
         <h2 id="pause-title">일시정지</h2>
         <div class="pause-actions">
           <button type="button" id="resume" class="race-button">계속 달리기 <span aria-hidden="true">↗</span></button>
-          <button type="button" id="pause-menu" class="secondary-button selection-link">‹ 차량·코스 선택</button>
+          <button type="button" id="pause-menu" class="secondary-button selection-link">‹ 차고로 돌아가기</button>
           <button type="button" id="retry" class="secondary-button">처음부터 다시</button>
         </div>
         <p class="keyboard-help">연결 키보드: ← → / A D 조향 · ↓ / S / Shift 드리프트 · Space 부스터</p>
@@ -124,13 +132,26 @@
         </dl>
         <p id="official-result-message" class="ranking-status" role="status" hidden></p>
         <div class="result-actions">
-          <button type="button" id="menu" class="race-button selection-button" title="차량·코스 선택 (Esc)" aria-keyshortcuts="Escape"><span aria-hidden="true">‹</span> 차량·코스 선택</button>
+          <button type="button" id="menu" class="race-button selection-button" title="차고로 돌아가기 (Esc)" aria-keyshortcuts="Escape"><span aria-hidden="true">‹</span> 차고로 돌아가기</button>
           <button type="button" id="play-again" class="secondary-button">다시 달리기</button>
           <button type="button" id="result-ranking" class="secondary-button" aria-haspopup="dialog">코스 랭킹</button>
           <button type="button" id="official-result-board" class="secondary-button" aria-haspopup="dialog" hidden>공식 순위표</button>
         </div>
       </section>
     </div>
+
+    <dialog id="driving-help" class="ranking-panel" aria-labelledby="help-title">
+      <div class="ranking-heading">
+        <div><h2 id="help-title">조작법</h2><p>차는 자동으로 가속해요.</p></div>
+        <form method="dialog"><button type="submit" aria-label="조작법 닫기" autofocus>×</button></form>
+      </div>
+      <dl class="drive-keys">
+        <div><dt>조향</dt><dd><kbd>←</kbd> <kbd>→</kbd> 또는 <kbd>A</kbd> <kbd>D</kbd></dd></div>
+        <div><dt>감속·드리프트</dt><dd><kbd>↓</kbd> 또는 <kbd>S</kbd> <span>+ 조향하면 드리프트</span></dd></div>
+        <div><dt>부스터</dt><dd><kbd>Space</kbd> 또는 <kbd>W</kbd></dd></div>
+      </dl>
+      <p class="drive-tip">터치 화면에서는 방향과 드리프트 버튼을 함께 누르세요. 코너를 빠져나올 때 드리프트를 떼면 터보가 붙어요.</p>
+    </dialog>
 
     <dialog id="ranking" class="ranking-panel" aria-labelledby="ranking-title" aria-describedby="ranking-scope">
       <div class="ranking-heading">

@@ -7,7 +7,7 @@ import { buildCars, driveCar, selectVehicle } from './cars.js?v=20';
 import { drivingKeys, resolveDrivingKey } from './input.js?v=10';
 import { createAudio } from './audio.js?v=20';
 import { createEffects, createBoostStreaks } from './effects.js?v=20';
-import { bindGarage } from './garage.js?v=11';
+import { bindGarage } from './garage.js?v=21';
 import { bindRanking, formatTime } from './ranking.js?v=19';
 import { officialEvent } from './official-event.js?v=19';
 import { bindOfficialRanking } from './official-ranking.js?v=19';
@@ -114,6 +114,8 @@ function createCamera() {
   const aim = new T.Vector3();
   const subject = new T.Vector3(), screenSubject = new T.Vector3(), cameraDelta = new T.Vector3();
   const p = {}, preview = {}, trailing = {};
+  const shortGarage = window.matchMedia('(max-height: 620px) and (orientation: landscape)');
+  const tallGarage = window.matchMedia('(min-height: 700px)');
   let ready = false;
   function update(track, race, vehicle, state, animateTime, dt, reduced, snap = false, player = race.cars[0]) {
     const portrait = camera.aspect < .95;
@@ -122,18 +124,36 @@ function createCamera() {
     let fov;
     if (isMenu) {
       const drift = reduced ? 0 : Math.sin(animateTime * .35) * .62;
-      const ahead = vehicle.cosmetic ? (portrait ? 10.65 : 6.2) : (portrait ? 9.5 : 8.4);
-      const flank = (vehicle.cosmetic ? (portrait ? 7.4 : 6.65) : (portrait ? 6.75 : 6.4)) + drift;
-      const height = vehicle.cosmetic ? (portrait ? 4.6 : 3.15) : (portrait ? 4.2 : 3.8);
+      const roadCar = vehicle.cosmetic;
+      let ahead = roadCar ? 6.2 : 8.4;
+      let flank = roadCar ? 6.65 : 6.4;
+      let height = roadCar ? 3.15 : 3.8;
+      let offset = roadCar ? 1.75 : 3.06;
+      let aimHeight = roadCar ? .77 : .37;
+      fov = roadCar ? 44 : 46;
+      if (portrait) {
+        const roomy = tallGarage.matches;
+        ahead = roadCar ? (roomy ? 9.35 : 10.65) : 9.5;
+        flank = roadCar ? 7.4 : 6.75;
+        height = roadCar ? 4.6 : 4.2;
+        offset = .10;
+        aimHeight = roomy ? -1.55 : (roadCar ? -2.92 : -2.7);
+        fov = 49;
+      } else if (shortGarage.matches) {
+        if (roadCar) {
+          ahead = 7.65;
+          flank = 7.5;
+        }
+        offset = 3.8;
+        aimHeight = -1.10;
+      }
+      flank += drift;
       desired.set(p.x + p.dx * ahead - p.dz * flank, p.y + height,
         p.z + p.dz * ahead + p.dx * flank);
       const rightX = desired.z - p.z;
       const rightZ = p.x - desired.x;
-      const offset = portrait ? .10 : vehicle.cosmetic ? 1.75 : 3.06;
       const scale = offset / Math.hypot(rightX, rightZ);
-      const aimHeight = vehicle.cosmetic ? (portrait ? -1.8 : .77) : (portrait ? -2.0 : .37);
       aim.set(p.x - rightX * scale, p.y + aimHeight, p.z - rightZ * scale);
-      fov = vehicle.cosmetic ? (portrait ? 49 : 44) : (portrait ? 49 : 46);
     } else {
       const marker = (player.distance % track.length + track.length) % track.length;
       let dropView = 0;
@@ -495,7 +515,7 @@ function setup() {
     lastHUD = '';
     worldTime = 0;
     setText(nodes['result-course'], track.name);
-    showMenu(false);
+    showMenu();
     render(0);
   }
   const garage = bindGarage({
@@ -577,7 +597,7 @@ function setup() {
     document.body.classList.toggle('is-boosting', next === 'racing' && race.boosting);
     if (!['countdown', 'racing'].includes(next)) audio.drive();
   }
-  function showMenu(focus) {
+  function showMenu() {
     race.reset();
     effects.reset();
     clearControls();
@@ -587,7 +607,6 @@ function setup() {
     signalTime = 0;
     snap = true;
     change('menu');
-    if (focus) nodes.start.focus({ preventScroll: true });
   }
   function start() {
     runNumber++;
@@ -617,9 +636,8 @@ function setup() {
       byId('official-ranking-open').focus({ preventScroll: true });
       return;
     }
-    showMenu(false);
-    document.querySelector('.garage-scroll').scrollTop = 0;
-    document.querySelector('[data-vehicle="' + vehicle.id + '"]').focus({preventScroll: true});
+    showMenu();
+    garage.focus();
   }
   function pause() {
     if (state !== 'racing' && state !== 'countdown') return;
@@ -817,6 +835,7 @@ function setup() {
   }
 
   nodes.start.addEventListener('click', start);
+  byId('garage-help').addEventListener('click', () => byId('driving-help').showModal());
   nodes.pause.addEventListener('click', pause);
   nodes.resume.addEventListener('click', resume);
   nodes.retry.addEventListener('click', start);
@@ -894,6 +913,7 @@ function setup() {
   }, {passive: false});
   window.addEventListener('blur', clearControls);
   window.addEventListener('resize', () => { resizePending = true; });
+  new ResizeObserver(() => { resizePending = true; }).observe(world);
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) pause();
   });
@@ -946,7 +966,7 @@ function setup() {
     };
   }
   updateSound();
-  garage(vehicle.id, track.id);
+  garage.select(vehicle.id, track.id);
   loadSelection();
   requestAnimationFrame(animate);
 }

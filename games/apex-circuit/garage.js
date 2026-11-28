@@ -20,24 +20,30 @@ function courseOutline(track) {
 }
 
 export function bindGarage({ vehicleSpecs, tracks, onVehicle, onCourse }) {
-  const description = document.getElementById('garage-description');
-  const scroll = document.querySelector('.garage-scroll');
-  const scrollHint = document.createElement('p');
-  scrollHint.className = 'garage-scroll-hint';
-  scrollHint.textContent = '밀어서 차량·코스 더 보기 ↓';
-  scrollHint.hidden = true;
-  scroll.after(scrollHint);
-  let hintFrame = 0;
-  function refreshScrollHint() {
-    if (hintFrame) return;
-    hintFrame = requestAnimationFrame(() => {
-      hintFrame = 0;
-      scrollHint.hidden = scroll.scrollHeight <= scroll.clientHeight + 2 ||
-        scroll.scrollTop + scroll.clientHeight >= scroll.scrollHeight - 4;
+  const byId = id => document.getElementById(id);
+  const tabs = [byId('vehicle-tab'), byId('course-tab')];
+  const panels = tabs.map(tab => byId(tab.getAttribute('aria-controls')));
+  let activeTab = 0;
+  function showTab(index) {
+    activeTab = index;
+    tabs.forEach((tab, i) => {
+      const selected = index === i;
+      tab.setAttribute('aria-selected', String(selected));
+      tab.tabIndex = selected ? 0 : -1;
+      panels[i].hidden = !selected;
     });
   }
-  scroll.addEventListener('scroll', refreshScrollHint, { passive: true });
-  new ResizeObserver(refreshScrollHint).observe(scroll);
+  tabs.forEach((tab, index) => {
+    tab.addEventListener('click', () => showTab(index));
+    tab.addEventListener('keydown', event => {
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 :
+        (index + (event.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length;
+      showTab(next);
+      tabs[next].focus();
+    });
+  });
   const brands = { apex: 'APEX', tesla: '테슬라', hyundai: '현대', audi: '아우디' };
   const brandOf = spec => spec.brand || 'apex';
   const selectedByBrand = new Map();
@@ -57,10 +63,10 @@ export function bindGarage({ vehicleSpecs, tracks, onVehicle, onCourse }) {
     });
     brandButtons.push(button);
   }
-  document.getElementById('brand-options').replaceChildren(...brandButtons);
+  byId('brand-options').replaceChildren(...brandButtons);
 
   function choices(items, key, onChange) {
-    const container = document.getElementById(key + '-options');
+    const container = byId(key + '-options');
     const buttons = items.map(item => {
       const button = document.createElement('button');
       button.type = 'button';
@@ -73,11 +79,8 @@ export function bindGarage({ vehicleSpecs, tracks, onVehicle, onCourse }) {
       name.textContent = item.name;
       button.append(name);
       if (key === 'vehicle') {
-        const type = document.createElement('small');
         button.dataset.make = brandOf(item);
-        type.textContent = item.type || item.bodyClass || '';
         button.title = item.description || item.name;
-        if (type.textContent) button.append(type);
       } else {
         const outline = courseOutline(item);
         if (outline) button.prepend(outline);
@@ -96,50 +99,69 @@ export function bindGarage({ vehicleSpecs, tracks, onVehicle, onCourse }) {
   let vehicleId, courseId;
   const vehicles = choices(vehicleSpecs, 'vehicle', onVehicle);
   const courses = choices(tracks, 'course', onCourse);
+  const boostDuration = spec => 1 / (spec.boostDrain || .4);
+  const stats = [
+    ['최고 속도', spec => spec.topSpeed, value => Math.round(value * 3.6) + ' km/h'],
+    ['출발 가속', spec => spec.acceleration, value => (value / 18).toFixed(2) + '×'],
+    ['코너 그립', spec => spec.grip, value => value.toFixed(2) + '×'],
+    ['부스터 지속', boostDuration, value => value.toFixed(1) + '초']
+  ].map(([label, read, format]) => ({
+    label, read, format, max: Math.max(...vehicleSpecs.map(read))
+  }));
+  const profile = byId('vehicle-profile');
+  const courseTitle = byId('selected-course');
+  const meters = document.createElement('dl');
+  const statViews = stats.map(({ label }) => {
+    const group = document.createElement('div');
+    const term = document.createElement('dt');
+    const value = document.createElement('dd');
+    const meter = document.createElement('i');
+    term.textContent = label;
+    meter.className = 'garage-meter';
+    meter.setAttribute('aria-hidden', 'true');
+    group.append(term, value, meter);
+    meters.append(group);
+    return { value, meter };
+  });
+  const trait = document.createElement('strong');
+  const bodyClass = document.createElement('span');
+  const detail = document.createElement('p');
+  const heading = document.createElement('div');
+  heading.className = 'garage-detail-heading';
+  heading.append(trait, bodyClass);
+  profile.append(heading, meters, detail);
   function select(vehicle, course) {
-    courseId = course;
-    const spec = vehicleSpecs.find(item => item.id === vehicle) || vehicleSpecs[0];
-    const brand = brandOf(spec);
-    vehicleId = spec.id;
-    selectedByBrand.set(brand, vehicleId);
-    for (const button of brandButtons) button.setAttribute('aria-pressed', String(button.dataset.brand === brand));
-    for (const button of vehicles) {
-      button.hidden = button.dataset.make !== brand;
-      button.setAttribute('aria-pressed', String(button.dataset.vehicle === vehicleId));
+    if (vehicleId !== vehicle) {
+      const spec = vehicleSpecs.find(item => item.id === vehicle) || vehicleSpecs[0];
+      const brand = brandOf(spec);
+      vehicleId = spec.id;
+      selectedByBrand.set(brand, vehicleId);
+      for (const button of brandButtons) button.setAttribute('aria-pressed', String(button.dataset.brand === brand));
+      for (const button of vehicles) {
+        button.hidden = button.dataset.make !== brand;
+        button.setAttribute('aria-pressed', String(button.dataset.vehicle === vehicleId));
+      }
+      byId('selected-vehicle').textContent = spec.name;
+      trait.textContent = spec.type;
+      bodyClass.textContent = spec.bodyClass || brands[brand];
+      detail.textContent = spec.description;
+      stats.forEach(({ read, format, max }, i) => {
+        const amount = read(spec);
+        statViews[i].value.textContent = format(amount);
+        statViews[i].meter.style.setProperty('--fill', amount / max);
+      });
     }
-    for (const button of courses) button.setAttribute('aria-pressed', String(button.dataset.course === course));
-    const profile = document.getElementById('vehicle-profile');
-    const heading = document.createElement('div');
-    heading.className = 'vehicle-trait';
-    const trait = document.createElement('strong');
-    trait.textContent = spec.type || spec.bodyClass || '밸런스';
-    const note = document.createElement('small');
-    note.textContent = '게임 내 튜닝';
-    heading.append(trait, note);
-    const stats = document.createElement('dl');
-    const tuning = [
-      ['최고 속도', Math.round(spec.topSpeed * 3.6) + ' km/h'],
-      ['출발 가속', (spec.acceleration / 18).toFixed(2) + '×'],
-      ['코너 그립', spec.grip.toFixed(2) + '×'],
-      ['부스터', (1 / (spec.boostDrain || .4)).toFixed(1) + '초']
-    ];
-    for (const [label, value] of tuning) {
-      const group = document.createElement('div');
-      const term = document.createElement('dt');
-      const detail = document.createElement('dd');
-      term.textContent = label;
-      detail.textContent = value;
-      group.append(term, detail);
-      stats.append(group);
+    if (courseId !== course) {
+      courseId = course;
+      for (const button of courses) button.setAttribute('aria-pressed', String(button.dataset.course === course));
+      const track = tracks.find(item => item.id === course);
+      courseTitle.textContent = track.name;
+      byId('course-terrain').textContent = track.subtitle;
+      byId('course-length').textContent = track.length < 1000 ?
+        Math.round(track.length) + ' m / 랩' : (track.length / 1000).toFixed(2) + ' km / 랩';
+      byId('garage-description').textContent = track.description;
     }
-    const detail = document.createElement('p');
-    detail.textContent = spec.description || '';
-    profile.replaceChildren(heading, stats, detail);
-    const track = tracks.find(item => item.id === course);
-    description.textContent = track?.description || '';
-    document.getElementById('result-course').textContent = track?.name || '';
-    refreshScrollHint();
   }
   select(vehicleSpecs[0].id, tracks[0].id);
-  return select;
+  return { select, focus: () => tabs[activeTab].focus({ preventScroll: true }) };
 }
