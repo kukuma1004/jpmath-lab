@@ -77,7 +77,8 @@ export class BodiesView {
     return e;
   }
 
-  sync(b: Battle, t: number): void {
+  private syncClouds(b: Battle, t: number): void {
+    if (!b.clouds.length && !this.cloudLabels.size) return;
     this.cloudFx.clear();
     const seenClouds = new Set<number>();
     for (const c of b.clouds) {
@@ -99,6 +100,10 @@ export class BodiesView {
       }
     }
     for (const [id,label] of this.cloudLabels) if(!seenClouds.has(id)){label.destroy();this.cloudLabels.delete(id);}
+  }
+
+  sync(b: Battle, t: number): void {
+    this.syncClouds(b, t);
     // 포탄
     for (const v of this.proj.values()) v.seen = false;
     for (const p of b.projectiles) {

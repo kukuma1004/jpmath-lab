@@ -64,6 +64,7 @@ export class BattleScene extends Phaser.Scene {
   private guideKey = '';
   private bottomFx: Phaser.GameObjects.GameObject[] = [];
   private river: Phaser.GameObjects.Graphics | null = null;
+  private riverFrame = -1;
   private actors: (AIActor | null)[] = [];
   private t = 0;
   // 카메라
@@ -113,6 +114,7 @@ export class BattleScene extends Phaser.Scene {
     this.fighters = [];
     this.bottomFx = [];
     this.river = null;
+    this.riverFrame = -1;
     this.guideKey = '';
     this.resultTimer = null;
     this.advisor.reset();
@@ -250,6 +252,12 @@ export class BattleScene extends Phaser.Scene {
     }
     if (this.river) {
       const g = this.river;
+      const visible = this.camY + VIEW_H / (2 * this.cam.zoom) >= 1020;
+      g.setVisible(visible);
+      if (!visible) return;
+      const frame = Math.floor(this.t * 30);
+      if (frame === this.riverFrame) return;
+      this.riverFrame = frame;
       g.clear();
       g.fillGradientStyle(0x1a1030, 0x1a1030, 0x05030a, 0x05030a, 0.92);
       g.fillRect(-400, 1140, WORLD_W + 800, 260);
@@ -258,7 +266,7 @@ export class BattleScene extends Phaser.Scene {
         const y = 1150 + k * 12;
         g.beginPath();
         for (let x = -400; x <= WORLD_W + 400; x += 40) {
-          const yy = y + Math.sin(x * 0.01 + this.t * (1 + k * 0.3)) * 3;
+          const yy = y + Math.sin(x * 0.01 + (frame / 30) * (1 + k * 0.3)) * 3;
           if (x === -400) g.moveTo(x, yy);
           else g.lineTo(x, yy);
         }
@@ -445,6 +453,7 @@ export class BattleScene extends Phaser.Scene {
     if (y0 < y1) this.camY = Phaser.Math.Clamp(this.camY, y0, y1);
     this.cam.setZoom(z);
     this.cam.centerOn(this.camX, this.camY);
+    this.terrainView.setView(this.camX - hw, this.camY - hh, this.camX + hw, this.camY + hh);
     const cssScale = this.scale.displaySize.width / W * z;
     if (cssScale > 0) {
       const markerScale = Phaser.Math.Clamp(.72 / cssScale, 1, 3.6);
@@ -904,8 +913,8 @@ export class BattleScene extends Phaser.Scene {
     const previewPower=this.chargePreview?onlineChargePower(this.chargePreview.shownMs):undefined;
     const lockedPower = previewPower ?? (this.pendingFire?.kind === 'release' ? this.pendingFire.power : undefined);
     this.drawGuide(terrainChanged, lockedPower);
-    this.drawBottom(dt);
     this.updateCamera(dt);
+    this.drawBottom(dt);
     const wv = this.cam.worldView;
     this.bg.update(wv.centerX, wv.centerY, this.camZ, dt, b.wind, this.paused);
     if ((b.phase === 'CHARGE' || previewPower!==undefined) && !this.paused) audio.charge(lockedPower ?? b.cur.power);

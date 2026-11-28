@@ -27,6 +27,7 @@
 .rank-profile { display:flex; align-items:center; flex-wrap:wrap; gap:7px; }
 .rank-profile small,.online-board small { color:#d9c8a9; }
 .rank-medal { display:inline-flex; align-items:center; gap:4px; border:1px solid currentColor; border-radius:4px; padding:1px 4px; font-size:.83em; line-height:1.2; font-style:normal; white-space:nowrap; background:#222129; }
+.rank-dung { color:#d2ae8e; }
 .rank-bronze { color:#e0a277; }
 .rank-silver { color:#d0dce8; }
 .rank-gold { color:#ffd566; }

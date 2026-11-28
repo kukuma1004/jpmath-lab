@@ -14,7 +14,16 @@ export interface BgLayers {
   far: HTMLCanvasElement;
   mid: HTMLCanvasElement;
   near: HTMLCanvasElement;
-  ambient: 'embers' | 'leaves' | 'fireflies' | 'clouds' | 'souls';
+}
+
+type Ambient = 'embers' | 'leaves' | 'fireflies' | 'clouds' | 'souls';
+const AMBIENT: Record<string, Ambient> = {
+  baekdu: 'embers', forest: 'fireflies', underworld: 'souls',
+  cloud: 'clouds', windrift: 'clouds', meadow: 'clouds',
+};
+
+export function ambientFor(mapId: string): Ambient {
+  return AMBIENT[mapId] ?? 'leaves';
 }
 
 type C = CanvasRenderingContext2D;
@@ -200,7 +209,7 @@ function baekdu(): BgLayers {
   for (let i = 0; i < 5; i++) cloud(m, 300 + i * 480, 330 + (i % 2) * 40, 40, 'rgba(90,70,80,0.55)', 'rgba(50,35,45,0.55)');
   const [near, n] = canvas(LAYER_W, LAYER_H, 0.5);
   ridge(n, HORIZON + 170, 110, 180, 31, '#0e070b', 1);
-  return { sky, far, mid, near, ambient: 'embers' };
+  return { sky, far, mid, near };
 }
 
 function sanseong(): BgLayers {
@@ -225,7 +234,7 @@ function sanseong(): BgLayers {
   const [near, n] = canvas(LAYER_W, LAYER_H, 0.5);
   ridge(n, HORIZON + 190, 70, 200, 51, '#0b0e1a', 0.6);
   for (const x of [80, 640, 1100, 1700, 2250]) pine(n, x, HORIZON + 180, 150, '#070a12');
-  return { sky, far, mid, near, ambient: 'leaves' };
+  return { sky, far, mid, near };
 }
 
 function ctx2Ridge(ctx: C, y: (x: number) => number, fill: CanvasGradient) {
@@ -278,7 +287,7 @@ function forest(): BgLayers {
   const [near, n] = canvas(LAYER_W, LAYER_H, 0.5);
   ridge(n, HORIZON + 200, 50, 160, 25, '#04100f', 0.4);
   for (const x of [60, 520, 980, 1500, 2000, 2340]) tree(n, x, HORIZON + 200, 420, '#030b0b', '#06120f');
-  return { sky, far, mid, near, ambient: 'fireflies' };
+  return { sky, far, mid, near };
 }
 
 function cloudPalace(): BgLayers {
@@ -302,7 +311,7 @@ function cloudPalace(): BgLayers {
   }
   const [near, n] = canvas(LAYER_W, LAYER_H, 0.5);
   for (let i = 0; i < 8; i++) cloud(n, 150 + i * 310, HORIZON + 230 + (i % 2) * 30, 90, 'rgba(255,255,255,0.97)', 'rgba(200,214,236,0.97)');
-  return { sky, far, mid, near, ambient: 'clouds' };
+  return { sky, far, mid, near };
 }
 
 function underworld(): BgLayers {
@@ -340,7 +349,7 @@ function underworld(): BgLayers {
   }
   const [near, n] = canvas(LAYER_W, LAYER_H, 0.5);
   ridge(n, HORIZON + 210, 80, 140, 37, '#050208', 1);
-  return { sky, far, mid, near, ambient: 'souls' };
+  return { sky, far, mid, near };
 }
 
 function windRift(): BgLayers {
@@ -353,7 +362,7 @@ function windRift(): BgLayers {
   ridge(m, 610, 125, 290, 228, '#6b7591');
   const [near, n] = canvas(LAYER_W, LAYER_H, 0.5);
   mist(n, 650, 180, 'rgba(196,189,208,0.32)');
-  return { sky, far, mid, near, ambient: 'clouds' };
+  return { sky, far, mid, near };
 }
 
 function meadow(): BgLayers {
@@ -366,7 +375,7 @@ function meadow(): BgLayers {
   ridge(m, 614, 96, 280, 64, '#9caa7f', 0);
   const [near, n] = canvas(LAYER_W,LAYER_H,.5);
   ridge(n, 718, 110, 220, 65, '#a9aa69', 0);
-  return {sky,far,mid,near,ambient:'clouds'};
+  return {sky,far,mid,near};
 }
 
 const BUILDERS: Record<string, () => BgLayers> = {

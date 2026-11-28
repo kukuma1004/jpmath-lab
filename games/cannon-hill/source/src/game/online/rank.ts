@@ -1,11 +1,12 @@
 import { STARTING_RATING, type Profile } from './protocol';
 
 export const RANKS = [
-  {id:'bronze', title:'동장', min:0, mark:'◆'},
-  {id:'silver', title:'은장', min:1000, mark:'✦'},
-  {id:'gold', title:'금장', min:1150, mark:'✹'},
-  {id:'jade', title:'비취장', min:1300, mark:'✧'},
-  {id:'royal', title:'어사장', min:1450, mark:'❖'},
+  {id:'dung', title:'똥장', min:0, mark:'💩'},
+  {id:'bronze', title:'동장', min:800, mark:'◆'},
+  {id:'silver', title:'은장', min:1300, mark:'✦'},
+  {id:'gold', title:'금장', min:1700, mark:'✹'},
+  {id:'jade', title:'비취장', min:2100, mark:'✧'},
+  {id:'royal', title:'어사장', min:2500, mark:'❖'},
 ] as const;
 
 export function rankTier(points:number) {

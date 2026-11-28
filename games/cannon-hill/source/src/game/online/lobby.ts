@@ -9,6 +9,14 @@ const mapNames = new Map(MAPS.map(map=>[map.id,map.name]));
 const teams = ['청팀','홍팀'] as const;
 type LobbyArt = {portraits:Record<string,{normal:string}>;mapThumbs:Record<string,string>};
 
+const rankBands=RANKS.map((tier,index)=>{
+  const low=tier.min.toLocaleString('ko-KR');
+  const next=RANKS[index+1];
+  const range=!next?`${low}점 이상`:index===0?`${next.min.toLocaleString('ko-KR')}점 미만`:
+    `${low}~${(next.min-1).toLocaleString('ko-KR')}점`;
+  return `<li>${rankBadge(tier.min,true)} ${range}</li>`;
+}).join('');
+
 export class OnlineLobby {
   private readonly root = document.createElement('section');
   private register = false;
@@ -44,7 +52,7 @@ export class OnlineLobby {
               <p class="online-random"><strong>랜덤 전장</strong><small>경기 시작 때 공개</small></p>
               <div class="online-actions"><button class="btn primary" data-act="queue">1:1 상대 찾기</button><button class="btn" data-act="rankings">누적 순위</button></div>
               ${client.groups?`<div class="online-invite-actions"><button class="btn ghost" data-act="rank-room" data-mode="duel">1:1 초대방</button><button class="btn ghost" data-act="rank-room" data-mode="teams">2:2 초대방</button></div>`:''}
-              <details class="rank-tiers"><summary>훈장 기준</summary><ul>${RANKS.map(tier=>`<li>${rankBadge(tier.min,true)} ${tier.min.toLocaleString('ko-KR')}점 이상</li>`).join('')}</ul></details>
+              <details class="rank-tiers"><summary>훈장 기준</summary><ul>${rankBands}</ul></details>
             </section>
             <section class="friendly-options">
               <h3>친선전</h3>

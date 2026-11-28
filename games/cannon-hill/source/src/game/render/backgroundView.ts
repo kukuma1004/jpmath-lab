@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { VIEW_H, WORLD_W } from '../config/constants';
-import { LAYER_W, backgroundFor, type BgLayers } from '../art/backgrounds';
+import { LAYER_W, ambientFor, backgroundFor, type BgLayers } from '../art/backgrounds';
 import { artKey } from '../art/artAssets';
 import type { Quality } from '../settings';
 import { WindStreaks, traceWind } from './windStreaks';
@@ -11,20 +11,18 @@ let uid = 0;
  * 화면 고정 카메라(bgCam)에 그리는 여러 겹의 배경. 월드 카메라 위치에 따라 겹마다 다르게 움직인다.
  */
 export class BackgroundView {
-  private sky: Phaser.GameObjects.Image;
+  private sky: Phaser.GameObjects.Image | null = null;
   private layers: { img: Phaser.GameObjects.Image; f: number; fy: number }[] = [];
   /** 그려 받은 배경 한 장(있으면 겹 배경 대신 쓴다) */
   private painted: Phaser.GameObjects.Image | null = null;
   private valleyMist: Phaser.GameObjects.Image | null = null;
   private ambient: Phaser.GameObjects.Particles.ParticleEmitter | null = null;
   private keys: string[] = [];
-  private bg: BgLayers;
   private t = 0;
   private breeze: Phaser.GameObjects.Graphics | null = null;
   private wind: WindStreaks | null = null;
 
   constructor(private scene: Phaser.Scene, private layer: Phaser.GameObjects.Layer, mapId: string, quality: Quality, private viewW: number, battle = false) {
-    this.bg = backgroundFor(mapId);
     const id = ++uid;
     const add = (name: string, c: HTMLCanvasElement) => {
       const key = `bg_${mapId}_${name}_${id}`;
@@ -32,9 +30,6 @@ export class BackgroundView {
       this.keys.push(key);
       return key;
     };
-    this.sky = scene.add.image(0, 0, add('sky', this.bg.sky)).setOrigin(0, 0);
-    layer.add(this.sky);
-    const spec: [keyof BgLayers, number, number][] = [['far', 0.06, 0.04], ['mid', 0.16, 0.1], ['near', 0.3, 0.2]];
     if (scene.textures.exists(artKey.bg(mapId))) {
       let key = artKey.bg(mapId);
       if (mapId === 'windrift') {
@@ -104,14 +99,18 @@ export class BackgroundView {
         this.valleyMist = scene.add.image(0, 0, add('mist', fog)).setOrigin(.5, 0);
         layer.add(this.valleyMist);
       }
-      spec.length = 0;
-    }
-    for (const [name, f, fy] of spec) {
-      const c = this.bg[name] as HTMLCanvasElement;
-      const img = scene.add.image(0, 0, add(name, c)).setOrigin(0, 0);
-      img.setScale(LAYER_W / c.width);
-      layer.add(img);
-      this.layers.push({ img, f, fy });
+    } else {
+      // The illustrated backdrops cover the viewport. Build procedural layers only for missing art.
+      const fallback = backgroundFor(mapId);
+      this.sky = scene.add.image(0, 0, add('sky', fallback.sky)).setOrigin(0, 0);
+      layer.add(this.sky);
+      const spec: [keyof BgLayers, number, number][] = [['far', .06, .04], ['mid', .16, .1], ['near', .3, .2]];
+      for (const [name, f, fy] of spec) {
+        const c = fallback[name];
+        const img = scene.add.image(0, 0, add(name, c)).setOrigin(0, 0).setScale(LAYER_W / c.width);
+        layer.add(img);
+        this.layers.push({ img, f, fy });
+      }
     }
     if (battle) {
       const breeze = this.breeze = scene.add.graphics();
@@ -125,16 +124,17 @@ export class BackgroundView {
         breeze.fillPath();
       }, quality === 'low');
     }
-    this.makeAmbient(quality);
+    this.makeAmbient(quality, mapId);
     this.resize(viewW);
   }
 
-  private makeAmbient(q: Quality): void {
+  private makeAmbient(q: Quality, mapId: string): void {
     const k = q === 'low' ? 0.35 : q === 'high' ? 1.4 : 1;
     const w = this.viewW;
     let cfg: Phaser.Types.GameObjects.Particles.ParticleEmitterConfig;
     let tex = 'dot';
-    switch (this.bg.ambient) {
+    const mood = ambientFor(mapId);
+    switch (mood) {
       case 'embers':
         cfg = { x: { min: 0, max: w }, y: VIEW_H + 10, speedY: { min: -90, max: -40 }, speedX: { min: -20, max: 20 }, lifespan: 6000, scale: { start: 0.5, end: 0 }, alpha: { start: 0.9, end: 0 }, tint: [0xffb04a, 0xff6a2a, 0xffe08a], blendMode: 'ADD', frequency: 160 / k };
         break;
@@ -156,12 +156,13 @@ export class BackgroundView {
     this.ambient = this.scene.add.particles(0, 0, tex, cfg);
     this.layer.add(this.ambient);
     // 처음부터 화면에 조금 깔려 있게
-    this.ambient.fastForward(this.bg.ambient === 'clouds' ? 30000 : 4000);
+    this.ambient.fastForward(mood === 'clouds' ? 30000 : 4000);
   }
 
   resize(w: number): void {
     this.viewW = w;
-    this.sky.setDisplaySize(w, VIEW_H);
+    this.sky?.setDisplaySize(w, VIEW_H);
+    this.valleyMist?.setDisplaySize(w * 1.16, VIEW_H);
   }
 
   /** camX/camY는 월드 카메라가 보는 가운데 */
@@ -179,7 +180,6 @@ export class BackgroundView {
       p.x = this.viewW / 2 - w / 2 - ux * slackX * 0.9;
       p.y = -slackY * (0.55 + uy * 0.4);
       if (this.valleyMist) {
-        this.valleyMist.setDisplaySize(this.viewW * 1.16, VIEW_H);
         this.valleyMist.setPosition(this.viewW * (.5 - .045 * ux) + Math.sin(this.t * .055) * 9, -uy * 11);
       }
     }
@@ -194,7 +194,7 @@ export class BackgroundView {
   }
 
   destroy(): void {
-    this.sky.destroy();
+    this.sky?.destroy();
     this.painted?.destroy();
     this.valleyMist?.destroy();
     for (const l of this.layers) l.img.destroy();

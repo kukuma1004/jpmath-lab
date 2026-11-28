@@ -3,7 +3,8 @@ import {rankAfter,rankTier,startingRank} from '../src/game/online/rank';
 import {Battle,defaultConfig} from '../src/game/combat/battle';
 
 describe('공개 랭크전',()=>{
-  it.each([[0,'bronze'],[999,'bronze'],[1000,'silver'],[1149,'silver'],[1150,'gold'],[1300,'jade'],[1450,'royal']])(
+  it.each([[0,'dung'],[799,'dung'],[800,'bronze'],[1000,'bronze'],[1299,'bronze'],[1300,'silver'],[1699,'silver'],
+    [1700,'gold'],[2099,'gold'],[2100,'jade'],[2499,'jade'],[2500,'royal']])(
     '%d 점에 해당하는 훈장을 표시한다',(points,id)=>expect(rankTier(points).id).toBe(id),
   );
   it('대등한 상대는 24점, 강한 상대를 이기면 32점이며 무승부는 점수가 유지된다',()=>{
