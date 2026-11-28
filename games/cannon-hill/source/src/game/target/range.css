@@ -245,4 +245,44 @@
   .target-scoreboard>span { padding-inline:5px; }
   .target-note { top:50px; padding:2px 6px; }
   .target-control { bottom:5px; --range-fire-width:64px; }
+  .target-tip { display:none; }
+}
+.target-mode .target-shell::after { inset:2px; border-radius:10px; }
+.target-field { background-image:linear-gradient(180deg,#fff1cb05,transparent 52%,#1d355938),url('/art/bg_quarry.png'); }
+.target-title,.target-scoreboard,.target-control>.target-shots,.target-adjust,.target-note {
+  border-color:#ebc373; background:linear-gradient(140deg,#344455f5,#192735fa 66%);
+  box-shadow:inset 0 0 0 2px #5a503e,0 3px 10px #10233185;
+}
+.target-scoreboard strong,.target-title h1 { color:#fff0cc; text-shadow:0 2px 1px #171e27; }
+.target-scoreboard>span:last-child strong { color:#ffd379; }
+.target-note { border:1px solid #dcb36d; padding:5px 15px; color:#fff0cd; }
+.target-finish {
+  background:radial-gradient(ellipse at center,#17273465,#172734b3);
+}
+.target-result-card {
+  display:grid; justify-items:center; gap:8px; width:min(90%,440px);
+  padding:clamp(16px,3vh,32px) 14px; border:2px solid #d6ab69; border-radius:6px 22px;
+  background:linear-gradient(145deg,#283d4de6,#152534ed 65%),url('/art/bg_quarry.png') center 35% / cover;
+  box-shadow:inset 0 0 0 3px #1a2730,inset 0 0 0 4px #847153,0 8px 28px #0a162d85;
+}
+.target-result-card::before {
+  content:""; width:34px; aspect-ratio:1; border-radius:50%; border:2px solid #d4a666;
+  background:radial-gradient(circle at center,#a74432 0 23%,#ffe0a1 25% 44%,#ad4e36 46% 67%,#543f37 69%);
+  box-shadow:0 2px 0 #131e28;
+}
+.target-result-card > strong { font-family:var(--title-font); text-shadow:0 3px 0 #5e422e; }
+.target-dialog { border:2px solid #c99e62; background:linear-gradient(145deg,#334351,#192633 72%); box-shadow:inset 0 0 0 2px #514b40,0 10px 30px #0d182aaa; }
+.target-dialog header { padding-bottom:10px; border-bottom:1px solid #af8c55; }
+.target-ranking li { border-left:3px solid #806e54; background:#223341; }
+.target-ranking li:first-child { border-color:#edc078; background:linear-gradient(100deg,#5c4a34,#293844); }
+@media (max-height:480px) {
+  .target-result-card { gap:3px; padding:10px; }
+  .target-result-card::before { width:20px; }
+}
+.target-shots li { border:1px solid #997c50; }
+.target-control .target-fire { border-color:#ffe08b; box-shadow:inset 0 0 0 3px #9c452c,inset 0 0 0 4px #ffc16a,0 3px 0 #5a301f,0 4px 12px #182230; }
+@media(max-width:460px) {
+  .target-mode .target-shell::after { background-size:12px 12px; }
+  .target-scoreboard { width:calc(100% - 22px); }
+  .target-scoreboard>span { padding-inline:2px; }
 }

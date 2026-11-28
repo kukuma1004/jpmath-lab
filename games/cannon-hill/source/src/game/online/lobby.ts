@@ -46,25 +46,33 @@ export class OnlineLobby {
                 <label>공개 범위<select name="visibility"><option value="public">공개방</option><option value="code">코드 전용</option></select></label>
               </div>
               <button class="btn jade" data-act="create">방 만들기</button>
-              <form class="online-join">
-                <label>방 코드<input name="code" maxlength="6" minlength="6" autocomplete="off" autocapitalize="characters" required></label>
-                <button class="btn" type="submit">방 참가</button>
-              </form>
+
             </section>
             <section class="online-room-list" aria-labelledby="open-room-title">
               <h3 id="open-room-title">공개방 목록</h3>
               <p class="online-room-empty">대기 중인 공개방이 없어요.</p>
               <ul class="online-room-rows" aria-label="대기 중인 공개방"></ul>
+              <form class="online-join">
+                <label>방 코드<input name="code" maxlength="6" minlength="6" autocomplete="off" autocapitalize="characters" required></label>
+                <button class="btn" type="submit">방 참가</button>
+              </form>
             </section>
           </div>
           <section class="online-wait" hidden>
             <p data-wait></p><p data-wait-map></p><p data-wait-players></p><strong data-code></strong>
             <div class="online-actions"><button class="btn jade" data-act="copy" hidden>코드 복사</button><button class="btn" data-act="leave">대기 취소</button></div>
           </section>
-          <ol class="online-board" aria-label="온라인 대전 누적 순위" hidden></ol>
         </div>
-      </div>`;
+      </div>
+      <dialog class="online-board-dialog" aria-labelledby="online-board-title">
+        <header><h3 id="online-board-title">랭크전 누적 순위</h3><button class="btn ghost" type="button" data-act="close-board">닫기</button></header>
+        <p class="online-board-message" role="status"></p>
+        <ol class="online-board" aria-label="온라인 대전 누적 순위"></ol>
+      </dialog>`;
     container.append(this.root);
+    this.select('.online-board-dialog').addEventListener('close',()=>{
+      if(this.client.state&&this.root.isConnected)this.select('[data-act=rankings]').focus({preventScroll:true});
+    });
     this.root.addEventListener('submit',event=>{
       event.preventDefault();
       const form=event.target as HTMLFormElement;
@@ -127,9 +135,13 @@ export class OnlineLobby {
             li.append(name,medal,stats);
             return li;
           }));
-          this.message=rows.length?'':'첫 랭킹전 기록을 기다리고 있어요.';
           board.hidden=!rows.length;
+          this.select('.online-board-message').textContent=rows.length?'':'첫 랭킹전 기록을 기다리고 있어요.';
+          const dialog=this.select<HTMLDialogElement>('.online-board-dialog');
+          if(this.root.isConnected&&this.client.state&&!dialog.open)dialog.showModal();
         });
+      }else if(action==='close-board'){
+        this.select<HTMLDialogElement>('.online-board-dialog').close();
       }
     });
     this.render();
@@ -176,7 +188,7 @@ export class OnlineLobby {
     if(status.textContent!==message)status.textContent=message;
     this.select('.online-auth').hidden=this.client.authenticated;
     this.select('.online-signed').hidden=!state;
-    if(!state)this.select('.online-board').hidden=true;
+    if(!state)this.select<HTMLDialogElement>('.online-board-dialog').close();
     if(state) {
       this.select('[data-profile]').textContent=state.profile.nickname;
       const medal=this.select('[data-medal]');
@@ -198,7 +210,7 @@ export class OnlineLobby {
     this.select('[data-code]').textContent=state?.room?.kind==='friendly'?state.room.code:'';
     this.select('[data-act=copy]').hidden=!state?.room?.code || state.room.kind!=='friendly' || !navigator.clipboard;
     this.renderRooms(state?.rooms??[]);
-    this.root.querySelectorAll<HTMLButtonElement>('button').forEach(button=>{button.disabled=this.busy;});
+    this.root.querySelectorAll<HTMLButtonElement>('button:not([data-act=close-board])').forEach(button=>{button.disabled=this.busy;});
   }
 
   private async run(action:()=>Promise<void>):Promise<void> {

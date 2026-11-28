@@ -114,10 +114,12 @@ export class TargetRange {
           <canvas width="${WIDTH * 2}" height="${HEIGHT * 2}" aria-label="높낮이가 있는 표적과 엄폐물을 넘겨 쏘는 사격장"></canvas>
           <div class="target-note" data-feedback role="status" aria-live="polite"></div>
           <section class="target-finish" hidden aria-label="도전 결과">
-            <p>10발 완료</p><strong data-total></strong><p data-best></p>
-            <div class="target-result-actions">
-              <button class="btn primary" type="button" data-action="submit">순위에 등록</button>
-              <button class="btn" type="button" data-action="retry">다시 도전</button>
+            <div class="target-result-card">
+              <p>10발 완료</p><strong data-total></strong><p data-best></p>
+              <div class="target-result-actions">
+                <button class="btn primary" type="button" data-action="submit">순위에 등록</button>
+                <button class="btn" type="button" data-action="retry">다시 도전</button>
+              </div>
             </div>
           </section>
         </div>
@@ -589,7 +591,17 @@ export class TargetRange {
       g.save();
       g.translate(landingX, landingY);
       g.scale(this.objectAspect,1);
-      if (shot.stop === 'wall' || shot.points > 0) {
+      if (shot.stop === 'floor') {
+        g.globalAlpha = fade * .85;
+        for (let i = 0; i < 7; i++) {
+          const drift = (i - 3) * spread * .29;
+          const lift = (4 - Math.abs(i - 3)) * spread * .11;
+          g.fillStyle = i % 2 ? '#d3b38b' : '#9e8c77';
+          g.beginPath();
+          g.ellipse(drift,-lift,spread*.21,spread*.11,-.22,0,Math.PI*2);
+          g.fill();
+        }
+      } else if (shot.stop === 'wall' || shot.points > 0) {
         g.globalAlpha = fade;
         g.lineWidth = 3;
         g.strokeStyle = center ? '#ffe89a' : '#f1d1a6';
@@ -726,11 +738,30 @@ function drawRangeStand(g: CanvasRenderingContext2D, x: number, y: number, floor
   };
   const standBottom = Math.max(5, floor-y);
   const standTop = Math.min(standBottom-3, 23);
+  // The foot shadow and iron shoes seat the target on the quarry shelf.
+  g.save();
+  g.translate(0,standBottom);
+  const shadow = g.createRadialGradient(0,0,0,0,0,1);
+  shadow.addColorStop(0,'rgba(36,32,35,.65)');
+  shadow.addColorStop(1,'rgba(36,32,35,0)');
+  g.scale(56,5);
+  g.fillStyle = shadow;
+  g.fillRect(-1,-1,2,2);
+  g.restore();
   for (const post of [-29,29]) beam(post,standTop,post,standBottom,7);
   if (standBottom - standTop > 10) {
     beam(-29,standTop,29,standBottom,5); beam(29,standTop,-29,standBottom,5);
   }
   beam(-35,standTop,35,standTop,7);
+  if (standBottom - standTop > 15) {
+    for (const post of [-29,29]) {
+      g.fillStyle = '#463e38';
+      g.fillRect(post-5,standBottom-9,10,9);
+      g.fillStyle = '#d7ac72';
+      g.fillRect(post-5,standBottom-9,10,2);
+      g.fillRect(post-1,standBottom-5,2,2);
+    }
+  }
   beam(0,0,0,standTop,7);
   g.save();
   g.transform(1, 0, kick * aspect, 1, -standTop * kick * aspect, 0);

@@ -737,3 +737,64 @@ html, body {
   .hud .kbtn { width:clamp(30px,4.9vw,45px); }
   .hud .power { width:clamp(54px,9vw,84px); }
 }
+/* Illustrated game entrances and the gilded battlefield frame. */
+.title::after,.online-panel::after,.target-shell::after {
+  content:""; position:absolute; inset:4px; z-index:3; pointer-events:none;
+  --curl: radial-gradient(circle at 9px 9px, transparent 0 3px,#ebbd69 3.5px 5px,transparent 5.5px 7px,#ce9342 7.5px 9px,transparent 9.5px);
+  border:2px solid #edbb65; border-radius:13px;
+  background:var(--curl) left top / 20px 20px,var(--curl) right top / 20px 20px,var(--curl) left bottom / 20px 20px,var(--curl) right bottom / 20px 20px;
+  background-repeat:no-repeat; box-shadow:inset 0 0 0 1px #704b31;
+}
+.title { overflow:auto; align-content:safe center; }
+@media (orientation:portrait) {
+  .title {
+    background:linear-gradient(180deg,#14283b18,#24223340 47%,#182635b8),
+      url('/art/bg_sanseong.webp') 61% center / cover;
+    touch-action:pan-y;
+  }
+}
+.title .title-wrap { width:min(1060px,97%); margin:auto; padding:24px 12px; transform:none; }
+.title .menu {
+  width:100%; grid-template-columns:1.25fr 1.25fr .72fr .72fr;
+  grid-template-areas:"online target quick quick" "online target ai local" "online target howto settings";
+  gap:12px; margin-top:16px;
+}
+.title .menu .btn { border:1px solid #e2b15d; padding:12px 7px; }
+.title [data-act=ai] { grid-area:ai; }
+.title [data-act=local] { grid-area:local; }
+.title [data-act=howto] { grid-area:howto; }
+.title [data-act=settings] { grid-area:settings; }
+.title .menu .quick { grid-area:quick; }
+.title .menu .online-entry,.title .menu .target-entry {
+  position:relative; isolation:isolate; overflow:hidden; display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+  padding:clamp(16px,2vw,29px) 7px 62px; border:2px solid #f6ce79; border-radius:17px;
+  color:#fff0cf; font:400 clamp(23px,2.6vw,38px)/1.12 var(--title-font);
+  text-shadow:0 2px 2px #2f2217,0 0 9px #382620;
+  box-shadow:inset 0 0 0 3px #614324,0 4px 0 #5e381c,0 8px 20px #100d1aa6;
+}
+.title .menu .online-entry { grid-area:online; background:linear-gradient(#582124f2,#733131a8 38%,transparent 76%),url('/art/bg_sanseong.webp') 74% 25% / 180% auto; }
+.title .menu .target-entry { grid-area:target; background:linear-gradient(#123f4cf5,#195665ab 38%,transparent 75%),url('/art/bg_quarry.png') 74% 35% / 160% auto; }
+.title .menu .online-entry::after,.title .menu .target-entry::after {
+  content:""; position:absolute; inset:2px; border:1px solid #ffdb85; border-radius:12px; box-shadow:inset 0 0 0 2px #885d3266; pointer-events:none;
+}
+.title .menu .target-entry::before {
+  content:""; position:absolute; z-index:-1; bottom:-3%; width:27%; aspect-ratio:1;
+  border-radius:50%; border:4px ridge #b17d38; background:repeating-radial-gradient(circle,#ba4429 0 15%,#efc567 16% 32%,#bb4529 33% 46%,#e4b45c 47% 63%);
+  box-shadow:2px 3px 2px #513a21;
+}
+.title .menu .target-entry small,.title .menu .online-entry small { color:#ffedbd; font:650 clamp(10px,1.1vw,15px)/1.25 var(--body-font); opacity:1; }
+@media(max-width:680px) and (orientation:portrait) {
+  .title .title-wrap { width:97%; gap:6px; padding:18px 9px; }
+  .title .menu { grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; grid-template-areas:"online target" "quick quick" "ai local" "howto settings"; }
+  .title .menu .online-entry,.title .menu .target-entry { min-height:clamp(92px,18dvh,148px); padding:15px 4px 34px; }
+  .title .menu .btn:not(.online-entry,.target-entry) { min-height:40px; padding:8px 4px; font-size:16px; }
+  .title .foot { margin-top:8px; flex-wrap:wrap; justify-content:center; gap:3px 10px; }
+}
+@media(max-height:500px) and (orientation:landscape) {
+  .title .title-wrap { padding:12px 16px; gap:3px; }
+  .title .logo { font-size:clamp(46px,16dvh,75px); }
+  .title .menu { margin-top:5px; gap:6px; }
+  .title .menu .btn { min-height:32px; padding:5px 4px; font-size:16px; }
+  .title .menu .online-entry,.title .menu .target-entry { padding-top:13px; font-size:24px; }
+  .title .foot { margin-top:5px; }
+}

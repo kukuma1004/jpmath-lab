@@ -71,6 +71,7 @@ export class UI {
   private picks: string[];
   private mapPick: string;
   private hudCache = new Map<string, string>();
+  private onlineSeat?: number;
   private bannerT = 0;
   private toastT = 0;
 
@@ -133,7 +134,7 @@ export class UI {
           <div class="menu">
             <button class="btn primary quick" data-act="quick">바로 한 판<small>쉬운 AI · 내가 먼저 발사</small></button>
             <button class="btn jade target-entry" data-act="target">표적 10발<small>각도와 힘으로 누적 순위 도전</small></button>
-            ${this.hooks.online ? `<button class="btn jade online-entry" data-act="online">${this.hooks.onlineGroups?'온라인 대전':'온라인 1:1'}<small>랭크전 · 친선전</small></button>` : ''}
+            ${this.hooks.online ? `<button class="btn jade online-entry" data-act="online">1:1 랭크전<small>${this.hooks.onlineGroups?'온라인 대전':'온라인 1:1'} · 친선전</small></button>` : ''}
             <button class="btn" data-act="ai">AI와 겨루기<small>장수·전장 고르기</small></button>
             <button class="btn jade" data-act="local">함께 하기<small>한 기기로 2~4명</small></button>
             <button class="btn" data-act="howto">게임 방법</button>
@@ -387,6 +388,7 @@ export class UI {
         <div class="top">
           <div class="team t1"></div>
           <div class="center">
+            <div class="match-format" hidden></div>
             <div class="turnpill"><div class="timer"><svg viewBox="0 0 40 40"><circle class="bg" cx="20" cy="20" r="17"/><circle class="fg" cx="20" cy="20" r="17" stroke-dasharray="106.8" stroke-dashoffset="0"/></svg><b>30</b></div><span class="tp">1P 차례</span><span class="tno"></span></div>
             <div class="wind"><span class="lbl">바람</span><div class="arrow"><div class="track"></div><div class="mid"></div><div class="fill"></div></div><span class="v">0</span></div>
             <div class="status"></div>
@@ -446,9 +448,13 @@ export class UI {
     });
   }
 
-  showHud(b: Battle, names: string[]): void {
+  showHud(b: Battle, names: string[], online?: OnlineRoom): void {
+    this.onlineSeat = online?.you;
     this.hudCache.clear();
     const el = this.screens.get('hud')!;
+    const format = el.querySelector<HTMLElement>('.match-format')!;
+    format.hidden = !online;
+    if (online) format.textContent = online.kind === 'ranked' ? '1:1 랭크전' : b.cfg.freeForAll ? `${b.fighters.length}인 개인전` : b.fighters.length > 2 ? '2:2 팀전' : '1:1 친선전';
     const mini = b.fighters.length > 2;
     for (const team of [0, 1] as const) {
       const box = el.querySelector<HTMLElement>(`.team.t${team + 1}`)!;
@@ -456,8 +462,8 @@ export class UI {
         const c = character(f.charId);
         return `
         <div class="pcard p${team + 1}${mini ? ' mini' : ''}" data-f="${f.idx}" data-team="${f.team + 1}">
-          <div class="who"><img alt="" src="${this.portraits[c.id]?.[team === 1 ? 'bustFlip' : 'bust'] ?? ''}"><i>${esc(names[f.idx] ?? '')}</i></div>
-          <div><div class="name"><span class="nm">${mini && !b.cfg.freeForAll ? c.name : `${esc(names[f.idx] ?? '')} · ${c.name}`}</span><span data-rank-badge></span><small class="hpn"></small></div>
+          <div class="who"><img alt="" src="${this.portraits[c.id]?.[team === 1 ? 'bustFlip' : 'bust'] ?? ''}"><i>${online ? f.idx === online.you ? '나' : f.team === b.fighters[online.you]?.team ? '아군' : '상대' : esc(names[f.idx] ?? '')}</i></div>
+          <div><div class="name"><span class="nm">${mini && !b.cfg.freeForAll && !online ? c.name : `${esc(names[f.idx] ?? '')} · ${c.name}`}</span><span data-rank-badge></span><small class="hpn"></small></div>
           <div class="bar"><b></b><i></i><span></span></div>
           </div>
         </div>`;
@@ -532,7 +538,12 @@ export class UI {
     });
     this.set('tp', `${b.current}|${b.turnNo}`, () => {
       const tp = el.querySelector<HTMLElement>('.tp')!;
-      tp.textContent = b.fighters.length > 2 ? `${opts.names[b.current]} · ${character(b.cur.charId).name}` : `${opts.names[b.current]} 차례`;
+      if (this.onlineSeat !== undefined) {
+        const ally = !b.cfg.freeForAll && b.cur.team === b.fighters[this.onlineSeat]?.team;
+        tp.textContent = b.current === this.onlineSeat ? '내 차례' : ally ? '아군 차례' : '상대 차례';
+      } else {
+        tp.textContent = b.fighters.length > 2 ? `${opts.names[b.current]} · ${character(b.cur.charId).name}` : `${opts.names[b.current]} 차례`;
+      }
       tp.dataset.team = String(b.cur.team + 1);
       el.querySelector('.tno')!.textContent = b.cfg.turnLimit > 0 ? `${Math.max(1, b.turnNo)} / ${b.cfg.turnLimit}턴` : `${Math.max(1, b.turnNo)}턴 · 끝장전`;
     });

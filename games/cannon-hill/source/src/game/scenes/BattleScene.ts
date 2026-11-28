@@ -159,7 +159,7 @@ export class BattleScene extends Phaser.Scene {
     this.camZ = ov.z;
     this.applyCamera();
 
-    this.app.ui.showHud(b, this.names);
+    this.app.ui.showHud(b, this.names, this.online?.room ?? undefined);
     input.reset();
     input.active = true;
     input.listeners = {

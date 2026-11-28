@@ -8,7 +8,7 @@ document.addEventListener('dblclick', (e) => {
   if (!(e.target as HTMLElement).closest('.card')) e.preventDefault();
 }, { passive: false });
 document.addEventListener('touchmove', (e) => {
-  if (!(e.target as HTMLElement).closest('.grid, .detail, .sheet')) e.preventDefault();
+  if (!(e.target as HTMLElement).closest('.grid, .detail, .sheet, .title, .online-lobby, .target-dialog, .result, input[type=range]')) e.preventDefault();
 }, { passive: false });
 
 input.attach();
