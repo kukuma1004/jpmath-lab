@@ -219,7 +219,7 @@ export class OnlineLobby {
 
   private mapImage(id:string):string {
     if(id==='random')return this.art.mapThumbs.sanseong||'art/bg_sanseong.webp';
-    return this.art.mapThumbs[id]||`art/bg_${id}.${id==='bridge'||id==='quarry'?'png':'webp'}`;
+    return this.art.mapThumbs[id]||`art/bg_${id}.webp`;
   }
 
   private paintPicks():void {

@@ -151,11 +151,14 @@ export class TerrainView {
     }
     d.length = 0;
     let n = 0;
-    for (const i of want) {
-      if (n >= maxTiles || (n > 0 && performance.now() >= deadline)) break;
-      this.drawTile(i);
-      want.delete(i);
-      n++;
+    for (const visible of [true, false]) {
+      for (const i of want) {
+        if (n >= maxTiles || (n > 0 && performance.now() >= deadline)) break;
+        if (visible !== this.inView(i)) continue;
+        this.drawTile(i);
+        want.delete(i);
+        n++;
+      }
     }
     if (railsChanged) this.drawBridgeRails();
   }

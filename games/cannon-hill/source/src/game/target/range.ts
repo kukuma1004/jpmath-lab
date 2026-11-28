@@ -55,6 +55,19 @@ function showShot(token: HTMLElement, shot: TargetShot, index: number): void {
   token.title = shotFeedback(shot);
   token.setAttribute('aria-label', `${index + 1}번째 · ${token.title}`);
 }
+
+function makeSmokePuff(): HTMLCanvasElement {
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = 64;
+  const ctx = canvas.getContext('2d')!;
+  const smoke = ctx.createRadialGradient(32, 24.32, 0, 32, 32, 32);
+  smoke.addColorStop(0, 'rgba(58,54,56,.69)');
+  smoke.addColorStop(.54, 'rgba(87,78,77,.5)');
+  smoke.addColorStop(1, 'rgba(128,108,93,0)');
+  ctx.fillStyle = smoke;
+  ctx.fillRect(0, 0, 64, 64);
+  return canvas;
+}
 type Phase = 'ready' | 'flight' | 'feedback' | 'result';
 
 interface RenderShot {
@@ -111,7 +124,7 @@ export class TargetRange {
         </div>
         <div class="target-field">
           <canvas class="target-wind" aria-hidden="true"></canvas>
-          <canvas width="${WIDTH * 2}" height="${HEIGHT * 2}" aria-label="높낮이가 있는 표적과 엄폐물을 넘겨 쏘는 사격장"></canvas>
+          <canvas width="${WIDTH}" height="${HEIGHT}" aria-label="높낮이가 있는 표적과 엄폐물을 넘겨 쏘는 사격장"></canvas>
           <div class="target-note" data-feedback role="status" aria-live="polite"></div>
           <section class="target-finish" hidden aria-label="도전 결과">
             <div class="target-result-card">
@@ -157,7 +170,6 @@ export class TargetRange {
     container.appendChild(this.root);
     const canvas = this.select<HTMLCanvasElement>('canvas[aria-label]');
     this.ctx = canvas.getContext('2d')!;
-    this.ctx.scale(2, 2);
     const windCanvas = this.windCanvas = this.select<HTMLCanvasElement>('.target-wind');
     const air = windCanvas.getContext('2d')!;
     this.breeze = new WindStreaks(() => {
@@ -184,6 +196,15 @@ export class TargetRange {
           if (windCanvas.width !== rasterWidth) windCanvas.width = rasterWidth;
           if (windCanvas.height !== rasterHeight) windCanvas.height = rasterHeight;
         } else {
+          const density = Math.min(devicePixelRatio || 1, matchMedia('(pointer: coarse)').matches ? 1.5 : 2);
+          const rasterWidth = Math.min(WIDTH * 2, Math.ceil(width * density));
+          const rasterHeight = Math.min(HEIGHT * 2, Math.ceil(height * density));
+          if (canvas.width !== rasterWidth || canvas.height !== rasterHeight) {
+            canvas.width = rasterWidth;
+            canvas.height = rasterHeight;
+            this.ctx.setTransform(rasterWidth / WIDTH, 0, 0, rasterHeight / HEIGHT, 0, 0);
+            this.sceneryKey = -1;
+          }
           this.objectAspect = Math.min(2.6, height * WIDTH / (width * HEIGHT));
           this.needsPaint = true;
         }
@@ -195,10 +216,10 @@ export class TargetRange {
     const { signal } = this.controls;
     this.portrait.addEventListener('load', () => { this.needsPaint = true; }, { signal });
     this.rockTexture.addEventListener('load', () => {
-      this.rampartImage = undefined;
+      this.sceneryKey = -1;
       this.needsPaint = true;
     }, {signal});
-    this.rockTexture.src = new URL('art/bg_quarry.png', document.baseURI).href;
+    this.rockTexture.src = new URL('art/bg_quarry.webp', document.baseURI).href;
     if (portrait) this.portrait.src = portrait;
     const angle = this.select<HTMLInputElement>('#target-slope');
     const fire = this.select<HTMLButtonElement>('.target-fire');
@@ -426,6 +447,7 @@ export class TargetRange {
   };
 
   private rampartImage?: HTMLCanvasElement;
+  private smokePuff?: HTMLCanvasElement;
   private sceneryKey = -1;
 
   private draw(now: number): void {
@@ -443,11 +465,14 @@ export class TargetRange {
     g.clearRect(0, 0, WIDTH, HEIGHT);
     if (!this.rampartImage || this.sceneryKey !== muzzle + activeRound * WIDTH) {
       this.sceneryKey = muzzle + activeRound * WIDTH;
-      this.rampartImage = document.createElement('canvas');
-      this.rampartImage.width = WIDTH*2;
-      this.rampartImage.height = HEIGHT*2;
-      const stone = this.rampartImage.getContext('2d')!;
-      stone.scale(2,2);
+      const scenery = this.rampartImage ??= document.createElement('canvas');
+      if (scenery.width !== g.canvas.width || scenery.height !== g.canvas.height) {
+        scenery.width = g.canvas.width;
+        scenery.height = g.canvas.height;
+      }
+      const stone = scenery.getContext('2d')!;
+      stone.setTransform(scenery.width / WIDTH, 0, 0, scenery.height / HEIGHT, 0, 0);
+      stone.clearRect(0, 0, WIDTH, HEIGHT);
       const floor = targetY(FLOOR_HEIGHT);
       const launch = LINE_Y + 16;
       drawCliff(stone, [[0,launch],[muzzle+50,launch],[muzzle+68,floor+30],[muzzle+116,floor+36],[muzzle+150,floor+92],[muzzle+224,floor+105],[muzzle+270,HEIGHT]], this.rockTexture);
@@ -517,22 +542,16 @@ export class TargetRange {
     if (this.phase === 'flight') {
       if (!this.reducedMotion) {
         // Puffs stay at their emission coordinates while the shell travels ahead.
+        const smoke = this.smokePuff ??= makeSmokePuff();
         g.save();
         for (let i=Math.max(0,Math.floor((progress-.24)*120));i<progress*120;i++) {
           const age=(progress-i/120)/.24;
           const puff=position(i/120);
           const size=3+age*(7+3*Math.sin(i));
           const centerY=puff.y-age*(5+Math.sin(i*3.7)*6);
-          g.save();
-          g.translate(puff.x,centerY);
-          g.scale(this.objectAspect,1);
-          const smoke=g.createRadialGradient(0,-size*.24,0,0,0,size);
-          smoke.addColorStop(0,'rgba(58,54,56,'+(Math.max(0,1-age)*.69)+')');
-          smoke.addColorStop(.54,'rgba(87,78,77,'+(Math.max(0,1-age)*.5)+')');
-          smoke.addColorStop(1,'rgba(128,108,93,0)');
-          g.fillStyle=smoke;
-          g.fillRect(-size,-size,size*2,size*2);
-          g.restore();
+          const halfWidth = size * this.objectAspect;
+          g.globalAlpha = Math.max(0, 1 - age);
+          g.drawImage(smoke, puff.x - halfWidth, centerY - size, halfWidth * 2, size * 2);
         }
         g.restore();
         const count = 16;

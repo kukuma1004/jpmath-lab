@@ -82,6 +82,6 @@ export function saveSettings(s: Settings): void {
   }
 }
 
-export function particleScale(q: Quality): number {
-  return q === 'low' ? 0.4 : q === 'high' ? 1.35 : 1;
+export function particleScale(q: Quality, touch = false): number {
+  return q === 'low' ? 0.4 : q === 'high' ? 1.35 : touch ? 0.75 : 1;
 }

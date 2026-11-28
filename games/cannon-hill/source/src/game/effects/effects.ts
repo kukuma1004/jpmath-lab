@@ -30,9 +30,9 @@ export class Effects {
   private flashes: Phaser.GameObjects.Image[] = [];
   private matColor: (m: number) => number;
 
-  constructor(private scene: Phaser.Scene, private layer: Phaser.GameObjects.Layer, def: MapDef, public quality: number, public shakeK: number, private cam: () => Phaser.Cameras.Scene2D.Camera) {
+  constructor(private scene: Phaser.Scene, private layer: Phaser.GameObjects.Layer, def: MapDef, public quality: number, public shakeK: number, private cam: () => Phaser.Cameras.Scene2D.Camera, touch: boolean) {
     const add = (tex: string, cfg: Phaser.Types.GameObjects.Particles.ParticleEmitterConfig, depth: number) => {
-      const e = scene.add.particles(0, 0, tex, { ...cfg, emitting: false });
+      const e = scene.add.particles(0, 0, tex, { ...cfg, maxAliveParticles: touch ? 80 : 0, emitting: false });
       e.setDepth(depth);
       layer.add(e);
       return e;

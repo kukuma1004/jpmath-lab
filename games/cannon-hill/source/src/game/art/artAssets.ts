@@ -79,9 +79,9 @@ export const artKey = {
 };
 
 export function preloadArt(load: Phaser.Loader.LoaderPlugin): void {
-  for (const id of Object.keys(ART.chars)) load.image(artKey.char(id), `art/char_${id}.${id === 'driller' ? 'png' : 'webp'}`);
+  for (const id of Object.keys(ART.chars)) load.image(artKey.char(id), `art/char_${id}.webp`);
   for (const id of Object.keys(ART.weapons)) load.image(artKey.wpn(id), `art/wpn_${id}.webp`);
-  for (const id of Object.keys(ART.bgs)) load.image(artKey.bg(id), `art/bg_${id}.${id === 'bridge' || id === 'quarry' ? 'png' : 'webp'}`);
+  for (const id of Object.keys(ART.bgs)) load.image(artKey.bg(id), `art/bg_${id}.webp`);
 }
 
 export interface BodyArt {
@@ -184,9 +184,4 @@ export function makeArtPortrait(textures: Phaser.Textures.TextureManager, id: st
     ctx.restore();
   }
   return c.toDataURL('image/png');
-}
-
-/** 전장 미리보기 뒤에 깔 그림 */
-export function bgSource(textures: Phaser.Textures.TextureManager, mapId: string): CanvasImageSource | null {
-  return ART.bgs[mapId] ? source(textures, artKey.bg(mapId)) : null;
 }

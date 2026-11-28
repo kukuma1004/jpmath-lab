@@ -79,7 +79,6 @@ export class BodiesView {
 
   private syncClouds(b: Battle, t: number): void {
     if (!b.clouds.length && !this.cloudLabels.size) return;
-    this.cloudFx.clear();
     const seenClouds = new Set<number>();
     for (const c of b.clouds) {
       seenClouds.add(c.id);
@@ -103,6 +102,8 @@ export class BodiesView {
   }
 
   sync(b: Battle, t: number): void {
+    // The same graphics buffer also draws drill shavings and homing indicators.
+    this.cloudFx.clear();
     this.syncClouds(b, t);
     // 포탄
     for (const v of this.proj.values()) v.seen = false;

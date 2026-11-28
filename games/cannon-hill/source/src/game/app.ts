@@ -1,11 +1,10 @@
 import Phaser from 'phaser';
 import { VIEW_H, VIEW_W_MAX, VIEW_W_MIN } from './config/constants';
 import { CHARACTERS } from './data/characters';
-import { MAPS, generateTerrain } from './data/maps';
+import { MAPS } from './data/maps';
 import { makePortrait } from './art/characters';
-import { bgSource, makeArtPortrait } from './art/artAssets';
-import { TerrainPainter } from './render/terrainPainter';
-import { loadSettings, saveSettings, type Settings } from './settings';
+import { bodyArt, makeArtPortrait } from './art/artAssets';
+import { loadSettings, particleScale, saveSettings, type Settings } from './settings';
 import { UI, type Mode } from './ui/ui';
 import { audio } from './audio/audio';
 import { BootScene } from './scenes/BootScene';
@@ -28,6 +27,7 @@ export class App {
   ui: UI;
   game!: Phaser.Game;
   mode: Mode = 'ai';
+  readonly touchGraphics = matchMedia('(pointer: coarse)').matches;
   private target: TargetRange | null = null;
   private readonly online: OnlineClient | null = onlineEnabled ? new OnlineClient(() => this.onlineChanged()) : null;
   private lobby: OnlineLobby | null = null;
@@ -125,37 +125,25 @@ export class App {
   onBooted(): void {
     const tex = this.game.textures;
     for (const c of CHARACTERS) {
-      const art = makeArtPortrait(tex, c.id, 256);
-      if (art) {
-        this.ui.portraits[c.id] = {
-          normal: art,
-          happy: art,
-          hurt: art,
-          flip: makeArtPortrait(tex, c.id, 256, { flip: true })!,
-          bust: makeArtPortrait(tex, c.id, 128, { bust: true })!,
-          bustFlip: makeArtPortrait(tex, c.id, 128, { bust: true, flip: true })!,
-        };
-        continue;
-      }
-      const normal = makePortrait(c.id, 192, 'normal');
-      const flip = makePortrait(c.id, 192, 'normal', true);
-      this.ui.portraits[c.id] = { normal, happy: makePortrait(c.id, 192, 'happy'), hurt: makePortrait(c.id, 192, 'hurt'), flip, bust: normal, bustFlip: flip };
+      const art = bodyArt(tex, c.id) !== null;
+      let normal: string | undefined, flip: string | undefined;
+      let happy: string | undefined, hurt: string | undefined, bust: string | undefined, bustFlip: string | undefined;
+      this.ui.portraits[c.id] = {
+        get normal() { return normal ??= makeArtPortrait(tex, c.id, 256) ?? makePortrait(c.id, 192, 'normal'); },
+        get flip() { return flip ??= makeArtPortrait(tex, c.id, 256, { flip: true }) ?? makePortrait(c.id, 192, 'normal', true); },
+        get happy() { return art ? this.normal : happy ??= makePortrait(c.id, 192, 'happy'); },
+        get hurt() { return art ? this.normal : hurt ??= makePortrait(c.id, 192, 'hurt'); },
+        get bust() { return bust ??= makeArtPortrait(tex, c.id, 128, { bust: true }) ?? this.normal; },
+        get bustFlip() { return bustFlip ??= makeArtPortrait(tex, c.id, 128, { bust: true, flip: true }) ?? this.flip; },
+      };
     }
+    // Seed-1 battlefield previews are rendered ahead of time so opening a match does not compete with their generation.
+    for (const map of MAPS) this.ui.mapThumbs[map.id] = `art/map_${map.id}.webp`;
     this.ui.hideLoading();
     this.ui.showTitle();
     const invite=new URLSearchParams(location.search).get('room')?.toUpperCase()??'';
     if(this.online?.groups&&/^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{6}$/.test(invite))this.openOnline();
     audio.playBgm('title');
-    // 전장 미리보기는 화면이 뜬 뒤 하나씩 천천히
-    let i = 0;
-    const next = () => {
-      const m = MAPS[i++];
-      if (!m) return;
-      const t = generateTerrain(m, 1);
-      this.ui.mapThumbs[m.id] = new TerrainPainter(t, m, 1).thumbnail(360, 180, m.sky, bgSource(tex, m.id));
-      window.setTimeout(next, 30);
-    };
-    window.setTimeout(next, 200);
   }
 
   private applySettings(s: Settings): void {
@@ -164,7 +152,7 @@ export class App {
     const bs = this.battleScene();
     if (bs) {
       bs.effects.shakeK = s.shake;
-      bs.effects.quality = s.quality === 'low' ? 0.4 : s.quality === 'high' ? 1.35 : 1;
+      bs.effects.quality = particleScale(s.quality, this.touchGraphics);
     }
   }
 

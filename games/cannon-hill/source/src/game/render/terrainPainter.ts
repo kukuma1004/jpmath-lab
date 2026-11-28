@@ -55,7 +55,7 @@ export class TerrainPainter {
   private ink: RGB[] = [];
   private crust: (RGB | null)[] = [];
   private fog: RGB;
-  private _soft: Int8Array | null = null;
+  private _soft: Uint8Array | null = null;
   private _strata: Float32Array | null = null;
 
   constructor(public terrain: Terrain, public def: MapDef, private seed: number) {
@@ -71,20 +71,18 @@ export class TerrainPainter {
     this.fog = hex(def.sky[1]);
   }
 
-  /** 큰 붓자국 같은 색 얼룩(셀마다 한 번만 계산) */
-  private get soft(): Int8Array {
-    if (this._soft) return this._soft;
+  /** Shade each painted cell once. Zero marks a coordinate that has never been painted. */
+  private softAt(cx: number, cy: number): number {
+    const cache = this._soft ??= new Uint8Array(COLS * ROWS);
+    const i = cy * COLS + cx;
+    const packed = cache[i]!;
+    if (packed) return packed - 32;
     const seed = this.seed;
-    const v = new Int8Array(COLS * ROWS);
-    for (let cy = 0; cy < ROWS; cy++) {
-      for (let cx = 0; cx < COLS; cx++) {
-        const a = noise2(cx / 13, cy / 11, seed) - 0.5;
-        const b = noise2(cx / 41, cy / 29, seed + 5) - 0.5;
-        v[cy * COLS + cx] = (a * 18 + b * 26 + (hash2(cx, cy, seed) - 0.5) * 3) | 0;
-      }
-    }
-    this._soft = v;
-    return v;
+    const a = noise2(cx / 13, cy / 11, seed) - 0.5;
+    const b = noise2(cx / 41, cy / 29, seed + 5) - 0.5;
+    const shade = (a * 18 + b * 26 + (hash2(cx, cy, seed) - 0.5) * 3) | 0;
+    cache[i] = shade + 32;
+    return shade;
   }
 
   private get strata(): Float32Array {
@@ -359,7 +357,7 @@ export class TerrainPainter {
   /** depth: 위쪽 공기에서 몇 칸째인가(겉흙용), air: 가장 가까운 공기까지 거리(셀) */
   private cellColor(t: Uint8Array, cx: number, cy: number, m: number, depth: number, air: number): RGB {
     const i = cy * COLS + cx;
-    const v = this.soft[i]!;
+    const v = this.softAt(cx, cy);
     const base = this.base[m]!;
     let r = base[0], gg = base[1], b = base[2];
     const px = cx * CELL, py = cy * CELL;
@@ -685,7 +683,7 @@ export class TerrainPainter {
         const m = mask[ly * cw + lx]!;
         if (!m) continue;
         const base = this.base[m]!, dk = this.dark[m]!, ink = this.ink[m]!;
-        const v = this.soft[(ly + minY) * COLS + lx + minX]! + this.materialRelief(lx + minX, ly + minY, m === Mat.Rock || m === Mat.Core || m === Mat.Bedrock);
+        const v = this.softAt(lx + minX, ly + minY) + this.materialRelief(lx + minX, ly + minY, m === Mat.Rock || m === Mat.Core || m === Mat.Bedrock);
         let r = base[0] + v, g = base[1] + v, b = base[2] + v;
         const e1 = !at(lx - 1, ly) || !at(lx + 1, ly) || !at(lx, ly - 1) || !at(lx, ly + 1);
         const e2 = !e1 && (!at(lx - 2, ly) || !at(lx + 2, ly) || !at(lx, ly - 2) || !at(lx, ly + 2));

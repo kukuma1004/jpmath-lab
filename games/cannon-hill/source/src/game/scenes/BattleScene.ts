@@ -147,9 +147,10 @@ export class BattleScene extends Phaser.Scene {
       this.world.add([line,this.ringOutLabel]);
     }
     this.terrainView = new TerrainView(this, this.world, b.terrain, def, b.cfg.seed);
-    this.bodies = new BodiesView(this, this.world, this.terrainView.painter, particleScale(s.quality));
+    const density = particleScale(s.quality, this.app.touchGraphics);
+    this.bodies = new BodiesView(this, this.world, this.terrainView.painter, density);
     this.bodies.onProjectileGone = (id) => audio.whistleStop(id);
-    this.effects = new Effects(this, this.world, def, particleScale(s.quality), s.shake, () => this.cam);
+    this.effects = new Effects(this, this.world, def, density, s.shake, () => this.cam, this.app.touchGraphics);
     this.guide = this.add.graphics().setDepth(25);
     this.world.add(this.guide);
     for (const f of b.fighters) this.fighters.push(new FighterView(this, this.world, f, this.names[f.idx]!));
@@ -905,7 +906,8 @@ export class BattleScene extends Phaser.Scene {
 
     // 그리기
     const terrainChanged = b.terrain.dirty.length > 0;
-    this.terrainView.flush(this.app.settings.quality === 'low' ? 6 : 12, this.online ? 3 : Infinity);
+    const tileLimit = this.app.touchGraphics ? 3 : this.app.settings.quality === 'low' ? 6 : 12;
+    this.terrainView.flush(tileLimit, this.online || this.app.touchGraphics ? 3 : Infinity);
     this.bodies.sync(b, this.t);
     for (const p of b.projectiles) audio.whistleUpdate(p.id, p.vy);
     const showArrow = b.isPlayerPhase() || b.phase === 'TURN_START';

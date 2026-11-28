@@ -773,7 +773,7 @@ html, body {
   box-shadow:inset 0 0 0 3px #614324,0 4px 0 #5e381c,0 8px 20px #100d1aa6;
 }
 .title .menu .online-entry { grid-area:online; background:linear-gradient(#582124f2,#733131a8 38%,transparent 76%),url('/art/bg_sanseong.webp') 74% 25% / 180% auto; }
-.title .menu .target-entry { grid-area:target; background:linear-gradient(#123f4cf5,#195665ab 38%,transparent 75%),url('/art/bg_quarry.png') 74% 35% / 160% auto; }
+.title .menu .target-entry { grid-area:target; background:linear-gradient(#123f4cf5,#195665ab 38%,transparent 75%),url('/art/bg_quarry.webp') 74% 35% / 160% auto; }
 .title .menu .online-entry::after,.title .menu .target-entry::after {
   content:""; position:absolute; inset:2px; border:1px solid #ffdb85; border-radius:12px; box-shadow:inset 0 0 0 2px #885d3266; pointer-events:none;
 }

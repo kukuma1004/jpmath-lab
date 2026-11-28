@@ -208,6 +208,16 @@ test('굴착대장: 전용 몸·회전 드릴을 불러오고 실제 땅속 굴�
   await wr(page,`const b=__wr.battle;b.current=0;b.phase='AIM';b.timeLeft=30;b.wind=0;for(const [i,x] of [300,2100].entries()){const f=b.fighters[i];f.x=x;f.y=b.terrain.topSurface(x);f.airPeakY=f.y;f.vx=f.vy=0;f.onGround=true;} __wr.fire(45,42,0);`);
   await page.waitForFunction(()=> (window as any).__wr.battle.projectiles.some((p:any)=>p.drilling),undefined,{polling:'raf'});
   expect(await wr(page,`__wr.scene.textures.exists('proj_drill')`)).toBe(true);
+  const { first, last } = await page.evaluate(() => {
+    const { battle, scene } = (window as any).__wr;
+    const bodies = scene.bodies;
+    bodies.sync(battle, 0);
+    const first = bodies.cloudFx.commandBuffer.length;
+    for (let i = 1; i <= 30; i++) bodies.sync(battle, i / 60);
+    return { first, last: bodies.cloudFx.commandBuffer.length };
+  });
+  expect(first).toBeGreaterThan(0);
+  expect(last).toBe(first);
   await page.waitForFunction(()=> (window as any).__wr.battle.fighters[0].stats.cellsDestroyed>100,undefined,{polling:'raf'});
   await page.screenshot({path:'test-results/driller-quarry.png'});
   await waitAim(page,1,20_000);expect(errors).toEqual([]);
