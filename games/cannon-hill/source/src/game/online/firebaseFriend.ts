@@ -7,8 +7,8 @@ import { DT } from '../config/constants';
 import { CHARACTERS } from '../data/characters';
 import { MAPS } from '../data/maps';
 import { firebaseProject } from './firebaseConfig';
-import { DUEL_ACCOUNT_DOMAIN, FRIEND_BALANCE_RULESET, FRIEND_BRANCH, FRIEND_FAST_CHARGE_RULESET, FRIEND_MODES, isFriendMode, OnlineError, RECONNECT_MS, ROOM_DURATION_MS, ROOM_LIST_LIMIT, ROOM_WAIT_MS, type Control, type FriendMode, type OnlineRoom, type OnlineState, type Profile, type PublicRoom, type RatingChange, type ReplayCommand } from './protocol';
-import { FirebaseRank } from './firebaseRank';
+import { DUEL_ACCOUNT_DOMAIN, FRIEND_BALANCE_RULESET, FRIEND_BRANCH, FRIEND_FAST_CHARGE_RULESET, FRIEND_MODES, isFriendMode, OnlineError, RECONNECT_MS, ROOM_DURATION_MS, ROOM_LIST_LIMIT, ROOM_WAIT_MS, type Control, type FriendMode, type MatchSide, type OnlineRoom, type OnlineState, type Profile, type PublicRoom, type RankMode, type RatingChange, type ReplayCommand, type RoomPreview } from './protocol';
+import { FirebaseRank, resultsPath } from './firebaseRank';
 import { confirmedChargePower } from './charge';
 import { startingRank } from './rank';
 
@@ -23,9 +23,9 @@ const invalidLogin = { 'auth/email-already-in-use':'이미 사용 중인 아이�
 const characters = new Set(CHARACTERS.map(c=>c.id));
 const maps = new Set(MAPS.map(m=>m.id));
 
-type Name = { uid: string; nickname: string; char: string };
-type Info = Name & { map: string; seed: number; created: number; listed?: boolean; mode?: FriendMode; ruleset?: number; ranked?: true };
-type Head = { step: number; turn: number; cursor: number; done: boolean; ack: string; writer: string };
+type Name = { uid: string; nickname: string; char: string; joinedAt?: number };
+type Info = Name & { map: string; seed: number; created: number; listed?: boolean; mode?: FriendMode; ruleset?: number; ranked?: true; rankInvite?: true };
+type Head = { step: number; turn: number; cursor: number; done: boolean; ack: string; writer: string; rankCanceled?: true };
 type Packet = { turn: number; player?: Team; receivedAt?: number; control: Control | {kind:'leave'} };
 type Room = {
   code: string;
@@ -40,6 +40,8 @@ type Room = {
   rating?: RatingChange;
   settling?: boolean;
   settleAgain?: boolean;
+  withdrew?: boolean;
+  rankVote?: Promise<void>;
   inbox: Record<string,Packet>;
   presence: Record<string,Record<string,boolean>>;
 };
@@ -47,6 +49,9 @@ type Room = {
 const keyOf = (i:number) => 'c'+String(i).padStart(7,'0');
 const readActive = (uid:string) => localStorage.getItem(activeKey+uid);
 const seatsOf = (mode:FriendMode) => FRIEND_MODES[mode].seats;
+const rankMode = (room:Room):RankMode => room.mode==='teams'?'teams':'duel';
+const canLoadMap = (info:Info) => info.rankInvite ? info.map==='random' : maps.has(info.map);
+const publicNames = (members:(Name|null)[]) => members.map(member=>member?.nickname??null);
 const playerPath = (mode:FriendMode, player:number) => mode==='duel'?'guest':'seats/p'+player;
 const memberState = (info:Info, mode:FriendMode, guests:DataSnapshot): (Name|null)[] =>
   Array.from({length:seatsOf(mode)},(_,player)=>player===0?info:
@@ -63,6 +68,7 @@ export class FirebaseFriend {
   private offset = 0;
   private nickname = '';
   private rankProfile: Profile | null = null;
+  private teamProfile: Profile | null = null;
   private rankPollAt = 0;
   private matchingRank = false;
   private transferringRoom: Room | null = null;
@@ -135,6 +141,7 @@ export class FirebaseFriend {
     }
     this.nickname=register?nickname:'';
     this.rankProfile=null;
+    this.teamProfile=null;
     return {token:this.uid};
   }
 
@@ -148,7 +155,10 @@ export class FirebaseFriend {
         this.nickname=(await get(this.at('profiles/'+uid))).val()??'';
         if(!this.nickname) throw new OnlineError(401,'계정 정보를 불러오지 못했어요. 다시 로그인해 주세요.');
       }
-      if(!this.rankProfile)this.rankProfile=await this.rank.profile({uid,nickname:this.nickname});
+      if(!this.rankProfile||!this.teamProfile){
+        const player={uid,nickname:this.nickname};
+        [this.rankProfile,this.teamProfile]=await Promise.all([this.rank.profile(player),this.rank.profile(player,'teams')]);
+      }
       const params=new URLSearchParams(action.slice(6));
       const code=readActive(uid);
       if(code&&!this.selection)await this.enter(code).catch(()=>localStorage.removeItem(activeKey+uid));
@@ -162,32 +172,45 @@ export class FirebaseFriend {
       await signOut(this.auth);
       this.nickname='';
       this.rankProfile=null;
-    } else if(action==='ranking') {
-      return this.rank.board();
+      this.teamProfile=null;
+    } else if(action==='ranking'||action==='team-ranking') {
+      return this.rank.board(action==='team-ranking'?'teams':'duel');
+    } else if(action==='inspect-room') {
+      const {code,info}=await this.readJoinable(body?.code);
+      const mode=info.mode??'duel';
+      const roster=memberState(info,mode,await get(this.at('rooms/'+code+'/'+(mode==='duel'?'guest':'seats'))));
+      const seat=roster.findIndex(member=>member?.uid===uid);
+      if(roster.every(Boolean)&&seat<0)throw new OnlineError(409,'이미 인원이 찬 방이에요.');
+      return {code,kind:info.ranked?'ranked':'friendly',mode,map:info.map,seats:publicNames(roster),seat} satisfies RoomPreview;
     } else if(action==='create'||action==='join'||action==='queue') {
       const char=String(body?.char);
       if(!characters.has(char))throw new OnlineError(400,'플레이할 장수를 골라 주세요.');
       if(this.selection)throw new OnlineError(409,'이미 참가한 방이 있어요.');
       if(action!=='join') {
-        const ranked=action==='queue';
+        const invite=action==='create'&&body?.ranked===true;
+        const ranked=action==='queue'||invite;
         const choice=ranked?'random':String(body?.map);
         if(choice!=='random'&&!maps.has(choice))throw new OnlineError(400,'전장을 골라 주세요.');
         const bytes=crypto.getRandomValues(new Uint32Array(8));
-        const map=choice==='random'?MAPS[bytes[7]!%MAPS.length]!.id:choice;
+        const map=invite?'random':choice==='random'?MAPS[bytes[7]!%MAPS.length]!.id:choice;
         const code=Array.from(bytes.slice(0,6),n=>alphabet[n%alphabet.length]).join('');
-        const mode=!ranked&&isFriendMode(body?.mode)?body.mode:'duel';
+        const mode=invite?(body?.mode==='teams'?'teams':'duel'):!ranked&&isFriendMode(body?.mode)?body.mode:'duel';
         await set(this.at('rooms/'+code+'/info'),{uid,nickname:this.nickname,char,map,seed:bytes[6]!%2147483646+1,
-          created:serverTimestamp(),listed:!ranked&&body?.listed===true,mode,ruleset:FRIEND_FAST_CHARGE_RULESET,...(ranked?{ranked:true}:{})});
+          created:serverTimestamp(),listed:!ranked&&body?.listed===true,mode,ruleset:FRIEND_FAST_CHARGE_RULESET,
+          ...(ranked?{ranked:true}:{}),...(invite?{rankInvite:true}:{})});
         await this.enter(code);
       } else {
-        const code=String(body?.code??'').trim().toUpperCase();
-        if(!/^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{6}$/.test(code))throw new OnlineError(400,'방 코드 6자리를 확인해 주세요.');
         try {
-          const info:Info|null=(await get(this.at('rooms/'+code+'/info'))).val();
-          if(!info||!maps.has(info.map)||info.ranked)throw new Error();
-          if(info.uid!==uid) await this.join(code,info,char,body?.listedOnly===true);
+          const {code,info}=await this.readJoinable(body?.code);
+          if(info.rankInvite&&body?.expectedKind!=='ranked')throw new OnlineError(409,'랭크전 확인 후 입장해 주세요.');
+          const side=body?.side===0?0:body?.side===1?1:undefined;
+          if(info.rankInvite&&info.mode==='teams'&&side===undefined)throw new OnlineError(400,'참가할 팀을 골라 주세요.');
+          if(info.uid!==uid) await this.join(code,info,char,body?.listedOnly===true,side);
           await this.enter(code);
-        } catch { throw new OnlineError(404,'참가할 수 있는 방을 찾지 못했어요.'); }
+        } catch(error) {
+          if(error instanceof OnlineError)throw error;
+          throw new OnlineError(404,'참가할 수 있는 방을 찾지 못했어요.');
+        }
       }
     } else if(action==='leave') {
       await this.leave();
@@ -195,8 +218,17 @@ export class FirebaseFriend {
     return {ok:true};
   }
 
+  private async readJoinable(value:unknown):Promise<{code:string;info:Info}> {
+    const code=String(value??'').trim().toUpperCase();
+    if(!/^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{6}$/.test(code))throw new OnlineError(400,'방 코드 6자리를 확인해 주세요.');
+    const info:Info|null=(await get(this.at('rooms/'+code+'/info'))).val();
+    if(!info||!canLoadMap(info)||info.ranked&&!info.rankInvite||Date.now()+this.offset-info.created>=ROOM_WAIT_MS)
+      throw new OnlineError(404,'참가할 수 있는 방을 찾지 못했어요.');
+    return {code,info};
+  }
+
   private seekRanked(room:Room):void {
-    if(!room.info.ranked||room.you!==0||room.config||!this.connected||this.matchingRank||performance.now()<this.rankPollAt)return;
+    if(!room.info.ranked||room.info.rankInvite||room.you!==0||room.config||!this.connected||this.matchingRank||performance.now()<this.rankPollAt)return;
     this.rankPollAt=performance.now()+1400;
     this.matchingRank=true;
     void this.matchEarlier(room).catch(()=>{}).finally(()=>{this.matchingRank=false;});
@@ -209,7 +241,7 @@ export class FirebaseFriend {
       if(this.selection!==room||room.config)return;
       if(created>room.info.created||created===room.info.created&&code>=room.code)continue;
       const info:Info|null=(await get(this.at('rooms/'+code+'/info'))).val();
-      if(this.selection!==room||!info?.ranked||info.ruleset!==FRIEND_FAST_CHARGE_RULESET||info.uid===this.uid||room.config)continue;
+      if(this.selection!==room||!info?.ranked||info.rankInvite||info.ruleset!==FRIEND_FAST_CHARGE_RULESET||info.uid===this.uid||room.config)continue;
       try {
         this.transferringRoom=room;
         await update(ref(this.db,this.gameRef),{
@@ -228,16 +260,16 @@ export class FirebaseFriend {
 
   reportRanked(winner:-1|0|1):void {
     const room=this.selection;
-    if(!room?.info.ranked||!room.head?.done)return;
-    void this.rank.confirm(room.code,this.uid,winner).then(()=>this.settleRanked(room)).catch(()=>{});
+    if(!room?.info.ranked||!room.head?.done||room.head.rankCanceled||room.info.rankInvite&&room.withdrew)return;
+    room.rankVote=this.rank.confirm(room.code,this.uid,winner).then(()=>this.settleRanked(room)).catch(()=>{});
   }
 
   private settleRanked(room:Room):void {
-    const [host,guest]=room.members;
-    if(!host||!guest||room.rating||this.selection!==room)return;
+    const players=room.members.filter((member):member is Name=>!!member);
+    if(players.length!==seatsOf(room.mode)||room.rating||room.head?.rankCanceled||room.info.rankInvite&&room.withdrew)return;
     if(room.settling){room.settleAgain=true;return;}
     room.settling=true;
-    void this.rank.settle(room.code,[host,guest]).catch(()=>{}).finally(()=>{
+    void this.rank.settle(room.code,players,rankMode(room),room.info.rankInvite).catch(()=>{}).finally(()=>{
       room.settling=false;
       if(room.settleAgain){room.settleAgain=false;this.settleRanked(room);}
     });
@@ -258,16 +290,17 @@ export class FirebaseFriend {
     }
   }
 
-  private async join(code:string,info:Info,char:string,listedOnly:boolean):Promise<void> {
+  private async join(code:string,info:Info,char:string,listedOnly:boolean,side?:MatchSide):Promise<void> {
     const mode=info.mode??'duel';
     const root='rooms/'+code+'/';
     const members=this.at(root+(mode==='duel'?'guest':'seats'));
     const guest={uid:this.uid,nickname:this.nickname,char,...(info.ruleset?{ruleset:info.ruleset}:{}),
-      ...(info.ruleset===FRIEND_FAST_CHARGE_RULESET?{fastCharge:true}:{}),...(listedOnly?{listedOnly:true}:{})};
+      ...(info.ruleset===FRIEND_FAST_CHARGE_RULESET?{fastCharge:true}:{}),...(listedOnly?{listedOnly:true}:{}),
+      ...(info.rankInvite?{rankInvite:true,joinedAt:serverTimestamp(),...(mode==='duel'?{ranked:true}:{})}:{})};
     for(let attempt=1;attempt<seatsOf(mode);attempt++) {
       const roster=memberState(info,mode,await get(members));
       if(roster.some(member=>member?.uid===this.uid))return;
-      const seat=roster.indexOf(null);
+      const seat=roster.findIndex((member,i)=>member===null&&(side===undefined||!info.rankInvite||mode!=='teams'||i%2===side));
       if(seat<1)break;
       const path=root+playerPath(mode,seat);
       try {
@@ -279,7 +312,11 @@ export class FirebaseFriend {
       }
     }
     const roster=memberState(info,mode,await get(members));
-    if(!roster.some(member=>member?.uid===this.uid))throw new Error('Room is full or closed');
+    if(!roster.some(member=>member?.uid===this.uid)) {
+      if(info.rankInvite&&mode==='teams'&&side!==undefined&&roster.every((member,i)=>i%2!==side||member))
+        throw new OnlineError(409,'그 팀은 자리가 찼어요. 방 코드를 다시 확인해 주세요.');
+      throw new OnlineError(404,'참가할 수 있는 방을 찾지 못했어요.');
+    }
   }
 
   private watchListings():void {
@@ -297,7 +334,7 @@ export class FirebaseFriend {
   private async enter(code:string):Promise<void> {
     const root='rooms/'+code+'/';
     const data:Info|null=(await get(this.at(root+'info'))).val();
-    if(!data||!maps.has(data.map)||!characters.has(data.char)||Date.now()-data.created>ROOM_DURATION_MS)
+    if(!data||!canLoadMap(data)||!characters.has(data.char)||Date.now()-data.created>ROOM_DURATION_MS)
       throw new OnlineError(404,'이미 종료된 방이에요.');
     const mode=data.mode??'duel';
     const memberRef=this.at(root+(mode==='duel'?'guest':'seats'));
@@ -359,13 +396,18 @@ export class FirebaseFriend {
     }
     if(room.info.ranked){
       for(const branch of ['verdicts','withdrawals'])this.unsubscribers.push(onValue(this.at(root+branch),s=>{
+        if(branch==='withdrawals'&&room.info.rankInvite){room.withdrew=s.exists();this.notify();}
         if(s.exists())this.settleRanked(room);
       },listenError));
-      this.unsubscribers.push(onValue(this.at('rankedResults/'+code),s=>{
+      const ladder=rankMode(room);
+      this.unsubscribers.push(onValue(this.at(resultsPath(ladder)+'/'+code),s=>{
         if(!s.exists()||this.selection!==room)return;
-        room.rating=this.rank.change(s.val(),room.you===0?0:1);
-        void this.rank.profile({uid,nickname:this.nickname}).then(profile=>{
-          if(this.auth.currentUser?.uid===uid){this.rankProfile=profile;this.notify();}
+        room.rating=this.rank.change(s.val(),room.you,ladder);
+        void this.rank.profile({uid,nickname:this.nickname},ladder).then(profile=>{
+          if(this.auth.currentUser?.uid!==uid)return;
+          if(ladder==='duel')this.rankProfile=profile;
+          else this.teamProfile=profile;
+          this.notify();
         }).catch(()=>{});
         this.notify();
       },listenError));
@@ -383,19 +425,20 @@ export class FirebaseFriend {
 
   private setMembers(room:Room,members:(Name|null)[]):void {
     room.members=members.map(member=>member&&characters.has(member.char)?member:null);
-    const {map,seed,ruleset}=room.info;
+    const {map,seed,ruleset,created,rankInvite}=room.info;
     const chars=room.members.map(member=>member?.char);
+    const joined=Math.max(created,...room.members.map(member=>member?.joinedAt??0));
     room.config=chars.every((char):char is string=>!!char) ? defaultConfig({
-      mapId:map,seed,chars,controllers:chars.map(()=>'human'),turnTime:25,turnLimit:0,
+      mapId:rankInvite?MAPS[joined%MAPS.length]!.id:map,seed,chars,controllers:chars.map(()=>'human'),turnTime:25,turnLimit:0,
       freeForAll:FRIEND_MODES[room.mode].freeForAll,legacyPoison:ruleset===undefined,legacyBalance:(ruleset??0)<FRIEND_BALANCE_RULESET,
     }) : null;
-    if(room.config&&!room.ranks)void Promise.all(room.members.map(player=>this.rank.profile(player!))).then(rows=>{
+    if(room.config&&room.info.ranked&&!room.ranks)void Promise.all(room.members.map(player=>this.rank.profile(player!,rankMode(room)))).then(rows=>{
       if(this.selection===room){room.ranks=rows.map(row=>row.rating);this.notify();}
     }).catch(()=>{});
   }
 
   private updateListing(room:Room):void {
-    if(!this.connected||room.you!==0||!room.info.listed&&!room.info.ranked)return;
+    if(!this.connected||room.you!==0||room.info.rankInvite||!room.info.listed&&!room.info.ranked)return;
     if(room.info.ranked){
       if(!room.config&&!room.head)void this.listRoom(room).then(()=>this.seekRanked(room));
       return;
@@ -464,7 +507,8 @@ export class FirebaseFriend {
 
   private state(cursor:number):OnlineState {
     const room=this.selection;
-    if(!room) return {profile:this.profile(),queued:false,room:null,
+    const teamProfile=this.teamProfile??undefined;
+    if(!room) return {profile:this.profile(),teamProfile,queued:false,room:null,
       rooms:this.openRooms.filter(entry=>Date.now()+this.offset-entry.created<ROOM_WAIT_MS)};
     if(this.failure)throw new Error(this.failure);
     const {head,log}=room;
@@ -475,12 +519,13 @@ export class FirebaseFriend {
       commands.push({...command,a:Array.isArray(command.a)?command.a:[]});
     }
     const view:OnlineRoom={code:room.code,kind:room.info.ranked?'ranked':'friendly',you:room.you,names:room.members.flatMap(member=>member?[member.nickname]:[]),
-      map:room.info.map,listed:room.info.listed===true,
+      map:head&&room.config?room.config.mapId:room.info.map,listed:room.info.listed===true,seats:publicNames(room.members),
       mode:room.mode,connectedSeats:room.members.map((_,player)=>this.present(room,player)),
       config:head?room.config:null,turn:head?.turn??1,step:head?.step??0,cursor:head?.cursor??0,commands,
       opponentConnected:this.playConnected(room),done:head?.done??false,rating:room.rating??null,ranks:room.ranks,
-      fastCharge:room.info.ruleset===FRIEND_FAST_CHARGE_RULESET};
-    return {profile:this.profile(),queued:room.info.ranked===true&&!head,room:view,rooms:[]};
+      fastCharge:room.info.ruleset===FRIEND_FAST_CHARGE_RULESET,rankInvite:room.info.rankInvite,
+      rankCanceled:room.info.rankInvite&&(room.withdrew||head?.rankCanceled)};
+    return {profile:this.profile(),teamProfile,queued:room.info.ranked===true&&!room.info.rankInvite&&!head,room:view,rooms:[]};
   }
 
   private profile() {
@@ -631,6 +676,7 @@ export class FirebaseFriend {
     this.lastPublish=now;
     const patch:Record<string,unknown>={'wire/head':{
       step:b.stepNo,turn:b.turnNo,cursor,done,ack:this.ack,writer:this.tab,
+      ...(done&&room.info.rankInvite&&(room.withdrew||b.log.some(cmd=>cmd.c==='forfeit'))?{rankCanceled:true}:{}),
     }};
     for(let i=this.sent;i<cursor;i++)patch['wire/log/'+keyOf(i)]=b.log[i];
     if(this.ack!==previousAck)for(const key of Object.keys(room.inbox))if(key<=this.ack)patch['inbox/'+key]=null;
@@ -658,14 +704,16 @@ export class FirebaseFriend {
       if(!room.head) {
         const path='rooms/'+room.code;
         if(room.you!==0)await remove(this.at(path+'/'+playerPath(room.mode,room.you)));
-        else if(room.info.ranked)await update(ref(this.db,this.gameRef),{[path]:null,['rankedQueue/'+room.code]:null});
+        else if(room.info.ranked&&!room.info.rankInvite)await update(ref(this.db,this.gameRef),{[path]:null,['rankedQueue/'+room.code]:null});
         else if(room.info.listed)await update(ref(this.db,this.gameRef),{[path]:null,['listings/'+room.code]:null});
         else await remove(this.at(path));
-      } else if(!room.head.done) {
+      } else if(room.head.done) {
+        await room.rankVote;
+      } else {
         if(room.info.ranked){
           await this.rank.withdraw(room.code,this.uid);
           const [host,guest]=room.members;
-          if(host&&guest)await this.rank.settle(room.code,[host,guest]);
+          if(!room.info.rankInvite&&host&&guest)await this.rank.settle(room.code,[host,guest]);
         }
         if(room.you!==0) await set(push(this.at('rooms/'+room.code+'/inbox')),{
           turn:0,control:{kind:'leave'},...(room.mode==='duel'?{}:{player:room.you}),
@@ -681,7 +729,7 @@ export class FirebaseFriend {
       }
     }
     localStorage.removeItem(activeKey+this.uid);
-    if(room?.info.ranked)this.rankProfile=null;
+    if(room?.info.ranked){this.rankProfile=null;this.teamProfile=null;}
     this.close();
   }
 }

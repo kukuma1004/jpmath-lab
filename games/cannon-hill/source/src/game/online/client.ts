@@ -1,5 +1,5 @@
 import type { Battle } from '../combat/battle';
-import { OnlineError, type Control, type OnlineRoom, type OnlineState, type Profile, type ReplayCommand } from './protocol';
+import { OnlineError, type Control, type OnlineRoom, type OnlineState, type Profile, type RankMode, type ReplayCommand, type RoomPreview } from './protocol';
 import type { FirebaseFriend } from './firebaseFriend';
 
 const base = import.meta.env.VITE_WARUREU_ONLINE_URL as string | undefined;
@@ -151,13 +151,15 @@ export class OnlineClient {
     this.refresh();
   }
 
+  inspectRoom(code:string):Promise<RoomPreview> { return this.request('inspect-room',{code}); }
+
   async leave(): Promise<void> {
     if (this.room || this.state?.queued) await this.request('leave',{code:this.room?.code??null});
     this.setState(this.state ? {...this.state,room:null,queued:false} : null);
     this.refresh();
   }
 
-  rankings(): Promise<Profile[]> { return this.request('ranking'); }
+  rankings(mode:RankMode='duel'): Promise<Profile[]> { return this.request(mode==='teams'?'team-ranking':'ranking'); }
 
   reportRanked(winner:-1|0|1):void { this.friend?.reportRanked(winner); }
 

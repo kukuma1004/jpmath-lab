@@ -9,7 +9,7 @@ import type { Difficulty, Fighter, Team, WeaponSlot } from '../combat/types';
 import { input, type Hold } from '../input/input';
 import type { Settings } from '../settings';
 import { audio } from '../audio/audio';
-import type { OnlineRoom } from '../online/protocol';
+import { matchLabel, type OnlineRoom } from '../online/protocol';
 import { rankBadge } from '../online/rank';
 
 export type Mode = 'ai' | 'local';
@@ -454,7 +454,10 @@ export class UI {
     const el = this.screens.get('hud')!;
     const format = el.querySelector<HTMLElement>('.match-format')!;
     format.hidden = !online;
-    if (online) format.textContent = online.kind === 'ranked' ? '1:1 랭크전' : b.cfg.freeForAll ? `${b.fighters.length}인 개인전` : b.fighters.length > 2 ? '2:2 팀전' : '1:1 친선전';
+    if (online) {
+      format.textContent = matchLabel(online.kind,online.mode);
+      format.dataset.kind = online.kind;
+    } else delete format.dataset.kind;
     const mini = b.fighters.length > 2;
     for (const team of [0, 1] as const) {
       const box = el.querySelector<HTMLElement>(`.team.t${team + 1}`)!;
@@ -756,9 +759,10 @@ export class UI {
       return `<tr><td>${label}</td>${vals.map((v) => `<td class="${unique && v === top && v > 0 ? 'best' : ''}">${fmt(v)}</td>`).join('')}</tr>`;
     }).join('');
     el.innerHTML = `
+      ${online?`<span class="online-kind" data-kind="${online.kind}">${matchLabel(online.kind,online.mode)}</span>`:''}
       <h2 class="${cls}">${title}</h2>
       <div class="why">${esc(why)}</div>
-      ${online?.kind==='ranked'?`<p class="online-rating" role="status">${b.endReason==='forfeit'?'랭크 점수 확인을 기다리는 중…':'두 장수의 경기 결과 확인 중…'}</p>`:''}
+      ${online?.kind==='ranked'?`<p class="online-rating" role="status">${online.rankCanceled?'기권 또는 연결 종료로 점수가 반영되지 않아요.':'랭크 점수를 확인하는 중…'}</p>`:''}
       <div class="who">${img}</div>
       <table class="table${four ? ' four' : ''}">${head}${body}</table>
       <div class="actions">
@@ -773,7 +777,15 @@ export class UI {
   updateRankResult(online?: OnlineRoom):void {
     const rating=online?.rating;
     const row=this.screens.get('result')!.querySelector<HTMLElement>('.online-rating');
-    if(!row||!rating||row.dataset.score===String(rating.after))return;
+    if(!row)return;
+    if(online?.rankCanceled&&!rating){
+      if(row.dataset.score!=='canceled'){
+        row.dataset.score='canceled';
+        row.textContent='기권 또는 연결 종료로 점수가 반영되지 않아요.';
+      }
+      return;
+    }
+    if(!rating||row.dataset.score===String(rating.after))return;
     const delta=rating.after-rating.before;
     row.dataset.score=String(rating.after);
     row.innerHTML=`${rankBadge(rating.after,true)} ${rating.before} → ${rating.after}점 (${delta>0?'+':''}${delta})`;

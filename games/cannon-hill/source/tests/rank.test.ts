@@ -14,6 +14,13 @@ describe('공개 랭크전',()=>{
     expect(rankAfter(p,1280,'draw')).toEqual({...p,draws:1});
     expect(rankAfter({...p,rating:4},4,'loss').rating).toBe(0);
   });
+  it('팀전은 두 팀의 평균 점수 차이로 각 팀원에게 같은 가산점을 준다',()=>{
+    const low={...startingRank('첫 장수'),rating:800};
+    const high={...startingRank('둘째 장수'),rating:1200};
+    expect(rankAfter(low,1000,'win',1000).rating).toBe(824);
+    expect(rankAfter(high,1000,'win',1000).rating).toBe(1224);
+    expect(rankAfter(high,1200,'win',1000).rating).toBe(1232);
+  });
   it('진행 중이던 친선방은 해당 버전의 무기 수치를 재현한다',()=>{
     const config=defaultConfig({chars:['mukyeong','mudang']});
     const old=new Battle({...config,legacyBalance:true},true);

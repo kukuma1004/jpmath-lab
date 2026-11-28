@@ -22,8 +22,8 @@ export function startingRank(nickname:string):Profile {
   return {nickname,rating:STARTING_RATING,wins:0,losses:0,draws:0};
 }
 
-export function rankAfter(profile:Profile, opponent:number, result:'win'|'loss'|'draw'):Profile {
-  const difference = profile.rating-opponent;
+export function rankAfter(profile:Profile, opponent:number, result:'win'|'loss'|'draw', ownRating=profile.rating):Profile {
+  const difference = ownRating-opponent;
   const stake = difference>=200 ? (result==='win'?16:32) : difference<=-200 ? (result==='win'?32:16) : 24;
   return {
     ...profile,

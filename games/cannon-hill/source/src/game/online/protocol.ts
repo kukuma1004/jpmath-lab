@@ -24,6 +24,13 @@ export function isFriendMode(value: unknown): value is FriendMode {
   return typeof value === 'string' && Object.prototype.hasOwnProperty.call(FRIEND_MODES, value);
 }
 export type MatchKind = 'friendly' | 'ranked';
+export type RankMode = 'duel' | 'teams';
+export type MatchSide = 0 | 1;
+
+export function matchLabel(kind: MatchKind, mode: FriendMode = 'duel'): string {
+  if (kind === 'ranked') return mode === 'teams' ? '2:2 랭크전' : '1:1 랭크전';
+  return `${mode==='teams'?'2:2 팀':FRIEND_MODES[mode].title} 친선전`;
+}
 export type ReplayCommand = { s: number; c: string; a: number[] };
 export type Control =
   | { kind: 'input'; move: -1 | 0 | 1; aim: -1 | 0 | 1 }
@@ -65,6 +72,18 @@ export interface OnlineRoom {
   rating: RatingChange | null;
   ranks?: number[];
   fastCharge?: boolean;
+  rankInvite?: boolean;
+  rankCanceled?: boolean;
+  seats?: (string | null)[];
+}
+
+export interface RoomPreview {
+  code: string;
+  kind: MatchKind;
+  mode: FriendMode;
+  map: string;
+  seats: (string | null)[];
+  seat: number;
 }
 
 export interface PublicRoom {
@@ -77,6 +96,7 @@ export interface PublicRoom {
 
 export interface OnlineState {
   profile: Profile;
+  teamProfile?: Profile;
   queued: boolean;
   room: OnlineRoom | null;
   rooms: PublicRoom[];

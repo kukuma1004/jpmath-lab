@@ -1,9 +1,11 @@
 import {get,limitToLast,orderByChild,query,ref,serverTimestamp,set,update,type Database} from '@firebase/database';
-import {FRIEND_FAST_CHARGE_RULESET, FRIEND_BRANCH, ROOM_LIST_LIMIT, ROOM_WAIT_MS, type Profile, type RatingChange} from './protocol';
+import {FRIEND_FAST_CHARGE_RULESET, FRIEND_BRANCH, ROOM_LIST_LIMIT, ROOM_WAIT_MS, type MatchSide, type Profile, type RankMode, type RatingChange} from './protocol';
 import {rankAfter,startingRank} from './rank';
 
 type RankedPlayer = {uid:string;nickname:string};
-type Finish = {winner:-1|0|1;p0:string;p1:string;before0:number;before1:number;after0:number;after1:number};
+type Finish = Record<`before${number}`|`after${number}`,number>;
+const recordsPath = (mode:RankMode) => mode==='teams'?'rankedTeamRecords':'rankedRecords';
+export const resultsPath = (mode:RankMode) => mode==='teams'?'rankedTeamResults':'rankedResults';
 
 export class FirebaseRank {
   constructor(private readonly db:Database) {}
@@ -18,13 +20,13 @@ export class FirebaseRank {
     return valid;
   }
 
-  async profile(player:RankedPlayer):Promise<Profile> {
-    const record = await get(this.at('rankedRecords/'+player.uid));
+  async profile(player:RankedPlayer,mode:RankMode='duel'):Promise<Profile> {
+    const record = await get(this.at(recordsPath(mode)+'/'+player.uid));
     return (record.val() as Profile|null) ?? startingRank(player.nickname);
   }
 
-  async board():Promise<Profile[]> {
-    const records=await get(query(this.at('rankedRecords'),orderByChild('rating'),limitToLast(50)));
+  async board(mode:RankMode='duel'):Promise<Profile[]> {
+    const records=await get(query(this.at(recordsPath(mode)),orderByChild('rating'),limitToLast(50)));
     const rows:Profile[]=[];
     records.forEach(row=>{rows.push(row.val() as Profile);});
     return rows.sort((a,b)=>b.rating-a.rating||b.wins-a.wins||a.nickname.localeCompare(b.nickname,'ko'));
@@ -40,29 +42,35 @@ export class FirebaseRank {
     if(!(await get(path)).exists())await set(path,true);
   }
 
-  async settle(code:string, players:readonly [RankedPlayer, RankedPlayer]):Promise<void> {
-    const result=this.at('rankedResults/'+code);
+  async settle(code:string, players:readonly RankedPlayer[], mode:RankMode='duel', invite=false):Promise<void> {
+    const resultPath=resultsPath(mode)+'/'+code;
+    const result=this.at(resultPath);
     const [finished,votes,withdrawals]=await Promise.all([
       get(result),get(this.at(`rooms/${code}/verdicts`)),get(this.at(`rooms/${code}/withdrawals`)),
     ]);
-    if(finished.exists())return;
+    if(finished.exists()||players.length!==(mode==='teams'?4:2)||invite&&withdrawals.exists())return;
     const [host,guest]=players;
-    const home=votes.child(host.uid).val(), away=votes.child(guest.uid).val();
-    const hostLeft=withdrawals.child(host.uid).val()===true;
-    const guestLeft=withdrawals.child(guest.uid).val()===true;
-    const winner=home!==null&&home===away?home as -1|0|1:hostLeft?1:guestLeft?0:null;
+    const home=votes.child(host!.uid).val() as MatchSide|-1|null;
+    const unanimous=home!==null&&players.every(player=>votes.child(player.uid).val()===home);
+    const winner=unanimous?home:invite?null:withdrawals.child(host!.uid).val()===true?1:
+      withdrawals.child(guest!.uid).val()===true?0:null;
     if(winner===null)return;
     for(let attempt=0;attempt<3;attempt++) {
-      const [a,b]=await Promise.all(players.map(player=>this.profile(player)));
-      const nextA=rankAfter(a!,b!.rating,winner===-1?'draw':winner===0?'win':'loss');
-      const nextB=rankAfter(b!,a!.rating,winner===-1?'draw':winner===1?'win':'loss');
+      const profiles=await Promise.all(players.map(player=>this.profile(player,mode)));
+      const averages=mode==='teams'?[(profiles[0]!.rating+profiles[2]!.rating)/2,(profiles[1]!.rating+profiles[3]!.rating)/2]:profiles.map(profile=>profile.rating);
+      const summary:Record<string,unknown>={winner,created:serverTimestamp()};
+      const writes:Record<string,unknown>={[resultPath]:summary};
+      for(const [i,player] of players.entries()) {
+        const side=i%2;
+        const profile=profiles[i]!;
+        const next=rankAfter(profile,averages[1-side]!,winner===-1?'draw':winner===side?'win':'loss',averages[side]!);
+        writes[recordsPath(mode)+'/'+player.uid]={...next,lastGame:code};
+        summary['p'+i]=player.uid;
+        summary['before'+i]=profile.rating;
+        summary['after'+i]=next.rating;
+      }
       try {
-        await update(this.at(''),{
-          ['rankedRecords/'+host.uid]:{...nextA,lastGame:code},
-          ['rankedRecords/'+guest.uid]:{...nextB,lastGame:code},
-          ['rankedResults/'+code]:{winner,p0:host.uid,p1:guest.uid,
-            before0:a!.rating,before1:b!.rating,after0:nextA.rating,after1:nextB.rating,created:serverTimestamp()},
-        });
+        await update(this.at(''),writes);
         return;
       } catch(error) {
         if((await get(result)).exists())return;
@@ -71,9 +79,10 @@ export class FirebaseRank {
     }
   }
 
-  change(data:Finish, seat:0|1):RatingChange {
-    return seat===0?{before:data.before0,after:data.after0,opponent:data.before1}:
-      {before:data.before1,after:data.after1,opponent:data.before0};
+  change(data:Finish, seat:number, mode:RankMode):RatingChange {
+    const rival=1-seat%2;
+    const opponent=mode==='teams'?(data[`before${rival}`]!+data[`before${rival+2}`]!)/2:data[`before${rival}`]!;
+    return {before:data[`before${seat}`]!,after:data[`after${seat}`]!,opponent};
   }
 
   private at(path:string) {return ref(this.db,path?FRIEND_BRANCH+'/'+path:FRIEND_BRANCH);}

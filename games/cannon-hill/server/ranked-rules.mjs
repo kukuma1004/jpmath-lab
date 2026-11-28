@@ -6,47 +6,86 @@ export function rankedRules(account) {
   const host = room + ".child('info/uid').val()";
   const guest = room + ".child('guest/uid').val()";
   const ranked = room + ".child('info/ranked').val() == true";
+  const invite = room + ".child('info/rankInvite').val() == true";
+  const teams = room + ".child('info/mode').val() == 'teams'";
   const started = room + ".child('wire/head').exists()";
   const finished = "(" + room + ".child('wire/head/done').val() == true)";
   const waiting = `now - ${room}.child('info/created').val() < ${ROOM_WAIT_MS}`;
-  const participant = `(${host} == auth.uid || ${guest} == auth.uid)`;
+  const participant = `(${host} == auth.uid || ${guest} == auth.uid || (${teams} && (${[1,2,3].map(i=>`${room}.child('seats/p${i}/uid').val() == auth.uid`).join(' || ')})))`;
   const valid = condition => ({'.validate':condition});
   const number = (lo,hi) => `newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= ${lo} && newData.val() <= ${hi}`;
   const required = fields => `newData.hasChildren(${JSON.stringify(fields)})`;
   const child = (node,key) => `${node}.child('${key}').val()`;
   const verdict = (player) => `${room}.child('verdicts/' + ${player}).val()`;
   const gaveUp = (player) => `${room}.child('withdrawals/' + ${player}).val() == true`;
-  const board = uid => `${rootBranch}.child('rankedRecords/' + ${uid})`;
-  const final = key => child('newData',key);
-  const resultWinner = final('winner');
-  const consent = `(${finished} && ${verdict(host)} == ${resultWinner} && ${verdict(guest)} == ${resultWinner})`;
-  const authorizedResult = `(${consent} || (${resultWinner} == 0 && ${gaveUp(guest)}) || (${resultWinner} == 1 && ${gaveUp(host)}))`;
   const stats = ['wins','losses','draws'];
-  const before = i => final('before'+i);
-  const after = i => final('after'+i);
   const prior = (node,field,amount) => `((!${node}.child('${field}').exists() && ${amount} == ${field==='rating'?STARTING_RATING:0}) || ${child(node,field)} == ${amount})`;
-  const afterRating = i => {
-    const other=1-i;
-    const change=`(${before(i)} - ${before(other)})`;
-    const win = (delta,condition) => `(${resultWinner} == ${i} && ${condition} && ${after(i)} == ${before(i)} + ${delta})`;
-    const loss = (delta,condition) => `(${resultWinner} == ${other} && ${condition} && ((${before(i)} >= ${delta} && ${after(i)} == ${before(i)} - ${delta}) || (${before(i)} < ${delta} && ${after(i)} == 0)))`;
-    return '(' + [
-      `(${resultWinner} == -1 && ${after(i)} == ${before(i)})`,
-      win(16,`${change} >= 200`),win(32,`${change} <= 0 - 200`),win(24,`${change} > 0 - 200 && ${change} < 200`),
-      loss(32,`${change} >= 200`),loss(16,`${change} <= 0 - 200`),loss(24,`${change} > 0 - 200 && ${change} < 200`),
-    ].join(' || ')+')';
+  const ladder = (team) => {
+    const records=team?'rankedTeamRecords':'rankedRecords';
+    const results=team?'rankedTeamResults':'rankedResults';
+    const indices=team?[0,1,2,3]:[0,1];
+    const members=team?[host,...[1,2,3].map(i=>room + `.child('seats/p${i}/uid').val()`)]:[host,guest];
+    const eligible=`${ranked} && ${team?`${teams} && ${invite}`:`!(${teams})`}`;
+    const board = uid => `${rootBranch}.child('${records}/' + ${uid})`;
+    const final = key => child('newData',key);
+    const winner = final('winner');
+    const before = i => final('before'+i);
+    const after = i => final('after'+i);
+    const canceled=`(${room}.child('wire/head/rankCanceled').val() == true || ${room}.child('withdrawals').exists())`;
+    const agreed=`(${finished} && ${members.map(uid=>`${verdict(uid)} == ${winner}`).join(' && ')})`;
+    const voluntary=`((${winner} == 0 && ${gaveUp(guest)}) || (${winner} == 1 && ${gaveUp(host)}))`;
+    const consent=team?`${agreed} && !${canceled}`:
+      `((${invite} && ${agreed} && !${canceled}) || (!(${invite}) && (${agreed} || ${voluntary})))`;
+    const afterRating = i => {
+      const side=i%2, other=1-side, threshold=team?400:200;
+      const change=team?`(${before(side)} + ${before(side+2)} - ${before(other)} - ${before(other+2)})`:`(${before(side)} - ${before(other)})`;
+      const above=`${change} >= ${threshold}`;
+      const below=`${change} <= 0 - ${threshold}`;
+      const close=`${change} > 0 - ${threshold} && ${change} < ${threshold}`;
+      const win = (delta,condition) => `(${winner} == ${side} && ${condition} && ${after(i)} == ${before(i)} + ${delta})`;
+      const loss = (delta,condition) => `(${winner} == ${other} && ${condition} && ((${before(i)} >= ${delta} && ${after(i)} == ${before(i)} - ${delta}) || (${before(i)} < ${delta} && ${after(i)} == 0)))`;
+      return '(' + [
+        `(${winner} == -1 && ${after(i)} == ${before(i)})`,
+        win(16,above),win(32,below),win(24,close),loss(32,above),loss(16,below),loss(24,close),
+      ].join(' || ')+')';
+    };
+    const linked = uid => `newData.parent().parent().child('${records}/' + ${uid} + '/lastGame').val() == $code`;
+    const resultCode = child('newData','lastGame');
+    const nextResult = `newData.parent().parent().child('${results}/' + ${resultCode})`;
+    const oldResult = `${rootBranch}.child('${results}/' + ${resultCode})`;
+    const finalWinner = child(nextResult,'winner');
+    const seat = i => child(nextResult,'p'+i);
+    const incremented = (field,condition) => {
+      const out=child('newData',field);
+      return `((${condition} && ${prior('data',field,`(${out} - 1)`)}) || (!(${condition}) && ${prior('data',field,out)}))`;
+    };
+    const resultSeat = i => `(${seat(i)} == $uid && ${child('newData','rating')} == ${child(nextResult,'after'+i)} && ${incremented('wins',`${finalWinner} == ${i%2}`)} && ${incremented('losses',`${finalWinner} == ${1-i%2}`)} && ${incremented('draws',`${finalWinner} == -1`)})`;
+    return {
+      [records]:{
+        '.indexOn':['rating'],
+        '.read':`${account} && query.orderByChild == 'rating' && query.limitToLast >= 1 && query.limitToLast <= 50`,
+        $uid:{
+          '.read':account,
+          '.write':`${account} && newData.exists() && !${oldResult}.exists() && ${nextResult}.exists() && (${indices.map(i=>`${seat(i)} == auth.uid`).join(' || ')})`,
+          '.validate':`${required(['nickname','rating',...stats,'lastGame'])} && (${indices.map(resultSeat).join(' || ')})`,
+          nickname:valid(`newData.val() == ${rootBranch}.child('profiles/' + $uid).val()`),
+          rating:valid(number(0,100000)),
+          ...Object.fromEntries(stats.map(name=>[name,valid(number(0,1000000))])),
+          lastGame:valid("newData.isString() && newData.val().matches(/^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{6}$/)"),
+          $other:valid(false),
+        },
+      },
+      [results]:{$code:{
+        '.read':`${account} && ${participant}`,
+        '.write':`${account} && ${eligible} && ${started} && ${participant} && ${members.map(uid=>`${uid} != null`).join(' && ')} && !data.exists() && newData.exists()`,
+        '.validate':`${required(['winner','created',...indices.flatMap(i=>['p'+i,'before'+i,'after'+i])])} && ${consent} && ${indices.map(i=>`${linked(members[i])} && ${prior(board(members[i]),'rating',before(i))} && ${afterRating(i)}`).join(' && ')}`,
+        winner:valid(number(-1,1)),
+        ...Object.fromEntries(indices.flatMap(i=>[['p'+i,valid(`newData.val() == ${members[i]}`)],['before'+i,valid(number(0,100000))],['after'+i,valid(number(0,100000))]])),
+        created:valid('newData.val() == now'),
+        $other:valid(false),
+      }},
+    };
   };
-  const linked = uid => `newData.parent().parent().child('rankedRecords/' + ${uid} + '/lastGame').val() == $code`;
-  const resultCode = child('newData','lastGame');
-  const nextResult = `newData.parent().parent().child('rankedResults/' + ${resultCode})`;
-  const oldResult = `${rootBranch}.child('rankedResults/' + ${resultCode})`;
-  const finalWinner = child(nextResult,'winner');
-  const seat = i => child(nextResult,'p'+i);
-  const incremented = (field,condition) => {
-    const out=child('newData',field);
-    return `((${condition} && ${prior('data',field,`(${out} - 1)`)}) || (!(${condition}) && ${prior('data',field,out)}))`;
-  };
-  const resultSeat = i => `(${seat(i)} == $uid && ${child('newData','rating')} == ${child(nextResult,'after'+i)} && ${incremented('wins',`${finalWinner} == ${i}`)} && ${incremented('losses',`${finalWinner} == ${1-i}`)} && ${incremented('draws',`${finalWinner} == -1`)})`;
   return {
     rooms:{
       verdicts:{'.read':`${account} && ${participant}`,$uid:{
@@ -62,37 +101,14 @@ export function rankedRules(account) {
       '.read':`${account} && query.orderByChild == 'created' && query.limitToLast >= 1 && query.limitToLast <= ${ROOM_LIST_LIMIT}`,
       '.indexOn':['created'],
       $code:{
-        '.write':`${account} && ${ranked} && ((${host} == auth.uid && (!newData.exists() || (${waiting} && !${started} && ${guest} == null))) || (!newData.exists() && newData.parent().parent().child('rooms/' + $code + '/guest/uid').val() == auth.uid))`,
+        '.write':`${account} && ${ranked} && !(${invite}) && ((${host} == auth.uid && (!newData.exists() || (${waiting} && !${started} && ${guest} == null))) || (!newData.exists() && newData.parent().parent().child('rooms/' + $code + '/guest/uid').val() == auth.uid))`,
         '.validate':required(['created','ruleset']),
         created:valid(`newData.val() == ${room}.child('info/created').val()`),
         ruleset:valid(`newData.val() == ${room}.child('info/ruleset').val() && (newData.val() == ${FRIEND_BALANCE_RULESET} || newData.val() == ${FRIEND_FAST_CHARGE_RULESET})`),
         $other:valid(false),
       },
     },
-    rankedRecords:{
-      '.indexOn':['rating'],
-      '.read':`${account} && query.orderByChild == 'rating' && query.limitToLast >= 1 && query.limitToLast <= 50`,
-      $uid:{
-        '.read':account,
-        '.write':`${account} && newData.exists() && !${oldResult}.exists() && ${nextResult}.exists() && (${seat(0)} == auth.uid || ${seat(1)} == auth.uid)`,
-        '.validate':`${required(['nickname','rating',...stats,'lastGame'])} && (${resultSeat(0)} || ${resultSeat(1)})`,
-        nickname:valid(`newData.val() == ${rootBranch}.child('profiles/' + $uid).val()`),
-        rating:valid(number(0,100000)),
-        ...Object.fromEntries(stats.map(name=>[name,valid(number(0,1000000))])),
-        lastGame:valid("newData.isString() && newData.val().matches(/^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{6}$/)"),
-        $other:valid(false),
-      },
-    },
-    rankedResults:{$code:{
-      '.read':`${account} && ${participant}`,
-      '.write':`${account} && ${ranked} && ${started} && ${participant} && ${guest} != null && !data.exists() && newData.exists()`,
-      '.validate':`${required(['winner','p0','p1','before0','before1','after0','after1','created'])} && ${authorizedResult} && ${linked(host)} && ${linked(guest)} && ${prior(board(host),'rating',before(0))} && ${prior(board(guest),'rating',before(1))} && ${afterRating(0)} && ${afterRating(1)}`,
-      winner:valid(number(-1,1)),
-      p0:valid(`newData.val() == ${host}`),p1:valid(`newData.val() == ${guest}`),
-      before0:valid(number(0,100000)),before1:valid(number(0,100000)),
-      after0:valid(number(0,100000)),after1:valid(number(0,100000)),
-      created:valid('newData.val() == now'),
-      $other:valid(false),
-    }},
+    ...ladder(false),
+    ...ladder(true),
   };
 }

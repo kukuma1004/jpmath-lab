@@ -42,6 +42,10 @@ const timed = `(newData.child('control/kind').val() == 'startCharge' || newData.
 const listedOnly = valid(`newData.val() == true && ${listing}.exists()`);
 const {rooms:rankedRoomRules,...rankedBranches}=rankedRules(account);
 const ranked = base + ".child('info/ranked').val() == true";
+const invite = base + ".child('info/rankInvite').val() == true";
+const inviteGuest = valid(`newData.val() == true && ${invite}`);
+const inviteEntry = `(!(${invite}) || newData.hasChildren(['rankInvite','joinedAt']) && newData.child('rankInvite').val() == true)`;
+const joinedAt = valid(`${invite} && newData.val() == now`);
 
 export function targetRules() {
   return { [BRANCH]: {
@@ -65,30 +69,32 @@ export function targetRules() {
       },
     },
     rooms:{ $code:{
-      '.write':`${member} && !newData.exists() && ((${host} && !${started} && (!(${ranked}) || !${playing})) || !(${fresh}))`,
+      '.write':`${member} && !newData.exists() && ((${host} && !${started} && (!(${ranked}) || ${invite} || !${playing})) || !(${fresh}))`,
       ...rankedRoomRules,
       info:{
         '.read':account,
         '.write':`${account} && !data.exists() && newData.exists() && $code.matches(/^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{6}$/)`,
         '.validate':required(['uid','nickname','char','map','seed','created']) +
-          ` && (newData.child('map').val() != 'meadow' || ${oneOfRulesets("newData.child('ruleset').val()",FRIEND_MEADOW_RULESET,FRIEND_BALANCE_RULESET,FRIEND_FAST_CHARGE_RULESET)})`,
+          ` && (newData.child('map').val() == 'random') == (newData.child('rankInvite').val() == true) && (newData.child('map').val() != 'meadow' || ${oneOfRulesets("newData.child('ruleset').val()",FRIEND_MEADOW_RULESET,FRIEND_BALANCE_RULESET,FRIEND_FAST_CHARGE_RULESET)})`,
         ...player, map:valid(gameId), seed:valid(number(1,2147483646)), created:valid('newData.val() == now'),
         listed:valid('newData.isBoolean()'), ruleset:valid(ruleset),
         mode:valid(`${allowedRuleset("newData.parent().child('ruleset').val()")} && newData.isString() && newData.val().matches(/^(duel|teams|solo3|solo4)$/)`),
-        ranked:valid(`newData.val() == true && ${oneOfRulesets("newData.parent().child('ruleset').val()",FRIEND_BALANCE_RULESET,FRIEND_FAST_CHARGE_RULESET)} && newData.parent().child('mode').val() == 'duel' && newData.parent().child('listed').val() == false`),
+        ranked:valid(`newData.val() == true && ${oneOfRulesets("newData.parent().child('ruleset').val()",FRIEND_BALANCE_RULESET,FRIEND_FAST_CHARGE_RULESET)} && (newData.parent().child('mode').val() == 'duel' || (newData.parent().child('mode').val() == 'teams' && newData.parent().child('rankInvite').val() == true)) && newData.parent().child('listed').val() == false`),
+        rankInvite:valid(`newData.val() == true && newData.parent().child('ranked').val() == true && newData.parent().child('ruleset').val() == ${FRIEND_FAST_CHARGE_RULESET}`),
         $other:unknown,
       },
       guest:{
         '.read':account,
         '.write':`${account} && !${group} && !${started} && ((!data.exists() && newData.exists() && ${waiting} && !(${host})) || (!newData.exists() && ${guest}))`,
-        '.validate':required(['uid','nickname','char']) + ` && ${visitorRuleset} && (!(${ranked}) || newData.child('ranked').val() == true)`,
+        '.validate':required(['uid','nickname','char']) + ` && ${visitorRuleset} && (!(${ranked}) || newData.child('ranked').val() == true) && ${inviteEntry}`,
         ...player, listedOnly, ruleset:valid(ruleset), fastCharge:supportsFastCharge,
-        ranked:valid(`newData.val() == true && ${ranked} && root.child('${BRANCH}/rankedQueue/' + $code).exists()`), $other:unknown,
+        rankInvite:inviteGuest, joinedAt,
+        ranked:valid(`newData.val() == true && ${ranked} && (${invite} || root.child('${BRANCH}/rankedQueue/' + $code).exists())`), $other:unknown,
       },
       seats:{ '.read':account, $seat:{
         '.write':`${account} && ${group} && ${groupSeat} && !${started} && ((!data.exists() && newData.exists() && ${waiting} && !(${host}) && !${visitor}) || (!newData.exists() && ${ownSeat}))`,
-        '.validate':required(['uid','nickname','char','ruleset']) + ` && ${visitorRuleset} && ${uniqueSeat}`,
-        ...player, listedOnly, ruleset:valid(ruleset), fastCharge:supportsFastCharge, $other:unknown,
+        '.validate':required(['uid','nickname','char','ruleset']) + ` && ${visitorRuleset} && ${uniqueSeat} && ${inviteEntry}`,
+        ...player, listedOnly, ruleset:valid(ruleset), fastCharge:supportsFastCharge, rankInvite:inviteGuest, joinedAt, $other:unknown,
       },
       },
       presence:{
@@ -114,6 +120,7 @@ export function targetRules() {
           turn:valid(number(0,432000) + ' && (!data.exists() || newData.val() >= data.val())'),
           cursor:valid(number(0,200000) + ' && (!data.exists() || newData.val() >= data.val())'),
           done:valid('newData.isBoolean()'),
+          rankCanceled:valid(`newData.val() == true && ${invite} && newData.parent().child('done').val() == true`),
           ack:valid("newData.isString() && newData.val().matches(/^([A-Za-z0-9_-]{20})?$/)"),
           writer:valid('newData.isString()'), $other:unknown,
         },

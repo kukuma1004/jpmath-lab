@@ -143,6 +143,8 @@ export class App {
     }
     this.ui.hideLoading();
     this.ui.showTitle();
+    const invite=new URLSearchParams(location.search).get('room')?.toUpperCase()??'';
+    if(this.online?.groups&&/^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{6}$/.test(invite))this.openOnline();
     audio.playBgm('title');
     // 전장 미리보기는 화면이 뜬 뒤 하나씩 천천히
     let i = 0;
@@ -215,7 +217,7 @@ export class App {
   private openOnline(): void {
     if (!this.online || this.lobby) return;
     this.ui.only();
-    this.lobby = new OnlineLobby(this.ui.root,this.online,() => this.showTitleScreen());
+    this.lobby = new OnlineLobby(this.ui.root,this.online,this.ui,() => this.showTitleScreen());
     this.online.start();
   }
 
