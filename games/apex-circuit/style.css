@@ -51,8 +51,9 @@ body[data-state="racing"], body[data-state="countdown"] { touch-action: none; ov
     linear-gradient(105deg,#101a25f5 0%,#101a25de 23%,#101a2575 41%,transparent 64%);
 }
 .is-boosting .shade {
-  box-shadow: inset 5px 0 36px -16px #92ffe0, inset -5px 0 36px -16px #92ffe0;
+  box-shadow: inset 23px 0 64px -50px var(--thrust, #92ffe0), inset -23px 0 64px -50px var(--thrust, #92ffe0);
 }
+#boost-streaks { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 #game-screen { pointer-events: none; }
 
 .topbar {
@@ -255,7 +256,9 @@ kbd {
 .boost-caption span:first-child { font: 800 11px/1 system-ui, sans-serif; letter-spacing: .03em; }
 .boost-track { height: 8px; border: 1px solid #f9f4d659; background: #101a25b8; transform: skewX(-17deg); }
 #boost-fill { width: 100%; height: 100%; background: var(--cyan); transform: scaleX(var(--charge, 0)); transform-origin: left; }
-.is-boosting #boost-fill { background: var(--lemon); }
+.is-boosting #boost-fill {
+  background: repeating-linear-gradient(112deg, #fff7da 0 10px, var(--thrust, #ffcf57) 11px 16px);
+}
 .is-boosting .speed-stat, .is-boosting .boost-caption { color: var(--lemon); }
 #countdown {
   position: absolute;
@@ -434,7 +437,6 @@ body::after {
   mask-image: radial-gradient(ellipse at 50% 43%, transparent 40%, #000 100%);
   transition: opacity .18s ease;
 }
-body.is-boosting::after { opacity: .8; }
 body.is-drafting:not(.is-boosting)::after { opacity: .24; }
 body.is-drifting .boost-track { box-shadow: 0 0 13px #ffb846; }
 body.is-drifting .boost-caption { color: #ffc65b; }

@@ -11,9 +11,12 @@ export function createEffects(scene) {
   scene.add(root);
   const dummy = new T.Object3D();
   const sparkMat = new T.MeshBasicMaterial({
-    color: 0xffd56d, transparent: true, blending: T.AdditiveBlending, depthWrite: false
+    transparent: true, blending: T.AdditiveBlending, depthWrite: false
   });
+  const impactColor = new T.Color(0xffd56d);
+  const jetColor = new T.Color();
   const sparks = new T.InstancedMesh(new T.SphereGeometry(1, 4, 3), sparkMat, sparkCount);
+  sparks.renderOrder = 4;
   const flat = new T.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
   const rubber = new T.MeshBasicMaterial({ color: 0x15141b, transparent: true, opacity: .33, depthWrite: false });
   const skid = new T.InstancedMesh(flat, rubber, 180);
@@ -37,29 +40,45 @@ export function createEffects(scene) {
   }
   const particles = Array.from({ length: sparkCount }, () => ({ life: 0, x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0 }));
   const clouds = Array.from({ length: smokeCount }, () => ({ life: 0, x: 0, y: 0, z: 0 }));
-  let sparkIndex = 0, trailIndex = 0, cloudIndex = 0, timer = 0;
+  let sparkIndex = 0, trailIndex = 0, cloudIndex = 0, timer = 0, jetTimer = 0;
   const p = {};
-  function event(name, car, reduced, track) {
+  function event(name, car, reduced, track, boostColor) {
     if (reduced || !sparkEvents.has(name)) return;
     sampleDriver(track, car, car.distance, p);
     const x = p.x - p.dz * car.lane;
     const z = p.z + p.dx * car.lane;
-    const amount = name === 'land' ? 24 : 16;
+    const thrust = name === 'boost';
+    const amount = thrust ? 9 : name === 'land' ? 24 : 16;
+    if (thrust) jetColor.setHex(boostColor).lerp(impactColor, .12);
     for (let i = 0; i < amount; i++) {
-      const particle = particles[sparkIndex++ % sparkCount];
+      const index = sparkIndex++ % sparkCount;
+      const particle = particles[index];
       const angle = i * 2.399;
+      const side = i % 2 ? -.57 : .57;
+      const rear = thrust ? 2.5 + (i % 4) * .19 : 0;
       Object.assign(particle, {
-        life: .32 + (i % 4) * .08, x, y: p.y + .45 + car.air, z,
-        vx: Math.sin(angle) * 7 - p.dx * 8,
-        vy: 2 + (i % 5),
-        vz: Math.cos(angle) * 7 - p.dz * 8
+        life: (thrust ? .22 : .32) + (i % 4) * .07,
+        x: x - p.dx * rear - (thrust ? p.dz * side : 0),
+        y: p.y + p.bank * car.lane + .48 + car.air,
+        z: z - p.dz * rear + (thrust ? p.dx * side : 0),
+        vx: Math.sin(angle) * (thrust ? 1.9 : 7) - p.dx * (thrust ? 14 : 8),
+        vy: thrust ? .8 + (i % 5) * .28 : 2 + (i % 5),
+        vz: Math.cos(angle) * (thrust ? 1.9 : 7) - p.dz * (thrust ? 14 : 8),
+        heading: thrust ? Math.atan2(p.dx, p.dz) : null
       });
+      sparks.setColorAt(index, thrust ? jetColor : impactColor);
     }
+    sparks.instanceColor.needsUpdate = true;
   }
-  function update(race, dt, time, reduced, active, track) {
+  function update(race, dt, time, reduced, active, track, boostColor) {
     root.visible = active && !reduced;
     if (!root.visible) return;
     const car = race.cars[0];
+    jetTimer = Math.max(0, jetTimer - dt);
+    if (race.boosting && jetTimer === 0 && dt > 0) {
+      event('boost', car, reduced, track, boostColor);
+      jetTimer = .086;
+    }
     timer += dt;
     if (timer > .032) {
       timer = 0;
@@ -95,8 +114,8 @@ export function createEffects(scene) {
       particle.z += particle.vz * dt;
       particle.vy -= 14 * dt;
       dummy.position.set(particle.x, particle.y, particle.z);
-      dummy.rotation.set(0, time * 3 + i, 0);
-      dummy.scale.set(particle.life * .12, particle.life * .12, particle.life * .65);
+      dummy.rotation.set(0, particle.heading ?? time * 3 + i, 0);
+      dummy.scale.set(particle.life * .12, particle.life * .12, particle.life * (particle.heading === null ? .65 : 1.8));
       dummy.updateMatrix();
       sparks.setMatrixAt(i, dummy.matrix);
     });
@@ -117,7 +136,7 @@ export function createEffects(scene) {
   function reset() {
     for (const particle of particles) particle.life = 0;
     for (const cloud of clouds) cloud.life = 0;
-    sparkIndex = trailIndex = cloudIndex = timer = 0;
+    sparkIndex = trailIndex = cloudIndex = timer = jetTimer = 0;
     dummy.position.set(0, 0, 0);
     dummy.scale.setScalar(0);
     dummy.updateMatrix();
@@ -128,4 +147,55 @@ export function createEffects(scene) {
   }
   reset();
   return { event, update, reset };
+}
+
+export function createBoostStreaks(canvas) {
+  const ctx = canvas.getContext('2d');
+  // Repeatable streaks follow the periphery, leaving the center and next turn clear.
+  const rays = Array.from({ length: 23 }, (_, i) => {
+    const angle = i * 2.399963;
+    return {
+      x: Math.cos(angle), y: Math.sin(angle), start: (i * .618) % 1,
+      speed: 1.36 + (i % 5) * .17, length: .09 + (i % 4) * .025
+    };
+  });
+  let time = 0, impact = 0, visible = false;
+  return {
+    get active() { return visible; },
+    resize(width, height) {
+      canvas.width = Math.max(1, Math.round(width * .70));
+      canvas.height = Math.max(1, Math.round(height * .70));
+    },
+    update(boosting, dt, reduced) {
+      if (!ctx) return;
+      if (!boosting || reduced) {
+        if (visible) ctx.clearRect(0, 0, canvas.width, canvas.height);
+        time = impact = 0;
+        visible = false;
+        return;
+      }
+      const { width, height } = canvas;
+      if (!visible) impact = 1;
+      visible = true;
+      time += dt;
+      impact *= Math.exp(-dt * 10);
+      const cx = width * .5, cy = height * .43;
+      ctx.clearRect(0, 0, width, height);
+      ctx.lineCap = 'round';
+      for (const ray of rays) {
+        const progress = (ray.start + time * ray.speed) % 1;
+        const distance = .53 + progress * .58;
+        const length = ray.length * (.72 + progress * .9 + impact * .50);
+        const dx = ray.x * width * .64, dy = ray.y * height * .65;
+        ctx.strokeStyle = '#e8f8ff';
+        ctx.globalAlpha = Math.sin(progress * Math.PI) * (.50 + impact * .29);
+        ctx.lineWidth = .75 + progress * 1.1 + impact * .42;
+        ctx.beginPath();
+        ctx.moveTo(cx + dx * distance, cy + dy * distance);
+        ctx.lineTo(cx + dx * (distance + length), cy + dy * (distance + length));
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }
+  };
 }

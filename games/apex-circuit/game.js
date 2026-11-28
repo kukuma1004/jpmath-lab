@@ -3,10 +3,10 @@ import * as T from './vendor/three.module.min.js';
 import { tracks, courseRecordId, rankedTrack } from './track.js?v=19';
 import { createRace, vehicleSpecs } from './race.js?v=19';
 import { buildWorld } from './world.js?v=19';
-import { buildCars, driveCar, selectVehicle } from './cars.js?v=19';
+import { buildCars, driveCar, selectVehicle } from './cars.js?v=20';
 import { drivingKeys, resolveDrivingKey } from './input.js?v=10';
-import { createAudio } from './audio.js?v=4';
-import { createEffects } from './effects.js?v=14';
+import { createAudio } from './audio.js?v=20';
+import { createEffects, createBoostStreaks } from './effects.js?v=20';
 import { bindGarage } from './garage.js?v=11';
 import { bindRanking, formatTime } from './ranking.js?v=19';
 import { officialEvent } from './official-event.js?v=19';
@@ -154,7 +154,9 @@ function createCamera() {
       desired.set(trailing.x - trailing.dz * (laneFollow - shoulder), Math.max(carY + height, trailing.y + 2.65),
         trailing.z + trailing.dx * (laneFollow - shoulder));
       const upcoming = T.MathUtils.clamp(preview.y + .95, carY - 5.6, carY + 9);
-      const aimY = T.MathUtils.lerp(upcoming + (portrait ? .32 : .55), carY - height * .68, dropView);
+      const thrustFraming = !reduced && state === 'racing' && race.boosting ? (portrait ? .58 : .80) : 0;
+      const aimY = T.MathUtils.lerp(upcoming + (portrait ? .32 : .55) - thrustFraming,
+        carY - height * .68, dropView);
       // A narrow portrait frustum needs a closer subject anchor in hairpins.
       // Keep the same camera distance/FOV; reduce only the horizontal lookahead.
       const lookahead = portrait ? .45 : 1;
@@ -374,6 +376,7 @@ function setup() {
   const carLayer = new T.Group();
   const vehicles = buildCars(carLayer);
   const effects = createEffects(carLayer);
+  const boostStreaks = createBoostStreaks(byId('boost-streaks'));
   const garageKey = new T.DirectionalLight(0xffe2c2, 2.1);
   garageKey.position.set(45, 54, 40);
   carLayer.add(garageKey);
@@ -481,6 +484,8 @@ function setup() {
     }
     trimWorldCache();
     selectVehicle(vehicles, vehicle, roadRoster);
+    audio.select(vehicle);
+    document.body.style.setProperty('--thrust', '#' + vehicle.boostColor.toString(16).padStart(6, '0'));
     race = createRace(track, vehicle);
     document.body.dataset.mode = track.official ? 'official' : 'arcade';
     setText(byId('lap-count'), `/ ${race.laps}`);
@@ -520,7 +525,10 @@ function setup() {
     // setPixelRatio also resizes the drawing buffer using the current size.
     const targetRatio = pixelRatio * renderScale;
     if (renderer.getPixelRatio() !== targetRatio) renderer.setPixelRatio(targetRatio);
-    if (resizePending) renderer.setSize(width, height, false);
+    if (resizePending) {
+      renderer.setSize(width, height, false);
+      boostStreaks.resize(width, height);
+    }
     view.camera.aspect = width / Math.max(height, 1);
     view.camera.updateProjectionMatrix();
     if (resizePending) snap = true;
@@ -567,7 +575,7 @@ function setup() {
     state = next;
     document.body.dataset.state = next;
     document.body.classList.toggle('is-boosting', next === 'racing' && race.boosting);
-    if (!['countdown', 'racing'].includes(next)) audio.drive(0, false, false);
+    if (!['countdown', 'racing'].includes(next)) audio.drive();
   }
   function showMenu(focus) {
     race.reset();
@@ -669,7 +677,7 @@ function setup() {
   }
   function playEvent(event) {
     audio.signal(event);
-    effects.event(event, race.cars[0], motion.matches, track);
+    if (event !== 'boost') effects.event(event, race.cars[0], motion.matches, track, vehicle.boostColor);
     switch (event) {
       case 'shortcut': note(race.cars[0].shortcut?.name || '지름길 진입', 1.2); break;
       case 'drift': note('드리프트 충전 + 터보!', .9); break;
@@ -740,7 +748,8 @@ function setup() {
     document.body.classList.toggle('is-boosting', boosting);
     document.body.classList.toggle('is-drifting', state === 'racing' && race.drifting);
     document.body.classList.toggle('is-drafting', state === 'racing' && race.drafting);
-    effects.update(race, state === 'racing' && !visualOnly ? dt : 0, worldTime, motion.matches, state === 'racing', track);
+    effects.update(race, state === 'racing' && !visualOnly ? dt : 0, worldTime, motion.matches, state === 'racing', track, vehicle.boostColor);
+    boostStreaks.update(boosting, visualOnly ? 0 : dt, motion.matches);
     for (const [i, material] of lights.entries()) {
       const lit = state === 'countdown' && i < previousBeat * 2;
       material.color.set(signalTime > 0 ? 0x30fcc0 : lit ? 0xff622d : 0x4f2f34);
@@ -763,7 +772,10 @@ function setup() {
     if (state !== 'paused' || snap) view.update(track, race, vehicle, state === 'paused' ? pausedState : state, worldTime, dt, motion.matches, snap, player);
     reflectRoad(scene, view.camera, player, snap || state !== lastStateRendered);
     snap = false;
-    audio.drive(race.cars[0].speed, boosting, state === 'racing' || state === 'countdown');
+    audio.drive(player.speed, {
+      boosting, drifting: state === 'racing' && race.drifting, airborne: player.air > .18,
+      running: state === 'racing' || state === 'countdown'
+    });
     hud();
     const mirrorCalls = renderer.info.render.calls;
     const mirrorTriangles = renderer.info.render.triangles;
@@ -777,6 +789,8 @@ function setup() {
         course: track.id, vehicle: vehicle.id, model: vehicles[0].roadId || vehicles[0].id,
         grid: vehicles.map(visual => visual.roadId || visual.id),
         player: { ...race.cars[0] }, boost: race.boost, boosting, lap: race.lap, input: { ...input },
+        playerExhaust: { visible: vehicles[0].jets.visible, style: vehicles[0].boostProfile.style, meshes: vehicles[0].jets.children.length },
+        boostStreaks: boostStreaks.active,
         projected: { x: (1 + projected.x) * .5, y: (1 - projected.y) * .5 },
         camera: { fov: view.camera.fov, position: view.camera.position.toArray() },
         grounded: { modelY: vehicles[0].model.position.y, shadowOffset: vehicles[0].shadow.position.distanceTo(vehicles[0].model.position),

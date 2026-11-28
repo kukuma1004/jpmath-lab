@@ -172,11 +172,11 @@ function shadowStamp() {
 }
 
 const boostShapes = {
-  needle: { width: .48, length: 2.8, spacing: .27, sway: .025, rhythm: 12 },
-  fork: { width: .72, length: 2.1, spacing: .40, sway: .06, rhythm: 15 },
-  pulse: { width: .86, length: 1.6, spacing: .37, sway: .025, rhythm: 8 },
-  ribbon: { width: 1.02, length: 2.25, spacing: .32, sway: .08, rhythm: 6 },
-  plume: { width: 1.12, length: 1.8, spacing: .45, sway: .035, rhythm: 10 }
+  needle: { width: .62, length: 2.58, spacing: .36, sway: .014, rhythm: 12 },
+  fork: { width: .92, length: 2.37, spacing: .48, sway: .038, rhythm: 11 },
+  pulse: { width: .82, length: 2.06, spacing: .42, sway: .016, rhythm: 8 },
+  ribbon: { width: .83, length: 2.54, spacing: .43, sway: .075, rhythm: 6 },
+  plume: { width: 1.08, length: 2.13, spacing: .50, sway: .030, rhythm: 10 }
 };
 const prototypeBoost = {
   vector: { boostStyle: 'needle', boostColor: 0xffc15a },
@@ -186,87 +186,109 @@ const prototypeBoost = {
   pulse: { boostStyle: 'ribbon', boostColor: 0xffe482 }
 };
 const boostGeometry = new Map();
-const boostMaterials = new Map();
-let boostTexture;
+const boostStyles = Object.keys(boostShapes);
 
-// Longitudinal ribbons share one texture; their edges and cadence define the engine type.
+// Each strand is a soft-sided tapered volume instead of a flat decal on the road.
 function exhaustGeometry(style) {
   if (boostGeometry.has(style)) return boostGeometry.get(style);
-  const positions = [], uvs = [], indices = [];
-  const blades = style === 'fork' ? [-.25, .25] : [0];
-  const rows = 16;
-  for (const blade of blades) {
+  const positions = [], normals = [], uvs = [], indices = [];
+  const branches = style === 'fork' ? [0, 1] : [0];
+  const rows = 16, sides = 12;
+  for (const [branch, inner] of branches.flatMap(branch => [[branch, false], [branch, true]])) {
     const offset = positions.length / 3;
     for (let i = 0; i <= rows; i++) {
       const t = i / rows;
-      let width = Math.pow(1 - t, .68) * .5;
-      let center = blade * (.45 + t * .8);
-      if (style === 'needle') width *= .67;
-      if (style === 'fork') width *= .35;
-      if (style === 'plume') width *= .66 + Math.sin(t * Math.PI) * .56;
-      if (style === 'pulse') width *= .50 + .44 * Math.pow(Math.sin(t * Math.PI * 3), 2);
-      if (style === 'ribbon') { width *= .67; center = Math.sin(t * Math.PI * 1.6) * .16; }
-      for (const side of [-1, 1]) {
-        positions.push(center + side * width, 0, -t);
-        uvs.push(side < 0 ? 0 : 1, 1 - t);
+      let width = .5 * (1 - t) ** .86 * (.42 + .58 * Math.min(1, t * 7));
+      let center = 0;
+      if (style === 'needle') width *= .70 - t * .21;
+      if (style === 'fork') {
+        width *= branch ? .42 : .69;
+        if (branch) center = .15 + t * .58;
       }
-      if (i < rows) {
-        const n = offset + i * 2;
-        indices.push(n, n + 1, n + 2, n + 1, n + 3, n + 2);
+      if (style === 'plume') width *= .65 + Math.sin(t * Math.PI) * .84;
+      if (style === 'pulse') width *= .88 + .26 * Math.cos(t * Math.PI * 6);
+      if (style === 'ribbon') {
+        width *= .66;
+        center = Math.sin(t * 7.8) * t * .58;
+      }
+      if (inner) width *= .41;
+      for (let j = 0; j <= sides; j++) {
+        const u = j / sides;
+        const angle = u * Math.PI * 2;
+        const x = Math.cos(angle), y = Math.sin(angle);
+        positions.push(center + x * width, t * .20 + y * width, -t * (branch ? .74 : 1) * (inner ? .83 : 1));
+        normals.push(x, y, 0);
+        uvs.push(inner ? u + 2 : u, t);
+        if (i === rows || j === sides) continue;
+        const n = offset + i * (sides + 1) + j;
+        const next = n + sides + 1;
+        indices.push(n, next, n + 1, n + 1, next, next + 1);
       }
     }
   }
   const geometry = new T.BufferGeometry();
   geometry.setAttribute('position', new T.Float32BufferAttribute(positions, 3));
+  geometry.setAttribute('normal', new T.Float32BufferAttribute(normals, 3));
   geometry.setAttribute('uv', new T.Float32BufferAttribute(uvs, 2));
   geometry.setIndex(indices);
-  geometry.computeVertexNormals();
   boostGeometry.set(style, geometry);
   return geometry;
 }
 
-function exhaustMaterial(color = 0xb4fff1) {
-  if (boostMaterials.has(color)) return boostMaterials.get(color);
-  if (!boostTexture) {
-    const canvas = document.createElement('canvas');
-    canvas.width = 96;
-    canvas.height = 256;
-    const ctx = canvas.getContext('2d');
-    const pixels = ctx.createImageData(canvas.width, canvas.height);
-    for (let y = 0; y < canvas.height; y++) {
-      const t = y / (canvas.height - 1);
-      const width = .30 * Math.pow(1 - t, .78) + .013;
-      for (let x = 0; x < canvas.width; x++) {
-        const radius = Math.abs((x + .5) / canvas.width - .5) / width;
-        const heat = Math.exp(-radius * radius * 3.1) * Math.pow(1 - t, 1.8);
-        const amber = Math.max(0, 1 - t * 4.8);
-        const i = (y * canvas.width + x) * 4;
-        const light = Math.min(255, 195 + heat * 60 + amber * 35);
-        pixels.data[i] = light;
-        pixels.data[i + 1] = light;
-        pixels.data[i + 2] = light;
-        pixels.data[i + 3] = 255 * Math.exp(-radius * radius * 1.7) * Math.min(1, (1 - t) * 3);
+function exhaustMaterial() {
+  return new T.ShaderMaterial({
+    transparent: true, depthWrite: false, toneMapped: false, blending: T.AdditiveBlending,
+    uniforms: { flameColor: { value: new T.Color() }, time: { value: 0 }, style: { value: 0 } },
+    vertexShader: `
+      varying vec2 flame;
+      varying vec3 viewDirection, flameNormal, flameAxis;
+      void main() {
+        flame = uv;
+        vec4 viewPosition = modelViewMatrix * vec4(position, 1.0);
+        viewDirection = -viewPosition.xyz;
+        flameNormal = normalMatrix * normal;
+        flameAxis = (modelViewMatrix * vec4(0.0, 0.0, 1.0, 0.0)).xyz;
+        gl_Position = projectionMatrix * viewPosition;
       }
-    }
-    ctx.putImageData(pixels, 0, 0);
-    boostTexture = new T.CanvasTexture(canvas);
-    boostTexture.colorSpace = T.SRGBColorSpace;
-  }
-  const material = new T.MeshBasicMaterial({map: boostTexture, color, transparent: true, depthWrite: false, toneMapped: false, side: T.DoubleSide});
-  boostMaterials.set(color, material);
-  return material;
+    `,
+    fragmentShader: `
+      uniform vec3 flameColor;
+      uniform float time, style;
+      varying vec2 flame;
+      varying vec3 viewDirection, flameNormal, flameAxis;
+      void main() {
+        float t = flame.y;
+        bool inner = flame.x > 1.5;
+        vec3 axis = normalize(flameAxis);
+        vec3 radial = viewDirection - dot(viewDirection, axis) * axis;
+        float facing = abs(dot(radial / max(length(radial), 0.001), normalize(flameNormal)));
+        float section = sin(t * 29.0 - time * 15.0 + cos(flame.x * 12.566) * 0.42);
+        float edge = clamp(facing + section * 0.106 * t, 0.0, 1.0);
+        float bands = pow(0.5 + 0.5 * cos(t * 28.0 - time * 13.0), 5.0);
+        float core = smoothstep(0.33, 0.97, edge) * (1.0 - smoothstep(0.02, 0.49, t));
+        float envelope = smoothstep(0.02, 0.42, edge) *
+          smoothstep(0.0, 0.075, t) * (1.0 - smoothstep(0.45, 1.0, t));
+        float heat = clamp(core + bands * (style == 2.0 ? 0.83 : 0.25) * edge, 0.0, 1.0);
+        if (inner) heat = max(heat, 0.84 - 0.55 * t + bands * 0.21);
+        gl_FragColor = vec4(mix(flameColor * 0.88, vec3(1.0, 0.96, 0.87), heat),
+          envelope * (inner ? 0.91 : 0.66));
+        #include <colorspace_fragment>
+      }
+    `
+  });
 }
 
 function tuneExhaust(visual, spec) {
   const style = boostShapes[spec.boostStyle] ? spec.boostStyle : 'needle';
   const settings = boostShapes[style];
-  const variation = [...spec.id].reduce((sum, letter) => sum + letter.charCodeAt(0), 0) % 9;
-  visual.boostProfile = { ...settings, variation, style };
-  visual.jets.userData.style = style;
+  visual.boostProfile = { ...settings, style };
   for (const [index, jet] of visual.jets.children.entries()) {
+    const side = index === 0 ? -1 : 1;
     jet.geometry = exhaustGeometry(style);
-    jet.material = exhaustMaterial(spec.boostColor);
-    jet.position.set((index ? 1 : -1) * settings.spacing, .28, -2.14);
+    jet.position.set(side * settings.spacing, .34, -2.14);
+    jet.scale.x = side;
+    jet.material.uniforms.flameColor.value.setHex(spec.boostColor);
+    jet.material.uniforms.style.value = boostStyles.indexOf(style);
   }
   visual.jets.position.z = spec.id === 'cybertruck' ? -.29 : spec.cosmetic ? -.10 : 0;
 }
@@ -275,7 +297,6 @@ export function buildCars(scene) {
   const reflection = carReflection();
   const shadowGeometry = new T.PlaneGeometry(3.45, 5.8).rotateX(-Math.PI / 2);
   const shadowMaterial = shadowStamp();
-  const exhaust = exhaustMaterial();
   const jetGeometry = exhaustGeometry('needle');
   const visuals = liveries.map((design, id) => {
     const model = new T.Group();
@@ -285,9 +306,9 @@ export function buildCars(scene) {
     buildBody(body, design, reflection);
     model.add(body);
     const jets = new T.Group();
-    for (const side of [-1, 1]) {
-      const flame = new T.Mesh(jetGeometry, exhaust);
-      flame.position.set(side * .29, .28, -2.14);
+    for (let index = 0; index < 2; index++) {
+      const flame = new T.Mesh(jetGeometry, exhaustMaterial());
+      flame.renderOrder = 3;
       jets.add(flame);
     }
     model.add(jets);
@@ -371,14 +392,15 @@ export function driveCar(visual, car, boosting, elapsed, course = track) {
   visual.shadow.scale.set(spread, 1, spread * 1.05);
   visual.shadow.material.opacity = .62 / (1 + car.air * .24);
   visual.jets.visible = boosting;
+  if (!boosting) return;
+  const { width, length, style, rhythm, sway } = visual.boostProfile;
   for (let i = 0; i < visual.jets.children.length; i++) {
     const jet = visual.jets.children[i];
-    const profile = visual.boostProfile;
-    const phase = elapsed * (profile.rhythm + profile.variation * .28) + i * .8;
-    const wave = Math.sin(phase);
-    const pulse = profile.style === 'pulse' ? .16 : .06;
-    jet.scale.x = profile.width * (.96 + profile.variation * .012) * (1 + wave * pulse);
-    jet.scale.z = profile.length * (1 + .045 * Math.sin(phase * 1.3) + profile.variation * .006);
-    jet.rotation.y = car.slip * .42 + Math.sin(phase * .65) * profile.sway;
+    const phase = elapsed * rhythm + i * .8;
+    const pulse = 1 + Math.sin(phase) * (style === 'pulse' ? .105 : .05);
+    const side = i === 0 ? -1 : 1;
+    jet.scale.set(side * width * pulse, width * .66 * pulse, length * pulse);
+    jet.rotation.y = car.slip * .42 + Math.sin(phase * .65) * sway - side * .09;
+    jet.material.uniforms.time.value = elapsed + i * .051;
   }
 }
